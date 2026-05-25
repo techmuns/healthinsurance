@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 type BlobShape = 'blob-a' | 'blob-b' | 'blob-c' | 'blob-d' | 'blob-e'
-type BlobTone = 'navy' | 'ivory' | 'soft' | 'muted'
+type BlobTone = 'navy' | 'ivory' | 'soft' | 'muted' | 'glass'
 type BlobSize = 'sm' | 'md' | 'lg'
 
 const sizeMap: Record<BlobSize, string> = {
@@ -21,6 +21,8 @@ const toneMap: Record<BlobTone, string> = {
   ivory: 'bg-ivory text-navy-primary ring-1 ring-soft-border',
   soft: 'bg-soft-blue text-navy-primary',
   muted: 'bg-muted-blue text-white shadow-soft',
+  // Translucent white icon for use inside a dark/navy capsule.
+  glass: 'bg-white/15 text-white ring-1 ring-white/25',
 }
 
 export interface OrganicIconBlobProps {

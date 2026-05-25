@@ -39,20 +39,18 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                   onClick={() => onNavigate(item.id)}
                   title={item.question}
                   className={[
-                    'group relative flex items-center gap-2.5 rounded-2xl py-2 pl-2.5 pr-2 text-left text-[13px] transition-all duration-200',
+                    'group flex items-center gap-2.5 rounded-2xl py-2 pl-2.5 pr-2 text-left text-[13px] transition-all duration-200',
                     isActive
-                      ? 'border border-[rgba(182,139,58,0.18)] bg-white/85 font-semibold text-navy-deep shadow-[0_10px_26px_rgba(23,43,77,0.08)]'
-                      : 'border border-transparent text-[#5C6675] hover:bg-white/55 hover:text-navy-primary',
+                      ? 'border border-white/20 bg-navy-primary font-semibold text-white shadow-[0_12px_26px_rgba(36,63,120,0.22)]'
+                      : 'border border-transparent text-[#657184] hover:bg-white/55 hover:text-navy-deep',
                   ].join(' ')}
                 >
-                  {isActive && (
-                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-champagne" />
-                  )}
                   <OrganicIconBlob
                     shape={isActive ? 'blob-b' : 'blob-d'}
-                    tone={isActive ? 'navy' : 'ivory'}
+                    tone={isActive ? 'glass' : 'navy'}
                     size="sm"
                     interactive={!isActive}
+                    className={isActive ? '' : 'ring-1 ring-white/80'}
                   >
                     <Icon name={item.icon} />
                   </OrganicIconBlob>
