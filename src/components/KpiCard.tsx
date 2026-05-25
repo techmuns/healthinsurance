@@ -18,6 +18,14 @@ export interface KpiCardProps {
   invert?: boolean
 }
 
+// Signal-led accent used for the card's top strip and corner wash.
+const accent: Record<Signal, { bar: string; wash: string; spark: string }> = {
+  Strong: { bar: 'bg-emerald', wash: 'rgba(47,133,90,0.07)', spark: '#2F855A' },
+  Improving: { bar: 'bg-teal', wash: 'rgba(22,142,142,0.07)', spark: '#168E8E' },
+  Watch: { bar: 'bg-gold', wash: 'rgba(183,121,31,0.07)', spark: '#3D5F9F' },
+  Weak: { bar: 'bg-coral', wash: 'rgba(199,93,84,0.07)', spark: '#C75D54' },
+}
+
 export function KpiCard({
   label,
   metric,
@@ -32,10 +40,20 @@ export function KpiCard({
   const change = metric.change
   const positiveChange = change !== undefined && (invert ? change < 0 : change > 0)
   const ChangeArrow = change !== undefined && change < 0 ? ArrowDownRight : ArrowUpRight
+  const a = signal ? accent[signal] : null
 
   return (
-    <div className="group card-surface flex flex-col gap-2.5 p-4 transition-shadow duration-300 hover:shadow-lift">
-      <div className="flex items-start justify-between gap-2">
+    <div className="group card-surface relative flex flex-col gap-2.5 overflow-hidden p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
+      {/* signal accent strip */}
+      {a && <span className={`absolute inset-x-0 top-0 h-[3px] ${a.bar}`} />}
+      {/* soft corner wash */}
+      {a && (
+        <span
+          className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 blob-a"
+          style={{ background: a.wash }}
+        />
+      )}
+      <div className="relative flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <OrganicIconBlob shape={blob} tone={tone} size="sm" interactive>
             <Icon name={icon} />
@@ -45,14 +63,14 @@ export function KpiCard({
         {signal && <SignalBadge label={signal} size="sm" />}
       </div>
 
-      <div className="flex items-end justify-between gap-2">
+      <div className="relative flex items-end justify-between gap-2">
         <span className={`font-display text-[30px] leading-none ${pending ? 'text-ink-secondary' : 'text-navy-deep'}`}>
           {formatValue(metric)}
         </span>
-        {spark && !pending && <MiniSparkline data={spark} width={84} height={28} invert={invert} />}
+        {spark && !pending && <MiniSparkline data={spark} width={84} height={28} color={a?.spark} invert={invert} />}
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-soft-border pt-2">
+      <div className="relative flex items-center justify-between gap-2 border-t border-soft-border pt-2">
         {change !== undefined && !pending ? (
           <span
             className={[

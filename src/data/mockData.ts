@@ -127,6 +127,88 @@ export const heroKpis: HeroKpi[] = [
   },
 ]
 
+// --- Industry at a Glance (first-page visual summary) -------------------
+
+export interface ShareSlice {
+  name: string
+  value: number
+  focal?: boolean
+}
+
+/** SAHI health-premium pool share (%) — mock. */
+export const marketShareDonut: ShareSlice[] = [
+  { name: 'Star Health', value: 33 },
+  { name: 'Niva Bupa', value: 19, focal: true },
+  { name: 'Care Health', value: 17 },
+  { name: 'Aditya Birla', value: 12 },
+  { name: 'ManipalCigna', value: 9 },
+  { name: 'Others', value: 10 },
+]
+
+export interface LeaderRow {
+  name: string
+  ticker: string
+  value: string
+  delta: string
+  positive: boolean
+  focal?: boolean
+}
+
+/** Top performers this period — fastest GWP growth (mock, derived from peers). */
+export const leaderboard: LeaderRow[] = [
+  { name: 'Aditya Birla Health', ticker: 'ABHI', value: '28.6%', delta: '+5.0', positive: true },
+  { name: 'Niva Bupa Health', ticker: 'NIVABUPA', value: '23.4%', delta: '+2.8', positive: true, focal: true },
+  { name: 'Care Health', ticker: 'CAREHEALTH', value: '20.1%', delta: '+1.9', positive: true },
+  { name: 'Star Health', ticker: 'STARHEALTH', value: '17.5%', delta: '+0.7', positive: true },
+  { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: '15.2%', delta: '-0.4', positive: false },
+]
+
+export interface PulseItem {
+  kind: 'Strength' | 'Watch' | 'Risk'
+  headline: string
+  detail: string
+  metric: string
+}
+
+export const pulseStrip: PulseItem[] = [
+  {
+    kind: 'Strength',
+    headline: 'Underwriting is profitable',
+    detail: 'Combined ratio below 100 and improving as retail mix rises.',
+    metric: 'Combined 96.8%',
+  },
+  {
+    kind: 'Watch',
+    headline: 'Banca concentration elevated',
+    detail: 'Fresh premium leans on bancassurance; channel mix needs monitoring.',
+    metric: 'Banca 31%',
+  },
+  {
+    kind: 'Risk',
+    headline: 'Valuation looks full',
+    detail: 'Trades at a premium to the peer median; limited margin of safety.',
+    metric: 'P/GWP 3.4x',
+  },
+]
+
+export interface ScoreRow {
+  label: string
+  rank: number
+  rankOf: number
+  signal: Signal
+  /** 0–100 relative position vs peers. */
+  score: number
+}
+
+/** Where Niva Bupa stands across the five investor pillars (mock). */
+export const positioningScore: ScoreRow[] = [
+  { label: 'Growth', rank: 2, rankOf: 5, signal: 'Strong', score: 84 },
+  { label: 'Margin', rank: 1, rankOf: 5, signal: 'Strong', score: 90 },
+  { label: 'Capital', rank: 2, rankOf: 5, signal: 'Strong', score: 78 },
+  { label: 'Distribution', rank: 3, rankOf: 5, signal: 'Watch', score: 58 },
+  { label: 'Valuation', rank: 3, rankOf: 5, signal: 'Watch', score: 52 },
+]
+
 export interface InvestorReadRow {
   label: string
   value: string

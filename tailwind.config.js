@@ -9,6 +9,7 @@ export default {
           primary: '#27457E',
           deep: '#172B4D',
         },
+        royal: '#315AA9',
         muted: {
           blue: '#3D5F9F',
         },
@@ -28,6 +29,12 @@ export default {
           warning: '#B7791F',
           negative: '#B94A48',
         },
+        // Selective accent pops (institutional, signal-led)
+        teal: { DEFAULT: '#168E8E', soft: '#E1F2F1' },
+        emerald: { DEFAULT: '#2F855A', soft: '#E6F1EB' },
+        gold: { DEFAULT: '#B7791F', soft: '#FBF3E2' },
+        coral: { DEFAULT: '#C75D54', soft: '#F8ECEC' },
+        lavender: { DEFAULT: '#6E7BD6', soft: '#ECEEFB' },
       },
       fontFamily: {
         sans: [
