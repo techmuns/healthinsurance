@@ -44,15 +44,15 @@ export function ModuleCard({
   const [statusOpen, setStatusOpen] = useState(false)
 
   return (
-    <section className="card-surface animate-fade-in p-6 sm:p-7">
+    <section className="card-surface animate-fade-in p-5">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <OrganicIconBlob shape="blob-b" tone="navy" size="lg">
+        <div className="flex items-start gap-3">
+          <OrganicIconBlob shape="blob-b" tone="navy" size="md">
             <Icon name={icon} />
           </OrganicIconBlob>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-blue">{question}</p>
-            <h2 className="mt-1 font-display text-2xl text-navy-deep">{title}</h2>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-blue">{question}</p>
+            <h2 className="mt-0.5 font-display text-xl text-navy-deep">{title}</h2>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -80,17 +80,17 @@ export function ModuleCard({
       </header>
 
       {controls && (
-        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-xl2 border border-soft-border bg-ice/70 px-4 py-3">
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border border-soft-border bg-ice/70 px-3.5 py-2.5">
           {controls}
         </div>
       )}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.55fr_1fr]">
+      <div className="mt-5 grid gap-5 lg:grid-cols-[1.6fr_1fr]">
         <div className="min-w-0">
           {children}
-          {kpis && <div className="mt-5">{kpis}</div>}
+          {kpis && <div className="mt-4">{kpis}</div>}
         </div>
-        {insight && <div className="flex flex-col gap-4">{insight}</div>}
+        {insight && <div className="flex flex-col gap-3.5">{insight}</div>}
       </div>
 
       {drawer && (

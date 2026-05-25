@@ -43,7 +43,7 @@ export interface ChartFrameProps {
 }
 
 /** Standard chart container: insight headline + chart + optional footnote strip. */
-export function ChartFrame({ headline, caption, height = 280, children, footnote }: ChartFrameProps) {
+export function ChartFrame({ headline, caption, height = 240, children, footnote }: ChartFrameProps) {
   return (
     <div>
       <div className="mb-4">
@@ -56,7 +56,7 @@ export function ChartFrame({ headline, caption, height = 280, children, footnote
   )
 }
 
-export function ChartEmpty({ height = 280 }: { height?: number }) {
+export function ChartEmpty({ height = 240 }: { height?: number }) {
   return (
     <div
       className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/60 text-center"
@@ -84,7 +84,7 @@ export interface TrendChartProps {
   unit?: string
 }
 
-export function TrendLineChart({ data, series, height = 280, unit }: TrendChartProps) {
+export function TrendLineChart({ data, series, height = 240, unit }: TrendChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
@@ -109,7 +109,7 @@ export function TrendLineChart({ data, series, height = 280, unit }: TrendChartP
   )
 }
 
-export function StackedBarChart({ data, series, height = 280, unit }: TrendChartProps) {
+export function StackedBarChart({ data, series, height = 240, unit }: TrendChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barCategoryGap="28%">
@@ -133,7 +133,7 @@ export function StackedBarChart({ data, series, height = 280, unit }: TrendChart
   )
 }
 
-export function GroupedBarChart({ data, series, height = 280, unit }: TrendChartProps) {
+export function GroupedBarChart({ data, series, height = 240, unit }: TrendChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barGap={4} barCategoryGap="24%">
@@ -158,7 +158,7 @@ export interface HBarPoint {
 
 export function HorizontalBarChart({
   data,
-  height = 280,
+  height = 240,
   unit,
   diverging = false,
 }: {
@@ -191,7 +191,7 @@ export function HorizontalBarChart({
 /** Solvency-style trend with a comfort band drawn behind the line. */
 export function BandedLineChart({
   data,
-  height = 280,
+  height = 240,
   bandLow,
   bandHigh,
   lineKey,
@@ -229,7 +229,7 @@ export function DualAxisChart({
   lineKey,
   barLabel,
   lineLabel,
-  height = 280,
+  height = 240,
 }: {
   data: SeriesPoint[]
   barKey: string
@@ -257,7 +257,7 @@ export function DualAxisChart({
 /** Growth (x) vs valuation (y) scatter, highlighting the focal company. */
 export function ScatterPlot({
   data,
-  height = 300,
+  height = 260,
 }: {
   data: { name: string; growth: number; valuation: number; focal?: boolean }[]
   height?: number

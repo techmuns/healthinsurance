@@ -29,16 +29,18 @@ const m = (
 
 // --- Universe -------------------------------------------------------------
 
-export const FOCAL_COMPANY = 'aurora-health'
+export const FOCAL_COMPANY = 'niva-bupa'
 
 export const companies: Company[] = [
-  { id: 'aurora-health', name: 'Aurora Health Insurance', ticker: 'AURHL', peerGroup: 'SAHI' },
-  { id: 'meridian-sahi', name: 'Meridian Health', ticker: 'MERHL', peerGroup: 'SAHI' },
-  { id: 'cardinal-sahi', name: 'Cardinal Care', ticker: 'CRDCL', peerGroup: 'SAHI' },
-  { id: 'atlas-general', name: 'Atlas General Insurance', ticker: 'ATLGI', peerGroup: 'General' },
-  { id: 'beacon-general', name: 'Beacon General', ticker: 'BCNGI', peerGroup: 'General' },
-  { id: 'sterling-life', name: 'Sterling Life', ticker: 'STRLF', peerGroup: 'Life' },
-  { id: 'harbour-life', name: 'Harbour Life', ticker: 'HRBLF', peerGroup: 'Life' },
+  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', ticker: 'NIVABUPA', peerGroup: 'SAHI' },
+  { id: 'star-health', name: 'Star Health and Allied Insurance', ticker: 'STARHEALTH', peerGroup: 'SAHI' },
+  { id: 'care-health', name: 'Care Health Insurance', ticker: 'CAREHEALTH', peerGroup: 'SAHI' },
+  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', ticker: 'ABHI', peerGroup: 'SAHI' },
+  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI' },
+  { id: 'icici-lombard', name: 'ICICI Lombard General', ticker: 'ICICILOMB', peerGroup: 'General' },
+  { id: 'bajaj-general', name: 'Bajaj Allianz General', ticker: 'BAJAJGEN', peerGroup: 'General' },
+  { id: 'hdfc-life', name: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life' },
+  { id: 'sbi-life', name: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life' },
 ]
 
 export const DATA_FRESHNESS = {
@@ -223,7 +225,7 @@ export const marketKpis: { label: string; metric: Metric }[] = [
   { label: 'Health premium growth', metric: m(19.3, { unit: '%', period: 'FY25', change: 2.8, changeLabel: 'YoY', source: 'IRDAI (mock)' }) },
   { label: 'SAHI share of health', metric: m(38.2, { unit: '%', period: 'FY25', change: 3.1, changeLabel: 'YoY', status: 'Derived', source: 'Derived from segment GWP (mock)' }) },
   { label: 'Private insurer share', metric: m(63.5, { unit: '%', period: 'FY25', change: 1.4, changeLabel: 'YoY', source: 'IRDAI (mock)' }) },
-  { label: 'Top share gainer', metric: { ...m(null), period: 'FY25', status: 'Reported', source: 'Aurora Health (mock)' } },
+  { label: 'Top share gainer', metric: { ...m(null), period: 'FY25', status: 'Reported', source: 'Niva Bupa Health (mock)' } },
 ]
 
 // =========================================================================
@@ -386,13 +388,15 @@ export interface PeerRow {
 }
 
 export const peerRows: PeerRow[] = [
-  { company: 'Aurora Health Insurance', ticker: 'AURHL', peerGroup: 'SAHI', gwpGrowth: 23.4, marketShareChange: 0.9, combinedRatio: 96.8, solvency: 2.18, roe: 17.2, valuation: 3.4, retailMix: 64, signal: 'Strong', focal: true },
-  { company: 'Meridian Health', ticker: 'MERHL', peerGroup: 'SAHI', gwpGrowth: 19.8, marketShareChange: 0.4, combinedRatio: 99.2, solvency: 1.96, roe: 13.9, valuation: 3.9, retailMix: 57, signal: 'Improving' },
-  { company: 'Cardinal Care', ticker: 'CRDCL', peerGroup: 'SAHI', gwpGrowth: 15.2, marketShareChange: -0.2, combinedRatio: 102.4, solvency: 1.74, roe: 10.6, valuation: 2.7, retailMix: 49, signal: 'Watch' },
-  { company: 'Atlas General Insurance', ticker: 'ATLGI', peerGroup: 'General', gwpGrowth: 12.1, marketShareChange: 0.2, combinedRatio: 103.6, solvency: 1.88, roe: 12.1, valuation: 1.9, retailMix: 31, signal: 'Watch' },
-  { company: 'Beacon General', ticker: 'BCNGI', peerGroup: 'General', gwpGrowth: 9.4, marketShareChange: -0.3, combinedRatio: 106.2, solvency: 1.71, roe: 8.4, valuation: 1.4, retailMix: 22, signal: 'Weak' },
-  { company: 'Sterling Life', ticker: 'STRLF', peerGroup: 'Life', gwpGrowth: 11.6, marketShareChange: 0.1, combinedRatio: 0, solvency: 1.98, roe: 14.8, valuation: 2.2, retailMix: 0, signal: 'Improving' },
-  { company: 'Harbour Life', ticker: 'HRBLF', peerGroup: 'Life', gwpGrowth: 7.8, marketShareChange: -0.1, combinedRatio: 0, solvency: 1.82, roe: 11.2, valuation: 1.8, retailMix: 0, signal: 'Watch' },
+  { company: 'Niva Bupa Health Insurance', ticker: 'NIVABUPA', peerGroup: 'SAHI', gwpGrowth: 23.4, marketShareChange: 0.9, combinedRatio: 96.8, solvency: 2.18, roe: 17.2, valuation: 3.4, retailMix: 64, signal: 'Strong', focal: true },
+  { company: 'Star Health and Allied', ticker: 'STARHEALTH', peerGroup: 'SAHI', gwpGrowth: 17.5, marketShareChange: 0.3, combinedRatio: 99.4, solvency: 2.05, roe: 14.2, valuation: 3.6, retailMix: 67, signal: 'Improving' },
+  { company: 'Care Health Insurance', ticker: 'CAREHEALTH', peerGroup: 'SAHI', gwpGrowth: 20.1, marketShareChange: 0.5, combinedRatio: 98.1, solvency: 1.92, roe: 13.0, valuation: 3.0, retailMix: 55, signal: 'Improving' },
+  { company: 'Aditya Birla Health', ticker: 'ABHI', peerGroup: 'SAHI', gwpGrowth: 28.6, marketShareChange: 0.7, combinedRatio: 101.8, solvency: 1.78, roe: 9.5, valuation: 4.2, retailMix: 52, signal: 'Watch' },
+  { company: 'ManipalCigna Health', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', gwpGrowth: 15.2, marketShareChange: -0.1, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, retailMix: 48, signal: 'Watch' },
+  { company: 'ICICI Lombard General', ticker: 'ICICILOMB', peerGroup: 'General', gwpGrowth: 13.1, marketShareChange: 0.2, combinedRatio: 102.6, solvency: 2.55, roe: 18.4, valuation: 5.8, retailMix: 35, signal: 'Strong' },
+  { company: 'Bajaj Allianz General', ticker: 'BAJAJGEN', peerGroup: 'General', gwpGrowth: 9.8, marketShareChange: -0.2, combinedRatio: 100.4, solvency: 2.10, roe: 14.0, valuation: 3.1, retailMix: 28, signal: 'Improving' },
+  { company: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', gwpGrowth: 11.6, marketShareChange: 0.1, combinedRatio: 0, solvency: 1.98, roe: 14.8, valuation: 2.2, retailMix: 0, signal: 'Improving' },
+  { company: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', gwpGrowth: 7.8, marketShareChange: -0.1, combinedRatio: 0, solvency: 1.82, roe: 11.2, valuation: 1.8, retailMix: 0, signal: 'Watch' },
 ]
 
 // =========================================================================
@@ -408,20 +412,20 @@ export const valuationTrend: SeriesPoint[] = [
 ]
 
 export const valuationPeers: SeriesPoint[] = [
-  { label: 'Meridian Health', value: 3.9 },
-  { label: 'Aurora Health', value: 3.4 },
-  { label: 'Cardinal Care', value: 2.7 },
-  { label: 'Sterling Life', value: 2.2 },
-  { label: 'Atlas General', value: 1.9 },
+  { label: 'Aditya Birla Health', value: 4.2 },
+  { label: 'Star Health', value: 3.6 },
+  { label: 'Niva Bupa', value: 3.4 },
+  { label: 'Care Health', value: 3.0 },
+  { label: 'ManipalCigna', value: 2.6 },
 ]
 
 export const valuationScatter: { name: string; growth: number; valuation: number; focal?: boolean }[] = [
-  { name: 'Aurora Health', growth: 23.4, valuation: 3.4, focal: true },
-  { name: 'Meridian Health', growth: 19.8, valuation: 3.9 },
-  { name: 'Cardinal Care', growth: 15.2, valuation: 2.7 },
-  { name: 'Atlas General', growth: 12.1, valuation: 1.9 },
-  { name: 'Beacon General', growth: 9.4, valuation: 1.4 },
-  { name: 'Sterling Life', growth: 11.6, valuation: 2.2 },
+  { name: 'Niva Bupa', growth: 23.4, valuation: 3.4, focal: true },
+  { name: 'Star Health', growth: 17.5, valuation: 3.6 },
+  { name: 'Care Health', growth: 20.1, valuation: 3.0 },
+  { name: 'Aditya Birla', growth: 28.6, valuation: 4.2 },
+  { name: 'ManipalCigna', growth: 15.2, valuation: 2.6 },
+  { name: 'ICICI Lombard', growth: 13.1, valuation: 5.8 },
 ]
 
 export const priceVolume: SeriesPoint[] = [
@@ -535,8 +539,8 @@ export const events: EventItem[] = [
   {
     id: 'ev1',
     date: '2026-05-12',
-    title: 'Aurora posts Q4 with combined ratio at multi-year low',
-    tag: 'Aurora Health',
+    title: 'Niva Bupa posts Q4 with combined ratio at multi-year low',
+    tag: 'Niva Bupa Health',
     type: 'Company',
     impact: 'Positive',
     relevance: 'Confirms structural margin thesis; supports premium valuation.',
@@ -551,22 +555,22 @@ export const events: EventItem[] = [
     tag: 'IRDAI',
     type: 'Regulation',
     impact: 'Watch',
-    relevance: 'Cost ceilings could pressure aggressive-acquisition peers more than Aurora.',
+    relevance: 'Cost ceilings could pressure aggressive-acquisition peers more than Niva Bupa.',
     importance: 88,
     source: 'Regulatory circular (mock)',
-    detail: 'Revised EOM framework tightens allowable expense ratios on a glide path. Insurers with elevated commission ratios face the most adjustment; Aurora sits within limits.',
+    detail: 'Revised EOM framework tightens allowable expense ratios on a glide path. Insurers with elevated commission ratios face the most adjustment; Niva Bupa sits within limits.',
   },
   {
     id: 'ev3',
     date: '2026-04-22',
-    title: 'Large bank renews banca tie-up with Meridian',
-    tag: 'Meridian Health',
+    title: 'Large bank renews banca tie-up with Star Health',
+    tag: 'Star Health',
     type: 'Competition',
     impact: 'Negative',
-    relevance: 'Tightens banca shelf-space; watch impact on Aurora fresh premium.',
+    relevance: 'Tightens banca shelf-space; watch impact on Niva Bupa fresh premium.',
     importance: 74,
     source: 'Exchange filing (mock)',
-    detail: 'Multi-year exclusive renewal locks a major bank channel to a peer, a modest headwind to Aurora’s banca-led fresh premium growth.',
+    detail: 'Multi-year exclusive renewal locks a major bank channel to a peer, a modest headwind to Niva Bupa’s banca-led fresh premium growth.',
   },
   {
     id: 'ev4',
@@ -583,8 +587,8 @@ export const events: EventItem[] = [
   {
     id: 'ev5',
     date: '2026-03-28',
-    title: 'FII ownership in Aurora rises to multi-quarter high',
-    tag: 'Aurora Health',
+    title: 'FII ownership in Niva Bupa rises to multi-quarter high',
+    tag: 'Niva Bupa Health',
     type: 'Company',
     impact: 'Positive',
     relevance: 'Quality institutions accumulating; supportive of the stock.',

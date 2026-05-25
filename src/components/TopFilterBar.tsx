@@ -1,5 +1,4 @@
-import { Building2, CalendarRange, CheckCircle2, ChevronDown, Layers } from 'lucide-react'
-import { OrganicIconBlob } from './OrganicIconBlob'
+import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import { useFilters } from '@/state/filters'
 import { companies, DATA_FRESHNESS } from '@/data/mockData'
@@ -8,22 +7,31 @@ import type { PeerGroup, TimePeriod } from '@/data/types'
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
 const periods: TimePeriod[] = ['Monthly', 'Quarterly', 'Annual']
 
+function FieldLabel({ children, hint }: { children: string; hint?: string }) {
+  return (
+    <span
+      className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-secondary"
+      title={hint}
+    >
+      {children}
+    </span>
+  )
+}
+
 export function TopFilterBar() {
   const { companyId, setCompanyId, peerGroup, setPeerGroup, timePeriod, setTimePeriod } = useFilters()
 
   return (
-    <div className="sticky top-0 z-30 px-4 pt-4 sm:px-6">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-xl2 border border-soft-border bg-card/90 px-4 py-3 shadow-bar backdrop-blur-md">
-        {/* Company selector */}
-        <label className="flex items-center gap-2.5">
-          <OrganicIconBlob shape="blob-a" tone="soft" size="sm">
-            <Building2 />
-          </OrganicIconBlob>
-          <span className="relative">
+    <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
+      <div className="flex flex-wrap items-end gap-x-5 gap-y-2.5 rounded-2xl border border-soft-border bg-card/90 px-4 py-2.5 shadow-bar backdrop-blur-md">
+        {/* Company */}
+        <label className="block">
+          <FieldLabel>Company</FieldLabel>
+          <span className="relative block">
             <select
               value={companyId}
               onChange={(e) => setCompanyId(e.target.value)}
-              className="appearance-none rounded-full border border-soft-border bg-ice py-1.5 pl-3.5 pr-9 text-sm font-semibold text-navy-deep outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
+              className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -31,47 +39,41 @@ export function TopFilterBar() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-secondary" />
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-secondary" />
           </span>
         </label>
 
-        <div className="hidden h-7 w-px bg-soft-border sm:block" />
+        <div className="hidden h-9 w-px self-end bg-soft-border sm:block" />
 
         {/* Peer group */}
-        <div className="flex items-center gap-2.5">
-          <OrganicIconBlob shape="blob-b" tone="soft" size="sm">
-            <Layers />
-          </OrganicIconBlob>
-          <SegmentedControl<PeerGroup>
-            options={peerGroups}
-            value={peerGroup}
-            onChange={setPeerGroup}
-            size="sm"
-          />
+        <div>
+          <FieldLabel hint="Compare against selected insurer type">Peer Group</FieldLabel>
+          <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
         </div>
 
-        {/* Time period */}
-        <div className="flex items-center gap-2.5">
-          <OrganicIconBlob shape="blob-c" tone="soft" size="sm">
-            <CalendarRange />
-          </OrganicIconBlob>
-          <SegmentedControl<TimePeriod>
-            options={periods}
-            value={timePeriod}
-            onChange={setTimePeriod}
-            size="sm"
-          />
+        {/* Period */}
+        <div>
+          <FieldLabel hint="Controls all charts and KPI deltas">Period</FieldLabel>
+          <SegmentedControl<TimePeriod> options={periods} value={timePeriod} onChange={setTimePeriod} size="sm" />
         </div>
 
-        {/* Status + freshness pushed right */}
-        <div className="ml-auto flex items-center gap-3">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EAF3EE] px-3 py-1.5 text-xs font-semibold text-signal-positive ring-1 ring-[#CDE6D7]">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            {DATA_FRESHNESS.quality}
-          </span>
-          <span className="hidden text-xs text-ink-secondary md:inline">
-            Updated <span className="font-semibold text-navy-primary">{DATA_FRESHNESS.lastUpdated}</span>
-          </span>
+        <div className="ml-auto flex items-end gap-5">
+          {/* Dataset */}
+          <div>
+            <FieldLabel hint="Source status for visible metrics">Dataset</FieldLabel>
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBF3E2] px-2.5 py-1.5 text-[12px] font-semibold text-signal-warning ring-1 ring-[#F0E1BE]">
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              {DATA_FRESHNESS.quality}
+            </span>
+          </div>
+
+          {/* Updated */}
+          <div className="hidden md:block">
+            <FieldLabel>Updated</FieldLabel>
+            <span className="inline-flex items-center rounded-lg border border-soft-border bg-card px-2.5 py-1.5 text-[12px] font-semibold text-navy-deep">
+              {DATA_FRESHNESS.lastUpdated}
+            </span>
+          </div>
         </div>
       </div>
     </div>

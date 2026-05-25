@@ -14,18 +14,20 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
   return (
     <div className="flex min-h-screen bg-ivory">
       {/* Left navigation */}
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-soft-border bg-card/70 px-4 py-6 lg:flex">
-        <div className="flex items-center gap-3 px-2">
-          <OrganicIconBlob shape="blob-a" tone="navy" size="md">
+      <aside className="sticky top-0 hidden h-screen w-[224px] shrink-0 flex-col border-r border-soft-border bg-card/70 px-3 py-5 lg:flex">
+        <div className="flex items-center gap-2.5 px-2">
+          <OrganicIconBlob shape="blob-a" tone="navy" size="sm">
             <Icon name="shield" />
           </OrganicIconBlob>
-          <div>
-            <p className="font-display text-[15px] leading-tight text-navy-deep">Insurance</p>
-            <p className="text-xs font-medium tracking-wide text-muted-blue">Investor Dashboard</p>
+          <div className="leading-tight">
+            <p className="font-display text-[14px] text-navy-deep">Insurance</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-blue">
+              Investor Dashboard
+            </p>
           </div>
         </div>
 
-        <nav className="mt-8 flex flex-1 flex-col gap-1">
+        <nav className="mt-6 flex flex-1 flex-col gap-0.5">
           {navItems.map((item) => {
             const isActive = item.id === active
             return (
@@ -33,13 +35,17 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                 key={item.id}
                 type="button"
                 onClick={() => onNavigate(item.id)}
+                title={item.question}
                 className={[
-                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-all duration-200',
+                  'group relative flex items-center gap-2.5 rounded-lg py-2 pl-3 pr-2 text-left text-[13px] transition-all duration-200',
                   isActive
                     ? 'bg-soft-blue/70 font-semibold text-navy-deep'
                     : 'text-ink-secondary hover:bg-ice hover:text-navy-primary',
                 ].join(' ')}
               >
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-navy-primary" />
+                )}
                 <OrganicIconBlob
                   shape={isActive ? 'blob-b' : 'blob-d'}
                   tone={isActive ? 'navy' : 'ivory'}
@@ -48,16 +54,16 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                 >
                   <Icon name={item.icon} />
                 </OrganicIconBlob>
-                {item.label}
+                <span className="truncate">{item.label}</span>
               </button>
             )
           })}
         </nav>
 
-        <div className="mt-4 rounded-xl2 border border-soft-border bg-ivory p-3.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-blue">Demo dataset</p>
-          <p className="mt-1 text-xs leading-relaxed text-ink-secondary">
-            All figures are illustrative mock data for design purposes only.
+        <div className="mt-3 rounded-xl border border-soft-border bg-ivory px-3 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-blue">Demo dataset</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">
+            Illustrative mock data for design only.
           </p>
         </div>
       </aside>
@@ -76,7 +82,7 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                 type="button"
                 onClick={() => onNavigate(item.id)}
                 className={[
-                  'whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors',
+                  'whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
                   isActive ? 'bg-navy-primary text-white' : 'bg-card text-ink-secondary ring-1 ring-soft-border',
                 ].join(' ')}
               >
@@ -86,9 +92,9 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
           })}
         </div>
 
-        <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-6 sm:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-5 sm:px-6">{children}</main>
 
-        <footer className="border-t border-soft-border px-6 py-5 text-center text-xs text-ink-secondary">
+        <footer className="border-t border-soft-border px-6 py-4 text-center text-[11px] text-ink-secondary">
           Insurance Investment Dashboard · Illustrative mock data · Built for design demonstration
         </footer>
       </div>

@@ -6,6 +6,7 @@ import { ChartFrame, HorizontalBarChart } from '@/components/charts'
 import { Heatmap } from '@/components/Heatmap'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
 import { peerRows } from '@/data/mockData'
+import { useActiveCompany } from '@/state/filters'
 import type { PeerGroup } from '@/data/types'
 
 type View = 'Ranking' | 'Table' | 'Heatmap'
@@ -26,8 +27,11 @@ export function CompetitivePositioning() {
   const [view, setView] = useState<View>('Ranking')
   const [group, setGroup] = useState<PeerGroup>('SAHI')
   const [metric, setMetric] = useState<RankMetric>('GWP Growth')
+  const active = useActiveCompany()
 
-  const rows = peerRows.filter((r) => group === 'All' || r.peerGroup === group)
+  const rows = peerRows
+    .filter((r) => group === 'All' || r.peerGroup === group)
+    .map((r) => ({ ...r, focal: r.ticker === active.ticker }))
 
   const acc = metricAccessor[metric]
   const rankingData = rows
@@ -61,7 +65,7 @@ export function CompetitivePositioning() {
           signal="Strong"
           lines={[
             { label: 'Signal', value: 'Strong (focal name)' },
-            { label: 'Why', value: 'Aurora leads on growth, ROE and share gain while holding underwriting discipline.' },
+            { label: 'Why', value: 'Niva Bupa leads on growth, ROE and share gain while holding underwriting discipline.' },
             { label: 'Implication', value: 'Best-positioned within the SAHI peer set.' },
             { label: 'Next trigger', value: 'Whether peers close the combined-ratio gap.' },
           ]}

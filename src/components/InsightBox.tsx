@@ -22,20 +22,20 @@ export function InsightBox({ signal, lines, variant = 'inline', title = 'Investo
   return (
     <div
       className={[
-        'rounded-xl2 p-5',
+        'rounded-xl p-4',
         variant === 'panel'
           ? 'bg-navy-deep text-white shadow-card'
           : 'border border-soft-border bg-soft-blue/40',
       ].join(' ')}
     >
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
+      <div className="mb-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
           <OrganicIconBlob shape="blob-e" tone={variant === 'panel' ? 'muted' : 'navy'} size="sm">
             <Lightbulb />
           </OrganicIconBlob>
           <span
             className={[
-              'text-xs font-semibold uppercase tracking-wide',
+              'text-[11px] font-semibold uppercase tracking-[0.06em]',
               variant === 'panel' ? 'text-white/70' : 'text-ink-secondary',
             ].join(' ')}
           >
@@ -44,13 +44,13 @@ export function InsightBox({ signal, lines, variant = 'inline', title = 'Investo
         </div>
         {signal && <SignalBadge label={signal} size="sm" />}
       </div>
-      <dl className="space-y-2">
+      <dl className="space-y-1.5">
         {lines.map((l) => (
-          <div key={l.label} className="flex gap-2 text-sm leading-relaxed">
+          <div key={l.label} className="flex gap-2 text-[12.5px] leading-relaxed">
             <dt
               className={[
-                'w-24 shrink-0 font-semibold',
-                variant === 'panel' ? 'text-white/60' : 'text-navy-primary',
+                'w-[88px] shrink-0 font-semibold',
+                variant === 'panel' ? 'text-white/55' : 'text-navy-primary',
               ].join(' ')}
             >
               {l.label}

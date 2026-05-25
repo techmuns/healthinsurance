@@ -23,7 +23,7 @@ export function ValuationMarketView() {
   const upside = (((streetView.targetPrice - streetView.currentPrice) / streetView.currentPrice) * 100).toFixed(1)
   const headline = {
     Trend: 'Valuation has cooled from its peak but stays at a premium to peers',
-    'Peer Comparison': 'Aurora trades above the peer median — justified only by superior quality',
+    'Peer Comparison': 'Niva Bupa trades above the peer median — justified only by superior quality',
     Scatter: 'Growth-adjusted, the premium multiple looks defensible',
   }[view]
 
@@ -112,7 +112,7 @@ export function ValuationMarketView() {
       {view === 'Peer Comparison' && (
         <ChartFrame headline={headline} caption="P/GWP by peer (x) · mock data">
           <HorizontalBarChart
-            data={valuationPeers.map((d) => ({ label: d.label as string, value: d.value as number, focal: String(d.label).includes('Aurora') }))}
+            data={valuationPeers.map((d) => ({ label: d.label as string, value: d.value as number, focal: String(d.label).includes('Niva Bupa') }))}
             unit="x"
           />
         </ChartFrame>
