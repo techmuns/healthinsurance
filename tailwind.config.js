@@ -43,6 +43,8 @@ export default {
         lavender: { DEFAULT: '#6E7BD6', soft: '#ECEEFB' },
         // Muted champagne gold — premium editorial accent only
         champagne: { DEFAULT: '#B68B3A', deep: '#9C7430', soft: '#F4ECDB' },
+        // Soft sage — used only to tint the navigation rail
+        sage: { DEFAULT: '#7AA58B', deep: '#4E8B79', bg: '#EEF4EF', tint: '#F4F8F4', border: '#DCE7DD' },
       },
       fontFamily: {
         sans: [

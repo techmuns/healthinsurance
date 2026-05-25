@@ -13,58 +13,62 @@ export interface DashboardShellProps {
 export function DashboardShell({ active, onNavigate, children }: DashboardShellProps) {
   return (
     <div className="flex min-h-screen bg-transparent">
-      {/* Left navigation */}
-      <aside className="sticky top-0 hidden h-screen w-[224px] shrink-0 flex-col border-r border-[rgba(23,43,77,0.06)] bg-surface/50 px-3 py-5 backdrop-blur-sm lg:flex">
-        <div className="flex items-center gap-2.5 px-2">
-          <OrganicIconBlob shape="blob-a" tone="navy" size="sm">
-            <Icon name="shield" />
-          </OrganicIconBlob>
-          <div className="leading-tight">
-            <p className="font-display text-[14px] text-navy-deep">Insurance</p>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-blue">
-              Investor Dashboard
-            </p>
+      {/* Left navigation — floating sage capsule rail */}
+      <aside className="sticky top-0 hidden h-screen w-[240px] shrink-0 p-3 lg:flex">
+        <div className="flex h-full w-full flex-col rounded-[26px] border border-sage-border bg-gradient-to-b from-sage-tint to-sage-bg px-3 py-5 shadow-[0_10px_34px_rgba(40,80,60,0.07)]">
+          {/* Brand */}
+          <div className="flex items-center gap-2.5 px-1.5">
+            <OrganicIconBlob shape="blob-a" tone="navy" size="sm">
+              <Icon name="shield" />
+            </OrganicIconBlob>
+            <div className="leading-tight">
+              <p className="font-display text-[15px] text-navy-deep">Insurance</p>
+              <p className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-sage-deep">
+                Investor Dashboard
+              </p>
+            </div>
           </div>
-        </div>
 
-        <nav className="mt-6 flex flex-1 flex-col gap-0.5">
-          {navItems.map((item) => {
-            const isActive = item.id === active
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onNavigate(item.id)}
-                title={item.question}
-                className={[
-                  'group relative flex items-center gap-2.5 rounded-lg py-2 pl-3 pr-2 text-left text-[13px] transition-all duration-200',
-                  isActive
-                    ? 'bg-soft-blue/70 font-semibold text-navy-deep'
-                    : 'text-ink-secondary hover:bg-ice hover:text-navy-primary',
-                ].join(' ')}
-              >
-                {isActive && (
-                  <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-navy-primary" />
-                )}
-                <OrganicIconBlob
-                  shape={isActive ? 'blob-b' : 'blob-d'}
-                  tone={isActive ? 'navy' : 'ivory'}
-                  size="sm"
-                  interactive={!isActive}
+          <nav className="mt-6 flex flex-1 flex-col gap-1">
+            {navItems.map((item) => {
+              const isActive = item.id === active
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onNavigate(item.id)}
+                  title={item.question}
+                  className={[
+                    'group relative flex items-center gap-2.5 rounded-2xl py-2 pl-2.5 pr-2 text-left text-[13px] transition-all duration-200',
+                    isActive
+                      ? 'bg-white font-semibold text-navy-deep shadow-soft'
+                      : 'text-[#6A7485] hover:bg-white/55 hover:text-navy-primary',
+                  ].join(' ')}
                 >
-                  <Icon name={item.icon} />
-                </OrganicIconBlob>
-                <span className="truncate">{item.label}</span>
-              </button>
-            )
-          })}
-        </nav>
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-sage-deep" />
+                  )}
+                  <OrganicIconBlob
+                    shape={isActive ? 'blob-b' : 'blob-d'}
+                    tone={isActive ? 'navy' : 'ivory'}
+                    size="sm"
+                    interactive={!isActive}
+                  >
+                    <Icon name={item.icon} />
+                  </OrganicIconBlob>
+                  <span className="truncate">{item.label}</span>
+                </button>
+              )
+            })}
+          </nav>
 
-        <div className="mt-3 rounded-xl border border-soft-border bg-ivory px-3 py-2.5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-blue">Demo dataset</p>
-          <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">
-            Illustrative mock data for design only.
-          </p>
+          <div className="mt-3 rounded-2xl border border-sage-border bg-white/55 px-3 py-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-sage-deep" />
+              <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-sage-deep">Demo</p>
+            </div>
+            <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Mock data for design preview.</p>
+          </div>
         </div>
       </aside>
 
