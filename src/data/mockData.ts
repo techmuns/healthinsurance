@@ -201,12 +201,12 @@ export interface IndustryMetric {
 
 /** Compact industry-level supporting metrics (mock). */
 export const industryMetrics: IndustryMetric[] = [
-  { label: 'Industry GWP growth', value: '18.4%', delta: '+1.6 pp', positive: true, signal: 'Improving' },
-  { label: 'Health premium growth', value: '19.3%', delta: '+2.8 pp', positive: true, signal: 'Strong' },
-  { label: 'SAHI share of health', value: '38.2%', delta: '+3.1 pp', positive: true, signal: 'Strong' },
-  { label: 'Avg combined ratio', value: '99.8%', delta: '-0.9 pp', positive: true, signal: 'Watch' },
-  { label: 'Solvency comfort', value: '2.0x', delta: '+0.05', positive: true, signal: 'Strong' },
-  { label: 'Leaders’ valuation', value: '4.2x', delta: 'P/GWP', positive: false, signal: 'Watch' },
+  { label: 'Industry growth', value: '18.4%', delta: '+1.6 pp', positive: true, signal: 'Improving' },
+  { label: 'Health growth', value: '19.3%', delta: '+2.8 pp', positive: true, signal: 'Strong' },
+  { label: 'SAHI share', value: '38.2%', delta: '+3.1 pp', positive: true, signal: 'Strong' },
+  { label: 'Combined ratio', value: '99.8%', delta: '-0.9 pp', positive: true, signal: 'Watch' },
+  { label: 'Solvency', value: '2.0x', delta: '+0.05', positive: true, signal: 'Strong' },
+  { label: 'Valuation', value: '4.2x', delta: 'P/GWP', positive: false, signal: 'Watch' },
 ]
 
 export interface ScoreRow {

@@ -63,6 +63,7 @@ function buildPositioning(ticker: string, group: PeerRow['peerGroup']): ScoreRow
 
 export function ExecutiveOverview() {
   const company = useActiveCompany()
+  const shortName = company.name.split(' ').slice(0, 2).join(' ')
 
   const positioning = buildPositioning(company.ticker, company.peerGroup)
   const heatRows = peerRows
@@ -90,15 +91,14 @@ export function ExecutiveOverview() {
             <div className="mb-2 flex items-center gap-2">
               <SignalBadge label="Industry Overview" tone="navy" size="sm" />
               <span className="text-[11px] font-medium text-ink-secondary">
-                Highlighting <span className="font-semibold text-teal">{company.ticker}</span>
+                · <span className="font-semibold text-champagne">{shortName}</span> highlighted
               </span>
             </div>
             <h1 className="font-display text-[26px] leading-[1.1] text-navy-deep sm:text-[30px]">
               Insurance Investment Dashboard
             </h1>
             <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
-              A sector-wide read on growth, leadership, underwriting discipline, capital strength and
-              valuation across India’s health insurers.
+              See who leads, who is improving, and where risk is building.
             </p>
           </div>
 
@@ -122,25 +122,20 @@ export function ExecutiveOverview() {
 
       {/* B. Industry at a glance — visual story first */}
       <section>
-        <SectionHeading
-          eyebrow="Industry at a glance"
-          title="Who leads, and where the sector stands"
-          icon="market"
-          right={<span className="text-[11px] text-ink-secondary">All tracked SAHI insurers · mock data</span>}
-        />
+        <SectionHeading eyebrow="Industry Snapshot" title="Who Leads" note="SAHI insurers" />
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Leadership donut — all companies, selected one highlighted */}
           <div className="card-surface p-4">
-            <p className="mb-3 text-[12px] font-semibold text-navy-deep">Health insurance market share</p>
+            <p className="mb-3 text-[12px] font-semibold text-navy-deep">Market Share</p>
             <MarketShareDonut data={marketShareDonut} highlight={company.name} />
           </div>
 
           {/* Leaderboard — all companies */}
           <div className="card-surface p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">Who is leading this period?</p>
+              <p className="text-[12px] font-semibold text-navy-deep">Top Performers</p>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-emerald">
-                <Flame className="h-3 w-3" /> Fastest GWP growth
+                <Flame className="h-3 w-3" /> Fastest Growth
               </span>
             </div>
             <Leaderboard rows={leaderboard} highlight={company.ticker} />
@@ -150,8 +145,8 @@ export function ExecutiveOverview() {
         {/* Industry score grid — full width */}
         <div className="card-surface mt-4 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-[12px] font-semibold text-navy-deep">Industry score grid</p>
-            <span className="text-[11px] text-ink-secondary">Greener is stronger on each pillar</span>
+            <p className="text-[12px] font-semibold text-navy-deep">Scorecard</p>
+            <span className="text-[11px] text-ink-secondary">Green = better</span>
           </div>
           <Heatmap
             columns={[
@@ -168,7 +163,7 @@ export function ExecutiveOverview() {
 
       {/* C. Compact supporting industry metrics */}
       <section>
-        <SectionHeading eyebrow="Supporting evidence" title="Industry metrics" />
+        <SectionHeading eyebrow="At a Glance" title="Quick Metrics" />
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {industryMetrics.map((mtr) => (
             <MetricChip key={mtr.label} metric={mtr} />
@@ -178,7 +173,7 @@ export function ExecutiveOverview() {
 
       {/* E. Investor Read (industry) + highlighted company */}
       <section>
-        <SectionHeading eyebrow="Executive read" title="The investment signal" icon="overview" />
+        <SectionHeading eyebrow="Executive Read" title="The Signal" />
         <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <aside className="card-surface relative flex flex-col overflow-hidden bg-gradient-to-br from-navy-deep via-navy-primary to-[#1E396B] p-5 text-white shadow-card">
             <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 blob-a bg-white/5" />
@@ -188,7 +183,7 @@ export function ExecutiveOverview() {
               </OrganicIconBlob>
               <div className="leading-tight">
                 <h2 className="font-display text-lg">Investor Read</h2>
-                <p className="text-[11px] text-white/55">Industry PM signal readout</p>
+                <p className="text-[11px] text-white/55">At a glance</p>
               </div>
             </div>
             <dl className="relative mt-1 grid gap-x-6 sm:grid-cols-2">
@@ -210,15 +205,15 @@ export function ExecutiveOverview() {
               })}
             </dl>
             <p className="relative mt-3 rounded-lg bg-white/10 px-3 py-2 text-[12px] text-white/85">
-              <span className="font-semibold text-teal">Highlighted:</span> {company.name} — see its
-              standing across the visuals and the score grid above.
+              <span className="font-semibold text-champagne">{shortName}</span> highlighted across the
+              visuals above.
             </p>
           </aside>
 
           {/* Highlighted company positioning (dynamic vs its peer group) */}
           <div className="card-surface p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">{company.ticker} vs {company.peerGroup} peers</p>
+              <p className="text-[12px] font-semibold text-navy-deep">{shortName} vs peers</p>
               <SignalBadge label={company.peerGroup} tone="navy" size="sm" />
             </div>
             {positioning ? (

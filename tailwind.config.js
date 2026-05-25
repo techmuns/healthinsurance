@@ -41,6 +41,8 @@ export default {
         gold: { DEFAULT: '#B7791F', soft: '#FBF3E2' },
         coral: { DEFAULT: '#C75D54', soft: '#F8ECEC' },
         lavender: { DEFAULT: '#6E7BD6', soft: '#ECEEFB' },
+        // Muted champagne gold — premium editorial accent only
+        champagne: { DEFAULT: '#B68B3A', deep: '#9C7430', soft: '#F4ECDB' },
       },
       fontFamily: {
         sans: [
