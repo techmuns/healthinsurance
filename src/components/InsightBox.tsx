@@ -1,0 +1,64 @@
+import { Lightbulb } from 'lucide-react'
+import { OrganicIconBlob } from './OrganicIconBlob'
+import { SignalBadge } from './SignalBadge'
+
+export interface InsightLine {
+  label: string
+  value: string
+}
+
+export interface InsightBoxProps {
+  signal?: string
+  lines: InsightLine[]
+  variant?: 'panel' | 'inline'
+  title?: string
+}
+
+/**
+ * Structured investor insight: Signal / Why / Implication / Next trigger.
+ * Used as the short "one investor insight" inside every module.
+ */
+export function InsightBox({ signal, lines, variant = 'inline', title = 'Investor insight' }: InsightBoxProps) {
+  return (
+    <div
+      className={[
+        'rounded-xl2 p-5',
+        variant === 'panel'
+          ? 'bg-navy-deep text-white shadow-card'
+          : 'border border-soft-border bg-soft-blue/40',
+      ].join(' ')}
+    >
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <OrganicIconBlob shape="blob-e" tone={variant === 'panel' ? 'muted' : 'navy'} size="sm">
+            <Lightbulb />
+          </OrganicIconBlob>
+          <span
+            className={[
+              'text-xs font-semibold uppercase tracking-wide',
+              variant === 'panel' ? 'text-white/70' : 'text-ink-secondary',
+            ].join(' ')}
+          >
+            {title}
+          </span>
+        </div>
+        {signal && <SignalBadge label={signal} size="sm" />}
+      </div>
+      <dl className="space-y-2">
+        {lines.map((l) => (
+          <div key={l.label} className="flex gap-2 text-sm leading-relaxed">
+            <dt
+              className={[
+                'w-24 shrink-0 font-semibold',
+                variant === 'panel' ? 'text-white/60' : 'text-navy-primary',
+              ].join(' ')}
+            >
+              {l.label}
+            </dt>
+            <dd className={variant === 'panel' ? 'text-white/90' : 'text-ink-primary'}>{l.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
