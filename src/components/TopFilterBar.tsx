@@ -24,7 +24,7 @@ export function TopFilterBar({ section }: { section?: string }) {
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
-      <div className="flex flex-wrap items-end gap-x-5 gap-y-2.5 rounded-2xl border border-soft-border bg-card/90 px-4 py-2.5 shadow-bar backdrop-blur-md">
+      <div className="flex flex-wrap items-end gap-x-5 gap-y-2.5 rounded-2xl border border-[rgba(23,43,77,0.07)] bg-surface/80 px-4 py-2.5 shadow-bar backdrop-blur-md">
         {/* Scope (overview is industry-wide) */}
         {isOverview && (
           <div>

@@ -14,14 +14,20 @@ export default {
           blue: '#3D5F9F',
         },
         soft: {
-          blue: '#EAF1FF',
-          border: '#E5E8EF',
+          blue: '#EEF4FF',
+          border: '#E8EBF1',
         },
         ice: '#F4F7FC',
-        ivory: '#FAF8F3',
+        ivory: '#F6F4EF',
+        // Layered surface system (avoid pure white everywhere)
+        surface: {
+          DEFAULT: '#FCFCFB',
+          tint: '#F6F9FD',
+          band: '#F8F9FB',
+        },
         card: '#FFFFFF',
         ink: {
-          primary: '#1F2937',
+          primary: '#26303F',
           secondary: '#6B7280',
         },
         signal: {
@@ -56,10 +62,10 @@ export default {
         ],
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(23, 43, 77, 0.04), 0 4px 16px rgba(23, 43, 77, 0.05)',
-        card: '0 1px 3px rgba(23, 43, 77, 0.05), 0 8px 24px rgba(23, 43, 77, 0.06)',
-        lift: '0 8px 28px rgba(23, 43, 77, 0.12)',
-        bar: '0 2px 14px rgba(23, 43, 77, 0.07)',
+        soft: '0 1px 2px rgba(23, 43, 77, 0.03), 0 6px 18px rgba(23, 43, 77, 0.04)',
+        card: '0 1px 2px rgba(23, 43, 77, 0.025), 0 14px 34px rgba(23, 43, 77, 0.045)',
+        lift: '0 14px 40px rgba(23, 43, 77, 0.10)',
+        bar: '0 2px 18px rgba(23, 43, 77, 0.05)',
       },
       borderRadius: {
         xl2: '1.25rem',

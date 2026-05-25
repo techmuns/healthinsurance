@@ -10,7 +10,7 @@ const dot: Record<string, string> = {
 /** Compact supporting-metric tile (label, value, delta, status dot). */
 export function MetricChip({ metric }: { metric: IndustryMetric }) {
   return (
-    <div className="rounded-lg border border-soft-border bg-card/70 px-3 py-2">
+    <div className="surface-soft px-3 py-2 hover:shadow-soft">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10.5px] font-medium uppercase tracking-wide text-ink-secondary">
           {metric.label}

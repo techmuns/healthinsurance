@@ -12,9 +12,9 @@ export interface DashboardShellProps {
 
 export function DashboardShell({ active, onNavigate, children }: DashboardShellProps) {
   return (
-    <div className="flex min-h-screen bg-ivory">
+    <div className="flex min-h-screen bg-transparent">
       {/* Left navigation */}
-      <aside className="sticky top-0 hidden h-screen w-[224px] shrink-0 flex-col border-r border-soft-border bg-card/70 px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-[224px] shrink-0 flex-col border-r border-[rgba(23,43,77,0.06)] bg-surface/50 px-3 py-5 backdrop-blur-sm lg:flex">
         <div className="flex items-center gap-2.5 px-2">
           <OrganicIconBlob shape="blob-a" tone="navy" size="sm">
             <Icon name="shield" />
@@ -92,7 +92,11 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
           })}
         </div>
 
-        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-5 sm:px-6">{children}</main>
+        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-5 sm:px-6">
+          <div key={active} className="animate-fade-in">
+            {children}
+          </div>
+        </main>
 
         <footer className="border-t border-soft-border px-6 py-4 text-center text-[11px] text-ink-secondary">
           Insurance Investment Dashboard · Illustrative mock data · Built for design demonstration
