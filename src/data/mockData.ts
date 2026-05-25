@@ -251,18 +251,21 @@ export interface IndustryMetric {
   label: string
   value: string
   delta?: string
+  /** What the delta is measured against, e.g. "vs last yr". */
+  basis?: string
   positive?: boolean
   signal: Signal
+  note?: string
 }
 
 /** Compact industry-level supporting metrics (mock). */
 export const industryMetrics: IndustryMetric[] = [
-  { label: 'Industry growth', value: '18.4%', delta: '+1.6 pp', positive: true, signal: 'Improving' },
-  { label: 'Health growth', value: '19.3%', delta: '+2.8 pp', positive: true, signal: 'Strong' },
-  { label: 'SAHI share', value: '38.2%', delta: '+3.1 pp', positive: true, signal: 'Strong' },
-  { label: 'Combined ratio', value: '99.8%', delta: '-0.9 pp', positive: true, signal: 'Watch' },
-  { label: 'Solvency', value: '2.0x', delta: '+0.05', positive: true, signal: 'Strong' },
-  { label: 'Valuation', value: '4.2x', delta: 'P/GWP', positive: false, signal: 'Watch' },
+  { label: 'Industry growth', value: '18.4%', delta: '+1.6 pp', basis: 'vs last yr', positive: true, signal: 'Improving', note: 'Private players outgrow the market' },
+  { label: 'Health growth', value: '19.3%', delta: '+2.8 pp', basis: 'vs last yr', positive: true, signal: 'Strong', note: 'Fastest-growing segment' },
+  { label: 'SAHI share', value: '38.2%', delta: '+3.1 pp', basis: 'vs last yr', positive: true, signal: 'Strong', note: 'Standalone health keeps gaining' },
+  { label: 'Combined ratio', value: '99.8%', delta: '-0.9 pp', basis: 'vs last yr', positive: true, signal: 'Watch', note: 'Just under 100 — thin profit' },
+  { label: 'Solvency', value: '2.0x', delta: '+0.05', basis: 'vs last yr', positive: true, signal: 'Strong', note: 'Well above the 1.5x floor' },
+  { label: 'Valuation', value: '4.2x', basis: 'P/GWP', signal: 'Watch', note: 'Leaders trade at a premium' },
 ]
 
 export interface ScoreRow {

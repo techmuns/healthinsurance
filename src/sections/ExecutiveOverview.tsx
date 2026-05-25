@@ -135,29 +135,57 @@ export function ExecutiveOverview() {
           </div>
         </div>
 
-        {/* Industry score grid — full width */}
+        {/* Peer scorecard — full width, self-explanatory */}
         <div className="card-surface mt-4 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-[12px] font-semibold text-navy-deep">Scorecard</p>
-            <span className="text-[11px] text-ink-secondary">Green = better</span>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="font-display text-[15px] text-navy-deep">Peer Scorecard</p>
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
+              <span className="h-1.5 w-1.5 rounded-full bg-champagne" /> = best in column
+            </span>
           </div>
-          <Heatmap
-            columns={[
-              { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
-              { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}` },
-              { key: 'combinedRatio', label: 'Margin', invert: true, format: (v) => `${v.toFixed(0)}%` },
-              { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
-              { key: 'valuation', label: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
-            ]}
-            rows={heatRows}
-          />
+
+          {/* One-line takeaway */}
+          <p className="mt-1 text-[12px] leading-relaxed text-ink-secondary">
+            Growth leaders aren’t margin leaders —{' '}
+            <span className="font-semibold text-navy-primary">Niva Bupa</span> and{' '}
+            <span className="font-semibold text-navy-primary">Care Health</span> look the most balanced,
+            while Aditya Birla leads growth but trails on margin and valuation.
+          </p>
+
+          {/* Reading guide */}
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-ice/70 px-3 py-2 text-[10.5px] text-ink-secondary">
+            <span className="font-semibold text-navy-deep">How to read:</span>
+            <span><span className="font-semibold text-emerald">Green</span> stronger · <span className="font-semibold text-coral">red</span> weaker</span>
+            <span>·</span>
+            <span>Growth &amp; Share Δ are YoY</span>
+            <span>·</span>
+            <span>Combined ratio: lower is better</span>
+            <span>·</span>
+            <span>Solvency: higher is safer</span>
+            <span>·</span>
+            <span>Valuation (P/GWP): lower is cheaper</span>
+          </div>
+
+          <div className="mt-3">
+            <Heatmap
+              markBest
+              columns={[
+                { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
+                { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} pp` },
+                { key: 'combinedRatio', label: 'Combined Ratio', invert: true, format: (v) => `${v.toFixed(0)}%` },
+                { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
+                { key: 'valuation', label: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
+              ]}
+              rows={heatRows}
+            />
+          </div>
         </div>
       </section>
 
-      {/* C. Compact supporting industry metrics */}
+      {/* C. Supporting industry metrics */}
       <section>
-        <SectionHeading eyebrow="At a Glance" title="Quick Metrics" />
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+        <SectionHeading eyebrow="At a Glance" title="Key Sector Metrics" note="YoY unless noted" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {industryMetrics.map((mtr) => (
             <MetricChip key={mtr.label} metric={mtr} />
           ))}
