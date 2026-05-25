@@ -173,22 +173,40 @@ export interface PulseItem {
 export const pulseStrip: PulseItem[] = [
   {
     kind: 'Strength',
-    headline: 'Underwriting is profitable',
-    detail: 'Combined ratio below 100 and improving as retail mix rises.',
-    metric: 'Combined 96.8%',
+    headline: 'Health growth is broad-based',
+    detail: 'SAHI insurers keep outgrowing the wider industry on retail demand.',
+    metric: 'Health +19.3%',
   },
   {
     kind: 'Watch',
-    headline: 'Banca concentration elevated',
-    detail: 'Fresh premium leans on bancassurance; channel mix needs monitoring.',
-    metric: 'Banca 31%',
+    headline: 'Competitive intensity rising',
+    detail: 'Banca tie-ups and pricing competition are intensifying across players.',
+    metric: 'Banca-led growth',
   },
   {
     kind: 'Risk',
-    headline: 'Valuation looks full',
-    detail: 'Trades at a premium to the peer median; limited margin of safety.',
-    metric: 'P/GWP 3.4x',
+    headline: 'Leader valuations look full',
+    detail: 'Top SAHI names trade at a premium to the broader market.',
+    metric: 'P/GWP up to 4.2x',
   },
+]
+
+export interface IndustryMetric {
+  label: string
+  value: string
+  delta?: string
+  positive?: boolean
+  signal: Signal
+}
+
+/** Compact industry-level supporting metrics (mock). */
+export const industryMetrics: IndustryMetric[] = [
+  { label: 'Industry GWP growth', value: '18.4%', delta: '+1.6 pp', positive: true, signal: 'Improving' },
+  { label: 'Health premium growth', value: '19.3%', delta: '+2.8 pp', positive: true, signal: 'Strong' },
+  { label: 'SAHI share of health', value: '38.2%', delta: '+3.1 pp', positive: true, signal: 'Strong' },
+  { label: 'Avg combined ratio', value: '99.8%', delta: '-0.9 pp', positive: true, signal: 'Watch' },
+  { label: 'Solvency comfort', value: '2.0x', delta: '+0.05', positive: true, signal: 'Strong' },
+  { label: 'Leaders’ valuation', value: '4.2x', delta: 'P/GWP', positive: false, signal: 'Watch' },
 ]
 
 export interface ScoreRow {
@@ -216,12 +234,13 @@ export interface InvestorReadRow {
 }
 
 export const investorRead: InvestorReadRow[] = [
-  { label: 'Growth', value: 'Strong', tone: 'positive' },
-  { label: 'Margin', value: 'Improving', tone: 'positive' },
-  { label: 'Capital', value: 'Safe', tone: 'positive' },
+  { label: 'Industry Growth', value: 'Strong', tone: 'positive' },
+  { label: 'Competitive Intensity', value: 'Rising', tone: 'warning' },
+  { label: 'Margin Discipline', value: 'Improving', tone: 'positive' },
+  { label: 'Capital Strength', value: 'Safe', tone: 'positive' },
   { label: 'Valuation', value: 'Fair → Full', tone: 'warning' },
-  { label: 'Key Risk', value: 'Banca concentration in fresh premium mix', tone: 'warning' },
-  { label: 'Next Trigger', value: 'Monthly retail health GWP + Q1 combined ratio', tone: 'neutral' },
+  { label: 'Key Risk', value: 'Banca concentration & claims inflation', tone: 'warning' },
+  { label: 'Next Trigger', value: 'Monthly GWP + combined ratio trend', tone: 'neutral' },
 ]
 
 export interface StoryTile {

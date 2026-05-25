@@ -5,12 +5,22 @@ import type { ShareSlice } from '@/data/mockData'
 const PEER_SHADES = ['#27457E', '#3D5F9F', '#6E8AC0', '#A9BFE0', '#CBD9F0']
 const FOCAL_COLOR = '#168E8E'
 
-export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
-  const focal = data.find((d) => d.focal)
-  const focalRank = focal ? [...data].sort((a, b) => b.value - a.value).findIndex((d) => d.focal) + 1 : null
+export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; highlight?: string }) {
+  // Highlight follows the selected company when it is part of the pool;
+  // the chart always shows ALL companies (never filtered down).
+  const withFocal = data.map((d) => ({
+    ...d,
+    focal: highlight ? d.name !== 'Others' && highlight.includes(d.name) : d.focal,
+  }))
+
+  const ranked = [...withFocal].sort((a, b) => b.value - a.value)
+  const focal = withFocal.find((d) => d.focal)
+  const leader = ranked.find((d) => d.name !== 'Others')
+  const center = focal ?? leader
+  const centerRank = center ? ranked.findIndex((d) => d.name === center.name) + 1 : null
 
   let peerIdx = 0
-  const colored = data.map((d) => {
+  const colored = withFocal.map((d) => {
     if (d.focal) return { ...d, color: FOCAL_COLOR }
     const c = PEER_SHADES[peerIdx % PEER_SHADES.length]
     peerIdx += 1
@@ -35,16 +45,13 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
                 <Cell key={d.name} fill={d.color} />
               ))}
             </Pie>
-            <Tooltip
-              contentStyle={{ fontSize: 12 }}
-              formatter={(v: number, n: string) => [`${v}%`, n]}
-            />
+            <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v: number, n: string) => [`${v}%`, n]} />
           </PieChart>
         </ResponsiveContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl text-navy-deep">{focal?.value}%</span>
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-teal">
-            #{focalRank} · {focal?.name}
+          <span className="font-display text-2xl text-navy-deep">{center?.value}%</span>
+          <span className={`text-[10px] font-semibold uppercase tracking-wide ${focal ? 'text-teal' : 'text-muted-blue'}`}>
+            #{centerRank} · {center?.name}
           </span>
         </div>
       </div>

@@ -8,9 +8,10 @@ const podiumStyle = [
   { ring: 'ring-coral/30', chip: 'bg-coral/10 text-coral', badge: 'bg-coral text-white' },
 ]
 
-export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
-  const top3 = rows.slice(0, 3)
-  const rest = rows.slice(3)
+export function Leaderboard({ rows, highlight }: { rows: LeaderRow[]; highlight?: string }) {
+  const marked = rows.map((r) => ({ ...r, focal: highlight ? r.ticker === highlight : r.focal }))
+  const top3 = marked.slice(0, 3)
+  const rest = marked.slice(3)
 
   return (
     <div className="space-y-3">

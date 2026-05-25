@@ -10,7 +10,6 @@ import {
   Sparkles,
   TrendingUp,
 } from 'lucide-react'
-import { KpiCard } from '@/components/KpiCard'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { SignalBadge } from '@/components/SignalBadge'
 import { Drawer } from '@/components/Drawer'
@@ -18,20 +17,25 @@ import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { Leaderboard } from '@/components/Leaderboard'
 import { PositioningScorecard } from '@/components/PositioningScorecard'
+import { MetricChip } from '@/components/MetricChip'
+import { Heatmap } from '@/components/Heatmap'
 import { Icon } from '@/components/icons'
 import { useActiveCompany } from '@/state/filters'
 import {
   DATA_FRESHNESS,
-  heroKpis,
+  industryMetrics,
   investorRead,
   leaderboard,
   marketShareDonut,
-  positioningScore,
+  peerRows,
   pulseStrip,
   storyStrip,
+  type PeerRow,
   type PulseItem,
+  type ScoreRow,
   type StoryTile,
 } from '@/data/mockData'
+import type { Signal } from '@/data/types'
 
 // Lightened tones for legibility on the dark navy Investor Read panel.
 const readTone = {
@@ -47,28 +51,78 @@ const pulseStyle: Record<PulseItem['kind'], { ring: string; chip: string; iconBg
   Risk: { ring: 'border-coral/30 bg-coral-soft/60', chip: 'bg-coral text-white', iconBg: 'bg-coral text-white', icon: ShieldAlert },
 }
 
+function signalFor(rank: number, n: number): Signal {
+  const f = rank / n
+  if (f <= 0.34) return 'Strong'
+  if (f <= 0.5) return 'Improving'
+  if (f <= 0.75) return 'Watch'
+  return 'Weak'
+}
+
+// Rank the highlighted company within its own peer group on each pillar.
+function buildPositioning(ticker: string, group: PeerRow['peerGroup']): ScoreRow[] | null {
+  const peers = peerRows.filter((r) => r.peerGroup === group)
+  if (!peers.some((r) => r.ticker === ticker)) return null
+
+  const pillars: { label: string; key: keyof PeerRow; lowerBetter?: boolean }[] = [
+    { label: 'Growth', key: 'gwpGrowth' },
+    { label: 'Margin', key: 'combinedRatio', lowerBetter: true },
+    { label: 'Capital', key: 'solvency' },
+    { label: 'Returns', key: 'roe' },
+    { label: 'Valuation', key: 'valuation', lowerBetter: true },
+  ]
+
+  return pillars.flatMap((p) => {
+    const valid = peers.filter((r) => !(p.key === 'combinedRatio' && r.combinedRatio === 0))
+    if (!valid.some((r) => r.ticker === ticker)) return []
+    const sorted = [...valid].sort((a, b) =>
+      p.lowerBetter ? (a[p.key] as number) - (b[p.key] as number) : (b[p.key] as number) - (a[p.key] as number),
+    )
+    const rank = sorted.findIndex((r) => r.ticker === ticker) + 1
+    const n = sorted.length
+    return [{ label: p.label, rank, rankOf: n, signal: signalFor(rank, n), score: Math.round(((n - rank + 1) / n) * 100) }]
+  })
+}
+
 export function ExecutiveOverview() {
   const company = useActiveCompany()
   const [openTile, setOpenTile] = useState<StoryTile | null>(null)
 
+  const positioning = buildPositioning(company.ticker, company.peerGroup)
+  const heatRows = peerRows
+    .filter((r) => r.peerGroup === 'SAHI')
+    .map((r) => ({
+      label: r.company.replace(' Insurance', '').replace(' and Allied', ''),
+      focal: r.ticker === company.ticker,
+      values: {
+        gwpGrowth: r.gwpGrowth,
+        marketShareChange: r.marketShareChange,
+        combinedRatio: r.combinedRatio,
+        solvency: r.solvency,
+        valuation: r.valuation,
+      },
+    }))
+
   return (
     <div className="space-y-5">
-      {/* A. Compact hero header */}
+      {/* A. Compact, industry-framed hero */}
       <header className="card-surface relative overflow-hidden px-6 py-5 sm:px-7">
         <div className="absolute -right-12 -top-16 hidden h-44 w-44 bg-soft-blue/50 blob-a sm:block" />
         <div className="absolute right-6 top-16 hidden h-20 w-20 bg-teal-soft blob-c sm:block" />
         <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
             <div className="mb-2 flex items-center gap-2">
-              <SignalBadge label={company.peerGroup} tone="navy" size="sm" />
-              <span className="text-[11px] font-semibold text-ink-secondary">{company.ticker}</span>
+              <SignalBadge label="Industry Overview" tone="navy" size="sm" />
+              <span className="text-[11px] font-medium text-ink-secondary">
+                Highlighting <span className="font-semibold text-teal">{company.ticker}</span>
+              </span>
             </div>
             <h1 className="font-display text-[26px] leading-[1.1] text-navy-deep sm:text-[30px]">
               Insurance Investment Dashboard
             </h1>
             <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
-              Growth quality, underwriting discipline, capital strength, valuation and key sector
-              events for <span className="font-semibold text-navy-primary">{company.name}</span>.
+              A sector-wide read on growth, leadership, underwriting discipline, capital strength and
+              valuation across India’s health insurers.
             </p>
           </div>
 
@@ -90,52 +144,53 @@ export function ExecutiveOverview() {
         </div>
       </header>
 
-      {/* B. Industry at a glance — visual summary first */}
+      {/* B. Industry at a glance — visual story first */}
       <section>
         <SectionHeading
           eyebrow="Industry at a glance"
-          title="Where the sector stands"
+          title="Who leads, and where the sector stands"
           icon="market"
-          right={<span className="text-[11px] text-ink-secondary">SAHI health pool · mock data</span>}
+          right={<span className="text-[11px] text-ink-secondary">All tracked SAHI insurers · mock data</span>}
         />
-        <div className="grid gap-4 lg:grid-cols-3">
-          {/* Leadership donut */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          {/* Leadership donut — all companies, selected one highlighted */}
           <div className="card-surface p-4">
-            <p className="mb-3 text-[12px] font-semibold text-navy-deep">Health premium share</p>
-            <MarketShareDonut data={marketShareDonut} />
-            <p className="mt-3 border-t border-soft-border pt-2.5 text-[11.5px] leading-relaxed text-ink-secondary">
-              <span className="font-semibold text-navy-primary">Star Health</span> leads the SAHI pool;{' '}
-              <span className="font-semibold text-teal">Niva Bupa</span> is narrowing the gap with faster growth.
-            </p>
+            <p className="mb-3 text-[12px] font-semibold text-navy-deep">Health insurance market share</p>
+            <MarketShareDonut data={marketShareDonut} highlight={company.name} />
           </div>
 
-          {/* Leaderboard */}
+          {/* Leaderboard — all companies */}
           <div className="card-surface p-4">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">Top performers</p>
+              <p className="text-[12px] font-semibold text-navy-deep">Who is leading this period?</p>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-emerald">
                 <Flame className="h-3 w-3" /> Fastest GWP growth
               </span>
             </div>
-            <Leaderboard rows={leaderboard} />
+            <Leaderboard rows={leaderboard} highlight={company.ticker} />
           </div>
+        </div>
 
-          {/* Positioning scorecard */}
-          <div className="card-surface p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">Niva Bupa vs peers</p>
-              <SignalBadge label="Strong" size="sm" />
-            </div>
-            <PositioningScorecard rows={positioningScore} />
-            <p className="mt-3 border-t border-soft-border pt-2.5 text-[11.5px] leading-relaxed text-ink-secondary">
-              Leads on <span className="font-semibold text-emerald">margin</span>, lags on{' '}
-              <span className="font-semibold text-gold">valuation</span> and distribution mix.
-            </p>
+        {/* Industry score grid — full width */}
+        <div className="card-surface mt-4 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-[12px] font-semibold text-navy-deep">Industry score grid</p>
+            <span className="text-[11px] text-ink-secondary">Greener is stronger on each pillar</span>
           </div>
+          <Heatmap
+            columns={[
+              { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
+              { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}` },
+              { key: 'combinedRatio', label: 'Margin', invert: true, format: (v) => `${v.toFixed(0)}%` },
+              { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
+              { key: 'valuation', label: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
+            ]}
+            rows={heatRows}
+          />
         </div>
       </section>
 
-      {/* C. Strength / Watch / Risk strip */}
+      {/* C. Strength / Watch / Risk — industry level */}
       <div className="grid gap-4 md:grid-cols-3">
         {pulseStrip.map((p) => {
           const s = pulseStyle[p.kind]
@@ -160,27 +215,20 @@ export function ExecutiveOverview() {
         })}
       </div>
 
-      {/* D. KPI grid with upgraded Investor Read */}
+      {/* D. Compact supporting industry metrics */}
       <section>
-        <SectionHeading eyebrow="Key metrics" title="The numbers behind the signal" icon="overview" />
-        <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {heroKpis.map((k) => (
-              <KpiCard
-                key={k.id}
-                label={k.label}
-                metric={k.metric}
-                signal={k.signal}
-                spark={k.spark}
-                icon={k.icon}
-                blob={k.blob}
-                tone={k.tone}
-                invert={k.id === 'combined-ratio' || k.id === 'valuation'}
-              />
-            ))}
-          </div>
+        <SectionHeading eyebrow="Supporting evidence" title="Industry metrics" />
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+          {industryMetrics.map((mtr) => (
+            <MetricChip key={mtr.label} metric={mtr} />
+          ))}
+        </div>
+      </section>
 
-          {/* Investor Read — PM readout */}
+      {/* E. Investor Read (industry) + highlighted company */}
+      <section>
+        <SectionHeading eyebrow="Executive read" title="The investment signal" icon="overview" />
+        <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
           <aside className="card-surface relative flex flex-col overflow-hidden bg-gradient-to-br from-navy-deep via-navy-primary to-[#1E396B] p-5 text-white shadow-card">
             <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 blob-a bg-white/5" />
             <div className="relative flex items-center gap-2.5 border-b border-white/10 pb-3">
@@ -189,29 +237,49 @@ export function ExecutiveOverview() {
               </OrganicIconBlob>
               <div className="leading-tight">
                 <h2 className="font-display text-lg">Investor Read</h2>
-                <p className="text-[11px] text-white/55">PM signal readout, at a glance</p>
+                <p className="text-[11px] text-white/55">Industry PM signal readout</p>
               </div>
             </div>
-            <dl className="relative mt-1 divide-y divide-white/10">
+            <dl className="relative mt-1 grid gap-x-6 sm:grid-cols-2">
               {investorRead.map((row) => {
                 const emphasised = row.label === 'Key Risk' || row.label === 'Next Trigger'
                 return (
-                  <div key={row.label} className="flex items-baseline justify-between gap-3 py-2">
+                  <div
+                    key={row.label}
+                    className={`flex items-baseline justify-between gap-3 border-b border-white/10 py-2 ${
+                      emphasised ? 'sm:col-span-2' : ''
+                    }`}
+                  >
                     <dt className={`text-[12px] ${emphasised ? 'font-semibold text-white/75' : 'text-white/55'}`}>
                       {row.label}
                     </dt>
-                    <dd className={`max-w-[60%] text-right text-[12.5px] font-semibold ${readTone[row.tone]}`}>
-                      {row.value}
-                    </dd>
+                    <dd className={`text-right text-[12.5px] font-semibold ${readTone[row.tone]}`}>{row.value}</dd>
                   </div>
                 )
               })}
             </dl>
+            <p className="relative mt-3 rounded-lg bg-white/10 px-3 py-2 text-[12px] text-white/85">
+              <span className="font-semibold text-teal">Highlighted:</span> {company.name} — see its
+              standing across the visuals and the score grid above.
+            </p>
           </aside>
+
+          {/* Highlighted company positioning (dynamic vs its peer group) */}
+          <div className="card-surface p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-[12px] font-semibold text-navy-deep">{company.ticker} vs {company.peerGroup} peers</p>
+              <SignalBadge label={company.peerGroup} tone="navy" size="sm" />
+            </div>
+            {positioning ? (
+              <PositioningScorecard rows={positioning} />
+            ) : (
+              <p className="py-6 text-center text-[12px] text-ink-secondary">Positioning data pending</p>
+            )}
+          </div>
         </div>
       </section>
 
-      {/* E. Mini story strip */}
+      {/* F. Mini story strip */}
       <div>
         <div className="mb-2.5 flex items-center justify-between">
           <h2 className="font-display text-lg text-navy-deep">The three things that matter</h2>

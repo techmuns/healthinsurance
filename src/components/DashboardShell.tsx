@@ -70,7 +70,7 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopFilterBar />
+        <TopFilterBar section={active} />
 
         {/* Mobile nav */}
         <div className="scroll-thin flex gap-2 overflow-x-auto px-4 pt-3 lg:hidden">

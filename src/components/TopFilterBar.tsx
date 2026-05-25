@@ -18,15 +18,29 @@ function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   )
 }
 
-export function TopFilterBar() {
+export function TopFilterBar({ section }: { section?: string }) {
   const { companyId, setCompanyId, peerGroup, setPeerGroup, timePeriod, setTimePeriod } = useFilters()
+  const isOverview = section === 'overview'
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
       <div className="flex flex-wrap items-end gap-x-5 gap-y-2.5 rounded-2xl border border-soft-border bg-card/90 px-4 py-2.5 shadow-bar backdrop-blur-md">
-        {/* Company */}
+        {/* Scope (overview is industry-wide) */}
+        {isOverview && (
+          <div>
+            <FieldLabel hint="The first page is an industry-wide view">Scope</FieldLabel>
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-navy-primary px-3 py-1.5 text-[12px] font-semibold text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+              Industry Overview
+            </span>
+          </div>
+        )}
+
+        {/* Company / highlight company */}
         <label className="block">
-          <FieldLabel>Company</FieldLabel>
+          <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : undefined}>
+            {isOverview ? 'Highlight company' : 'Company'}
+          </FieldLabel>
           <span className="relative block">
             <select
               value={companyId}
