@@ -268,40 +268,6 @@ export const industryMetrics: IndustryMetric[] = [
   { label: 'Valuation', value: '4.2x', basis: 'P/GWP', signal: 'Watch', note: 'Leaders trade at a premium' },
 ]
 
-export interface ScoreRow {
-  label: string
-  rank: number
-  rankOf: number
-  signal: Signal
-  /** 0–100 relative position vs peers. */
-  score: number
-}
-
-/** Where Niva Bupa stands across the five investor pillars (mock). */
-export const positioningScore: ScoreRow[] = [
-  { label: 'Growth', rank: 2, rankOf: 5, signal: 'Strong', score: 84 },
-  { label: 'Margin', rank: 1, rankOf: 5, signal: 'Strong', score: 90 },
-  { label: 'Capital', rank: 2, rankOf: 5, signal: 'Strong', score: 78 },
-  { label: 'Distribution', rank: 3, rankOf: 5, signal: 'Watch', score: 58 },
-  { label: 'Valuation', rank: 3, rankOf: 5, signal: 'Watch', score: 52 },
-]
-
-export interface InvestorReadRow {
-  label: string
-  value: string
-  tone: 'positive' | 'warning' | 'negative' | 'neutral'
-}
-
-export const investorRead: InvestorReadRow[] = [
-  { label: 'Industry Growth', value: 'Strong', tone: 'positive' },
-  { label: 'Competitive Intensity', value: 'Rising', tone: 'warning' },
-  { label: 'Margin Discipline', value: 'Improving', tone: 'positive' },
-  { label: 'Capital Strength', value: 'Safe', tone: 'positive' },
-  { label: 'Valuation', value: 'Fair → Full', tone: 'warning' },
-  { label: 'Key Risk', value: 'Banca concentration & claims inflation', tone: 'warning' },
-  { label: 'Next Trigger', value: 'Monthly GWP + combined ratio trend', tone: 'neutral' },
-]
-
 export interface StoryTile {
   id: string
   title: string

@@ -1,70 +1,17 @@
-import { BadgeCheck, Clock, ShieldCheck, TrendingUp } from 'lucide-react'
-import { OrganicIconBlob } from '@/components/OrganicIconBlob'
+import { BadgeCheck, Clock, ShieldCheck } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { IndustryLeaders } from '@/components/IndustryLeaders'
-import { PositioningScorecard } from '@/components/PositioningScorecard'
 import { MetricChip } from '@/components/MetricChip'
 import { Heatmap } from '@/components/Heatmap'
 import { useActiveCompany } from '@/state/filters'
-import {
-  DATA_FRESHNESS,
-  industryMetrics,
-  investorRead,
-  marketShareDonut,
-  peerRows,
-  type PeerRow,
-  type ScoreRow,
-} from '@/data/mockData'
-import type { Signal } from '@/data/types'
-
-// Lightened tones for legibility on the dark navy Investor Read panel.
-const readTone = {
-  positive: 'text-[#86CBA3]',
-  warning: 'text-[#E7BE74]',
-  negative: 'text-[#E59B98]',
-  neutral: 'text-soft-blue',
-} as const
-
-function signalFor(rank: number, n: number): Signal {
-  const f = rank / n
-  if (f <= 0.34) return 'Strong'
-  if (f <= 0.5) return 'Improving'
-  if (f <= 0.75) return 'Watch'
-  return 'Weak'
-}
-
-// Rank the highlighted company within its own peer group on each pillar.
-function buildPositioning(ticker: string, group: PeerRow['peerGroup']): ScoreRow[] | null {
-  const peers = peerRows.filter((r) => r.peerGroup === group)
-  if (!peers.some((r) => r.ticker === ticker)) return null
-
-  const pillars: { label: string; key: keyof PeerRow; lowerBetter?: boolean }[] = [
-    { label: 'Growth', key: 'gwpGrowth' },
-    { label: 'Margin', key: 'combinedRatio', lowerBetter: true },
-    { label: 'Capital', key: 'solvency' },
-    { label: 'Returns', key: 'roe' },
-    { label: 'Valuation', key: 'valuation', lowerBetter: true },
-  ]
-
-  return pillars.flatMap((p) => {
-    const valid = peers.filter((r) => !(p.key === 'combinedRatio' && r.combinedRatio === 0))
-    if (!valid.some((r) => r.ticker === ticker)) return []
-    const sorted = [...valid].sort((a, b) =>
-      p.lowerBetter ? (a[p.key] as number) - (b[p.key] as number) : (b[p.key] as number) - (a[p.key] as number),
-    )
-    const rank = sorted.findIndex((r) => r.ticker === ticker) + 1
-    const n = sorted.length
-    return [{ label: p.label, rank, rankOf: n, signal: signalFor(rank, n), score: Math.round(((n - rank + 1) / n) * 100) }]
-  })
-}
+import { DATA_FRESHNESS, industryMetrics, marketShareDonut, peerRows } from '@/data/mockData'
 
 export function ExecutiveOverview() {
   const company = useActiveCompany()
   const shortName = company.name.split(' ').slice(0, 2).join(' ')
 
-  const positioning = buildPositioning(company.ticker, company.peerGroup)
   const heatRows = peerRows
     .filter((r) => r.peerGroup === 'SAHI')
     .map((r) => ({
@@ -80,7 +27,7 @@ export function ExecutiveOverview() {
     }))
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* A. Compact, industry-framed hero */}
       <header className="card-surface relative overflow-hidden px-6 py-5 sm:px-7">
         <div className="absolute -right-12 -top-16 hidden h-44 w-44 bg-soft-blue/50 blob-a sm:block" />
@@ -155,7 +102,10 @@ export function ExecutiveOverview() {
           {/* Reading guide */}
           <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-ice/70 px-3 py-2 text-[10.5px] text-ink-secondary">
             <span className="font-semibold text-navy-deep">How to read:</span>
-            <span><span className="font-semibold text-emerald">Green</span> stronger · <span className="font-semibold text-coral">red</span> weaker</span>
+            <span>
+              <span className="font-semibold text-emerald">Green</span> stronger ·{' '}
+              <span className="font-semibold text-coral">red</span> weaker
+            </span>
             <span>·</span>
             <span>Growth &amp; Share Δ are YoY</span>
             <span>·</span>
@@ -182,7 +132,7 @@ export function ExecutiveOverview() {
         </div>
       </section>
 
-      {/* C. Supporting industry metrics */}
+      {/* C. Supporting industry metrics — premium navy mini-cards */}
       <section>
         <SectionHeading eyebrow="At a Glance" title="Key Sector Metrics" note="YoY unless noted" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -191,61 +141,6 @@ export function ExecutiveOverview() {
           ))}
         </div>
       </section>
-
-      {/* E. Investor Read (industry) + highlighted company */}
-      <section>
-        <SectionHeading eyebrow="Executive Read" title="The Signal" />
-        <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-          <aside className="card-surface relative flex flex-col overflow-hidden bg-gradient-to-br from-navy-deep via-navy-primary to-[#1E396B] p-5 text-white shadow-card">
-            <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 blob-a bg-white/5" />
-            <div className="relative flex items-center gap-2.5 border-b border-white/10 pb-3">
-              <OrganicIconBlob shape="blob-e" tone="muted" size="sm">
-                <TrendingUp />
-              </OrganicIconBlob>
-              <div className="leading-tight">
-                <h2 className="font-display text-lg">Investor Read</h2>
-                <p className="text-[11px] text-white/55">At a glance</p>
-              </div>
-            </div>
-            <dl className="relative mt-1 grid gap-x-6 sm:grid-cols-2">
-              {investorRead.map((row) => {
-                const emphasised = row.label === 'Key Risk' || row.label === 'Next Trigger'
-                return (
-                  <div
-                    key={row.label}
-                    className={`flex items-baseline justify-between gap-3 border-b border-white/10 py-2 ${
-                      emphasised ? 'sm:col-span-2' : ''
-                    }`}
-                  >
-                    <dt className={`text-[12px] ${emphasised ? 'font-semibold text-white/75' : 'text-white/55'}`}>
-                      {row.label}
-                    </dt>
-                    <dd className={`text-right text-[12.5px] font-semibold ${readTone[row.tone]}`}>{row.value}</dd>
-                  </div>
-                )
-              })}
-            </dl>
-            <p className="relative mt-3 rounded-lg bg-white/10 px-3 py-2 text-[12px] text-white/85">
-              <span className="font-semibold text-champagne">{shortName}</span> highlighted across the
-              visuals above.
-            </p>
-          </aside>
-
-          {/* Highlighted company positioning (dynamic vs its peer group) */}
-          <div className="card-surface p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">{shortName} vs peers</p>
-              <SignalBadge label={company.peerGroup} tone="navy" size="sm" />
-            </div>
-            {positioning ? (
-              <PositioningScorecard rows={positioning} />
-            ) : (
-              <p className="py-6 text-center text-[12px] text-ink-secondary">Positioning data pending</p>
-            )}
-          </div>
-        </div>
-      </section>
-
     </div>
   )
 }
