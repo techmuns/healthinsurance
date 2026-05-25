@@ -145,22 +145,78 @@ export const marketShareDonut: ShareSlice[] = [
   { name: 'Others', value: 10 },
 ]
 
-export interface LeaderRow {
+// --- Industry Leaders ranking (tabbed top-3 by metric) -----------------
+
+export interface RankRow {
   name: string
   ticker: string
-  value: string
-  delta: string
-  positive: boolean
-  focal?: boolean
+  value: number
+  display: string
 }
 
-/** Top performers this period — fastest GWP growth (mock, derived from peers). */
-export const leaderboard: LeaderRow[] = [
-  { name: 'Aditya Birla Health', ticker: 'ABHI', value: '28.6%', delta: '+5.0', positive: true },
-  { name: 'Niva Bupa Health', ticker: 'NIVABUPA', value: '23.4%', delta: '+2.8', positive: true, focal: true },
-  { name: 'Care Health', ticker: 'CAREHEALTH', value: '20.1%', delta: '+1.9', positive: true },
-  { name: 'Star Health', ticker: 'STARHEALTH', value: '17.5%', delta: '+0.7', positive: true },
-  { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: '15.2%', delta: '-0.4', positive: false },
+export interface LeaderMetric {
+  id: string
+  label: string
+  /** higher value = better; bars scale to the metric. */
+  rows: RankRow[]
+}
+
+export const industryLeaders: LeaderMetric[] = [
+  {
+    id: 'premium',
+    label: 'Premium Collection',
+    rows: [
+      { name: 'Star Health', ticker: 'STARHEALTH', value: 12400, display: '₹12,400 Cr' },
+      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 7200, display: '₹7,200 Cr' },
+      { name: 'Care Health', ticker: 'CAREHEALTH', value: 6400, display: '₹6,400 Cr' },
+      { name: 'Aditya Birla', ticker: 'ABHI', value: 4100, display: '₹4,100 Cr' },
+      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 2600, display: '₹2,600 Cr' },
+    ],
+  },
+  {
+    id: 'settlement',
+    label: 'Settlement Ratio',
+    rows: [
+      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 99.1, display: '99.1%' },
+      { name: 'Care Health', ticker: 'CAREHEALTH', value: 98.7, display: '98.7%' },
+      { name: 'Star Health', ticker: 'STARHEALTH', value: 98.2, display: '98.2%' },
+      { name: 'Aditya Birla', ticker: 'ABHI', value: 97.5, display: '97.5%' },
+      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 96.8, display: '96.8%' },
+    ],
+  },
+  {
+    id: 'renewal',
+    label: 'Renewal Rate',
+    rows: [
+      { name: 'Star Health', ticker: 'STARHEALTH', value: 92, display: '92%' },
+      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 90, display: '90%' },
+      { name: 'Care Health', ticker: 'CAREHEALTH', value: 88, display: '88%' },
+      { name: 'Aditya Birla', ticker: 'ABHI', value: 85, display: '85%' },
+      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 83, display: '83%' },
+    ],
+  },
+  {
+    id: 'retention',
+    label: 'Customer Retention',
+    rows: [
+      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 89, display: '89%' },
+      { name: 'Star Health', ticker: 'STARHEALTH', value: 88, display: '88%' },
+      { name: 'Care Health', ticker: 'CAREHEALTH', value: 86, display: '86%' },
+      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 82, display: '82%' },
+      { name: 'Aditya Birla', ticker: 'ABHI', value: 81, display: '81%' },
+    ],
+  },
+  {
+    id: 'share',
+    label: 'Market Share',
+    rows: [
+      { name: 'Star Health', ticker: 'STARHEALTH', value: 33, display: '33%' },
+      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 19, display: '19%' },
+      { name: 'Care Health', ticker: 'CAREHEALTH', value: 17, display: '17%' },
+      { name: 'Aditya Birla', ticker: 'ABHI', value: 12, display: '12%' },
+      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 9, display: '9%' },
+    ],
+  },
 ]
 
 export interface PulseItem {

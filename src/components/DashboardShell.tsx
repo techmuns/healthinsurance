@@ -18,12 +18,12 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
         <div className="flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto scroll-thin rounded-[30px] border border-[rgba(182,139,58,0.18)] bg-gradient-to-b from-[#F8F3E9] to-[#F4ECDC] px-3 py-5 shadow-[0_18px_45px_rgba(23,43,77,0.08)]">
           {/* Brand */}
           <div className="flex items-center gap-2.5 px-1.5">
-            <OrganicIconBlob shape="blob-a" tone="navy" size="sm">
+            <OrganicIconBlob shape="blob-a" tone="navySoft" size="xs">
               <Icon name="shield" />
             </OrganicIconBlob>
             <div className="leading-tight">
-              <p className="font-display text-[15px] text-navy-deep">Insurance</p>
-              <p className="text-[9.5px] font-semibold uppercase tracking-[0.16em] text-champagne-deep">
+              <p className="font-display text-[14px] font-medium tracking-tight text-navy-deep">Insurance</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-champagne-deep">
                 Investor Dashboard
               </p>
             </div>
@@ -39,15 +39,15 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                   onClick={() => onNavigate(item.id)}
                   title={item.question}
                   className={[
-                    'group flex items-center gap-2.5 rounded-2xl py-2 pl-2.5 pr-2 text-left text-[13px] transition-all duration-200',
+                    'group flex items-center gap-2.5 rounded-2xl py-1.5 pl-2 pr-2 text-left text-[13px] transition-all duration-200',
                     isActive
-                      ? 'border border-white/20 bg-navy-primary font-semibold text-white shadow-[0_12px_26px_rgba(36,63,120,0.22)]'
+                      ? 'border border-white/12 bg-gradient-to-br from-[#2A4680] to-[#1E3563] font-semibold text-white shadow-[0_10px_24px_rgba(23,43,77,0.18)]'
                       : 'border border-transparent text-[#657184] hover:bg-white/55 hover:text-navy-deep',
                   ].join(' ')}
                 >
                   <OrganicIconBlob
                     shape={isActive ? 'blob-b' : 'blob-d'}
-                    tone={isActive ? 'glass' : 'navy'}
+                    tone={isActive ? 'invert' : 'navySoft'}
                     size="sm"
                     interactive={!isActive}
                     className={isActive ? '' : 'ring-1 ring-white/80'}

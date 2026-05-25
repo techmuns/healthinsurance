@@ -1,16 +1,18 @@
 import type { ReactNode } from 'react'
 
 type BlobShape = 'blob-a' | 'blob-b' | 'blob-c' | 'blob-d' | 'blob-e'
-type BlobTone = 'navy' | 'ivory' | 'soft' | 'muted' | 'glass'
-type BlobSize = 'sm' | 'md' | 'lg'
+type BlobTone = 'navy' | 'navySoft' | 'invert' | 'ivory' | 'soft' | 'muted' | 'glass'
+type BlobSize = 'xs' | 'sm' | 'md' | 'lg'
 
 const sizeMap: Record<BlobSize, string> = {
+  xs: 'h-8 w-8',
   sm: 'h-9 w-9',
   md: 'h-12 w-12',
   lg: 'h-14 w-14',
 }
 
 const iconSizeMap: Record<BlobSize, string> = {
+  xs: '[&_svg]:h-[15px] [&_svg]:w-[15px]',
   sm: '[&_svg]:h-4 [&_svg]:w-4',
   md: '[&_svg]:h-[22px] [&_svg]:w-[22px]',
   lg: '[&_svg]:h-6 [&_svg]:w-6',
@@ -18,6 +20,10 @@ const iconSizeMap: Record<BlobSize, string> = {
 
 const toneMap: Record<BlobTone, string> = {
   navy: 'bg-navy-primary text-white shadow-soft',
+  // Softer, layered navy with depth (less flat/bright than solid navy).
+  navySoft: 'bg-gradient-to-br from-[#2C4A86] to-[#20366A] text-white shadow-soft',
+  // White bubble with a blue icon + blue ring (selected/inverted state).
+  invert: 'bg-white text-navy-primary ring-1 ring-navy-primary/30 shadow-soft',
   ivory: 'bg-ivory text-navy-primary ring-1 ring-soft-border',
   soft: 'bg-soft-blue text-navy-primary',
   muted: 'bg-muted-blue text-white shadow-soft',

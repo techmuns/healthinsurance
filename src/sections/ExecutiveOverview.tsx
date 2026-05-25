@@ -1,9 +1,9 @@
-import { BadgeCheck, Clock, Flame, ShieldCheck, TrendingUp } from 'lucide-react'
+import { BadgeCheck, Clock, ShieldCheck, TrendingUp } from 'lucide-react'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
-import { Leaderboard } from '@/components/Leaderboard'
+import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { PositioningScorecard } from '@/components/PositioningScorecard'
 import { MetricChip } from '@/components/MetricChip'
 import { Heatmap } from '@/components/Heatmap'
@@ -12,7 +12,6 @@ import {
   DATA_FRESHNESS,
   industryMetrics,
   investorRead,
-  leaderboard,
   marketShareDonut,
   peerRows,
   type PeerRow,
@@ -130,15 +129,9 @@ export function ExecutiveOverview() {
             <MarketShareDonut data={marketShareDonut} highlight={company.name} />
           </div>
 
-          {/* Leaderboard — all companies */}
+          {/* Industry leaders — tabbed top-3 ranking */}
           <div className="card-surface p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-[12px] font-semibold text-navy-deep">Top Performers</p>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-emerald">
-                <Flame className="h-3 w-3" /> Fastest Growth
-              </span>
-            </div>
-            <Leaderboard rows={leaderboard} highlight={company.ticker} />
+            <IndustryLeaders highlight={company.ticker} />
           </div>
         </div>
 
