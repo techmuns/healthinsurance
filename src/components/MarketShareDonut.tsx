@@ -1,9 +1,9 @@
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import type { ShareSlice } from '@/data/mockData'
 
-// Focal company gets the teal accent pop; peers stay in calm blue shades.
-const PEER_SHADES = ['#27457E', '#3D5F9F', '#6E8AC0', '#A9BFE0', '#CBD9F0']
-const FOCAL_COLOR = '#168E8E'
+// Peers stay neutral slate-grey; the highlighted company is the only blue.
+const PEER_SHADES = ['#AEB6C1', '#C5CAD2', '#969DA9', '#D2D6DC', '#8893A1']
+const FOCAL_COLOR = '#27457E'
 
 export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; highlight?: string }) {
   // Highlight follows the selected company when it is part of the pool;
@@ -36,21 +36,21 @@ export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; high
               data={colored}
               dataKey="value"
               nameKey="name"
-              innerRadius={50}
-              outerRadius={72}
-              paddingAngle={2}
+              innerRadius={60}
+              outerRadius={74}
+              paddingAngle={1.5}
               stroke="none"
             >
               {colored.map((d) => (
                 <Cell key={d.name} fill={d.color} />
               ))}
             </Pie>
-            <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v: number, n: string) => [`${v}%`, n]} />
           </PieChart>
         </ResponsiveContainer>
+        {/* Center label carries the value; no hover tooltip to avoid clutter. */}
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-display text-2xl text-navy-deep">{center?.value}%</span>
-          <span className={`text-[10px] font-semibold uppercase tracking-wide ${focal ? 'text-teal' : 'text-muted-blue'}`}>
+          <span className={`text-[10px] font-semibold uppercase tracking-wide ${focal ? 'text-navy-primary' : 'text-ink-secondary'}`}>
             #{centerRank} · {center?.name}
           </span>
         </div>
@@ -63,7 +63,7 @@ export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; high
             <span className={`flex-1 truncate ${d.focal ? 'font-semibold text-navy-deep' : 'text-ink-secondary'}`}>
               {d.name}
             </span>
-            <span className={`tabular-nums ${d.focal ? 'font-semibold text-teal' : 'text-ink-primary'}`}>
+            <span className={`tabular-nums ${d.focal ? 'font-semibold text-navy-primary' : 'text-ink-primary'}`}>
               {d.value}%
             </span>
           </li>

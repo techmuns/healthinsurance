@@ -21,8 +21,9 @@ import {
 } from 'recharts'
 import type { SeriesPoint } from '@/data/types'
 
-// Unified blue-forward series palette (kept calm, no neon).
-export const SERIES_COLORS = ['#27457E', '#3D5F9F', '#6E8AC0', '#A9BFE0', '#CBD9F0', '#8DA4CC']
+// Primary deep blue leads (the focus colour); supporting series move to muted
+// teal / slate / gold so blue stays meaningful rather than monotonous.
+export const SERIES_COLORS = ['#27457E', '#2E8B86', '#8C97A8', '#A9BFE0', '#C29A4B', '#6E7787']
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 

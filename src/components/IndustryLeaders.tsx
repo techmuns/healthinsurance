@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { industryLeaders } from '@/data/mockData'
 
-const rankBadge = ['bg-champagne text-white', 'bg-muted-blue text-white', 'bg-teal text-white']
+// Neutral medal tones; blue is reserved for the highlighted company's bar.
+const rankBadge = ['bg-champagne text-white', 'bg-[#9AA3AF] text-white', 'bg-[#BCC2CB] text-white']
 
 export function IndustryLeaders({ highlight }: { highlight?: string }) {
   const [metricId, setMetricId] = useState(industryLeaders[0].id)
@@ -59,7 +60,7 @@ export function IndustryLeaders({ highlight }: { highlight?: string }) {
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-ice">
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${focal ? 'bg-teal' : 'bg-muted-blue'}`}
+                  className={`h-full rounded-full transition-all duration-300 ${focal ? 'bg-navy-primary' : 'bg-[#AEB6C1]'}`}
                   style={{ width: `${Math.round((r.value / max) * 100)}%` }}
                 />
               </div>

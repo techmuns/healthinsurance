@@ -51,8 +51,8 @@ export function ModuleCard({
             <Icon name={icon} />
           </OrganicIconBlob>
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-blue">{question}</p>
-            <h2 className="mt-0.5 font-display text-xl text-navy-deep">{title}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne">{question}</p>
+            <h2 className="mt-0.5 font-display text-[22px] leading-tight text-navy-deep">{title}</h2>
           </div>
         </div>
         <div className="flex items-center gap-2">

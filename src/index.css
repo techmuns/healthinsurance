@@ -19,14 +19,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  /* Soft institutional blue mist: a layered overlay so the whole app feels
-     atmospheric and premium rather than flat white. */
-  background-color: #f1f5fb;
+  /* Calm neutral canvas with only faint atmospheric tints — blue is reserved
+     as a signal colour, not the background. */
+  background-color: #f3f4f6;
   background-image:
-    radial-gradient(1150px 580px at 100% -10%, rgba(49, 90, 169, 0.12), transparent 60%),
-    radial-gradient(900px 520px at -10% 108%, rgba(22, 142, 142, 0.06), transparent 58%),
-    radial-gradient(700px 420px at 50% 40%, rgba(182, 139, 58, 0.035), transparent 70%),
-    linear-gradient(180deg, #f5f8fc 0%, #eef3fa 55%, #f4f7fc 100%);
+    radial-gradient(1100px 560px at 100% -10%, rgba(49, 90, 169, 0.05), transparent 60%),
+    radial-gradient(820px 460px at -8% 108%, rgba(46, 120, 120, 0.035), transparent 58%),
+    linear-gradient(180deg, #f6f7f9 0%, #f1f2f5 100%);
   background-attachment: fixed;
 }
 

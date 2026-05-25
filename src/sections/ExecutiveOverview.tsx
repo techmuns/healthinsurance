@@ -27,7 +27,7 @@ export function ExecutiveOverview() {
     }))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* A. Compact, industry-framed hero */}
       <header className="card-surface relative overflow-hidden px-6 py-5 sm:px-7">
         <div className="absolute -right-12 -top-16 hidden h-44 w-44 bg-soft-blue/50 blob-a sm:block" />

@@ -94,7 +94,7 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
           })}
         </div>
 
-        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-5 sm:px-6">
+        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-6 sm:px-6">
           <div key={active} className="animate-fade-in">
             {children}
           </div>

@@ -9,6 +9,8 @@ export interface SegmentedControlProps<T extends string> {
   onChange: (value: T) => void
   label?: string
   size?: 'sm' | 'md'
+  /** "dark" adapts the control for the charcoal header bar. */
+  tone?: 'light' | 'dark'
 }
 
 function normalise<T extends string>(
@@ -26,16 +28,28 @@ export function SegmentedControl<T extends string>({
   onChange,
   label,
   size = 'md',
+  tone = 'light',
 }: SegmentedControlProps<T>) {
   const opts = normalise(options)
+  const dark = tone === 'dark'
   return (
     <div className="flex items-center gap-2">
       {label && (
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-secondary">
+        <span
+          className={[
+            'text-[11px] font-semibold uppercase tracking-wide',
+            dark ? 'text-white/45' : 'text-ink-secondary',
+          ].join(' ')}
+        >
           {label}
         </span>
       )}
-      <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+      <div
+        className={[
+          'inline-flex items-center gap-0.5 rounded-full p-0.5',
+          dark ? 'bg-white/10 ring-1 ring-white/10' : 'border border-soft-border bg-ice',
+        ].join(' ')}
+      >
         {opts.map((opt) => {
           const active = opt.value === value
           return (
@@ -47,8 +61,12 @@ export function SegmentedControl<T extends string>({
                 'rounded-full font-medium transition-all duration-200',
                 size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3.5 py-1.5 text-xs',
                 active
-                  ? 'bg-navy-primary text-white shadow-soft'
-                  : 'text-ink-secondary hover:text-navy-primary',
+                  ? dark
+                    ? 'bg-royal text-white shadow-soft'
+                    : 'bg-navy-primary text-white shadow-soft'
+                  : dark
+                    ? 'text-white/55 hover:text-white'
+                    : 'text-ink-secondary hover:text-navy-primary',
               ].join(' ')}
               aria-pressed={active}
             >
