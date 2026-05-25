@@ -1,25 +1,12 @@
-import { useState } from 'react'
-import {
-  AlertTriangle,
-  BadgeCheck,
-  ChevronRight,
-  Clock,
-  Flame,
-  ShieldAlert,
-  ShieldCheck,
-  Sparkles,
-  TrendingUp,
-} from 'lucide-react'
+import { BadgeCheck, Clock, Flame, ShieldCheck, TrendingUp } from 'lucide-react'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { SignalBadge } from '@/components/SignalBadge'
-import { Drawer } from '@/components/Drawer'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { Leaderboard } from '@/components/Leaderboard'
 import { PositioningScorecard } from '@/components/PositioningScorecard'
 import { MetricChip } from '@/components/MetricChip'
 import { Heatmap } from '@/components/Heatmap'
-import { Icon } from '@/components/icons'
 import { useActiveCompany } from '@/state/filters'
 import {
   DATA_FRESHNESS,
@@ -28,12 +15,8 @@ import {
   leaderboard,
   marketShareDonut,
   peerRows,
-  pulseStrip,
-  storyStrip,
   type PeerRow,
-  type PulseItem,
   type ScoreRow,
-  type StoryTile,
 } from '@/data/mockData'
 import type { Signal } from '@/data/types'
 
@@ -44,12 +27,6 @@ const readTone = {
   negative: 'text-[#E59B98]',
   neutral: 'text-soft-blue',
 } as const
-
-const pulseStyle: Record<PulseItem['kind'], { ring: string; chip: string; iconBg: string; icon: typeof Flame }> = {
-  Strength: { ring: 'border-emerald/30 bg-emerald-soft/50', chip: 'bg-emerald text-white', iconBg: 'bg-emerald text-white', icon: Sparkles },
-  Watch: { ring: 'border-gold/30 bg-gold-soft/60', chip: 'bg-gold text-white', iconBg: 'bg-gold text-white', icon: AlertTriangle },
-  Risk: { ring: 'border-coral/30 bg-coral-soft/60', chip: 'bg-coral text-white', iconBg: 'bg-coral text-white', icon: ShieldAlert },
-}
 
 function signalFor(rank: number, n: number): Signal {
   const f = rank / n
@@ -86,7 +63,6 @@ function buildPositioning(ticker: string, group: PeerRow['peerGroup']): ScoreRow
 
 export function ExecutiveOverview() {
   const company = useActiveCompany()
-  const [openTile, setOpenTile] = useState<StoryTile | null>(null)
 
   const positioning = buildPositioning(company.ticker, company.peerGroup)
   const heatRows = peerRows
@@ -190,32 +166,7 @@ export function ExecutiveOverview() {
         </div>
       </section>
 
-      {/* C. Strength / Watch / Risk — industry level */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {pulseStrip.map((p) => {
-          const s = pulseStyle[p.kind]
-          const PulseIcon = s.icon
-          return (
-            <div key={p.kind} className={`rounded-xl2 border p-4 ${s.ring}`}>
-              <div className="flex items-center justify-between">
-                <span className={`blob-c inline-flex h-9 w-9 items-center justify-center ${s.iconBg}`}>
-                  <PulseIcon className="h-[18px] w-[18px]" />
-                </span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${s.chip}`}>
-                  {p.kind}
-                </span>
-              </div>
-              <h3 className="mt-2.5 text-[14px] font-semibold text-navy-deep">{p.headline}</h3>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-ink-secondary">{p.detail}</p>
-              <p className="mt-2 inline-block rounded-md bg-card/70 px-2 py-1 text-[11px] font-semibold text-navy-primary">
-                {p.metric}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* D. Compact supporting industry metrics */}
+      {/* C. Compact supporting industry metrics */}
       <section>
         <SectionHeading eyebrow="Supporting evidence" title="Industry metrics" />
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
@@ -279,61 +230,6 @@ export function ExecutiveOverview() {
         </div>
       </section>
 
-      {/* F. Mini story strip */}
-      <div>
-        <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="font-display text-lg text-navy-deep">The three things that matter</h2>
-          <span className="text-[11px] text-ink-secondary">Tap a tile for the detail</span>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {storyStrip.map((tile) => (
-            <button
-              key={tile.id}
-              type="button"
-              onClick={() => setOpenTile(tile)}
-              className="card-surface group flex flex-col gap-2.5 p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <OrganicIconBlob shape={tile.blob} tone="soft" size="sm" interactive>
-                    <Icon name={tile.icon} />
-                  </OrganicIconBlob>
-                  <h3 className="font-display text-[15px] text-navy-deep">{tile.title}</h3>
-                </div>
-                <SignalBadge label={tile.status} size="sm" />
-              </div>
-              <p className="text-[12.5px] leading-relaxed text-ink-secondary">{tile.insight}</p>
-              <span className="mt-0.5 inline-flex items-center gap-1 text-[11px] font-semibold text-navy-primary">
-                Open detail
-                <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <Drawer
-        open={openTile !== null}
-        onClose={() => setOpenTile(null)}
-        title={openTile?.title ?? ''}
-        subtitle={openTile?.insight}
-      >
-        {openTile && (
-          <div className="space-y-5">
-            <SignalBadge label={openTile.status} />
-            <ul className="space-y-3">
-              {openTile.detail.map((d, i) => (
-                <li key={i} className="flex gap-3 rounded-xl2 border border-soft-border bg-card p-4 text-sm text-ink-primary">
-                  <span className="blob-d mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center bg-soft-blue text-[11px] font-bold text-navy-primary">
-                    {i + 1}
-                  </span>
-                  {d}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </Drawer>
     </div>
   )
 }
