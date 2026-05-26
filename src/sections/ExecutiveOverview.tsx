@@ -7,8 +7,7 @@ import { Heatmap } from '@/components/Heatmap'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { MetricChip } from '@/components/MetricChip'
 import { WhatChangedStrip } from '@/components/WhatChangedStrip'
-import { CompanySignalCard } from '@/components/CompanySignalCard'
-import { PeerRankSnapshot } from '@/components/PeerRankSnapshot'
+import { CompareCompanies } from '@/components/CompareCompanies'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices, getPeerScorecardData } from '@/lib/insurers'
@@ -186,13 +185,10 @@ export function ExecutiveOverview() {
       {/* C. What Changed — compact visual strip */}
       <WhatChangedStrip company={company} list={peerList} review={review} />
 
-      {/* D. Signal + Peer Rank Snapshot — compact */}
+      {/* D. Compare Companies — interactive comparison panel */}
       <section>
-        <SectionHeading eyebrow="Rank Snapshot" title="Where It Stands" note={`${company.shortName} vs ${groupLabel.toLowerCase()}`} />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <CompanySignalCard company={company} list={peerList} review={review} />
-          <PeerRankSnapshot company={company} list={peerList} />
-        </div>
+        <SectionHeading eyebrow="Comparison" title="Compare Companies" note="Select companies and compare key metrics" />
+        <CompareCompanies focalId={company.id} />
       </section>
 
       {/* E. Quarterly calculation trust — compact bridge + detail drawer */}
