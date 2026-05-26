@@ -365,8 +365,7 @@ const compareMomentum: Record<string, number> = {
   'sbi-life': 0.7,
 }
 
-const SEASON = [0.22, 0.24, 0.26, 0.28] // quarterly weights for flow metrics (sum = 1)
-const STOCK_RAMP = [0.94, 0.96, 0.98, 1] // in-force book ramp through the year
+const SEASON = [0.22, 0.24, 0.26, 0.28] // base quarterly weights for flow metrics (sum = 1)
 
 const round1 = (v: number) => Math.round(v * 10) / 10
 const round10 = (v: number) => Math.round(v / 10) * 10
@@ -395,7 +394,11 @@ export function getCompareSeries(
 
   if (shape.kind === 'stock') {
     const roundStock = (v: number) => (anchor >= 1000 ? round10(v) : round1(v))
-    if (period === 'Quarterly') return STOCK_RAMP.map((w) => roundStock(anchor * w))
+    if (period === 'Quarterly') {
+      // Ramp to the FY25 anchor; higher-momentum books ramp more steeply.
+      const qDrop = 0.05 * mom
+      return [0, 1, 2, 3].map((i) => roundStock(anchor * (1 - (qDrop * (3 - i)) / 3)))
+    }
     const sg = shape.fixedGrowth != null ? shape.fixedGrowth * mom : g * 0.8
     const fy24 = anchor / (1 + sg)
     const fy23 = fy24 / (1 + sg * 0.9)
@@ -404,7 +407,14 @@ export function getCompareSeries(
   }
 
   // flow (GWP / NWP / NEP)
-  if (period === 'Quarterly') return SEASON.map((w) => round10(anchor * w))
+  if (period === 'Quarterly') {
+    // Tilt the seasonal split by momentum so faster growers ramp harder through
+    // the year (gives quarterly views a real "who's accelerating" signal).
+    const tilt = 0.06 * (mom - 1)
+    const w = SEASON.map((base, i) => base * (1 + tilt * (i - 1.5)))
+    const sum = w.reduce((a, b) => a + b, 0)
+    return w.map((wi) => round10((anchor * wi) / sum))
+  }
   const fy24 = anchor / (1 + g)
   const fy23 = fy24 / (1 + g * 0.9)
   const fy22 = fy23 / (1 + g * 0.8)
