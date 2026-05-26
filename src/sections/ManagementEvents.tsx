@@ -6,7 +6,9 @@ import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { Drawer } from '@/components/Drawer'
+import { PromiseTracker } from '@/components/PromiseTracker'
 import { commentary, events, promiseTracker, type EventItem } from '@/data/mockData'
+import { useActiveCompany } from '@/state/filters'
 
 type MgmtView = 'Current Commentary' | 'Promise Tracker'
 type Topic = 'Growth' | 'Margin' | 'Distribution' | 'Regulation' | 'Capital'
@@ -28,18 +30,20 @@ export function ManagementEvents() {
 }
 
 function ManagementReadout() {
-  const [view, setView] = useState<MgmtView>('Current Commentary')
+  const [view, setView] = useState<MgmtView>('Promise Tracker')
   const [topic, setTopic] = useState<Topic>('Growth')
+  const company = useActiveCompany()
   const item = commentary.find((c) => c.topic === topic) ?? commentary[0]
+  const promises = promiseTracker.filter((p) => p.company === company.id)
 
   return (
     <ModuleCard
-      question="Is management credible on what it said it would deliver?"
+      question="What did management promise, and what actually happened?"
       title="Management Readout"
       icon="commentary"
       controls={
         <>
-          <SegmentedControl<MgmtView> label="View" options={['Current Commentary', 'Promise Tracker'] as MgmtView[]} value={view} onChange={setView} size="sm" />
+          <SegmentedControl<MgmtView> label="View" options={['Promise Tracker', 'Current Commentary'] as MgmtView[]} value={view} onChange={setView} size="sm" />
           {view === 'Current Commentary' && (
             <SegmentedControl<Topic> label="Topic" options={['Growth', 'Margin', 'Distribution', 'Regulation', 'Capital'] as Topic[]} value={topic} onChange={setTopic} size="sm" />
           )}
@@ -51,13 +55,14 @@ function ManagementReadout() {
           signal="On Track"
           lines={[
             { label: 'Signal', value: 'On Track' },
-            { label: 'Why', value: 'Management has delivered on growth, margin and retail-mix guidance.' },
-            { label: 'Implication', value: 'Credible team; judge by delivery, not optimism.' },
+            { label: 'Why', value: 'Track record on growth, margin and retail-mix guidance; judge by delivery.' },
+            { label: 'Implication', value: 'Credible team where promises are measurable.' },
             { label: 'Next trigger', value: 'Closing the banca-concentration gap to guidance.' },
           ]}
         />
       }
     >
+      {view === 'Promise Tracker' && <PromiseTracker items={promises} companyName={company.shortName} />}
       {view === 'Current Commentary' && (
         <div className="rounded-xl2 border border-soft-border bg-card p-6">
           <OrganicIconBlob shape="blob-e" tone="soft" size="md">
@@ -71,32 +76,6 @@ function ManagementReadout() {
             <span>·</span>
             <span>{item.date}</span>
           </div>
-        </div>
-      )}
-      {view === 'Promise Tracker' && (
-        <div className="overflow-hidden rounded-xl2 border border-soft-border">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-ice text-[11px] uppercase tracking-wide text-ink-secondary">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Topic</th>
-                <th className="px-4 py-3 font-semibold">Prior guidance</th>
-                <th className="px-4 py-3 font-semibold">Current</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {promiseTracker.map((p, i) => (
-                <tr key={p.topic} className={i % 2 ? 'bg-ice/40' : ''}>
-                  <td className="px-4 py-3 font-medium text-ink-primary">{p.topic}</td>
-                  <td className="px-4 py-3 text-ink-secondary">{p.previousGuidance}</td>
-                  <td className="px-4 py-3 text-ink-primary">{p.currentUpdate}</td>
-                  <td className="px-4 py-3">
-                    <SignalBadge label={p.status} size="sm" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       )}
     </ModuleCard>

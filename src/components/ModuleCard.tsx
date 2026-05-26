@@ -5,6 +5,7 @@ import { OrganicIconBlob } from './OrganicIconBlob'
 import { Drawer } from './Drawer'
 import { DataStatusDrawer, type DataStatusEntry } from './DataStatusDrawer'
 import { Icon, type IconKey } from './icons'
+import type { BasisInfo } from '@/data/mockData'
 
 export interface ModuleCardProps {
   /** The single investor question this module answers. */
@@ -25,6 +26,8 @@ export interface ModuleCardProps {
   drawerSubtitle?: string
   /** Data-status entries for the provenance drawer. */
   dataStatus?: DataStatusEntry[]
+  /** Accounting/source basis shown in the provenance drawer. */
+  dataBasis?: BasisInfo
 }
 
 export function ModuleCard({
@@ -39,6 +42,7 @@ export function ModuleCard({
   drawerTitle,
   drawerSubtitle,
   dataStatus,
+  dataBasis,
 }: ModuleCardProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
@@ -110,6 +114,7 @@ export function ModuleCard({
           onClose={() => setStatusOpen(false)}
           moduleName={title}
           entries={dataStatus}
+          basis={dataBasis}
         />
       )}
     </section>

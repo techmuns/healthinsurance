@@ -4,11 +4,13 @@ import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
+import { BasisTag } from '@/components/BasisTag'
 import { BandedLineChart, ChartFrame, TrendLineChart } from '@/components/charts'
 import {
   costKpis,
   marginTrend,
   plTrend,
+  profitabilityBasis,
   profitabilityKpis,
   returnsTrend,
   solvencyTrend,
@@ -91,7 +93,9 @@ export function ProfitabilityCapital() {
         </>
       }
       dataStatus={[...profitabilityKpis, ...costKpis]}
+      dataBasis={profitabilityBasis}
     >
+      <BasisTag info={profitabilityBasis} className="mb-3" />
       {view === 'P&L' && (
         <ChartFrame headline={headline} caption="Revenue, operating profit & PAT (₹ Cr) · mock data">
           <TrendLineChart data={plTrend} series={['Revenue', 'Operating', 'PAT']} />

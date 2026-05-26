@@ -6,6 +6,7 @@
 // ===========================================================================
 
 import type {
+  DataStatus,
   Insurer,
   Metric,
   PeerGroup,
@@ -66,6 +67,204 @@ export const DATA_FRESHNESS = {
   quality: 'Mock dataset',
   /** Mock data is annual-only; period toggle surfaces this limitation. */
   periodCoverage: 'Annual',
+}
+
+// =========================================================================
+//  QUARTERLY REVIEW LAYER  (PE quarterly-review logic — mock)
+//  Standalone quarterly figures are derived from cumulative IRDAI/YTD
+//  disclosures: Quarter = current YTD − previous YTD.
+// =========================================================================
+
+export const QUARTER = {
+  current: 'Q4 FY25',
+  previous: 'Q3 FY25',
+  currentYtd: 'FY25 YTD (Mar)',
+  previousYtd: '9M FY25 YTD (Dec)',
+}
+
+export const QUARTERLY_BASIS_NOTE =
+  'Quarterly values are derived from cumulative IRDAI/YTD disclosures where standalone quarterly data is not directly reported.'
+
+export interface BasisInfo {
+  /** Premium/earnings basis, e.g. "GWP / NWP / NEP". */
+  basis: string
+  /** How the period figure is produced, e.g. "Quarterly derived from YTD". */
+  method: string
+  /** Accounting framework, e.g. "IGAAP" / "IGAAP / IndAS as available". */
+  accounting: string
+  source: string
+  status: DataStatus
+}
+
+export const growthBasis: BasisInfo = {
+  basis: 'GWP / NWP / NEP',
+  method: 'Quarterly derived from YTD',
+  accounting: 'IGAAP',
+  source: 'IRDAI monthly disclosure',
+  status: 'Derived',
+}
+
+export const profitabilityBasis: BasisInfo = {
+  basis: 'PAT',
+  method: 'As reported (1/n where applicable)',
+  accounting: 'IGAAP / IndAS as available',
+  source: 'Company filing',
+  status: 'Reported',
+}
+
+/** A single cumulative-to-standalone bridge input for a metric. */
+export interface YtdBridgeInput {
+  label: string
+  unit: string
+  /** Current period cumulative/YTD value. null => Data pending. */
+  currentYtd: number | null
+  previousYtd: number | null
+  basis: string
+  source: string
+  status: DataStatus
+}
+
+export interface QuarterlyReview {
+  /** One-line summary of the quarter for the selected company. */
+  whatChanged: string
+  whatImproved: string
+  whatWorsened: string
+  whatMattersNext: string
+  topRisk: string
+  nextTrigger: string
+  biggestPositive: { label: string; detail: string }
+  biggestNegative: { label: string; detail: string }
+  bridge: YtdBridgeInput[]
+}
+
+const gwp = (cur: number | null, prev: number | null): YtdBridgeInput => ({
+  label: 'GWP',
+  unit: '₹ Cr',
+  currentYtd: cur,
+  previousYtd: prev,
+  basis: 'GWP',
+  source: 'IRDAI monthly disclosure',
+  status: cur === null ? 'Pending' : 'Derived',
+})
+const nwp = (cur: number | null, prev: number | null): YtdBridgeInput => ({
+  label: 'NWP',
+  unit: '₹ Cr',
+  currentYtd: cur,
+  previousYtd: prev,
+  basis: 'NWP',
+  source: 'IRDAI monthly disclosure',
+  status: cur === null ? 'Pending' : 'Derived',
+})
+const pat = (cur: number | null, prev: number | null): YtdBridgeInput => ({
+  label: 'PAT',
+  unit: '₹ Cr',
+  currentYtd: cur,
+  previousYtd: prev,
+  basis: 'PAT',
+  source: 'Company filing',
+  status: cur === null ? 'Pending' : 'Reported',
+})
+
+export const quarterlyReviews: Record<string, QuarterlyReview> = {
+  'niva-bupa': {
+    whatChanged: 'Margins and returns improved while banca concentration kept rising.',
+    whatImproved: 'Combined ratio fell to 96.8% (multi-year low) and ROE rose to 17.2%; retail mix reached 64%.',
+    whatWorsened: 'Banca concentration climbed to 31%, above the ~25% guidance.',
+    whatMattersNext: 'Whether retail momentum holds as banca shelf-space tightens at a peer.',
+    topRisk: 'Rising banca dependence concentrates fresh-premium growth in one channel.',
+    nextTrigger: 'Q1 FY26 loss-ratio trend and fresh-premium channel mix.',
+    biggestPositive: { label: 'Combined ratio', detail: '−1.6 pp YoY to 96.8% — a multi-year low' },
+    biggestNegative: { label: 'Banca concentration', detail: '+4 pp to 31%, above ~25% guidance' },
+    bridge: [gwp(7200, 5180), nwp(6540, 4720), pat(790, 560)],
+  },
+  'star-health': {
+    whatChanged: 'Scale leadership held, but underwriting margin stayed thin.',
+    whatImproved: 'GWP growth held at 17.5% with the highest retail mix in the peer set (67%).',
+    whatWorsened: 'Combined ratio at 99.4% remains close to 100, limiting margin headroom.',
+    whatMattersNext: 'Whether the scale leader can push combined ratio below 98.',
+    topRisk: 'Thin underwriting margin leaves little buffer if loss ratios rise.',
+    nextTrigger: 'Loss-ratio trajectory and pricing actions in Q1 FY26.',
+    biggestPositive: { label: 'Market share', detail: 'Largest SAHI pool share at 33%' },
+    biggestNegative: { label: 'Combined ratio', detail: '99.4% — near-breakeven underwriting' },
+    bridge: [gwp(12400, 9050), nwp(11100, 8050), pat(620, 430)],
+  },
+  'care-health': {
+    whatChanged: 'Solid growth and improving margin, retention still a gap.',
+    whatImproved: 'GWP growth at 20.1% with combined ratio improving to 98.1%.',
+    whatWorsened: 'Customer retention at 86% trails the leaders.',
+    whatMattersNext: 'Whether retention investments lift renewals.',
+    topRisk: 'Below-peer retention pressures renewal-led growth.',
+    nextTrigger: 'Retention and renewal-rate trend next quarter.',
+    biggestPositive: { label: 'GWP growth', detail: '20.1% — second-fastest in SAHI' },
+    biggestNegative: { label: 'Retention', detail: '86% — below Niva Bupa and Star' },
+    bridge: [gwp(6400, 4650), nwp(5700, 4150), pat(410, 290)],
+  },
+  'aditya-birla': {
+    whatChanged: 'Fastest growth, but underwriting still loss-making.',
+    whatImproved: 'Fastest GWP growth in the peer set at 28.6%.',
+    whatWorsened: 'Combined ratio at 101.8% — underwriting loss-making; ROE only 9.5%.',
+    whatMattersNext: 'Whether rapid growth converts to underwriting profit.',
+    topRisk: 'Growth-at-any-cost with combined ratio above 100 and the richest valuation (4.2x).',
+    nextTrigger: 'Combined-ratio glide-path and EOM compliance.',
+    biggestPositive: { label: 'GWP growth', detail: '28.6% — fastest in SAHI' },
+    biggestNegative: { label: 'Combined ratio', detail: '101.8% — above breakeven' },
+    bridge: [gwp(4100, 2950), nwp(3650, 2620), pat(null, null)],
+  },
+  manipalcigna: {
+    whatChanged: 'Sub-scale economics weighed on growth and margin.',
+    whatImproved: 'Settlement ratio steady at 96.8%.',
+    whatWorsened: 'Slowest growth (15.2%), highest combined ratio (103.2%), share slipping (−0.1 pp).',
+    whatMattersNext: 'Whether scale improves enough to fix the expense ratio.',
+    topRisk: 'Sub-scale economics with combined ratio above 103.',
+    nextTrigger: 'Expense-ratio improvement and share stabilisation.',
+    biggestPositive: { label: 'Settlement ratio', detail: 'Stable at 96.8%' },
+    biggestNegative: { label: 'Combined ratio', detail: '103.2% — weakest in SAHI' },
+    bridge: [gwp(2600, 1880), nwp(2300, 1660), pat(null, null)],
+  },
+  'icici-lombard': {
+    whatChanged: 'Strong returns, but combined ratio above 100.',
+    whatImproved: 'Highest ROE in the tracked set at 18.4%.',
+    whatWorsened: 'Combined ratio at 102.6% on motor/health mix.',
+    whatMattersNext: 'Whether pricing discipline pulls combined ratio under 100.',
+    topRisk: 'Combined ratio above 100 despite strong returns; premium valuation (5.8x).',
+    nextTrigger: 'Combined-ratio trend and health-segment growth.',
+    biggestPositive: { label: 'ROE', detail: '18.4% — best in the tracked set' },
+    biggestNegative: { label: 'Combined ratio', detail: '102.6% — above breakeven' },
+    bridge: [gwp(21000, 15200), nwp(18600, 13500), pat(1900, 1380)],
+  },
+  'bajaj-general': {
+    whatChanged: 'Steady margin, but growth lagged peers.',
+    whatImproved: 'Combined ratio near 100 with steady solvency.',
+    whatWorsened: 'Slowest growth among general peers (9.8%).',
+    whatMattersNext: 'Whether growth re-accelerates without margin loss.',
+    topRisk: 'Tepid growth could cede share to faster peers.',
+    nextTrigger: 'Growth re-acceleration in retail health.',
+    biggestPositive: { label: 'Combined ratio', detail: '100.4% — near breakeven' },
+    biggestNegative: { label: 'GWP growth', detail: '9.8% — slowest general peer' },
+    bridge: [gwp(14500, 10600), nwp(12900, 9400), pat(980, 700)],
+  },
+  'hdfc-life': {
+    whatChanged: 'Steady compounding with strong persistency.',
+    whatImproved: 'Steady 11.6% growth with strong persistency (87%).',
+    whatWorsened: 'Margin pressure from a shifting product mix.',
+    whatMattersNext: 'VNB-margin trend versus product mix.',
+    topRisk: 'Margin compression from competition in protection/par.',
+    nextTrigger: 'VNB margin and 61-month persistency.',
+    biggestPositive: { label: 'Persistency', detail: 'Renewal/persistency at 87%' },
+    biggestNegative: { label: 'Margin', detail: 'Mix-led VNB-margin pressure' },
+    bridge: [gwp(56000, 40500), nwp(54000, 39000), pat(null, null)],
+  },
+  'sbi-life': {
+    whatChanged: 'Largest life book, but growth lagged private peers.',
+    whatImproved: 'Largest life book among tracked peers.',
+    whatWorsened: 'Slowest growth (7.8%) and lower ROE (11.2%).',
+    whatMattersNext: 'Whether APE growth picks up.',
+    topRisk: 'Growth lag versus faster private life peers.',
+    nextTrigger: 'APE growth and VNB margin.',
+    biggestPositive: { label: 'Scale', detail: 'Largest life premium book' },
+    biggestNegative: { label: 'GWP growth', detail: '7.8% — slowest in the set' },
+    bridge: [gwp(62000, 45000), nwp(60000, 43500), pat(null, null)],
+  },
 }
 
 // =========================================================================
@@ -579,19 +778,44 @@ export const commentary: CommentaryItem[] = [
   { topic: 'Capital', quote: 'No equity raise is planned; solvency funds the FY26 growth plan internally.', speaker: 'CFO', date: '2026-05-12' },
 ]
 
+export type PromiseCategory =
+  | 'Growth'
+  | 'Profitability'
+  | 'Distribution'
+  | 'Capital'
+  | 'Valuation'
+  | 'Regulation'
+
+export type PromiseStatus = 'Delivered' | 'On Track' | 'Delayed' | 'Missed' | 'Not Measurable'
+
 export interface PromiseItem {
-  topic: string
-  previousGuidance: string
-  currentUpdate: string
-  status: 'Achieved' | 'On Track' | 'Delayed' | 'Missed'
+  /** Insurer id the promise belongs to. */
+  company: string
+  category: PromiseCategory
+  promise: string
+  /** When it was promised. */
+  date: string
+  metric: string
+  /** Guidance / target. */
+  target: string
+  /** Current result, or "Data pending". */
+  current: string
+  status: PromiseStatus
+  source: string
 }
 
+// Management promises for the focal company (mock). Other companies show an
+// empty state — promise tracking is not wired for them in this dataset.
 export const promiseTracker: PromiseItem[] = [
-  { topic: 'GWP growth FY25', previousGuidance: '~20% YoY', currentUpdate: 'Delivered 23.4%', status: 'Achieved' },
-  { topic: 'Combined ratio', previousGuidance: 'Below 98%', currentUpdate: 'At 96.8%', status: 'Achieved' },
-  { topic: 'Retail mix', previousGuidance: '60%+ by FY25', currentUpdate: 'At 64%', status: 'Achieved' },
-  { topic: 'Banca concentration', previousGuidance: 'Hold near 25%', currentUpdate: 'Rose to 31%', status: 'Missed' },
-  { topic: 'Digital channel scale-up', previousGuidance: '8% of mix by FY25', currentUpdate: 'At 5%', status: 'Delayed' },
+  { company: 'niva-bupa', category: 'Growth', promise: 'Grow GWP in the low-20s', date: 'Q2 FY25 call', metric: 'GWP growth', target: '~20% YoY', current: '23.4%', status: 'Delivered', source: 'Earnings call' },
+  { company: 'niva-bupa', category: 'Profitability', promise: 'Hold combined ratio below 98%', date: 'Q2 FY25 call', metric: 'Combined ratio', target: '<98%', current: '96.8%', status: 'Delivered', source: 'Investor presentation' },
+  { company: 'niva-bupa', category: 'Profitability', promise: 'Expand ROE toward high-teens', date: 'FY24 annual report', metric: 'ROE', target: '~17%', current: '17.2%', status: 'Delivered', source: 'Annual report' },
+  { company: 'niva-bupa', category: 'Growth', promise: 'Lift retail mix above 60%', date: 'FY24 annual report', metric: 'Retail mix', target: '60%+ by FY25', current: '64%', status: 'Delivered', source: 'Annual report' },
+  { company: 'niva-bupa', category: 'Distribution', promise: 'Hold banca concentration near 25%', date: 'Q3 FY25 call', metric: 'Banca share', target: '~25%', current: '31%', status: 'Missed', source: 'Earnings call' },
+  { company: 'niva-bupa', category: 'Distribution', promise: 'Scale the digital channel', date: 'FY24 annual report', metric: 'Digital mix', target: '8% by FY25', current: '5%', status: 'Delayed', source: 'Annual report' },
+  { company: 'niva-bupa', category: 'Capital', promise: 'Fund FY26 growth without an equity raise', date: 'Q4 FY25 call', metric: 'Solvency', target: 'No raise; >1.8x', current: '2.18x', status: 'On Track', source: 'Earnings call' },
+  { company: 'niva-bupa', category: 'Regulation', promise: 'Stay within revised EOM limits', date: 'Q4 FY25 call', metric: 'EOM', target: 'Within glide path', current: '28.4%', status: 'On Track', source: 'Earnings call' },
+  { company: 'niva-bupa', category: 'Valuation', promise: 'Sustain premium re-rating via delivery', date: 'Q4 FY25 call', metric: 'P/GWP', target: 'Earn the premium', current: '3.4x (13% > peer median)', status: 'Not Measurable', source: 'Management commentary' },
 ]
 
 export interface EventItem {

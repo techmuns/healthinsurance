@@ -13,10 +13,12 @@ type FilterInput = Pick<DashboardFilters, 'peerGroup' | 'highlightedCompany'>
 /** Numeric Insurer metrics that can be ranked. */
 export type MetricKey =
   | 'marketShare'
+  | 'marketShareChange'
   | 'premiumCollection'
   | 'settlementRatio'
   | 'renewalRate'
   | 'customerRetention'
+  | 'retailMix'
   | 'growth'
   | 'margin'
   | 'combinedRatio'

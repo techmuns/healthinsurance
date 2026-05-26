@@ -3,14 +3,15 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { InsightBox } from '@/components/InsightBox'
 import { ChartFrame, HorizontalBarChart } from '@/components/charts'
-import { Heatmap } from '@/components/Heatmap'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
-import { peerRows } from '@/data/mockData'
+import { PeerScorecard } from '@/components/PeerScorecard'
+import { insurers, peerRows } from '@/data/mockData'
+import { getCompanySignals, getQuarterlyReview, getScorecardSummary } from '@/lib/review'
 import { useActiveCompany } from '@/state/filters'
 import type { PeerGroup } from '@/data/types'
 
-type View = 'Ranking' | 'Table' | 'Heatmap'
+type View = 'Scorecard' | 'Ranking' | 'Table'
 type RankMetric = 'GWP Growth' | 'Market Share' | 'Solvency' | 'ROE' | 'Combined Ratio' | 'Valuation'
 
 const groups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
@@ -25,7 +26,7 @@ const metricAccessor: Record<RankMetric, { key: keyof (typeof peerRows)[number];
 }
 
 export function CompetitivePositioning() {
-  const [view, setView] = useState<View>('Ranking')
+  const [view, setView] = useState<View>('Scorecard')
   const [group, setGroup] = useState<PeerGroup>('SAHI')
   const [metric, setMetric] = useState<RankMetric>('GWP Growth')
   const active = useActiveCompany()
@@ -33,6 +34,14 @@ export function CompetitivePositioning() {
   const rows = peerRows
     .filter((r) => group === 'All' || r.peerGroup === group)
     .map((r) => ({ ...r, focal: r.ticker === active.ticker }))
+
+  // Insurer-typed list for the scorecard; falls back to the company's own group.
+  const scorecardList = group === 'All' ? insurers : insurers.filter((i) => i.peerGroup === group)
+  const inGroup = scorecardList.some((i) => i.id === active.id)
+  const signalList = inGroup ? scorecardList : insurers.filter((i) => i.peerGroup === active.peerGroup)
+  const summary = getScorecardSummary(active, signalList)
+  const signals = getCompanySignals(active, signalList)
+  const review = getQuarterlyReview(active.id)
 
   const acc = metricAccessor[metric]
   const rankingData = rows
@@ -48,7 +57,7 @@ export function CompetitivePositioning() {
       controls={
         <>
           <SegmentedControl<PeerGroup> label="Peers" options={groups} value={group} onChange={setGroup} size="sm" />
-          <SegmentedControl<View> label="View" options={['Ranking', 'Table', 'Heatmap'] as View[]} value={view} onChange={setView} size="sm" />
+          <SegmentedControl<View> label="View" options={['Scorecard', 'Ranking', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
           {view === 'Ranking' && (
             <SegmentedControl<RankMetric>
               label="Metric"
@@ -63,16 +72,29 @@ export function CompetitivePositioning() {
       insight={
         <InsightBox
           variant="panel"
-          signal="Strong"
+          signal={signals.overall}
           lines={[
-            { label: 'Signal', value: 'Strong (focal name)' },
-            { label: 'Why', value: 'Niva Bupa leads on growth, ROE and share gain while holding underwriting discipline.' },
-            { label: 'Implication', value: 'Best-positioned within the SAHI peer set.' },
-            { label: 'Next trigger', value: 'Whether peers close the combined-ratio gap.' },
+            { label: 'Signal', value: `${signals.overall} (${active.shortName})` },
+            { label: 'Why', value: summary },
+            { label: 'Peer rank', value: signals.peerRankSummary },
+            { label: 'Next trigger', value: review?.nextTrigger ?? 'Whether peers close the gap.' },
           ]}
         />
       }
     >
+      {view === 'Scorecard' && (
+        <ChartFrame
+          headline="Multi-metric peer scorecard"
+          caption={`${group} peer group · value, rank and signal per metric · mock data`}
+          height="auto"
+          footnote={<BestInColumnLegend />}
+        >
+          <p className="mb-3 rounded-lg bg-ice/70 px-3 py-2 text-[12px] leading-relaxed text-ink-secondary">
+            {summary}
+          </p>
+          <PeerScorecard list={scorecardList} focalId={active.id} />
+        </ChartFrame>
+      )}
       {view === 'Ranking' && (
         <ChartFrame
           headline={`Peer leaderboard — ${metric}`}
@@ -92,33 +114,6 @@ export function CompetitivePositioning() {
       {view === 'Table' && (
         <ChartFrame headline="One peer table — sort any column to find the leader" caption={`${group} peer group · mock data`} height="auto">
           <PeerRankingTable rows={rows} />
-        </ChartFrame>
-      )}
-      {view === 'Heatmap' && (
-        <ChartFrame headline="Peer scorecard — green is better on each metric" caption={`${group} peer group · mock data`} height="auto" footnote={<BestInColumnLegend />}>
-          <Heatmap
-            markBest
-            columns={[
-              { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
-              { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}` },
-              { key: 'combinedRatio', label: 'Combined', invert: true, format: (v) => `${v.toFixed(0)}%` },
-              { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
-              { key: 'roe', label: 'ROE', format: (v) => `${v.toFixed(0)}%` },
-              { key: 'valuation', label: 'P/GWP', invert: true, format: (v) => `${v.toFixed(1)}x` },
-            ]}
-            rows={rows.map((r) => ({
-              label: r.shortName,
-              focal: r.focal,
-              values: {
-                gwpGrowth: r.gwpGrowth,
-                marketShareChange: r.marketShareChange,
-                combinedRatio: r.combinedRatio,
-                solvency: r.solvency,
-                roe: r.roe,
-                valuation: r.valuation,
-              },
-            }))}
-          />
         </ChartFrame>
       )}
     </ModuleCard>

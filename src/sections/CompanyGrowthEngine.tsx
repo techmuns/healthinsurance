@@ -3,15 +3,19 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
+import { BasisTag } from '@/components/BasisTag'
+import { YtdBridge } from '@/components/YtdBridge'
 import { ChartFrame, GroupedBarChart, StackedBarChart, TrendLineChart } from '@/components/charts'
-import { growthDrawer, growthKpis, growthMix, growthQuality, growthTrend } from '@/data/mockData'
+import { growthBasis, growthDrawer, growthKpis, growthMix, growthQuality, growthTrend } from '@/data/mockData'
+import { useActiveCompany } from '@/state/filters'
 
-type View = 'Growth' | 'Mix' | 'Quality'
+type View = 'Growth' | 'Mix' | 'Quality' | 'Quarterly'
 type Metric = 'GWP' | 'NWP' | 'NEP'
 
 export function CompanyGrowthEngine() {
   const [view, setView] = useState<View>('Growth')
   const [metric, setMetric] = useState<Metric>('GWP')
+  const company = useActiveCompany()
 
   const headline =
     view === 'Quality'
@@ -27,7 +31,7 @@ export function CompanyGrowthEngine() {
       icon="growth"
       controls={
         <>
-          <SegmentedControl<View> label="View" options={['Growth', 'Mix', 'Quality'] as View[]} value={view} onChange={setView} size="sm" />
+          <SegmentedControl<View> label="View" options={['Growth', 'Mix', 'Quality', 'Quarterly'] as View[]} value={view} onChange={setView} size="sm" />
           {view === 'Growth' && (
             <SegmentedControl<Metric> label="Metric" options={['GWP', 'NWP', 'NEP'] as Metric[]} value={metric} onChange={setMetric} size="sm" />
           )}
@@ -53,10 +57,12 @@ export function CompanyGrowthEngine() {
         />
       }
       dataStatus={growthKpis}
+      dataBasis={growthBasis}
       drawer={<GrowthDrawer />}
       drawerTitle="Growth engine — detail"
       drawerSubtitle="Fresh vs renewal, policy count and segment contribution"
     >
+      <BasisTag info={growthBasis} className="mb-3" />
       {view === 'Growth' && (
         <ChartFrame headline={headline} caption="YoY growth (%), quarterly · mock data">
           <TrendLineChart data={growthTrend} series={[metric]} unit="%" />
@@ -70,6 +76,15 @@ export function CompanyGrowthEngine() {
       {view === 'Quality' && (
         <ChartFrame headline={headline} caption="Fresh vs renewal premium share (%) · mock data">
           <GroupedBarChart data={growthQuality} series={['Fresh', 'Renewal']} unit="%" />
+        </ChartFrame>
+      )}
+      {view === 'Quarterly' && (
+        <ChartFrame
+          headline={`Cumulative-to-standalone bridge — ${company.shortName}`}
+          caption="How the standalone quarter is derived from cumulative YTD disclosures"
+          height="auto"
+        >
+          <YtdBridge companyId={company.id} />
         </ChartFrame>
       )}
     </ModuleCard>

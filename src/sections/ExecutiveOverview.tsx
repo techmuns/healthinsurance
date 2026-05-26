@@ -6,13 +6,18 @@ import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { MetricChip } from '@/components/MetricChip'
 import { Heatmap } from '@/components/Heatmap'
+import { QuarterlyChangeCard } from '@/components/QuarterlyChangeCard'
+import { CompanySignalCard } from '@/components/CompanySignalCard'
+import { PeerRankSnapshot } from '@/components/PeerRankSnapshot'
+import { YtdBridge } from '@/components/YtdBridge'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import {
   getFilteredInsurers,
   getMarketShareSlices,
   getPeerScorecardData,
 } from '@/lib/insurers'
-import { DATA_FRESHNESS, PEER_GROUP_LABEL, industryMetrics } from '@/data/mockData'
+import { getQuarterlyReview } from '@/lib/review'
+import { DATA_FRESHNESS, PEER_GROUP_LABEL, QUARTER, industryMetrics, insurers } from '@/data/mockData'
 
 export function ExecutiveOverview() {
   const filters = useFilters()
@@ -22,6 +27,11 @@ export function ExecutiveOverview() {
   const annualOnly = period !== 'Annual'
 
   const filtered = getFilteredInsurers(filters)
+  const review = getQuarterlyReview(company.id)
+  // Rank the selected company against its active peer group; if it sits outside
+  // the filtered group, fall back to its own peer group so ranks stay meaningful.
+  const inFiltered = filtered.some((i) => i.id === company.id)
+  const peerList = inFiltered ? filtered : insurers.filter((i) => i.peerGroup === company.peerGroup)
   const slices = getMarketShareSlices(filters)
   const scorecard = getPeerScorecardData(filters)
   const s = scorecard.summary
@@ -77,6 +87,23 @@ export function ExecutiveOverview() {
           </div>
         </div>
       </header>
+
+      {/* A0. Quarterly review layer — the PE partner-review at the top */}
+      <section>
+        <SectionHeading
+          eyebrow="Partner Review"
+          title="Quarterly Review"
+          note={`${company.shortName} · ${QUARTER.current} vs ${QUARTER.previous}`}
+        />
+        <div className="space-y-4">
+          <QuarterlyChangeCard company={company} review={review} />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <CompanySignalCard company={company} list={peerList} review={review} />
+            <PeerRankSnapshot company={company} list={peerList} />
+          </div>
+          <YtdBridge companyId={company.id} compact />
+        </div>
+      </section>
 
       {/* B. Industry at a glance — visual story first */}
       <section>

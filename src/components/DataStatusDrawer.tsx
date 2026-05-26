@@ -2,8 +2,10 @@ import { Database, ExternalLink } from 'lucide-react'
 import { Drawer } from './Drawer'
 import { SignalBadge } from './SignalBadge'
 import { OrganicIconBlob } from './OrganicIconBlob'
+import { BasisTag } from './BasisTag'
 import { statusTone } from '@/lib/format'
 import type { Metric } from '@/data/types'
+import type { BasisInfo } from '@/data/mockData'
 
 export interface DataStatusEntry {
   label: string
@@ -15,10 +17,11 @@ export interface DataStatusDrawerProps {
   onClose: () => void
   moduleName: string
   entries: DataStatusEntry[]
+  basis?: BasisInfo
 }
 
 /** Per-module provenance panel: source, status and freshness for each metric. */
-export function DataStatusDrawer({ open, onClose, moduleName, entries }: DataStatusDrawerProps) {
+export function DataStatusDrawer({ open, onClose, moduleName, entries, basis }: DataStatusDrawerProps) {
   return (
     <Drawer
       open={open}
@@ -35,6 +38,13 @@ export function DataStatusDrawer({ open, onClose, moduleName, entries }: DataSta
           lists the source, reporting status and last update the live product would surface.
         </p>
       </div>
+
+      {basis && (
+        <div className="mb-5 rounded-xl2 border border-soft-border bg-card p-4">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-secondary">Accounting & source basis</p>
+          <BasisTag info={basis} />
+        </div>
+      )}
 
       <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card">
         <table className="w-full text-left text-sm">
