@@ -23,9 +23,6 @@ export function IndustryLeaders({
   const max = Math.max(...top3.map((r) => r[def.key]), 1)
   const leaderId = top3[0]?.id
 
-  // Insight follows the SELECTED company (click-driven), never hover.
-  const interpSource = top3.find((r) => r.id === highlightId) ?? top3[0]
-
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -90,13 +87,6 @@ export function IndustryLeaders({
           )
         })}
       </div>
-
-      {/* Hover interpretation — short investor line. */}
-      {interpSource && (
-        <p className="mt-3 border-t border-soft-border pt-2.5 text-[11.5px] leading-snug text-ink-secondary">
-          <span className="font-semibold text-navy-primary">{interpSource.shortName}:</span> {interpSource.takeaway}
-        </p>
-      )}
     </div>
   )
 }
