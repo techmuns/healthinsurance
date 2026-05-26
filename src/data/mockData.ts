@@ -279,6 +279,112 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
 }
 
 // =========================================================================
+//  COMPANY COMPARISON LAYER  (time-based, constant peer set — mock)
+//  Powers the "Compare Companies" grouped-bar panel. Period sits on the axis
+//  (Q1–Q4 FY25 or FY22–FY25); within each period every tracked company is
+//  shown. Metrics here are deliberately *operational* and distinct from the
+//  scorecard/heatmap (growth, share Δ, combined ratio, solvency, valuation).
+//  Series are generated from FY25 anchors via smooth, deterministic trends so
+//  the panel always reconciles with the canonical FY25 snapshots above.
+// =========================================================================
+
+export type CompareMetricKey =
+  | 'gwp'
+  | 'nwp'
+  | 'nep'
+  | 'retailMix'
+  | 'bancaMix'
+  | 'renewalRate'
+  | 'settlementRatio'
+  | 'expenseRatio'
+  | 'lossRatio'
+  | 'policyCount'
+
+export const compareQuarters = ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25'] as const
+export const compareYears = ['FY22', 'FY23', 'FY24', 'FY25'] as const
+
+interface CompareShape {
+  kind: 'flow' | 'stock' | 'ratio'
+  /** Lower is better (cost ratios). */
+  invert?: boolean
+  /** Ratio metrics only: signed FY22→FY25 drift toward the FY25 anchor. */
+  yearlyDrift?: number
+}
+
+const compareShapes: Record<CompareMetricKey, CompareShape> = {
+  gwp: { kind: 'flow' },
+  nwp: { kind: 'flow' },
+  nep: { kind: 'flow' },
+  policyCount: { kind: 'stock' },
+  retailMix: { kind: 'ratio', yearlyDrift: 9 },
+  bancaMix: { kind: 'ratio', yearlyDrift: 7 },
+  renewalRate: { kind: 'ratio', yearlyDrift: 5 },
+  settlementRatio: { kind: 'ratio', yearlyDrift: 1.6 },
+  expenseRatio: { kind: 'ratio', invert: true, yearlyDrift: -2.4 },
+  lossRatio: { kind: 'ratio', invert: true, yearlyDrift: -2.2 },
+}
+
+// FY25 anchors. GWP/NWP reconcile with the canonical model + YTD bridge above;
+// other values are plausible mock operating figures. `undefined` => N/A (e.g.
+// life carriers report no retail/banca mix or underwriting loss/expense ratio).
+const compareAnchors: Record<string, Partial<Record<CompareMetricKey, number>>> = {
+  'niva-bupa': { gwp: 7200, nwp: 6540, nep: 6150, retailMix: 64, bancaMix: 31, renewalRate: 90, settlementRatio: 99.1, expenseRatio: 20.6, lossRatio: 62.8, policyCount: 11.4 },
+  'star-health': { gwp: 12400, nwp: 11100, nep: 10450, retailMix: 67, bancaMix: 18, renewalRate: 92, settlementRatio: 98.2, expenseRatio: 22.4, lossRatio: 66.8, policyCount: 21.8 },
+  'care-health': { gwp: 6400, nwp: 5700, nep: 5350, retailMix: 55, bancaMix: 38, renewalRate: 88, settlementRatio: 98.7, expenseRatio: 21.8, lossRatio: 64.2, policyCount: 9.6 },
+  'aditya-birla': { gwp: 4100, nwp: 3650, nep: 3380, retailMix: 52, bancaMix: 44, renewalRate: 85, settlementRatio: 97.5, expenseRatio: 24.6, lossRatio: 65.0, policyCount: 6.2 },
+  manipalcigna: { gwp: 2600, nwp: 2300, nep: 2120, retailMix: 48, bancaMix: 41, renewalRate: 83, settlementRatio: 96.8, expenseRatio: 25.2, lossRatio: 66.4, policyCount: 3.8 },
+  // General insurers — retail/banca/loss/expense apply on a P&C basis.
+  'icici-lombard': { gwp: 21000, nwp: 18600, nep: 17400, retailMix: 35, bancaMix: 22, renewalRate: 79, settlementRatio: 96.0, expenseRatio: 23.8, lossRatio: 74.2, policyCount: 38.5 },
+  'bajaj-general': { gwp: 14500, nwp: 12900, nep: 12100, retailMix: 28, bancaMix: 26, renewalRate: 76, settlementRatio: 95.2, expenseRatio: 22.6, lossRatio: 73.8, policyCount: 29.4 },
+  // Life insurers — no retail/banca mix or underwriting ratios reported.
+  'hdfc-life': { gwp: 56000, nwp: 54000, nep: 52500, renewalRate: 87, settlementRatio: 99.5, policyCount: 42.0 },
+  'sbi-life': { gwp: 62000, nwp: 60000, nep: 58200, renewalRate: 89, settlementRatio: 99.8, policyCount: 46.5 },
+}
+
+const SEASON = [0.22, 0.24, 0.26, 0.28] // quarterly weights for flow metrics (sum = 1)
+const STOCK_RAMP = [0.94, 0.96, 0.98, 1] // in-force book ramp through the year
+
+const round1 = (v: number) => Math.round(v * 10) / 10
+const round10 = (v: number) => Math.round(v / 10) * 10
+
+/**
+ * Time series for one company × metric × period (4 points). Returns `null`s
+ * when the metric is not reported for that company so the chart can omit it.
+ */
+export function getCompareSeries(
+  companyId: string,
+  metric: CompareMetricKey,
+  period: 'Quarterly' | 'Yearly',
+): (number | null)[] {
+  const anchor = compareAnchors[companyId]?.[metric]
+  if (anchor == null) return [null, null, null, null]
+  const shape = compareShapes[metric]
+  const g = (insurers.find((i) => i.id === companyId)?.growth ?? 12) / 100
+
+  if (shape.kind === 'ratio') {
+    const drift = shape.yearlyDrift ?? 0
+    // Yearly walks the full drift FY22→FY25; quarterly walks one year's worth.
+    const span = period === 'Yearly' ? drift : drift / 3
+    return [0, 1, 2, 3].map((i) => round1(anchor - span + (span * i) / 3))
+  }
+
+  if (shape.kind === 'stock') {
+    if (period === 'Quarterly') return STOCK_RAMP.map((w) => round1(anchor * w))
+    const fy24 = anchor / (1 + g * 0.8)
+    const fy23 = fy24 / (1 + g * 0.72)
+    const fy22 = fy23 / (1 + g * 0.64)
+    return [fy22, fy23, fy24, anchor].map(round1)
+  }
+
+  // flow (GWP / NWP / NEP)
+  if (period === 'Quarterly') return SEASON.map((w) => round10(anchor * w))
+  const fy24 = anchor / (1 + g)
+  const fy23 = fy24 / (1 + g * 0.9)
+  const fy22 = fy23 / (1 + g * 0.8)
+  return [fy22, fy23, fy24, anchor].map(round10)
+}
+
+// =========================================================================
 //  EXECUTIVE OVERVIEW
 // =========================================================================
 

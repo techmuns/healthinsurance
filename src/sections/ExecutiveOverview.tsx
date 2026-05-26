@@ -185,10 +185,10 @@ export function ExecutiveOverview() {
       {/* C. What Changed — compact visual strip */}
       <WhatChangedStrip company={company} list={peerList} review={review} />
 
-      {/* D. Compare Companies — interactive comparison panel */}
+      {/* D. Compare Companies — time-based grouped comparison */}
       <section>
-        <SectionHeading eyebrow="Comparison" title="Compare Companies" note="Select companies and compare key metrics" />
-        <CompareCompanies focalId={company.id} />
+        <SectionHeading eyebrow="Comparison" title="Compare Companies" note="Compare key insurance metrics over time" />
+        <CompareCompanies companies={peerList} focalId={company.id} />
       </section>
 
       {/* E. Quarterly calculation trust — compact bridge + detail drawer */}
