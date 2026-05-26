@@ -422,6 +422,146 @@ export function getCompareSeries(
 }
 
 // =========================================================================
+//  PREMIUM FLOW & QUALITY  (story module — mock)
+//  Three views over the premium journey:
+//   • Flow      — GWP → NWP → NEP bridge (reuses getCompareSeries)
+//   • Mix       — customer / channel / quality composition over periods
+//   • Retention — policyholder cohort survival, derived from renewal rate
+//  All figures reconcile with the compare-layer FY25 anchors above.
+// =========================================================================
+
+export type FlowPeriod = 'Quarterly' | 'Yearly'
+
+// Channel mix (% of GWP) FY25 anchors — banca/agency reconcile with the compare
+// layer; broker/direct/other complete each split to 100.
+const channelMixAnchors: Record<string, { banca: number; agency: number; broker: number; direct: number; other: number }> = {
+  'niva-bupa': { banca: 31, agency: 42, broker: 16, direct: 6, other: 5 },
+  'star-health': { banca: 18, agency: 58, broker: 12, direct: 7, other: 5 },
+  'care-health': { banca: 38, agency: 40, broker: 13, direct: 5, other: 4 },
+  'aditya-birla': { banca: 44, agency: 34, broker: 13, direct: 5, other: 4 },
+  manipalcigna: { banca: 41, agency: 38, broker: 12, direct: 5, other: 4 },
+  'icici-lombard': { banca: 22, agency: 25, broker: 30, direct: 13, other: 10 },
+  'bajaj-general': { banca: 26, agency: 30, broker: 24, direct: 12, other: 8 },
+  'hdfc-life': { banca: 55, agency: 25, broker: 6, direct: 10, other: 4 },
+  'sbi-life': { banca: 62, agency: 22, broker: 4, direct: 8, other: 4 },
+}
+
+// Renewal premium share (% of GWP) FY25 anchors; fresh = 100 − renewal.
+const renewalShareAnchor: Record<string, number> = {
+  'niva-bupa': 71,
+  'star-health': 73,
+  'care-health': 67,
+  'aditya-birla': 62,
+  manipalcigna: 65,
+  'icici-lombard': 58,
+  'bajaj-general': 55,
+  'hdfc-life': 80,
+  'sbi-life': 82,
+}
+
+export interface MixSegmentDef {
+  key: string
+  label: string
+}
+export interface MixSeries {
+  segments: MixSegmentDef[]
+  /** One row per period: { period, <segKey>: share/value, ... }. */
+  rows: Record<string, number | string>[]
+}
+
+/** Build composition rows (each period normalised to 100) from FY25 base + drift. */
+function buildMix(
+  base: Record<string, number>,
+  drift: Record<string, number>,
+  defs: MixSegmentDef[],
+  period: FlowPeriod,
+  mom: number,
+): MixSeries {
+  const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  const rows = periods.map((p, i) => {
+    const raw: Record<string, number> = {}
+    defs.forEach(({ key }) => {
+      const d = (drift[key] ?? 0) * mom
+      const span = period === 'Yearly' ? d : d / 3
+      raw[key] = Math.max(0, base[key] - span + (span * i) / 3)
+    })
+    const sum = defs.reduce((s, { key }) => s + raw[key], 0) || 1
+    const row: Record<string, number | string> = { period: p }
+    defs.forEach(({ key }) => {
+      row[key] = Math.round((raw[key] / sum) * 1000) / 10
+    })
+    return row
+  })
+  return { segments: defs, rows }
+}
+
+/** Customer mix (Retail / Group). Null where retail mix is not reported (life). */
+export function getCustomerMix(id: string, period: FlowPeriod): MixSeries | null {
+  const retail = compareAnchors[id]?.retailMix
+  if (retail == null) return null
+  const defs: MixSegmentDef[] = [
+    { key: 'retail', label: 'Retail' },
+    { key: 'group', label: 'Group' },
+  ]
+  return buildMix({ retail, group: 100 - retail }, { retail: 9, group: -9 }, defs, period, compareMomentum[id] ?? 1)
+}
+
+/** Channel mix (Banca / Agency / Broker / Direct / Other). */
+export function getChannelMix(id: string, period: FlowPeriod): MixSeries | null {
+  const c = channelMixAnchors[id]
+  if (!c) return null
+  const defs: MixSegmentDef[] = [
+    { key: 'banca', label: 'Banca' },
+    { key: 'agency', label: 'Agency' },
+    { key: 'broker', label: 'Broker' },
+    { key: 'direct', label: 'Direct' },
+    { key: 'other', label: 'Other' },
+  ]
+  return buildMix({ ...c }, { banca: 7, agency: -4, broker: 1, direct: -2, other: -2 }, defs, period, compareMomentum[id] ?? 1)
+}
+
+/** Quality mix (Renewal / Fresh premium share). */
+export function getQualityMix(id: string, period: FlowPeriod): MixSeries | null {
+  const renewal = renewalShareAnchor[id]
+  if (renewal == null) return null
+  const defs: MixSegmentDef[] = [
+    { key: 'renewal', label: 'Renewal' },
+    { key: 'fresh', label: 'Fresh' },
+  ]
+  return buildMix({ renewal, fresh: 100 - renewal }, { renewal: 5, fresh: -5 }, defs, period, compareMomentum[id] ?? 1)
+}
+
+export interface RetentionNode {
+  year: string
+  /** Customers remaining out of an opening cohort of 100. */
+  customers: number
+  /** Year-over-year renewal rate into this node (null for Year 1). */
+  renewalPct: number | null
+  /** Premium retained, indexed to 100 (renewing books also re-price up). */
+  premium: number
+}
+
+/** Policyholder cohort survival, derived from the renewal-rate anchor (proxy). */
+export function getRetentionCohort(id: string): RetentionNode[] | null {
+  const r = compareAnchors[id]?.renewalRate
+  if (r == null) return null
+  // Surviving customers renew a little better each year (self-selection).
+  const r2 = r / 100
+  const r3 = Math.min(0.99, (r + (100 - r) * 0.2) / 100)
+  const r4 = Math.min(0.99, (r + (100 - r) * 0.35) / 100)
+  const c2 = round1(100 * r2)
+  const c3 = round1(c2 * r3)
+  const c4 = round1(c3 * r4)
+  const up = 1.06 // renewing books re-price ~6% a year
+  return [
+    { year: 'Year 1', customers: 100, renewalPct: null, premium: 100 },
+    { year: 'Year 2', customers: c2, renewalPct: round1(r2 * 100), premium: round1(c2 * up) },
+    { year: 'Year 3', customers: c3, renewalPct: round1(r3 * 100), premium: round1(c3 * up * up) },
+    { year: 'Year 4+', customers: c4, renewalPct: round1(r4 * 100), premium: round1(c4 * up * up * up) },
+  ]
+}
+
+// =========================================================================
 //  EXECUTIVE OVERVIEW
 // =========================================================================
 

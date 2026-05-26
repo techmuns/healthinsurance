@@ -7,7 +7,7 @@ import { Heatmap } from '@/components/Heatmap'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { MetricChip } from '@/components/MetricChip'
 import { WhatChangedStrip } from '@/components/WhatChangedStrip'
-import { CompareCompanies } from '@/components/CompareCompanies'
+import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices, getPeerScorecardData } from '@/lib/insurers'
@@ -185,10 +185,10 @@ export function ExecutiveOverview() {
       {/* C. What Changed — compact visual strip */}
       <WhatChangedStrip company={company} list={peerList} review={review} />
 
-      {/* D. Compare Companies — time-based grouped comparison */}
+      {/* D. Premium Flow & Quality — story-led premium module */}
       <section>
-        <SectionHeading eyebrow="Comparison" title="Compare Companies" note="Compare key insurance metrics over time" />
-        <CompareCompanies companies={peerList} focalId={company.id} />
+        <SectionHeading eyebrow="Premium Story" title="Premium Flow & Quality" note="See how premium is written, retained, earned, sourced, and renewed" />
+        <PremiumFlowQuality companies={peerList} focalId={company.id} />
       </section>
 
       {/* E. Quarterly calculation trust — compact bridge + detail drawer */}
