@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import {
@@ -399,75 +399,97 @@ function MixView({ companyId, period }: { companyId: string; period: Period }) {
   )
 }
 
-// --- Retention tab: Customer Stickiness --------------------------------------
+// --- Retention tab: Customer Renewal & Stickiness ----------------------------
 
-function RenewalSpark({ companyId, period }: { companyId: string; period: Period }) {
+// Small flat renewal-rate progression (FY21 → FY25), latest highlighted teal.
+function RenewalProgression({ companyId, period }: { companyId: string; period: Period }) {
   const series = getCompareSeries(companyId, 'renewalRate', period)
   const periods = period === 'Quarterly' ? compareQuarters : compareYears
-  const vals = series.filter((v): v is number => v != null)
-  if (!vals.length) return null
-  const data = periods.map((p, i) => ({ period: p, renewal: series[i] }))
-  const first = Math.round(vals[0])
-  const last = Math.round(vals[vals.length - 1])
-  const sparkLabel = (props: LabelProps) => {
-    const x = Number(props.x) || 0
-    const y = Number(props.y) || 0
-    if (props.value == null) return <g />
-    return (
-      <text x={x} y={y - 6} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={TEAL}>
-        {Math.round(Number(props.value))}%
-      </text>
-    )
-  }
+  const pts: { period: string; v: number }[] = []
+  periods.forEach((p, i) => {
+    const v = series[i]
+    if (v != null) pts.push({ period: p, v })
+  })
+  if (!pts.length) return null
+  const last = pts.length - 1
   return (
-    <div className="mt-5 border-t border-soft-border pt-3">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-secondary">Renewal rate trend</span>
-        <span className="text-[11px] text-ink-secondary">
-          {first}% → <span className="font-semibold" style={{ color: TEAL }}>{last}%</span>
-        </span>
+    <div className="relative pt-1">
+      <div className="absolute left-[10%] right-[10%] top-[7px] h-0.5 rounded-full bg-soft-border" />
+      <div className="relative flex justify-between">
+        {pts.map((d, i) => (
+          <div key={d.period} className="flex flex-1 flex-col items-center">
+            <span className="h-3.5 w-3.5 rounded-full ring-2 ring-card" style={{ background: i === last ? TEAL : FOCAL, opacity: i === last ? 1 : 0.4 }} />
+            <span className="mt-2 text-[10px] text-ink-secondary">{d.period}</span>
+            <span className="text-[11.5px] font-semibold" style={{ color: i === last ? TEAL : '#26303F' }}>
+              {Math.round(d.v)}%
+            </span>
+          </div>
+        ))}
       </div>
-      <ResponsiveContainer width="100%" height={68}>
-        <LineChart data={data} margin={{ top: 16, right: 14, left: 6, bottom: 0 }}>
-          <XAxis dataKey="period" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: AXIS_TEXT }} interval={0} />
-          <YAxis hide domain={[(min: number) => Math.floor(min - 3), (max: number) => Math.ceil(max + 3)]} />
-          <Line dataKey="renewal" stroke={TEAL} strokeWidth={1.8} dot={{ r: 2.5, fill: TEAL, strokeWidth: 0 }} isAnimationActive={false}>
-            <LabelList content={sparkLabel} />
-          </Line>
-        </LineChart>
-      </ResponsiveContainer>
     </div>
   )
 }
 
-function CohortJourney({ cohort, metric }: { cohort: RetentionNode[]; metric: 'customers' | 'premium' }) {
-  const value = (i: number) => (metric === 'premium' ? cohort[i].premium : cohort[i].customers)
-  const nodeLabel = (i: number) => (metric === 'premium' ? `₹${value(i).toFixed(0)}` : `${value(i).toFixed(0)}`)
+// Hero: renewal rate as the primary metric, with the progression strip beside it.
+function HeroRenewal({ companyId, period, rrFirst, rrLast, firstLabel, improving }: { companyId: string; period: Period; rrFirst: number; rrLast: number; firstLabel: string; improving: boolean }) {
   return (
-    <div className="flex items-start pt-1">
+    <div
+      className="relative overflow-hidden rounded-xl2 border border-soft-border p-4 shadow-soft sm:p-5"
+      style={{ background: `linear-gradient(135deg, ${hexA(TEAL, 0.1)}, ${hexA(FOCAL, 0.05)} 55%, transparent)` }}
+    >
+      <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: TEAL }} />
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pl-2">
+        <div className="shrink-0">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">Renewal Rate</p>
+          <div className="mt-1 flex items-end gap-2">
+            <span className="font-display text-[40px] leading-none text-navy-deep">{rrLast}%</span>
+            {improving && (
+              <span className="mb-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ color: TEAL, background: hexA(TEAL, 0.12) }}>
+                ↑ Improving
+              </span>
+            )}
+          </div>
+          <p className="mt-1.5 text-[12px] text-ink-secondary">
+            Up from <span className="font-semibold" style={{ color: GOLD }}>{rrFirst}%</span> in {firstLabel}
+          </p>
+        </div>
+        <div className="min-w-[220px] flex-1">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{period === 'Quarterly' ? 'Quarterly renewal' : 'Yearly renewal'}</p>
+          <RenewalProgression companyId={companyId} period={period} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Secondary supporting visual: how many of 100 customers stay each year.
+function StayPath({ cohort }: { cohort: RetentionNode[] }) {
+  const cust = (i: number) => Math.round(cohort[i].customers)
+  return (
+    <div className="flex items-start">
       {cohort.map((n, i) => {
         const endpoint = i === cohort.length - 1
         return (
           <div key={n.year} className="contents">
             {i > 0 && (
-              <div className="relative mt-7 h-0 flex-1">
+              <div className="relative mt-6 h-0 flex-1">
                 <div className="border-t-2 border-dashed border-soft-border" />
                 <span
                   className="absolute left-1/2 -top-3 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
                   style={{ color: RED, background: hexA(RED, 0.1) }}
                 >
-                  −{Math.abs(value(i) - value(i - 1)).toFixed(0)}
+                  −{Math.abs(cust(i) - cust(i - 1))}
                 </span>
               </div>
             )}
-            <div className="flex w-16 shrink-0 flex-col items-center">
+            <div className="flex w-14 shrink-0 flex-col items-center">
               <div
-                className="flex h-14 w-14 items-center justify-center rounded-full text-[13px] font-semibold text-white shadow-soft"
-                style={{ background: `linear-gradient(150deg, ${endpoint ? TEAL : FOCAL}, ${hexA(endpoint ? TEAL : FOCAL, 0.78)})`, opacity: i === 0 ? 1 : 0.96 }}
+                className="flex h-12 w-12 items-center justify-center rounded-full text-[12.5px] font-semibold text-white shadow-soft"
+                style={{ background: `linear-gradient(150deg, ${endpoint ? TEAL : FOCAL}, ${hexA(endpoint ? TEAL : FOCAL, 0.78)})`, opacity: i === 0 ? 1 : 0.95 }}
               >
-                {nodeLabel(i)}
+                {cust(i)}
               </div>
-              <span className="mt-2 text-[11.5px] font-semibold text-navy-deep">{n.year}</span>
+              <span className="mt-1.5 text-[11px] font-semibold text-navy-deep">{n.year}</span>
             </div>
           </div>
         )
@@ -477,38 +499,40 @@ function CohortJourney({ cohort, metric }: { cohort: RetentionNode[]; metric: 'c
 }
 
 function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
-  const [metric, setMetric] = useState<'customers' | 'premium'>('customers')
   const cohort = getRetentionCohort(companyId)
-  if (!cohort) {
+  const rrSeries = getCompareSeries(companyId, 'renewalRate', period)
+  const rrVals = rrSeries.filter((v): v is number => v != null)
+  if (!cohort || !rrVals.length) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Retention is not reported for this company — data pending.</div>
   }
-  const hasPremium = cohort.some((n) => n.premium != null)
-  const caption =
-    metric === 'premium'
-      ? 'Premium retained as customers renew, indexed to 100 at Year 1.'
-      : 'Out of 100 customers in Year 1, how many stay through Year 4+.'
+  const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  const rrFirst = Math.round(rrVals[0])
+  const rrLast = Math.round(rrVals[rrVals.length - 1])
+  const improving = rrLast > rrFirst
+  const year4 = Math.round(cohort[cohort.length - 1].customers)
+  const dropTotal = 100 - year4
+  const pills: Chip[] = [
+    { label: 'Year-4 Retained', value: `${year4} of 100`, color: TEAL },
+    { label: 'Drop-off', value: `−${dropTotal}`, note: 'customers', color: RED },
+    { label: 'Status', value: year4 >= 75 ? 'Sticky book' : 'Watch', color: FOCAL },
+  ]
 
   return (
-    <div>
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-[12px] font-semibold text-navy-deep">{metric === 'premium' ? 'Premium staying over time' : 'Customers staying over time'}</span>
-        {hasPremium && (
-          <SegmentedControl<'customers' | 'premium'>
-            options={[
-              { value: 'customers', label: 'Customers retained' },
-              { value: 'premium', label: 'Premium retained' },
-            ]}
-            value={metric}
-            onChange={setMetric}
-            size="sm"
-          />
-        )}
+    <div className="space-y-4">
+      {/* Primary: renewal rate hero + progression */}
+      <HeroRenewal companyId={companyId} period={period} rrFirst={rrFirst} rrLast={rrLast} firstLabel={periods[0]} improving={improving} />
+
+      {/* Secondary: customer stay path */}
+      <div className="rounded-xl2 border border-soft-border bg-ice/40 p-4">
+        <p className="text-[12px] font-semibold text-navy-deep">Customer Stay Path</p>
+        <p className="mb-3 mt-0.5 text-[11.5px] text-ink-secondary">
+          Out of 100 customers, <span className="font-semibold" style={{ color: TEAL }}>{year4}</span> remain by Year 4+.
+        </p>
+        <StayPath cohort={cohort} />
       </div>
-      <CohortJourney cohort={cohort} metric={metric} />
-      <p className="mt-3 text-[11.5px] text-ink-secondary">
-        {caption} <span className="font-semibold" style={{ color: GOLD }}>{metric === 'premium' ? 'Sticky premium.' : 'Higher is stickier.'}</span>
-      </p>
-      <RenewalSpark companyId={companyId} period={period} />
+
+      {/* Supporting summary pills */}
+      <SlimStrip chips={pills} />
     </div>
   )
 }
@@ -530,15 +554,9 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
   const name = company?.shortName ?? 'Company'
   const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
-  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Stickiness'
+  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Renewal & Stickiness'
   const tabPhrase =
-    tab === 'Flow'
-      ? 'Premium conversion over time'
-      : tab === 'Mix'
-        ? 'Premium composition over time'
-        : period === 'Quarterly'
-          ? 'Customer renewal and stickiness'
-          : 'How many customers stay and renew over time'
+    tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal performance and customer stay path'
 
   const chips = useMemo<Chip[]>(() => {
     if (!company) return []
@@ -580,18 +598,8 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
       }
       return out
     }
-    const cohort = getRetentionCohort(company.id)
-    if (!cohort) return []
-    const rrSeries = getCompareSeries(company.id, 'renewalRate', period)
-    const rrLast = rrSeries[lastIdx]
-    const rrFirst = rrSeries.find((v) => v != null) ?? null
-    const rrTrend = rrLast != null && rrFirst != null ? (rrLast > rrFirst + 0.3 ? 'Improving' : 'Stable') : undefined
-    const year4 = cohort[cohort.length - 1].customers
-    return [
-      { label: 'Renewal Rate', value: rrLast != null ? pct(rrLast) : '—', note: rrTrend, color: TEAL },
-      { label: 'Year-4 Retention', value: `${year4.toFixed(0)} of 100`, note: 'customers', color: FOCAL },
-      { label: 'Drop-off', value: `−${(100 - year4).toFixed(0)}`, note: 'by Year 4+', color: RED },
-    ]
+    // Retention renders its own hero + pills inside RetentionView.
+    return []
   }, [tab, company, period, lastIdx])
 
   const basis: string[] = useMemo(() => {
