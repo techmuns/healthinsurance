@@ -498,13 +498,23 @@ function RetentionView({ companyId, period }: { companyId: string; period: Perio
     view === 'Renewal'
       ? 'Year-on-year renewal rate — higher means stickier premium.'
       : view === 'Stay'
-        ? 'Premium retained from a Year-1 cohort, indexed to 100 (renewing books re-price up).'
+        ? 'Premium retained as customers renew, indexed to 100 (renewing books re-price up).'
         : 'Of 100 customers in Year 1, how many remain through Year 4+.'
 
   return (
     <div>
       <div className="mb-4 flex justify-end">
-        <SegmentedControl<RetView> label="View" options={['Cohort', 'Renewal', 'Stay'] as RetView[]} value={view} onChange={setView} size="sm" />
+        <SegmentedControl<RetView>
+          label="View"
+          options={[
+            { value: 'Cohort', label: 'Retention Path' },
+            { value: 'Renewal', label: 'Renewal Trend' },
+            { value: 'Stay', label: 'Customer Tenure' },
+          ]}
+          value={view}
+          onChange={setView}
+          size="sm"
+        />
       </div>
       {view === 'Renewal' ? <RenewalLine companyId={companyId} period={period} /> : <CohortJourney cohort={cohort} metric={view === 'Stay' ? 'premium' : 'customers'} />}
       <p className="mt-4 text-[11.5px] text-ink-secondary">
@@ -594,7 +604,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
     const per = `Period: ${periodLabel}`
     if (tab === 'Flow') return ['Basis: GWP / NWP / NEP', per, src, period === 'Quarterly' ? 'Status: Derived from YTD where applicable' : 'Status: Reported / Derived']
     if (tab === 'Mix') return ['Basis: % of GWP', per, src, 'Status: Reported / Derived']
-    return ['Basis: Renewal rate (proxy)', 'Cohort: indicative', src, 'Status: Derived']
+    return ['Basis: Renewal rate (proxy)', 'Retention path: indicative', src, 'Status: Derived']
   }, [tab, period, periodLabel])
 
   return (
@@ -616,6 +626,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
       <p className="mt-1 pl-4 text-[12px] text-ink-secondary">
         <span className="font-semibold text-navy-deep">{name}</span> · <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
+      {tab === 'Retention' && <p className="mt-0.5 pl-4 text-[11px] text-ink-secondary">Shows how many customers renew and stay over time.</p>}
 
       {/* Slim insight strip (shared treatment across all tabs) */}
       {chips.length > 0 && (
