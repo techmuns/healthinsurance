@@ -1,81 +1,9 @@
-import { useMemo, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { useState } from 'react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
-import { insurers, quarterlyReviews } from '@/data/mockData'
+import { buildCompare, opMetrics, type ComparePeriod, type OpKey } from '@/lib/compare'
 import type { Insurer } from '@/data/types'
-
-type Period = 'Quarterly' | 'Yearly'
-type MKey =
-  | 'gwp'
-  | 'nwp'
-  | 'growth'
-  | 'marketShare'
-  | 'retailMix'
-  | 'combinedRatio'
-  | 'roe'
-  | 'solvency'
-  | 'valuation'
-
-interface MetricDef {
-  key: MKey
-  label: string
-  /** Lower is better (combined ratio, valuation). */
-  invert?: boolean
-  /** Genuinely differs between quarter and year (flow metrics). */
-  periodVaries?: boolean
-  format: (v: number) => string
-}
-
-const fmtCr = (v: number) => `₹${Math.round(v).toLocaleString('en-IN')} Cr`
-const fmtPct = (v: number) => `${v.toFixed(1)}%`
-
-const METRICS: MetricDef[] = [
-  { key: 'gwp', label: 'GWP', periodVaries: true, format: fmtCr },
-  { key: 'nwp', label: 'NWP', periodVaries: true, format: fmtCr },
-  { key: 'growth', label: 'GWP Growth', format: fmtPct },
-  { key: 'marketShare', label: 'Market Share', format: (v) => `${v.toFixed(0)}%` },
-  { key: 'retailMix', label: 'Retail Mix', format: (v) => `${v.toFixed(0)}%` },
-  { key: 'combinedRatio', label: 'Combined Ratio', invert: true, format: fmtPct },
-  { key: 'roe', label: 'ROE', format: fmtPct },
-  { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
-  { key: 'valuation', label: 'Valuation (P/GWP)', invert: true, format: (v) => `${v.toFixed(1)}x` },
-]
-
-const FOCAL = '#26477F'
-const PEER = '#7C8AA0'
-const GRID = '#EEF1F7'
-
-function bridgeVal(id: string, label: 'GWP' | 'NWP', period: Period): number | null {
-  const b = quarterlyReviews[id]?.bridge.find((x) => x.label === label)
-  if (!b) return null
-  if (period === 'Yearly') return b.currentYtd
-  if (b.currentYtd == null || b.previousYtd == null) return null
-  return Math.round((b.currentYtd - b.previousYtd) * 10) / 10
-}
-
-function metricValue(c: Insurer, key: MKey, period: Period): number | null {
-  switch (key) {
-    case 'gwp':
-      return bridgeVal(c.id, 'GWP', period)
-    case 'nwp':
-      return bridgeVal(c.id, 'NWP', period)
-    case 'growth':
-      return c.growth
-    case 'marketShare':
-      return c.marketShare
-    case 'retailMix':
-      return c.retailMix === 0 ? null : c.retailMix
-    case 'combinedRatio':
-      return c.combinedRatio === 0 ? null : c.combinedRatio
-    case 'roe':
-      return c.roe
-    case 'solvency':
-      return c.solvency
-    case 'valuation':
-      return c.valuation
-  }
-}
 
 function Pill({ children }: { children: React.ReactNode }) {
   return (
@@ -85,60 +13,64 @@ function Pill({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Interactive comparison workspace: metric × companies × period, as bars. */
-export function CompareCompanies({ focalId }: { focalId: string }) {
-  const [period, setPeriod] = useState<Period>('Yearly')
-  const [metricKey, setMetricKey] = useState<MKey>('gwp')
-  const [selected, setSelected] = useState<string[]>(() =>
-    Array.from(new Set([focalId, 'star-health', 'care-health'])),
-  )
-  const def = METRICS.find((m) => m.key === metricKey)!
+/**
+ * Time-based company comparison: period on the X-axis, the (constant) peer
+ * group as distinctly-coloured grouped bars. Metrics are unique to this panel.
+ */
+export function CompareCompanies({ companies }: { companies: Insurer[] }) {
+  const [period, setPeriod] = useState<ComparePeriod>('Yearly')
+  const [metricKey, setMetricKey] = useState<OpKey>('gwp')
 
-  const toggle = (id: string) =>
-    setSelected((prev) =>
-      prev.includes(id) ? (prev.length > 1 ? prev.filter((x) => x !== id) : prev) : [...prev, id],
-    )
+  const { data, series, def, missing } = buildCompare(companies, metricKey, period)
 
-  const data = useMemo(
-    () =>
-      selected
-        .map((id) => insurers.find((i) => i.id === id))
-        .filter((c): c is Insurer => Boolean(c))
-        .map((c) => ({ id: c.id, name: c.shortName, value: metricValue(c, metricKey, period), focal: c.id === focalId }))
-        .filter((d): d is { id: string; name: string; value: number; focal: boolean } => d.value !== null)
-        .sort((a, b) => (def.invert ? a.value - b.value : b.value - a.value))
-        .map((d) => ({ ...d, display: def.format(d.value), color: d.focal ? FOCAL : PEER })),
-    [selected, metricKey, period, focalId, def],
-  )
+  const tickFmt = (v: number) => {
+    if (def.unit === '₹ Cr') return v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`
+    if (def.unit === 'mn') return `${v}`
+    return `${v}`
+  }
 
-  const missing = selected
-    .map((id) => insurers.find((i) => i.id === id))
-    .filter((c): c is Insurer => c !== undefined && metricValue(c, metricKey, period) === null)
+  // One-line takeaway: latest-period leader + biggest mover over the series.
+  let insight: string | null = null
+  if (series.length && data.length) {
+    const latest = data[data.length - 1] as Record<string, number>
+    const first = data[0] as Record<string, number>
+    let leader = series[0]
+    series.forEach((s) => {
+      const v = latest[s.name]
+      const lv = latest[leader.name]
+      if (def.invert ? v < lv : v > lv) leader = s
+    })
+    let mover = series[0]
+    let best = -Infinity
+    series.forEach((s) => {
+      const imp = def.invert ? first[s.name] - latest[s.name] : latest[s.name] - first[s.name]
+      if (imp > best) {
+        best = imp
+        mover = s
+      }
+    })
+    insight =
+      mover.id === leader.id
+        ? `${leader.name} leads on ${def.label} and improved most over the ${period.toLowerCase()} series.`
+        : `${leader.name} leads on ${def.label}; ${mover.name} improved most over the ${period.toLowerCase()} series.`
+  }
 
-  const best = data[0]
-  const periodNote = def.periodVaries
-    ? period === 'Quarterly'
-      ? 'Standalone quarter (derived from YTD)'
-      : 'Full year (FY25)'
-    : period === 'Quarterly'
-      ? 'Latest quarter'
-      : 'Latest year'
-  const chartHeight = Math.max(140, data.length * 44)
+  const periodNote = def.kind === 'flow' ? (period === 'Quarterly' ? 'Standalone quarter' : 'Full year') : 'Period-end'
 
   return (
     <div className="card-surface p-4 sm:p-5">
       {/* Controls */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
-        <SegmentedControl<Period> label="Period" options={['Quarterly', 'Yearly'] as Period[]} value={period} onChange={setPeriod} size="sm" />
+        <SegmentedControl<ComparePeriod> label="Period" options={['Quarterly', 'Yearly'] as ComparePeriod[]} value={period} onChange={setPeriod} size="sm" />
         <label className="flex items-center gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-secondary">Metric</span>
           <span className="relative block">
             <select
               value={metricKey}
-              onChange={(e) => setMetricKey(e.target.value as MKey)}
+              onChange={(e) => setMetricKey(e.target.value as OpKey)}
               className="appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
             >
-              {METRICS.map((m) => (
+              {opMetrics.map((m) => (
                 <option key={m.key} value={m.key}>
                   {m.label}
                 </option>
@@ -149,74 +81,51 @@ export function CompareCompanies({ focalId }: { focalId: string }) {
         </label>
       </div>
 
-      {/* Company multi-select chips */}
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {insurers.map((c) => {
-          const on = selected.includes(c.id)
-          return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => toggle(c.id)}
-              aria-pressed={on}
-              className={[
-                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11.5px] font-medium transition-all duration-200',
-                on
-                  ? 'border-navy-primary/30 bg-soft-blue/60 text-navy-deep'
-                  : 'border-soft-border bg-ice text-ink-secondary hover:text-navy-primary',
-              ].join(' ')}
-            >
-              {c.id === focalId && <span className="h-1.5 w-1.5 rounded-full bg-navy-primary" />}
-              {c.shortName}
-            </button>
-          )
-        })}
+      {/* Legend */}
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5">
+        {series.map((s) => (
+          <span key={s.id} className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-secondary">
+            <span className="h-2.5 w-2.5 rounded-[3px]" style={{ backgroundColor: s.color }} />
+            {s.name}
+          </span>
+        ))}
       </div>
 
-      {/* Comparison bars */}
-      <div className="mt-4">
-        {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart data={data} layout="vertical" margin={{ top: 4, right: 72, left: 8, bottom: 4 }}>
-              <CartesianGrid horizontal={false} stroke={GRID} strokeDasharray="3 3" />
-              <XAxis type="number" hide domain={[0, 'dataMax']} />
-              <YAxis type="category" dataKey="name" width={104} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#26303F' }} />
+      {/* Grouped bars — period on X-axis */}
+      <div className="mt-3">
+        {series.length ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data} margin={{ top: 8, right: 12, left: -4, bottom: 0 }} barCategoryGap="22%" barGap={2}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
+              <XAxis dataKey="period" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#EEF1F7' }} />
+              <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={false} width={44} tickFormatter={tickFmt} />
               <Tooltip cursor={{ fill: 'rgba(39,69,126,0.04)' }} formatter={(v: number) => def.format(v)} contentStyle={{ fontSize: 12 }} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={28} isAnimationActive={false}>
-                {data.map((d) => (
-                  <Cell key={d.id} fill={d.color} />
-                ))}
-                <LabelList dataKey="display" position="right" fill="#172B4D" style={{ fontSize: 11, fontWeight: 600 }} />
-              </Bar>
+              {series.map((s) => (
+                <Bar key={s.id} dataKey={s.name} fill={s.color} radius={[3, 3, 0, 0]} maxBarSize={26} isAnimationActive={false} />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         ) : (
           <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">
-            No reported values for {def.label} in the current selection.
+            {def.label} is not reported for the companies in this peer group.
           </div>
         )}
       </div>
 
       {/* Insight + basis */}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-soft-border pt-3">
-        {best ? (
-          <p className="text-[12px] text-ink-secondary">
-            <span className="font-semibold text-navy-primary">{best.name}</span> leads selected peers on {def.label}.
-          </p>
-        ) : (
-          <span />
-        )}
+        {insight ? <p className="text-[12px] text-ink-secondary">{insight}</p> : <span />}
         <div className="flex flex-wrap items-center gap-1.5">
-          <Pill>Basis: Reported</Pill>
           <Pill>Period: {period}</Pill>
           <Pill>{periodNote}</Pill>
+          <Pill>Illustrative trend (mock)</Pill>
           <Pill>Source: IRDAI / company filing</Pill>
         </div>
       </div>
 
       {missing.length > 0 && (
         <p className="mt-2 text-[11px] text-ink-secondary">
-          Not reported for {def.label}: {missing.map((c) => c.shortName).join(', ')}.
+          Not reported for {def.label}: {missing.join(', ')}.
         </p>
       )}
     </div>

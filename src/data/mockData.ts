@@ -279,6 +279,39 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
 }
 
 // =========================================================================
+//  COMPANY OPERATIONAL METRICS  (unique to the Compare Companies panel)
+//  Latest FY25 values; the panel synthesises an illustrative time series
+//  (mock) from these. Deliberately distinct from the scorecard/heatmap set.
+//  0 = not reported / not applicable (e.g. life carriers).
+// =========================================================================
+
+export interface CompanyOpMetrics {
+  gwp: number
+  nwp: number
+  nep: number
+  retailMix: number
+  bancaMix: number
+  renewalRate: number
+  settlementRatio: number
+  expenseRatio: number
+  lossRatio: number
+  /** Policies issued in the year (mn). */
+  policyCount: number
+}
+
+export const companyMetrics: Record<string, CompanyOpMetrics> = {
+  'niva-bupa': { gwp: 7200, nwp: 6540, nep: 5980, retailMix: 64, bancaMix: 31, renewalRate: 90, settlementRatio: 99.1, expenseRatio: 20.6, lossRatio: 62.8, policyCount: 11.4 },
+  'star-health': { gwp: 12400, nwp: 11100, nep: 10200, retailMix: 67, bancaMix: 22, renewalRate: 92, settlementRatio: 98.2, expenseRatio: 21.5, lossRatio: 65.0, policyCount: 18.2 },
+  'care-health': { gwp: 6400, nwp: 5700, nep: 5200, retailMix: 55, bancaMix: 28, renewalRate: 88, settlementRatio: 98.7, expenseRatio: 21.0, lossRatio: 64.0, policyCount: 9.1 },
+  'aditya-birla': { gwp: 4100, nwp: 3650, nep: 3300, retailMix: 52, bancaMix: 36, renewalRate: 85, settlementRatio: 97.5, expenseRatio: 23.0, lossRatio: 66.5, policyCount: 5.4 },
+  manipalcigna: { gwp: 2600, nwp: 2300, nep: 2050, retailMix: 48, bancaMix: 41, renewalRate: 83, settlementRatio: 96.8, expenseRatio: 24.2, lossRatio: 67.8, policyCount: 3.2 },
+  'icici-lombard': { gwp: 21000, nwp: 18600, nep: 17200, retailMix: 35, bancaMix: 18, renewalRate: 79, settlementRatio: 96.0, expenseRatio: 19.5, lossRatio: 70.0, policyCount: 28.0 },
+  'bajaj-general': { gwp: 14500, nwp: 12900, nep: 11800, retailMix: 28, bancaMix: 20, renewalRate: 76, settlementRatio: 95.2, expenseRatio: 20.0, lossRatio: 71.5, policyCount: 22.0 },
+  'hdfc-life': { gwp: 56000, nwp: 54000, nep: 52000, retailMix: 0, bancaMix: 55, renewalRate: 87, settlementRatio: 99.5, expenseRatio: 14.0, lossRatio: 0, policyCount: 9.0 },
+  'sbi-life': { gwp: 62000, nwp: 60000, nep: 58000, retailMix: 0, bancaMix: 62, renewalRate: 89, settlementRatio: 99.8, expenseRatio: 11.5, lossRatio: 0, policyCount: 10.0 },
+}
+
+// =========================================================================
 //  EXECUTIVE OVERVIEW
 // =========================================================================
 
