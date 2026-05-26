@@ -7,17 +7,24 @@ import type { Insurer } from '@/data/types'
 const rankBadge = ['bg-champagne text-white', 'bg-[#9AA3AF] text-white', 'bg-[#BCC2CB] text-white']
 const peerBar = ['bg-teal', 'bg-[#6E7E96]', 'bg-[#9FB1C6]']
 
-export function IndustryLeaders({ insurers, highlightId }: { insurers: Insurer[]; highlightId: string }) {
+export function IndustryLeaders({
+  insurers,
+  highlightId,
+  onSelect,
+}: {
+  insurers: Insurer[]
+  highlightId: string
+  onSelect?: (id: string) => void
+}) {
   const [metricId, setMetricId] = useState(leaderMetricDefs[0].id)
-  const [hover, setHover] = useState<string | null>(null)
   const def = leaderMetricDefs.find((m) => m.id === metricId) ?? leaderMetricDefs[0]
 
   const top3 = [...insurers].sort((a, b) => b[def.key] - a[def.key]).slice(0, 3)
   const max = Math.max(...top3.map((r) => r[def.key]), 1)
   const leaderId = top3[0]?.id
 
-  const hovered = top3.find((r) => r.id === hover)
-  const interpSource = hovered ?? top3.find((r) => r.id === highlightId) ?? top3[0]
+  // Insight follows the SELECTED company (click-driven), never hover.
+  const interpSource = top3.find((r) => r.id === highlightId) ?? top3[0]
 
   return (
     <div>
@@ -58,9 +65,10 @@ export function IndustryLeaders({ insurers, highlightId }: { insurers: Insurer[]
           return (
             <div
               key={r.id}
-              className={`rounded-md px-1.5 py-1 transition-colors ${focal ? 'focal-mark' : ''}`}
-              onMouseEnter={() => setHover(r.id)}
-              onMouseLeave={() => setHover(null)}
+              role="button"
+              title={`Select ${r.shortName}`}
+              onClick={() => onSelect?.(r.id)}
+              className={`cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:bg-ice/70'}`}
             >
               <div className="mb-1 flex items-center gap-2">
                 <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${rankBadge[i]}`}>

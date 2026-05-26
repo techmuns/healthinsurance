@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { LeaderDot } from './LeaderDot'
 import type { ShareSlice } from '@/data/mockData'
 
@@ -15,8 +15,32 @@ const PEER_PALETTE = [
 ]
 const OTHERS_COLOR = '#D4D9E0'
 
-export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
-  const [active, setActive] = useState<number | null>(null)
+interface TipPayload {
+  payload: { name: string; value: number }
+}
+
+/** Tiny calm tooltip — name + share only, no selection side-effects. */
+function ShareTooltip({ active, payload }: { active?: boolean; payload?: TipPayload[] }) {
+  if (!active || !payload?.length) return null
+  const { name, value } = payload[0].payload
+  return (
+    <div className="rounded-lg border border-soft-border bg-white px-2.5 py-1 text-[11px] shadow-soft">
+      <span className="font-semibold text-navy-deep">{name}</span>
+      <span className="ml-1.5 tabular-nums text-ink-secondary">{value}%</span>
+    </div>
+  )
+}
+
+export function MarketShareDonut({
+  data,
+  onSelect,
+}: {
+  data: ShareSlice[]
+  /** Called with the insurer id when a slice/legend row is clicked. */
+  onSelect?: (id: string) => void
+}) {
+  // Hover is a visual *preview* only — it never changes the selection.
+  const [hover, setHover] = useState<number | null>(null)
 
   const ranked = [...data].sort((a, b) => b.value - a.value)
   const leaderName = ranked.find((d) => d.name !== 'Others')?.name
@@ -35,17 +59,15 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
 
   const focal = colored.find((d) => d.focal)
   const leader = colored.find((d) => d.name !== 'Others')
-  const base = focal ?? leader
-  // Center reflects the hovered slice, else the highlighted/leader company.
-  const centerSlice = active !== null ? colored[active] : base
-  const centerRank = centerSlice
-    ? ranked.findIndex((d) => d.name === centerSlice.name) + 1
-    : null
+  // Center + insight follow the SELECTED company only (click-driven), never hover.
+  const centerSlice = focal ?? leader
+  const centerRank = centerSlice ? ranked.findIndex((d) => d.name === centerSlice.name) + 1 : null
   const centerIsFocal = centerSlice?.focal ?? false
+  const interp = focal?.takeaway ?? leader?.takeaway
 
-  // Hover interpretation: hovered slice, else highlighted, else leader.
-  const interp =
-    (active !== null ? colored[active]?.takeaway : undefined) ?? focal?.takeaway ?? leader?.takeaway
+  const select = (id?: string) => {
+    if (id) onSelect?.(id)
+  }
 
   return (
     <div>
@@ -53,6 +75,7 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
         <div className="relative h-[150px] w-[150px] shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
+              <Tooltip content={<ShareTooltip />} />
               <Pie
                 data={colored}
                 dataKey="value"
@@ -61,30 +84,35 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
                 outerRadius={73}
                 paddingAngle={1.5}
                 stroke="none"
-                onMouseEnter={(_, idx) => setActive(idx)}
-                onMouseLeave={() => setActive(null)}
+                isAnimationActive={false}
+                onMouseEnter={(_, idx) => setHover(idx)}
+                onMouseLeave={() => setHover(null)}
+                onClick={(_, idx) => select(colored[idx]?.id)}
               >
                 {colored.map((d, i) => {
-                  const dim = active !== null && active !== i
+                  // Subtle preview: gently fade the *other* slices on hover.
+                  const dim = hover !== null && hover !== i
                   return (
                     <Cell
                       key={d.name}
                       fill={d.color}
-                      fillOpacity={dim ? 0.42 : 1}
+                      fillOpacity={dim ? 0.8 : 1}
                       stroke={d.focal ? FOCAL_COLOR : 'none'}
                       strokeWidth={d.focal ? 2 : 0}
-                      style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+                      style={{ cursor: d.id ? 'pointer' : 'default', transition: 'opacity 0.18s ease' }}
                     />
                   )
                 })}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          {/* Center label carries value, rank and name; updates on hover/filter. */}
+          {/* Center label carries value, rank and name; updates only on click. */}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
-            <span className="font-display text-2xl leading-none text-navy-deep">{centerSlice?.value}%</span>
+            <span className="font-display text-2xl leading-none text-navy-deep transition-colors duration-200">
+              {centerSlice?.value}%
+            </span>
             <span
-              className={`mt-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              className={`mt-0.5 text-[10px] font-semibold uppercase tracking-wide transition-colors duration-200 ${
                 centerIsFocal ? 'text-navy-primary' : 'text-ink-secondary'
               }`}
             >
@@ -98,17 +126,21 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
 
         <ul className="flex-1 space-y-1">
           {colored.map((d, i) => {
-            const dim = active !== null && active !== i
+            const dim = hover !== null && hover !== i
+            const clickable = Boolean(d.id)
             return (
               <li
                 key={d.name}
+                title={`${d.name} · ${d.value}%`}
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
+                onClick={() => select(d.id)}
                 className={[
-                  'flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[12px] transition-opacity duration-200',
-                  dim ? 'opacity-50' : '',
-                  d.focal ? 'focal-mark' : '',
+                  'flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[12px] transition-all duration-200',
+                  clickable ? 'cursor-pointer' : '',
+                  d.focal ? 'focal-mark' : clickable && !dim ? 'hover:bg-ice/70' : '',
+                  dim ? 'opacity-70' : '',
                 ].join(' ')}
-                onMouseEnter={() => setActive(i)}
-                onMouseLeave={() => setActive(null)}
               >
                 <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
                 <span className={`flex-1 truncate ${d.focal ? 'font-semibold text-navy-deep' : 'text-ink-secondary'}`}>
@@ -124,7 +156,7 @@ export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
         </ul>
       </div>
 
-      {/* Hover interpretation — one short investor line, no popup. */}
+      {/* Selected-company insight — one short investor line, click-driven only. */}
       {interp && (
         <p className="mt-3 border-t border-soft-border pt-2.5 text-[11.5px] leading-snug text-ink-secondary">
           <span className="font-semibold text-navy-primary">{centerSlice?.name}:</span> {interp}

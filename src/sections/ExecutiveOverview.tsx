@@ -92,12 +92,12 @@ export function ExecutiveOverview() {
               <p className="text-[12px] font-semibold text-navy-deep">Market Share</p>
               <span className="text-[10.5px] text-ink-secondary">{shareContext}</span>
             </div>
-            <MarketShareDonut data={slices} />
+            <MarketShareDonut data={slices} onSelect={filters.setHighlightedCompany} />
           </div>
 
           {/* Industry leaders — tabbed top ranking within the active group */}
           <div className="card-surface card-interactive p-4">
-            <IndustryLeaders insurers={filtered} highlightId={company.id} />
+            <IndustryLeaders insurers={filtered} highlightId={company.id} onSelect={filters.setHighlightedCompany} />
           </div>
         </div>
 
