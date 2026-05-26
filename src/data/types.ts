@@ -42,10 +42,57 @@ export interface SeriesPoint {
 
 export type PeerGroup = 'SAHI' | 'General' | 'Life' | 'All'
 export type TimePeriod = 'Monthly' | 'Quarterly' | 'Annual'
+export type Scope = 'industry-overview' | 'company-view'
+export type Dataset = 'mock' | 'live'
 
 export interface Company {
   id: string
   name: string
   ticker: string
   peerGroup: Exclude<PeerGroup, 'All'>
+}
+
+/**
+ * Canonical insurer record. Every Executive Overview chart/card reads from this
+ * shape via the helpers in `@/lib/insurers` — no metric is hardcoded into the UI.
+ */
+export interface Insurer {
+  id: string
+  name: string
+  /** Compact label for charts/legends, e.g. "Niva Bupa". */
+  shortName: string
+  ticker: string
+  peerGroup: Exclude<PeerGroup, 'All'>
+  /** Share of the insurer's own segment pool (%). */
+  marketShare: number
+  /** Gross written premium (₹ Cr). */
+  premiumCollection: number
+  settlementRatio: number
+  renewalRate: number
+  customerRetention: number
+  /** GWP growth, YoY (%). */
+  growth: number
+  /** Underwriting margin = 100 − combined ratio (%); higher is better. 0 = N/A. */
+  margin: number
+  /** Combined ratio (%); lower is better. 0 = N/A (life). */
+  combinedRatio: number
+  solvency: number
+  roe: number
+  /** P/GWP multiple (x). */
+  valuation: number
+  /** Market-share change, YoY (pp). */
+  marketShareChange: number
+  retailMix: number
+  signal: Signal
+}
+
+/** Single global filter state shared across the dashboard. */
+export interface DashboardFilters {
+  scope: Scope
+  /** Highlighted insurer id. */
+  highlightedCompany: string
+  peerGroup: PeerGroup
+  period: TimePeriod
+  dataset: Dataset
+  updatedAsOf: string
 }

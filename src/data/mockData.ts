@@ -6,7 +6,7 @@
 // ===========================================================================
 
 import type {
-  Company,
+  Insurer,
   Metric,
   PeerGroup,
   SeriesPoint,
@@ -27,26 +27,45 @@ const m = (
   ...opts,
 })
 
-// --- Universe -------------------------------------------------------------
+// --- Universe (single source of truth) -------------------------------------
+// Every Executive Overview visual is derived from this array via the helpers in
+// `@/lib/insurers`. `marketShare` is share of the insurer's own segment pool;
+// `margin` is underwriting margin (100 − combined ratio). Life carriers report
+// no combined ratio, so combinedRatio/margin/retailMix are 0 (= N/A) for them.
 
 export const FOCAL_COMPANY = 'niva-bupa'
 
-export const companies: Company[] = [
-  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', ticker: 'NIVABUPA', peerGroup: 'SAHI' },
-  { id: 'star-health', name: 'Star Health and Allied Insurance', ticker: 'STARHEALTH', peerGroup: 'SAHI' },
-  { id: 'care-health', name: 'Care Health Insurance', ticker: 'CAREHEALTH', peerGroup: 'SAHI' },
-  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', ticker: 'ABHI', peerGroup: 'SAHI' },
-  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI' },
-  { id: 'icici-lombard', name: 'ICICI Lombard General', ticker: 'ICICILOMB', peerGroup: 'General' },
-  { id: 'bajaj-general', name: 'Bajaj Allianz General', ticker: 'BAJAJGEN', peerGroup: 'General' },
-  { id: 'hdfc-life', name: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life' },
-  { id: 'sbi-life', name: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life' },
+export const PEER_GROUP_LABEL: Record<PeerGroup, string> = {
+  SAHI: 'Standalone health insurers',
+  General: 'General insurers',
+  Life: 'Life insurers',
+  All: 'Full insurer universe',
+}
+
+export const insurers: Insurer[] = [
+  // Standalone health insurers (SAHI) — segment shares sum to 90 (Others = 10).
+  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', shortName: 'Niva Bupa', ticker: 'NIVABUPA', peerGroup: 'SAHI', marketShare: 19, premiumCollection: 7200, settlementRatio: 99.1, renewalRate: 90, customerRetention: 89, growth: 23.4, margin: 3.2, combinedRatio: 96.8, solvency: 2.18, roe: 17.2, valuation: 3.4, marketShareChange: 0.9, retailMix: 64, signal: 'Strong' },
+  { id: 'star-health', name: 'Star Health and Allied Insurance', shortName: 'Star Health', ticker: 'STARHEALTH', peerGroup: 'SAHI', marketShare: 33, premiumCollection: 12400, settlementRatio: 98.2, renewalRate: 92, customerRetention: 88, growth: 17.5, margin: 0.6, combinedRatio: 99.4, solvency: 2.05, roe: 14.2, valuation: 3.6, marketShareChange: 0.3, retailMix: 67, signal: 'Improving' },
+  { id: 'care-health', name: 'Care Health Insurance', shortName: 'Care Health', ticker: 'CAREHEALTH', peerGroup: 'SAHI', marketShare: 17, premiumCollection: 6400, settlementRatio: 98.7, renewalRate: 88, customerRetention: 86, growth: 20.1, margin: 1.9, combinedRatio: 98.1, solvency: 1.92, roe: 13.0, valuation: 3.0, marketShareChange: 0.5, retailMix: 55, signal: 'Improving' },
+  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', shortName: 'Aditya Birla', ticker: 'ABHI', peerGroup: 'SAHI', marketShare: 12, premiumCollection: 4100, settlementRatio: 97.5, renewalRate: 85, customerRetention: 81, growth: 28.6, margin: -1.8, combinedRatio: 101.8, solvency: 1.78, roe: 9.5, valuation: 4.2, marketShareChange: 0.7, retailMix: 52, signal: 'Watch' },
+  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', shortName: 'ManipalCigna', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', marketShare: 9, premiumCollection: 2600, settlementRatio: 96.8, renewalRate: 83, customerRetention: 82, growth: 15.2, margin: -3.2, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, marketShareChange: -0.1, retailMix: 48, signal: 'Watch' },
+  // General insurers.
+  { id: 'icici-lombard', name: 'ICICI Lombard General', shortName: 'ICICI Lombard', ticker: 'ICICILOMB', peerGroup: 'General', marketShare: 28, premiumCollection: 21000, settlementRatio: 96.0, renewalRate: 79, customerRetention: 80, growth: 13.1, margin: -2.6, combinedRatio: 102.6, solvency: 2.55, roe: 18.4, valuation: 5.8, marketShareChange: 0.2, retailMix: 35, signal: 'Strong' },
+  { id: 'bajaj-general', name: 'Bajaj Allianz General', shortName: 'Bajaj Allianz', ticker: 'BAJAJGEN', peerGroup: 'General', marketShare: 16, premiumCollection: 14500, settlementRatio: 95.2, renewalRate: 76, customerRetention: 77, growth: 9.8, margin: -0.4, combinedRatio: 100.4, solvency: 2.10, roe: 14.0, valuation: 3.1, marketShareChange: -0.2, retailMix: 28, signal: 'Improving' },
+  // Life insurers — no combined ratio reported.
+  { id: 'hdfc-life', name: 'HDFC Life', shortName: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', marketShare: 22, premiumCollection: 56000, settlementRatio: 99.5, renewalRate: 87, customerRetention: 84, growth: 11.6, margin: 0, combinedRatio: 0, solvency: 1.98, roe: 14.8, valuation: 2.2, marketShareChange: 0.1, retailMix: 0, signal: 'Improving' },
+  { id: 'sbi-life', name: 'SBI Life', shortName: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', marketShare: 25, premiumCollection: 62000, settlementRatio: 99.8, renewalRate: 89, customerRetention: 86, growth: 7.8, margin: 0, combinedRatio: 0, solvency: 1.82, roe: 11.2, valuation: 1.8, marketShareChange: -0.1, retailMix: 0, signal: 'Watch' },
 ]
+
+/** Back-compat alias — the highlight dropdown reads this. */
+export const companies = insurers
 
 export const DATA_FRESHNESS = {
   lastUpdated: UPDATED,
   coverage: 'FY21 – Q4 FY25',
   quality: 'Mock dataset',
+  /** Mock data is annual-only; period toggle surfaces this limitation. */
+  periodCoverage: 'Annual',
 }
 
 // =========================================================================
@@ -128,96 +147,14 @@ export const heroKpis: HeroKpi[] = [
 ]
 
 // --- Industry at a Glance (first-page visual summary) -------------------
+// The donut and Industry-Leaders ranking are derived at render time from
+// `insurers` via `@/lib/insurers` so they always reflect the active filters.
 
 export interface ShareSlice {
   name: string
   value: number
   focal?: boolean
 }
-
-/** SAHI health-premium pool share (%) — mock. */
-export const marketShareDonut: ShareSlice[] = [
-  { name: 'Star Health', value: 33 },
-  { name: 'Niva Bupa', value: 19, focal: true },
-  { name: 'Care Health', value: 17 },
-  { name: 'Aditya Birla', value: 12 },
-  { name: 'ManipalCigna', value: 9 },
-  { name: 'Others', value: 10 },
-]
-
-// --- Industry Leaders ranking (tabbed top-3 by metric) -----------------
-
-export interface RankRow {
-  name: string
-  ticker: string
-  value: number
-  display: string
-}
-
-export interface LeaderMetric {
-  id: string
-  label: string
-  /** higher value = better; bars scale to the metric. */
-  rows: RankRow[]
-}
-
-export const industryLeaders: LeaderMetric[] = [
-  {
-    id: 'premium',
-    label: 'Premium Collection',
-    rows: [
-      { name: 'Star Health', ticker: 'STARHEALTH', value: 12400, display: '₹12,400 Cr' },
-      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 7200, display: '₹7,200 Cr' },
-      { name: 'Care Health', ticker: 'CAREHEALTH', value: 6400, display: '₹6,400 Cr' },
-      { name: 'Aditya Birla', ticker: 'ABHI', value: 4100, display: '₹4,100 Cr' },
-      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 2600, display: '₹2,600 Cr' },
-    ],
-  },
-  {
-    id: 'settlement',
-    label: 'Settlement Ratio',
-    rows: [
-      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 99.1, display: '99.1%' },
-      { name: 'Care Health', ticker: 'CAREHEALTH', value: 98.7, display: '98.7%' },
-      { name: 'Star Health', ticker: 'STARHEALTH', value: 98.2, display: '98.2%' },
-      { name: 'Aditya Birla', ticker: 'ABHI', value: 97.5, display: '97.5%' },
-      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 96.8, display: '96.8%' },
-    ],
-  },
-  {
-    id: 'renewal',
-    label: 'Renewal Rate',
-    rows: [
-      { name: 'Star Health', ticker: 'STARHEALTH', value: 92, display: '92%' },
-      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 90, display: '90%' },
-      { name: 'Care Health', ticker: 'CAREHEALTH', value: 88, display: '88%' },
-      { name: 'Aditya Birla', ticker: 'ABHI', value: 85, display: '85%' },
-      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 83, display: '83%' },
-    ],
-  },
-  {
-    id: 'retention',
-    label: 'Customer Retention',
-    rows: [
-      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 89, display: '89%' },
-      { name: 'Star Health', ticker: 'STARHEALTH', value: 88, display: '88%' },
-      { name: 'Care Health', ticker: 'CAREHEALTH', value: 86, display: '86%' },
-      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 82, display: '82%' },
-      { name: 'Aditya Birla', ticker: 'ABHI', value: 81, display: '81%' },
-    ],
-  },
-  {
-    id: 'share',
-    label: 'Market Share',
-    rows: [
-      { name: 'Star Health', ticker: 'STARHEALTH', value: 33, display: '33%' },
-      { name: 'Niva Bupa', ticker: 'NIVABUPA', value: 19, display: '19%' },
-      { name: 'Care Health', ticker: 'CAREHEALTH', value: 17, display: '17%' },
-      { name: 'Aditya Birla', ticker: 'ABHI', value: 12, display: '12%' },
-      { name: 'ManipalCigna', ticker: 'MANIPALCIGNA', value: 9, display: '9%' },
-    ],
-  },
-]
 
 export interface PulseItem {
   kind: 'Strength' | 'Watch' | 'Risk'
@@ -513,17 +450,21 @@ export interface PeerRow {
   focal?: boolean
 }
 
-export const peerRows: PeerRow[] = [
-  { company: 'Niva Bupa Health Insurance', ticker: 'NIVABUPA', peerGroup: 'SAHI', gwpGrowth: 23.4, marketShareChange: 0.9, combinedRatio: 96.8, solvency: 2.18, roe: 17.2, valuation: 3.4, retailMix: 64, signal: 'Strong', focal: true },
-  { company: 'Star Health and Allied', ticker: 'STARHEALTH', peerGroup: 'SAHI', gwpGrowth: 17.5, marketShareChange: 0.3, combinedRatio: 99.4, solvency: 2.05, roe: 14.2, valuation: 3.6, retailMix: 67, signal: 'Improving' },
-  { company: 'Care Health Insurance', ticker: 'CAREHEALTH', peerGroup: 'SAHI', gwpGrowth: 20.1, marketShareChange: 0.5, combinedRatio: 98.1, solvency: 1.92, roe: 13.0, valuation: 3.0, retailMix: 55, signal: 'Improving' },
-  { company: 'Aditya Birla Health', ticker: 'ABHI', peerGroup: 'SAHI', gwpGrowth: 28.6, marketShareChange: 0.7, combinedRatio: 101.8, solvency: 1.78, roe: 9.5, valuation: 4.2, retailMix: 52, signal: 'Watch' },
-  { company: 'ManipalCigna Health', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', gwpGrowth: 15.2, marketShareChange: -0.1, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, retailMix: 48, signal: 'Watch' },
-  { company: 'ICICI Lombard General', ticker: 'ICICILOMB', peerGroup: 'General', gwpGrowth: 13.1, marketShareChange: 0.2, combinedRatio: 102.6, solvency: 2.55, roe: 18.4, valuation: 5.8, retailMix: 35, signal: 'Strong' },
-  { company: 'Bajaj Allianz General', ticker: 'BAJAJGEN', peerGroup: 'General', gwpGrowth: 9.8, marketShareChange: -0.2, combinedRatio: 100.4, solvency: 2.10, roe: 14.0, valuation: 3.1, retailMix: 28, signal: 'Improving' },
-  { company: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', gwpGrowth: 11.6, marketShareChange: 0.1, combinedRatio: 0, solvency: 1.98, roe: 14.8, valuation: 2.2, retailMix: 0, signal: 'Improving' },
-  { company: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', gwpGrowth: 7.8, marketShareChange: -0.1, combinedRatio: 0, solvency: 1.82, roe: 11.2, valuation: 1.8, retailMix: 0, signal: 'Watch' },
-]
+// Derived from the canonical `insurers` model so peer tables stay in sync.
+export const peerRows: PeerRow[] = insurers.map((i) => ({
+  company: i.name,
+  ticker: i.ticker,
+  peerGroup: i.peerGroup,
+  gwpGrowth: i.growth,
+  marketShareChange: i.marketShareChange,
+  combinedRatio: i.combinedRatio,
+  solvency: i.solvency,
+  roe: i.roe,
+  valuation: i.valuation,
+  retailMix: i.retailMix,
+  signal: i.signal,
+  focal: i.id === FOCAL_COMPANY,
+}))
 
 // =========================================================================
 //  SECTION 6 — VALUATION & MARKET VIEW

@@ -1,31 +1,45 @@
+import { useState } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import type { ShareSlice } from '@/data/mockData'
 
-// Peers stay neutral slate-grey; the highlighted company is the only blue.
-const PEER_SHADES = ['#AEB6C1', '#C5CAD2', '#969DA9', '#D2D6DC', '#8893A1']
-const FOCAL_COLOR = '#27457E'
+// Highlighted company is the strongest colour (navy). Peers use a pleasant,
+// institutional palette — distinct and legible, never dead grey.
+const FOCAL_COLOR = '#26477F'
+const PEER_PALETTE = [
+  '#3F8E8E', // soft teal
+  '#6E7E96', // slate
+  '#C2A24E', // muted gold
+  '#9FB1C6', // light blue-grey
+  '#B3A795', // warm grey
+]
+const OTHERS_COLOR = '#D4D9E0'
 
-export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; highlight?: string }) {
-  // Highlight follows the selected company when it is part of the pool;
-  // the chart always shows ALL companies (never filtered down).
-  const withFocal = data.map((d) => ({
-    ...d,
-    focal: highlight ? d.name !== 'Others' && highlight.includes(d.name) : d.focal,
-  }))
+export function MarketShareDonut({ data }: { data: ShareSlice[] }) {
+  const [active, setActive] = useState<number | null>(null)
 
-  const ranked = [...withFocal].sort((a, b) => b.value - a.value)
-  const focal = withFocal.find((d) => d.focal)
-  const leader = ranked.find((d) => d.name !== 'Others')
-  const center = focal ?? leader
-  const centerRank = center ? ranked.findIndex((d) => d.name === center.name) + 1 : null
+  const ranked = [...data].sort((a, b) => b.value - a.value)
 
   let peerIdx = 0
-  const colored = withFocal.map((d) => {
-    if (d.focal) return { ...d, color: FOCAL_COLOR }
-    const c = PEER_SHADES[peerIdx % PEER_SHADES.length]
-    peerIdx += 1
-    return { ...d, color: c }
+  const colored = data.map((d) => {
+    let color: string
+    if (d.focal) color = FOCAL_COLOR
+    else if (d.name === 'Others') color = OTHERS_COLOR
+    else {
+      color = PEER_PALETTE[peerIdx % PEER_PALETTE.length]
+      peerIdx += 1
+    }
+    return { ...d, color }
   })
+
+  const focal = colored.find((d) => d.focal)
+  const leader = colored.find((d) => d.name !== 'Others')
+  const base = focal ?? leader
+  // Center reflects the hovered slice, else the highlighted/leader company.
+  const centerSlice = active !== null ? colored[active] : base
+  const centerRank = centerSlice
+    ? ranked.findIndex((d) => d.name === centerSlice.name) + 1
+    : null
+  const centerIsFocal = centerSlice?.focal ?? false
 
   return (
     <div className="flex items-center gap-4">
@@ -36,38 +50,63 @@ export function MarketShareDonut({ data, highlight }: { data: ShareSlice[]; high
               data={colored}
               dataKey="value"
               nameKey="name"
-              innerRadius={60}
-              outerRadius={74}
+              innerRadius={62}
+              outerRadius={73}
               paddingAngle={1.5}
               stroke="none"
+              onMouseEnter={(_, idx) => setActive(idx)}
+              onMouseLeave={() => setActive(null)}
             >
-              {colored.map((d) => (
-                <Cell key={d.name} fill={d.color} />
-              ))}
+              {colored.map((d, i) => {
+                const dim = active !== null && active !== i
+                return (
+                  <Cell
+                    key={d.name}
+                    fill={d.color}
+                    fillOpacity={dim ? 0.42 : 1}
+                    style={{ cursor: 'pointer', transition: 'opacity 0.2s ease' }}
+                  />
+                )
+              })}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
-        {/* Center label carries the value; no hover tooltip to avoid clutter. */}
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl text-navy-deep">{center?.value}%</span>
-          <span className={`text-[10px] font-semibold uppercase tracking-wide ${focal ? 'text-navy-primary' : 'text-ink-secondary'}`}>
-            #{centerRank} · {center?.name}
+        {/* Center label carries the value, rank and name; updates on hover/filter. */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+          <span className="font-display text-2xl leading-none text-navy-deep">{centerSlice?.value}%</span>
+          <span
+            className={`mt-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              centerIsFocal ? 'text-navy-primary' : 'text-ink-secondary'
+            }`}
+          >
+            #{centerRank}
+          </span>
+          <span className="mt-0.5 line-clamp-1 text-[10.5px] font-medium text-ink-secondary">
+            {centerSlice?.name}
           </span>
         </div>
       </div>
 
       <ul className="flex-1 space-y-1.5">
-        {colored.map((d) => (
-          <li key={d.name} className="flex items-center gap-2 text-[12px]">
-            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
-            <span className={`flex-1 truncate ${d.focal ? 'font-semibold text-navy-deep' : 'text-ink-secondary'}`}>
-              {d.name}
-            </span>
-            <span className={`tabular-nums ${d.focal ? 'font-semibold text-navy-primary' : 'text-ink-primary'}`}>
-              {d.value}%
-            </span>
-          </li>
-        ))}
+        {colored.map((d, i) => {
+          const dim = active !== null && active !== i
+          return (
+            <li
+              key={d.name}
+              className={`flex items-center gap-2 text-[12px] transition-opacity duration-200 ${dim ? 'opacity-50' : ''}`}
+              onMouseEnter={() => setActive(i)}
+              onMouseLeave={() => setActive(null)}
+            >
+              <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: d.color }} />
+              <span className={`flex-1 truncate ${d.focal ? 'font-semibold text-navy-deep' : 'text-ink-secondary'}`}>
+                {d.name}
+              </span>
+              <span className={`tabular-nums ${d.focal ? 'font-semibold text-navy-primary' : 'text-ink-primary'}`}>
+                {d.value}%
+              </span>
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

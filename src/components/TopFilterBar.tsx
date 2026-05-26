@@ -1,11 +1,16 @@
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
+import type { SegmentedOption } from './SegmentedControl'
 import { useFilters } from '@/state/filters'
-import { companies, DATA_FRESHNESS } from '@/data/mockData'
-import type { PeerGroup, TimePeriod } from '@/data/types'
+import { insurers, DATA_FRESHNESS, PEER_GROUP_LABEL } from '@/data/mockData'
+import type { PeerGroup, Scope, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
 const periods: TimePeriod[] = ['Monthly', 'Quarterly', 'Annual']
+const scopeOptions: SegmentedOption<Scope>[] = [
+  { value: 'industry-overview', label: 'Industry' },
+  { value: 'company-view', label: 'Company' },
+]
 
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   return (
@@ -19,36 +24,44 @@ function FieldLabel({ children, hint }: { children: string; hint?: string }) {
 }
 
 export function TopFilterBar({ section }: { section?: string }) {
-  const { companyId, setCompanyId, peerGroup, setPeerGroup, timePeriod, setTimePeriod } = useFilters()
+  const {
+    scope,
+    setScope,
+    highlightedCompany,
+    setHighlightedCompany,
+    peerGroup,
+    setPeerGroup,
+    period,
+    setPeriod,
+  } = useFilters()
   const isOverview = section === 'overview'
+  const highlighted = insurers.find((c) => c.id === highlightedCompany) ?? insurers[0]
+  const annualOnly = period !== 'Annual'
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
       {/* Light, integrated control strip — calm and secondary to the content. */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-4 py-2 shadow-soft backdrop-blur-md">
-        {/* Scope (overview is industry-wide) */}
+        {/* Scope toggle (industry-wide vs company-centric) */}
         {isOverview && (
           <div>
-            <FieldLabel hint="The first page is an industry-wide view">Scope</FieldLabel>
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-navy-primary px-3 py-1.5 text-[12px] font-semibold text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal" />
-              Industry Overview
-            </span>
+            <FieldLabel hint="Industry compares the field; Company centers the highlighted insurer">Scope</FieldLabel>
+            <SegmentedControl<Scope> options={scopeOptions} value={scope} onChange={setScope} size="sm" />
           </div>
         )}
 
         {/* Company / highlight company */}
         <label className="block">
           <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : undefined}>
-            {isOverview ? 'Highlight' : 'Company'}
+            {scope === 'company-view' || !isOverview ? 'Company' : 'Highlight'}
           </FieldLabel>
           <span className="relative block">
             <select
-              value={companyId}
-              onChange={(e) => setCompanyId(e.target.value)}
+              value={highlightedCompany}
+              onChange={(e) => setHighlightedCompany(e.target.value)}
               className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
             >
-              {companies.map((c) => (
+              {insurers.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
@@ -62,23 +75,23 @@ export function TopFilterBar({ section }: { section?: string }) {
 
         {/* Peer group */}
         <div>
-          <FieldLabel hint="Compare against selected insurer type">Peer Group</FieldLabel>
+          <FieldLabel hint="Filters which insurers appear in charts and tables">Peer Group</FieldLabel>
           <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
         </div>
 
         {/* Period */}
         <div>
-          <FieldLabel hint="Controls all charts and KPI deltas">Period</FieldLabel>
-          <SegmentedControl<TimePeriod> options={periods} value={timePeriod} onChange={setTimePeriod} size="sm" />
+          <FieldLabel hint="Mock dataset is annual-only">Period</FieldLabel>
+          <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
         </div>
 
         <div className="ml-auto flex items-end gap-4">
-          {/* Dataset */}
+          {/* Dataset — explicitly mock; live is not connected. */}
           <div>
-            <FieldLabel hint="Source status for visible metrics">Dataset</FieldLabel>
+            <FieldLabel hint="Live data is not connected in this demo">Dataset</FieldLabel>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-gold-soft px-2.5 py-1.5 text-[12px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
               <span className="h-1.5 w-1.5 rounded-full bg-current" />
-              {DATA_FRESHNESS.quality}
+              Mock dataset
             </span>
           </div>
 
@@ -90,6 +103,33 @@ export function TopFilterBar({ section }: { section?: string }) {
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Active-filter summary — updates live so a filter change is always visible. */}
+      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-[11.5px] text-ink-secondary">
+        <SlidersHorizontal className="h-3.5 w-3.5 text-champagne" />
+        <span>Showing</span>
+        <span className="font-semibold text-navy-deep">{PEER_GROUP_LABEL[peerGroup]}</span>
+        <span className="text-soft-border">·</span>
+        <span>Highlight:</span>
+        <span className="font-semibold text-navy-primary">{highlighted.shortName}</span>
+        <span className="text-soft-border">·</span>
+        <span className="font-semibold text-navy-deep">{period} view</span>
+        <span className="text-soft-border">·</span>
+        <span className="font-semibold text-gold">Mock dataset</span>
+        {isOverview && (
+          <>
+            <span className="text-soft-border">·</span>
+            <span className="font-semibold text-navy-deep">
+              {scope === 'company-view' ? 'Company view' : 'Industry view'}
+            </span>
+          </>
+        )}
+        {annualOnly && (
+          <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[10.5px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
+            Annual mock data only
+          </span>
+        )}
       </div>
     </div>
   )

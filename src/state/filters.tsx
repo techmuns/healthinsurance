@@ -1,27 +1,40 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { PeerGroup, TimePeriod } from '@/data/types'
-import { companies, FOCAL_COMPANY } from '@/data/mockData'
+import type { Dataset, DashboardFilters, PeerGroup, Scope, TimePeriod } from '@/data/types'
+import { insurers, FOCAL_COMPANY, DATA_FRESHNESS } from '@/data/mockData'
 
-interface FilterState {
-  companyId: string
-  peerGroup: PeerGroup
-  timePeriod: TimePeriod
-  setCompanyId: (id: string) => void
+interface FilterContextValue extends DashboardFilters {
+  setScope: (s: Scope) => void
+  setHighlightedCompany: (id: string) => void
   setPeerGroup: (g: PeerGroup) => void
-  setTimePeriod: (t: TimePeriod) => void
+  setPeriod: (t: TimePeriod) => void
+  setDataset: (d: Dataset) => void
 }
 
-const FilterContext = createContext<FilterState | null>(null)
+const FilterContext = createContext<FilterContextValue | null>(null)
 
 export function FilterProvider({ children }: { children: ReactNode }) {
-  const [companyId, setCompanyId] = useState(FOCAL_COMPANY)
+  const [scope, setScope] = useState<Scope>('industry-overview')
+  const [highlightedCompany, setHighlightedCompany] = useState(FOCAL_COMPANY)
   const [peerGroup, setPeerGroup] = useState<PeerGroup>('SAHI')
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('Annual')
+  const [period, setPeriod] = useState<TimePeriod>('Annual')
+  const [dataset, setDataset] = useState<Dataset>('mock')
 
   const value = useMemo(
-    () => ({ companyId, peerGroup, timePeriod, setCompanyId, setPeerGroup, setTimePeriod }),
-    [companyId, peerGroup, timePeriod],
+    () => ({
+      scope,
+      highlightedCompany,
+      peerGroup,
+      period,
+      dataset,
+      updatedAsOf: DATA_FRESHNESS.lastUpdated,
+      setScope,
+      setHighlightedCompany,
+      setPeerGroup,
+      setPeriod,
+      setDataset,
+    }),
+    [scope, highlightedCompany, peerGroup, period, dataset],
   )
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
@@ -33,7 +46,8 @@ export function useFilters() {
   return ctx
 }
 
+/** The currently highlighted insurer. */
 export function useActiveCompany() {
-  const { companyId } = useFilters()
-  return companies.find((c) => c.id === companyId) ?? companies[0]
+  const { highlightedCompany } = useFilters()
+  return insurers.find((c) => c.id === highlightedCompany) ?? insurers[0]
 }
