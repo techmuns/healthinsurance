@@ -1,8 +1,8 @@
-import { ChevronDown, SlidersHorizontal } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import type { SegmentedOption } from './SegmentedControl'
 import { useFilters } from '@/state/filters'
-import { insurers, DATA_FRESHNESS, PEER_GROUP_LABEL } from '@/data/mockData'
+import { insurers, DATA_FRESHNESS } from '@/data/mockData'
 import type { PeerGroup, Scope, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
@@ -11,6 +11,14 @@ const scopeOptions: SegmentedOption<Scope>[] = [
   { value: 'industry-overview', label: 'Industry' },
   { value: 'company-view', label: 'Company' },
 ]
+
+// Compact labels for the "You are viewing" summary sentence.
+const peerGroupShort: Record<PeerGroup, string> = {
+  SAHI: 'SAHI insurers',
+  General: 'General insurers',
+  Life: 'Life insurers',
+  All: 'All insurers',
+}
 
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   return (
@@ -106,27 +114,26 @@ export function TopFilterBar({ section }: { section?: string }) {
       </div>
 
       {/* Active-filter summary — updates live so a filter change is always visible. */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-[11.5px] text-ink-secondary">
-        <SlidersHorizontal className="h-3.5 w-3.5 text-champagne" />
-        <span>Showing</span>
-        <span className="font-semibold text-navy-deep">{PEER_GROUP_LABEL[peerGroup]}</span>
+      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-[12.5px] text-ink-secondary">
+        <span>You are viewing:</span>
+        <span className="font-semibold text-navy-deep">{peerGroupShort[peerGroup]}</span>
         <span className="text-soft-border">·</span>
-        <span>Highlight:</span>
+        <span className="font-semibold text-navy-deep">{period}</span>
+        <span className="text-soft-border">·</span>
         <span className="font-semibold text-navy-primary">{highlighted.shortName}</span>
-        <span className="text-soft-border">·</span>
-        <span className="font-semibold text-navy-deep">{period} view</span>
-        <span className="text-soft-border">·</span>
-        <span className="font-semibold text-gold">Mock dataset</span>
-        {isOverview && (
+        <span>highlighted</span>
+        {isOverview && scope === 'company-view' && (
           <>
             <span className="text-soft-border">·</span>
-            <span className="font-semibold text-navy-deep">
-              {scope === 'company-view' ? 'Company view' : 'Industry view'}
-            </span>
+            <span className="font-semibold text-navy-deep">Company view</span>
           </>
         )}
+        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          Demo dataset
+        </span>
         {annualOnly && (
-          <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[10.5px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
+          <span className="inline-flex items-center rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
             Annual mock data only
           </span>
         )}

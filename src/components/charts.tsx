@@ -157,24 +157,54 @@ export interface HBarPoint {
   focal?: boolean
 }
 
+/** Y-axis category tick that flags the leader row with a small gold dot. */
+function LeaderCategoryTick(props: {
+  x?: number
+  y?: number
+  payload?: { value?: string }
+  leaderLabel?: string
+}) {
+  const { x = 0, y = 0, payload, leaderLabel } = props
+  const value = payload?.value ?? ''
+  const isLeader = value === leaderLabel
+  const dotX = -(value.length * 6 + 10)
+  return (
+    <g transform={`translate(${x},${y})`}>
+      {isLeader && <circle cx={dotX} cy={0} r={2.6} fill="#B68B3A" />}
+      <text x={0} y={0} dy={4} textAnchor="end" fontSize={11} fill={AXIS}>
+        {value}
+      </text>
+    </g>
+  )
+}
+
 export function HorizontalBarChart({
   data,
   height = 240,
   unit,
   diverging = false,
+  leaderLabel,
 }: {
   data: HBarPoint[]
   height?: number
   unit?: string
   /** Color negatives differently (for change charts). */
   diverging?: boolean
+  /** Label of the leader row — flagged with a gold "best" dot. */
+  leaderLabel?: string
 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 24, left: 8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
         <XAxis type="number" {...axisProps} unit={unit} />
-        <YAxis type="category" dataKey="label" {...axisProps} width={120} />
+        <YAxis
+          type="category"
+          dataKey="label"
+          {...axisProps}
+          width={120}
+          tick={leaderLabel ? <LeaderCategoryTick leaderLabel={leaderLabel} /> : axisProps.tick}
+        />
         <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(39,69,126,0.04)' }} />
         <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={26}>
           {data.map((d, i) => {

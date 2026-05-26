@@ -84,6 +84,8 @@ export interface Insurer {
   marketShareChange: number
   retailMix: number
   signal: Signal
+  /** Short investor-style one-liner shown on hover. */
+  takeaway: string
 }
 
 /** Single global filter state shared across the dashboard. */

@@ -74,8 +74,8 @@ export function Heatmap({
             <tr key={r.label}>
               <td
                 className={[
-                  'sticky left-0 bg-card px-3 py-2 text-left font-medium',
-                  r.focal ? 'text-navy-primary' : 'text-ink-primary',
+                  'sticky left-0 px-3 py-2 text-left font-medium',
+                  r.focal ? 'focal-mark rounded-lg text-navy-primary' : 'bg-card text-ink-primary',
                 ].join(' ')}
               >
                 <div className="flex items-center gap-2 whitespace-nowrap">

@@ -3,6 +3,7 @@ import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { IndustryLeaders } from '@/components/IndustryLeaders'
+import { BestInColumnLegend } from '@/components/LeaderDot'
 import { MetricChip } from '@/components/MetricChip'
 import { Heatmap } from '@/components/Heatmap'
 import { useActiveCompany, useFilters } from '@/state/filters'
@@ -86,7 +87,7 @@ export function ExecutiveOverview() {
         />
         <div className="grid gap-4 lg:grid-cols-2">
           {/* Leadership donut — derived from the active filters */}
-          <div className="card-surface p-4">
+          <div className="card-surface card-interactive p-4">
             <div className="mb-3 flex items-baseline justify-between gap-2">
               <p className="text-[12px] font-semibold text-navy-deep">Market Share</p>
               <span className="text-[10.5px] text-ink-secondary">{shareContext}</span>
@@ -95,18 +96,16 @@ export function ExecutiveOverview() {
           </div>
 
           {/* Industry leaders — tabbed top ranking within the active group */}
-          <div className="card-surface p-4">
+          <div className="card-surface card-interactive p-4">
             <IndustryLeaders insurers={filtered} highlightId={company.id} />
           </div>
         </div>
 
         {/* Peer scorecard — full width, self-explanatory */}
-        <div className="card-surface mt-4 p-4">
+        <div className="card-surface card-interactive mt-4 p-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="font-display text-[15px] text-navy-deep">Peer Scorecard</p>
-            <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
-              <span className="h-1.5 w-1.5 rounded-full bg-champagne" /> = best in column
-            </span>
+            <BestInColumnLegend />
           </div>
 
           {/* Dynamic one-line takeaway */}

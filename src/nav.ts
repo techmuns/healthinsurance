@@ -19,3 +19,10 @@ export const navItems: NavItem[] = [
   { id: 'ownership', label: 'Ownership', shortLabel: 'Ownership', icon: 'ownership', question: 'Are serious investors increasing or reducing exposure?' },
   { id: 'management', label: 'Management Events', shortLabel: 'Management', icon: 'commentary', question: 'Is management credible, and what events matter now?' },
 ]
+
+/** Sidebar grouping — keeps the rail scannable without changing the labels. */
+export const navGroups: { label: string; itemIds: string[] }[] = [
+  { label: 'Market', itemIds: ['overview', 'market', 'growth', 'distribution'] },
+  { label: 'Company', itemIds: ['profitability', 'peers', 'valuation'] },
+  { label: 'Governance', itemIds: ['ownership', 'management'] },
+]

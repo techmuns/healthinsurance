@@ -71,6 +71,25 @@ body {
       border-color 0.25s ease,
       background-color 0.25s ease;
   }
+
+  /* Premium hover: a very slight lift + softer-but-deeper shadow. Opt-in so
+     large section shells stay calm; applied to the smaller info cards. */
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    border-color: rgba(39, 69, 126, 0.16);
+    box-shadow:
+      0 2px 4px rgba(23, 43, 77, 0.04),
+      0 18px 40px rgba(23, 43, 77, 0.1);
+  }
+
+  /* Selected / highlighted company: soft navy tint + subtle ring + glow so the
+     row/bar/cell is instantly findable without being loud. */
+  .focal-mark {
+    background-color: rgba(39, 69, 126, 0.06);
+    box-shadow:
+      inset 0 0 0 1px rgba(39, 69, 126, 0.18),
+      0 4px 14px rgba(39, 69, 126, 0.1);
+  }
 }
 
 /* Respect reduced-motion preferences. */

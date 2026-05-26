@@ -4,6 +4,7 @@ import { SegmentedControl } from '@/components/SegmentedControl'
 import { InsightBox } from '@/components/InsightBox'
 import { ChartFrame, HorizontalBarChart } from '@/components/charts'
 import { Heatmap } from '@/components/Heatmap'
+import { BestInColumnLegend } from '@/components/LeaderDot'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
 import { peerRows } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
@@ -36,7 +37,7 @@ export function CompetitivePositioning() {
   const acc = metricAccessor[metric]
   const rankingData = rows
     .filter((r) => !(acc.key === 'combinedRatio' && r.combinedRatio === 0))
-    .map((r) => ({ label: r.company.replace(' Insurance', ''), value: r[acc.key] as number, focal: r.focal }))
+    .map((r) => ({ label: r.shortName, value: r[acc.key] as number, focal: r.focal }))
     .sort((a, b) => (acc.invert ? a.value - b.value : b.value - a.value))
 
   return (
@@ -73,8 +74,19 @@ export function CompetitivePositioning() {
       }
     >
       {view === 'Ranking' && (
-        <ChartFrame headline={`Peer leaderboard — ${metric}`} caption={`${group} peer group · mock data`} height="auto">
-          <HorizontalBarChart data={rankingData} unit={acc.unit} diverging={metric === 'Market Share'} height={Math.max(220, rankingData.length * 44)} />
+        <ChartFrame
+          headline={`Peer leaderboard — ${metric}`}
+          caption={`${group} peer group · mock data`}
+          height="auto"
+          footnote={<BestInColumnLegend />}
+        >
+          <HorizontalBarChart
+            data={rankingData}
+            unit={acc.unit}
+            diverging={metric === 'Market Share'}
+            leaderLabel={rankingData[0]?.label}
+            height={Math.max(220, rankingData.length * 44)}
+          />
         </ChartFrame>
       )}
       {view === 'Table' && (
@@ -83,8 +95,9 @@ export function CompetitivePositioning() {
         </ChartFrame>
       )}
       {view === 'Heatmap' && (
-        <ChartFrame headline="Peer scorecard — green is better on each metric" caption={`${group} peer group · mock data`} height="auto">
+        <ChartFrame headline="Peer scorecard — green is better on each metric" caption={`${group} peer group · mock data`} height="auto" footnote={<BestInColumnLegend />}>
           <Heatmap
+            markBest
             columns={[
               { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
               { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)}` },
@@ -94,7 +107,7 @@ export function CompetitivePositioning() {
               { key: 'valuation', label: 'P/GWP', invert: true, format: (v) => `${v.toFixed(1)}x` },
             ]}
             rows={rows.map((r) => ({
-              label: r.company.replace(' Insurance', ''),
+              label: r.shortName,
               focal: r.focal,
               values: {
                 gwpGrowth: r.gwpGrowth,

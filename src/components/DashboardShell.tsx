@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { OrganicIconBlob } from './OrganicIconBlob'
 import { Icon } from './icons'
 import { TopFilterBar } from './TopFilterBar'
-import { navItems } from '@/nav'
+import { navItems, navGroups } from '@/nav'
 
 export interface DashboardShellProps {
   active: string
@@ -31,35 +31,44 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
             </div>
           </div>
 
-          <nav className="mt-2 flex flex-1 flex-col gap-0.5 border-t border-[rgba(182,139,58,0.16)] pt-3">
-            {navItems.map((item) => {
-              const isActive = item.id === active
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onNavigate(item.id)}
-                  title={item.question}
-                  className={[
-                    'group flex items-center gap-2.5 rounded-2xl py-1 pl-1.5 pr-3 text-left text-[13px] leading-tight transition-all duration-200',
-                    isActive
-                      ? 'border border-white/12 bg-gradient-to-br from-[#2A4680] to-[#1E3563] font-semibold text-white shadow-[0_8px_20px_rgba(23,43,77,0.16)]'
-                      : 'border border-transparent text-[#657184] hover:bg-white/55 hover:text-navy-deep',
-                  ].join(' ')}
-                >
-                  <OrganicIconBlob
-                    shape={isActive ? 'blob-b' : 'blob-d'}
-                    tone={isActive ? 'invert' : 'navySoft'}
-                    size="sm"
-                    interactive={!isActive}
-                    className={isActive ? '' : 'ring-1 ring-white/80'}
-                  >
-                    <Icon name={item.icon} />
-                  </OrganicIconBlob>
-                  <span className="whitespace-nowrap">{item.label}</span>
-                </button>
-              )
-            })}
+          <nav className="mt-2 flex flex-1 flex-col gap-0.5 border-t border-[rgba(182,139,58,0.16)] pt-2.5">
+            {navGroups.map((groupItem, gi) => (
+              <div key={groupItem.label} className={gi === 0 ? '' : 'mt-2'}>
+                <p className="mb-0.5 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep/70">
+                  {groupItem.label}
+                </p>
+                {groupItem.itemIds.map((id) => {
+                  const item = navItems.find((n) => n.id === id)
+                  if (!item) return null
+                  const isActive = item.id === active
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => onNavigate(item.id)}
+                      title={item.question}
+                      className={[
+                        'group flex w-full items-center gap-2.5 rounded-2xl py-1 pl-1.5 pr-3 text-left text-[13px] leading-tight transition-all duration-200',
+                        isActive
+                          ? 'border border-white/12 bg-gradient-to-br from-[#2A4680] to-[#1E3563] font-semibold text-white shadow-[0_8px_20px_rgba(23,43,77,0.16)]'
+                          : 'border border-transparent text-[#657184] hover:bg-white/55 hover:text-navy-deep',
+                      ].join(' ')}
+                    >
+                      <OrganicIconBlob
+                        shape={isActive ? 'blob-b' : 'blob-d'}
+                        tone={isActive ? 'invert' : 'navySoft'}
+                        size="sm"
+                        interactive={!isActive}
+                        className={isActive ? '' : 'ring-1 ring-white/80'}
+                      >
+                        <Icon name={item.icon} />
+                      </OrganicIconBlob>
+                      <span className="whitespace-nowrap">{item.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
           </nav>
 
           <div className="mt-3 rounded-2xl border border-[rgba(182,139,58,0.2)] bg-white/55 px-3 py-2.5">

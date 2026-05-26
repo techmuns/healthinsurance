@@ -99,12 +99,14 @@ export function getMarketShareSlices(filters: FilterInput): ShareSlice[] {
         name: i.shortName,
         value: Math.round((i.premiumCollection / total) * 1000) / 10,
         focal: i.id === highlightId,
+        id: i.id,
+        takeaway: i.takeaway,
       }))
       .sort((a, b) => b.value - a.value)
   }
 
   const slices: ShareSlice[] = list
-    .map((i) => ({ name: i.shortName, value: i.marketShare, focal: i.id === highlightId }))
+    .map((i) => ({ name: i.shortName, value: i.marketShare, focal: i.id === highlightId, id: i.id, takeaway: i.takeaway }))
     .sort((a, b) => b.value - a.value)
   const others = Math.round((100 - slices.reduce((s, d) => s + d.value, 0)) * 10) / 10
   if (others >= 0.5) slices.push({ name: 'Others', value: others })
