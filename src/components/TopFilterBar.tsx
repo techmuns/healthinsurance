@@ -12,14 +12,6 @@ const scopeOptions: SegmentedOption<Scope>[] = [
   { value: 'company-view', label: 'Company' },
 ]
 
-// Compact labels for the "You are viewing" summary sentence.
-const peerGroupShort: Record<PeerGroup, string> = {
-  SAHI: 'SAHI insurers',
-  General: 'General insurers',
-  Life: 'Life insurers',
-  All: 'All insurers',
-}
-
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   return (
     <span
@@ -43,8 +35,6 @@ export function TopFilterBar({ section }: { section?: string }) {
     setPeriod,
   } = useFilters()
   const isOverview = section === 'overview'
-  const highlighted = insurers.find((c) => c.id === highlightedCompany) ?? insurers[0]
-  const annualOnly = period !== 'Annual'
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
@@ -111,32 +101,6 @@ export function TopFilterBar({ section }: { section?: string }) {
             </span>
           </div>
         </div>
-      </div>
-
-      {/* Active-filter summary — updates live so a filter change is always visible. */}
-      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-[12.5px] text-ink-secondary">
-        <span>You are viewing:</span>
-        <span className="font-semibold text-navy-deep">{peerGroupShort[peerGroup]}</span>
-        <span className="text-soft-border">·</span>
-        <span className="font-semibold text-navy-deep">{period}</span>
-        <span className="text-soft-border">·</span>
-        <span className="font-semibold text-navy-primary">{highlighted.shortName}</span>
-        <span>highlighted</span>
-        {isOverview && scope === 'company-view' && (
-          <>
-            <span className="text-soft-border">·</span>
-            <span className="font-semibold text-navy-deep">Company view</span>
-          </>
-        )}
-        <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
-          <span className="h-1.5 w-1.5 rounded-full bg-current" />
-          Demo dataset
-        </span>
-        {annualOnly && (
-          <span className="inline-flex items-center rounded-full bg-gold-soft px-2 py-0.5 text-[11px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
-            Annual mock data only
-          </span>
-        )}
       </div>
     </div>
   )
