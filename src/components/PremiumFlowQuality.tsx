@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { BadgeCheck, ChevronDown, Layers, Repeat, TrendingDown } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import {
   compareQuarters,
@@ -12,7 +12,7 @@ import {
   getQualityMix,
   getRetentionCohort,
 } from '@/data/mockData'
-import type { FlowPoint, MixSeries } from '@/data/mockData'
+import type { FlowPoint, MixSeries, RetentionNode } from '@/data/mockData'
 import type { Insurer } from '@/data/types'
 
 type Period = 'Quarterly' | 'Yearly'
@@ -20,37 +20,38 @@ type Tab = 'Flow' | 'Mix' | 'Retention'
 type Stage = 'GWP' | 'NWP' | 'NEP'
 type MixType = 'Customer' | 'Channel' | 'Quality'
 type MixView = 'Share' | 'Value'
-type RetView = 'Customers' | 'Premium' | 'Renewal'
+type RetView = 'Cohort' | 'Renewal' | 'Stay'
 
-// Color meaning: deep blue = core premium / written, teal = retained / positive,
-// steel = earned, amber = concentration watch, soft red = leakage / ceded,
-// gold = premium accent (used sparingly), grey = background / inactive.
+// Color meaning: deep blue = core premium / retail, teal = retained / renewal /
+// positive, steel = earned / broker, amber = agency / fresh / watch, soft red =
+// leakage / drop-off, green = direct, gold = accents, grey = inactive.
 const FOCAL = '#27457E'
 const TEAL = '#168E8E'
 const NEP_BLUE = '#3D7396'
 const AMBER = '#C2902F'
 const RED = '#C8635A'
 const GOLD = '#B68B3A'
+const GREEN = '#3F9B6B'
 const SLATE = '#64748B'
-const LAV = '#6E7BD6'
 const GREY = '#94A3B8'
 const GRID = '#ECEFF5'
 const AXIS_TEXT = '#6B7280'
-// Inactive / muted segment fills for the conversion bar.
+// Inactive / muted segment fills for the Flow conversion bar.
 const MUTE_NEAR = '#D3DBE6'
 const MUTE_FAR = '#E7EBF1'
 const CEDED_MUTE = 'rgba(199, 93, 90, 0.34)'
 
+// Elegant, professional segment palette shared by the Mix tab.
 const SEG_COLORS: Record<string, string> = {
-  retail: TEAL,
+  retail: FOCAL,
   group: SLATE,
-  banca: AMBER,
-  agency: FOCAL,
-  broker: LAV,
-  direct: TEAL,
+  banca: TEAL,
+  agency: AMBER,
+  broker: NEP_BLUE,
+  direct: GREEN,
   other: GREY,
   renewal: TEAL,
-  fresh: FOCAL,
+  fresh: AMBER,
 }
 
 const fmtCr = (v: number) => `₹${Math.round(v).toLocaleString('en-IN')} Cr`
@@ -67,45 +68,11 @@ function hexA(hex: string, a: number): string {
 interface Chip {
   label: string
   value: string
-  sub: string
   note?: string
   color: string
-  icon: typeof Repeat
 }
 
-function InsightChips({ chips }: { chips: Chip[] }) {
-  return (
-    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-      {chips.map((c) => {
-        const Icon = c.icon
-        return (
-          <div
-            key={c.label}
-            className="relative overflow-hidden rounded-xl2 border border-soft-border p-3.5"
-            style={{ background: `linear-gradient(135deg, ${hexA(c.color, 0.09)}, transparent 65%)` }}
-          >
-            <span className="absolute left-0 top-0 h-full w-1" style={{ background: c.color }} />
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md" style={{ background: hexA(c.color, 0.14), color: c.color }}>
-                <Icon className="h-3 w-3" />
-              </span>
-              {c.label}
-            </div>
-            <p className="mt-1.5 font-display text-[20px] leading-none text-navy-deep">{c.value}</p>
-            <p className="mt-1 text-[11px] text-ink-secondary">{c.sub}</p>
-            {c.note && (
-              <span className="mt-1.5 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-semibold" style={{ color: GOLD, background: hexA(GOLD, 0.12) }}>
-                {c.note}
-              </span>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
-/** Slim horizontal pills — replaces the bulky cards on the Flow tab. */
+/** Slim horizontal insight pills — the shared insight treatment for all tabs. */
 function SlimStrip({ chips }: { chips: Chip[] }) {
   return (
     <div className="flex flex-wrap gap-2">
@@ -217,6 +184,9 @@ function LegendSwatch({ color, children }: { color: string; children: React.Reac
   )
 }
 
+// Loosened label-content props (Recharts types x/y/width as string|number).
+type LabelProps = { x?: number | string; y?: number | string; width?: number | string; value?: number | string; index?: number }
+
 // --- Flow tab: one premium bar per year, transitioning through stages --------
 
 const STAGE_DEFS: { k: Stage; color: string }[] = [
@@ -226,10 +196,10 @@ const STAGE_DEFS: { k: Stage; color: string }[] = [
 ]
 
 function stageSegColor(seg: 'earned' | 'mid' | 'ceded', stage: Stage): string {
-  if (stage === 'GWP') return FOCAL // whole bar = gross premium
-  if (stage === 'NWP') return seg === 'ceded' ? CEDED_MUTE : TEAL // retained highlighted, ceded muted
-  if (seg === 'earned') return NEP_BLUE // earned highlighted
-  return seg === 'mid' ? MUTE_NEAR : MUTE_FAR // remaining muted
+  if (stage === 'GWP') return FOCAL
+  if (stage === 'NWP') return seg === 'ceded' ? CEDED_MUTE : TEAL
+  if (seg === 'earned') return NEP_BLUE
+  return seg === 'mid' ? MUTE_NEAR : MUTE_FAR
 }
 
 function FlowTooltip({ active, payload, stage }: { active?: boolean; payload?: { payload?: FlowPoint }[]; stage: Stage }) {
@@ -268,7 +238,7 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
   }
   const data = flow.map((f) => ({ ...f, earned: f.nep, mid: Math.max(0, f.nwp - f.nep), ceded: Math.max(0, f.gwp - f.nwp) }))
 
-  const makeLabel = (key: 'gwp' | 'nwp' | 'nep') => (props: { x?: number | string; y?: number | string; width?: number | string; index?: number }) => {
+  const makeLabel = (key: 'gwp' | 'nwp' | 'nep') => (props: LabelProps) => {
     const x = Number(props.x) || 0
     const y = Number(props.y) || 0
     const width = Number(props.width) || 0
@@ -290,7 +260,6 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
 
   return (
     <div>
-      {/* Stage selector — same bar, highlight a different portion */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex items-center gap-0.5 rounded-lg border border-soft-border bg-ice p-0.5">
           {STAGE_DEFS.map((s) => {
@@ -358,7 +327,7 @@ function MixTooltip({ active, payload, label, segments, view }: { active?: boole
 }
 
 function MixView({ companyId, period }: { companyId: string; period: Period }) {
-  const [mixType, setMixType] = useState<MixType>('Customer')
+  const [mixType, setMixType] = useState<MixType>('Channel')
   const [view, setView] = useState<MixView>('Share')
 
   const series: MixSeries | null =
@@ -399,7 +368,7 @@ function MixView({ companyId, period }: { companyId: string; period: Period }) {
             ))}
           </div>
           <ResponsiveContainer width="100%" height={252}>
-            <BarChart data={rows} margin={{ top: 6, right: 6, left: 0, bottom: 4 }} barCategoryGap="28%">
+            <BarChart data={rows} margin={{ top: 6, right: 6, left: 0, bottom: 4 }} barCategoryGap="32%">
               <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
               <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
               <YAxis
@@ -418,7 +387,7 @@ function MixView({ companyId, period }: { companyId: string; period: Period }) {
                   name={seg.label}
                   stackId="mix"
                   fill={SEG_COLORS[seg.key] ?? GREY}
-                  maxBarSize={46}
+                  maxBarSize={38}
                   isAnimationActive={false}
                   radius={idx === series.segments.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
                 />
@@ -431,68 +400,115 @@ function MixView({ companyId, period }: { companyId: string; period: Period }) {
   )
 }
 
-// --- Retention tab: policyholder cohort survival -----------------------------
+// --- Retention tab: renewal trend + cohort survival --------------------------
 
-function RetentionView({ companyId }: { companyId: string }) {
-  const [view, setView] = useState<RetView>('Customers')
+function RenewalTooltip({ active, payload, label }: { active?: boolean; payload?: { value?: number }[]; label?: string }) {
+  if (!active || !payload?.length || !label) return null
+  return (
+    <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
+      <p className="text-[11px] font-semibold text-navy-deep">{label}</p>
+      <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-secondary">
+        <span className="h-2 w-2 rounded-sm" style={{ background: TEAL }} />
+        Renewal rate <span className="font-semibold text-navy-deep">{pct(Number(payload[0].value ?? 0), 1)}</span>
+      </p>
+    </div>
+  )
+}
+
+function RenewalLine({ companyId, period }: { companyId: string; period: Period }) {
+  const series = getCompareSeries(companyId, 'renewalRate', period)
+  const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  if (series.every((v) => v == null)) {
+    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Renewal rate is not reported for this company — data pending.</div>
+  }
+  const data = periods.map((p, i) => ({ period: p, renewal: series[i] }))
+  const endLabel = (props: LabelProps) => {
+    const x = Number(props.x) || 0
+    const y = Number(props.y) || 0
+    if (props.index !== periods.length - 1 || props.value == null) return <g />
+    return (
+      <text x={x + 6} y={y} dy={3.5} fontSize={10.5} fontWeight={700} fill={TEAL}>
+        {pct(Number(props.value), 0)}
+      </text>
+    )
+  }
+  return (
+    <ResponsiveContainer width="100%" height={236}>
+      <LineChart data={data} margin={{ top: 16, right: 40, left: 0, bottom: 4 }}>
+        <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
+        <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
+        <YAxis
+          tickFormatter={(v: number) => `${v}%`}
+          tickLine={false}
+          axisLine={false}
+          tick={{ fontSize: 11, fill: AXIS_TEXT }}
+          width={40}
+          domain={[(min: number) => Math.max(0, Math.floor(min - 2)), (max: number) => Math.min(100, Math.ceil(max + 2))]}
+        />
+        <Tooltip cursor={{ stroke: '#C9D2E0', strokeWidth: 1 }} content={<RenewalTooltip />} />
+        <Line dataKey="renewal" stroke={TEAL} strokeWidth={2.4} dot={{ r: 3, fill: TEAL, strokeWidth: 0 }} activeDot={{ r: 4 }} isAnimationActive={false} label={endLabel} />
+      </LineChart>
+    </ResponsiveContainer>
+  )
+}
+
+function CohortJourney({ cohort, metric }: { cohort: RetentionNode[]; metric: 'customers' | 'premium' }) {
+  const value = (i: number) => (metric === 'premium' ? cohort[i].premium : cohort[i].customers)
+  const nodeLabel = (i: number) => (metric === 'premium' ? `₹${value(i).toFixed(0)}` : `${value(i).toFixed(0)}`)
+  return (
+    <div className="flex items-start pt-1">
+      {cohort.map((n, i) => {
+        const endpoint = i === cohort.length - 1
+        return (
+          <div key={n.year} className="contents">
+            {i > 0 && (
+              <div className="relative mt-7 h-0 flex-1">
+                <div className="border-t-2 border-dashed border-soft-border" />
+                <span
+                  className="absolute left-1/2 -top-3 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                  style={{ color: RED, background: hexA(RED, 0.1) }}
+                >
+                  −{Math.abs(value(i) - value(i - 1)).toFixed(0)}
+                </span>
+              </div>
+            )}
+            <div className="flex w-16 shrink-0 flex-col items-center">
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-full text-[13px] font-semibold text-white shadow-soft"
+                style={{ background: `linear-gradient(150deg, ${endpoint ? TEAL : FOCAL}, ${hexA(endpoint ? TEAL : FOCAL, 0.78)})`, opacity: i === 0 ? 1 : 0.96 }}
+              >
+                {nodeLabel(i)}
+              </div>
+              <span className="mt-2 text-[11.5px] font-semibold text-navy-deep">{n.year}</span>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
+  const [view, setView] = useState<RetView>('Cohort')
   const cohort = getRetentionCohort(companyId)
   if (!cohort) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Retention is not reported for this company — data pending.</div>
   }
-  const nodeValue = (i: number) => {
-    const n = cohort[i]
-    if (view === 'Premium') return n.premium
-    if (view === 'Renewal') return i === 0 ? 100 : (n.renewalPct ?? 0)
-    return n.customers
-  }
-  const nodeLabel = (i: number) => {
-    if (view === 'Renewal') return i === 0 ? 'Start' : pct(nodeValue(i), 0)
-    if (view === 'Premium') return `₹${nodeValue(i).toFixed(0)}`
-    return `${nodeValue(i).toFixed(0)}`
-  }
+  const caption =
+    view === 'Renewal'
+      ? 'Year-on-year renewal rate — higher means stickier premium.'
+      : view === 'Stay'
+        ? 'Premium retained from a Year-1 cohort, indexed to 100 (renewing books re-price up).'
+        : 'Of 100 customers in Year 1, how many remain through Year 4+.'
 
   return (
     <div>
       <div className="mb-4 flex justify-end">
-        <SegmentedControl<RetView> label="View" options={['Customers', 'Premium', 'Renewal'] as RetView[]} value={view} onChange={setView} size="sm" />
+        <SegmentedControl<RetView> label="View" options={['Cohort', 'Renewal', 'Stay'] as RetView[]} value={view} onChange={setView} size="sm" />
       </div>
-      <div className="flex items-start">
-        {cohort.map((n, i) => {
-          const endpoint = i === cohort.length - 1
-          return (
-            <div key={n.year} className="contents">
-              {i > 0 && (
-                <div className="relative mt-7 h-0 flex-1">
-                  <div className="border-t-2 border-dashed border-soft-border" />
-                  {(() => {
-                    const isDrop = view !== 'Renewal'
-                    const drop = isDrop ? nodeValue(i) - nodeValue(i - 1) : cohort[i].renewalPct ?? 0
-                    return (
-                      <span
-                        className="absolute left-1/2 -top-3 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
-                        style={{ color: isDrop ? RED : TEAL, background: isDrop ? hexA(RED, 0.1) : hexA(TEAL, 0.1) }}
-                      >
-                        {isDrop ? `−${Math.abs(drop).toFixed(0)}` : `${drop.toFixed(0)}% renew`}
-                      </span>
-                    )
-                  })()}
-                </div>
-              )}
-              <div className="flex w-16 shrink-0 flex-col items-center">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-full text-[13px] font-semibold text-white shadow-soft"
-                  style={{ background: `linear-gradient(150deg, ${endpoint ? TEAL : FOCAL}, ${hexA(endpoint ? TEAL : FOCAL, 0.78)})`, opacity: i === 0 ? 1 : 0.96 }}
-                >
-                  {nodeLabel(i)}
-                </div>
-                <span className="mt-2 text-[11.5px] font-semibold text-navy-deep">{n.year}</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-      <p className="mt-4 text-[12px] text-ink-secondary">
-        Higher renewal means <span className="font-semibold" style={{ color: GOLD }}>more sticky premium</span>.
+      {view === 'Renewal' ? <RenewalLine companyId={companyId} period={period} /> : <CohortJourney cohort={cohort} metric={view === 'Stay' ? 'premium' : 'customers'} />}
+      <p className="mt-4 text-[11.5px] text-ink-secondary">
+        {caption} <span className="font-semibold" style={{ color: GOLD }}>{view === 'Renewal' ? 'Higher is better.' : 'Sticky premium.'}</span>
       </p>
     </div>
   )
@@ -516,7 +532,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
   const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
   const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'How Sticky the Customer Base Is'
-  const tabPhrase = tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium mix' : 'Customer retention'
+  const tabPhrase = tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal and persistence over time'
 
   const chips = useMemo<Chip[]>(() => {
     if (!company) return []
@@ -532,44 +548,46 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
       const lbl = period === 'Quarterly' ? 'QoQ' : 'YoY'
       const trend = (d: number) => (Math.abs(d) < 0.3 ? `Stable ${lbl}` : `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} pp ${lbl}`)
       return [
-        { label: 'Retention Ratio', value: pct(ret), sub: 'NWP / GWP', note: trend(dRet), color: TEAL, icon: Repeat },
-        { label: 'Earned Ratio', value: pct(earn), sub: 'NEP / NWP', note: trend(dEarn), color: NEP_BLUE, icon: BadgeCheck },
-        { label: 'Leakage', value: fmtCr(last.gwp - last.nwp), sub: 'ceded to reinsurers', note: dRet > 0.1 ? 'Improving' : 'Watch', color: RED, icon: TrendingDown },
+        { label: 'Retention Ratio', value: pct(ret), note: trend(dRet), color: TEAL },
+        { label: 'Earned Ratio', value: pct(earn), note: trend(dEarn), color: NEP_BLUE },
+        { label: 'Leakage', value: fmtCr(last.gwp - last.nwp), note: dRet > 0.1 ? 'Improving' : 'Watch', color: RED },
       ]
     }
     if (tab === 'Mix') {
       const ch = getChannelMix(company.id, period)
       const ql = getQualityMix(company.id, period)
+      const cm = getCustomerMix(company.id, period)
       const out: Chip[] = []
       if (ch) {
         const lastRow = ch.rows[lastIdx]
-        const firstRow = ch.rows[0]
         const largest = [...ch.segments].sort((a, b) => Number(lastRow[b.key]) - Number(lastRow[a.key]))[0]
-        const bancaNow = Number(lastRow.banca)
-        const rising = bancaNow > Number(firstRow.banca)
-        out.push({ label: 'Largest Source', value: largest.label, sub: `${pct(Number(lastRow[largest.key]))} of GWP`, color: SEG_COLORS[largest.key] ?? FOCAL, icon: Layers })
-        out.push({ label: 'Concentration Risk', value: `Banca ${pct(bancaNow)}`, sub: rising ? 'channel concentration' : 'easing vs start', note: rising ? 'Rising' : undefined, color: AMBER, icon: TrendingDown })
+        out.push({ label: 'Largest Channel', value: largest.label, note: pct(Number(lastRow[largest.key])), color: SEG_COLORS[largest.key] ?? FOCAL })
       }
-      if (ql) out.push({ label: 'Renewal Strength', value: pct(Number(ql.rows[lastIdx].renewal)), sub: 'renewal premium share', color: TEAL, icon: Repeat })
+      if (ql) {
+        const r = Number(ql.rows[lastIdx].renewal)
+        out.push({ label: 'Renewal Share', value: pct(r), note: r >= 70 ? 'Strong' : r >= 60 ? 'Healthy' : 'Watch', color: TEAL })
+      }
+      if (cm) {
+        const retailNow = Number(cm.rows[lastIdx].retail)
+        const retailThen = Number(cm.rows[0].retail)
+        out.push({ label: 'Retail Mix', value: pct(retailNow), note: retailNow > retailThen + 0.5 ? 'Improving' : 'Stable', color: FOCAL })
+      }
       return out
     }
     const cohort = getRetentionCohort(company.id)
     if (!cohort) return []
+    const rrSeries = getCompareSeries(company.id, 'renewalRate', period)
+    const rrLast = rrSeries[lastIdx]
+    const rrFirst = rrSeries.find((v) => v != null) ?? null
+    const rrTrend = rrLast != null && rrFirst != null ? (rrLast > rrFirst + 0.3 ? 'Improving' : 'Stable') : undefined
     let maxDrop = 0
-    let maxAt = 1
-    for (let i = 1; i < cohort.length; i++) {
-      const d = cohort[i - 1].customers - cohort[i].customers
-      if (d > maxDrop) {
-        maxDrop = d
-        maxAt = i
-      }
-    }
+    for (let i = 1; i < cohort.length; i++) maxDrop = Math.max(maxDrop, cohort[i - 1].customers - cohort[i].customers)
     return [
-      { label: 'Year-2 Retention', value: pct(cohort[1].customers), sub: 'of the Year-1 cohort', color: TEAL, icon: Repeat },
-      { label: 'Long-term Stickiness', value: pct(cohort[3].customers), sub: 'remain at Year 4+', note: cohort[3].customers >= 75 ? 'Sticky book' : undefined, color: FOCAL, icon: BadgeCheck },
-      { label: 'Drop-off Watch', value: `−${maxDrop.toFixed(0)} pp`, sub: `${cohort[maxAt - 1].year} → ${cohort[maxAt].year}`, color: RED, icon: TrendingDown },
+      { label: 'Renewal Rate', value: rrLast != null ? pct(rrLast) : '—', note: rrTrend, color: TEAL },
+      { label: '2-Yr Persistence', value: pct(cohort[1].customers), note: cohort[1].customers >= 85 ? 'Strong' : 'Stable', color: FOCAL },
+      { label: 'Drop-off', value: `−${maxDrop.toFixed(0)} pp`, note: 'Watch', color: RED },
     ]
-  }, [tab, company, period, companies, lastIdx])
+  }, [tab, company, period, lastIdx])
 
   const basis: string[] = useMemo(() => {
     const src = 'Source: IRDAI / company filing'
@@ -599,14 +617,18 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
         <span className="font-semibold text-navy-deep">{name}</span> · <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
 
-      {/* Insight strip / cards */}
-      {chips.length > 0 && <div className="mt-3.5">{tab === 'Flow' ? <SlimStrip chips={chips} /> : <InsightChips chips={chips} />}</div>}
+      {/* Slim insight strip (shared treatment across all tabs) */}
+      {chips.length > 0 && (
+        <div className="mt-3.5">
+          <SlimStrip chips={chips} />
+        </div>
+      )}
 
       {/* Tab content */}
       <div className="mt-4">
         {tab === 'Flow' && company && <FlowView companyId={company.id} period={period} />}
         {tab === 'Mix' && company && <MixView companyId={company.id} period={period} />}
-        {tab === 'Retention' && company && <RetentionView companyId={company.id} />}
+        {tab === 'Retention' && company && <RetentionView companyId={company.id} period={period} />}
       </div>
 
       {/* Basis tags */}
