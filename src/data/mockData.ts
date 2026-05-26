@@ -132,8 +132,10 @@ export interface QuarterlyReview {
   whatMattersNext: string
   topRisk: string
   nextTrigger: string
-  biggestPositive: { label: string; detail: string }
-  biggestNegative: { label: string; detail: string }
+  /** Compact, visual-strip fields (metric · value/delta · one short line). */
+  biggestPositive: { label: string; value: string; note: string }
+  biggestNegative: { label: string; value: string; note: string }
+  nextWatch: { label: string; note: string }
   bridge: YtdBridgeInput[]
 }
 
@@ -173,8 +175,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether retail momentum holds as banca shelf-space tightens at a peer.',
     topRisk: 'Rising banca dependence concentrates fresh-premium growth in one channel.',
     nextTrigger: 'Q1 FY26 loss-ratio trend and fresh-premium channel mix.',
-    biggestPositive: { label: 'Combined ratio', detail: '−1.6 pp YoY to 96.8% — a multi-year low' },
-    biggestNegative: { label: 'Banca concentration', detail: '+4 pp to 31%, above ~25% guidance' },
+    biggestPositive: { label: 'Combined ratio', value: '96.8%, −1.6 pp', note: 'Margin improved' },
+    biggestNegative: { label: 'Banca mix', value: '31%, +4 pp', note: 'Concentration rising' },
+    nextWatch: { label: 'Retail GWP', note: 'Watch next quarter' },
     bridge: [gwp(7200, 5180), nwp(6540, 4720), pat(790, 560)],
   },
   'star-health': {
@@ -184,8 +187,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether the scale leader can push combined ratio below 98.',
     topRisk: 'Thin underwriting margin leaves little buffer if loss ratios rise.',
     nextTrigger: 'Loss-ratio trajectory and pricing actions in Q1 FY26.',
-    biggestPositive: { label: 'Market share', detail: 'Largest SAHI pool share at 33%' },
-    biggestNegative: { label: 'Combined ratio', detail: '99.4% — near-breakeven underwriting' },
+    biggestPositive: { label: 'Market share', value: '33%', note: 'Scale leader' },
+    biggestNegative: { label: 'Combined ratio', value: '99.4%', note: 'Thin margin' },
+    nextWatch: { label: 'Loss ratio', note: 'Watch next quarter' },
     bridge: [gwp(12400, 9050), nwp(11100, 8050), pat(620, 430)],
   },
   'care-health': {
@@ -195,8 +199,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether retention investments lift renewals.',
     topRisk: 'Below-peer retention pressures renewal-led growth.',
     nextTrigger: 'Retention and renewal-rate trend next quarter.',
-    biggestPositive: { label: 'GWP growth', detail: '20.1% — second-fastest in SAHI' },
-    biggestNegative: { label: 'Retention', detail: '86% — below Niva Bupa and Star' },
+    biggestPositive: { label: 'GWP growth', value: '20.1%', note: 'Second-fastest' },
+    biggestNegative: { label: 'Retention', value: '86%', note: 'Below leaders' },
+    nextWatch: { label: 'Renewals', note: 'Watch next quarter' },
     bridge: [gwp(6400, 4650), nwp(5700, 4150), pat(410, 290)],
   },
   'aditya-birla': {
@@ -206,8 +211,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether rapid growth converts to underwriting profit.',
     topRisk: 'Growth-at-any-cost with combined ratio above 100 and the richest valuation (4.2x).',
     nextTrigger: 'Combined-ratio glide-path and EOM compliance.',
-    biggestPositive: { label: 'GWP growth', detail: '28.6% — fastest in SAHI' },
-    biggestNegative: { label: 'Combined ratio', detail: '101.8% — above breakeven' },
+    biggestPositive: { label: 'GWP growth', value: '28.6%', note: 'Fastest in SAHI' },
+    biggestNegative: { label: 'Combined ratio', value: '101.8%', note: 'Above breakeven' },
+    nextWatch: { label: 'Combined ratio', note: 'Watch glide-path' },
     bridge: [gwp(4100, 2950), nwp(3650, 2620), pat(null, null)],
   },
   manipalcigna: {
@@ -217,8 +223,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether scale improves enough to fix the expense ratio.',
     topRisk: 'Sub-scale economics with combined ratio above 103.',
     nextTrigger: 'Expense-ratio improvement and share stabilisation.',
-    biggestPositive: { label: 'Settlement ratio', detail: 'Stable at 96.8%' },
-    biggestNegative: { label: 'Combined ratio', detail: '103.2% — weakest in SAHI' },
+    biggestPositive: { label: 'Settlement', value: '96.8%', note: 'Stable' },
+    biggestNegative: { label: 'Combined ratio', value: '103.2%', note: 'Weakest in SAHI' },
+    nextWatch: { label: 'Expense ratio', note: 'Watch next quarter' },
     bridge: [gwp(2600, 1880), nwp(2300, 1660), pat(null, null)],
   },
   'icici-lombard': {
@@ -228,8 +235,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether pricing discipline pulls combined ratio under 100.',
     topRisk: 'Combined ratio above 100 despite strong returns; premium valuation (5.8x).',
     nextTrigger: 'Combined-ratio trend and health-segment growth.',
-    biggestPositive: { label: 'ROE', detail: '18.4% — best in the tracked set' },
-    biggestNegative: { label: 'Combined ratio', detail: '102.6% — above breakeven' },
+    biggestPositive: { label: 'ROE', value: '18.4%', note: 'Best in set' },
+    biggestNegative: { label: 'Combined ratio', value: '102.6%', note: 'Above breakeven' },
+    nextWatch: { label: 'Combined ratio', note: 'Watch next quarter' },
     bridge: [gwp(21000, 15200), nwp(18600, 13500), pat(1900, 1380)],
   },
   'bajaj-general': {
@@ -239,8 +247,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether growth re-accelerates without margin loss.',
     topRisk: 'Tepid growth could cede share to faster peers.',
     nextTrigger: 'Growth re-acceleration in retail health.',
-    biggestPositive: { label: 'Combined ratio', detail: '100.4% — near breakeven' },
-    biggestNegative: { label: 'GWP growth', detail: '9.8% — slowest general peer' },
+    biggestPositive: { label: 'Combined ratio', value: '100.4%', note: 'Near breakeven' },
+    biggestNegative: { label: 'GWP growth', value: '9.8%', note: 'Slowest general' },
+    nextWatch: { label: 'Growth', note: 'Watch re-acceleration' },
     bridge: [gwp(14500, 10600), nwp(12900, 9400), pat(980, 700)],
   },
   'hdfc-life': {
@@ -250,8 +259,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'VNB-margin trend versus product mix.',
     topRisk: 'Margin compression from competition in protection/par.',
     nextTrigger: 'VNB margin and 61-month persistency.',
-    biggestPositive: { label: 'Persistency', detail: 'Renewal/persistency at 87%' },
-    biggestNegative: { label: 'Margin', detail: 'Mix-led VNB-margin pressure' },
+    biggestPositive: { label: 'Persistency', value: '87%', note: 'Strong' },
+    biggestNegative: { label: 'Margin', value: 'Mix-led', note: 'VNB pressure' },
+    nextWatch: { label: 'VNB margin', note: 'Watch next quarter' },
     bridge: [gwp(56000, 40500), nwp(54000, 39000), pat(null, null)],
   },
   'sbi-life': {
@@ -261,8 +271,9 @@ export const quarterlyReviews: Record<string, QuarterlyReview> = {
     whatMattersNext: 'Whether APE growth picks up.',
     topRisk: 'Growth lag versus faster private life peers.',
     nextTrigger: 'APE growth and VNB margin.',
-    biggestPositive: { label: 'Scale', detail: 'Largest life premium book' },
-    biggestNegative: { label: 'GWP growth', detail: '7.8% — slowest in the set' },
+    biggestPositive: { label: 'Scale', value: 'Largest book', note: 'Market leader' },
+    biggestNegative: { label: 'GWP growth', value: '7.8%', note: 'Slowest in set' },
+    nextWatch: { label: 'APE growth', note: 'Watch next quarter' },
     bridge: [gwp(62000, 45000), nwp(60000, 43500), pat(null, null)],
   },
 }

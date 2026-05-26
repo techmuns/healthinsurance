@@ -3,21 +3,15 @@ import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { IndustryLeaders } from '@/components/IndustryLeaders'
-import { BestInColumnLegend } from '@/components/LeaderDot'
 import { MetricChip } from '@/components/MetricChip'
-import { Heatmap } from '@/components/Heatmap'
-import { QuarterlyChangeCard } from '@/components/QuarterlyChangeCard'
+import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { CompanySignalCard } from '@/components/CompanySignalCard'
 import { PeerRankSnapshot } from '@/components/PeerRankSnapshot'
-import { YtdBridge } from '@/components/YtdBridge'
+import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { useActiveCompany, useFilters } from '@/state/filters'
-import {
-  getFilteredInsurers,
-  getMarketShareSlices,
-  getPeerScorecardData,
-} from '@/lib/insurers'
+import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
 import { getQuarterlyReview } from '@/lib/review'
-import { DATA_FRESHNESS, PEER_GROUP_LABEL, QUARTER, industryMetrics, insurers } from '@/data/mockData'
+import { DATA_FRESHNESS, PEER_GROUP_LABEL, industryMetrics, insurers } from '@/data/mockData'
 
 export function ExecutiveOverview() {
   const filters = useFilters()
@@ -33,8 +27,6 @@ export function ExecutiveOverview() {
   const inFiltered = filtered.some((i) => i.id === company.id)
   const peerList = inFiltered ? filtered : insurers.filter((i) => i.peerGroup === company.peerGroup)
   const slices = getMarketShareSlices(filters)
-  const scorecard = getPeerScorecardData(filters)
-  const s = scorecard.summary
   const groupLabel = PEER_GROUP_LABEL[peerGroup]
   const shareContext = peerGroup === 'All' ? 'Premium-weighted, full universe' : `${groupLabel} pool`
 
@@ -58,7 +50,7 @@ export function ExecutiveOverview() {
             </h1>
             <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
               {isCompanyView
-                ? `How ${company.shortName} stacks up against ${groupLabel.toLowerCase()} — growth, margin and valuation.`
+                ? `How ${company.shortName} stacks up against ${groupLabel.toLowerCase()}.`
                 : 'See who leads, who is improving, and where risk is building.'}
             </p>
           </div>
@@ -88,24 +80,7 @@ export function ExecutiveOverview() {
         </div>
       </header>
 
-      {/* A0. Quarterly review layer — the PE partner-review at the top */}
-      <section>
-        <SectionHeading
-          eyebrow="Partner Review"
-          title="Quarterly Review"
-          note={`${company.shortName} · ${QUARTER.current} vs ${QUARTER.previous}`}
-        />
-        <div className="space-y-4">
-          <QuarterlyChangeCard company={company} review={review} />
-          <div className="grid gap-4 lg:grid-cols-2">
-            <CompanySignalCard company={company} list={peerList} review={review} />
-            <PeerRankSnapshot company={company} list={peerList} />
-          </div>
-          <YtdBridge companyId={company.id} compact />
-        </div>
-      </section>
-
-      {/* B. Industry at a glance — visual story first */}
+      {/* B. Industry Snapshot — the visual hero: donut + leaders */}
       <section>
         <SectionHeading
           eyebrow={isCompanyView ? 'Company Snapshot' : 'Industry Snapshot'}
@@ -113,7 +88,6 @@ export function ExecutiveOverview() {
           note={`${groupLabel} · ${company.shortName} highlighted`}
         />
         <div className="grid gap-4 lg:grid-cols-2">
-          {/* Leadership donut — derived from the active filters */}
           <div className="card-surface card-interactive p-4">
             <div className="mb-3 flex items-baseline justify-between gap-2">
               <p className="text-[12px] font-semibold text-navy-deep">Market Share</p>
@@ -121,93 +95,28 @@ export function ExecutiveOverview() {
             </div>
             <MarketShareDonut data={slices} onSelect={filters.setHighlightedCompany} />
           </div>
-
-          {/* Industry leaders — tabbed top ranking within the active group */}
           <div className="card-surface card-interactive p-4">
             <IndustryLeaders insurers={filtered} highlightId={company.id} onSelect={filters.setHighlightedCompany} />
           </div>
         </div>
+      </section>
 
-        {/* Peer scorecard — full width, self-explanatory */}
-        <div className="card-surface card-interactive mt-4 p-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="font-display text-[15px] text-navy-deep">Peer Scorecard</p>
-            <BestInColumnLegend />
-          </div>
+      {/* C. What Changed — compact visual strip */}
+      <WhatChangedStrip company={company} list={peerList} review={review} />
 
-          {/* Dynamic one-line takeaway */}
-          <p className="mt-1 text-[12px] leading-relaxed text-ink-secondary">
-            <span className="font-semibold text-navy-primary">{s.growthLeader.shortName}</span> leads growth at{' '}
-            {s.growthLeader.growth.toFixed(1)}%
-            {s.marginByCombined ? (
-              <>
-                , while <span className="font-semibold text-navy-primary">{s.marginLeader.shortName}</span> runs the
-                tightest combined ratio at {s.marginLeader.combinedRatio.toFixed(1)}%
-              </>
-            ) : (
-              <>
-                , while <span className="font-semibold text-navy-primary">{s.marginLeader.shortName}</span> leads on ROE
-                at {s.marginLeader.roe.toFixed(1)}%
-              </>
-            )}
-            .{' '}
-            {s.inGroup ? (
-              <>
-                <span className="font-semibold text-navy-deep">{s.highlighted.shortName}</span> ranks #{s.growthRank} of{' '}
-                {s.count} on growth and #{s.marginRank} on {s.marginByCombined ? 'combined ratio' : 'ROE'}.
-              </>
-            ) : (
-              <>
-                <span className="font-semibold text-navy-deep">{s.highlighted.shortName}</span> sits outside this peer
-                group ({PEER_GROUP_LABEL[s.highlighted.peerGroup].toLowerCase()}).
-              </>
-            )}
-          </p>
-
-          {/* Reading guide */}
-          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-ice/70 px-3 py-2 text-[10.5px] text-ink-secondary">
-            <span className="font-semibold text-navy-deep">How to read:</span>
-            <span>
-              <span className="font-semibold text-emerald">Green</span> stronger ·{' '}
-              <span className="font-semibold text-coral">red</span> weaker
-            </span>
-            <span>·</span>
-            <span>Growth &amp; Share Δ are YoY</span>
-            <span>·</span>
-            <span>Combined ratio: lower is better</span>
-            <span>·</span>
-            <span>Solvency: higher is safer</span>
-            <span>·</span>
-            <span>Valuation (P/GWP): lower is cheaper</span>
-          </div>
-
-          <div className="mt-3">
-            <Heatmap
-              markBest
-              columns={[
-                { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
-                { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} pp` },
-                { key: 'combinedRatio', label: 'Combined Ratio', invert: true, format: (v) => `${v.toFixed(0)}%` },
-                { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
-                { key: 'valuation', label: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
-              ]}
-              rows={scorecard.rows.map((r) => ({
-                label: r.label,
-                focal: r.focal,
-                values: {
-                  gwpGrowth: r.values.growth,
-                  marketShareChange: r.values.marketShareChange,
-                  combinedRatio: r.values.combinedRatio,
-                  solvency: r.values.solvency,
-                  valuation: r.values.valuation,
-                },
-              }))}
-            />
-          </div>
+      {/* D. Signal + Peer Rank Snapshot — compact */}
+      <section>
+        <SectionHeading eyebrow="Rank Snapshot" title="Where It Stands" note={`${company.shortName} vs ${groupLabel.toLowerCase()}`} />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <CompanySignalCard company={company} list={peerList} review={review} />
+          <PeerRankSnapshot company={company} list={peerList} />
         </div>
       </section>
 
-      {/* C. Supporting industry metrics — premium navy mini-cards */}
+      {/* E. Quarterly calculation trust — compact bridge + detail drawer */}
+      <QuarterlyCalcCard company={company} />
+
+      {/* F. Supporting industry metrics */}
       <section>
         <SectionHeading eyebrow="At a Glance" title="Key Sector Metrics" note="YoY unless noted" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
