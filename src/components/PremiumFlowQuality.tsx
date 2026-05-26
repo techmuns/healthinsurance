@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { BadgeCheck, ChevronDown, Layers, Repeat, TrendingDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import {
@@ -12,18 +12,19 @@ import {
   getQualityMix,
   getRetentionCohort,
 } from '@/data/mockData'
-import type { MixSeries } from '@/data/mockData'
+import type { FlowPoint, MixSeries } from '@/data/mockData'
 import type { Insurer } from '@/data/types'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
+type Stage = 'GWP' | 'NWP' | 'NEP'
 type MixType = 'Customer' | 'Channel' | 'Quality'
 type MixView = 'Share' | 'Value'
 type RetView = 'Customers' | 'Premium' | 'Renewal'
 
 // Color meaning: deep blue = core premium / written, teal = retained / positive,
-// steel = earned, amber = concentration watch, soft red = leakage / drop-off,
-// gold = premium accent (used sparingly), grey = background / prior periods.
+// steel = earned, amber = concentration watch, soft red = leakage / ceded,
+// gold = premium accent (used sparingly), grey = background / inactive.
 const FOCAL = '#27457E'
 const TEAL = '#168E8E'
 const NEP_BLUE = '#3D7396'
@@ -35,6 +36,10 @@ const LAV = '#6E7BD6'
 const GREY = '#94A3B8'
 const GRID = '#ECEFF5'
 const AXIS_TEXT = '#6B7280'
+// Inactive / muted segment fills for the conversion bar.
+const MUTE_NEAR = '#D3DBE6'
+const MUTE_FAR = '#E7EBF1'
+const CEDED_MUTE = 'rgba(199, 93, 90, 0.34)'
 
 const SEG_COLORS: Record<string, string> = {
   retail: TEAL,
@@ -49,6 +54,7 @@ const SEG_COLORS: Record<string, string> = {
 }
 
 const fmtCr = (v: number) => `₹${Math.round(v).toLocaleString('en-IN')} Cr`
+const compactCr = (v: number) => `₹${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`
 const pct = (v: number, d = 0) => `${v.toFixed(d)}%`
 const axisCr = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`)
 
@@ -95,6 +101,26 @@ function InsightChips({ chips }: { chips: Chip[] }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/** Slim horizontal pills — replaces the bulky cards on the Flow tab. */
+function SlimStrip({ chips }: { chips: Chip[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {chips.map((c) => (
+        <div key={c.label} className="flex items-center gap-2 rounded-lg border border-soft-border bg-ice/50 px-3 py-1.5">
+          <span className="h-4 w-1 rounded-full" style={{ background: c.color }} />
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{c.label}</span>
+          <span className="font-display text-[15px] leading-none text-navy-deep">{c.value}</span>
+          {c.note && (
+            <span className="text-[10.5px] font-semibold" style={{ color: GOLD }}>
+              {c.note}
+            </span>
+          )}
+        </div>
+      ))}
     </div>
   )
 }
@@ -182,93 +208,126 @@ function Tabs({ value, onChange }: { value: Tab; onChange: (t: Tab) => void }) {
   )
 }
 
-function LegendSwatch({ color, children, line }: { color: string; children: React.ReactNode; line?: boolean }) {
+function LegendSwatch({ color, children }: { color: string; children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-secondary">
-      {line ? (
-        <span className="inline-block h-0 w-4 border-t-2 border-dashed" style={{ borderColor: color }} />
-      ) : (
-        <span className="inline-block h-2.5 w-2.5 rounded-[3px]" style={{ background: color }} />
-      )}
+      <span className="inline-block h-2.5 w-2.5 rounded-[3px]" style={{ background: color }} />
       {children}
     </span>
   )
 }
 
-// --- Flow tab: GWP → NWP → NEP premium journey over time ---------------------
+// --- Flow tab: one premium bar per year, transitioning through stages --------
 
-function FlowTooltip({ active, payload, label }: { active?: boolean; payload?: { dataKey?: string | number; value?: number }[]; label?: string }) {
-  if (!active || !payload?.length || !label) return null
-  const get = (k: string) => payload.find((p) => p.dataKey === k)?.value
-  const rows = [
-    { k: 'gwp', label: 'GWP · Written', color: FOCAL },
-    { k: 'nwp', label: 'NWP · Retained', color: TEAL },
-    { k: 'nep', label: 'NEP · Earned', color: NEP_BLUE },
+const STAGE_DEFS: { k: Stage; color: string }[] = [
+  { k: 'GWP', color: FOCAL },
+  { k: 'NWP', color: TEAL },
+  { k: 'NEP', color: NEP_BLUE },
+]
+
+function stageSegColor(seg: 'earned' | 'mid' | 'ceded', stage: Stage): string {
+  if (stage === 'GWP') return FOCAL // whole bar = gross premium
+  if (stage === 'NWP') return seg === 'ceded' ? CEDED_MUTE : TEAL // retained highlighted, ceded muted
+  if (seg === 'earned') return NEP_BLUE // earned highlighted
+  return seg === 'mid' ? MUTE_NEAR : MUTE_FAR // remaining muted
+}
+
+function FlowTooltip({ active, payload, stage }: { active?: boolean; payload?: { payload?: FlowPoint }[]; stage: Stage }) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload
+  if (!d) return null
+  const rows: { k: Stage | 'ceded'; label: string; value: number; color: string }[] = [
+    { k: 'GWP', label: 'GWP · Written', value: d.gwp, color: FOCAL },
+    { k: 'ceded', label: 'Ceded to reinsurers', value: d.gwp - d.nwp, color: RED },
+    { k: 'NWP', label: 'NWP · Retained', value: d.nwp, color: TEAL },
+    { k: 'NEP', label: 'NEP · Earned', value: d.nep, color: NEP_BLUE },
   ]
   return (
     <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
-      <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{label}</p>
+      <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{d.period}</p>
       <div className="space-y-1">
         {rows.map((r) => (
-          <div key={r.k} className="flex items-center justify-between gap-5 text-[11.5px]">
+          <div key={r.label} className={['flex items-center justify-between gap-5 text-[11.5px]', r.k === stage ? 'font-semibold' : ''].join(' ')}>
             <span className="flex items-center gap-1.5 text-ink-secondary">
               <span className="h-2 w-2 rounded-sm" style={{ background: r.color }} />
               {r.label}
             </span>
-            <span className="font-semibold tabular-nums text-navy-deep">{get(r.k) != null ? fmtCr(Number(get(r.k))) : '—'}</span>
+            <span className="tabular-nums text-navy-deep">{fmtCr(r.value)}</span>
           </div>
         ))}
-        <div className="flex items-center justify-between gap-5 border-t border-soft-border pt-1 text-[11.5px]">
-          <span className="flex items-center gap-1.5 text-ink-secondary">
-            <span className="h-0 w-3 border-t-2 border-dashed" style={{ borderColor: GOLD }} />
-            Retention
-          </span>
-          <span className="font-semibold tabular-nums" style={{ color: GOLD }}>{get('retention') != null ? pct(Number(get('retention')), 1) : '—'}</span>
-        </div>
       </div>
     </div>
   )
 }
 
 function FlowView({ companyId, period }: { companyId: string; period: Period }) {
+  const [stage, setStage] = useState<Stage>('GWP')
   const flow = getPremiumFlow(companyId, period)
   if (!flow) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Premium flow is not reported for this company.</div>
   }
-  const data = flow.map((f) => ({ period: f.period, gwp: f.gwp, nwp: f.nwp, nep: f.nep, retention: Math.round((f.nwp / f.gwp) * 1000) / 10 }))
+  const data = flow.map((f) => ({ ...f, earned: f.nep, mid: Math.max(0, f.nwp - f.nep), ceded: Math.max(0, f.gwp - f.nwp) }))
+
+  const makeLabel = (key: 'gwp' | 'nwp' | 'nep') => (props: { x?: number | string; y?: number | string; width?: number | string; index?: number }) => {
+    const x = Number(props.x) || 0
+    const y = Number(props.y) || 0
+    const width = Number(props.width) || 0
+    const v = props.index != null ? data[props.index]?.[key] : null
+    if (v == null) return <g />
+    return (
+      <text x={x + width / 2} y={y - 5} textAnchor="middle" fontSize={10} fontWeight={700} fill="#172B4D">
+        {compactCr(Number(v))}
+      </text>
+    )
+  }
+
+  const caption =
+    stage === 'GWP'
+      ? 'Full gross premium written each year — the starting point.'
+      : stage === 'NWP'
+        ? 'Teal = premium retained · muted red = ceded to reinsurers.'
+        : 'Steel = premium earned in the period · muted = retained but not yet earned.'
 
   return (
     <div>
-      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <LegendSwatch color={FOCAL}>GWP · Written</LegendSwatch>
-        <LegendSwatch color={TEAL}>NWP · Retained</LegendSwatch>
-        <LegendSwatch color={NEP_BLUE}>NEP · Earned</LegendSwatch>
-        <LegendSwatch color={GOLD} line>
-          Retention %
-        </LegendSwatch>
+      {/* Stage selector — same bar, highlight a different portion */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-0.5 rounded-lg border border-soft-border bg-ice p-0.5">
+          {STAGE_DEFS.map((s) => {
+            const on = s.k === stage
+            return (
+              <button
+                key={s.k}
+                type="button"
+                onClick={() => setStage(s.k)}
+                className={['rounded-md px-3.5 py-1 text-[12px] font-semibold transition-all', on ? 'text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}
+                style={on ? { background: s.color } : undefined}
+              >
+                {s.k}
+              </button>
+            )
+          })}
+        </div>
+        <span className="text-[11px] text-ink-secondary">Same premium bar · highlighting <span className="font-semibold text-navy-deep">{stage}</span></span>
       </div>
       <ResponsiveContainer width="100%" height={288}>
-        <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 4 }} barCategoryGap="22%" barGap={2}>
+        <BarChart data={data} margin={{ top: 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
           <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
           <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
-          <YAxis yAxisId="cr" tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
-          <YAxis
-            yAxisId="pct"
-            orientation="right"
-            tickFormatter={(v: number) => `${v}%`}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 10, fill: GOLD }}
-            width={38}
-            domain={[(min: number) => Math.max(0, Math.floor(min - 3)), (max: number) => Math.min(100, Math.ceil(max + 2))]}
-          />
-          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip />} />
-          <Bar yAxisId="cr" dataKey="gwp" name="GWP" fill={FOCAL} maxBarSize={18} radius={[3, 3, 0, 0]} isAnimationActive={false} />
-          <Bar yAxisId="cr" dataKey="nwp" name="NWP" fill={TEAL} maxBarSize={18} radius={[3, 3, 0, 0]} isAnimationActive={false} />
-          <Bar yAxisId="cr" dataKey="nep" name="NEP" fill={NEP_BLUE} maxBarSize={18} radius={[3, 3, 0, 0]} isAnimationActive={false} />
-          <Line yAxisId="pct" dataKey="retention" name="Retention %" stroke={GOLD} strokeWidth={2} dot={{ r: 2.5, fill: GOLD, strokeWidth: 0 }} activeDot={{ r: 4 }} isAnimationActive={false} />
-        </ComposedChart>
+          <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
+          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip stage={stage} />} />
+          <Bar dataKey="earned" stackId="flow" fill={stageSegColor('earned', stage)} maxBarSize={44} isAnimationActive={false}>
+            {stage === 'NEP' && <LabelList content={makeLabel('nep')} />}
+          </Bar>
+          <Bar dataKey="mid" stackId="flow" fill={stageSegColor('mid', stage)} maxBarSize={44} isAnimationActive={false}>
+            {stage === 'NWP' && <LabelList content={makeLabel('nwp')} />}
+          </Bar>
+          <Bar dataKey="ceded" stackId="flow" fill={stageSegColor('ceded', stage)} maxBarSize={44} radius={[3, 3, 0, 0]} isAnimationActive={false}>
+            {stage === 'GWP' && <LabelList content={makeLabel('gwp')} />}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
+      <p className="mt-2 text-[11.5px] text-ink-secondary">{caption}</p>
     </div>
   )
 }
@@ -443,7 +502,7 @@ function RetentionView({ companyId }: { companyId: string }) {
 
 export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[]; focalId: string }) {
   const [tab, setTab] = useState<Tab>('Flow')
-  const [period, setPeriod] = useState<Period>('Quarterly')
+  const [period, setPeriod] = useState<Period>('Yearly')
   const [companyId, setCompanyId] = useState(focalId)
 
   useEffect(() => {
@@ -456,9 +515,8 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
   const name = company?.shortName ?? 'Company'
   const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
-  const headline = tab === 'Flow' ? 'From Written to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'How Sticky the Customer Base Is'
-  const tabPhrase =
-    tab === 'Flow' ? (period === 'Quarterly' ? 'Rolling premium conversion' : 'Year-on-year premium conversion') : tab === 'Mix' ? 'Premium mix' : 'Customer retention'
+  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'How Sticky the Customer Base Is'
+  const tabPhrase = tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium mix' : 'Customer retention'
 
   const chips = useMemo<Chip[]>(() => {
     if (!company) return []
@@ -476,7 +534,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
       return [
         { label: 'Retention Ratio', value: pct(ret), sub: 'NWP / GWP', note: trend(dRet), color: TEAL, icon: Repeat },
         { label: 'Earned Ratio', value: pct(earn), sub: 'NEP / NWP', note: trend(dEarn), color: NEP_BLUE, icon: BadgeCheck },
-        { label: 'Premium Leakage', value: fmtCr(last.gwp - last.nwp), sub: 'ceded to reinsurers', note: dRet > 0.1 ? 'Improving' : 'Watch', color: RED, icon: TrendingDown },
+        { label: 'Leakage', value: fmtCr(last.gwp - last.nwp), sub: 'ceded to reinsurers', note: dRet > 0.1 ? 'Improving' : 'Watch', color: RED, icon: TrendingDown },
       ]
     }
     if (tab === 'Mix') {
@@ -528,7 +586,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
         <Tabs value={tab} onChange={setTab} />
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <CompanyMenu companies={companies} value={companyId} onChange={setCompanyId} />
-          <SegmentedControl<Period> label="Period" options={['Quarterly', 'Yearly'] as Period[]} value={period} onChange={setPeriod} size="sm" />
+          <SegmentedControl<Period> label="Period" options={['Yearly', 'Quarterly'] as Period[]} value={period} onChange={setPeriod} size="sm" />
         </div>
       </div>
 
@@ -541,12 +599,8 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
         <span className="font-semibold text-navy-deep">{name}</span> · <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
 
-      {/* Insight chips */}
-      {chips.length > 0 && (
-        <div className="mt-3.5">
-          <InsightChips chips={chips} />
-        </div>
-      )}
+      {/* Insight strip / cards */}
+      {chips.length > 0 && <div className="mt-3.5">{tab === 'Flow' ? <SlimStrip chips={chips} /> : <InsightChips chips={chips} />}</div>}
 
       {/* Tab content */}
       <div className="mt-4">
