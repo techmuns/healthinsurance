@@ -304,7 +304,7 @@ export type CompareMetricKey =
   | 'averagePremium'
 
 export const compareQuarters = ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25'] as const
-export const compareYears = ['FY22', 'FY23', 'FY24', 'FY25'] as const
+export const compareYears = ['FY21', 'FY22', 'FY23', 'FY24', 'FY25'] as const
 
 interface CompareShape {
   kind: 'flow' | 'stock' | 'ratio'
@@ -370,25 +370,41 @@ const SEASON = [0.22, 0.24, 0.26, 0.28] // base quarterly weights for flow metri
 const round1 = (v: number) => Math.round(v * 10) / 10
 const round10 = (v: number) => Math.round(v / 10) * 10
 
+/** Grow a level metric backward from its latest anchor over `n` periods. */
+function backwardSeries(anchor: number, baseGrowth: number, n: number): number[] {
+  const out = [anchor]
+  let v = anchor
+  for (let k = 1; k < n; k++) {
+    const gk = baseGrowth * (1 - 0.1 * (k - 1)) // gentle deceleration further back
+    v = v / (1 + gk)
+    out.unshift(v)
+  }
+  return out
+}
+
 /**
- * Time series for one company × metric × period (4 points). Returns `null`s
- * when the metric is not reported for that company so the chart can omit it.
+ * Time series for one company × metric × period. Quarterly = latest 4 quarters,
+ * Yearly = `compareYears` (FY21–FY25). Returns `null`s when the metric is not
+ * reported for that company so the chart can omit it.
  */
 export function getCompareSeries(
   companyId: string,
   metric: CompareMetricKey,
   period: 'Quarterly' | 'Yearly',
 ): (number | null)[] {
+  const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  const n = periods.length
   const anchor = compareAnchors[companyId]?.[metric]
-  if (anchor == null) return [null, null, null, null]
+  if (anchor == null) return new Array(n).fill(null)
   const shape = compareShapes[metric]
   const g = (insurers.find((i) => i.id === companyId)?.growth ?? 12) / 100
   const mom = compareMomentum[companyId] ?? 1
 
   if (shape.kind === 'ratio') {
     const drift = (shape.yearlyDrift ?? 0) * mom
-    // Yearly walks the full drift FY22→FY25; quarterly walks one year's worth.
-    const span = period === 'Yearly' ? drift : drift / 3
+    if (period === 'Yearly') return Array.from({ length: n }, (_, i) => round1(anchor - drift + (drift * i) / (n - 1)))
+    // Quarterly walks one year's worth of drift across the 4 quarters.
+    const span = drift / 3
     return [0, 1, 2, 3].map((i) => round1(anchor - span + (span * i) / 3))
   }
 
@@ -400,10 +416,7 @@ export function getCompareSeries(
       return [0, 1, 2, 3].map((i) => roundStock(anchor * (1 - (qDrop * (3 - i)) / 3)))
     }
     const sg = shape.fixedGrowth != null ? shape.fixedGrowth * mom : g * 0.8
-    const fy24 = anchor / (1 + sg)
-    const fy23 = fy24 / (1 + sg * 0.9)
-    const fy22 = fy23 / (1 + sg * 0.8)
-    return [fy22, fy23, fy24, anchor].map(roundStock)
+    return backwardSeries(anchor, sg, n).map(roundStock)
   }
 
   // flow (GWP / NWP / NEP)
@@ -415,10 +428,7 @@ export function getCompareSeries(
     const sum = w.reduce((a, b) => a + b, 0)
     return w.map((wi) => round10((anchor * wi) / sum))
   }
-  const fy24 = anchor / (1 + g)
-  const fy23 = fy24 / (1 + g * 0.9)
-  const fy22 = fy23 / (1 + g * 0.8)
-  return [fy22, fy23, fy24, anchor].map(round10)
+  return backwardSeries(anchor, g, n).map(round10)
 }
 
 // =========================================================================
@@ -478,12 +488,13 @@ function buildMix(
   mom: number,
 ): MixSeries {
   const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  const n = periods.length
   const rows = periods.map((p, i) => {
     const raw: Record<string, number> = {}
     defs.forEach(({ key }) => {
       const d = (drift[key] ?? 0) * mom
       const span = period === 'Yearly' ? d : d / 3
-      raw[key] = Math.max(0, base[key] - span + (span * i) / 3)
+      raw[key] = Math.max(0, base[key] - span + (span * i) / (n - 1))
     })
     const sum = defs.reduce((s, { key }) => s + raw[key], 0) || 1
     const row: Record<string, number | string> = { period: p }
@@ -529,6 +540,42 @@ export function getQualityMix(id: string, period: FlowPeriod): MixSeries | null 
     { key: 'fresh', label: 'Fresh' },
   ]
   return buildMix({ renewal, fresh: 100 - renewal }, { renewal: 5, fresh: -5 }, defs, period, compareMomentum[id] ?? 1)
+}
+
+export interface FlowPoint {
+  period: string
+  gwp: number
+  nwp: number
+  nep: number
+}
+
+/**
+ * Premium bridge over time: GWP → NWP → NEP per period. Retention (NWP/GWP) and
+ * earned (NEP/NWP) ratios *improve* gradually toward the FY25 anchor, so the
+ * year-on-year story shows a company retaining and earning more of its premium.
+ */
+export function getPremiumFlow(id: string, period: FlowPeriod): FlowPoint[] | null {
+  const gA = compareAnchors[id]?.gwp
+  const nA = compareAnchors[id]?.nwp
+  const eA = compareAnchors[id]?.nep
+  if (gA == null || nA == null || eA == null) return null
+  const periods = period === 'Quarterly' ? compareQuarters : compareYears
+  const n = periods.length
+  const gwpS = getCompareSeries(id, 'gwp', period)
+  const retLatest = nA / gA
+  const earnLatest = eA / nA
+  // How much lower the ratios were at the start of the window.
+  const retGain = period === 'Yearly' ? 0.04 : 0.012
+  const earnGain = period === 'Yearly' ? 0.025 : 0.006
+  return periods.map((p, i) => {
+    const t = n > 1 ? i / (n - 1) : 1 // 0 at earliest period, 1 at latest
+    const ret = retLatest - retGain * (1 - t)
+    const earn = earnLatest - earnGain * (1 - t)
+    const gwp = gwpS[i] ?? 0
+    const nwp = round10(gwp * ret)
+    const nep = round10(nwp * earn)
+    return { period: p, gwp, nwp, nep }
+  })
 }
 
 export interface RetentionNode {
