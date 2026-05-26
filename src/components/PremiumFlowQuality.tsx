@@ -20,7 +20,6 @@ type Tab = 'Flow' | 'Mix' | 'Retention'
 type Stage = 'GWP' | 'NWP' | 'NEP'
 type MixType = 'Customer' | 'Channel' | 'Quality'
 type MixView = 'Share' | 'Value'
-type RetView = 'Cohort' | 'Renewal' | 'Stay'
 
 // Color meaning: deep blue = core premium / retail, teal = retained / renewal /
 // positive, steel = earned / broker, amber = agency / fresh / watch, soft red =
@@ -400,55 +399,44 @@ function MixView({ companyId, period }: { companyId: string; period: Period }) {
   )
 }
 
-// --- Retention tab: renewal trend + cohort survival --------------------------
+// --- Retention tab: Customer Stickiness --------------------------------------
 
-function RenewalTooltip({ active, payload, label }: { active?: boolean; payload?: { value?: number }[]; label?: string }) {
-  if (!active || !payload?.length || !label) return null
-  return (
-    <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
-      <p className="text-[11px] font-semibold text-navy-deep">{label}</p>
-      <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-secondary">
-        <span className="h-2 w-2 rounded-sm" style={{ background: TEAL }} />
-        Renewal rate <span className="font-semibold text-navy-deep">{pct(Number(payload[0].value ?? 0), 1)}</span>
-      </p>
-    </div>
-  )
-}
-
-function RenewalLine({ companyId, period }: { companyId: string; period: Period }) {
+function RenewalSpark({ companyId, period }: { companyId: string; period: Period }) {
   const series = getCompareSeries(companyId, 'renewalRate', period)
   const periods = period === 'Quarterly' ? compareQuarters : compareYears
-  if (series.every((v) => v == null)) {
-    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Renewal rate is not reported for this company — data pending.</div>
-  }
+  const vals = series.filter((v): v is number => v != null)
+  if (!vals.length) return null
   const data = periods.map((p, i) => ({ period: p, renewal: series[i] }))
-  const endLabel = (props: LabelProps) => {
+  const first = Math.round(vals[0])
+  const last = Math.round(vals[vals.length - 1])
+  const sparkLabel = (props: LabelProps) => {
     const x = Number(props.x) || 0
     const y = Number(props.y) || 0
-    if (props.index !== periods.length - 1 || props.value == null) return <g />
+    if (props.value == null) return <g />
     return (
-      <text x={x + 6} y={y} dy={3.5} fontSize={10.5} fontWeight={700} fill={TEAL}>
-        {pct(Number(props.value), 0)}
+      <text x={x} y={y - 6} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={TEAL}>
+        {Math.round(Number(props.value))}%
       </text>
     )
   }
   return (
-    <ResponsiveContainer width="100%" height={236}>
-      <LineChart data={data} margin={{ top: 16, right: 40, left: 0, bottom: 4 }}>
-        <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
-        <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
-        <YAxis
-          tickFormatter={(v: number) => `${v}%`}
-          tickLine={false}
-          axisLine={false}
-          tick={{ fontSize: 11, fill: AXIS_TEXT }}
-          width={40}
-          domain={[(min: number) => Math.max(0, Math.floor(min - 2)), (max: number) => Math.min(100, Math.ceil(max + 2))]}
-        />
-        <Tooltip cursor={{ stroke: '#C9D2E0', strokeWidth: 1 }} content={<RenewalTooltip />} />
-        <Line dataKey="renewal" stroke={TEAL} strokeWidth={2.4} dot={{ r: 3, fill: TEAL, strokeWidth: 0 }} activeDot={{ r: 4 }} isAnimationActive={false} label={endLabel} />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="mt-5 border-t border-soft-border pt-3">
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-secondary">Renewal rate trend</span>
+        <span className="text-[11px] text-ink-secondary">
+          {first}% → <span className="font-semibold" style={{ color: TEAL }}>{last}%</span>
+        </span>
+      </div>
+      <ResponsiveContainer width="100%" height={68}>
+        <LineChart data={data} margin={{ top: 16, right: 14, left: 6, bottom: 0 }}>
+          <XAxis dataKey="period" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: AXIS_TEXT }} interval={0} />
+          <YAxis hide domain={[(min: number) => Math.floor(min - 3), (max: number) => Math.ceil(max + 3)]} />
+          <Line dataKey="renewal" stroke={TEAL} strokeWidth={1.8} dot={{ r: 2.5, fill: TEAL, strokeWidth: 0 }} isAnimationActive={false}>
+            <LabelList content={sparkLabel} />
+          </Line>
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -489,37 +477,38 @@ function CohortJourney({ cohort, metric }: { cohort: RetentionNode[]; metric: 'c
 }
 
 function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
-  const [view, setView] = useState<RetView>('Cohort')
+  const [metric, setMetric] = useState<'customers' | 'premium'>('customers')
   const cohort = getRetentionCohort(companyId)
   if (!cohort) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Retention is not reported for this company — data pending.</div>
   }
+  const hasPremium = cohort.some((n) => n.premium != null)
   const caption =
-    view === 'Renewal'
-      ? 'Year-on-year renewal rate — higher means stickier premium.'
-      : view === 'Stay'
-        ? 'Premium retained as customers renew, indexed to 100 (renewing books re-price up).'
-        : 'Of 100 customers in Year 1, how many remain through Year 4+.'
+    metric === 'premium'
+      ? 'Premium retained as customers renew, indexed to 100 at Year 1.'
+      : 'Out of 100 customers in Year 1, how many stay through Year 4+.'
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <SegmentedControl<RetView>
-          label="View"
-          options={[
-            { value: 'Cohort', label: 'Retention Path' },
-            { value: 'Renewal', label: 'Renewal Trend' },
-            { value: 'Stay', label: 'Customer Tenure' },
-          ]}
-          value={view}
-          onChange={setView}
-          size="sm"
-        />
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[12px] font-semibold text-navy-deep">{metric === 'premium' ? 'Premium staying over time' : 'Customers staying over time'}</span>
+        {hasPremium && (
+          <SegmentedControl<'customers' | 'premium'>
+            options={[
+              { value: 'customers', label: 'Customers retained' },
+              { value: 'premium', label: 'Premium retained' },
+            ]}
+            value={metric}
+            onChange={setMetric}
+            size="sm"
+          />
+        )}
       </div>
-      {view === 'Renewal' ? <RenewalLine companyId={companyId} period={period} /> : <CohortJourney cohort={cohort} metric={view === 'Stay' ? 'premium' : 'customers'} />}
-      <p className="mt-4 text-[11.5px] text-ink-secondary">
-        {caption} <span className="font-semibold" style={{ color: GOLD }}>{view === 'Renewal' ? 'Higher is better.' : 'Sticky premium.'}</span>
+      <CohortJourney cohort={cohort} metric={metric} />
+      <p className="mt-3 text-[11.5px] text-ink-secondary">
+        {caption} <span className="font-semibold" style={{ color: GOLD }}>{metric === 'premium' ? 'Sticky premium.' : 'Higher is stickier.'}</span>
       </p>
+      <RenewalSpark companyId={companyId} period={period} />
     </div>
   )
 }
@@ -541,8 +530,15 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
   const name = company?.shortName ?? 'Company'
   const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
-  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'How Sticky the Customer Base Is'
-  const tabPhrase = tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal and persistence over time'
+  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Stickiness'
+  const tabPhrase =
+    tab === 'Flow'
+      ? 'Premium conversion over time'
+      : tab === 'Mix'
+        ? 'Premium composition over time'
+        : period === 'Quarterly'
+          ? 'Customer renewal and stickiness'
+          : 'How many customers stay and renew over time'
 
   const chips = useMemo<Chip[]>(() => {
     if (!company) return []
@@ -590,12 +586,11 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
     const rrLast = rrSeries[lastIdx]
     const rrFirst = rrSeries.find((v) => v != null) ?? null
     const rrTrend = rrLast != null && rrFirst != null ? (rrLast > rrFirst + 0.3 ? 'Improving' : 'Stable') : undefined
-    let maxDrop = 0
-    for (let i = 1; i < cohort.length; i++) maxDrop = Math.max(maxDrop, cohort[i - 1].customers - cohort[i].customers)
+    const year4 = cohort[cohort.length - 1].customers
     return [
       { label: 'Renewal Rate', value: rrLast != null ? pct(rrLast) : '—', note: rrTrend, color: TEAL },
-      { label: '2-Yr Persistence', value: pct(cohort[1].customers), note: cohort[1].customers >= 85 ? 'Strong' : 'Stable', color: FOCAL },
-      { label: 'Drop-off', value: `−${maxDrop.toFixed(0)} pp`, note: 'Watch', color: RED },
+      { label: 'Year-4 Retention', value: `${year4.toFixed(0)} of 100`, note: 'customers', color: FOCAL },
+      { label: 'Drop-off', value: `−${(100 - year4).toFixed(0)}`, note: 'by Year 4+', color: RED },
     ]
   }, [tab, company, period, lastIdx])
 
@@ -604,7 +599,7 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
     const per = `Period: ${periodLabel}`
     if (tab === 'Flow') return ['Basis: GWP / NWP / NEP', per, src, period === 'Quarterly' ? 'Status: Derived from YTD where applicable' : 'Status: Reported / Derived']
     if (tab === 'Mix') return ['Basis: % of GWP', per, src, 'Status: Reported / Derived']
-    return ['Basis: Renewal rate (proxy)', 'Retention path: indicative', src, 'Status: Derived']
+    return ['Basis: Renewal rate proxy', per, src, 'Status: Proxy / Derived']
   }, [tab, period, periodLabel])
 
   return (
@@ -626,7 +621,6 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
       <p className="mt-1 pl-4 text-[12px] text-ink-secondary">
         <span className="font-semibold text-navy-deep">{name}</span> · <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
-      {tab === 'Retention' && <p className="mt-0.5 pl-4 text-[11px] text-ink-secondary">Shows how many customers renew and stay over time.</p>}
 
       {/* Slim insight strip (shared treatment across all tabs) */}
       {chips.length > 0 && (
