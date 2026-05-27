@@ -19,13 +19,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  /* Calm cool canvas — a clean blue-tinted gradient (not flat grey) so the
-     near-white cards read crisply against it (still light, never dark mode). */
-  background-color: #e5e9f2;
+  /* Calm neutral canvas with only faint atmospheric tints — blue is reserved
+     as a signal colour, not the background. */
+  background-color: #f3f4f6;
   background-image:
-    radial-gradient(1150px 580px at 100% -8%, rgba(49, 90, 169, 0.12), transparent 60%),
-    radial-gradient(900px 480px at -6% 106%, rgba(46, 120, 120, 0.05), transparent 58%),
-    linear-gradient(180deg, #eef2fb 0%, #e2e7f3 100%);
+    radial-gradient(1100px 560px at 100% -10%, rgba(49, 90, 169, 0.05), transparent 60%),
+    radial-gradient(820px 460px at -8% 108%, rgba(46, 120, 120, 0.035), transparent 58%),
+    linear-gradient(180deg, #f6f7f9 0%, #f1f2f5 100%);
   background-attachment: fixed;
 }
 
