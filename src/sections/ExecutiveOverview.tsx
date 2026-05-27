@@ -14,53 +14,21 @@ import { navItems } from '@/nav'
 import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
 // Retail-investor translation layer — plain-English read before the data.
-type ReadTone = 'positive' | 'warning'
+// Card copy is built per selected company inside the component; tints are fixed.
 const tintClass: Record<'green' | 'teal' | 'amber', { card: string; icon: string }> = {
   green: { card: 'border-[#CDE6D7] bg-[#EAF3EE]', icon: 'text-emerald' },
   teal: { card: 'border-[#CDE6D7] bg-[#E1F2F1]', icon: 'text-teal' },
   amber: { card: 'border-[#F0E1BE] bg-gold-soft', icon: 'text-gold' },
 }
-const investorRead: {
-  icon: LucideIcon
-  title: string
-  text: string
-  status: string
-  tone: ReadTone
-  tint: keyof typeof tintClass
-}[] = [
-  {
-    icon: TrendingUp,
-    title: 'Market Tailwind',
-    text: 'Health insurance is growing faster than the broader insurance market.',
-    status: 'Positive',
-    tone: 'positive',
-    tint: 'green',
-  },
-  {
-    icon: Award,
-    title: 'Niva Position',
-    text: 'Niva Bupa is the #2 standalone health insurer in the current peer pool.',
-    status: 'Improving',
-    tone: 'positive',
-    tint: 'teal',
-  },
-  {
-    icon: Eye,
-    title: 'Main Watch',
-    text: 'Track banca concentration, claims discipline, and valuation.',
-    status: 'Watch',
-    tone: 'warning',
-    tint: 'amber',
-  },
-]
 
 // Curated "next click" destinations — icons reused from nav, with a plain-English
 // "what you will learn" line per page.
+// {co} is replaced with the selected company's short name at render time.
 const deepLinkConfig: { id: string; label?: string; learn: string }[] = [
   { id: 'market', learn: 'Why the sector is growing' },
-  { id: 'growth', learn: 'How Niva is growing' },
+  { id: 'growth', learn: 'How {co} is growing' },
   { id: 'profitability', learn: 'Whether growth is profitable' },
-  { id: 'peers', learn: 'How Niva compares' },
+  { id: 'peers', learn: 'How {co} compares' },
   { id: 'valuation', learn: 'Whether the stock is expensive' },
   { id: 'ownership', label: 'Governance', learn: 'Who owns and runs the company' },
 ]
@@ -84,8 +52,58 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
   const deepLinks = deepLinkConfig.map((d) => {
     const item = navItems.find((n) => n.id === d.id)!
-    return { ...item, label: d.label ?? item.label, learn: d.learn }
+    return { ...item, label: d.label ?? item.label, learn: d.learn.replace('{co}', company.shortName) }
   })
+
+  // Position rank by market share within the company's own segment pool
+  // (marketShare is a within-segment figure, so we rank inside the segment).
+  const segmentPeers = insurers.filter((i) => i.peerGroup === company.peerGroup)
+  const sharePosition = [...segmentPeers]
+    .sort((a, b) => b.marketShare - a.marketShare)
+    .findIndex((i) => i.id === company.id)
+  const positionRank = sharePosition >= 0 ? sharePosition + 1 : null
+  const positionText = positionRank
+    ? `${company.shortName} ranks #${positionRank} in the ${company.peerGroup} peer pool.`
+    : `${company.shortName} is being tracked against the selected peer group.`
+  const positionPhrase = positionRank
+    ? positionRank === 1
+      ? `the #1 ${company.peerGroup} player`
+      : `a top-${positionRank} ${company.peerGroup} player`
+    : `a tracked ${company.peerGroup} player`
+
+  const investorRead: {
+    icon: LucideIcon
+    title: string
+    text: string
+    status: string
+    tone?: 'positive' | 'warning'
+    tint: keyof typeof tintClass
+  }[] = [
+    {
+      icon: TrendingUp,
+      title: 'Market Tailwind',
+      text: `Health insurance is growing faster than the broader insurance market, creating a positive sector tailwind for ${company.shortName}.`,
+      status: 'Positive',
+      tone: 'positive',
+      tint: 'green',
+    },
+    {
+      icon: Award,
+      title: 'Company Position',
+      text: positionText,
+      // Live company signal drives the pill; SignalBadge resolves its tone.
+      status: company.signal ?? 'Improving',
+      tint: 'teal',
+    },
+    {
+      icon: Eye,
+      title: 'Main Watch',
+      text: `Track ${company.shortName}’s banca concentration, claims discipline, and valuation.`,
+      status: 'Watch',
+      tone: 'warning',
+      tint: 'amber',
+    },
+  ]
 
   return (
     <div className="space-y-6">
@@ -139,15 +157,22 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
       {/* A2. Today's Investor Read — plain-English translation layer */}
       <section>
-        <div className="mb-3">
-          <div className="mb-1 flex items-center gap-2">
-            <span className="h-3 w-[3px] rounded-full bg-champagne" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</span>
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+          <div>
+            <div className="mb-1 flex items-center gap-2">
+              <span className="h-3 w-[3px] rounded-full bg-champagne" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</span>
+            </div>
+            <h2 className="font-display text-[23px] leading-tight text-navy-deep">
+              Today’s Investor Read for {company.shortName}
+            </h2>
+            <p className="mt-0.5 text-[12px] text-ink-secondary">
+              Simple view of what the dashboard is saying about {company.shortName} before you go deeper.
+            </p>
           </div>
-          <h2 className="font-display text-[23px] leading-tight text-navy-deep">Today’s Investor Read</h2>
-          <p className="mt-0.5 text-[12px] text-ink-secondary">
-            Simple view of what the dashboard is saying before you go deeper.
-          </p>
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-soft-blue px-2.5 py-1 text-[11px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">
+            Highlighted: {company.shortName}
+          </span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {investorRead.map((r) => {
@@ -188,8 +213,8 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           </div>
         </div>
         <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
-          Niva is currently a top-2 SAHI player; the key question is whether growth quality and profitability continue to
-          improve.
+          {company.shortName} is currently {positionPhrase}; the key question is whether growth quality and profitability
+          continue to improve.
         </p>
       </section>
 
