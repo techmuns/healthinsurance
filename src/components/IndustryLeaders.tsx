@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Crown } from 'lucide-react'
-import { LeaderDot } from './LeaderDot'
 import { leaderMetricDefs } from '@/lib/insurers'
 import type { Insurer } from '@/data/types'
 
@@ -29,7 +28,7 @@ export function IndustryLeaders({
       <div className="mb-2 flex items-baseline justify-between gap-2">
         <p className="font-display text-[15px] text-navy-deep">Industry Leaders</p>
         <p className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
-          <LeaderDot title="Leader" /> leads {def.label}
+          <Crown className="h-3.5 w-3.5 fill-champagne/25 text-champagne" /> leads {def.label}
         </p>
       </div>
 
@@ -68,10 +67,10 @@ export function IndustryLeaders({
               onClick={() => onSelect?.(r.id)}
               className={`relative cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:bg-ice/70'}`}
             >
-              {focal && (
+              {r.id === leaderId && (
                 <Crown
                   className="absolute -top-2 left-1/2 z-10 h-4 w-4 -translate-x-1/2 fill-champagne/25 text-champagne"
-                  aria-label={`${r.shortName} highlighted`}
+                  aria-label={`Leads ${def.label}`}
                 />
               )}
               <div className="mb-1 flex items-center gap-2">
@@ -83,7 +82,6 @@ export function IndustryLeaders({
                 <span className={`flex-1 truncate text-[12px] ${focal ? 'font-semibold text-navy-deep' : 'text-ink-primary'}`}>
                   {r.shortName}
                 </span>
-                {r.id === leaderId && <LeaderDot title={`Leads ${def.label}`} />}
                 <span className="text-[12px] font-semibold tabular-nums text-navy-deep">{def.format(r[def.key])}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-ice">
