@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { BasisTag } from '@/components/BasisTag'
 import { YtdBridge } from '@/components/YtdBridge'
 import { SectionHeading } from '@/components/SectionHeading'
@@ -64,18 +63,6 @@ export function CompanyGrowthEngine() {
             <MiniKpi key={k.label} label={k.label} metric={k.metric} />
           ))}
         </div>
-      }
-      insight={
-        <InsightBox
-          variant="panel"
-          signal="Strong"
-          lines={[
-            { label: 'Signal', value: 'Strong' },
-            { label: 'Why', value: 'Premium expansion is supported by retail mix, renewals and share gains — not low-margin group.' },
-            { label: 'Implication', value: 'Growth is high quality and likely to persist.' },
-            { label: 'Next trigger', value: 'Fresh-premium concentration by channel.' },
-          ]}
-        />
       }
       dataStatus={growthKpis}
       dataBasis={growthBasis}

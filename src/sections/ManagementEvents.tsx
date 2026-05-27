@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { CalendarDays, ChevronRight, ExternalLink, Quote } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
-import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { Drawer } from '@/components/Drawer'
@@ -68,18 +67,6 @@ function ManagementReadout() {
           )}
         </>
       }
-      insight={
-        <InsightBox
-          variant="panel"
-          signal="On Track"
-          lines={[
-            { label: 'Signal', value: 'On Track' },
-            { label: 'Why', value: 'Track record on growth, margin and retail-mix guidance; judge by delivery.' },
-            { label: 'Implication', value: 'Credible team where promises are measurable.' },
-            { label: 'Next trigger', value: 'Closing the banca-concentration gap to guidance.' },
-          ]}
-        />
-      }
     >
       {view === 'Promise Tracker' && <PromiseTracker items={promises} companyName={company.shortName} />}
       {view === 'Current Commentary' && (
@@ -133,15 +120,6 @@ function EventFeed() {
             size="sm"
           />
         </>
-      }
-      insight={
-        <InsightBox
-          signal="Watch"
-          lines={[
-            { label: 'Top read', value: 'Strong Q4 print and favourable EOM positioning outweigh the banca-renewal headwind.' },
-            { label: 'Net impact', value: 'Constructive, with one competitive watch-item.' },
-          ]}
-        />
       }
     >
       <div className="space-y-3">

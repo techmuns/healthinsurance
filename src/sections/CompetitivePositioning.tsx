@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
-import { InsightBox } from '@/components/InsightBox'
 import { ChartFrame, HorizontalBarChart } from '@/components/charts'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
@@ -12,7 +11,7 @@ import { Heatmap } from '@/components/Heatmap'
 import { SectionHeading } from '@/components/SectionHeading'
 import { PEER_GROUP_LABEL, insurers, peerRows } from '@/data/mockData'
 import { getPeerScorecardData } from '@/lib/insurers'
-import { getCompanySignals, getQuarterlyReview, getScorecardSummary } from '@/lib/review'
+import { getScorecardSummary } from '@/lib/review'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import type { PeerGroup } from '@/data/types'
 
@@ -50,8 +49,6 @@ export function CompetitivePositioning() {
   const inGroup = scorecardList.some((i) => i.id === active.id)
   const signalList = inGroup ? scorecardList : insurers.filter((i) => i.peerGroup === active.peerGroup)
   const summary = getScorecardSummary(active, signalList)
-  const signals = getCompanySignals(active, signalList)
-  const review = getQuarterlyReview(active.id)
 
   const acc = metricAccessor[metric]
   const rankingData = rows
@@ -87,18 +84,6 @@ export function CompetitivePositioning() {
             />
           )}
         </>
-      }
-      insight={
-        <InsightBox
-          variant="panel"
-          signal={signals.overall}
-          lines={[
-            { label: 'Signal', value: `${signals.overall} (${active.shortName})` },
-            { label: 'Why', value: summary },
-            { label: 'Peer rank', value: signals.peerRankSummary },
-            { label: 'Next trigger', value: review?.nextTrigger ?? 'Whether peers close the gap.' },
-          ]}
-        />
       }
     >
       {view === 'Scorecard' && (

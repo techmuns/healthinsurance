@@ -4,7 +4,6 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
 import { BasisTag } from '@/components/BasisTag'
 import { BandedLineChart, ChartFrame, TrendLineChart } from '@/components/charts'
@@ -71,37 +70,25 @@ export function ProfitabilityCapital() {
         </div>
       }
       insight={
-        <>
-          {/* Hero combined-ratio callout */}
-          <div className="rounded-xl2 border border-soft-border bg-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio (hero)</p>
-              <SignalBadge label={ct.label} tone={ct.tone} size="sm" />
-            </div>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="font-display text-4xl text-navy-deep">{latestCombined}%</span>
-              <span className="mb-1 text-xs text-signal-positive">improving</span>
-            </div>
-            <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ice">
-              <div className="h-full rounded-full bg-signal-positive" style={{ width: `${Math.min(100, (latestCombined / 110) * 100)}%` }} />
-            </div>
-            <div className="mt-1.5 flex justify-between text-[10px] text-ink-secondary">
-              <span>&lt;100 strong</span>
-              <span>100–105 watch</span>
-              <span>&gt;105 weak</span>
-            </div>
+        // Hero combined-ratio callout
+        <div className="rounded-xl2 border border-soft-border bg-card p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio (hero)</p>
+            <SignalBadge label={ct.label} tone={ct.tone} size="sm" />
           </div>
-          <InsightBox
-            variant="panel"
-            signal="Strong"
-            lines={[
-              { label: 'Signal', value: 'Strong' },
-              { label: 'Why', value: 'Improving combined ratio, stable solvency and rising ROE.' },
-              { label: 'Implication', value: 'Growth is converting into quality returns.' },
-              { label: 'Next trigger', value: 'Loss ratio trend next quarter.' },
-            ]}
-          />
-        </>
+          <div className="mt-2 flex items-end gap-2">
+            <span className="font-display text-4xl text-navy-deep">{latestCombined}%</span>
+            <span className="mb-1 text-xs text-signal-positive">improving</span>
+          </div>
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-ice">
+            <div className="h-full rounded-full bg-signal-positive" style={{ width: `${Math.min(100, (latestCombined / 110) * 100)}%` }} />
+          </div>
+          <div className="mt-1.5 flex justify-between text-[10px] text-ink-secondary">
+            <span>&lt;100 strong</span>
+            <span>100–105 watch</span>
+            <span>&gt;105 weak</span>
+          </div>
+        </div>
       }
       dataStatus={[...profitabilityKpis, ...costKpis]}
       dataBasis={profitabilityBasis}

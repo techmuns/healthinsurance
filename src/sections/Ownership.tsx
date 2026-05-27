@@ -4,7 +4,6 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
 import { ChartFrame, HorizontalBarChart, StackedBarChart } from '@/components/charts'
 import { majorHolders, ownershipChange, ownershipKpis, ownershipTrend } from '@/data/mockData'
@@ -43,18 +42,6 @@ export function Ownership() {
             <MiniKpi key={k.label} label={k.label} metric={k.metric} />
           ))}
         </div>
-      }
-      insight={
-        <InsightBox
-          variant="panel"
-          signal="Improving"
-          lines={[
-            { label: 'Signal', value: 'Improving' },
-            { label: 'Why', value: 'Quality FIIs are accumulating while promoter alignment stays stable.' },
-            { label: 'Implication', value: 'Supportive ownership backdrop; no large exit overhang.' },
-            { label: 'Next trigger', value: 'Any block deal from the remaining PE holder.' },
-          ]}
-        />
       }
       dataStatus={ownershipKpis}
     >

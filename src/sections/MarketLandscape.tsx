@@ -3,7 +3,6 @@ import { AlertTriangle } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MetricChip } from '@/components/MetricChip'
 import { VerdictStrip } from '@/components/VerdictStrip'
@@ -73,18 +72,6 @@ export function MarketLandscape() {
             <MiniKpi key={k.label} label={k.label} metric={k.metric} />
           ))}
         </div>
-      }
-      insight={
-        <InsightBox
-          variant="panel"
-          signal="Improving"
-          lines={[
-            { label: 'Signal', value: 'Improving' },
-            { label: 'Why', value: 'Health and SAHI continue to outgrow the broader market.' },
-            { label: 'Implication', value: 'Growth is shifting toward specialised health players.' },
-            { label: 'Next trigger', value: 'Watch monthly GWP and the retail health mix.' },
-          ]}
-        />
       }
       dataStatus={marketKpis}
       drawer={<MarketDrawer />}

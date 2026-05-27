@@ -89,7 +89,7 @@ export function ModuleCard({
         </div>
       )}
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-[1.6fr_1fr]">
+      <div className={insight ? 'mt-5 grid gap-5 lg:grid-cols-[1.6fr_1fr]' : 'mt-5'}>
         <div className="min-w-0">
           {children}
           {kpis && <div className="mt-4">{kpis}</div>}

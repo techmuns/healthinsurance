@@ -4,7 +4,6 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { SignalBadge } from '@/components/SignalBadge'
 import { ChartFrame, DualAxisChart, HorizontalBarChart, StackedBarChart } from '@/components/charts'
 import { Heatmap } from '@/components/Heatmap'
@@ -60,26 +59,14 @@ export function DistributionStrength() {
         </div>
       }
       insight={
-        <>
-          <InsightBox
-            variant="panel"
-            signal="Watch"
-            lines={[
-              { label: 'Signal', value: 'Watch' },
-              { label: 'Why', value: 'Productivity is improving, but banca concentration is rising.' },
-              { label: 'Implication', value: 'Scalable, but channel mix needs monitoring.' },
-              { label: 'Next trigger', value: 'Banca share of fresh premium.' },
-            ]}
-          />
-          <div className="rounded-xl2 border border-soft-border bg-card p-4">
-            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-ink-secondary">Risk flags</p>
-            <div className="flex flex-wrap gap-2">
-              {distributionRiskBadges.map((b) => (
-                <SignalBadge key={b.label} label={b.label} tone={b.tone} size="sm" />
-              ))}
-            </div>
+        <div className="rounded-xl2 border border-soft-border bg-card p-4">
+          <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-ink-secondary">Risk flags</p>
+          <div className="flex flex-wrap gap-2">
+            {distributionRiskBadges.map((b) => (
+              <SignalBadge key={b.label} label={b.label} tone={b.tone} size="sm" />
+            ))}
           </div>
-        </>
+        </div>
       }
       dataStatus={distributionKpis}
     >

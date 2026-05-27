@@ -5,7 +5,6 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
-import { InsightBox } from '@/components/InsightBox'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { AreaMiniChart, ChartFrame, HorizontalBarChart, ScatterPlot, TrendLineChart } from '@/components/charts'
 import {
@@ -60,9 +59,8 @@ export function ValuationMarketView() {
         </div>
       }
       insight={
-        <>
-          {/* Street view card */}
-          <div className="rounded-xl2 border border-soft-border bg-card p-5">
+        // Analyst Street View
+        <div className="rounded-xl2 border border-soft-border bg-card p-5">
             <div className="mb-3 flex items-center gap-2.5">
               <OrganicIconBlob shape="blob-c" tone="soft" size="sm">
                 <Target />
@@ -94,18 +92,7 @@ export function ValuationMarketView() {
               </span>
             </div>
             <p className="mt-3 rounded-lg bg-ice px-3 py-2 text-[11px] text-ink-secondary">{streetView.recentChange}</p>
-          </div>
-          <InsightBox
-            variant="panel"
-            signal="Fair"
-            lines={[
-              { label: 'Signal', value: 'Fair → Full' },
-              { label: 'Why', value: 'Premium multiple is backed by growth quality, solvency and share gains.' },
-              { label: 'Implication', value: 'Acceptable, but limited margin of safety.' },
-              { label: 'Next trigger', value: 'Any slip in combined ratio or growth.' },
-            ]}
-          />
-        </>
+        </div>
       }
       dataStatus={valuationKpis}
       drawer={
