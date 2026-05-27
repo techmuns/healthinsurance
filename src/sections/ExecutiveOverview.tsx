@@ -9,6 +9,7 @@ import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { AboutView } from '@/components/AboutView'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
+import { InvestorRead } from '@/components/InvestorRead'
 import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
@@ -241,6 +242,18 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
       {/* C. What Changed — compact visual strip */}
       <WhatChangedStrip company={company} list={peerList} review={review} />
+
+      {/* Final Buy-side Read */}
+      <InvestorRead
+        title="Final Buy-side Read"
+        signal="Improving"
+        lines={[
+          { label: 'Why', value: 'A #2 SAHI player riding a sector tailwind with improving growth quality.' },
+          { label: 'Implication', value: 'A quality compounder in a structurally growing segment.' },
+          { label: 'Watch', value: 'Banca concentration, combined-ratio drift and valuation.' },
+          { label: 'Read', value: 'Own the quality; let valuation discipline guide entry.' },
+        ]}
+      />
 
       {/* D. Understand the story deeper — navigation to the full analysis pages */}
       <section>

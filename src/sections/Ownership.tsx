@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
@@ -19,6 +21,15 @@ export function Ownership() {
   }[view]
 
   return (
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Ownership Signal"
+        verdict="Quality institutions accumulating"
+        tone="positive"
+        badge="Improving"
+        summary="Long-only FIIs are steadily replacing PE and promoter sell-down; no large exit overhang remains."
+      />
+
     <ModuleCard
       question="Who owns the company, and are serious investors increasing or reducing exposure?"
       title="Ownership Trend"
@@ -93,5 +104,17 @@ export function Ownership() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      <InvestorRead
+        title="Ownership Investor Read"
+        signal="Improving"
+        lines={[
+          { label: 'Why', value: 'Quality FIIs are accumulating; promoter alignment is stable.' },
+          { label: 'Implication', value: 'Supportive ownership backdrop, no exit overhang.' },
+          { label: 'Watch', value: 'Any block deal from the remaining PE holder.' },
+          { label: 'Read', value: 'Register is rotating toward sticky, quality capital.' },
+        ]}
+      />
+    </div>
   )
 }

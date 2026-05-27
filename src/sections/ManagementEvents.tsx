@@ -7,6 +7,8 @@ import { SignalBadge } from '@/components/SignalBadge'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { Drawer } from '@/components/Drawer'
 import { PromiseTracker } from '@/components/PromiseTracker'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { commentary, events, promiseTracker, type EventItem } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
 
@@ -22,9 +24,26 @@ const impactTone = {
 
 export function ManagementEvents() {
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Governance Signal"
+        verdict="Credible team, one watch-item"
+        tone="navy"
+        badge="On Track"
+        summary="Track record on growth, margin and retail-mix guidance is broadly on track; the open item is closing the banca-concentration gap to guidance."
+      />
       <ManagementReadout />
       <EventFeed />
+      <InvestorRead
+        title="Management Investor Read"
+        signal="On Track"
+        lines={[
+          { label: 'Why', value: 'Measurable promises have broadly been delivered.' },
+          { label: 'Implication', value: 'Credible management where targets are quantified.' },
+          { label: 'Watch', value: 'Banca-concentration gap to guidance.' },
+          { label: 'Read', value: 'No governance red flags; execution credibility intact.' },
+        ]}
+      />
     </div>
   )
 }

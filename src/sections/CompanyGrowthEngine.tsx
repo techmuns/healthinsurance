@@ -8,6 +8,8 @@ import { YtdBridge } from '@/components/YtdBridge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { ChartFrame, GroupedBarChart, StackedBarChart, TrendLineChart } from '@/components/charts'
 import { growthBasis, growthDrawer, growthKpis, growthMix, growthQuality, growthTrend, insurers } from '@/data/mockData'
 import { getFilteredInsurers } from '@/lib/insurers'
@@ -35,7 +37,15 @@ export function CompanyGrowthEngine() {
         : `${metric} growth is accelerating on retail and renewal strength`
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Growth Verdict"
+        verdict="Growing — and the growth is high quality"
+        tone="teal"
+        badge="Strong"
+        summary="Premium expansion is led by retail mix, renewals and share gains — not low-margin group business — so the growth is durable."
+      />
+
     <ModuleCard
       question="Which company is growing fastest, and is that growth high quality?"
       title="Premium Growth Engine"
@@ -108,6 +118,17 @@ export function CompanyGrowthEngine() {
 
       {/* Quarterly calculation trust — compact bridge + detail drawer */}
       <QuarterlyCalcCard company={company} />
+
+      <InvestorRead
+        title="Growth Investor Read"
+        signal="Strong"
+        lines={[
+          { label: 'Why', value: 'Retail mix, renewals and share gains drive premium.' },
+          { label: 'Implication', value: 'High-quality growth, likely to persist.' },
+          { label: 'Watch', value: 'Fresh-premium concentration by channel.' },
+          { label: 'Read', value: 'Durable compounding if retail mix keeps rising.' },
+        ]}
+      />
     </div>
   )
 }

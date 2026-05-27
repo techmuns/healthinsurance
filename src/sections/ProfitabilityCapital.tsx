@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
@@ -39,6 +41,15 @@ export function ProfitabilityCapital() {
   }[view]
 
   return (
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Profitability Verdict"
+        verdict="Underwriting now profitable"
+        tone="positive"
+        badge="Strong"
+        summary="Combined ratio is below 100 and trending down; solvency sits comfortably above the floor while ROE expands toward the high-teens."
+      />
+
     <ModuleCard
       question="Is premium growth converting into profit, underwriting discipline and strong capital returns?"
       title="Profitability & Capital Quality"
@@ -126,5 +137,17 @@ export function ProfitabilityCapital() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      <InvestorRead
+        title="Profitability Investor Read"
+        signal="Strong"
+        lines={[
+          { label: 'Why', value: 'Improving combined ratio, stable solvency and rising ROE.' },
+          { label: 'Implication', value: 'Growth is converting into quality returns.' },
+          { label: 'Watch', value: 'Loss-ratio trend next quarter.' },
+          { label: 'Read', value: 'Profitability inflection supports a quality re-rating.' },
+        ]}
+      />
+    </div>
   )
 }

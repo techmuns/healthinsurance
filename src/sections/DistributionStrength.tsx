@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
@@ -28,6 +30,15 @@ export function DistributionStrength() {
   }[view]
 
   return (
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Distribution Verdict"
+        verdict="Scalable, but banca-concentrated"
+        tone="warning"
+        badge="Watch"
+        summary="Agent productivity is rising as the base grows, but banca is taking a larger share of distribution — the key concentration watch-item."
+      />
+
     <ModuleCard
       question="Is the sales engine scalable, productive and not over-dependent on risky channels?"
       title="Distribution Strength"
@@ -107,5 +118,17 @@ export function DistributionStrength() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      <InvestorRead
+        title="Distribution Investor Read"
+        signal="Watch"
+        lines={[
+          { label: 'Why', value: 'Productivity is improving, but banca concentration is rising.' },
+          { label: 'Implication', value: 'Scalable engine — channel mix needs monitoring.' },
+          { label: 'Watch', value: 'Banca share of fresh premium.' },
+          { label: 'Read', value: 'De-risking via agency/digital would re-rate the channel story.' },
+        ]}
+      />
+    </div>
   )
 }

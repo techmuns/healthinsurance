@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { ArrowUpRight, Target } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
@@ -28,6 +30,15 @@ export function ValuationMarketView() {
   }[view]
 
   return (
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Valuation Verdict"
+        verdict="Premium — but largely earned"
+        tone="navy"
+        badge="Fair"
+        summary="The stock trades above the peer median; the premium is backed by growth quality, solvency and share gains, leaving a limited margin of safety."
+      />
+
     <ModuleCard
       question="Is the stock pricing in too much optimism, or still offering upside?"
       title="Valuation Compass"
@@ -123,5 +134,17 @@ export function ValuationMarketView() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      <InvestorRead
+        title="Valuation Investor Read"
+        signal="Fair"
+        lines={[
+          { label: 'Why', value: 'Premium multiple is backed by growth quality and share gains.' },
+          { label: 'Implication', value: 'Acceptable entry, but limited margin of safety.' },
+          { label: 'Watch', value: 'Any slip in combined ratio or growth.' },
+          { label: 'Read', value: 'Own for quality; add on valuation resets.' },
+        ]}
+      />
+    </div>
   )
 }

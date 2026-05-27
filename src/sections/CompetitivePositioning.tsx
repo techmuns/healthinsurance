@@ -6,6 +6,8 @@ import { ChartFrame, HorizontalBarChart } from '@/components/charts'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
 import { PeerScorecard } from '@/components/PeerScorecard'
+import { VerdictStrip } from '@/components/VerdictStrip'
+import { InvestorRead } from '@/components/InvestorRead'
 import { Heatmap } from '@/components/Heatmap'
 import { SectionHeading } from '@/components/SectionHeading'
 import { PEER_GROUP_LABEL, insurers, peerRows } from '@/data/mockData'
@@ -58,7 +60,15 @@ export function CompetitivePositioning() {
     .sort((a, b) => (acc.invert ? a.value - b.value : b.value - a.value))
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-6">
+      <VerdictStrip
+        eyebrow="Competitive Verdict"
+        verdict="Top-2 on balance, not scale"
+        tone="navy"
+        badge="Stable"
+        summary="Niva leads SAHI peers on growth quality, solvency and settlement, but trails the scale leader on raw market share."
+      />
+
     <ModuleCard
       question="Who is winning versus peers?"
       title="Peer Positioning"
@@ -207,6 +217,17 @@ export function CompetitivePositioning() {
           </div>
         </div>
       </section>
+
+      <InvestorRead
+        title="Competitive Investor Read"
+        signal="Stable"
+        lines={[
+          { label: 'Why', value: 'Strong on growth, share gain and combined ratio vs SAHI peers.' },
+          { label: 'Implication', value: 'Differentiated on quality, not size.' },
+          { label: 'Watch', value: 'Whether peers close the growth-quality gap.' },
+          { label: 'Read', value: 'A quality leader competing in a scale-led segment.' },
+        ]}
+      />
     </div>
   )
 }
