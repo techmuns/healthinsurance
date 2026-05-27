@@ -1,4 +1,4 @@
-import { Award, BadgeCheck, ChevronRight, Clock, Eye, Info, ShieldCheck, TrendingUp } from 'lucide-react'
+import { Award, BadgeCheck, ChevronRight, Clock, Eye, ShieldCheck, TrendingUp } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
@@ -128,8 +128,8 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
                 ? `How ${company.shortName} stacks up against ${groupLabel.toLowerCase()}.`
                 : 'See who leads, who is improving, and where risk is building.'}
             </p>
-            <p className="mt-2 flex items-center gap-1.5 text-[11px] text-ink-secondary">
-              <Info className="h-3.5 w-3.5 shrink-0 text-muted-blue" />
+            <p className="mt-2 inline-block rounded-lg bg-soft-blue/50 px-2.5 py-1.5 text-[11px] leading-snug text-ink-secondary ring-1 ring-[#D6E2FA]">
+              <span className="font-semibold text-navy-primary">How to read this page:</span>{' '}
               Executive Overview compares the selected company against its relevant insurance peer group.
             </p>
           </div>
