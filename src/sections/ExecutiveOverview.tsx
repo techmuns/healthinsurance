@@ -110,12 +110,15 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
       <header className="card-surface relative px-3 py-5 sm:px-4">
-        {/* Subtle premium depth — soft teal/green glow on the right, clipped to the card */}
+        {/* Premium organic accent — layered navy/blue/teal/green blobs in the
+            dashboard's shape language, clipped to the card and sitting behind
+            the right-side chips (never over the title). */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
-          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/50 via-teal-soft/10 to-transparent" />
-          <div className="absolute -right-12 -top-16 h-52 w-52 rounded-full bg-teal-soft/70 blur-2xl" />
-          <div className="absolute right-12 -top-10 h-28 w-28 rounded-full bg-soft-blue/50 blur-2xl" />
-          <div className="absolute -right-8 -top-10 hidden h-36 w-36 bg-teal-soft/45 blob-a sm:block" />
+          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/45 via-teal-soft/10 to-transparent" />
+          <div className="absolute -right-10 -top-16 h-48 w-48 bg-navy-primary/[0.05] blob-a" />
+          <div className="absolute -right-14 -top-4 h-40 w-40 bg-soft-blue/60 blob-b" />
+          <div className="absolute -right-16 top-8 h-32 w-32 bg-teal-soft/70 blob-c" />
+          <div className="absolute right-12 -top-6 hidden h-16 w-16 bg-emerald-soft/50 blob-e sm:block" />
         </div>
         <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
