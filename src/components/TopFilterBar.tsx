@@ -1,16 +1,11 @@
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
-import type { SegmentedOption } from './SegmentedControl'
 import { useFilters } from '@/state/filters'
 import { insurers, DATA_FRESHNESS } from '@/data/mockData'
-import type { PeerGroup, Scope, TimePeriod } from '@/data/types'
+import type { PeerGroup, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
 const periods: TimePeriod[] = ['Monthly', 'Quarterly', 'Annual']
-const scopeOptions: SegmentedOption<Scope>[] = [
-  { value: 'industry-overview', label: 'Industry' },
-  { value: 'company-view', label: 'Company' },
-]
 
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   return (
@@ -25,8 +20,6 @@ function FieldLabel({ children, hint }: { children: string; hint?: string }) {
 
 export function TopFilterBar({ section }: { section?: string }) {
   const {
-    scope,
-    setScope,
     highlightedCompany,
     setHighlightedCompany,
     peerGroup,
@@ -40,18 +33,10 @@ export function TopFilterBar({ section }: { section?: string }) {
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
       {/* Light, integrated control strip — calm and secondary to the content. */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-4 py-2 shadow-soft backdrop-blur-md">
-        {/* Scope toggle (industry-wide vs company-centric) */}
-        {isOverview && (
-          <div>
-            <FieldLabel hint="Industry compares the field; Company centers the highlighted insurer">Scope</FieldLabel>
-            <SegmentedControl<Scope> options={scopeOptions} value={scope} onChange={setScope} size="sm" />
-          </div>
-        )}
-
-        {/* Company / highlight company */}
+        {/* Company / highlight company — first control on the overview */}
         <label className="block">
           <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : undefined}>
-            {scope === 'company-view' || !isOverview ? 'Company' : 'Highlight'}
+            {isOverview ? 'Highlight' : 'Company'}
           </FieldLabel>
           <span className="relative block">
             <select
