@@ -6,6 +6,7 @@ import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
+import { AboutView } from '@/components/AboutView'
 import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
@@ -15,10 +16,10 @@ import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
 // Retail-investor translation layer — plain-English read before the data.
 // Card copy is built per selected company inside the component; tints are fixed.
-const tintClass: Record<'green' | 'teal' | 'amber', { card: string; icon: string }> = {
-  green: { card: 'border-[#CDE6D7] bg-[#EAF3EE]', icon: 'text-emerald' },
-  teal: { card: 'border-[#CDE6D7] bg-[#E1F2F1]', icon: 'text-teal' },
-  amber: { card: 'border-[#F0E1BE] bg-gold-soft', icon: 'text-gold' },
+const tintClass: Record<'green' | 'teal' | 'amber', { card: string; icon: string; glow: string }> = {
+  green: { card: 'border-[#CDE6D7] bg-[#EAF3EE]', icon: 'text-emerald', glow: 'rgba(63,155,107,0.18)' },
+  teal: { card: 'border-[#CDE6D7] bg-[#E1F2F1]', icon: 'text-teal', glow: 'rgba(22,142,142,0.18)' },
+  amber: { card: 'border-[#F0E1BE] bg-gold-soft', icon: 'text-gold', glow: 'rgba(182,139,58,0.18)' },
 }
 
 // Curated "next click" destinations — icons reused from nav, with a plain-English
@@ -108,10 +109,14 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   return (
     <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
-      <header className="card-surface relative overflow-hidden px-6 py-5 sm:px-7">
-        <div className="absolute -right-12 -top-16 hidden h-44 w-44 bg-teal-soft/60 blob-a sm:block" />
-        <div className="absolute right-6 top-16 hidden h-20 w-20 bg-soft-blue/60 blob-c sm:block" />
-        <div className="relative flex flex-wrap items-center justify-between gap-x-6 gap-y-4">
+      <header className="card-surface relative px-4 py-5 sm:px-5">
+        {/* Subtle premium depth — faint navy wash + soft right glow, clipped to the card */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
+          <div className="absolute inset-0 bg-gradient-to-br from-soft-blue/30 via-transparent to-transparent" />
+          <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-soft-blue/40 blur-3xl" />
+          <div className="absolute -right-10 -top-14 hidden h-40 w-40 bg-teal-soft/40 blob-a blur-[2px] sm:block" />
+        </div>
+        <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <SignalBadge label={isCompanyView ? 'Company View' : 'Industry Overview'} tone="navy" size="sm" />
@@ -128,32 +133,31 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
                 ? `How ${company.shortName} stacks up against ${groupLabel.toLowerCase()}.`
                 : 'See who leads, who is improving, and where risk is building.'}
             </p>
-            <p className="mt-2 inline-block rounded-lg bg-soft-blue/50 px-2.5 py-1.5 text-[11px] leading-snug text-ink-secondary ring-1 ring-[#D6E2FA]">
-              <span className="font-semibold text-navy-primary">How to read this page:</span>{' '}
-              Executive Overview compares the selected company against its relevant insurance peer group.
-            </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 rounded-lg border border-soft-border bg-card px-3 py-1.5 text-[11px]">
-              <Clock className="h-3.5 w-3.5 text-muted-blue" />
-              <span className="text-ink-secondary">Updated</span>
-              <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
-            </div>
-            {annualOnly ? (
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            <AboutView text="Executive Overview compares the selected insurer with its relevant peer group, selected period, and available dataset." />
+            <div className="flex flex-wrap gap-2 sm:justify-end">
+              <div className="flex items-center gap-1.5 rounded-lg border border-soft-border bg-card px-3 py-1.5 text-[11px]">
+                <Clock className="h-3.5 w-3.5 text-muted-blue" />
+                <span className="text-ink-secondary">Updated</span>
+                <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
+              </div>
+              {annualOnly ? (
+                <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px]">
+                  <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
+                  <span className="font-semibold text-signal-warning">Annual mock data only</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 rounded-lg border border-[#CDE6D7] bg-[#EAF3EE] px-3 py-1.5 text-[11px]">
+                  <BadgeCheck className="h-3.5 w-3.5 text-signal-positive" />
+                  <span className="font-semibold text-signal-positive">Freshness: current</span>
+                </div>
+              )}
               <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px]">
                 <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-                <span className="font-semibold text-signal-warning">Annual mock data only</span>
+                <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
               </div>
-            ) : (
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#CDE6D7] bg-[#EAF3EE] px-3 py-1.5 text-[11px]">
-                <BadgeCheck className="h-3.5 w-3.5 text-signal-positive" />
-                <span className="font-semibold text-signal-positive">Freshness: current</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px]">
-              <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-              <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
             </div>
           </div>
         </div>
@@ -182,15 +186,19 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           {investorRead.map((r) => {
             const tint = tintClass[r.tint]
             return (
-              <div key={r.title} className={`rounded-xl border p-3 ${tint.card}`}>
-                <div className="flex items-center justify-between gap-2">
+              <div key={r.title} className={`relative overflow-hidden rounded-xl border p-3 ${tint.card}`}>
+                <span
+                  className="pointer-events-none absolute -right-5 -top-5 h-14 w-14 rounded-full blur-2xl"
+                  style={{ background: tint.glow }}
+                />
+                <div className="relative flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5">
                     <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
                     <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{r.title}</span>
                   </div>
                   <SignalBadge label={r.status} tone={r.tone} size="sm" />
                 </div>
-                <p className="mt-1.5 text-[12px] leading-snug text-navy-deep">{r.text}</p>
+                <p className="relative mt-1.5 text-[12px] leading-snug text-navy-deep">{r.text}</p>
               </div>
             )
           })}
