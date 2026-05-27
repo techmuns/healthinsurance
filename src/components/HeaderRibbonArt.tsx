@@ -55,11 +55,11 @@ export function HeaderRibbonArt() {
           </filter>
         </defs>
 
-        {/* back layers: pale-blue field + mint bands */}
+        {/* back layers: pale-blue field + mint bands (rising left→right) */}
         <g filter="url(#ribSoft)">
-          <path d="M-20 -5 C 130 24, 180 70, 320 50 L 320 120 L -20 120 Z" fill="url(#ribPaleBlue)" opacity="0.3" />
-          <path d="M-20 8 C 95 -4, 185 28, 320 10 L 320 44 C 185 60, 95 26, -20 40 Z" fill="url(#ribMint)" opacity="0.52" />
-          <path d="M-20 80 C 95 68, 185 94, 320 84 L 320 120 L -20 120 Z" fill="url(#ribMint)" opacity="0.26" />
+          <path d="M-20 115 C 130 86, 180 40, 320 60 L 320 -10 L -20 -10 Z" fill="url(#ribPaleBlue)" opacity="0.3" />
+          <path d="M-20 102 C 95 114, 185 82, 320 100 L 320 66 C 185 50, 95 84, -20 70 Z" fill="url(#ribMint)" opacity="0.52" />
+          <path d="M-20 30 C 95 42, 185 16, 320 26 L 320 -10 L -20 -10 Z" fill="url(#ribMint)" opacity="0.26" />
         </g>
 
         {/* dotted mesh, upper-right, radially faded (kept crisp) */}
@@ -67,15 +67,15 @@ export function HeaderRibbonArt() {
 
         {/* front layers: blue field, gold ribbon, blue edge, glass sheen */}
         <g filter="url(#ribSoft)">
-          <path d="M150 -10 C 200 40, 175 86, 228 130 L 320 130 L 320 -10 Z" fill="url(#ribPaleBlue)" opacity="0.34" />
-          <path d="M28 -12 C 122 30, 150 72, 212 132 L 272 132 C 210 72, 178 30, 90 -12 Z" fill="url(#ribGold)" opacity="0.58" />
-          <path d="M206 -12 C 238 40, 208 84, 254 132 L 320 132 L 320 -12 Z" fill="url(#ribBlue)" opacity="0.42" />
-          <path d="M96 -12 C 162 34, 142 82, 198 132 L 234 132 C 178 82, 200 34, 134 -12 Z" fill="url(#ribGlass)" opacity="0.5" />
+          <path d="M150 120 C 200 70, 175 24, 228 -20 L 320 -20 L 320 120 Z" fill="url(#ribPaleBlue)" opacity="0.34" />
+          <path d="M28 122 C 122 80, 150 38, 212 -22 L 272 -22 C 210 38, 178 80, 90 122 Z" fill="url(#ribGold)" opacity="0.58" />
+          <path d="M206 122 C 238 70, 208 26, 254 -22 L 320 -22 L 320 122 Z" fill="url(#ribBlue)" opacity="0.42" />
+          <path d="M96 122 C 162 76, 142 28, 198 -22 L 234 -22 C 178 28, 200 76, 134 122 Z" fill="url(#ribGlass)" opacity="0.5" />
         </g>
 
         {/* satin highlight strokes along ribbon edges */}
-        <path d="M92 -10 C 152 36, 134 82, 190 130" stroke="#FFFFFF" strokeOpacity="0.45" strokeWidth="1.1" fill="none" />
-        <path d="M210 -10 C 240 42, 212 86, 256 130" stroke="#FFFFFF" strokeOpacity="0.3" strokeWidth="0.9" fill="none" />
+        <path d="M92 120 C 152 74, 134 28, 190 -20" stroke="#FFFFFF" strokeOpacity="0.45" strokeWidth="1.1" fill="none" />
+        <path d="M210 120 C 240 68, 212 24, 256 -20" stroke="#FFFFFF" strokeOpacity="0.3" strokeWidth="0.9" fill="none" />
 
         {/* dissolve the left edge into the white card */}
         <rect x="0" y="0" width="100" height="110" fill="url(#ribLeftFade)" />
