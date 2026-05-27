@@ -47,14 +47,14 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
         className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:border-muted-blue"
       >
         <Maximize2 className="h-3.5 w-3.5" />
-        How quarter was calculated
+        Quarter calculation audit
       </button>
 
       <Drawer
         open={open}
         onClose={() => setOpen(false)}
-        title="How the quarter was calculated"
-        subtitle={`${company.shortName} · cumulative YTD → standalone quarter`}
+        title="Quarter Calculation Audit"
+        subtitle="Standalone quarter derived from reported YTD numbers"
       >
         <YtdBridge companyId={company.id} />
       </Drawer>
