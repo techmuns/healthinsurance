@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Crown } from 'lucide-react'
 import { LeaderDot } from './LeaderDot'
 import { leaderMetricDefs } from '@/lib/insurers'
 import type { Insurer } from '@/data/types'
@@ -74,7 +75,7 @@ export function IndustryLeaders({
                 <span className={`flex-1 truncate text-[12px] ${focal ? 'font-semibold text-navy-deep' : 'text-ink-primary'}`}>
                   {r.shortName}
                 </span>
-                {r.id === leaderId && <LeaderDot title={`Leads ${def.label}`} />}
+                {r.id === leaderId && <Crown className="h-3.5 w-3.5 fill-champagne/20 text-champagne" aria-label={`Leads ${def.label}`} />}
                 <span className="text-[12px] font-semibold tabular-nums text-navy-deep">{def.format(r[def.key])}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-ice">

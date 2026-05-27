@@ -17,12 +17,12 @@ import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
 // Retail-investor translation layer — plain-English read before the data.
 // Card copy is built per selected company inside the component; tints are fixed.
-// Mostly-white cards; per-card identity comes from a soft icon medallion and a
-// subtle corner glow, with a deeper navy/teal icon as the anchor.
-const tintClass: Record<'green' | 'teal' | 'amber', { medallion: string; icon: string; glow: string }> = {
-  green: { medallion: 'bg-teal-soft', icon: 'text-teal', glow: 'rgba(22,142,142,0.22)' },
-  teal: { medallion: 'bg-soft-blue', icon: 'text-navy-primary', glow: 'rgba(49,90,169,0.18)' },
-  amber: { medallion: 'bg-gold-soft', icon: 'text-navy-primary', glow: 'rgba(183,121,31,0.20)' },
+// Mostly-white cards; per-card identity comes from a thin left accent line, a
+// soft icon medallion and a subtle corner glow, with a navy/teal icon anchor.
+const tintClass: Record<'green' | 'teal' | 'amber', { accent: string; medallion: string; icon: string; glow: string }> = {
+  green: { accent: 'border-l-teal', medallion: 'bg-teal-soft', icon: 'text-teal', glow: 'rgba(22,142,142,0.22)' },
+  teal: { accent: 'border-l-navy-primary', medallion: 'bg-soft-blue', icon: 'text-navy-primary', glow: 'rgba(49,90,169,0.18)' },
+  amber: { accent: 'border-l-gold', medallion: 'bg-gold-soft', icon: 'text-navy-primary', glow: 'rgba(183,121,31,0.20)' },
 }
 
 // Curated "next click" destinations — icons reused from nav, with a plain-English
@@ -77,7 +77,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     title: string
     text: ReactNode
     status: string
-    tone?: 'positive' | 'warning'
+    tone?: 'positive' | 'warning' | 'teal'
     tint: keyof typeof tintClass
   }[] = [
     {
@@ -85,7 +85,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
       title: 'Market Tailwind',
       text: `Sector growth outpaces the broader market — a tailwind for ${company.shortName}.`,
       status: 'Positive',
-      tone: 'positive',
+      tone: 'teal',
       tint: 'green',
     },
     {
@@ -120,11 +120,12 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             dashboard's shape language, clipped to the card and sitting behind
             the right-side chips (never over the title). */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
-          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/45 via-teal-soft/10 to-transparent" />
+          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/55 via-teal-soft/10 to-transparent" />
           <div className="absolute -right-10 -top-16 h-48 w-48 bg-navy-primary/[0.05] blob-a" />
-          <div className="absolute -right-14 -top-4 h-40 w-40 bg-soft-blue/60 blob-b" />
-          <div className="absolute -right-16 top-8 h-32 w-32 bg-teal-soft/70 blob-c" />
-          <div className="absolute right-12 -top-6 hidden h-16 w-16 bg-emerald-soft/50 blob-e sm:block" />
+          <div className="absolute -right-16 -top-4 h-44 w-44 bg-soft-blue/70 blob-b" />
+          <div className="absolute -right-16 top-6 h-36 w-36 bg-teal-soft/80 blob-c" />
+          <div className="absolute right-16 -top-8 hidden h-24 w-24 bg-gold-soft/70 blob-e sm:block" />
+          <div className="absolute right-4 top-12 hidden h-14 w-14 bg-emerald-soft/50 blob-d sm:block" />
         </div>
         <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
@@ -197,7 +198,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             return (
               <div
                 key={r.title}
-                className="relative overflow-hidden rounded-xl border border-soft-border bg-card p-3.5 shadow-[0_6px_18px_rgba(23,43,77,0.08)]"
+                className={`relative overflow-hidden rounded-xl border border-soft-border border-l-[3px] ${tint.accent} bg-card p-3.5 shadow-[0_6px_18px_rgba(23,43,77,0.08)]`}
               >
                 <span
                   className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full blur-2xl"

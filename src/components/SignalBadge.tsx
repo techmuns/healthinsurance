@@ -1,4 +1,4 @@
-type BadgeTone = 'positive' | 'warning' | 'negative' | 'neutral' | 'navy'
+type BadgeTone = 'positive' | 'warning' | 'negative' | 'neutral' | 'navy' | 'teal'
 
 const toneClass: Record<BadgeTone, string> = {
   positive: 'bg-[#EAF3EE] text-signal-positive ring-1 ring-[#CDE6D7]',
@@ -6,12 +6,14 @@ const toneClass: Record<BadgeTone, string> = {
   negative: 'bg-[#F8ECEC] text-signal-negative ring-1 ring-[#EBCFCE]',
   neutral: 'bg-ice text-ink-secondary ring-1 ring-soft-border',
   navy: 'bg-soft-blue text-navy-primary ring-1 ring-[#D6E2FA]',
+  teal: 'bg-[#E1F2F1] text-teal ring-1 ring-[#BFE3E1]',
 }
 
 // Maps a domain signal word to a visual tone.
 const wordTone: Record<string, BadgeTone> = {
   Strong: 'positive',
-  Improving: 'positive',
+  Improving: 'teal',
+  Positive: 'teal',
   Delivered: 'positive',
   Safe: 'positive',
   Cheap: 'positive',
