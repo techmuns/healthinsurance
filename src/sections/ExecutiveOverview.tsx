@@ -64,8 +64,8 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     .findIndex((i) => i.id === company.id)
   const positionRank = sharePosition >= 0 ? sharePosition + 1 : null
   const positionText = positionRank
-    ? `${company.shortName} ranks #${positionRank} in the ${company.peerGroup} peer pool.`
-    : `${company.shortName} is being tracked against the selected peer group.`
+    ? `#${positionRank} in the ${company.peerGroup} peer pool.`
+    : 'Tracked vs the selected peer pool.'
   const positionPhrase = positionRank
     ? positionRank === 1
       ? `the #1 ${company.peerGroup} player`
@@ -83,7 +83,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     {
       icon: TrendingUp,
       title: 'Market Tailwind',
-      text: `Health insurance is growing faster than the broader insurance market, creating a positive sector tailwind for ${company.shortName}.`,
+      text: `Sector growth outpaces the broader market — a tailwind for ${company.shortName}.`,
       status: 'Positive',
       tone: 'positive',
       tint: 'green',
@@ -99,7 +99,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     {
       icon: Eye,
       title: 'Main Watch',
-      text: `Track ${company.shortName}’s banca concentration, claims discipline, and valuation.`,
+      text: 'Banca mix, claims discipline, and valuation.',
       status: 'Watch',
       tone: 'warning',
       tint: 'amber',
@@ -109,12 +109,13 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   return (
     <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
-      <header className="card-surface relative px-4 py-5 sm:px-5">
-        {/* Subtle premium depth — faint navy wash + soft right glow, clipped to the card */}
+      <header className="card-surface relative px-3 py-5 sm:px-4">
+        {/* Subtle premium depth — soft teal/green glow on the right, clipped to the card */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
-          <div className="absolute inset-0 bg-gradient-to-br from-soft-blue/30 via-transparent to-transparent" />
-          <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-soft-blue/40 blur-3xl" />
-          <div className="absolute -right-10 -top-14 hidden h-40 w-40 bg-teal-soft/40 blob-a blur-[2px] sm:block" />
+          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/50 via-teal-soft/10 to-transparent" />
+          <div className="absolute -right-12 -top-16 h-52 w-52 rounded-full bg-teal-soft/70 blur-2xl" />
+          <div className="absolute right-12 -top-10 h-28 w-28 rounded-full bg-soft-blue/50 blur-2xl" />
+          <div className="absolute -right-8 -top-10 hidden h-36 w-36 bg-teal-soft/45 blob-a sm:block" />
         </div>
         <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
@@ -130,13 +131,13 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             </h1>
             <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
               {isCompanyView
-                ? `How ${company.shortName} stacks up against ${groupLabel.toLowerCase()}.`
-                : 'See who leads, who is improving, and where risk is building.'}
+                ? `${company.shortName} vs ${groupLabel.toLowerCase()}.`
+                : 'Who leads, who’s improving, and where risk is building.'}
             </p>
           </div>
 
           <div className="flex flex-col items-start gap-2 sm:items-end">
-            <AboutView text="Executive Overview compares the selected insurer with its relevant peer group, selected period, and available dataset." />
+            <AboutView text="Selected company vs its peer group, period, and dataset." />
             <div className="flex flex-wrap gap-2 sm:justify-end">
               <div className="flex items-center gap-1.5 rounded-lg border border-soft-border bg-card px-3 py-1.5 text-[11px]">
                 <Clock className="h-3.5 w-3.5 text-muted-blue" />
@@ -174,9 +175,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             <h2 className="font-display text-[23px] leading-tight text-navy-deep">
               Today’s Investor Read for {company.shortName}
             </h2>
-            <p className="mt-0.5 text-[12px] text-ink-secondary">
-              Simple view of what the dashboard is saying about {company.shortName} before you go deeper.
-            </p>
+            <p className="mt-0.5 text-[12px] text-ink-secondary">A quick read on {company.shortName}.</p>
           </div>
           <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-soft-blue px-2.5 py-1 text-[11px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">
             Highlighted: {company.shortName}
@@ -235,7 +234,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
       {/* D. Understand the story deeper — navigation to the full analysis pages */}
       <section>
-        <SectionHeading eyebrow="Next Click" title="Understand the Story Deeper" note="Open the full analysis for each theme" />
+        <SectionHeading eyebrow="Next Click" title="Understand the Story Deeper" note="Open the full analysis" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {deepLinks.map((link) => (
             <button
