@@ -45,8 +45,17 @@ export function CompanyGrowthEngine() {
         summary="Premium expansion is led by retail mix, renewals and share gains — not low-margin group business — so the growth is durable."
       />
 
+      {/* Premium Flow & Quality — the hero premium-engine story (Flow → Mix → Retention) */}
+      <section>
+        <SectionHeading eyebrow="Premium Story" title="Premium Flow & Quality" note="How premium is written, retained, earned and renewed" />
+        <PremiumFlowQuality companies={peerList} focalId={company.id} />
+      </section>
+
+      {/* Calculation basis behind the premium flow */}
+      <QuarterlyCalcCard company={company} />
+
     <ModuleCard
-      question="Which company is growing fastest, and is that growth high quality?"
+      question="How is premium growing, and is the growth high quality?"
       title="Premium Growth Engine"
       icon="growth"
       controls={
@@ -96,15 +105,6 @@ export function CompanyGrowthEngine() {
         </ChartFrame>
       )}
     </ModuleCard>
-
-      {/* Premium Flow & Quality — story-led premium module */}
-      <section>
-        <SectionHeading eyebrow="Premium Story" title="Premium Flow & Quality" note="See how premium is written, retained, earned, sourced, and renewed" />
-        <PremiumFlowQuality companies={peerList} focalId={company.id} />
-      </section>
-
-      {/* Quarterly calculation trust — compact bridge + detail drawer */}
-      <QuarterlyCalcCard company={company} />
 
       <InvestorRead
         title="Growth Investor Read"
