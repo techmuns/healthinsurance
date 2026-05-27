@@ -22,12 +22,15 @@ export function InsightBox({ signal, lines, variant = 'inline', title = 'Investo
   return (
     <div
       className={[
-        'rounded-xl p-4',
+        'relative overflow-hidden rounded-xl p-4',
         variant === 'panel'
           ? 'bg-navy-deep text-white shadow-card'
           : 'border border-soft-border bg-soft-blue/40',
       ].join(' ')}
     >
+      {variant === 'panel' && (
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-champagne/70 to-transparent" />
+      )}
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <OrganicIconBlob shape="blob-e" tone={variant === 'panel' ? 'muted' : 'navy'} size="sm">

@@ -104,7 +104,7 @@ export function PeerRankingTable({ rows }: { rows: PeerRow[] }) {
                   const isBest = bestByColumn.get(c.key) === r.ticker
                   return (
                     <td key={c.key} className="px-3 py-3 tabular-nums text-ink-primary">
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className={`inline-flex items-center gap-1.5 ${isBest ? 'font-semibold text-navy-deep' : ''}`}>
                         {c.fmt(r[c.key])}
                         {isBest && <LeaderDot />}
                       </span>
