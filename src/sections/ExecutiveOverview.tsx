@@ -8,6 +8,7 @@ import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { AboutView } from '@/components/AboutView'
+import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
@@ -115,113 +116,54 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   return (
     <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
-      <header className="card-surface relative px-3 py-5 sm:px-4">
-        {/* Premium right-side accent — soft overlapping curved ribbons (pale
-            blue, teal, warm gold) with a faint dotted mesh, clipped to the card
-            and fading into white behind the chips (never over the title). */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
-          <svg
-            className="absolute inset-0 h-full w-full"
-            viewBox="0 0 1200 200"
-            fill="none"
-            preserveAspectRatio="xMidYMid slice"
-            aria-hidden="true"
-          >
-            <defs>
-              <radialGradient id="hdrGlow" cx="97%" cy="8%" r="72%">
-                <stop offset="0%" stopColor="#E1F2F1" stopOpacity="0.5" />
-                <stop offset="55%" stopColor="#EEF4FF" stopOpacity="0.16" />
-                <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-              </radialGradient>
-              <linearGradient id="hdrGold" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#ECD9A8" />
-                <stop offset="100%" stopColor="#D4B36A" />
-              </linearGradient>
-              <pattern id="hdrDots" width="11" height="11" patternUnits="userSpaceOnUse">
-                <circle cx="1.5" cy="1.5" r="1" fill="#27457E" fillOpacity="0.4" />
-              </pattern>
-              <radialGradient id="hdrDotsFade" cx="50%" cy="42%" r="55%">
-                <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-                <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-              </radialGradient>
-              <mask id="hdrDotsMask">
-                <rect x="980" y="-15" width="230" height="150" fill="url(#hdrDotsFade)" />
-              </mask>
-              <filter id="hdrSoft" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="11" />
-              </filter>
-              <filter id="hdrSoftGold" x="-40%" y="-40%" width="180%" height="180%">
-                <feGaussianBlur stdDeviation="6" />
-              </filter>
-            </defs>
+      <header className="card-surface relative min-h-[170px] rounded-[28px] px-5 py-5 sm:px-6">
+        <HeaderRibbonArt />
 
-            {/* soft base glow, top-right, fading into white */}
-            <rect x="0" y="0" width="1200" height="200" fill="url(#hdrGlow)" />
-
-            {/* layered soft ribbons — wide + heavily blurred, confined to the right */}
-            <g filter="url(#hdrSoft)">
-              <path d="M860 -70 C 1000 20, 1090 90, 1290 60" stroke="#CFE0F7" strokeOpacity="0.5" strokeWidth="92" strokeLinecap="round" />
-              <path d="M910 -55 C 1040 35, 1130 130, 1290 135" stroke="#BCE2DD" strokeOpacity="0.42" strokeWidth="70" strokeLinecap="round" />
-            </g>
-            <path
-              d="M980 -45 C 1090 55, 1165 150, 1290 205"
-              stroke="url(#hdrGold)"
-              strokeOpacity="0.36"
-              strokeWidth="30"
-              strokeLinecap="round"
-              filter="url(#hdrSoftGold)"
-            />
-
-            {/* faint dotted mesh — radially masked so it fades, no hard edge */}
-            <rect x="980" y="-15" width="230" height="150" fill="url(#hdrDots)" mask="url(#hdrDotsMask)" opacity="0.45" />
-          </svg>
-
-          {/* fade the shape's left edge softly into the white card */}
-          <div className="absolute inset-y-0 right-0 w-[52%] bg-gradient-to-l from-transparent via-transparent to-card/70" />
+        {/* About this view — floating top-right */}
+        <div className="absolute right-5 top-5 z-20 sm:right-6 sm:top-6">
+          <AboutView text="Selected company vs its peer group, period, and dataset." />
         </div>
-        <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-          <div className="max-w-2xl">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <SignalBadge label={isCompanyView ? 'Company View' : 'Industry Overview'} tone="navy" size="sm" />
-              <span className="text-[11px] font-medium text-ink-secondary">
-                · <span className="font-semibold text-champagne">{company.shortName}</span>{' '}
-                {isCompanyView ? 'in focus' : 'highlighted'}
-              </span>
-            </div>
-            <h1 className="font-display text-[26px] leading-[1.1] text-navy-deep sm:text-[30px]">
-              {isCompanyView ? company.name : 'Insurance Investment Dashboard'}
-            </h1>
-            <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
-              {isCompanyView
-                ? `${company.shortName} vs ${groupLabel.toLowerCase()}.`
-                : 'Who leads, who’s improving, and where risk is building.'}
-            </p>
-          </div>
 
-          <div className="flex flex-col items-start gap-2 sm:items-end">
-            <AboutView text="Selected company vs its peer group, period, and dataset." />
-            <div className="flex flex-wrap gap-2.5 sm:justify-end">
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#DCE6F6] bg-[#F4F8FE] px-3 py-1.5 text-[11px] shadow-soft">
-                <Clock className="h-3.5 w-3.5 text-muted-blue" />
-                <span className="text-ink-secondary">Updated</span>
-                <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
-              </div>
-              {annualOnly ? (
-                <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px] shadow-soft">
-                  <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-                  <span className="font-semibold text-signal-warning">Annual mock data only</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-[#E1F2F1] px-3 py-1.5 text-[11px] shadow-soft">
-                  <BadgeCheck className="h-3.5 w-3.5 text-teal" />
-                  <span className="font-semibold text-teal">Freshness: current</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px] shadow-soft">
-                <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-                <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
-              </div>
+        {/* Left content */}
+        <div className="relative z-10 max-w-2xl">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <SignalBadge label={isCompanyView ? 'Company View' : 'Industry Overview'} tone="navy" size="sm" />
+            <span className="text-[11px] font-medium text-ink-secondary">
+              · <span className="font-semibold text-champagne">{company.shortName}</span>{' '}
+              {isCompanyView ? 'in focus' : 'highlighted'}
+            </span>
+          </div>
+          <h1 className="font-display text-[26px] leading-[1.1] text-navy-deep sm:text-[30px]">
+            {isCompanyView ? company.name : 'Insurance Investment Dashboard'}
+          </h1>
+          <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
+            {isCompanyView
+              ? `${company.shortName} vs ${groupLabel.toLowerCase()}.`
+              : 'Who leads, who’s improving, and where risk is building.'}
+          </p>
+        </div>
+
+        {/* Status chips — float lower-right on desktop, flow under title on mobile */}
+        <div className="relative z-20 mt-5 flex flex-wrap gap-3 sm:absolute sm:bottom-6 sm:right-6 sm:mt-0">
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#2956A02E] bg-[#FFFFFFC7] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+            <Clock className="h-3.5 w-3.5 text-muted-blue" />
+            <span className="text-ink-secondary">Updated</span>
+            <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
+          </div>
+          {annualOnly ? (
+            <div className="flex items-center gap-1.5 rounded-xl border border-[#C4841D3D] bg-[#FFF6E0E0] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
+              <span className="font-semibold text-signal-warning">Annual mock data only</span>
             </div>
+          ) : (
+            <div className="flex items-center gap-1.5 rounded-xl border border-[#16968438] bg-[#E8FAF4D9] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+              <BadgeCheck className="h-3.5 w-3.5 text-teal" />
+              <span className="font-semibold text-teal">Freshness: current</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#C4841D3D] bg-[#FFF6E0E0] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+            <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
+            <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
           </div>
         </div>
       </header>
