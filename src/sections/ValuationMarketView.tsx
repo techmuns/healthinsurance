@@ -24,9 +24,9 @@ export function ValuationMarketView() {
 
   const upside = (((streetView.targetPrice - streetView.currentPrice) / streetView.currentPrice) * 100).toFixed(1)
   const headline = {
-    Trend: 'Valuation has cooled from its peak but stays at a premium to peers',
-    'Peer Comparison': 'Niva Bupa trades above the peer median — justified only by superior quality',
-    Scatter: 'Growth-adjusted, the premium multiple looks defensible',
+    Trend: 'Off its peak, still a premium to peers',
+    'Peer Comparison': 'Above the peer median — earned on quality',
+    Scatter: 'Valuation looks reasonable vs growth',
   }[view]
 
   return (
@@ -129,7 +129,7 @@ export function ValuationMarketView() {
         </ChartFrame>
       )}
       {view === 'Scatter' && (
-        <ChartFrame headline={headline} caption="GWP growth (x-axis) vs P/GWP (y-axis) · star = focal · mock data">
+        <ChartFrame headline={headline} caption="Growth vs valuation · Niva Bupa highlighted · mock">
           <ScatterPlot data={valuationScatter} />
         </ChartFrame>
       )}

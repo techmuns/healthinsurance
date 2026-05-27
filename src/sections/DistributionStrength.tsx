@@ -98,7 +98,7 @@ export function DistributionStrength() {
         </ChartFrame>
       )}
       {view === 'Productivity' && (
-        <ChartFrame headline={headline} caption="Active agents (bars) vs premium per agent, ₹ L (line) · mock data">
+        <ChartFrame headline={headline} caption="Agents vs premium per agent (₹ L) · mock">
           <DualAxisChart data={productivity} barKey="agents" lineKey="perAgent" barLabel="Active agents" lineLabel="Premium / agent (₹ L)" />
         </ChartFrame>
       )}
