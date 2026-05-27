@@ -36,12 +36,12 @@ function ChangeCard({
 }) {
   const t = toneClass[tone]
   return (
-    <div className={`rounded-xl border p-3 ${t.card}`}>
+    <div className={`rounded-xl border px-3 py-2.5 ${t.card}`}>
       <div className="flex items-center gap-1.5">
         <span className={t.icon}>{icon}</span>
         <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{label}</span>
       </div>
-      <p className="mt-1.5 text-[12px] font-semibold text-navy-deep">{metric}</p>
+      <p className="mt-1 text-[12px] font-semibold text-navy-deep">{metric}</p>
       <div className="mt-0.5 flex items-center gap-1.5">
         {value && <span className="text-[13px] font-semibold tabular-nums text-navy-deep">{value}</span>}
         {chip}

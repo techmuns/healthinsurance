@@ -1,4 +1,5 @@
-import { BadgeCheck, ChevronRight, Clock, ShieldCheck } from 'lucide-react'
+import { Award, BadgeCheck, ChevronRight, Clock, Eye, ShieldCheck, TrendingUp } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
@@ -12,14 +13,56 @@ import { getQuarterlyReview } from '@/lib/review'
 import { navItems } from '@/nav'
 import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
-// Curated "next click" destinations — labels/icons/questions reused from nav.
-const deepLinkConfig: { id: string; label?: string }[] = [
-  { id: 'market' },
-  { id: 'growth' },
-  { id: 'profitability' },
-  { id: 'peers' },
-  { id: 'valuation' },
-  { id: 'ownership', label: 'Governance' },
+// Retail-investor translation layer — plain-English read before the data.
+type ReadTone = 'positive' | 'warning'
+const tintClass: Record<'green' | 'teal' | 'amber', { card: string; icon: string }> = {
+  green: { card: 'border-[#CDE6D7] bg-[#EAF3EE]', icon: 'text-emerald' },
+  teal: { card: 'border-[#CDE6D7] bg-[#E1F2F1]', icon: 'text-teal' },
+  amber: { card: 'border-[#F0E1BE] bg-gold-soft', icon: 'text-gold' },
+}
+const investorRead: {
+  icon: LucideIcon
+  title: string
+  text: string
+  status: string
+  tone: ReadTone
+  tint: keyof typeof tintClass
+}[] = [
+  {
+    icon: TrendingUp,
+    title: 'Market Tailwind',
+    text: 'Health insurance is growing faster than the broader insurance market.',
+    status: 'Positive',
+    tone: 'positive',
+    tint: 'green',
+  },
+  {
+    icon: Award,
+    title: 'Niva Position',
+    text: 'Niva Bupa is the #2 standalone health insurer in the current peer pool.',
+    status: 'Improving',
+    tone: 'positive',
+    tint: 'teal',
+  },
+  {
+    icon: Eye,
+    title: 'Main Watch',
+    text: 'Track banca concentration, claims discipline, and valuation.',
+    status: 'Watch',
+    tone: 'warning',
+    tint: 'amber',
+  },
+]
+
+// Curated "next click" destinations — icons reused from nav, with a plain-English
+// "what you will learn" line per page.
+const deepLinkConfig: { id: string; label?: string; learn: string }[] = [
+  { id: 'market', learn: 'Why the sector is growing' },
+  { id: 'growth', learn: 'How Niva is growing' },
+  { id: 'profitability', learn: 'Whether growth is profitable' },
+  { id: 'peers', learn: 'How Niva compares' },
+  { id: 'valuation', learn: 'Whether the stock is expensive' },
+  { id: 'ownership', label: 'Governance', learn: 'Who owns and runs the company' },
 ]
 
 export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) => void }) {
@@ -41,11 +84,11 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
   const deepLinks = deepLinkConfig.map((d) => {
     const item = navItems.find((n) => n.id === d.id)!
-    return { ...item, label: d.label ?? item.label }
+    return { ...item, label: d.label ?? item.label, learn: d.learn }
   })
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
       <header className="card-surface relative overflow-hidden px-6 py-5 sm:px-7">
         <div className="absolute -right-12 -top-16 hidden h-44 w-44 bg-teal-soft/60 blob-a sm:block" />
@@ -94,6 +137,37 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
         </div>
       </header>
 
+      {/* A2. Today's Investor Read — plain-English translation layer */}
+      <section>
+        <div className="mb-3">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="h-3 w-[3px] rounded-full bg-champagne" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</span>
+          </div>
+          <h2 className="font-display text-[23px] leading-tight text-navy-deep">Today’s Investor Read</h2>
+          <p className="mt-0.5 text-[12px] text-ink-secondary">
+            Simple view of what the dashboard is saying before you go deeper.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {investorRead.map((r) => {
+            const tint = tintClass[r.tint]
+            return (
+              <div key={r.title} className={`rounded-xl border p-3 ${tint.card}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
+                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{r.title}</span>
+                  </div>
+                  <SignalBadge label={r.status} tone={r.tone} size="sm" />
+                </div>
+                <p className="mt-1.5 text-[12px] leading-snug text-navy-deep">{r.text}</p>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
       {/* B. Who Leads — the visual hero: donut + leaders */}
       <section>
         <SectionHeading
@@ -113,6 +187,10 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             <IndustryLeaders insurers={filtered} highlightId={company.id} onSelect={filters.setHighlightedCompany} />
           </div>
         </div>
+        <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
+          Niva is currently a top-2 SAHI player; the key question is whether growth quality and profitability continue to
+          improve.
+        </p>
       </section>
 
       {/* C. What Changed — compact visual strip */}
@@ -127,16 +205,16 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
               key={link.id}
               type="button"
               onClick={() => onNavigate?.(link.id)}
-              className="card-surface card-interactive group flex items-start gap-3 p-4 text-left"
+              className="card-surface card-interactive group flex items-center gap-2.5 p-3 text-left"
             >
               <OrganicIconBlob shape="blob-d" tone="navySoft" size="sm">
                 <Icon name={link.icon} />
               </OrganicIconBlob>
               <div className="min-w-0">
                 <p className="text-[13px] font-semibold text-navy-deep">{link.label}</p>
-                <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{link.question}</p>
+                <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{link.learn}</p>
               </div>
-              <ChevronRight className="ml-auto mt-1 h-4 w-4 shrink-0 text-ink-secondary transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-ink-secondary transition-transform group-hover:translate-x-0.5" />
             </button>
           ))}
         </div>
