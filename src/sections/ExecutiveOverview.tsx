@@ -1,5 +1,6 @@
 import { Award, BadgeCheck, ChevronRight, Clock, Eye, ShieldCheck, TrendingUp } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
@@ -16,10 +17,12 @@ import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
 // Retail-investor translation layer — plain-English read before the data.
 // Card copy is built per selected company inside the component; tints are fixed.
-const tintClass: Record<'green' | 'teal' | 'amber', { card: string; icon: string; glow: string }> = {
-  green: { card: 'border-[#CDE6D7] bg-[#EAF3EE]', icon: 'text-emerald', glow: 'rgba(63,155,107,0.18)' },
-  teal: { card: 'border-[#CDE6D7] bg-[#E1F2F1]', icon: 'text-teal', glow: 'rgba(22,142,142,0.18)' },
-  amber: { card: 'border-[#F0E1BE] bg-gold-soft', icon: 'text-gold', glow: 'rgba(182,139,58,0.18)' },
+// Mostly-white cards; per-card identity comes from a soft icon medallion and a
+// subtle corner glow, with a deeper navy/teal icon as the anchor.
+const tintClass: Record<'green' | 'teal' | 'amber', { medallion: string; icon: string; glow: string }> = {
+  green: { medallion: 'bg-teal-soft', icon: 'text-teal', glow: 'rgba(22,142,142,0.22)' },
+  teal: { medallion: 'bg-soft-blue', icon: 'text-navy-primary', glow: 'rgba(49,90,169,0.18)' },
+  amber: { medallion: 'bg-gold-soft', icon: 'text-navy-primary', glow: 'rgba(183,121,31,0.20)' },
 }
 
 // Curated "next click" destinations — icons reused from nav, with a plain-English
@@ -63,9 +66,6 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     .sort((a, b) => b.marketShare - a.marketShare)
     .findIndex((i) => i.id === company.id)
   const positionRank = sharePosition >= 0 ? sharePosition + 1 : null
-  const positionText = positionRank
-    ? `#${positionRank} in the ${company.peerGroup} peer pool.`
-    : 'Tracked vs the selected peer pool.'
   const positionPhrase = positionRank
     ? positionRank === 1
       ? `the #1 ${company.peerGroup} player`
@@ -75,7 +75,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   const investorRead: {
     icon: LucideIcon
     title: string
-    text: string
+    text: ReactNode
     status: string
     tone?: 'positive' | 'warning'
     tint: keyof typeof tintClass
@@ -91,7 +91,13 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     {
       icon: Award,
       title: 'Company Position',
-      text: positionText,
+      text: positionRank ? (
+        <>
+          <span className="font-bold text-navy-primary">#{positionRank}</span> in the {company.peerGroup} peer pool.
+        </>
+      ) : (
+        'Tracked vs the selected peer pool.'
+      ),
       // Live company signal drives the pill; SignalBadge resolves its tone.
       status: company.signal ?? 'Improving',
       tint: 'teal',
@@ -180,7 +186,8 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             </h2>
             <p className="mt-0.5 text-[12px] text-ink-secondary">A quick read on {company.shortName}.</p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-soft-blue px-2.5 py-1 text-[11px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3 py-1 text-[11px] font-semibold text-white shadow-soft">
+            <span className="h-1.5 w-1.5 rounded-full bg-champagne" />
             Highlighted: {company.shortName}
           </span>
         </div>
@@ -188,19 +195,24 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           {investorRead.map((r) => {
             const tint = tintClass[r.tint]
             return (
-              <div key={r.title} className={`relative overflow-hidden rounded-xl border p-3 ${tint.card}`}>
+              <div
+                key={r.title}
+                className="relative overflow-hidden rounded-xl border border-soft-border bg-card p-3.5 shadow-[0_6px_18px_rgba(23,43,77,0.08)]"
+              >
                 <span
-                  className="pointer-events-none absolute -right-5 -top-5 h-14 w-14 rounded-full blur-2xl"
+                  className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full blur-2xl"
                   style={{ background: tint.glow }}
                 />
                 <div className="relative flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{r.title}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${tint.medallion}`}>
+                      <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-navy-deep">{r.title}</span>
                   </div>
                   <SignalBadge label={r.status} tone={r.tone} size="sm" />
                 </div>
-                <p className="relative mt-1.5 text-[12px] leading-snug text-navy-deep">{r.text}</p>
+                <p className="relative mt-2 text-[12px] font-medium leading-snug text-ink-primary">{r.text}</p>
               </div>
             )
           })}
