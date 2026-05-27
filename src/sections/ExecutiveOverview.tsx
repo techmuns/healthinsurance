@@ -128,49 +128,56 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             aria-hidden="true"
           >
             <defs>
-              <radialGradient id="hdrGlow" cx="95%" cy="14%" r="80%">
-                <stop offset="0%" stopColor="#E1F2F1" stopOpacity="0.6" />
-                <stop offset="55%" stopColor="#EEF4FF" stopOpacity="0.22" />
+              <radialGradient id="hdrGlow" cx="97%" cy="8%" r="72%">
+                <stop offset="0%" stopColor="#E1F2F1" stopOpacity="0.5" />
+                <stop offset="55%" stopColor="#EEF4FF" stopOpacity="0.16" />
                 <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
               </radialGradient>
               <linearGradient id="hdrGold" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#EAD29A" />
-                <stop offset="100%" stopColor="#C7A04A" />
+                <stop offset="0%" stopColor="#ECD9A8" />
+                <stop offset="100%" stopColor="#D4B36A" />
               </linearGradient>
-              <pattern id="hdrDots" width="9" height="9" patternUnits="userSpaceOnUse">
-                <circle cx="1.6" cy="1.6" r="1" fill="#27457E" fillOpacity="0.16" />
+              <pattern id="hdrDots" width="11" height="11" patternUnits="userSpaceOnUse">
+                <circle cx="1.5" cy="1.5" r="1" fill="#27457E" fillOpacity="0.4" />
               </pattern>
-              <filter id="hdrSoft" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="5" />
+              <radialGradient id="hdrDotsFade" cx="50%" cy="42%" r="55%">
+                <stop offset="0%" stopColor="#fff" stopOpacity="1" />
+                <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+              </radialGradient>
+              <mask id="hdrDotsMask">
+                <rect x="980" y="-15" width="230" height="150" fill="url(#hdrDotsFade)" />
+              </mask>
+              <filter id="hdrSoft" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="11" />
               </filter>
-              <filter id="hdrSoftGold" x="-30%" y="-30%" width="160%" height="160%">
-                <feGaussianBlur stdDeviation="1.6" />
+              <filter id="hdrSoftGold" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="6" />
               </filter>
             </defs>
 
             {/* soft base glow, top-right, fading into white */}
             <rect x="0" y="0" width="1200" height="200" fill="url(#hdrGlow)" />
 
-            {/* layered curved ribbons */}
+            {/* layered soft ribbons — wide + heavily blurred, confined to the right */}
             <g filter="url(#hdrSoft)">
-              <path d="M740 -50 C 900 40, 1000 110, 1260 75" stroke="#CFE0F7" strokeOpacity="0.6" strokeWidth="74" strokeLinecap="round" />
-              <path d="M810 -40 C 970 50, 1070 150, 1260 145" stroke="#BCE2DD" strokeOpacity="0.55" strokeWidth="56" strokeLinecap="round" />
+              <path d="M860 -70 C 1000 20, 1090 90, 1290 60" stroke="#CFE0F7" strokeOpacity="0.5" strokeWidth="92" strokeLinecap="round" />
+              <path d="M910 -55 C 1040 35, 1130 130, 1290 135" stroke="#BCE2DD" strokeOpacity="0.42" strokeWidth="70" strokeLinecap="round" />
             </g>
             <path
-              d="M900 -24 C 1020 56, 1110 165, 1260 205"
+              d="M980 -45 C 1090 55, 1165 150, 1290 205"
               stroke="url(#hdrGold)"
-              strokeOpacity="0.55"
-              strokeWidth="18"
+              strokeOpacity="0.36"
+              strokeWidth="30"
               strokeLinecap="round"
               filter="url(#hdrSoftGold)"
             />
 
-            {/* faint dotted mesh patch */}
-            <path d="M945 10 C 1025 -2, 1112 18, 1118 60 C 1122 95, 1018 102, 972 78 C 940 62, 920 26, 945 10 Z" fill="url(#hdrDots)" />
+            {/* faint dotted mesh — radially masked so it fades, no hard edge */}
+            <rect x="980" y="-15" width="230" height="150" fill="url(#hdrDots)" mask="url(#hdrDotsMask)" opacity="0.45" />
           </svg>
 
           {/* fade the shape's left edge softly into the white card */}
-          <div className="absolute inset-y-0 right-0 w-[46%] bg-gradient-to-l from-transparent via-transparent to-card/55" />
+          <div className="absolute inset-y-0 right-0 w-[52%] bg-gradient-to-l from-transparent via-transparent to-card/70" />
         </div>
         <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
