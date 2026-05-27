@@ -66,16 +66,24 @@ export function IndustryLeaders({
               role="button"
               title={`Select ${r.shortName}`}
               onClick={() => onSelect?.(r.id)}
-              className={`cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:bg-ice/70'}`}
+              className={`relative cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:bg-ice/70'}`}
             >
+              {focal && (
+                <Crown
+                  className="absolute -top-2 left-1/2 z-10 h-4 w-4 -translate-x-1/2 fill-champagne/25 text-champagne"
+                  aria-label={`${r.shortName} highlighted`}
+                />
+              )}
               <div className="mb-1 flex items-center gap-2">
-                <span className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${rankBadge[i]}`}>
+                <span
+                  className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${focal ? 'bg-navy-primary text-white' : rankBadge[i]}`}
+                >
                   {i + 1}
                 </span>
                 <span className={`flex-1 truncate text-[12px] ${focal ? 'font-semibold text-navy-deep' : 'text-ink-primary'}`}>
                   {r.shortName}
                 </span>
-                {r.id === leaderId && <Crown className="h-3.5 w-3.5 fill-champagne/20 text-champagne" aria-label={`Leads ${def.label}`} />}
+                {r.id === leaderId && <LeaderDot title={`Leads ${def.label}`} />}
                 <span className="text-[12px] font-semibold tabular-nums text-navy-deep">{def.format(r[def.key])}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-ice">

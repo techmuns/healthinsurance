@@ -34,7 +34,7 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
           <nav className="mt-2 flex flex-1 flex-col gap-0.5 border-t border-[rgba(182,139,58,0.16)] pt-2.5">
             {navGroups.map((groupItem, gi) => (
               <div key={groupItem.label} className={gi === 0 ? '' : 'mt-2'}>
-                <p className="mb-0.5 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep/70">
+                <p className="mb-0.5 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">
                   {groupItem.label}
                 </p>
                 {groupItem.itemIds.map((id) => {
