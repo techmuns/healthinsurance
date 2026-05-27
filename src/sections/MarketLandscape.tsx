@@ -4,13 +4,15 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
+import { SectionHeading } from '@/components/SectionHeading'
+import { MetricChip } from '@/components/MetricChip'
 import {
   ChartFrame,
   HorizontalBarChart,
   StackedBarChart,
   TrendLineChart,
 } from '@/components/charts'
-import { marketKpis, marketRanking, marketSplit, marketTrend } from '@/data/mockData'
+import { industryMetrics, marketKpis, marketRanking, marketSplit, marketTrend } from '@/data/mockData'
 
 type View = 'Trend' | 'Split' | 'Ranking'
 type Segment = 'Total' | 'Health' | 'Life' | 'General' | 'SAHI'
@@ -29,6 +31,7 @@ export function MarketLandscape() {
         : 'Health and SAHI premium growth are outpacing the broader market'
 
   return (
+    <div className="space-y-7">
     <ModuleCard
       question="Is the insurance market growing, and which segment is gaining share?"
       title="Insurance Market Growth"
@@ -81,6 +84,17 @@ export function MarketLandscape() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      {/* Key Sector Metrics — market-wide supporting metrics (moved from Executive Overview) */}
+      <section>
+        <SectionHeading eyebrow="At a Glance" title="Key Sector Metrics" note="YoY unless noted" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {industryMetrics.map((mtr) => (
+            <MetricChip key={mtr.label} metric={mtr} />
+          ))}
+        </div>
+      </section>
+    </div>
   )
 }
 

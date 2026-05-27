@@ -5,9 +5,13 @@ import { MiniKpi } from '@/components/MiniKpi'
 import { InsightBox } from '@/components/InsightBox'
 import { BasisTag } from '@/components/BasisTag'
 import { YtdBridge } from '@/components/YtdBridge'
+import { SectionHeading } from '@/components/SectionHeading'
+import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
+import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { ChartFrame, GroupedBarChart, StackedBarChart, TrendLineChart } from '@/components/charts'
-import { growthBasis, growthDrawer, growthKpis, growthMix, growthQuality, growthTrend } from '@/data/mockData'
-import { useActiveCompany } from '@/state/filters'
+import { growthBasis, growthDrawer, growthKpis, growthMix, growthQuality, growthTrend, insurers } from '@/data/mockData'
+import { getFilteredInsurers } from '@/lib/insurers'
+import { useActiveCompany, useFilters } from '@/state/filters'
 
 type View = 'Growth' | 'Mix' | 'Quality' | 'Quarterly'
 type Metric = 'GWP' | 'NWP' | 'NEP'
@@ -15,7 +19,13 @@ type Metric = 'GWP' | 'NWP' | 'NEP'
 export function CompanyGrowthEngine() {
   const [view, setView] = useState<View>('Growth')
   const [metric, setMetric] = useState<Metric>('GWP')
+  const filters = useFilters()
   const company = useActiveCompany()
+
+  // Peer set for the Premium Flow & Quality module's company switcher.
+  const filtered = getFilteredInsurers(filters)
+  const inFiltered = filtered.some((i) => i.id === company.id)
+  const peerList = inFiltered ? filtered : insurers.filter((i) => i.peerGroup === company.peerGroup)
 
   const headline =
     view === 'Quality'
@@ -25,6 +35,7 @@ export function CompanyGrowthEngine() {
         : `${metric} growth is accelerating on retail and renewal strength`
 
   return (
+    <div className="space-y-7">
     <ModuleCard
       question="Which company is growing fastest, and is that growth high quality?"
       title="Premium Growth Engine"
@@ -88,6 +99,16 @@ export function CompanyGrowthEngine() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      {/* Premium Flow & Quality — story-led premium module */}
+      <section>
+        <SectionHeading eyebrow="Premium Story" title="Premium Flow & Quality" note="See how premium is written, retained, earned, sourced, and renewed" />
+        <PremiumFlowQuality companies={peerList} focalId={company.id} />
+      </section>
+
+      {/* Quarterly calculation trust — compact bridge + detail drawer */}
+      <QuarterlyCalcCard company={company} />
+    </div>
   )
 }
 

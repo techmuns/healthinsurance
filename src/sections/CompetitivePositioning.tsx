@@ -6,9 +6,12 @@ import { ChartFrame, HorizontalBarChart } from '@/components/charts'
 import { BestInColumnLegend } from '@/components/LeaderDot'
 import { PeerRankingTable } from '@/components/PeerRankingTable'
 import { PeerScorecard } from '@/components/PeerScorecard'
-import { insurers, peerRows } from '@/data/mockData'
+import { Heatmap } from '@/components/Heatmap'
+import { SectionHeading } from '@/components/SectionHeading'
+import { PEER_GROUP_LABEL, insurers, peerRows } from '@/data/mockData'
+import { getPeerScorecardData } from '@/lib/insurers'
 import { getCompanySignals, getQuarterlyReview, getScorecardSummary } from '@/lib/review'
-import { useActiveCompany } from '@/state/filters'
+import { useActiveCompany, useFilters } from '@/state/filters'
 import type { PeerGroup } from '@/data/types'
 
 type View = 'Scorecard' | 'Ranking' | 'Table'
@@ -29,7 +32,12 @@ export function CompetitivePositioning() {
   const [view, setView] = useState<View>('Scorecard')
   const [group, setGroup] = useState<PeerGroup>('SAHI')
   const [metric, setMetric] = useState<RankMetric>('GWP Growth')
+  const filters = useFilters()
   const active = useActiveCompany()
+
+  // Filter-aware peer scorecard heatmap (moved from Executive Overview).
+  const heatmapData = getPeerScorecardData(filters)
+  const s = heatmapData.summary
 
   const rows = peerRows
     .filter((r) => group === 'All' || r.peerGroup === group)
@@ -50,6 +58,7 @@ export function CompetitivePositioning() {
     .sort((a, b) => (acc.invert ? a.value - b.value : b.value - a.value))
 
   return (
+    <div className="space-y-7">
     <ModuleCard
       question="Who is winning versus peers?"
       title="Peer Positioning"
@@ -117,5 +126,87 @@ export function CompetitivePositioning() {
         </ChartFrame>
       )}
     </ModuleCard>
+
+      {/* Peer Scorecard heatmap — full width, self-explanatory (moved from Executive Overview) */}
+      <section>
+        <SectionHeading eyebrow="At a Glance" title="Peer Scorecard" note="Best-in-column highlighted · mock data" />
+        <div className="card-surface card-interactive p-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <p className="font-display text-[15px] text-navy-deep">Multi-metric snapshot</p>
+            <BestInColumnLegend />
+          </div>
+
+          {/* Dynamic one-line takeaway */}
+          <p className="mt-1 text-[12px] leading-relaxed text-ink-secondary">
+            <span className="font-semibold text-navy-primary">{s.growthLeader.shortName}</span> leads growth at{' '}
+            {s.growthLeader.growth.toFixed(1)}%
+            {s.marginByCombined ? (
+              <>
+                , while <span className="font-semibold text-navy-primary">{s.marginLeader.shortName}</span> runs the
+                tightest combined ratio at {s.marginLeader.combinedRatio.toFixed(1)}%
+              </>
+            ) : (
+              <>
+                , while <span className="font-semibold text-navy-primary">{s.marginLeader.shortName}</span> leads on ROE
+                at {s.marginLeader.roe.toFixed(1)}%
+              </>
+            )}
+            .{' '}
+            {s.inGroup ? (
+              <>
+                <span className="font-semibold text-navy-deep">{s.highlighted.shortName}</span> ranks #{s.growthRank} of{' '}
+                {s.count} on growth and #{s.marginRank} on {s.marginByCombined ? 'combined ratio' : 'ROE'}.
+              </>
+            ) : (
+              <>
+                <span className="font-semibold text-navy-deep">{s.highlighted.shortName}</span> sits outside this peer
+                group ({PEER_GROUP_LABEL[s.highlighted.peerGroup].toLowerCase()}).
+              </>
+            )}
+          </p>
+
+          {/* Reading guide */}
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-ice/70 px-3 py-2 text-[10.5px] text-ink-secondary">
+            <span className="font-semibold text-navy-deep">How to read:</span>
+            <span>
+              <span className="font-semibold text-emerald">Green</span> stronger ·{' '}
+              <span className="font-semibold text-coral">red</span> weaker
+            </span>
+            <span>·</span>
+            <span>Growth &amp; Share Δ are YoY</span>
+            <span>·</span>
+            <span>Combined ratio: lower is better</span>
+            <span>·</span>
+            <span>Solvency: higher is safer</span>
+            <span>·</span>
+            <span>Valuation (P/GWP): lower is cheaper</span>
+          </div>
+
+          <div className="mt-3">
+            <Heatmap
+              markBest
+              columns={[
+                { key: 'gwpGrowth', label: 'Growth', format: (v) => `${v.toFixed(0)}%` },
+                { key: 'marketShareChange', label: 'Share Δ', format: (v) => `${v > 0 ? '+' : ''}${v.toFixed(1)} pp` },
+                { key: 'combinedRatio', label: 'Combined Ratio', invert: true, format: (v) => `${v.toFixed(0)}%` },
+                { key: 'solvency', label: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
+                { key: 'valuation', label: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
+              ]}
+              rows={heatmapData.rows.map((r) => ({
+                label: r.label,
+                focal: r.focal,
+                values: {
+                  gwpGrowth: r.values.growth,
+                  marketShareChange: r.values.marketShareChange,
+                  combinedRatio: r.values.combinedRatio,
+                  solvency: r.values.solvency,
+                  valuation: r.values.valuation,
+                },
+              }))}
+            />
+          </div>
+        </div>
+      </section>
+    </div>
   )
 }

@@ -11,7 +11,7 @@ import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { Ownership } from '@/sections/Ownership'
 import { ManagementEvents } from '@/sections/ManagementEvents'
 
-const sections: Record<string, ComponentType> = {
+const sections: Record<string, ComponentType<{ onNavigate?: (id: string) => void }>> = {
   overview: ExecutiveOverview,
   market: MarketLandscape,
   growth: CompanyGrowthEngine,
@@ -34,7 +34,7 @@ export default function App() {
   return (
     <FilterProvider>
       <DashboardShell active={active} onNavigate={setActive}>
-        <Section />
+        <Section onNavigate={setActive} />
       </DashboardShell>
     </FilterProvider>
   )
