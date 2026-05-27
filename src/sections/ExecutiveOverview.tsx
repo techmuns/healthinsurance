@@ -116,16 +116,61 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
     <div className="space-y-6">
       {/* A. Compact, filter-aware hero */}
       <header className="card-surface relative px-3 py-5 sm:px-4">
-        {/* Premium organic accent — layered navy/blue/teal/green blobs in the
-            dashboard's shape language, clipped to the card and sitting behind
-            the right-side chips (never over the title). */}
+        {/* Premium right-side accent — soft overlapping curved ribbons (pale
+            blue, teal, warm gold) with a faint dotted mesh, clipped to the card
+            and fading into white behind the chips (never over the title). */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.15rem]">
-          <div className="absolute inset-y-0 right-0 w-2/3 bg-gradient-to-l from-teal-soft/55 via-teal-soft/10 to-transparent" />
-          <div className="absolute -right-10 -top-16 h-48 w-48 bg-navy-primary/[0.05] blob-a" />
-          <div className="absolute -right-16 -top-4 h-44 w-44 bg-soft-blue/70 blob-b" />
-          <div className="absolute -right-16 top-6 h-36 w-36 bg-teal-soft/80 blob-c" />
-          <div className="absolute right-16 -top-8 hidden h-24 w-24 bg-gold-soft/70 blob-e sm:block" />
-          <div className="absolute right-4 top-12 hidden h-14 w-14 bg-emerald-soft/50 blob-d sm:block" />
+          <svg
+            className="absolute inset-0 h-full w-full"
+            viewBox="0 0 1200 200"
+            fill="none"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <defs>
+              <radialGradient id="hdrGlow" cx="95%" cy="14%" r="80%">
+                <stop offset="0%" stopColor="#E1F2F1" stopOpacity="0.6" />
+                <stop offset="55%" stopColor="#EEF4FF" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+              </radialGradient>
+              <linearGradient id="hdrGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#EAD29A" />
+                <stop offset="100%" stopColor="#C7A04A" />
+              </linearGradient>
+              <pattern id="hdrDots" width="9" height="9" patternUnits="userSpaceOnUse">
+                <circle cx="1.6" cy="1.6" r="1" fill="#27457E" fillOpacity="0.16" />
+              </pattern>
+              <filter id="hdrSoft" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="5" />
+              </filter>
+              <filter id="hdrSoftGold" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="1.6" />
+              </filter>
+            </defs>
+
+            {/* soft base glow, top-right, fading into white */}
+            <rect x="0" y="0" width="1200" height="200" fill="url(#hdrGlow)" />
+
+            {/* layered curved ribbons */}
+            <g filter="url(#hdrSoft)">
+              <path d="M740 -50 C 900 40, 1000 110, 1260 75" stroke="#CFE0F7" strokeOpacity="0.6" strokeWidth="74" strokeLinecap="round" />
+              <path d="M810 -40 C 970 50, 1070 150, 1260 145" stroke="#BCE2DD" strokeOpacity="0.55" strokeWidth="56" strokeLinecap="round" />
+            </g>
+            <path
+              d="M900 -24 C 1020 56, 1110 165, 1260 205"
+              stroke="url(#hdrGold)"
+              strokeOpacity="0.55"
+              strokeWidth="18"
+              strokeLinecap="round"
+              filter="url(#hdrSoftGold)"
+            />
+
+            {/* faint dotted mesh patch */}
+            <path d="M945 10 C 1025 -2, 1112 18, 1118 60 C 1122 95, 1018 102, 972 78 C 940 62, 920 26, 945 10 Z" fill="url(#hdrDots)" />
+          </svg>
+
+          {/* fade the shape's left edge softly into the white card */}
+          <div className="absolute inset-y-0 right-0 w-[46%] bg-gradient-to-l from-transparent via-transparent to-card/55" />
         </div>
         <div className="relative flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
           <div className="max-w-2xl">
@@ -148,24 +193,24 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
           <div className="flex flex-col items-start gap-2 sm:items-end">
             <AboutView text="Selected company vs its peer group, period, and dataset." />
-            <div className="flex flex-wrap gap-2 sm:justify-end">
-              <div className="flex items-center gap-1.5 rounded-lg border border-soft-border bg-card px-3 py-1.5 text-[11px]">
+            <div className="flex flex-wrap gap-2.5 sm:justify-end">
+              <div className="flex items-center gap-1.5 rounded-lg border border-[#DCE6F6] bg-[#F4F8FE] px-3 py-1.5 text-[11px] shadow-soft">
                 <Clock className="h-3.5 w-3.5 text-muted-blue" />
                 <span className="text-ink-secondary">Updated</span>
                 <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
               </div>
               {annualOnly ? (
-                <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px]">
+                <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px] shadow-soft">
                   <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
                   <span className="font-semibold text-signal-warning">Annual mock data only</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 rounded-lg border border-[#CDE6D7] bg-[#EAF3EE] px-3 py-1.5 text-[11px]">
-                  <BadgeCheck className="h-3.5 w-3.5 text-signal-positive" />
-                  <span className="font-semibold text-signal-positive">Freshness: current</span>
+                <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-[#E1F2F1] px-3 py-1.5 text-[11px] shadow-soft">
+                  <BadgeCheck className="h-3.5 w-3.5 text-teal" />
+                  <span className="font-semibold text-teal">Freshness: current</span>
                 </div>
               )}
-              <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px]">
+              <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF3E2] px-3 py-1.5 text-[11px] shadow-soft">
                 <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
                 <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
               </div>
