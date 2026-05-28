@@ -118,25 +118,33 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
   const primary = rows.find((r) => r.quarter !== null) ?? rows[0]
 
   return (
-    <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
-      <div className="flex items-center gap-2">
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-champagne-soft text-champagne-deep">
+    <div
+      className="relative flex flex-wrap items-center gap-x-4 gap-y-2 overflow-hidden rounded-[1.15rem] border border-[#EAD9B6] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.05)]"
+      style={{ background: 'linear-gradient(135deg, #FBF6EA 0%, #FFFCEF 60%, #F4ECDB 100%)' }}
+    >
+      <span
+        className="pointer-events-none absolute -right-12 -bottom-10 h-24 w-24 rounded-full opacity-60 blur-2xl"
+        style={{ background: 'rgba(182,139,58,0.18)' }}
+      />
+      <div className="relative flex items-center gap-2">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-champagne-deep shadow-soft ring-1 ring-[#EAD9B6]">
           <Calculator className="h-3.5 w-3.5" />
         </span>
-        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-deep">Calculation Basis</span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Calculation Basis</span>
         <SignalBadge label="Derived" tone={statusTone.Derived} size="sm" />
       </div>
 
       {primary && (
-        <p className="text-[12px] text-ink-secondary">
-          {primary.label}:{' '}
+        <p className="relative inline-flex items-baseline gap-1.5 rounded-md bg-white/70 px-2.5 py-1 text-[12px] text-ink-secondary ring-1 ring-[#EAD9B6]">
+          <span className="font-bold uppercase tracking-wide text-[9.5px] text-champagne-deep">{primary.label}</span>
           <span className="font-semibold text-navy-deep">{fmt(primary.currentYtd, primary.unit)}</span>
-          <span className="text-ink-secondary"> − </span>
+          <span className="text-champagne-deep">−</span>
           <span className="font-semibold text-navy-deep">{fmt(primary.previousYtd, primary.unit)}</span>
-          <span className="text-ink-secondary"> = </span>
+          <span className="text-champagne-deep">=</span>
           <span className="font-semibold text-navy-primary">
-            {QUARTER.current} {fmt(primary.quarter, primary.unit)}
+            {QUARTER.current}
           </span>
+          <span className="font-semibold text-navy-primary">{fmt(primary.quarter, primary.unit)}</span>
         </p>
       )}
 
@@ -145,7 +153,7 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3 py-1 text-[11px] font-semibold text-navy-primary transition-all duration-200 hover:border-muted-blue hover:bg-card hover:shadow-soft"
+        className="relative ml-auto inline-flex items-center gap-1.5 rounded-full border border-[#EAD9B6] bg-white/80 px-3 py-1 text-[11px] font-semibold text-champagne-deep transition-all duration-200 hover:border-champagne hover:bg-white hover:shadow-soft"
       >
         <Maximize2 className="h-3 w-3" />
         Quarter calculation audit

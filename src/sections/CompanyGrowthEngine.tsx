@@ -1,4 +1,4 @@
-import { Sparkles } from 'lucide-react'
+import { BookOpen, Lightbulb, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react'
 import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { SourceTag } from '@/components/SourceTag'
@@ -61,24 +61,40 @@ export function CompanyGrowthEngine() {
         source={PREMIUM_SOURCE}
       />
 
-      {/* Premium Engine — keeps the existing Flow / Mix / Retention chart untouched. */}
-      <section className="card-surface p-5 sm:p-6">
-        <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#EEF1F7] pb-4">
+      {/* Premium Engine — keeps the existing Flow / Mix / Retention chart untouched.
+          Card surface gets a subtle navy + teal tinted backdrop so it reads as
+          the "premium machine" panel rather than a plain white container. */}
+      <section
+        className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_36px_rgba(23,43,77,0.07)] sm:p-6"
+        style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F7FAFD 60%, #F1F8F6 100%)' }}
+      >
+        <span
+          className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full opacity-60 blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.14) 0%, transparent 70%)' }}
+        />
+        <span
+          className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full opacity-50 blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(49,90,169,0.12) 0%, transparent 70%)' }}
+        />
+        <header className="relative mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#EEF1F7] pb-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-              Premium Story
-            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.6)]" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
+                Premium Story
+              </p>
+            </div>
             <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
               Premium Engine
             </h2>
             <p className="mt-1 text-[12px] text-ink-secondary">
-              How {company.shortName} writes, retains, and earns premium over time
+              How <span className="font-semibold text-navy-deep">{company.shortName}</span> writes,
+              retains, and earns premium over time
             </p>
           </div>
         </header>
-        <PremiumFlowQuality focalId={company.id} />
-        <div className="mt-3 flex justify-end">
-          <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
+        <div className="relative">
+          <PremiumFlowQuality focalId={company.id} />
         </div>
       </section>
 
@@ -132,33 +148,49 @@ function HeroCard({
           : 'bg-soft-blue text-navy-primary'
 
   return (
-    <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7">
-      {/* Soft atmospheric tints, kept low-intensity. */}
-      <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
-      <div className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(22,142,142,0.08),transparent_65%)]" />
+    <section
+      className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7"
+      style={{ background: 'linear-gradient(135deg, #F4FAF8 0%, #FAFCFE 50%, #F5F0E1 100%)' }}
+    >
+      {/* Layered atmospheric tints — teal growth glow + champagne quality glow. */}
+      <span className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.18),transparent_65%)]" />
+      <span className="pointer-events-none absolute -bottom-28 -left-16 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(22,142,142,0.14),transparent_65%)]" />
+      <span className="pointer-events-none absolute right-10 bottom-6 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(49,90,169,0.10),transparent_65%)]" />
 
-      {/* Left accent stroke — colour follows the signal tone. */}
-      <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: accent }} />
+      {/* Left accent stroke — gradient from signal tone into champagne so the
+          hero reads as "discipline + quality". */}
+      <span
+        className="absolute inset-y-0 left-0 w-1.5"
+        style={{ background: `linear-gradient(180deg, ${accent} 0%, #B68B3A 100%)` }}
+      />
 
       <div className="relative grid items-center gap-6 lg:grid-cols-[1.25fr_1fr]">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DCC4] bg-[#FBF3E2]/70 px-2.5 py-1">
-            <Sparkles className="h-3 w-3 text-champagne-deep" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
-              {eyebrow}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DCC4] bg-[#FBF3E2]/80 px-2.5 py-1 backdrop-blur-sm">
+              <Sparkles className="h-3 w-3 text-champagne-deep" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
+                {eyebrow}
+              </span>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#BFE3E1] bg-teal-soft px-2.5 py-1 backdrop-blur-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.6)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">
+                Quality growth
+              </span>
             </span>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2.5">
             <h1 className="font-display text-[26px] leading-[1.18] tracking-tight text-navy-deep sm:text-[28px]">
               {verdict}
             </h1>
-            <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${badgeClass}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold shadow-soft ${badgeClass}`}>
               {badge}
             </span>
           </div>
         </div>
 
-        <p className="text-[13.5px] leading-relaxed text-ink-secondary">{summary}</p>
+        <p className="text-[13.5px] leading-relaxed text-navy-deep/85">{summary}</p>
       </div>
       <div className="relative mt-4 flex justify-end">
         <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />
@@ -168,6 +200,50 @@ function HeroCard({
 }
 
 // ─── INVESTOR READ ─────────────────────────────────────────────────────────
+// 4 lanes tinted per tone: Why = navy logic, Implication = teal positive,
+// Watch = amber/champagne caution, Read = champagne investor conclusion.
+// Matches by lane order (Why / Implication / Watch / Read) — falls back to
+// label-keyword detection so the lanes don't lose their meaning if copy
+// changes the order.
+const laneTone: Record<string, { icon: typeof Lightbulb; bg: string; border: string; bar: string; label: string; iconColor: string; ring: string }> = {
+  Why: {
+    icon: Lightbulb,
+    bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)',
+    border: '#D2DEF1',
+    bar: '#27457E',
+    label: 'text-navy-primary',
+    iconColor: '#27457E',
+    ring: 'rgba(49,90,169,0.30)',
+  },
+  Implication: {
+    icon: TrendingUp,
+    bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)',
+    border: '#BFE3E1',
+    bar: '#168E8E',
+    label: 'text-teal',
+    iconColor: '#168E8E',
+    ring: 'rgba(22,142,142,0.30)',
+  },
+  Watch: {
+    icon: ShieldAlert,
+    bg: 'linear-gradient(135deg, #FDF6E5 0%, #F4E5C0 100%)',
+    border: '#EAD9B6',
+    bar: '#B7791F',
+    label: 'text-[#8C6B1A]',
+    iconColor: '#B7791F',
+    ring: 'rgba(183,121,31,0.30)',
+  },
+  Read: {
+    icon: BookOpen,
+    bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)',
+    border: '#EAD9B6',
+    bar: '#B68B3A',
+    label: 'text-champagne-deep',
+    iconColor: '#B68B3A',
+    ring: 'rgba(182,139,58,0.30)',
+  },
+}
+
 function GrowthInvestorRead({
   signal,
   lines,
@@ -180,35 +256,71 @@ function GrowthInvestorRead({
   source: PremiumSourcePack
 }) {
   return (
-    <section className="card-surface relative overflow-hidden p-5">
-      <div className="pointer-events-none absolute -right-14 -top-14 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(22,142,142,0.10),transparent_70%)]" />
+    <section
+      className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_10px_28px_rgba(23,43,77,0.06)]"
+      style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #FBFCFE 60%, #F7FAFD 100%)' }}
+    >
+      <span
+        className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full opacity-60 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(182,139,58,0.16) 0%, transparent 70%)' }}
+      />
+      <span
+        className="pointer-events-none absolute -bottom-16 -left-16 h-40 w-40 rounded-full opacity-50 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.14) 0%, transparent 70%)' }}
+      />
+
       <header className="relative mb-3 flex items-center justify-between border-b border-[#EEF1F7] pb-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-            So What?
-          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.6)]" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
+              So What?
+            </p>
+          </div>
           <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
             {companyName} · Growth Investor Read
           </h3>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-soft px-2.5 py-1 text-[10.5px] font-semibold text-teal">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-soft px-2.5 py-1 text-[10.5px] font-semibold text-teal shadow-soft ring-1 ring-[#BFE3E1]">
+          <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.55)]" />
           {signal}
         </span>
       </header>
       <div className="relative grid gap-2.5 sm:grid-cols-2">
-        {lines.map((l) => (
-          <div
-            key={l.label}
-            className="relative overflow-hidden rounded-xl border border-[#E4E8F0] bg-white/85 px-3.5 py-2.5"
-          >
-            <span className="absolute inset-y-0 left-0 w-[2.5px] bg-gradient-to-b from-teal to-champagne" />
-            <p className="pl-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">
-              {l.label}
-            </p>
-            <p className="mt-1 pl-1.5 text-[12.5px] leading-snug text-navy-deep">{l.value}</p>
-          </div>
-        ))}
+        {lines.map((l) => {
+          // Lookup by exact label first; fall back to keyword match so we still
+          // tint correctly if the copy uses "Investor read" instead of "Read".
+          const key = laneTone[l.label]
+            ? l.label
+            : /watch/i.test(l.label)
+              ? 'Watch'
+              : /read/i.test(l.label)
+                ? 'Read'
+                : /implic/i.test(l.label)
+                  ? 'Implication'
+                  : 'Why'
+          const tone = laneTone[key]
+          const Icon = tone.icon
+          return (
+            <div
+              key={l.label}
+              className="group relative overflow-hidden rounded-xl border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(23,43,77,0.08)]"
+              style={{ background: tone.bg, borderColor: tone.border }}
+            >
+              <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: tone.bar }} />
+              <div className="flex items-center gap-2 pl-1.5">
+                <span
+                  className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white shadow-soft"
+                  style={{ boxShadow: `inset 0 0 0 1px ${tone.ring}`, color: tone.iconColor }}
+                >
+                  <Icon className="h-3 w-3" />
+                </span>
+                <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${tone.label}`}>{l.label}</p>
+              </div>
+              <p className="mt-1.5 pl-1.5 text-[12.5px] leading-snug text-navy-deep/90">{l.value}</p>
+            </div>
+          )
+        })}
       </div>
       <div className="relative mt-3 flex justify-end">
         <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />

@@ -324,7 +324,11 @@ function RealFlowChart({
       const ex = x2 - elbowLen // elbow point (start of horizontal segment)
       const yoyPct = ((cur.raw - prev.raw) / prev.raw) * 100
       const positive = yoyPct >= 0
-      const color = positive ? '#2F855A' : '#B94A48'
+      // YoY connector uses champagne/gold per the page palette — growth momentum
+      // is an "investor attention" colour, not a sign-of-direction colour.
+      // Direction stays visible via the +/− prefix on the label.
+      const connector = '#B68B3A'
+      const labelColor = positive ? '#B68B3A' : '#9C7430'
       const label = `${positive ? '+' : '−'}${Math.abs(yoyPct).toFixed(0)}%`
       // Place the label LEFT of the elbow, in the empty gap between bars,
       // so it never collides with the value LabelList sitting above bar_i.
@@ -334,20 +338,20 @@ function RealFlowChart({
         <g key={`yoy-${i}`} pointerEvents="none">
           <path
             d={`M ${x1} ${y1} L ${ex} ${y2} L ${x2} ${y2}`}
-            stroke={color}
-            strokeOpacity={0.65}
-            strokeWidth={1}
+            stroke={connector}
+            strokeOpacity={0.7}
+            strokeWidth={1.1}
             strokeDasharray="3 3"
             fill="none"
           />
-          <circle cx={ex} cy={y2} r={1.6} fill={color} opacity={0.85} />
+          <circle cx={ex} cy={y2} r={1.8} fill={connector} opacity={0.9} />
           <text
             x={labelX}
             y={labelY}
             textAnchor="end"
             fontSize={9.5}
             fontWeight={700}
-            fill={color}
+            fill={labelColor}
           >
             {label}
           </text>
@@ -376,17 +380,35 @@ function RealFlowChart({
                 onClick={() => setStage(s)}
                 className={[
                   'flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-200',
-                  isActive ? 'bg-card text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
+                  isActive
+                    ? 'text-white shadow-soft ring-1'
+                    : 'text-ink-secondary hover:text-navy-deep',
                 ].join(' ')}
+                style={
+                  isActive
+                    ? {
+                        background: `linear-gradient(135deg, ${meta.color} 0%, #172B4D 100%)`,
+                        boxShadow: `0 1px 3px ${meta.color}40, inset 0 0 0 1px ${meta.color}80`,
+                      }
+                    : undefined
+                }
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color, opacity: isActive ? 1 : 0.5 }} />
+                <span
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{
+                    background: isActive ? '#FFFFFF' : meta.color,
+                    opacity: isActive ? 1 : 0.5,
+                    boxShadow: isActive ? `0 0 6px ${meta.color}` : undefined,
+                  }}
+                />
                 {meta.label}
               </button>
             )
           })}
         </div>
         <div className="text-[10px] text-ink-secondary">
-          {stageReported} of {rows.length} years reported · Showing {active.full} · {active.desc}
+          {stageReported} of {rows.length} years reported · Showing{' '}
+          <span className="font-semibold text-navy-deep">{active.full}</span> · {active.desc}
         </div>
       </div>
 
@@ -436,47 +458,78 @@ function RealFlowChart({
               if (!isActive || !payload?.length) return null
               const row = (payload[0].payload ?? {}) as typeof data[number]
               const fmt = (v: number | null) => (v == null ? '—' : fmtCr(v))
+              // One-line interpretation header — names the stage being shown,
+              // its YoY growth (when computable) and the period.
+              const stageFull = stageMeta[stage].full
+              let headline: string
+              if (row.raw == null) {
+                headline = `${stage} not reported for ${row.period}.`
+              } else if (row.yoyPct != null && row.prevPeriod) {
+                const sign = row.yoyPct >= 0 ? '+' : '−'
+                headline = `${stage} ${sign}${Math.abs(row.yoyPct).toFixed(0)}% YoY — ${stageFull.toLowerCase()} of ${fmtCr(row.raw)} in ${row.period}.`
+              } else {
+                headline = `${stageFull} of ${fmtCr(row.raw)} in ${row.period}.`
+              }
               return (
-                <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
-                  <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{row.period}</p>
-                  <div className="space-y-0.5">
-                    {[
-                      { k: 'GWP', label: 'GWP · Written', v: row.gwp, color: FOCAL },
-                      { k: 'NWP', label: 'NWP · Retained', v: row.nwp, color: TEAL },
-                      { k: 'NEP', label: 'NEP · Earned', v: row.nep, color: NEP_BLUE },
-                    ].map((r) => (
-                      <div
-                        key={r.k}
-                        className={['flex items-center justify-between gap-5 text-[11.5px]', r.k === stage ? 'font-semibold text-navy-deep' : 'text-ink-secondary'].join(' ')}
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 rounded-sm" style={{ background: r.color }} />
-                          {r.label}
-                        </span>
-                        <span className="tabular-nums">{fmt(r.v)}</span>
-                      </div>
-                    ))}
+                <div className="max-w-[260px] overflow-hidden rounded-lg border border-soft-border bg-card shadow-card">
+                  <div
+                    className="border-b border-[#EAD9B6] px-3 py-1.5"
+                    style={{ background: 'linear-gradient(135deg, #FBF6EA 0%, #FFFCEF 100%)' }}
+                  >
+                    <p className="text-[11px] font-semibold leading-snug text-navy-deep">{headline}</p>
                   </div>
-                  {row.raw == null ? (
-                    <p className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
-                      Source did not report {stage} for this year.
+                  <div className="px-3 py-2">
+                    <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">
+                      {row.period}
                     </p>
-                  ) : row.prevRaw != null && row.prevPeriod ? (
-                    <div className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
-                      <div>
-                        YoY ₹ · <span className="font-semibold text-navy-deep">{(row.yoyAbs ?? 0) >= 0 ? '+' : '−'}{compactCr(Math.abs(row.yoyAbs ?? 0))}</span> vs {row.prevPeriod}
-                      </div>
-                      {row.yoyPct != null && (
-                        <div>
-                          YoY % · <span className="font-semibold" style={{ color: row.yoyPct >= 0 ? TEAL : RED }}>{row.yoyPct >= 0 ? '+' : ''}{row.yoyPct.toFixed(1)}%</span>
+                    <div className="space-y-0.5">
+                      {[
+                        { k: 'GWP', label: 'GWP · Written', v: row.gwp, color: FOCAL },
+                        { k: 'NWP', label: 'NWP · Retained', v: row.nwp, color: TEAL },
+                        { k: 'NEP', label: 'NEP · Earned', v: row.nep, color: NEP_BLUE },
+                      ].map((r) => (
+                        <div
+                          key={r.k}
+                          className={['flex items-center justify-between gap-5 text-[11.5px]', r.k === stage ? 'font-semibold text-navy-deep' : 'text-ink-secondary'].join(' ')}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-sm" style={{ background: r.color }} />
+                            {r.label}
+                          </span>
+                          <span className="tabular-nums">{fmt(r.v)}</span>
                         </div>
-                      )}
+                      ))}
                     </div>
-                  ) : (
-                    <p className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
-                      YoY needs a previous reported year.
-                    </p>
-                  )}
+                    {row.raw == null ? (
+                      <p className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
+                        Source did not report {stage} for this year.
+                      </p>
+                    ) : row.prevRaw != null && row.prevPeriod ? (
+                      <div className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
+                        <div>
+                          YoY ₹ ·{' '}
+                          <span className="font-semibold text-navy-deep">
+                            {(row.yoyAbs ?? 0) >= 0 ? '+' : '−'}
+                            {compactCr(Math.abs(row.yoyAbs ?? 0))}
+                          </span>{' '}
+                          vs {row.prevPeriod}
+                        </div>
+                        {row.yoyPct != null && (
+                          <div>
+                            YoY % ·{' '}
+                            <span className="font-semibold text-champagne-deep">
+                              {row.yoyPct >= 0 ? '+' : ''}
+                              {row.yoyPct.toFixed(1)}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
+                        YoY needs a previous reported year.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )
             }}
@@ -530,7 +583,7 @@ function RealFlowChart({
       <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-soft-border pt-2.5 text-[10.5px] text-ink-secondary">
         <LegendSwatch color={active.color}>{active.label}</LegendSwatch>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-px w-4" style={{ background: 'repeating-linear-gradient(90deg,#2F855A 0 3px,transparent 3px 6px)' }} />
+          <span className="inline-block h-px w-4" style={{ background: 'repeating-linear-gradient(90deg,#B68B3A 0 3px,transparent 3px 6px)' }} />
           YoY %
         </span>
         <span className="inline-flex items-center gap-1.5">
