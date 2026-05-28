@@ -15,6 +15,8 @@ import {
 import type { FlowPoint, MixSeries, RetentionNode } from '@/data/mockData'
 import { useFilters } from '@/state/filters'
 import { EmptyState } from './EmptyState'
+import { SourceTag } from './SourceTag'
+import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
@@ -208,6 +210,81 @@ function FlowTooltip({
             </span>
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * RealFlowChart — minimal annual GWP / NWP / NEP bar chart sourced from
+ * src/data/snapshots/insurer-annual-snapshot.json. Only renders bars that
+ * have real values; missing series are simply absent (no synthesis).
+ */
+function RealFlowChart({
+  rows,
+  companyName,
+}: {
+  rows: Array<{ fiscal_year: string; gwp: number | null; nwp: number | null; nep: number | null }>
+  companyName: string
+}) {
+  const data = rows.map((r) => ({
+    period: r.fiscal_year,
+    gwp: r.gwp ?? 0,
+    nwp: r.nwp ?? 0,
+    nep: r.nep ?? 0,
+  }))
+  const anyNwp = rows.some((r) => typeof r.nwp === 'number')
+  const anyNep = rows.some((r) => typeof r.nep === 'number')
+  return (
+    <div>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={data} margin={{ top: 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="22%" barGap={4}>
+          <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
+          <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
+          <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
+          <Tooltip
+            cursor={{ fill: 'rgba(39,69,126,0.05)' }}
+            content={({ active, payload, label }) =>
+              active && payload && payload.length ? (
+                <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
+                  <p className="mb-1 text-[11px] font-semibold text-navy-deep">{label}</p>
+                  {payload.map((p) => (
+                    <div key={p.dataKey as string} className="flex items-center justify-between gap-4 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-ink-secondary">
+                        <span className="h-2 w-2 rounded-sm" style={{ background: p.color as string }} />
+                        {(p.name as string).toUpperCase()}
+                      </span>
+                      <span className="tabular-nums text-navy-deep">{fmtCr(Number(p.value))}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null
+            }
+          />
+          <Bar dataKey="gwp" name="GWP" fill={FOCAL} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
+          {anyNwp && (
+            <Bar dataKey="nwp" name="NWP" fill={TEAL} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
+          )}
+          {anyNep && (
+            <Bar dataKey="nep" name="NEP" fill={NEP_BLUE} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
+          )}
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="mt-2 text-[11.5px] text-ink-secondary">
+        Navy = GWP (gross written). {anyNwp ? 'Teal = NWP (retained after reinsurance). ' : ''}
+        {anyNep ? 'Steel = NEP (earned). ' : ''}
+        {!anyNwp && `NWP / NEP per year for ${companyName} will fill in as ingest-company-disclosures.ts extracts more rows.`}
+      </p>
+      <div className="mt-2 flex justify-end">
+        <SourceTag
+          source="Company filing"
+          confidence="high"
+          period={`${data[0].period} → ${data[data.length - 1].period}`}
+          provenance={{
+            source_name: `${companyName} annual disclosures — verified per-year GWP`,
+            source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
+          }}
+        />
       </div>
     </div>
   )
@@ -699,17 +776,49 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
       {/* Slim insight strip removed — chips derived from mock anchors are
           intentionally hidden until per-period data is ingested. */}
 
-      {/* Tab content — per-period series not yet ingested from L-forms. */}
+      {/* Tab content — real annual GWP from snapshot when available;
+          empty state only when no real rows exist for the company. */}
       <div className="mt-4">
-        <EmptyState
-          title={`${tab} time-series not yet ingested for ${name}`}
-          body={
-            periodUnavailable
-              ? 'Premium series is annual-only — switch the period toggle in the header to Annual or Quarterly.'
-              : `${tab} per-${period.toLowerCase()} data needs IRDAI L-forms / NL-forms (quarterly) or monthly business figures (monthly). ingest-irdai-monthly.ts and ingest-company-disclosures.ts will populate these once the live runs land. Section structure is reserved.`
+        {(() => {
+          if (periodUnavailable) {
+            return (
+              <EmptyState
+                title="Monthly view not yet wired"
+                body="Switch the period toggle in the header to Annual."
+                height={300}
+              />
+            )
           }
-          height={300}
-        />
+          if (tab !== 'Flow') {
+            return (
+              <EmptyState
+                title={`${tab} time-series not yet ingested for ${name}`}
+                body={`${tab} per-${period.toLowerCase()} data needs IRDAI L-forms / NL-forms or monthly business figures. ingest-irdai-monthly.ts and ingest-company-disclosures.ts will populate these on the next scheduled run.`}
+                height={300}
+              />
+            )
+          }
+          // Flow tab: render from real snapshot annual rows for this company.
+          const rows = (annualSnapshot.data as Array<{
+            company_id: string
+            fiscal_year: string
+            gwp: number | null
+            nwp: number | null
+            nep: number | null
+          }>)
+            .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
+            .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
+          if (rows.length === 0) {
+            return (
+              <EmptyState
+                title={`Annual premium history not yet ingested for ${name}`}
+                body="ingest-company-disclosures.ts will populate per-year GWP / NWP / NEP from the company's annual report on the next scheduled run."
+                height={300}
+              />
+            )
+          }
+          return <RealFlowChart rows={rows} companyName={name} />
+        })()}
       </div>
 
       {/* Basis tags */}
