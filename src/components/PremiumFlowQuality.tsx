@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Customized, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import {
@@ -202,7 +202,19 @@ function stageSegColor(seg: 'earned' | 'mid' | 'ceded', stage: Stage): string {
   return seg === 'mid' ? MUTE_NEAR : MUTE_FAR
 }
 
-function FlowTooltip({ active, payload, stage }: { active?: boolean; payload?: { payload?: FlowPoint }[]; stage: Stage }) {
+function FlowTooltip({
+  active,
+  payload,
+  stage,
+  data,
+  showYoy,
+}: {
+  active?: boolean
+  payload?: { payload?: FlowPoint }[]
+  stage: Stage
+  data?: FlowPoint[]
+  showYoy?: boolean
+}) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   if (!d) return null
@@ -212,6 +224,20 @@ function FlowTooltip({ active, payload, stage }: { active?: boolean; payload?: {
     { k: 'NWP', label: 'NWP · Retained', value: d.nwp, color: TEAL },
     { k: 'NEP', label: 'NEP · Earned', value: d.nep, color: NEP_BLUE },
   ]
+  // YoY row — only shown when the chart view is "Absolute + YoY" and we
+  // have a previous period to compare against.
+  let yoy: { value: number; prev: FlowPoint } | null = null
+  if (showYoy && data && data.length > 1) {
+    const idx = data.findIndex((p) => p.period === d.period)
+    if (idx > 0) {
+      const prev = data[idx - 1]
+      const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
+      const prevV = prev[stageKey]
+      const currV = d[stageKey]
+      if (prevV > 0) yoy = { value: ((currV - prevV) / prevV) * 100, prev }
+    }
+  }
+  const yoyColor = yoy ? (yoy.value >= 0 ? TEAL : RED) : ''
   return (
     <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
       <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{d.period}</p>
@@ -225,13 +251,28 @@ function FlowTooltip({ active, payload, stage }: { active?: boolean; payload?: {
             <span className="tabular-nums text-navy-deep">{fmtCr(r.value)}</span>
           </div>
         ))}
+        {yoy && (
+          <div className="mt-1 flex items-center justify-between gap-5 border-t border-soft-border pt-1 text-[11.5px] font-semibold">
+            <span className="flex items-center gap-1.5 text-ink-secondary">
+              <span className="h-2 w-2 rounded-sm" style={{ background: yoyColor }} />
+              YoY growth · {stage} ({yoy.prev.period} → {d.period})
+            </span>
+            <span className="tabular-nums" style={{ color: yoyColor }}>
+              {yoy.value >= 0 ? '+' : '−'}
+              {Math.abs(yoy.value).toFixed(1)}%
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
+type ChartView = 'Absolute' | 'Absolute + YoY'
+
 function FlowView({ companyId, period }: { companyId: string; period: Period }) {
   const [stage, setStage] = useState<Stage>('GWP')
+  const [chartView, setChartView] = useState<ChartView>('Absolute')
   const flow = getPremiumFlow(companyId, period)
   if (!flow) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Premium flow is not reported for this company.</div>
@@ -255,8 +296,88 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
     stage === 'GWP'
       ? 'Full gross premium written each year — the starting point.'
       : stage === 'NWP'
-        ? 'Teal = premium retained · muted red = ceded to reinsurers.'
+        ? 'Teal = premium retained · muted terracotta = ceded to reinsurers.'
         : 'Steel = premium earned in the period · muted = retained but not yet earned.'
+
+  // YoY overlay — only renders when chartView === 'Absolute + YoY'. Reads the
+  // top-most stacked bar geometry from Recharts so the connector lands on the
+  // actual rendered bar tops regardless of the active stage.
+  const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
+  const showYoy = chartView === 'Absolute + YoY'
+  const YoyOverlay = (cprops: { formattedGraphicalItems?: { item?: { props?: { dataKey?: string } }; props?: { data?: { x?: number; y?: number; width?: number; height?: number }[] } }[] }) => {
+    if (!showYoy) return null
+    const items = cprops.formattedGraphicalItems ?? []
+    // Walk the stack from outermost layer inward to find the first layer that
+    // has non-zero height for each index — that's the top of each bar.
+    const cededLayer = items.find((it) => it.item?.props?.dataKey === 'ceded')?.props?.data ?? []
+    const midLayer = items.find((it) => it.item?.props?.dataKey === 'mid')?.props?.data ?? []
+    const earnedLayer = items.find((it) => it.item?.props?.dataKey === 'earned')?.props?.data ?? []
+    const tops: { x: number; y: number }[] = data.map((_, i) => {
+      const c = cededLayer[i]
+      const m = midLayer[i]
+      const e = earnedLayer[i]
+      const layer = c && (c.height ?? 0) > 0 ? c : m && (m.height ?? 0) > 0 ? m : e
+      const x = (layer?.x ?? 0) + (layer?.width ?? 0) / 2
+      const y = layer?.y ?? 0
+      return { x, y }
+    })
+    const nodes: JSX.Element[] = []
+    for (let i = 1; i < data.length; i++) {
+      const prevV = data[i - 1][stageKey]
+      const currV = data[i][stageKey]
+      if (!prevV || prevV <= 0) continue
+      const yoy = ((currV - prevV) / prevV) * 100
+      const a = tops[i - 1]
+      const b = tops[i]
+      if (!a || !b) continue
+      const mx = (a.x + b.x) / 2
+      const my = Math.min(a.y, b.y) - 14
+      const cy = Math.min(a.y, b.y) - 22 // gentle arc control point
+      const positive = yoy >= 0
+      const stroke = positive ? '#148A87' : '#C97A6B'
+      const fill = positive ? 'rgba(20,138,135,0.10)' : 'rgba(201,122,107,0.12)'
+      const text = positive ? '#0E6F6D' : '#A05A4B'
+      const label = `${positive ? '+' : '−'}${Math.abs(yoy).toFixed(1)}%`
+      // Pill geometry — sized to the label so short values aren't oversized.
+      const labelW = Math.max(34, label.length * 6 + 8)
+      const labelH = 16
+      nodes.push(
+        <g key={`yoy-${i}`} pointerEvents="none">
+          <path
+            d={`M ${a.x} ${a.y - 4} Q ${mx} ${cy} ${b.x} ${b.y - 4}`}
+            stroke="#94A3B8"
+            strokeOpacity={0.55}
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            fill="none"
+          />
+          <rect
+            x={mx - labelW / 2}
+            y={my - labelH / 2}
+            width={labelW}
+            height={labelH}
+            rx={labelH / 2}
+            ry={labelH / 2}
+            fill={fill}
+            stroke={stroke}
+            strokeOpacity={0.55}
+            strokeWidth={0.8}
+          />
+          <text
+            x={mx}
+            y={my + 4}
+            textAnchor="middle"
+            fontSize={10}
+            fontWeight={700}
+            fill={text}
+          >
+            {label}
+          </text>
+        </g>,
+      )
+    }
+    return <g>{nodes}</g>
+  }
 
   return (
     <div>
@@ -277,14 +398,19 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
             )
           })}
         </div>
-        <span className="text-[11px] text-ink-secondary">Same premium bar · highlighting <span className="font-semibold text-navy-deep">{stage}</span></span>
+        <SegmentedControl<ChartView>
+          options={['Absolute', 'Absolute + YoY'] as ChartView[]}
+          value={chartView}
+          onChange={setChartView}
+          size="sm"
+        />
       </div>
       <ResponsiveContainer width="100%" height={288}>
-        <BarChart data={data} margin={{ top: 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
+        <BarChart data={data} margin={{ top: showYoy ? 30 : 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
           <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
           <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
           <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
-          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip stage={stage} />} />
+          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip stage={stage} data={data} showYoy={showYoy} />} />
           <Bar dataKey="earned" stackId="flow" fill={stageSegColor('earned', stage)} maxBarSize={44} isAnimationActive={false}>
             {stage === 'NEP' && <LabelList content={makeLabel('nep')} />}
           </Bar>
@@ -294,9 +420,13 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
           <Bar dataKey="ceded" stackId="flow" fill={stageSegColor('ceded', stage)} maxBarSize={44} radius={[3, 3, 0, 0]} isAnimationActive={false}>
             {stage === 'GWP' && <LabelList content={makeLabel('gwp')} />}
           </Bar>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          <Customized component={YoyOverlay as any} />
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-2 text-[11.5px] text-ink-secondary">{caption}</p>
+      <p className="mt-2 text-[11.5px] text-ink-secondary">
+        Highlighting <span className="font-semibold text-navy-deep">{stage}</span> · {caption}
+      </p>
     </div>
   )
 }
