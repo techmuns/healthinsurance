@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "ownership-snapshot",
+    "description": "Quarterly shareholding pattern for listed insurers. Drives Ownership section.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["company_ir", "nse_quotes"],
+    "parser_status": "pending",
+    "notes": "Unlisted insurers render an unavailable state — shareholding pattern is not publicly disclosed for unlisted entities."
+  },
+  "data": []
+}

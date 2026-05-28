@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "sahi-peer-comparison",
+    "description": "SAHI peer comparison — per-company growth, share, ratios. Drives Competitive Position section.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["irdai_handbook", "company_ir"],
+    "parser_status": "pending",
+    "notes": "Derived snapshot — populated by build-snapshots.ts from insurer-annual-snapshot.json + industry-segment-premium.json. Auto-rebuilds when upstream snapshots change."
+  },
+  "data": []
+}

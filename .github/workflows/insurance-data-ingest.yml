@@ -1,0 +1,100 @@
+name: insurance-data-ingest
+
+# Scheduled official-source data ingestion. Pulls from IRDAI / company IR /
+# exchanges, normalises, validates, and commits any changed snapshot files.
+# Per the dashboard's source policy, never falls back to mock or unofficial
+# data — if a source fails, the workflow logs the failure and continues.
+
+on:
+  schedule:
+    # Monthly — first Tuesday of each month at 04:30 UTC
+    # (after IRDAI monthly business-figures release window).
+    - cron: '30 4 1-7 * 2'
+    # Quarterly — second Monday of Feb / May / Aug / Nov at 05:00 UTC.
+    - cron: '0 5 8-14 2,5,8,11 1'
+    # Annual — first Monday of December at 06:00 UTC.
+    - cron: '0 6 1-7 12 1'
+  workflow_dispatch:
+    inputs:
+      cadence:
+        description: 'Which fetchers to run'
+        required: true
+        default: 'all'
+        type: choice
+        options: [all, monthly, quarterly, annual]
+      live:
+        description: 'Set to "true" to enable live network fetches'
+        required: true
+        default: 'false'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine cadence
+        id: cadence
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.cadence }}" >> "$GITHUB_OUTPUT"
+          else
+            # cron triggers — map by month-day window:
+            case "$(date -u +%m-%d)" in
+              12-*) echo "value=annual" >> "$GITHUB_OUTPUT" ;;
+              02-*|05-*|08-*|11-*) echo "value=quarterly" >> "$GITHUB_OUTPUT" ;;
+              *) echo "value=monthly" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+
+      - name: Determine network mode
+        id: net
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.live }}" = "true" ]; then
+            echo "offline=0" >> "$GITHUB_OUTPUT"
+          else
+            # Scheduled runs default to live; flip to "1" here to dry-run.
+            echo "offline=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run ingestion
+        env:
+          CADENCE: ${{ steps.cadence.outputs.value }}
+          INGEST_OFFLINE: ${{ steps.net.outputs.offline }}
+        run: npx tsx scripts/ingest/ingest-all.ts
+
+      - name: Show data-health
+        run: |
+          echo "::group::data-health.json"
+          cat src/data/snapshots/data-health.json
+          echo "::endgroup::"
+
+      - name: Commit changes
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          # Stage only the data layer + snapshot files so unrelated changes
+          # never sneak in via a scheduled run.
+          git add data/ src/data/snapshots/
+          if ! git diff --staged --quiet; then
+            git commit -m "data: ingest ${{ steps.cadence.outputs.value }} run @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          else
+            echo "No snapshot changes — nothing to commit."
+          fi

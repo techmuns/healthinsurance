@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "insurer-quarterly-financials",
+    "description": "Quarterly company financials — GWP, NWP, NEP, PAT, combined ratio, solvency, ROE — drawn from quarterly disclosures.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["irdai_public_disclosures", "company_ir"],
+    "parser_status": "pending",
+    "notes": "Quarterly view in the UI shows EmptyState until this is populated. Do NOT synthesize quarterly numbers from annual data."
+  },
+  "data": []
+}

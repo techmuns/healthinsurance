@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "industry-segment-premium",
+    "description": "Industry-wide GI segment premium (Health / Motor / Fire / Crop / Marine / Other). Drives Market Engine main chart.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["irdai_handbook", "gi_council", "irdai_monthly_business"],
+    "parser_status": "pending",
+    "notes": "Empty until ingest-irdai-annual.ts + ingest-distribution.ts (industry helpers) run. UI continues to render the existing historical illustration until populated."
+  },
+  "data": []
+}

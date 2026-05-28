@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "insurer-monthly-premium",
+    "description": "Monthly premium / business figures per insurer. Drives Monthly view of Premium Engine and Executive Overview.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["irdai_monthly_business", "gi_council"],
+    "parser_status": "pending",
+    "notes": "Empty until ingest-irdai-monthly.ts has its first successful run. Monthly view in the UI shows EmptyState while this is empty."
+  },
+  "data": []
+}

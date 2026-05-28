@@ -1,0 +1,205 @@
+{
+  "last_successful_run": null,
+  "last_failed_run": null,
+  "sources_checked": 6,
+  "sources_success": 0,
+  "sources_failed": 0,
+  "metrics_updated": [],
+  "metrics_missing": [
+    "industry.gi_premium.health",
+    "industry.gi_premium.motor",
+    "industry.gi_premium.others",
+    "industry.health_share.sahi",
+    "industry.health_share.private_multiline",
+    "industry.health_share.psu",
+    "company.gwp",
+    "company.nwp",
+    "company.nep",
+    "company.pat",
+    "company.combined_ratio",
+    "company.claims_ratio",
+    "company.expense_ratio",
+    "company.commission_ratio",
+    "company.solvency_ratio",
+    "company.roe",
+    "company.market_share",
+    "company.retail_health_market_share",
+    "company.retail_mix",
+    "company.renewal_rate",
+    "company.claims_settlement_ratio",
+    "company.distribution.banca_share",
+    "company.distribution.broker_share",
+    "company.distribution.agent_share",
+    "company.distribution.corporate_agent_share",
+    "company.distribution.direct_share",
+    "company.market_cap",
+    "company.share_price",
+    "company.shares_outstanding",
+    "company.valuation.p_gwp",
+    "company.valuation.p_b",
+    "company.valuation.p_e",
+    "company.ownership.promoter_share",
+    "company.ownership.fii_share",
+    "company.ownership.dii_share",
+    "company.ownership.mf_share",
+    "company.ownership.top_holders",
+    "company.management.events"
+  ],
+  "stale_metrics": [],
+  "blocked_sources": [
+    "company.distribution.region_mix",
+    "company.distribution.tier_mix"
+  ],
+  "parser_warnings": [
+    "[irdai_monthly_business] INGEST_OFFLINE is set — set INGEST_OFFLINE=0 in CI to pull live data.",
+    "[irdai_handbook] Offline mode — IRDAI handbook not fetched.",
+    "[company_disclosures_batch] Offline mode — no company disclosure pages were fetched.",
+    "[company_disclosures_batch] Phase 1 targets: niva-bupa, star-health, care-health, aditya-birla, manipalcigna.",
+    "[distribution_extract] Offline mode — distribution extractor not run.",
+    "[ownership_quarterly] Offline mode — ownership fetcher not run.",
+    "[management_events_feed] Offline mode — management-events fetcher not run."
+  ],
+  "next_expected_update": null,
+  "per_source": [
+    {
+      "source_id": "irdai_handbook",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.770Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "irdai_monthly_business",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.769Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "irdai_public_disclosures",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "irdai_annual_report",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "gi_council",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "niva_bupa_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "star_health_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "care_health_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "aditya_birla_health_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "manipalcigna_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "icici_lombard_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "bajaj_general_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "hdfc_life_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "sbi_life_ir",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "nse_quotes",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "bse_quotes",
+      "status": "pending",
+      "last_attempt_at": null,
+      "last_success_at": null,
+      "records_fetched": null
+    },
+    {
+      "source_id": "company_disclosures_batch",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.771Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "distribution_extract",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.772Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "ownership_quarterly",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.773Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "management_events_feed",
+      "status": "pending",
+      "last_attempt_at": "2026-05-28T09:51:12.774Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    }
+  ]
+}

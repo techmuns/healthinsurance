@@ -1,0 +1,562 @@
+{
+  "$schema_version": "1.0.0",
+  "_meta": {
+    "purpose": "Single source of truth for every metric the dashboard renders. Each entry maps a metric_id to its official source. No metric may appear in the UI unless it exists in this file.",
+    "rules": [
+      "Only official sources: IRDAI portal, company IR / financial disclosure pages, exchanges (NSE/BSE) for listed insurers, GI Council for industry stats.",
+      "No broker reports, news sites, Screener, Tijori, Moneycontrol, Trendlyne or any unofficial source for the core dataset.",
+      "Every metric must declare frequency, source_priority, parser_status and confidence_level.",
+      "Raw source files must be stored under data/raw/ before parsing."
+    ],
+    "last_updated": "2026-05-28",
+    "maintainer": "data-pipeline"
+  },
+  "sources": [
+    {
+      "source_id": "irdai_handbook",
+      "name": "IRDAI Handbook on Indian Insurance Statistics",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "type": "IRDAI",
+      "frequency": "annual",
+      "notes": "Annual statistical handbook — segment premiums, market share, claims ratios."
+    },
+    {
+      "source_id": "irdai_monthly_business",
+      "name": "IRDAI Monthly Business Figures",
+      "url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "type": "IRDAI",
+      "frequency": "monthly",
+      "notes": "Monthly GDPI release for non-life and health insurers."
+    },
+    {
+      "source_id": "irdai_public_disclosures",
+      "name": "IRDAI Public Disclosures (insurer-wise)",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "type": "IRDAI",
+      "frequency": "quarterly",
+      "notes": "Insurer-wise quarterly L-forms, NL-forms (premium, claims, expenses, ratios)."
+    },
+    {
+      "source_id": "irdai_annual_report",
+      "name": "IRDAI Annual Report",
+      "url": "https://irdai.gov.in/annual-reports",
+      "type": "IRDAI",
+      "frequency": "annual",
+      "notes": "Full sector annual report."
+    },
+    {
+      "source_id": "gi_council",
+      "name": "General Insurance Council",
+      "url": "https://www.gicouncil.in/statistics/business-statistics/",
+      "type": "GI_Council",
+      "frequency": "monthly",
+      "notes": "Segment-wise industry premium summaries. Use only where IRDAI structure is less convenient."
+    },
+    {
+      "source_id": "niva_bupa_ir",
+      "name": "Niva Bupa Investor Relations",
+      "url": "https://www.nivabupa.com/investor-relations.html",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "niva-bupa"
+    },
+    {
+      "source_id": "star_health_ir",
+      "name": "Star Health Investor Relations",
+      "url": "https://www.starhealth.in/investor-relations",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "star-health"
+    },
+    {
+      "source_id": "care_health_ir",
+      "name": "Care Health Insurance Public Disclosures",
+      "url": "https://www.careinsurance.com/about-us/financial-information.html",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "care-health"
+    },
+    {
+      "source_id": "aditya_birla_health_ir",
+      "name": "Aditya Birla Health Insurance Public Disclosures",
+      "url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "aditya-birla"
+    },
+    {
+      "source_id": "manipalcigna_ir",
+      "name": "ManipalCigna Health Insurance Public Disclosures",
+      "url": "https://www.manipalcigna.com/public-disclosures",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "manipalcigna"
+    },
+    {
+      "source_id": "icici_lombard_ir",
+      "name": "ICICI Lombard Investor Relations",
+      "url": "https://www.icicilombard.com/investor-relations",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "icici-lombard"
+    },
+    {
+      "source_id": "bajaj_general_ir",
+      "name": "Bajaj Allianz General Public Disclosures",
+      "url": "https://www.bajajallianz.com/about-us/public-disclosures.html",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "bajaj-general"
+    },
+    {
+      "source_id": "hdfc_life_ir",
+      "name": "HDFC Life Investor Relations",
+      "url": "https://www.hdfclife.com/about-us/investor-relations",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "hdfc-life"
+    },
+    {
+      "source_id": "sbi_life_ir",
+      "name": "SBI Life Investor Relations",
+      "url": "https://www.sbilife.co.in/en/about-us/investor-relations",
+      "type": "company_page",
+      "frequency": "quarterly",
+      "company_id": "sbi-life"
+    },
+    {
+      "source_id": "nse_quotes",
+      "name": "NSE — listed insurer quotes",
+      "url": "https://www.nseindia.com/get-quotes/equity",
+      "type": "exchange",
+      "frequency": "daily",
+      "notes": "Use for market cap / price / shares outstanding of listed insurers. Label as exchange-sourced."
+    },
+    {
+      "source_id": "bse_quotes",
+      "name": "BSE — listed insurer quotes",
+      "url": "https://www.bseindia.com",
+      "type": "exchange",
+      "frequency": "daily"
+    }
+  ],
+  "metrics": [
+    {
+      "metric_id": "industry.gi_premium.health",
+      "display_name": "Health premium — industry",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook", "irdai_monthly_business", "gi_council"],
+      "frequency": "annual",
+      "company_level": false,
+      "industry_level": true,
+      "peer_level": false,
+      "requires_pdf_parsing": true,
+      "requires_excel_parsing": true,
+      "parser_status": "pending",
+      "confidence_level": "high",
+      "notes": "Used by the GI pool shift chart."
+    },
+    {
+      "metric_id": "industry.gi_premium.motor",
+      "display_name": "Motor premium — industry",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook", "gi_council"],
+      "frequency": "annual",
+      "industry_level": true,
+      "requires_pdf_parsing": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "industry.gi_premium.others",
+      "display_name": "Other GI segments premium",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook", "gi_council"],
+      "frequency": "annual",
+      "industry_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "industry.health_share.sahi",
+      "display_name": "SAHI share of health premium",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook"],
+      "frequency": "annual",
+      "industry_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "industry.health_share.private_multiline",
+      "display_name": "Private multi-line share of health",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook"],
+      "frequency": "annual",
+      "industry_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "industry.health_share.psu",
+      "display_name": "PSU share of health",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_handbook"],
+      "frequency": "annual",
+      "industry_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.gwp",
+      "display_name": "Gross Written Premium",
+      "dashboard_section": "Premium Engine / Profitability / Executive Overview",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "monthly",
+      "company_level": true,
+      "industry_level": false,
+      "peer_level": true,
+      "requires_pdf_parsing": true,
+      "parser_status": "pending",
+      "confidence_level": "high",
+      "notes": "Pulled from L-forms / monthly business figures and reconciled with company filings."
+    },
+    {
+      "metric_id": "company.nwp",
+      "display_name": "Net Written Premium",
+      "dashboard_section": "Premium Engine",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.nep",
+      "display_name": "Net Earned Premium",
+      "dashboard_section": "Premium Engine",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.pat",
+      "display_name": "Profit After Tax",
+      "dashboard_section": "Profitability",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.combined_ratio",
+      "display_name": "Combined Ratio",
+      "dashboard_section": "Profitability",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.claims_ratio",
+      "display_name": "Claims (Loss) Ratio",
+      "dashboard_section": "Profitability",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.expense_ratio",
+      "display_name": "Expense Ratio",
+      "dashboard_section": "Profitability",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.commission_ratio",
+      "display_name": "Commission Ratio",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.solvency_ratio",
+      "display_name": "Solvency Ratio",
+      "dashboard_section": "Profitability",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.roe",
+      "display_name": "Return on Equity",
+      "dashboard_section": "Profitability / Executive Overview",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.market_share",
+      "display_name": "Market share (segment)",
+      "dashboard_section": "Executive Overview / Market Engine / Competitive Position",
+      "source_priority": ["irdai_handbook", "irdai_monthly_business"],
+      "frequency": "monthly",
+      "company_level": true,
+      "industry_level": true,
+      "peer_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.retail_health_market_share",
+      "display_name": "Retail health market share",
+      "dashboard_section": "Market Engine",
+      "source_priority": ["irdai_public_disclosures", "company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.retail_mix",
+      "display_name": "Retail / Group premium mix",
+      "dashboard_section": "Premium Engine / Distribution",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.renewal_rate",
+      "display_name": "Renewal rate",
+      "dashboard_section": "Premium Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.claims_settlement_ratio",
+      "display_name": "Claims Settlement Ratio",
+      "dashboard_section": "Executive Overview",
+      "source_priority": ["company_ir", "irdai_public_disclosures"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.distribution.banca_share",
+      "display_name": "Banca channel share",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.distribution.broker_share",
+      "display_name": "Broker channel share",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.distribution.agent_share",
+      "display_name": "Agent / Agency channel share",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.distribution.corporate_agent_share",
+      "display_name": "Corporate agent channel share",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.distribution.direct_share",
+      "display_name": "Direct channel share",
+      "dashboard_section": "Distribution Engine",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.distribution.region_mix",
+      "display_name": "Region-wise premium mix",
+      "dashboard_section": "Distribution Engine (reach depth)",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "blocked",
+      "confidence_level": "low",
+      "notes": "Most insurers do not disclose region-wise breakdown — keep unavailable state."
+    },
+    {
+      "metric_id": "company.distribution.tier_mix",
+      "display_name": "Tier 1 / 2 / 3 premium mix",
+      "dashboard_section": "Distribution Engine (reach depth)",
+      "source_priority": ["company_ir"],
+      "frequency": "annual",
+      "company_level": true,
+      "parser_status": "blocked",
+      "confidence_level": "low",
+      "notes": "Not currently disclosed by Indian insurers — unavailable state."
+    },
+    {
+      "metric_id": "company.market_cap",
+      "display_name": "Market Capitalisation",
+      "dashboard_section": "Valuation",
+      "source_priority": ["nse_quotes", "bse_quotes"],
+      "frequency": "daily",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high",
+      "notes": "Listed insurers only."
+    },
+    {
+      "metric_id": "company.share_price",
+      "display_name": "Share price (close)",
+      "dashboard_section": "Valuation",
+      "source_priority": ["nse_quotes", "bse_quotes"],
+      "frequency": "daily",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.shares_outstanding",
+      "display_name": "Shares Outstanding",
+      "dashboard_section": "Valuation",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.valuation.p_gwp",
+      "display_name": "Price / GWP",
+      "dashboard_section": "Valuation",
+      "source_priority": ["derived"],
+      "frequency": "daily",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high",
+      "notes": "Derived from market_cap / GWP-trailing-12m."
+    },
+    {
+      "metric_id": "company.valuation.p_b",
+      "display_name": "Price / Book",
+      "dashboard_section": "Valuation",
+      "source_priority": ["derived"],
+      "frequency": "daily",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.valuation.p_e",
+      "display_name": "Price / Earnings",
+      "dashboard_section": "Valuation",
+      "source_priority": ["derived"],
+      "frequency": "daily",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.ownership.promoter_share",
+      "display_name": "Promoter shareholding",
+      "dashboard_section": "Ownership",
+      "source_priority": ["company_ir", "nse_quotes"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.ownership.fii_share",
+      "display_name": "FII shareholding",
+      "dashboard_section": "Ownership",
+      "source_priority": ["company_ir", "nse_quotes"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.ownership.dii_share",
+      "display_name": "DII shareholding",
+      "dashboard_section": "Ownership",
+      "source_priority": ["company_ir", "nse_quotes"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.ownership.mf_share",
+      "display_name": "Mutual Fund shareholding",
+      "dashboard_section": "Ownership",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "high"
+    },
+    {
+      "metric_id": "company.ownership.top_holders",
+      "display_name": "Top holders list",
+      "dashboard_section": "Ownership",
+      "source_priority": ["company_ir"],
+      "frequency": "quarterly",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium"
+    },
+    {
+      "metric_id": "company.management.events",
+      "display_name": "Management events (appointments, resignations, board changes)",
+      "dashboard_section": "Management Events",
+      "source_priority": ["company_ir", "nse_quotes", "bse_quotes"],
+      "frequency": "event_based",
+      "company_level": true,
+      "parser_status": "pending",
+      "confidence_level": "medium",
+      "notes": "Source from regulatory filings + listed-company disclosures."
+    }
+  ]
+}

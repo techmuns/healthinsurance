@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "distribution-channel-mix",
+    "description": "Per-insurer channel mix (Banca / Brokers / Agents / Corporate Agents / Direct / Others). Drives Distribution Engine.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["company_ir"],
+    "parser_status": "pending",
+    "notes": "Distribution Engine continues to render mock anchors via src/lib/distributionEngine.ts until this snapshot has at least the SAHI peer companies wired."
+  },
+  "data": []
+}

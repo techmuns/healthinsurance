@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "distribution-reach-depth",
+    "description": "Region / city / tier-level distribution depth. Reach-depth panel inside Distribution Engine.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["company_ir"],
+    "parser_status": "blocked",
+    "notes": "Indian insurers do not currently disclose region / city / tier breakdowns in public disclosures. Schema is reserved for future activation if company filings start disclosing it. UI shows a polished unavailable state."
+  },
+  "data": []
+}

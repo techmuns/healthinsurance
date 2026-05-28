@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "valuation-snapshot",
+    "description": "Daily valuation snapshot for listed insurers — price, market cap, P/GWP, P/B, P/E.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["nse_quotes", "bse_quotes", "company_ir"],
+    "parser_status": "pending",
+    "notes": "Listed-insurer only. Unlisted entities (Care, Aditya Birla, ManipalCigna, Bajaj General) render an unavailable state in the Valuation section."
+  },
+  "data": []
+}

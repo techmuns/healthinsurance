@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "management-events",
+    "description": "Management / governance events (appointments, resignations, board changes, KMP changes). Event-based feed.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["company_ir", "nse_quotes", "bse_quotes"],
+    "parser_status": "pending",
+    "notes": "Sourced from regulatory filings + listed-company event disclosures. Confidence labelled per event."
+  },
+  "data": []
+}
