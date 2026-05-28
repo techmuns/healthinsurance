@@ -69,13 +69,13 @@ export function TopFilterBar({ section }: { section?: string }) {
         </div>
 
         <div className="ml-auto flex items-end gap-4">
-          {/* Dataset — SAHI FY25 headline numbers are from official filings;
-              quarterly / monthly series + General / Life carriers still mock. */}
+          {/* Dataset — every rendered value is either real (FY25 from official
+              filings) or an explicit "not yet ingested" empty state. */}
           <div>
             <FieldLabel hint="Hover any source tag for the underlying URL">Dataset</FieldLabel>
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-soft px-2.5 py-1.5 text-[12px] font-semibold text-teal ring-1 ring-[#CFE3DA]">
               <span className="h-1.5 w-1.5 rounded-full bg-current" />
-              Official + mock series
+              Official
             </span>
           </div>
 

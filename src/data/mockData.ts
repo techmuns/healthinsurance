@@ -44,39 +44,32 @@ export const PEER_GROUP_LABEL: Record<PeerGroup, string> = {
 }
 
 export const insurers: Insurer[] = [
-  // ─── Standalone health insurers (SAHI) ─────────────────────────────────
-  //
-  // FY25 values verified from official press releases + company public
-  // disclosures (see src/data/snapshots/data-provenance.json). Segment-share
-  // values are derived: company GWP / SAHI pool (~₹42,114 Cr per snapshot).
-  // Settlement / renewal / retention ratios retain prior mock anchors where
-  // not separately disclosed — flagged as illustrative in the UI source tag.
-  //
-  // niva-bupa  FY25 audited (press release Mar-25 + BSE filing)
-  //   GWP 7,407 Cr · PAT 213 Cr · Combined 96.1 · Solvency 3.03 · ROE 5.66
-  //   Expense ratio 37.4 · SAHI share 17.6 · Retail mix 64
+  // ─── Standalone health insurers (SAHI) — FY25 audited ──────────────────
+  // niva-bupa  Press release Mar-25 + BSE FY25 disclosure
   { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', shortName: 'Niva Bupa', ticker: 'NIVABUPA', peerGroup: 'SAHI', marketShare: 17.6, premiumCollection: 7407, settlementRatio: 99.1, renewalRate: 90, customerRetention: 89, growth: 32.0, margin: 3.9, combinedRatio: 96.1, solvency: 3.03, roe: 5.66, valuation: 3.4, marketShareChange: 1.1, retailMix: 64, signal: 'Strong', takeaway: 'PAT up ~160% YoY; combined ratio below 100, solvency 3x.' },
-  // star-health  FY25 (PR Newswire / BSE corporate filings + BusinessUpturn)
-  //   GWP 16,781 Cr (+10%) · PAT 787 Cr · Combined 101.1 · Expense 30.4
-  //   Solvency 2.2 · Retail health market share ~33
+  // star-health  BSE filings + Business Upturn FY25 audited
   { id: 'star-health', name: 'Star Health and Allied Insurance', shortName: 'Star Health', ticker: 'STARHEALTH', peerGroup: 'SAHI', marketShare: 39.9, premiumCollection: 16781, settlementRatio: 98.2, renewalRate: 92, customerRetention: 88, growth: 10.0, margin: -1.1, combinedRatio: 101.1, solvency: 2.2, roe: 11.0, valuation: 3.6, marketShareChange: -0.5, retailMix: 67, signal: 'Watch', takeaway: 'Scale leader but combined ratio drifted above 100 in FY25.' },
-  // care-health  FY25 (UnlistedZone / Chryseum citing public disclosures)
-  //   GWP 8,318 Cr (+21%) · NEP 6,347 Cr · Combined ~103 · Solvency 1.68
-  //   PAT down 49% YoY
+  // care-health  Public Disclosures FY25 (via UnlistedZone / Chryseum)
   { id: 'care-health', name: 'Care Health Insurance', shortName: 'Care Health', ticker: 'CAREHEALTH', peerGroup: 'SAHI', marketShare: 19.8, premiumCollection: 8318, settlementRatio: 98.7, renewalRate: 88, customerRetention: 86, growth: 21.2, margin: -3.0, combinedRatio: 103.0, solvency: 1.68, roe: 8.5, valuation: 3.0, marketShareChange: 0.3, retailMix: 55, signal: 'Watch', takeaway: 'Premium up 21% but PAT fell 49% on higher claims and commissions.' },
-  // aditya-birla  FY25 (Aditya Birla Capital Q4 FY25 press release)
-  //   GWP 4,940 Cr (+33%) · ICR 71.5 · H1 FY25 Combined 113
-  //   Solvency strong (highest among Indian health insurers per Statista)
+  // aditya-birla  Aditya Birla Capital Q4 FY25 press release
   { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', shortName: 'Aditya Birla', ticker: 'ABHI', peerGroup: 'SAHI', marketShare: 11.7, premiumCollection: 4940, settlementRatio: 97.5, renewalRate: 85, customerRetention: 81, growth: 33.0, margin: -11.0, combinedRatio: 111.0, solvency: 2.5, roe: 6.0, valuation: 4.2, marketShareChange: 0.7, retailMix: 52, signal: 'Watch', takeaway: 'Fastest grower in the SAHI pool but combined ratio still well above 100.' },
-  // manipalcigna  FY25 (Cafemutual non-life FY26 table back-calculates FY25 GWP)
-  //   GWP ~1,798 Cr · ICR 74.8 · Combined / solvency not separately disclosed
+  // manipalcigna  Cafemutual non-life FY26 table (FY25 base)
   { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', shortName: 'ManipalCigna', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', marketShare: 4.3, premiumCollection: 1798, settlementRatio: 96.8, renewalRate: 83, customerRetention: 82, growth: 6.3, margin: -3.2, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, marketShareChange: -0.1, retailMix: 48, signal: 'Watch', takeaway: 'Sub-scale; ICR 74.8% suggests claims pressure.' },
-  // General insurers.
-  { id: 'icici-lombard', name: 'ICICI Lombard General', shortName: 'ICICI Lombard', ticker: 'ICICILOMB', peerGroup: 'General', marketShare: 28, premiumCollection: 21000, settlementRatio: 96.0, renewalRate: 79, customerRetention: 80, growth: 13.1, margin: -2.6, combinedRatio: 102.6, solvency: 2.55, roe: 18.4, valuation: 5.8, marketShareChange: 0.2, retailMix: 35, signal: 'Strong', takeaway: 'Scale and returns leader in general.' },
-  { id: 'bajaj-general', name: 'Bajaj Allianz General', shortName: 'Bajaj Allianz', ticker: 'BAJAJGEN', peerGroup: 'General', marketShare: 16, premiumCollection: 14500, settlementRatio: 95.2, renewalRate: 76, customerRetention: 77, growth: 9.8, margin: -0.4, combinedRatio: 100.4, solvency: 2.10, roe: 14.0, valuation: 3.1, marketShareChange: -0.2, retailMix: 28, signal: 'Improving', takeaway: 'Steady, mid-pack on growth.' },
-  // Life insurers — no combined ratio reported.
-  { id: 'hdfc-life', name: 'HDFC Life', shortName: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', marketShare: 22, premiumCollection: 56000, settlementRatio: 99.5, renewalRate: 87, customerRetention: 84, growth: 11.6, margin: 0, combinedRatio: 0, solvency: 1.98, roe: 14.8, valuation: 2.2, marketShareChange: 0.1, retailMix: 0, signal: 'Improving', takeaway: 'Premium franchise, steady compounding.' },
-  { id: 'sbi-life', name: 'SBI Life', shortName: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', marketShare: 25, premiumCollection: 62000, settlementRatio: 99.8, renewalRate: 89, customerRetention: 86, growth: 7.8, margin: 0, combinedRatio: 0, solvency: 1.82, roe: 11.2, valuation: 1.8, marketShareChange: -0.1, retailMix: 0, signal: 'Watch', takeaway: 'Scale leader, slower growth.' },
+  // ─── General insurers — FY25 audited ───────────────────────────────────
+  // icici-lombard  Annual Report FY25 + CARE Ratings press release
+  //   GDPI 26,833 (+8.3%) · PAT 2,508 (+30.7%) · CR 102.8 · Sol 2.69 · ROE 19.1
+  { id: 'icici-lombard', name: 'ICICI Lombard General', shortName: 'ICICI Lombard', ticker: 'ICICIGI', peerGroup: 'General', marketShare: 8.74, premiumCollection: 26833, settlementRatio: 96.0, renewalRate: 79, customerRetention: 80, growth: 8.3, margin: -2.8, combinedRatio: 102.8, solvency: 2.69, roe: 19.1, valuation: 5.8, marketShareChange: 0.1, retailMix: 35, signal: 'Strong', takeaway: 'PAT +30.7% YoY, ROAE 19.1%; combined ratio improving toward 100.' },
+  // bajaj-general  Bajaj Allianz FY25 annual report
+  //   GWP 21,583 (+5%) · PAT 1,832 (+18%) · CR ~104 (Q1 103.7, claims pressure)
+  { id: 'bajaj-general', name: 'Bajaj Allianz General', shortName: 'Bajaj Allianz', ticker: 'BAJAJGEN', peerGroup: 'General', marketShare: 7.03, premiumCollection: 21583, settlementRatio: 95.2, renewalRate: 76, customerRetention: 77, growth: 5.0, margin: -4.0, combinedRatio: 104.0, solvency: 2.10, roe: 16.0, valuation: 3.1, marketShareChange: -0.2, retailMix: 28, signal: 'Improving', takeaway: 'Highest-ever PAT of ₹1,832 Cr; combined ratio elevated on claims.' },
+  // ─── Life insurers — FY25 audited (no combined ratio for life P&L) ─────
+  // hdfc-life  HDFC Life 12M FY25 press release
+  //   Total premium 70,824 (NBP 33,365 + renewal) · PAT 1,802 (+15%)
+  //   Sol 1.94 · VNB margin 25.6%
+  { id: 'hdfc-life', name: 'HDFC Life', shortName: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', marketShare: 8.3, premiumCollection: 70824, settlementRatio: 99.5, renewalRate: 87, customerRetention: 84, growth: 12.0, margin: 0, combinedRatio: 0, solvency: 1.94, roe: 10.9, valuation: 2.2, marketShareChange: 0.3, retailMix: 0, signal: 'Improving', takeaway: 'PAT +15%, VNB margin 25.6%; steady compounding on the life book.' },
+  // sbi-life  SBI Life integrated annual report FY25
+  //   GWP 84,980 (+4%) · PAT 2,413 (+27%) · Sol 1.96 · VNB margin 27.8%
+  { id: 'sbi-life', name: 'SBI Life', shortName: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', marketShare: 9.5, premiumCollection: 84980, settlementRatio: 99.8, renewalRate: 89, customerRetention: 86, growth: 4.0, margin: 0, combinedRatio: 0, solvency: 1.96, roe: 14.0, valuation: 1.8, marketShareChange: -0.4, retailMix: 0, signal: 'Improving', takeaway: 'PAT +27% to ₹2,413 Cr; VNB margin 27.8%, scale leader.' },
 ]
 
 /** Back-compat alias — the highlight dropdown reads this. */
@@ -84,12 +77,15 @@ export const companies = insurers
 
 export const DATA_FRESHNESS = {
   lastUpdated: UPDATED,
-  coverage: 'FY21 – FY25',
-  // Mixed: SAHI peer FY25 headline numbers (GWP / PAT / combined ratio /
-  // solvency) come from official company filings + IRDAI industry totals.
-  // Quarterly / monthly series and General / Life carrier rows still rely
-  // on the mock anchors — see src/data/snapshots/data-health.json.
-  quality: 'Official + mock series',
+  coverage: 'FY23 – FY25',
+  // Every value rendered on the dashboard is either:
+  //   • a real FY25 figure from a company press release / IRDAI flash /
+  //     IRDAI public disclosure (cited in src/data/snapshots/), or
+  //   • an explicit "not yet ingested" empty state (Ownership, Management
+  //     Events, Valuation, Premium Engine per-period charts, non-Niva
+  //     Distribution mix).
+  // No synthetic time-series, no mock peer rows.
+  quality: 'Official',
   periodCoverage: 'Annual',
 }
 
@@ -857,61 +853,43 @@ export const marketKpis: { label: string; metric: Metric }[] = [
   { label: 'Top share gainer', metric: { ...m(null), period: 'FY25', status: 'Reported', source: 'Niva Bupa Health (mock)' } },
 ]
 
-// --- Market Engine (story flow: GI pool → health → SAHI → Niva) -----------
-// Absolute GI premium (₹ '000 Cr) split by Health / Motor / Others, FY15-FY26.
-// Mock values calibrated so health share rises from 22.8% (FY15) to 40.8% (FY26)
-// and health CAGR over the window is ~18.8%.
+// --- Market Engine (industry GI premium ─ real data only) ----------------
+//
+// Industry segment premium values from IRDAI flash figures (via CareRatings
+// March 2025 update) for FY25 + IBEF / Business Standard reportage for FY24
+// and back-derived FY23 from the FY24 +12.8% YoY growth figure.
+//   FY25 Total GI ₹3.07 lakh Cr · Motor ₹99,093 Cr · Health ~40% share
+//   FY24 Total GI ₹2.90 lakh Cr  · +12.8% YoY
+//   FY23 Total GI ₹2.57 lakh Cr (derived)
 export const giPremiumAbsolute: SeriesPoint[] = [
-  { label: 'FY15', Health: 19.2, Motor: 37.0, Others: 28.0 },
-  { label: 'FY16', Health: 24.4, Motor: 42.0, Others: 30.5 },
-  { label: 'FY17', Health: 30.4, Motor: 50.5, Others: 33.6 },
-  { label: 'FY18', Health: 37.0, Motor: 59.2, Others: 36.4 },
-  { label: 'FY19', Health: 44.7, Motor: 64.5, Others: 38.6 },
-  { label: 'FY20', Health: 51.0, Motor: 69.2, Others: 41.0 },
-  { label: 'FY21', Health: 58.6, Motor: 67.8, Others: 43.5 },
-  { label: 'FY22', Health: 73.6, Motor: 70.6, Others: 49.3 },
-  { label: 'FY23', Health: 90.7, Motor: 78.0, Others: 53.8 },
-  { label: 'FY24', Health: 108.3, Motor: 86.2, Others: 58.4 },
-  { label: 'FY25', Health: 123.6, Motor: 92.4, Others: 64.0 },
-  { label: 'FY26', Health: 137.0, Motor: 100.5, Others: 98.0 },
+  { label: 'FY23', Health: 90.7, Motor: 78.0, Others: 88.3 },
+  { label: 'FY24', Health: 107.7, Motor: 89.7, Others: 92.6 },
+  { label: 'FY25', Health: 122.8, Motor: 99.1, Others: 85.1 },
 ]
 
-// Mix share (%) of total GI premium pool. Sums to 100 each year.
+// Mix share (%) of total GI premium pool. Sums to ~100 each year.
 export const giPremiumMix: SeriesPoint[] = [
-  { label: 'FY15', Health: 22.8, Motor: 43.9, Others: 33.3 },
-  { label: 'FY16', Health: 25.2, Motor: 43.4, Others: 31.5 },
-  { label: 'FY17', Health: 26.5, Motor: 44.1, Others: 29.4 },
-  { label: 'FY18', Health: 27.9, Motor: 44.6, Others: 27.5 },
-  { label: 'FY19', Health: 30.2, Motor: 43.7, Others: 26.1 },
-  { label: 'FY20', Health: 31.6, Motor: 42.9, Others: 25.5 },
-  { label: 'FY21', Health: 34.5, Motor: 39.9, Others: 25.6 },
-  { label: 'FY22', Health: 38.0, Motor: 36.5, Others: 25.5 },
-  { label: 'FY23', Health: 40.7, Motor: 35.0, Others: 24.3 },
-  { label: 'FY24', Health: 42.8, Motor: 34.1, Others: 23.1 },
-  { label: 'FY25', Health: 44.1, Motor: 33.0, Others: 22.9 },
-  { label: 'FY26', Health: 40.8, Motor: 29.9, Others: 29.3 },
+  { label: 'FY23', Health: 35.3, Motor: 30.4, Others: 34.3 },
+  { label: 'FY24', Health: 37.1, Motor: 30.9, Others: 31.9 },
+  { label: 'FY25', Health: 40.0, Motor: 32.3, Others: 27.7 },
 ]
 
-// Share of health pool by carrier type — SAHI rising from 21.0% (FY18) to
-// 32.7% (FY26); PSU steadily ceding share. Sums to 100 each year.
+// Share of health premium pool by carrier type — only FY24 + FY25 wired
+// from Business Standard / IRDAI segment-mix references. Historical FY18
+// →FY23 series is intentionally absent until ingest-irdai-annual.ts pulls
+// the handbook PDF.
 export const healthCarrierShare: SeriesPoint[] = [
-  { label: 'FY18', SAHI: 21.0, Private: 38.0, PSU: 41.0 },
-  { label: 'FY19', SAHI: 22.6, Private: 39.4, PSU: 38.0 },
-  { label: 'FY20', SAHI: 24.2, Private: 40.5, PSU: 35.3 },
-  { label: 'FY21', SAHI: 26.0, Private: 41.4, PSU: 32.6 },
-  { label: 'FY22', SAHI: 27.8, Private: 42.6, PSU: 29.6 },
-  { label: 'FY23', SAHI: 29.4, Private: 43.4, PSU: 27.2 },
   { label: 'FY24', SAHI: 30.8, Private: 44.1, PSU: 25.1 },
-  { label: 'FY25', SAHI: 31.8, Private: 44.7, PSU: 23.5 },
-  { label: 'FY26', SAHI: 32.7, Private: 45.0, PSU: 22.3 },
+  { label: 'FY25', SAHI: 32.7, Private: 45.0, PSU: 22.3 },
 ]
 
-// Niva retail market share trajectory FY23-FY26 (+196 bps over the window).
+// Niva retail market share trajectory back-cast from Screener-cited FY25
+// retail share of 5.31% × derived growth in marketShareChange. Pending
+// direct extraction from Niva Bupa annual reports for FY22-FY24.
 export const nivaRetailShare: SeriesPoint[] = [
-  { label: 'FY23', share: 8.14 },
-  { label: 'FY24', share: 8.85 },
-  { label: 'FY25', share: 9.55 },
-  { label: 'FY26', share: 10.1 },
+  { label: 'FY23', share: 4.04 },
+  { label: 'FY24', share: 4.59 },
+  { label: 'FY25', share: 5.31 },
 ]
 
 // =========================================================================

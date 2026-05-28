@@ -1,140 +1,83 @@
 import { useState } from 'react'
+import { Database } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
-import { MiniKpi } from '@/components/MiniKpi'
-import { SignalBadge } from '@/components/SignalBadge'
-import { ChartFrame, HorizontalBarChart, StackedBarChart } from '@/components/charts'
-import { EmptyState } from '@/components/EmptyState'
-import { majorHolders, ownershipChange, ownershipKpis, ownershipTrend } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
-import { getCompanyOwnershipCopy } from '@/lib/companyCopy'
-import { usePeriodGate } from '@/lib/usePeriodGate'
 
 type View = 'Trend' | 'Change' | 'Table'
 
+/**
+ * Ownership section.
+ *
+ * We don't yet pull shareholding-pattern data from NSE / BSE / company IR.
+ * Rather than render mock holder splits, the section surfaces an explicit
+ * unavailable state until ingest-ownership.ts pulls the live PDFs.
+ */
 export function Ownership() {
   const [view, setView] = useState<View>('Trend')
   const company = useActiveCompany()
-  const copy = getCompanyOwnershipCopy(company)
-  const gate = usePeriodGate()
-
-  const headline = {
-    Trend: `${company.shortName} shareholding mix · illustrative`,
-    Change: `Marginal buyers & sellers around ${company.shortName} · illustrative`,
-    Table: `${company.shortName} major holders · illustrative`,
-  }[view]
 
   return (
     <div className="space-y-6">
       <VerdictStrip
-        eyebrow={copy.eyebrow}
-        verdict={copy.verdict}
-        tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
-        badge={copy.badge}
-        summary={copy.summary}
-        source="Mock dataset"
-        sourceConfidence="pending"
-        sourceProvenance={{ source_name: 'UI mock seed — ownership snapshot scaffold in src/data/snapshots/ownership-snapshot.json' }}
+        eyebrow="Ownership Signal"
+        verdict="Awaiting filings ingestion"
+        tone="navy"
+        badge="Pending"
+        summary={`Shareholding pattern for ${company.shortName} not yet ingested. Quarterly shareholding PDFs will populate this section once ingest-ownership.ts runs against NSE / BSE / company-IR filings.`}
+        source="Unavailable"
+        sourceProvenance={{
+          source_name: 'Shareholding pattern PDFs not yet ingested',
+          source_url: 'https://www.nseindia.com/companies-listing/corporate-filings-shareholding-pattern',
+        }}
       />
 
-    <ModuleCard
-      question="Who owns the company, and are serious investors increasing or reducing exposure?"
-      title={`${company.shortName} · Ownership Trend`}
-      icon="ownership"
-      controls={
-        <SegmentedControl<View> label="View" options={['Trend', 'Change', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
-      }
-      kpis={
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {ownershipKpis.map((k) => (
-            <MiniKpi key={k.label} label={k.label} metric={k.metric} />
-          ))}
-        </div>
-      }
-      dataStatus={ownershipKpis}
-    >
-      {!gate.ok ? (
-        <EmptyState
-          title="Data unavailable for this period"
-          body={gate.reason ?? 'Switch the period toggle to Annual to see ownership.'}
-          height={240}
+      <ModuleCard
+        question="Who owns the company, and are serious investors increasing or reducing exposure?"
+        title={`${company.shortName} · Ownership Trend`}
+        icon="ownership"
+        controls={
+          <SegmentedControl<View> label="View" options={['Trend', 'Change', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
+        }
+      >
+        <UnavailableSection
+          companyName={company.shortName}
+          listed={company.id === 'niva-bupa' || company.id === 'star-health' || company.id === 'icici-lombard' || company.id === 'hdfc-life' || company.id === 'sbi-life'}
         />
-      ) : (
-        <>
-          {view === 'Trend' && (
-            <ChartFrame
-              headline={headline}
-              caption="Shareholding by holder type (%) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
-            >
-              <StackedBarChart data={ownershipTrend} series={['Promoter', 'FII', 'DII', 'MF', 'PE', 'Public']} unit="%" />
-            </ChartFrame>
-          )}
-          {view === 'Change' && (
-            <ChartFrame
-              headline={headline}
-              caption="Change in holding over the period (pp) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
-            >
-              <HorizontalBarChart
-                data={ownershipChange.map((d) => ({ label: d.label as string, value: d.value as number, focal: d.label === 'FII' }))}
-                unit=" pp"
-                diverging
-              />
-            </ChartFrame>
-          )}
-          {view === 'Table' && (
-            <ChartFrame
-              headline={headline}
-              caption="Major holders · illustrative · mock"
-              height="auto"
-              source="Mock dataset"
-              sourceConfidence="pending"
-            >
-              <div className="overflow-hidden rounded-xl2 border border-soft-border">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-ice text-[11px] uppercase tracking-wide text-ink-secondary">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Holder</th>
-                      <th className="px-4 py-3 font-semibold">Type</th>
-                      <th className="px-4 py-3 font-semibold">Stake</th>
-                      <th className="px-4 py-3 font-semibold">Change</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {majorHolders.map((h, i) => (
-                      <tr key={h.holder} className={i % 2 ? 'bg-ice/40' : ''}>
-                        <td className="px-4 py-3 font-medium text-ink-primary">{h.holder}</td>
-                        <td className="px-4 py-3">
-                          <SignalBadge label={h.type} tone="navy" size="sm" />
-                        </td>
-                        <td className="px-4 py-3 tabular-nums text-ink-primary">{h.stake.toFixed(1)}%</td>
-                        <td className={`px-4 py-3 font-semibold tabular-nums ${h.change >= 0 ? 'text-signal-positive' : 'text-signal-negative'}`}>
-                          {h.change > 0 ? '+' : ''}
-                          {h.change.toFixed(1)} pp
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </ChartFrame>
-          )}
-        </>
-      )}
-    </ModuleCard>
+      </ModuleCard>
 
       <InvestorRead
         title={`${company.shortName} · Ownership Investor Read`}
-        signal={copy.badge}
-        lines={copy.readLines}
-        source="Mock dataset"
-        sourceConfidence="pending"
+        signal="Pending"
+        lines={[
+          { label: 'Why', value: `No ingested shareholding data for ${company.shortName} yet.` },
+          { label: 'Implication', value: 'Cannot read promoter / FII / DII / MF trends without primary filings.' },
+          { label: 'Watch', value: 'ingest-ownership.ts scheduled run (post-quarter shareholding-pattern release).' },
+          { label: 'Read', value: 'Section will populate automatically once snapshot is wired.' },
+        ]}
+        source="Unavailable"
       />
+    </div>
+  )
+}
+
+function UnavailableSection({ companyName, listed }: { companyName: string; listed: boolean }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-8 text-center"
+      style={{ height: 280 }}
+    >
+      <span className="blob-c mb-3 inline-flex h-12 w-12 items-center justify-center bg-soft-blue text-navy-primary">
+        <Database className="h-5 w-5" />
+      </span>
+      <p className="text-[13px] font-semibold text-navy-deep">Shareholding data not yet ingested</p>
+      <p className="mt-1.5 max-w-md text-[11.5px] leading-relaxed text-ink-secondary">
+        {listed
+          ? `${companyName} is listed. The next ingest-ownership.ts run will pull the quarterly shareholding-pattern PDF from NSE corporate filings and populate this section.`
+          : `${companyName} is unlisted — quarterly shareholding pattern is not publicly disclosed for unlisted insurers. Section reserved for future activation.`}
+      </p>
     </div>
   )
 }

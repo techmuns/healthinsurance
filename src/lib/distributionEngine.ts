@@ -38,46 +38,16 @@ export interface ChannelMixRow {
   Others: number
 }
 
-// Per-company channel mix (% of GWP). Rows sum to 100 (rounding tolerance).
-// PPT-anchored for Niva Bupa; other rows are calibrated to the existing
-// channel-mix snapshot we already use elsewhere in the dashboard.
+// Per-company channel mix (% of GWP). Only Niva Bupa is populated — values
+// come straight from the company's RHP / annual report channel-mix tables
+// for FY19 / FY25 / 9M FY26. Every other insurer is intentionally absent;
+// the UI surfaces an explicit "not yet ingested" state until per-company
+// channel-mix tables are extracted from their public disclosures.
 export const distributionEngineMix: Record<string, ChannelMixRow[]> = {
   'niva-bupa': [
     { period: 'FY19', Banca: 17.0, Brokers: 23.5, Agents: 36.2, 'Corporate Agents': 4.8, Direct: 14.5, Others: 4.0 },
     { period: 'FY25', Banca: 20.1, Brokers: 30.6, Agents: 29.7, 'Corporate Agents': 5.0, Direct: 11.5, Others: 3.1 },
     { period: '9M FY26', Banca: 21.5, Brokers: 31.0, Agents: 28.2, 'Corporate Agents': 5.0, Direct: 11.0, Others: 3.3 },
-  ],
-  'star-health': [
-    { period: 'FY25', Banca: 18.0, Brokers: 12.0, Agents: 58.0, 'Corporate Agents': 4.0, Direct: 5.5, Others: 2.5 },
-    { period: '9M FY26', Banca: 17.5, Brokers: 13.5, Agents: 57.0, 'Corporate Agents': 4.2, Direct: 5.5, Others: 2.3 },
-  ],
-  'care-health': [
-    { period: 'FY25', Banca: 38.0, Brokers: 13.0, Agents: 40.0, 'Corporate Agents': 4.0, Direct: 3.0, Others: 2.0 },
-    { period: '9M FY26', Banca: 39.5, Brokers: 13.5, Agents: 38.8, 'Corporate Agents': 4.0, Direct: 2.4, Others: 1.8 },
-  ],
-  'aditya-birla': [
-    { period: 'FY25', Banca: 44.0, Brokers: 13.0, Agents: 34.0, 'Corporate Agents': 4.0, Direct: 3.0, Others: 2.0 },
-    { period: '9M FY26', Banca: 46.0, Brokers: 13.0, Agents: 32.5, 'Corporate Agents': 4.0, Direct: 2.6, Others: 1.9 },
-  ],
-  manipalcigna: [
-    { period: 'FY25', Banca: 41.0, Brokers: 12.0, Agents: 38.0, 'Corporate Agents': 4.0, Direct: 3.0, Others: 2.0 },
-    { period: '9M FY26', Banca: 42.5, Brokers: 12.5, Agents: 36.8, 'Corporate Agents': 4.0, Direct: 2.4, Others: 1.8 },
-  ],
-  'icici-lombard': [
-    { period: 'FY25', Banca: 22.0, Brokers: 30.0, Agents: 25.0, 'Corporate Agents': 5.0, Direct: 13.0, Others: 5.0 },
-    { period: '9M FY26', Banca: 22.5, Brokers: 31.0, Agents: 24.0, 'Corporate Agents': 5.0, Direct: 12.5, Others: 5.0 },
-  ],
-  'bajaj-general': [
-    { period: 'FY25', Banca: 26.0, Brokers: 24.0, Agents: 30.0, 'Corporate Agents': 5.0, Direct: 11.0, Others: 4.0 },
-    { period: '9M FY26', Banca: 26.5, Brokers: 25.0, Agents: 29.0, 'Corporate Agents': 5.0, Direct: 10.5, Others: 4.0 },
-  ],
-  'hdfc-life': [
-    { period: 'FY25', Banca: 55.0, Brokers: 6.0, Agents: 25.0, 'Corporate Agents': 4.0, Direct: 8.0, Others: 2.0 },
-    { period: '9M FY26', Banca: 56.0, Brokers: 6.5, Agents: 24.0, 'Corporate Agents': 4.0, Direct: 7.5, Others: 2.0 },
-  ],
-  'sbi-life': [
-    { period: 'FY25', Banca: 62.0, Brokers: 4.0, Agents: 22.0, 'Corporate Agents': 4.0, Direct: 6.0, Others: 2.0 },
-    { period: '9M FY26', Banca: 63.0, Brokers: 4.2, Agents: 21.2, 'Corporate Agents': 4.0, Direct: 5.6, Others: 2.0 },
   ],
 }
 

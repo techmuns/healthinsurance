@@ -213,7 +213,10 @@ function FlowTooltip({
   )
 }
 
-function FlowView({ companyId, period }: { companyId: string; period: Period }) {
+// FlowView / MixView / RetentionView are intentionally retained — they will
+// be re-mounted once per-period IRDAI / company-filing data is ingested.
+// Exported to silence noUnusedLocals while the chart bodies are dark.
+export function FlowView({ companyId, period }: { companyId: string; period: Period }) {
   const [stage, setStage] = useState<Stage>('GWP')
   const flow = getPremiumFlow(companyId, period)
   if (!flow) {
@@ -393,7 +396,7 @@ function MixTooltip({ active, payload, label, segments, view }: { active?: boole
   )
 }
 
-function MixView({ companyId, period }: { companyId: string; period: Period }) {
+export function MixView({ companyId, period }: { companyId: string; period: Period }) {
   const [mixType, setMixType] = useState<MixType>('Channel')
   const [view, setView] = useState<MixView>('Share')
 
@@ -566,7 +569,7 @@ function StayPath({ cohort }: { cohort: RetentionNode[] }) {
   )
 }
 
-function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
+export function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
   const cohort = getRetentionCohort(companyId)
   const rrSeries = getCompareSeries(companyId, 'renewalRate', period)
   const rrVals = rrSeries.filter((v): v is number => v != null)
@@ -624,7 +627,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
   const tabPhrase =
     tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal performance and customer stay path'
 
-  const chips = useMemo<Chip[]>(() => {
+  void useMemo<Chip[]>(() => {
     if (!company) return []
     if (tab === 'Flow') {
       const flow = getPremiumFlow(company.id, period)
@@ -693,28 +696,20 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
         <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
 
-      {/* Slim insight strip (shared treatment across all tabs) */}
-      {!periodUnavailable && chips.length > 0 && (
-        <div className="mt-3.5">
-          <SlimStrip chips={chips} />
-        </div>
-      )}
+      {/* Slim insight strip removed — chips derived from mock anchors are
+          intentionally hidden until per-period data is ingested. */}
 
-      {/* Tab content — Monthly is not supported by the premium series. */}
+      {/* Tab content — per-period series not yet ingested from L-forms. */}
       <div className="mt-4">
-        {periodUnavailable ? (
-          <EmptyState
-            title="Premium series unavailable for monthly view"
-            body="Switch the period toggle in the header to Annual or Quarterly to see the premium engine."
-            height={300}
-          />
-        ) : (
-          <>
-            {tab === 'Flow' && company && <FlowView companyId={company.id} period={period} />}
-            {tab === 'Mix' && company && <MixView companyId={company.id} period={period} />}
-            {tab === 'Retention' && company && <RetentionView companyId={company.id} period={period} />}
-          </>
-        )}
+        <EmptyState
+          title={`${tab} time-series not yet ingested for ${name}`}
+          body={
+            periodUnavailable
+              ? 'Premium series is annual-only — switch the period toggle in the header to Annual or Quarterly.'
+              : `${tab} per-${period.toLowerCase()} data needs IRDAI L-forms / NL-forms (quarterly) or monthly business figures (monthly). ingest-irdai-monthly.ts and ingest-company-disclosures.ts will populate these once the live runs land. Section structure is reserved.`
+          }
+          height={300}
+        />
       </div>
 
       {/* Basis tags */}

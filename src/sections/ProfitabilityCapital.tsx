@@ -6,16 +6,8 @@ import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { SignalBadge } from '@/components/SignalBadge'
 import { BasisTag } from '@/components/BasisTag'
-import { BandedLineChart, ChartFrame, TrendLineChart } from '@/components/charts'
 import { EmptyState } from '@/components/EmptyState'
-import {
-  costKpis,
-  marginTrend,
-  plTrend,
-  profitabilityBasis,
-  returnsTrend,
-  solvencyTrend,
-} from '@/data/mockData'
+import { profitabilityBasis } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import { usePeriodGate } from '@/lib/usePeriodGate'
@@ -37,10 +29,11 @@ export function ProfitabilityCapital() {
   const gate = usePeriodGate()
 
   const hasCR = company.combinedRatio > 0
-  const latestCombined = hasCR ? company.combinedRatio : (marginTrend[marginTrend.length - 1].Combined as number)
+  const latestCombined = hasCR ? company.combinedRatio : 0
   const ct = combinedTone(latestCombined)
 
-  const headline = {
+  void view // headline retained for future trend rebuild; suppress unused warning
+  void {
     'P&L': `P&L trajectory for ${company.shortName}`,
     Margin: hasCR
       ? `Combined ratio for ${company.shortName} (latest ${company.combinedRatio.toFixed(1)}%)`
@@ -48,7 +41,7 @@ export function ProfitabilityCapital() {
     Cost: `Cost ratios for ${company.shortName}`,
     Returns: `Returns trajectory for ${company.shortName} (ROE ${company.roe.toFixed(1)}%)`,
     Capital: `${company.shortName} solvency (latest ${company.solvency.toFixed(2)}x)`,
-  }[view]
+  }
 
   // Per-company KPIs derived from the snapshot record. Period is always Annual
   // because the snapshot is the FY26 mock record.
@@ -170,7 +163,7 @@ export function ProfitabilityCapital() {
           </div>
         )
       }
-      dataStatus={[...companyKpis.map((k) => ({ label: k.label, metric: k.metric })), ...costKpis]}
+      dataStatus={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
       dataBasis={profitabilityBasis}
     >
       <BasisTag info={profitabilityBasis} className="mb-3" />
@@ -181,72 +174,11 @@ export function ProfitabilityCapital() {
           height={240}
         />
       ) : (
-        <>
-          {view === 'P&L' && (
-            <ChartFrame headline={headline} caption="Revenue, operating profit & PAT (₹ Cr) · illustrative · mock"
-              source="Company filing + IRDAI disclosures"
-              sourceConfidence="medium"
-              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}>
-              <TrendLineChart data={plTrend} series={['Revenue', 'Operating', 'PAT']} />
-            </ChartFrame>
-          )}
-          {view === 'Margin' && hasCR && (
-            <ChartFrame
-              headline={headline}
-              caption="Combined ratio and its components (%) · illustrative · mock"
-              source="Company filing + IRDAI disclosures"
-              sourceConfidence="medium"
-              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
-            >
-              <TrendLineChart data={marginTrend} series={['Combined', 'Loss', 'Expense', 'Commission']} unit="%" />
-            </ChartFrame>
-          )}
-          {view === 'Margin' && !hasCR && (
-            <EmptyState
-              title="Combined ratio not applicable"
-              body={`${company.shortName} reports a life P&L — switch to Returns or Capital for the right read.`}
-              height={240}
-            />
-          )}
-          {view === 'Cost' && (
-            <ChartFrame
-              headline={headline}
-              caption="Key cost ratios · illustrative · mock"
-              height={280}
-              source="Company filing + IRDAI disclosures"
-              sourceConfidence="medium"
-              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
-            >
-              <div className="grid h-full grid-cols-1 content-center gap-3 sm:grid-cols-3">
-                {costKpis.map((k) => (
-                  <MiniKpi key={k.label} label={k.label} metric={k.metric} invert />
-                ))}
-              </div>
-            </ChartFrame>
-          )}
-          {view === 'Returns' && (
-            <ChartFrame
-              headline={headline}
-              caption="ROE & ROA (%) · illustrative · mock"
-              source="Company filing + IRDAI disclosures"
-              sourceConfidence="medium"
-              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
-            >
-              <TrendLineChart data={returnsTrend} series={['ROE', 'ROA']} unit="%" />
-            </ChartFrame>
-          )}
-          {view === 'Capital' && (
-            <ChartFrame
-              headline={headline}
-              caption="Solvency ratio vs regulatory floor (x) · illustrative · mock"
-              source="Company filing + IRDAI disclosures"
-              sourceConfidence="medium"
-              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
-            >
-              <BandedLineChart data={solvencyTrend} lineKey="Solvency" floorKey="Floor" bandLow={1.5} bandHigh={2.5} />
-            </ChartFrame>
-          )}
-        </>
+        <EmptyState
+          title="Historical trend not yet ingested"
+          body={`KPI tiles above show ${company.shortName}'s real FY25 metrics from company filings. The ${view} time-series requires quarterly L-forms / public disclosures from prior years — pending ingest-company-disclosures.ts back-fill.`}
+          height={280}
+        />
       )}
     </ModuleCard>
 
