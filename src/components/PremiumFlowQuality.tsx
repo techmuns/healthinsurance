@@ -1040,7 +1040,7 @@ function HeroRenewal({ companyId, period, rrFirst, rrLast, firstLabel, improving
 }
 
 // Secondary supporting visual: how many of 100 customers stay each year.
-function StayPath({ cohort }: { cohort: RetentionNode[] }) {
+function StayPath({ cohort, benchmarkYear4 }: { cohort: RetentionNode[]; benchmarkYear4: number | null }) {
   const cust = (i: number) => Math.round(cohort[i].customers)
   return (
     <div className="flex items-start">
@@ -1067,12 +1067,50 @@ function StayPath({ cohort }: { cohort: RetentionNode[] }) {
                 {cust(i)}
               </div>
               <span className="mt-1.5 text-[11px] font-semibold text-navy-deep">{n.year}</span>
+              {/* Ghost benchmark marker — only on the Year 4+ endpoint when a
+                  peer benchmark is available. Dotted slate circle so it reads
+                  as "reference", not "actual". */}
+              {endpoint && benchmarkYear4 != null && (
+                <div
+                  className="mt-1 flex h-7 w-7 items-center justify-center rounded-full border border-dashed bg-white text-[10px] font-semibold text-ink-secondary"
+                  style={{ borderColor: '#94A3B8' }}
+                  title={`Peer median: ${benchmarkYear4} of 100`}
+                >
+                  {benchmarkYear4}
+                </div>
+              )}
             </div>
           </div>
         )
       })}
     </div>
   )
+}
+
+// Walks the same cohort math as getRetentionCohort to project a Year-4+
+// retained-customer count from a renewal-rate anchor. Lets us derive a peer
+// benchmark from the median renewalRate of the focal company's peer group.
+function projectYear4FromRenewal(r: number): number {
+  const r2 = r / 100
+  const r3 = Math.min(0.99, (r + (100 - r) * 0.2) / 100)
+  const r4 = Math.min(0.99, (r + (100 - r) * 0.35) / 100)
+  const c2 = 100 * r2
+  const c3 = c2 * r3
+  const c4 = c3 * r4
+  return Math.round(c4)
+}
+
+function median(values: number[]): number | null {
+  if (values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
+
+const peerGroupLabel: Record<string, string> = {
+  SAHI: 'SAHI peer',
+  General: 'General peer',
+  Life: 'Life peer',
 }
 
 export function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
@@ -1088,10 +1126,50 @@ export function RetentionView({ companyId, period }: { companyId: string; period
   const improving = rrLast > rrFirst
   const year4 = Math.round(cohort[cohort.length - 1].customers)
   const dropTotal = 100 - year4
+
+  // Peer-median benchmark — exclude focal, require at least 2 peers in the
+  // same group so the median is meaningful; otherwise mark as pending.
+  const focal = insurers.find((i) => i.id === companyId)
+  const peerGroup = focal?.peerGroup
+  const peerRates = insurers
+    .filter((i) => i.id !== companyId && i.peerGroup === peerGroup)
+    .map((i) => i.renewalRate)
+    .filter((v): v is number => typeof v === 'number' && v > 0)
+  const peerMedianRR = peerRates.length >= 2 ? median(peerRates) : null
+  const benchmarkYear4 = peerMedianRR != null ? projectYear4FromRenewal(peerMedianRR) : null
+  const benchmarkLabel = peerGroup ? peerGroupLabel[peerGroup] ?? 'Peer' : 'Peer'
+
+  // Classification per spec: ±5 = In line, +5+ = Sticky, −5+ = Weak retention.
+  const delta = benchmarkYear4 != null ? year4 - benchmarkYear4 : null
+  const status: { label: string; tone: 'positive' | 'navy' | 'negative' } =
+    delta == null
+      ? { label: year4 >= 75 ? 'Sticky book' : 'Watch', tone: year4 >= 75 ? 'positive' : 'navy' }
+      : delta >= 5
+        ? { label: 'Sticky book', tone: 'positive' }
+        : delta <= -5
+          ? { label: 'Weak retention', tone: 'negative' }
+          : { label: 'In line with peers', tone: 'navy' }
+  const explainer =
+    delta == null
+      ? null
+      : delta >= 5
+        ? 'Retention is above peer benchmark, suggesting better customer stickiness.'
+        : delta <= -5
+          ? 'Retention is below peer benchmark — customer stickiness lags peers.'
+          : 'Retention sits in line with the peer benchmark.'
+
   const pills: Chip[] = [
     { label: 'Year-4 Retained', value: `${year4} of 100`, color: TEAL },
     { label: 'Drop-off', value: `−${dropTotal}`, note: 'customers', color: RED },
-    { label: 'Status', value: year4 >= 75 ? 'Sticky book' : 'Watch', color: FOCAL },
+    {
+      label: 'Status',
+      value: status.label,
+      note:
+        delta != null
+          ? `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} vs ${benchmarkLabel} benchmark`
+          : 'benchmark pending',
+      color: status.tone === 'positive' ? TEAL : status.tone === 'negative' ? RED : FOCAL,
+    },
   ]
 
   return (
@@ -1101,11 +1179,47 @@ export function RetentionView({ companyId, period }: { companyId: string; period
 
       {/* Secondary: customer stay path */}
       <div className="rounded-xl2 border border-soft-border bg-ice/40 p-4">
-        <p className="text-[12px] font-semibold text-navy-deep">Customer Stay Path</p>
-        <p className="mb-3 mt-0.5 text-[11.5px] text-ink-secondary">
-          Out of 100 customers, <span className="font-semibold" style={{ color: TEAL }}>{year4}</span> remain by Year 4+.
-        </p>
-        <StayPath cohort={cohort} />
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+          <div>
+            <p className="text-[12px] font-semibold text-navy-deep">Customer Stay Path</p>
+            <p className="mt-0.5 text-[11.5px] text-ink-secondary">
+              Out of 100 customers, <span className="font-semibold" style={{ color: TEAL }}>{year4}</span> remain by Year 4+.
+            </p>
+          </div>
+          {/* Benchmark chip — only when peer median is computable. */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {benchmarkYear4 != null ? (
+              <>
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10.5px] text-ink-secondary">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#94A3B8', boxShadow: 'inset 0 0 0 1px #FFFFFF' }} />
+                  {benchmarkLabel} median: <span className="font-semibold text-navy-deep">{benchmarkYear4} of 100</span>
+                </span>
+                {delta != null && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold"
+                    style={
+                      delta >= 5
+                        ? { background: hexA(TEAL, 0.12), color: '#0E6F6D', boxShadow: 'inset 0 0 0 1px rgba(22,142,142,0.30)' }
+                        : delta <= -5
+                          ? { background: hexA(RED, 0.12), color: '#9C463D', boxShadow: 'inset 0 0 0 1px rgba(201,122,107,0.30)' }
+                          : { background: '#EEF1F7', color: '#475569', boxShadow: 'inset 0 0 0 1px #D2DAE6' }
+                    }
+                  >
+                    {delta >= 0 ? '+' : '−'}{Math.abs(delta)} vs benchmark
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10.5px] italic text-ink-secondary">
+                Peer benchmark pending
+              </span>
+            )}
+          </div>
+        </div>
+        <StayPath cohort={cohort} benchmarkYear4={benchmarkYear4} />
+        {explainer && (
+          <p className="mt-3 text-[11.5px] leading-snug text-navy-deep/80">{explainer}</p>
+        )}
       </div>
 
       {/* Supporting summary pills */}
