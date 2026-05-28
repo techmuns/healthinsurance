@@ -48,12 +48,34 @@ function findRow(snap: Snapshot, keys: Record<string, string>): Row | null {
   return null
 }
 
-/** Merge `incoming` values into `existing`, never overwriting populated → null. */
-function mergeValues(existing: Row, incoming: Record<string, unknown>): { row: Row; changed: boolean } {
+/**
+ * Merge `incoming` values into `existing`. Rules:
+ *   1. Never overwrite populated → null (failed extraction can't clobber).
+ *   2. If the existing row carries provenance.confidence === 'high' AND the
+ *      incoming record's parser_name starts with "ingest-" (i.e. is from an
+ *      automated parser, not a hand-curated seed), per-field updates are
+ *      blocked: the parser can only FILL EMPTY fields, never overwrite a
+ *      field already trusted as high-confidence. Prevents Q3 quarterly
+ *      disclosures from clobbering audited FY25-annual press-release values.
+ *   3. Existing-null fields can always be filled by any incoming value
+ *      that passes the per-fetcher validator.
+ */
+function mergeValues(
+  existing: Row,
+  incoming: Record<string, unknown>,
+  incomingProvenance?: { parser_name?: string; confidence?: string },
+): { row: Row; changed: boolean } {
   let changed = false
   const out: Row = { ...existing }
+  const existingProv = (existing.provenance as { confidence?: string } | undefined) ?? {}
+  const existingPinned = existingProv.confidence === 'high'
+  const incomingFromParser = incomingProvenance?.parser_name?.startsWith('ingest-') ?? false
+  // Pin guard: if existing row is high-confidence and the incoming write
+  // comes from an automated parser, only fill empty fields.
+  const fillOnly = existingPinned && incomingFromParser
   for (const [k, v] of Object.entries(incoming)) {
     if (v == null) continue // never overwrite populated with null
+    if (fillOnly && existing[k] != null) continue // pin guard
     if (existing[k] !== v) {
       out[k] = v
       changed = true
@@ -89,7 +111,7 @@ export async function mergeRecords(records: SnapshotRecord[]): Promise<{
     for (const rec of group) {
       const existing = findRow(snap, rec.keys)
       if (existing) {
-        const { row, changed } = mergeValues(existing, rec.values)
+        const { row, changed } = mergeValues(existing, rec.values, rec.provenance)
         if (changed) {
           // Replace and refresh provenance.
           const idx = snap.data.indexOf(existing)

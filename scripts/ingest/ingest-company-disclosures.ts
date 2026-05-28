@@ -95,21 +95,45 @@ export const ingestCompanyDisclosures: Fetcher = {
           continue
         }
 
-        records.push({
-          target: 'insurer-annual-snapshot',
-          keys: { company_id: t.company_id, fiscal_year: fy },
-          values,
-          provenance: {
-            source_name: `${t.company_id} disclosure (${fy})`,
-            source_url: pdfUrl ?? url,
-            source_file: raw_file,
-            source_period: fy,
-            fetched_at,
-            parsed_at: nowIso(),
-            parser_name: 'ingest-company-disclosures',
-            confidence: 'high',
-          },
-        })
+        // Detect whether this PDF is an annual or quarterly disclosure.
+        // Quarterly disclosures carry cumulative figures (9M / H1 / Q3
+        // standalone) that MUST NOT pollute the annual snapshot.
+        const isQuarterly = isQuarterlyDisclosure(text, filename)
+        const quarter = isQuarterly ? inferQuarter(text, filename) : null
+
+        records.push(
+          isQuarterly && quarter
+            ? {
+                target: 'insurer-quarterly-financials',
+                keys: { company_id: t.company_id, quarter, fiscal_year: fy },
+                values: { ...values, period_type: 'quarterly' },
+                provenance: {
+                  source_name: `${t.company_id} ${quarter} ${fy} public disclosure`,
+                  source_url: pdfUrl ?? url,
+                  source_file: raw_file,
+                  source_period: `${quarter} ${fy}`,
+                  fetched_at,
+                  parsed_at: nowIso(),
+                  parser_name: 'ingest-company-disclosures',
+                  confidence: 'high',
+                },
+              }
+            : {
+                target: 'insurer-annual-snapshot',
+                keys: { company_id: t.company_id, fiscal_year: fy },
+                values,
+                provenance: {
+                  source_name: `${t.company_id} ${fy} annual disclosure`,
+                  source_url: pdfUrl ?? url,
+                  source_file: raw_file,
+                  source_period: fy,
+                  fetched_at,
+                  parsed_at: nowIso(),
+                  parser_name: 'ingest-company-disclosures',
+                  confidence: 'high',
+                },
+              },
+        )
 
         await appendLog('ingest-company-disclosures.log', {
           source: SOURCE_ID,
@@ -237,6 +261,35 @@ function inferFY(filename: string, text: string): string {
  * combined ratio is below 50 or above 200, solvency ratios live in
  * 0.5-10x, ratios stored as decimal (e.g. "1.15") are normalised to %.
  */
+/**
+ * Returns true when the PDF text strongly indicates a quarterly /
+ * half-year / 9-month disclosure rather than a full-year annual report.
+ * Used to route the parsed values to the quarterly snapshot, keeping
+ * annual rows clean of cumulative-period figures.
+ */
+function isQuarterlyDisclosure(text: string, filename: string): boolean {
+  const haystack = `${filename} ${text.slice(0, 3000)}`
+  // Filename hints first — IRDAI L-forms / NL-forms ship with QtrN labels.
+  if (/\bQ[1-4][\s\-_]?FY|qtr[\s_\-]?[1-3]|quarter[\s_\-]?ended|9[\s_\-]?(month|m)|six[\s_\-]?month|half[\s_\-]?year|h1[\s_\-]?fy/i.test(haystack)) return true
+  // Annual-report markers that explicitly contradict.
+  if (/annual\s+report|board\s*['']\s*report\s*(?:to|on)\s+the\s+(?:members|shareholders)|management\s+discussion\s+and\s+analysis/i.test(text.slice(0, 5000))) {
+    // Annual reports are themselves not quarterly disclosures, even if
+    // they mention Q4 figures in passing.
+    return false
+  }
+  // Default: not quarterly.
+  return false
+}
+
+function inferQuarter(text: string, filename: string): string | null {
+  const haystack = `${filename} ${text.slice(0, 2000)}`
+  const q = haystack.match(/\bQ([1-4])\s*FY\b/i) ?? haystack.match(/qtr[\s_\-]?([1-3])\b/i)
+  if (q) return `Q${q[1]}`
+  if (/9[\s_\-]?month|9m/i.test(haystack)) return 'Q3'
+  if (/h1|half[\s_\-]?year|six[\s_\-]?month/i.test(haystack)) return 'Q2'
+  return null
+}
+
 function sanitiseExtracted(raw: Record<string, number | null>): Record<string, number | null> {
   const out: Record<string, number | null> = { ...raw }
   // GWP / NWP / NEP / PAT: bounded between 1 and 100,000 Cr per insurer
