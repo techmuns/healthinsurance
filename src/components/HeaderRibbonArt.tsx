@@ -106,28 +106,6 @@ export function HeaderRibbonArt() {
           <ellipse cx="38" cy="28" rx="32" ry="14" fill="url(#petalGlass)" opacity="0.6" />
         </g>
 
-        {/* Premium contour lines — two thin, low-opacity arcs trace petal
-            edges for a sculpted finish. */}
-        <path
-          d="M150 130 C 178 96 178 56 214 28"
-          stroke="#27457E"
-          strokeOpacity="0.12"
-          strokeWidth="0.9"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M178 152 C 210 122 234 96 260 60"
-          stroke="#B68B3A"
-          strokeOpacity="0.18"
-          strokeWidth="0.7"
-          fill="none"
-          strokeLinecap="round"
-        />
-
-        {/* Tiny champagne accent dot — minimal, premium punctuation. */}
-        <circle cx="252" cy="44" r="1.8" fill="#B68B3A" fillOpacity="0.65" />
-
         {/* Fade the inner edge into the white card. */}
         <rect x="0" y="0" width="140" height="170" fill="url(#petalLeftFade)" />
       </svg>
