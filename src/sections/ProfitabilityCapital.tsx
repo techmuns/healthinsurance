@@ -130,14 +130,14 @@ type View = 'P&L' | 'Margin' | 'Cost' | 'Returns' | 'Capital'
 // Chart building blocks
 // ---------------------------------------------------------------------------
 
-function Sparkline({ values, tone = 'navy', height = 28, width = 96 }: { values: number[]; tone?: 'positive' | 'navy' | 'negative'; height?: number; width?: number }) {
+function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values: number[]; tone?: 'positive' | 'navy' | 'negative'; height?: number; width?: number }) {
   const stroke = tone === 'positive' ? PALETTE.emerald : tone === 'negative' ? PALETTE.coral : PALETTE.navy
   const data = values.map((v, i) => ({ i, v }))
   return (
     <div style={{ height, width }} className="shrink-0">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 3, right: 3, bottom: 3, left: 3 }}>
-          <Line type="monotone" dataKey="v" stroke={stroke} strokeWidth={1.8} dot={false} isAnimationActive={false} />
+        <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+          <Line type="monotone" dataKey="v" stroke={stroke} strokeWidth={1.3} dot={false} isAnimationActive={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -173,26 +173,26 @@ function PremiumFunnel({ loss, commission, expense, hasCR }: { loss: number; com
         </p>
         <p className="text-[10.5px] text-ink-secondary">{profit > 0 ? `₹${profit.toFixed(1)} stays as underwriting profit` : `₹${lossOverhang.toFixed(1)} of underwriting loss`}</p>
       </div>
-      <div className="mt-2 flex h-8 w-full overflow-hidden rounded-md shadow-soft ring-1 ring-soft-border">
+      <div className="mt-1.5 flex h-5 w-full overflow-hidden rounded-sm ring-1 ring-soft-border">
         {segments.map((s) => {
           const w = (s.value / denom) * 100
           return (
             <div
               key={s.label}
               title={`${s.label} · ₹${s.value.toFixed(1)}`}
-              className="flex h-full items-center justify-center text-[10px] font-semibold text-white transition-transform duration-200 hover:scale-y-110"
+              className="flex h-full items-center justify-center text-[9.5px] font-semibold text-white/95 transition-opacity duration-200 hover:opacity-80"
               style={{ width: `${w}%`, background: s.color }}
             >
-              {w > 8 && `₹${s.value.toFixed(0)}`}
+              {w > 9 && `₹${s.value.toFixed(0)}`}
             </div>
           )
         })}
       </div>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px]">
+      <div className="mt-1.5 flex flex-wrap gap-x-3.5 gap-y-1 text-[10px]">
         {segments.map((s) => (
           <span key={s.label} className="inline-flex items-center gap-1.5 text-ink-secondary">
-            <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
-            <span className="text-navy-deep">{s.label}</span> · ₹{s.value.toFixed(1)}
+            <span className="h-1.5 w-1.5 rounded-sm" style={{ background: s.color }} />
+            <span className="text-navy-deep">{s.label}</span> ₹{s.value.toFixed(1)}
           </span>
         ))}
       </div>
@@ -206,17 +206,17 @@ function CombinedRatioBandedTrend({ series }: { series: number[] }) {
   const yMin = Math.min(94, ...series) - 1
   const yMax = Math.max(112, ...series) + 1
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <LineChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+    <ResponsiveContainer width="100%" height={180}>
+      <LineChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-        <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={40} unit="%" />
-        <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v: number) => [`${v.toFixed(1)}%`, 'Combined ratio']} />
-        <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.09} />
-        <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.1} />
-        <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.08} />
-        <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={1} />
-        <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={2.6} dot={{ r: 4, fill: PALETTE.navyDeep }} activeDot={{ r: 6 }} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={36} unit="%" />
+        <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number) => [`${v.toFixed(1)}%`, 'Combined ratio']} />
+        <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
+        <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.08} />
+        <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.07} />
+        <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} />
+        <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} />
       </LineChart>
     </ResponsiveContainer>
   )
@@ -230,7 +230,7 @@ function CostDonut({ cost, combinedRatio }: { cost: { loss: number; commission: 
     { label: 'Opex', value: cost.expense, color: PALETTE.navy },
   ]
   return (
-    <div className="relative h-[220px] w-full">
+    <div className="relative h-[180px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -238,26 +238,26 @@ function CostDonut({ cost, combinedRatio }: { cost: { loss: number; commission: 
             dataKey="value"
             cx="50%"
             cy="50%"
-            innerRadius="62%"
-            outerRadius="92%"
+            innerRadius="80%"
+            outerRadius="94%"
             startAngle={90}
             endAngle={-270}
             stroke="#fff"
-            strokeWidth={2}
-            paddingAngle={2}
+            strokeWidth={1}
+            paddingAngle={1}
             isAnimationActive={false}
           >
             {data.map((d) => (
               <Cell key={d.label} fill={d.color} />
             ))}
           </Pie>
-          <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v: number, _n, p) => [`${v.toFixed(1)}%`, p.payload.label]} />
+          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, _n, p) => [`${v.toFixed(1)}%`, p.payload.label]} />
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[10px] uppercase tracking-wide text-ink-secondary">Combined Ratio</span>
-        <span className="font-display text-[26px] leading-none text-navy-deep">{combinedRatio.toFixed(1)}%</span>
-        <span className={`mt-0.5 text-[10.5px] ${combinedRatio < 100 ? toneText.positive : combinedRatio <= 105 ? toneText.warning : toneText.negative}`}>
+        <span className="text-[9.5px] uppercase tracking-wide text-ink-secondary">Combined Ratio</span>
+        <span className="font-display text-[24px] leading-none text-navy-deep">{combinedRatio.toFixed(1)}%</span>
+        <span className={`mt-0.5 text-[10px] ${combinedRatio < 100 ? toneText.positive : combinedRatio <= 105 ? toneText.warning : toneText.negative}`}>
           {combinedRatio < 100 ? 'Underwriting profit' : combinedRatio <= 105 ? 'Watch zone' : 'Loss-making'}
         </span>
       </div>
@@ -270,19 +270,19 @@ function QuarterlyPatBars({ series }: { series: number[] }) {
   const data = QUARTER_LABELS.map((label, i) => ({ label, pat: series[i] }))
   const positive = series[series.length - 1] >= 0
   return (
-    <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} margin={{ top: 8, right: 12, left: -8, bottom: 0 }} barCategoryGap="28%">
+    <ResponsiveContainer width="100%" height={180}>
+      <BarChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="36%">
         <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-        <YAxis tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={44} />
-        <Tooltip contentStyle={{ fontSize: 12 }} formatter={(v: number) => [`₹${v.toLocaleString('en-IN')} Cr`, 'PAT']} cursor={{ fill: 'rgba(39,69,126,0.04)' }} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={38} />
+        <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number) => [`₹${v.toLocaleString('en-IN')} Cr`, 'PAT']} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
         <ReferenceLine y={0} stroke={PALETTE.border} />
-        <Bar dataKey="pat" radius={[6, 6, 0, 0]} maxBarSize={56}>
+        <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={32}>
           {data.map((d, i) => {
             const isLast = i === data.length - 1
             const color = d.pat < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
             const strokeC = d.pat < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
-            return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1.5 : 0.5} />
+            return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1 : 0.4} />
           })}
         </Bar>
       </BarChart>
@@ -292,7 +292,7 @@ function QuarterlyPatBars({ series }: { series: number[] }) {
 
 // 180° gauge — single colored arc whose width represents the current value's
 // position inside [min..max], over a faint full-arc track.
-function SemiGauge({ value, min, max, zones, unit = 'x', size = 220 }: {
+function SemiGauge({ value, min, max, zones, unit = 'x', size = 180 }: {
   value: number
   min: number
   max: number
@@ -308,10 +308,10 @@ function SemiGauge({ value, min, max, zones, unit = 'x', size = 220 }: {
     { name: 'rest', value: 180 - angle },
   ]
   return (
-    <div className="relative w-full" style={{ height: size * 0.62 }}>
+    <div className="relative w-full" style={{ height: size * 0.58 }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          {/* zone backdrop */}
+          {/* zone backdrop — thin tinted arc */}
           <Pie
             data={zones.map((z) => ({ name: z.color, value: ((z.to - z.from) / (max - min)) * 180 }))}
             dataKey="value"
@@ -319,17 +319,17 @@ function SemiGauge({ value, min, max, zones, unit = 'x', size = 220 }: {
             cy="100%"
             startAngle={180}
             endAngle={0}
-            innerRadius="62%"
-            outerRadius="80%"
+            innerRadius="84%"
+            outerRadius="93%"
             stroke="#fff"
-            strokeWidth={1}
+            strokeWidth={0.5}
             isAnimationActive={false}
           >
             {zones.map((z, i) => (
-              <Cell key={i} fill={z.color} fillOpacity={0.22} />
+              <Cell key={i} fill={z.color} fillOpacity={0.18} />
             ))}
           </Pie>
-          {/* value arc */}
+          {/* value arc — even thinner solid marker on top */}
           <Pie
             data={arcData}
             dataKey="value"
@@ -337,18 +337,18 @@ function SemiGauge({ value, min, max, zones, unit = 'x', size = 220 }: {
             cy="100%"
             startAngle={180}
             endAngle={0}
-            innerRadius="82%"
-            outerRadius="98%"
+            innerRadius="94%"
+            outerRadius="100%"
             stroke="none"
             isAnimationActive={false}
           >
             <Cell fill={zones.find((z) => clamped >= z.from && clamped <= z.to)?.color ?? PALETTE.navy} />
-            <Cell fill={PALETTE.border} fillOpacity={0.3} />
+            <Cell fill="transparent" />
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="pointer-events-none absolute inset-x-0 bottom-1 flex flex-col items-center">
-        <span className="font-display text-[26px] leading-none text-navy-deep">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
+        <span className="font-display text-[22px] leading-none text-navy-deep">
           {value.toFixed(unit === 'x' ? 2 : 1)}
           {unit}
         </span>
@@ -364,13 +364,13 @@ function CombinedRatioStrip({ value }: { value: number }) {
   const pct = ((Math.max(min, Math.min(max, value)) - min) / (max - min)) * 100
   return (
     <div>
-      <div className="relative h-3 w-full overflow-hidden rounded-full ring-1 ring-soft-border">
-        <div className="absolute inset-y-0 left-0" style={{ width: `${((100 - min) / (max - min)) * 100}%`, background: PALETTE.emerald, opacity: 0.32 }} />
-        <div className="absolute inset-y-0" style={{ left: `${((100 - min) / (max - min)) * 100}%`, width: `${((105 - 100) / (max - min)) * 100}%`, background: PALETTE.amber, opacity: 0.32 }} />
-        <div className="absolute inset-y-0" style={{ left: `${((105 - min) / (max - min)) * 100}%`, right: 0, background: PALETTE.coral, opacity: 0.32 }} />
-        <div className="absolute inset-y-0" style={{ left: `calc(${pct}% - 1.5px)`, width: 3, background: PALETTE.navyDeep, boxShadow: '0 0 0 2px white' }} />
+      <div className="relative h-1.5 w-full overflow-hidden rounded-full">
+        <div className="absolute inset-y-0 left-0" style={{ width: `${((100 - min) / (max - min)) * 100}%`, background: PALETTE.emerald, opacity: 0.28 }} />
+        <div className="absolute inset-y-0" style={{ left: `${((100 - min) / (max - min)) * 100}%`, width: `${((105 - 100) / (max - min)) * 100}%`, background: PALETTE.amber, opacity: 0.28 }} />
+        <div className="absolute inset-y-0" style={{ left: `${((105 - min) / (max - min)) * 100}%`, right: 0, background: PALETTE.coral, opacity: 0.28 }} />
+        <div className="absolute -top-0.5 bottom-[-2px]" style={{ left: `calc(${pct}% - 1px)`, width: 2, background: PALETTE.navyDeep, boxShadow: '0 0 0 1.5px white' }} />
       </div>
-      <div className="mt-1 flex justify-between text-[9.5px] text-ink-secondary">
+      <div className="mt-1 flex justify-between text-[9px] text-ink-secondary">
         <span>92</span>
         <span>100</span>
         <span>105</span>
@@ -386,16 +386,16 @@ function MiniPatArea({ values }: { values: number[] }) {
   const positive = values[values.length - 1] >= values[0]
   const color = positive ? PALETTE.emerald : PALETTE.coral
   return (
-    <div className="h-[58px] w-full">
+    <div className="h-[42px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+        <AreaChart data={data} margin={{ top: 2, right: 2, bottom: 0, left: 2 }}>
           <defs>
             <linearGradient id="miniPatFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.45} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.32} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={2} fill="url(#miniPatFill)" isAnimationActive={false} />
+          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.4} fill="url(#miniPatFill)" isAnimationActive={false} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
@@ -411,11 +411,11 @@ function MiniSolvencyDial({ value }: { value: number }) {
   const angle = 180 * pct
   const color = value >= 1.8 ? PALETTE.emerald : value >= 1.5 ? PALETTE.amber : PALETTE.coral
   return (
-    <div className="relative h-[68px] w-full">
+    <div className="relative h-[44px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          <Pie data={[{ v: 1 }]} cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="70%" outerRadius="100%" dataKey="v" stroke="none" isAnimationActive={false}>
-            <Cell fill={PALETTE.border} fillOpacity={0.55} />
+          <Pie data={[{ v: 1 }]} cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="86%" outerRadius="100%" dataKey="v" stroke="none" isAnimationActive={false}>
+            <Cell fill={PALETTE.border} fillOpacity={0.45} />
           </Pie>
           <Pie
             data={[{ v: angle }, { v: 180 - angle }]}
@@ -423,7 +423,7 @@ function MiniSolvencyDial({ value }: { value: number }) {
             cy="100%"
             startAngle={180}
             endAngle={0}
-            innerRadius="70%"
+            innerRadius="86%"
             outerRadius="100%"
             dataKey="v"
             stroke="none"
@@ -440,17 +440,17 @@ function MiniSolvencyDial({ value }: { value: number }) {
 
 // One step in the inline Profit Bridge.
 function BridgeStep({ label, value, caption, tone, isLast }: { label: string; value: string; caption: string; tone: Tone; isLast?: boolean }) {
-  const bg = tone === 'positive' ? 'bg-[#EAF3EE]' : tone === 'warning' ? 'bg-[#FBF3E2]' : tone === 'negative' ? 'bg-[#F8ECEC]' : 'bg-soft-blue'
+  const bg = tone === 'positive' ? 'bg-[#F2F8F4]' : tone === 'warning' ? 'bg-[#FDF7E8]' : tone === 'negative' ? 'bg-[#FBF1F1]' : 'bg-soft-blue/70'
   return (
-    <div className={`relative flex min-w-0 flex-1 flex-col gap-1 rounded-lg px-3 py-2.5 ${bg}`}>
-      <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{label}</p>
-      <p className="font-display text-[20px] leading-none text-navy-deep">{value}</p>
+    <div className={`relative flex min-w-0 flex-1 flex-col gap-0.5 rounded-md px-2.5 py-2 ${bg}`}>
+      <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{label}</p>
+      <p className="font-display text-[17px] leading-tight text-navy-deep">{value}</p>
       <div className="flex items-center gap-1.5">
-        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${toneDot[tone]}`} />
-        <span className={`text-[10.5px] leading-tight ${toneText[tone]}`}>{caption}</span>
+        <span className={`h-1 w-1 shrink-0 rounded-full ${toneDot[tone]}`} />
+        <span className={`text-[10px] leading-tight ${toneText[tone]}`}>{caption}</span>
       </div>
       {!isLast && (
-        <span aria-hidden className="absolute -right-2 top-1/2 hidden h-3 w-3 -translate-y-1/2 rotate-45 border-r border-t border-white bg-inherit sm:block" />
+        <span aria-hidden className="absolute -right-1.5 top-1/2 hidden h-2 w-2 -translate-y-1/2 rotate-45 border-r border-t border-white bg-inherit sm:block" />
       )}
     </div>
   )
@@ -527,58 +527,58 @@ export function ProfitabilityCapital() {
   ]
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* ─── HERO — gradient strip, verdict, chips, PAT mini-trend ─── */}
-      <section className="card-surface relative overflow-hidden p-5">
-        <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
+      <section className="card-surface relative overflow-hidden p-4">
+        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-60"
           style={{
             background: `radial-gradient(circle at 80% 30%, ${PALETTE.champagneSoft} 0%, transparent 60%), radial-gradient(circle at 60% 80%, ${PALETTE.softBlue} 0%, transparent 60%)`,
           }}
         />
-        <div className="relative flex flex-wrap items-center gap-x-6 gap-y-4 pl-2.5">
-          <div className="min-w-[260px] flex-1">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-3 w-3 text-champagne" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Verdict</span>
+        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-3 pl-2">
+          <div className="min-w-[240px] flex-1">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-2.5 w-2.5 text-champagne" />
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Verdict</span>
             </div>
-            <div className="mt-1 flex flex-wrap items-center gap-2.5">
-              <h2 className="font-display text-[22px] leading-tight text-navy-deep">{verdictHeadline}</h2>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-[19px] leading-tight text-navy-deep">{verdictHeadline}</h2>
               <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
             </div>
-            <p className="mt-1.5 max-w-2xl text-[12.5px] leading-relaxed text-ink-secondary">{verdictSummary}</p>
+            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{verdictSummary}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {heroChips.map((c) => (
               <div
                 key={c.label}
-                className="rounded-lg border border-soft-border bg-white/80 px-3 py-1.5 shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+                className="rounded-md border border-soft-border bg-white/80 px-2.5 py-1 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5"
               >
-                <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{c.label}</p>
+                <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{c.label}</p>
                 <div className="mt-0.5 flex items-baseline gap-1.5">
-                  <span className="font-display text-[17px] leading-none text-navy-deep">{c.value}</span>
-                  <span className={`h-1.5 w-1.5 rounded-full ${toneDot[c.tone]}`} />
+                  <span className="font-display text-[15px] leading-none text-navy-deep">{c.value}</span>
+                  <span className={`h-1 w-1 rounded-full ${toneDot[c.tone]}`} />
                 </div>
               </div>
             ))}
           </div>
 
           {hasTrend && (
-            <div className="flex items-center gap-3 rounded-lg border border-soft-border bg-white/80 px-3 py-2 shadow-soft">
+            <div className="flex items-center gap-2.5 rounded-md border border-soft-border bg-white/80 px-2.5 py-1.5">
               <div>
-                <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT · Q4 FY25</p>
+                <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">PAT · Q4 FY25</p>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-display text-[17px] leading-none text-navy-deep">₹{patSeries[3]} Cr</span>
+                  <span className="font-display text-[15px] leading-none text-navy-deep">₹{patSeries[3]} Cr</span>
                   {mm.yoyImprovement >= 0 ? (
-                    <span className="flex items-center gap-0.5 text-[10px] text-signal-positive">
-                      <TrendingUp className="h-3 w-3" />
+                    <span className="flex items-center gap-0.5 text-[9.5px] text-signal-positive">
+                      <TrendingUp className="h-2.5 w-2.5" />
                       {mm.yoyImprovement.toFixed(0)}%
                     </span>
                   ) : (
-                    <span className="flex items-center gap-0.5 text-[10px] text-signal-negative">
-                      <TrendingDown className="h-3 w-3" />
+                    <span className="flex items-center gap-0.5 text-[9.5px] text-signal-negative">
+                      <TrendingDown className="h-2.5 w-2.5" />
                       {mm.yoyImprovement.toFixed(0)}%
                     </span>
                   )}
@@ -588,8 +588,8 @@ export function ProfitabilityCapital() {
             </div>
           )}
         </div>
-        <div className="relative mt-3 flex justify-end pl-2.5">
-          <span className="text-[10px] text-ink-secondary">Source · Company filing + IRDAI disclosures · FY25</span>
+        <div className="relative mt-2 flex justify-end pl-2">
+          <span className="text-[9.5px] text-ink-secondary">Source · Company filing + IRDAI disclosures · FY25</span>
         </div>
       </section>
 
@@ -608,20 +608,22 @@ export function ProfitabilityCapital() {
           />
         }
         insight={
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5">
             {/* Underwriting Pulse */}
             <div
-              className="relative overflow-hidden rounded-xl border border-[#CDE6D7] p-3.5"
-              style={{ background: `linear-gradient(135deg, #F0F7F3 0%, #E1F2F1 100%)` }}
+              className="relative overflow-hidden rounded-lg border border-[#D9EBE0] px-3 py-2.5"
+              style={{ background: `linear-gradient(135deg, #F4F9F6 0%, #EAF4F1 100%)` }}
             >
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700/80">Underwriting Pulse</p>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/80">Underwriting Pulse</p>
                 <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
               </div>
-              <p className="mt-1.5 font-display text-[22px] leading-none text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}</p>
-              <p className="text-[10.5px] text-ink-secondary">Combined ratio · FY25</p>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="font-display text-[19px] leading-none text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}</span>
+                <span className="text-[9.5px] text-ink-secondary">Combined ratio · FY25</span>
+              </div>
               {hasCR && (
-                <div className="mt-2.5">
+                <div className="mt-2">
                   <CombinedRatioStrip value={company.combinedRatio} />
                 </div>
               )}
@@ -629,25 +631,25 @@ export function ProfitabilityCapital() {
 
             {/* Profit Velocity */}
             <div
-              className="relative overflow-hidden rounded-xl border border-soft-border p-3.5"
+              className="relative overflow-hidden rounded-lg border border-soft-border px-3 py-2.5"
               style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, #FFFFFF 100%)` }}
             >
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-primary">Profit Velocity</p>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">Profit Velocity</p>
                 <SignalBadge
                   label={netMarginTone === 'positive' ? 'Healthy' : netMarginTone === 'warning' ? 'Thin' : netMarginTone === 'neutral' ? 'Pending' : 'Loss'}
                   tone={netMarginTone === 'neutral' ? 'navy' : netMarginTone}
                   size="sm"
                 />
               </div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="font-display text-[22px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}</span>
-                <span className="text-[10.5px] text-ink-secondary">net margin · TTM</span>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="font-display text-[19px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}</span>
+                <span className="text-[9.5px] text-ink-secondary">net margin · TTM</span>
               </div>
               {hasTrend && (
                 <>
-                  <div className="mt-2"><MiniPatArea values={patSeries} /></div>
-                  <p className={`mt-1 text-[10.5px] ${mm.yoyImprovement >= 0 ? toneText.positive : toneText.negative}`}>
+                  <div className="mt-1.5"><MiniPatArea values={patSeries} /></div>
+                  <p className={`mt-0.5 text-[9.5px] ${mm.yoyImprovement >= 0 ? toneText.positive : toneText.negative}`}>
                     PAT {mm.yoyImprovement >= 0 ? '+' : ''}
                     {mm.yoyImprovement.toFixed(1)}% vs prior 3Q avg
                   </p>
@@ -657,22 +659,22 @@ export function ProfitabilityCapital() {
 
             {/* Capital Buffer */}
             <div
-              className="relative overflow-hidden rounded-xl border border-[#F0E1BE] p-3.5"
+              className="relative overflow-hidden rounded-lg border border-[#EFE2C2] px-3 py-2.5"
               style={{ background: `linear-gradient(135deg, ${PALETTE.champagneSoft} 0%, #FFFBF1 100%)` }}
             >
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Capital Buffer</p>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Capital Buffer</p>
                 <SignalBadge
                   label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'}
                   tone={solvencyTone}
                   size="sm"
                 />
               </div>
-              <div className="mt-1.5 flex items-baseline gap-2">
-                <span className="font-display text-[22px] leading-none text-navy-deep">{company.solvency.toFixed(2)}x</span>
-                <span className="text-[10.5px] text-ink-secondary">vs 1.5x floor</span>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className="font-display text-[19px] leading-none text-navy-deep">{company.solvency.toFixed(2)}x</span>
+                <span className="text-[9.5px] text-ink-secondary">vs 1.5x floor</span>
               </div>
-              <div className="mt-1.5"><MiniSolvencyDial value={company.solvency} /></div>
+              <div className="mt-1"><MiniSolvencyDial value={company.solvency} /></div>
             </div>
           </div>
         }
@@ -682,23 +684,23 @@ export function ProfitabilityCapital() {
         {/* ───── Morphing chart per tab ───── */}
         {view === 'P&L' && (
           <div className="space-y-4">
-            <div className="rounded-xl2 border border-soft-border bg-white p-5">
-              <div className="mb-3 flex items-baseline justify-between">
+            <div className="rounded-xl border border-soft-border bg-white p-4">
+              <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Premium Funnel</p>
-                  <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">Where every rupee of premium goes</h3>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium Funnel</p>
+                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Where every rupee of premium goes</h3>
                 </div>
-                <span className="text-[10.5px] text-ink-secondary">FY25</span>
+                <span className="text-[9.5px] text-ink-secondary">FY25</span>
               </div>
               {cost ? <PremiumFunnel loss={cost.loss} commission={cost.commission} expense={cost.expense} hasCR={hasCR} /> : <PremiumFunnel loss={0} commission={0} expense={0} hasCR={false} />}
             </div>
-            <div className="rounded-xl2 border border-soft-border bg-white p-5">
-              <div className="mb-3 flex items-baseline justify-between">
+            <div className="rounded-xl border border-soft-border bg-white p-4">
+              <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Profit Bridge</p>
-                  <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">From growth to capital strength</h3>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profit Bridge</p>
+                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">From growth to capital strength</h3>
                 </div>
-                <span className="text-[10.5px] text-ink-secondary">FY25 · TTM</span>
+                <span className="text-[9.5px] text-ink-secondary">FY25 · TTM</span>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                 <BridgeStep label="GWP Growth" value={`${company.growth.toFixed(0)}%`} caption="Growth engine" tone={growthTone} />
@@ -722,27 +724,27 @@ export function ProfitabilityCapital() {
         )}
 
         {view === 'Margin' && (
-          <div className="rounded-xl2 border border-soft-border bg-white p-5">
-            <div className="mb-3 flex items-baseline justify-between">
+          <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="mb-2.5 flex items-baseline justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
-                <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">Combined ratio trajectory · Q1–Q4 FY25</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
+                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Combined ratio trajectory · Q1–Q4 FY25</h3>
               </div>
               <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
             </div>
             {hasCR && crSeries ? (
               <>
                 <CombinedRatioBandedTrend series={crSeries} />
-                <div className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-                  <div className="rounded-md bg-[#EAF3EE] px-2.5 py-1.5">
+                <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10.5px]">
+                  <div className="rounded bg-[#EAF3EE] px-2 py-1">
                     <span className="font-semibold text-signal-positive">&lt;100</span>
                     <span className="ml-1 text-ink-secondary">strong</span>
                   </div>
-                  <div className="rounded-md bg-[#FBF3E2] px-2.5 py-1.5">
+                  <div className="rounded bg-[#FBF3E2] px-2 py-1">
                     <span className="font-semibold text-signal-warning">100–105</span>
                     <span className="ml-1 text-ink-secondary">watch</span>
                   </div>
-                  <div className="rounded-md bg-[#F8ECEC] px-2.5 py-1.5">
+                  <div className="rounded bg-[#F8ECEC] px-2 py-1">
                     <span className="font-semibold text-signal-negative">&gt;105</span>
                     <span className="ml-1 text-ink-secondary">weak</span>
                   </div>
@@ -755,18 +757,18 @@ export function ProfitabilityCapital() {
         )}
 
         {view === 'Cost' && (
-          <div className="rounded-xl2 border border-soft-border bg-white p-5">
-            <div className="mb-3 flex items-baseline justify-between">
+          <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="mb-2.5 flex items-baseline justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
-                <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
+                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
               </div>
-              <span className="text-[10.5px] text-ink-secondary">FY25 mock</span>
+              <span className="text-[9.5px] text-ink-secondary">FY25 mock</span>
             </div>
             {cost ? (
               <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1fr]">
                 <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {[
                     { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
                     { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
@@ -774,50 +776,50 @@ export function ProfitabilityCapital() {
                   ].map((r) => (
                     <div key={r.label}>
                       <div className="flex items-baseline justify-between">
-                        <span className="inline-flex items-center gap-2 text-[12px] text-navy-deep">
-                          <span className="h-2 w-2 rounded-sm" style={{ background: r.color }} />
+                        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep">
+                          <span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />
                           {r.label}
                         </span>
-                        <span className="font-display text-[15px] text-navy-deep">{r.value.toFixed(1)}%</span>
+                        <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
                       </div>
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-ice">
+                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-ice">
                         <div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} />
                       </div>
-                      <p className="mt-0.5 text-[10.5px] text-ink-secondary">{r.note}</p>
+                      <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="text-[12px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
+              <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
             )}
           </div>
         )}
 
         {view === 'Returns' && (
-          <div className="rounded-xl2 border border-soft-border bg-white p-5">
-            <div className="mb-3 flex items-baseline justify-between">
+          <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="mb-2.5 flex items-baseline justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
-                <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
+                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
               </div>
-              <span className="text-[10.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
+              <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
             </div>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.6fr_1fr]">
               {hasTrend ? (
                 <QuarterlyPatBars series={patSeries} />
               ) : (
-                <div className="flex h-[220px] items-center justify-center rounded-md border border-dashed border-soft-border bg-ice/60 text-[12px] text-ink-secondary">
+                <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-soft-border bg-ice/60 text-[11.5px] text-ink-secondary">
                   Quarterly PAT pending for {company.shortName}
                 </div>
               )}
               <div
-                className="relative overflow-hidden rounded-xl p-4"
+                className="relative overflow-hidden rounded-lg p-3.5"
                 style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, ${PALETTE.champagneSoft} 100%)` }}
               >
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · FY25</p>
-                <p className="mt-1 font-display text-[34px] leading-none text-navy-deep">{company.roe.toFixed(1)}%</p>
-                <p className={`mt-1 text-[11px] ${toneText[roeTone]}`}>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · FY25</p>
+                <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{company.roe.toFixed(1)}%</p>
+                <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
                   {roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
                 </p>
                 <SemiGauge
@@ -830,7 +832,7 @@ export function ProfitabilityCapital() {
                     { from: 5, to: 12, color: PALETTE.amber },
                     { from: 12, to: 22, color: PALETTE.emerald },
                   ]}
-                  size={180}
+                  size={150}
                 />
               </div>
             </div>
@@ -838,11 +840,11 @@ export function ProfitabilityCapital() {
         )}
 
         {view === 'Capital' && (
-          <div className="rounded-xl2 border border-soft-border bg-white p-5">
-            <div className="mb-3 flex items-baseline justify-between">
+          <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="mb-2.5 flex items-baseline justify-between">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Lens</p>
-                <h3 className="mt-0.5 font-display text-[16px] text-navy-deep">Solvency vs regulatory comfort zone</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Lens</p>
+                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Solvency vs regulatory comfort zone</h3>
               </div>
               <SignalBadge
                 label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'}
@@ -850,7 +852,7 @@ export function ProfitabilityCapital() {
                 size="sm"
               />
             </div>
-            <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[1fr_1fr]">
               <SemiGauge
                 value={company.solvency}
                 min={1}
@@ -862,20 +864,20 @@ export function ProfitabilityCapital() {
                   { from: 2, to: 3.5, color: PALETTE.emerald },
                 ]}
               />
-              <div className="space-y-2.5 text-[12px]">
-                <div className="flex items-center justify-between rounded-md bg-[#F8ECEC] px-3 py-2">
+              <div className="space-y-1.5 text-[11.5px]">
+                <div className="flex items-center justify-between rounded bg-[#F8ECEC] px-2.5 py-1.5">
                   <span className="text-navy-deep">Regulatory floor</span>
                   <span className="font-semibold text-signal-negative">1.50x</span>
                 </div>
-                <div className="flex items-center justify-between rounded-md bg-[#FBF3E2] px-3 py-2">
+                <div className="flex items-center justify-between rounded bg-[#FBF3E2] px-2.5 py-1.5">
                   <span className="text-navy-deep">Sector median</span>
                   <span className="font-semibold text-signal-warning">~2.10x</span>
                 </div>
-                <div className="flex items-center justify-between rounded-md bg-[#EAF3EE] px-3 py-2">
+                <div className="flex items-center justify-between rounded bg-[#EAF3EE] px-2.5 py-1.5">
                   <span className="text-navy-deep">{company.shortName}</span>
                   <span className="font-semibold text-signal-positive">{company.solvency.toFixed(2)}x</span>
                 </div>
-                <p className="pt-1 text-[10.5px] text-ink-secondary">
+                <p className="pt-0.5 text-[10px] text-ink-secondary">
                   {company.solvency >= 2 ? `Cushion of ${(company.solvency - 1.5).toFixed(2)}x above the regulatory floor.` : company.solvency >= 1.5 ? 'Above floor but below sector median.' : 'Capital cushion thin — watch quarterly trajectory.'}
                 </p>
               </div>
@@ -888,22 +890,22 @@ export function ProfitabilityCapital() {
 
       {/* ─── SO WHAT — tinted, sharp investor read ─── */}
       <section
-        className="card-surface relative overflow-hidden p-5"
+        className="card-surface relative overflow-hidden p-4"
         style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 110%)` }}
       >
-        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${heroTone} 100%)` }} />
-        <div className="flex flex-wrap items-baseline justify-between gap-2 pl-3">
+        <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${heroTone} 100%)` }} />
+        <div className="flex flex-wrap items-baseline justify-between gap-2 pl-2.5">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
-            <h3 className="mt-0.5 font-display text-[18px] text-navy-deep">So what?</h3>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
+            <h3 className="mt-0 font-display text-[15px] text-navy-deep">So what?</h3>
           </div>
-          <span className="text-[10.5px] text-ink-secondary">FY25 · {company.shortName}</span>
+          <span className="text-[9.5px] text-ink-secondary">FY25 · {company.shortName}</span>
         </div>
-        <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 pl-3 sm:grid-cols-[110px_1fr]">
+        <dl className="mt-2 grid grid-cols-1 gap-x-5 gap-y-1.5 pl-2.5 sm:grid-cols-[100px_1fr]">
           {copy.readLines.map((line, i) => (
             <div key={line.label} className="contents">
-              <dt className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
-              <dd className={`text-[12.5px] leading-relaxed ${i === 1 ? 'font-medium text-navy-deep' : 'text-navy-deep/85'}`}>{line.value}</dd>
+              <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
+              <dd className={`text-[11.5px] leading-relaxed ${i === 1 ? 'font-medium text-navy-deep' : 'text-navy-deep/85'}`}>{line.value}</dd>
             </div>
           ))}
         </dl>
