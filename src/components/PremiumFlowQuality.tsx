@@ -217,9 +217,17 @@ function FlowTooltip({
 }
 
 /**
- * RealFlowChart — minimal annual GWP / NWP / NEP bar chart sourced from
- * src/data/snapshots/insurer-annual-snapshot.json. Only renders bars that
- * have real values; missing series are simply absent (no synthesis).
+ * RealFlowChart — single connected premium-flow visual per year, showing
+ * the GWP → NWP → NEP conversion as one stacked bar. Layer order from
+ * bottom up:
+ *   • NEP (deep steel blue) — premium earned in the period
+ *   • NWP − NEP (rich teal) — premium retained but not yet earned
+ *   • GWP − NWP (muted terracotta) — ceded to reinsurers
+ *
+ * When NWP is missing, the deeper portion shows whichever of NEP / NWP is
+ * known and the top section merges everything above it as a single
+ * terracotta band. No layer is synthesised — segments simply don't appear
+ * when their source value is absent from the snapshot.
  */
 function RealFlowChart({
   rows,
@@ -228,62 +236,108 @@ function RealFlowChart({
   rows: Array<{ fiscal_year: string; gwp: number | null; nwp: number | null; nep: number | null }>
   companyName: string
 }) {
-  const data = rows.map((r) => ({
-    period: r.fiscal_year,
-    gwp: r.gwp ?? 0,
-    nwp: r.nwp ?? 0,
-    nep: r.nep ?? 0,
-  }))
-  const anyNwp = rows.some((r) => typeof r.nwp === 'number')
-  const anyNep = rows.some((r) => typeof r.nep === 'number')
+  const data = rows.map((r) => {
+    const gwp = r.gwp ?? 0
+    const nwp = r.nwp
+    const nep = r.nep
+    let earned = 0
+    let retained = 0
+    let ceded = 0
+    if (nwp != null && nep != null) {
+      earned = nep
+      retained = Math.max(0, nwp - nep)
+      ceded = Math.max(0, gwp - nwp)
+    } else if (nwp != null && nep == null) {
+      // NWP known, NEP missing — show NWP as the deeper section.
+      retained = nwp
+      ceded = Math.max(0, gwp - nwp)
+    } else if (nwp == null && nep != null) {
+      // NEP known, NWP missing — merge ceded + unearned into top band.
+      earned = nep
+      ceded = Math.max(0, gwp - nep)
+    } else {
+      ceded = gwp
+    }
+    return { period: r.fiscal_year, gwp, nwpRaw: nwp, nepRaw: nep, earned, retained, ceded }
+  })
+
+  // Pinned per-stage palette for the financial-flow story.
+  const NEP_FILL = '#4D7EA8'    // deep steel blue — premium earned
+  const NWP_FILL = '#148A87'    // rich teal — retained but unearned
+  const CEDED_FILL = '#D9B4AB'  // muted terracotta — ceded
+
   return (
     <div>
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} margin={{ top: 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="22%" barGap={4}>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={data} margin={{ top: 24, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
           <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
           <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
           <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
           <Tooltip
             cursor={{ fill: 'rgba(39,69,126,0.05)' }}
-            content={({ active, payload, label }) =>
-              active && payload && payload.length ? (
+            content={({ active, payload }) => {
+              if (!active || !payload?.length) return null
+              const row = (payload[0].payload ?? {}) as typeof data[number]
+              const retention = row.gwp > 0 && row.nwpRaw != null ? ((row.nwpRaw / row.gwp) * 100).toFixed(1) : null
+              const earnedRatio =
+                row.nwpRaw != null && row.nwpRaw > 0 && row.nepRaw != null
+                  ? ((row.nepRaw / row.nwpRaw) * 100).toFixed(1)
+                  : row.gwp > 0 && row.nepRaw != null
+                    ? ((row.nepRaw / row.gwp) * 100).toFixed(1)
+                    : null
+              return (
                 <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
-                  <p className="mb-1 text-[11px] font-semibold text-navy-deep">{label}</p>
-                  {payload.map((p) => (
-                    <div key={p.dataKey as string} className="flex items-center justify-between gap-4 text-[11.5px]">
-                      <span className="flex items-center gap-1.5 text-ink-secondary">
-                        <span className="h-2 w-2 rounded-sm" style={{ background: p.color as string }} />
-                        {(p.name as string).toUpperCase()}
-                      </span>
-                      <span className="tabular-nums text-navy-deep">{fmtCr(Number(p.value))}</span>
+                  <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{row.period}</p>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: FOCAL }} />GWP · Written</span>
+                      <span className="tabular-nums text-navy-deep">{fmtCr(row.gwp)}</span>
                     </div>
-                  ))}
+                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: NWP_FILL }} />NWP · Retained</span>
+                      <span className="tabular-nums text-navy-deep">{row.nwpRaw != null ? fmtCr(row.nwpRaw) : '—'}</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: NEP_FILL }} />NEP · Earned</span>
+                      <span className="tabular-nums text-navy-deep">{row.nepRaw != null ? fmtCr(row.nepRaw) : '—'}</span>
+                    </div>
+                  </div>
+                  <div className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
+                    {retention != null && <div>Retention ratio · <span className="font-semibold text-navy-deep">{retention}%</span></div>}
+                    {earnedRatio != null && <div>Earned ratio · <span className="font-semibold text-navy-deep">{earnedRatio}%</span></div>}
+                  </div>
                 </div>
-              ) : null
-            }
+              )
+            }}
           />
-          <Bar dataKey="gwp" name="GWP" fill={FOCAL} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
-          {anyNwp && (
-            <Bar dataKey="nwp" name="NWP" fill={TEAL} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
-          )}
-          {anyNep && (
-            <Bar dataKey="nep" name="NEP" fill={NEP_BLUE} maxBarSize={36} isAnimationActive={false} radius={[3, 3, 0, 0]} />
-          )}
+          <Bar dataKey="earned" name="NEP" stackId="flow" fill={NEP_FILL} maxBarSize={48} isAnimationActive={false} />
+          <Bar dataKey="retained" name="NWP" stackId="flow" fill={NWP_FILL} maxBarSize={48} isAnimationActive={false} />
+          <Bar dataKey="ceded" name="Ceded" stackId="flow" fill={CEDED_FILL} maxBarSize={48} radius={[3, 3, 0, 0]} isAnimationActive={false}>
+            <LabelList dataKey="gwp" position="top" formatter={(v: number) => compactCr(v)} fill="#172B4D" fontSize={10} fontWeight={700} />
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-2 text-[11.5px] text-ink-secondary">
-        Navy = GWP (gross written). {anyNwp ? 'Teal = NWP (retained after reinsurance). ' : ''}
-        {anyNep ? 'Steel = NEP (earned). ' : ''}
-        {!anyNwp && `NWP / NEP per year for ${companyName} will fill in as ingest-company-disclosures.ts extracts more rows.`}
-      </p>
-      <div className="mt-2 flex justify-end">
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <LegendSwatch color={CEDED_FILL}>Ceded to reinsurers</LegendSwatch>
+        <LegendSwatch color={NWP_FILL}>NWP · Retained</LegendSwatch>
+        <LegendSwatch color={NEP_FILL}>NEP · Earned</LegendSwatch>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <Pill>Basis: GWP / NWP / NEP</Pill>
+        <Pill>Period: {data[0].period}–{data[data.length - 1].period}</Pill>
+        <Pill>Status: Reported / Derived</Pill>
+      </div>
+
+      <div className="mt-3 flex justify-end">
         <SourceTag
           source="Company filing"
           confidence="high"
-          period={`${data[0].period} → ${data[data.length - 1].period}`}
+          period={`${data[0].period}–${data[data.length - 1].period}`}
           provenance={{
-            source_name: `${companyName} annual disclosures — verified per-year GWP`,
-            source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
+            source_name: `${companyName} annual disclosures + live PDF parse — GWP / NWP / NEP per FY`,
+            source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
           }}
         />
       </div>
