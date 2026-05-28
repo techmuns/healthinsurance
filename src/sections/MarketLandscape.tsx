@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Area,
   AreaChart,
@@ -81,10 +82,18 @@ function HeroCard() {
 
       <div className="relative grid items-center gap-6 lg:grid-cols-[1.25fr_1fr]">
         <div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DCC4] bg-[#FBF3E2]/70 px-2.5 py-1">
-            <Sparkles className="h-3 w-3 text-champagne-deep" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
-              Market Engine
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DCC4] bg-[#FBF3E2]/70 px-2.5 py-1">
+              <Sparkles className="h-3 w-3 text-champagne-deep" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
+                Market Engine
+              </span>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#BFE3E1] bg-teal-soft px-2.5 py-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.6)]" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">
+                Structural opportunity
+              </span>
             </span>
           </div>
           <h1 className="mt-3 font-display text-[26px] leading-[1.18] tracking-tight text-navy-deep sm:text-[28px]">
@@ -122,20 +131,48 @@ function KpiPill({
 }) {
   const accent =
     tone === 'teal'
-      ? { bar: '#168E8E', tint: 'bg-teal-soft', text: 'text-teal' }
+      ? {
+          bar: '#168E8E',
+          tint: 'bg-white text-teal ring-1 ring-[#BFE3E1]',
+          text: 'text-teal',
+          bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)',
+          border: '#BFE3E1',
+          glow: 'rgba(22,142,142,0.18)',
+        }
       : tone === 'gold'
-        ? { bar: '#B68B3A', tint: 'bg-champagne-soft', text: 'text-champagne-deep' }
-        : { bar: '#27457E', tint: 'bg-soft-blue', text: 'text-navy-primary' }
+        ? {
+            bar: '#B68B3A',
+            tint: 'bg-white text-champagne-deep ring-1 ring-[#EAD9B6]',
+            text: 'text-champagne-deep',
+            bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)',
+            border: '#EAD9B6',
+            glow: 'rgba(182,139,58,0.20)',
+          }
+        : {
+            bar: '#27457E',
+            tint: 'bg-white text-navy-primary ring-1 ring-[#D6E2FA]',
+            text: 'text-navy-primary',
+            bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)',
+            border: '#D2DEF1',
+            glow: 'rgba(49,90,169,0.20)',
+          }
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-[#E4E8F0] bg-white/85 p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_8px_22px_rgba(23,43,77,0.05)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_30px_rgba(23,43,77,0.08)]">
+    <div
+      className="group relative overflow-hidden rounded-2xl border p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_18px_rgba(23,43,77,0.05)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(23,43,77,0.06),0_14px_30px_rgba(23,43,77,0.10)]"
+      style={{ background: accent.bg, borderColor: accent.border }}
+    >
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: accent.bar }} />
-      <div className="flex items-baseline justify-between pl-2">
+      <span
+        className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full opacity-70 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
+        style={{ background: accent.glow }}
+      />
+      <div className="relative flex items-baseline justify-between pl-2">
         <p className={`font-display text-[22px] leading-none ${accent.text}`}>{value}</p>
-        <span className={`rounded-full ${accent.tint} px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${accent.text}`}>
+        <span className={`rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide shadow-soft ${accent.tint}`}>
           {sub}
         </span>
       </div>
-      <p className="mt-2 pl-2 text-[11.5px] leading-snug text-ink-secondary">{label}</p>
+      <p className="relative mt-2 pl-2 text-[11.5px] leading-snug text-navy-deep/80">{label}</p>
     </div>
   )
 }
@@ -151,7 +188,8 @@ function MainChartBlock() {
 
   // End-of-chart series labels at FY26. Only renders for the last datum;
   // Recharts places (x, y) at the top edge of each stacked band, so we nudge
-  // the text down a few px to seat it inside the band.
+  // the text down a few px to seat it inside the band. Health also gets a
+  // small "Largest growth pool" annotation pin attached above the label.
   const endLabel = (name: 'Health' | 'Motor' | 'Others', color: string, bold: boolean) =>
     (props: any) => {
       const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
@@ -177,6 +215,15 @@ function MainChartBlock() {
           <text x={x + 8} y={y + 24} fill={color} fontSize={10} opacity={0.78}>
             {display}
           </text>
+          {name === 'Health' && (
+            <g transform={`translate(${x + 8}, ${y + 32})`}>
+              <rect width={114} height={14} rx={7} fill="#E1F2F1" stroke="#BFE3E1" />
+              <circle cx={7} cy={7} r={2.5} fill={HEALTH} />
+              <text x={14} y={10.5} fill="#0E6F6D" fontSize={9} fontWeight={700} style={{ letterSpacing: 0.2 }}>
+                LARGEST GROWTH POOL
+              </text>
+            </g>
+          )}
         </g>
       )
     }
@@ -284,7 +331,9 @@ function ChartToggle({ value, onChange }: { value: ChartMode; onChange: (v: Char
             aria-pressed={active}
             className={[
               'rounded-full px-3 py-1 text-[11.5px] font-medium transition-all duration-200',
-              active ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary',
+              active
+                ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]'
+                : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
             ].join(' ')}
           >
             {o}
@@ -384,16 +433,22 @@ function SahiShiftCard() {
 
   return (
     <div className="card-surface p-5">
-      <header className="mb-3 border-b border-[#EEF1F7] pb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-          Inside Health
-        </p>
-        <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
-          Specialist insurers are gaining relevance
-        </h3>
-        <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-          Share of health premium by carrier type · FY18 → FY26
-        </p>
+      <header className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-[#EEF1F7] pb-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
+            Inside Health
+          </p>
+          <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
+            Specialist insurers are gaining relevance
+          </h3>
+          <p className="mt-0.5 text-[11.5px] text-ink-secondary">
+            Share of health premium by carrier type · FY18 → FY26
+          </p>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D6E2FA] bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-navy-primary" />
+          SAHIs gaining share
+        </span>
       </header>
 
       {!gate.ok ? (
@@ -516,8 +571,15 @@ function CompanyBridgeCard() {
         ))}
       </div>
 
-      <div className="relative mt-4 rounded-xl border border-[#E8EBF1] bg-[#FAFBFD] px-3 pb-2 pt-2.5">
-        <div className="mb-1 flex items-baseline justify-between">
+      <div
+        className="relative mt-4 overflow-hidden rounded-xl border border-[#EAD9B6] px-3 pb-2 pt-2.5"
+        style={{ background: 'linear-gradient(135deg, #FBF6EA 0%, #FFFFFF 60%, #F1F8F6 100%)' }}
+      >
+        <span
+          className="pointer-events-none absolute -right-10 -bottom-10 h-24 w-24 rounded-full opacity-50 blur-2xl"
+          style={{ background: 'rgba(182,139,58,0.18)' }}
+        />
+        <div className="relative mb-1 flex items-baseline justify-between">
           <p className="text-[11px] font-semibold text-navy-deep">
             {bridge.miniTitle}
           </p>
@@ -635,33 +697,111 @@ function MetricMini({
   label: string
   tone: 'teal' | 'navy' | 'gold'
 }) {
-  const bar = tone === 'teal' ? '#168E8E' : tone === 'gold' ? '#B68B3A' : '#27457E'
-  const text =
-    tone === 'teal' ? 'text-teal' : tone === 'gold' ? 'text-champagne-deep' : 'text-navy-primary'
+  const meta =
+    tone === 'teal'
+      ? {
+          bar: '#168E8E',
+          text: 'text-teal',
+          bg: 'linear-gradient(135deg, #F4FAF8 0%, #E8F4F1 100%)',
+          border: '#C8E2DD',
+          glow: 'rgba(22,142,142,0.18)',
+        }
+      : tone === 'gold'
+        ? {
+            bar: '#B68B3A',
+            text: 'text-champagne-deep',
+            bg: 'linear-gradient(135deg, #FDF8EC 0%, #F4ECDB 100%)',
+            border: '#EAD9B6',
+            glow: 'rgba(182,139,58,0.20)',
+          }
+        : {
+            bar: '#27457E',
+            text: 'text-navy-primary',
+            bg: 'linear-gradient(135deg, #F4F7FC 0%, #E6EEFA 100%)',
+            border: '#D2DEF1',
+            glow: 'rgba(49,90,169,0.18)',
+          }
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[#E4E8F0] bg-white px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(23,43,77,0.07)]">
-      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: bar }} />
-      <p className={`font-display text-[17px] leading-none ${text}`}>{value}</p>
-      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">{label}</p>
+    <div
+      className="group relative overflow-hidden rounded-xl border px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(23,43,77,0.09)]"
+      style={{ background: meta.bg, borderColor: meta.border }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: meta.bar }} />
+      <span
+        className="pointer-events-none absolute -right-6 -top-6 h-16 w-16 rounded-full opacity-0 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
+        style={{ background: meta.glow }}
+      />
+      <p className={`relative font-display text-[17px] leading-none ${meta.text}`}>{value}</p>
+      <p className="relative mt-1.5 text-[10.5px] leading-snug text-navy-deep/80">{label}</p>
     </div>
   )
 }
 
 // ─── 4. TAKEAWAY STRIP ─────────────────────────────────────────────────────
+// Highlights known thesis tokens inside the takeaway line with semantic colour
+// so the eye lands on the load-bearing words (growth → teal, prestige → gold,
+// company → navy). Tokens are matched case-insensitively in source order so
+// they don't double-wrap if `getCompanyTakeawayLine` rephrases.
+function highlightTakeaway(line: string, companyShortName: string): ReactNode[] {
+  const tokens: { match: RegExp; className: string }[] = [
+    { match: /fastest structural pool/i, className: 'font-semibold text-teal' },
+    { match: /SAHIs gaining share/i, className: 'font-semibold text-navy-primary' },
+    { match: /compounding faster/i, className: 'font-semibold text-champagne-deep' },
+    { match: /structural growth/i, className: 'font-semibold text-teal' },
+    { match: /gaining share/i, className: 'font-semibold text-navy-primary' },
+    { match: new RegExp(companyShortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), className: 'font-semibold text-champagne-deep' },
+  ]
+  const out: ReactNode[] = []
+  let cursor = 0
+  while (cursor < line.length) {
+    let nextMatch: { idx: number; len: number; className: string } | null = null
+    for (const t of tokens) {
+      const slice = line.slice(cursor)
+      const m = slice.match(t.match)
+      if (m && m.index != null) {
+        const absIdx = cursor + m.index
+        if (!nextMatch || absIdx < nextMatch.idx) {
+          nextMatch = { idx: absIdx, len: m[0].length, className: t.className }
+        }
+      }
+    }
+    if (!nextMatch) {
+      out.push(line.slice(cursor))
+      break
+    }
+    if (nextMatch.idx > cursor) out.push(line.slice(cursor, nextMatch.idx))
+    out.push(
+      <span key={`${nextMatch.idx}-${nextMatch.len}`} className={nextMatch.className}>
+        {line.slice(nextMatch.idx, nextMatch.idx + nextMatch.len)}
+      </span>,
+    )
+    cursor = nextMatch.idx + nextMatch.len
+  }
+  return out
+}
+
 function TakeawayStrip() {
   const company = useActiveCompany()
   const line = getCompanyTakeawayLine(company)
+  const parts = highlightTakeaway(line, company.shortName)
   return (
-    <section className="relative overflow-hidden rounded-xl border border-[#D6E5DF] bg-gradient-to-r from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)]">
-      <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-teal to-champagne" />
-      <div className="flex flex-wrap items-center gap-3 pl-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-0.5 ring-1 ring-[#CFE3DA]">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+    <section
+      className="relative overflow-hidden rounded-xl border border-[#EAD9B6] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_8px_18px_rgba(23,43,77,0.05)]"
+      style={{ background: 'linear-gradient(90deg, #F1F8F6 0%, #FAF6EC 55%, #FBF3E2 100%)' }}
+    >
+      <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-teal via-[#7FB99B] to-champagne" />
+      <span
+        className="pointer-events-none absolute -right-12 -bottom-10 h-24 w-24 rounded-full opacity-60 blur-2xl"
+        style={{ background: 'rgba(182,139,58,0.18)' }}
+      />
+      <div className="relative flex flex-wrap items-center gap-3 pl-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 shadow-soft ring-1 ring-[#CFE3DA]">
+          <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.55)]" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-teal">
             Market Read
           </span>
         </span>
-        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{line}</p>
+        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{parts}</p>
         <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} />
       </div>
     </section>
