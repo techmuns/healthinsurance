@@ -17,6 +17,7 @@ import { useFilters } from '@/state/filters'
 import { EmptyState } from './EmptyState'
 import { SourceTag } from './SourceTag'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
+import { distributionEngineMix, DIST_CHANNELS } from '@/lib/distributionEngine'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
@@ -283,6 +284,93 @@ function RealFlowChart({
           provenance={{
             source_name: `${companyName} annual disclosures — verified per-year GWP`,
             source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * RealMixChart — 100% stacked bar of channel mix per period sourced from
+ * distributionEngineMix (Niva Bupa PPT-anchored real values FY19 / FY25 /
+ * 9M FY26). Reads-only, no synthesis.
+ */
+const CHANNEL_COLORS_MIX: Record<string, string> = {
+  Banca: FOCAL,
+  Brokers: TEAL,
+  Agents: NEP_BLUE,
+  'Corporate Agents': GOLD,
+  Direct: GREEN,
+  Others: GREY,
+}
+
+function RealMixChart({
+  rows,
+  companyName,
+}: {
+  rows: Array<{ period: string; Banca: number; Brokers: number; Agents: number; 'Corporate Agents': number; Direct: number; Others: number }>
+  companyName: string
+}) {
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        {DIST_CHANNELS.map((ch) => (
+          <LegendSwatch key={ch} color={CHANNEL_COLORS_MIX[ch] ?? GREY}>
+            {ch}
+          </LegendSwatch>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={264}>
+        <BarChart data={rows} margin={{ top: 6, right: 6, left: 0, bottom: 4 }} barCategoryGap="32%">
+          <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
+          <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
+          <YAxis tickFormatter={(v: number) => `${v}%`} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} domain={[0, 100]} />
+          <Tooltip
+            cursor={{ fill: 'rgba(39,69,126,0.05)' }}
+            content={({ active, payload, label }) =>
+              active && payload && payload.length ? (
+                <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
+                  <p className="mb-1 text-[11px] font-semibold text-navy-deep">{label}</p>
+                  {[...payload].reverse().map((p) => (
+                    <div key={p.dataKey as string} className="flex items-center justify-between gap-4 text-[11.5px]">
+                      <span className="flex items-center gap-1.5 text-ink-secondary">
+                        <span className="h-2 w-2 rounded-sm" style={{ background: p.color as string }} />
+                        {p.name}
+                      </span>
+                      <span className="font-semibold tabular-nums text-navy-deep">{Number(p.value).toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null
+            }
+          />
+          {DIST_CHANNELS.map((ch, idx) => (
+            <Bar
+              key={ch}
+              dataKey={ch}
+              name={ch}
+              stackId="mix"
+              fill={CHANNEL_COLORS_MIX[ch] ?? GREY}
+              maxBarSize={48}
+              isAnimationActive={false}
+              radius={idx === DIST_CHANNELS.length - 1 ? [3, 3, 0, 0] : [0, 0, 0, 0]}
+            />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+      <p className="mt-2 text-[11.5px] text-ink-secondary">
+        Share of GWP by distribution channel for {companyName} — values from the
+        annual report MD&A section.
+      </p>
+      <div className="mt-2 flex justify-end">
+        <SourceTag
+          source="Company filing"
+          confidence="high"
+          period={`${rows[0].period} → ${rows[rows.length - 1].period}`}
+          provenance={{
+            source_name: `${companyName} annual report — channel-mix table`,
+            source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
           }}
         />
       </div>
@@ -698,7 +786,18 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
 
   const company = insurers.find((c) => c.id === focalId) ?? insurers[0]
   const name = company?.shortName ?? 'Company'
-  const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
+  // Derive the period label from the actual snapshot rows we'll render for
+  // this focal company — so "FY22–FY25" appears only if those rows exist.
+  const annualRowsForFocal = (annualSnapshot.data as Array<{ company_id: string; fiscal_year: string; gwp: number | null }>)
+    .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
+    .map((r) => r.fiscal_year)
+    .sort()
+  const periodLabel =
+    period === 'Quarterly'
+      ? 'Last 4 quarters'
+      : annualRowsForFocal.length > 0
+        ? `${annualRowsForFocal[0]}–${annualRowsForFocal[annualRowsForFocal.length - 1]}`
+        : 'Annual'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
   const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Renewal & Stickiness'
   const tabPhrase =
@@ -789,11 +888,24 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
               />
             )
           }
-          if (tab !== 'Flow') {
+          if (tab === 'Mix') {
+            const mixRows = distributionEngineMix[focalId]
+            if (!mixRows || mixRows.length === 0) {
+              return (
+                <EmptyState
+                  title={`Channel mix not yet ingested for ${name}`}
+                  body={`Channel-mix tables from ${name}'s annual report MD&A section will populate this view as ingest-distribution.ts extracts them.`}
+                  height={300}
+                />
+              )
+            }
+            return <RealMixChart rows={mixRows} companyName={name} />
+          }
+          if (tab === 'Retention') {
             return (
               <EmptyState
-                title={`${tab} time-series not yet ingested for ${name}`}
-                body={`${tab} per-${period.toLowerCase()} data needs IRDAI L-forms / NL-forms or monthly business figures. ingest-irdai-monthly.ts and ingest-company-disclosures.ts will populate these on the next scheduled run.`}
+                title={`Retention cohort not yet ingested for ${name}`}
+                body={`Customer renewal cohorts will populate this view as ingest-company-disclosures.ts extracts the renewal-rate tables from each company's annual report.`}
                 height={300}
               />
             )
