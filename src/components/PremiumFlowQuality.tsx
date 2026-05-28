@@ -956,13 +956,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             return <RealMixChart rows={mixRows} companyName={name} />
           }
           if (tab === 'Retention') {
-            return (
-              <EmptyState
-                title={`Retention cohort not yet ingested for ${name}`}
-                body={`Customer renewal cohorts will populate this view as ingest-company-disclosures.ts extracts the renewal-rate tables from each company's annual report.`}
-                height={300}
-              />
-            )
+            return <RetentionView companyId={focalId} period={period} />
           }
           // Flow tab: render from real snapshot annual rows for this company.
           const rows = (annualSnapshot.data as Array<{
