@@ -19,24 +19,52 @@ import * as XLSX from 'xlsx'
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { RAW_ROOT, ensureDir, fileExists, isOfflineMode, writeRaw } from './util'
 
+// Real desktop-Chrome User-Agent so IRDAI / CDN-fronted insurer sites stop
+// returning 403 to the default Node fetch UA. Paired with Accept-Language
+// + Accept headers that mirror a normal browser request.
+const BROWSER_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  Accept:
+    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Cache-Control': 'no-cache',
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 /**
- * Fetch a URL with a browser-ish user-agent. Returns the body as a Buffer
- * (works for binary like PDF / XLSX) and the final URL after redirects.
+ * Fetch a URL with a real browser user-agent + retry/back-off on transient
+ * failures (5xx, 429, network). Returns the body as a Buffer (works for
+ * binary like PDF / XLSX) and the final URL after redirects.
  */
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
-  const res = await fetch(url, {
-    redirect: 'follow',
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (compatible; InsuranceDataIngest/1.0; +https://github.com/techmuns/HealthInsurance)',
-      Accept: '*/*',
-    },
-  })
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} for ${url}`)
+  const maxAttempts = 3
+  let lastErr: unknown = null
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const res = await fetch(url, {
+        redirect: 'follow',
+        headers: BROWSER_HEADERS,
+      })
+      if (res.status >= 500 || res.status === 429) {
+        lastErr = new Error(`HTTP ${res.status} for ${url}`)
+        await sleep(1000 * Math.pow(2, i))
+        continue
+      }
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} for ${url}`)
+      }
+      const ab = await res.arrayBuffer()
+      return { buffer: Buffer.from(ab), finalUrl: res.url }
+    } catch (err) {
+      lastErr = err
+      // Non-HTTP failure (DNS, network): brief back-off then retry.
+      if (i < maxAttempts - 1) await sleep(1000 * Math.pow(2, i))
+    }
   }
-  const ab = await res.arrayBuffer()
-  return { buffer: Buffer.from(ab), finalUrl: res.url }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr))
 }
 
 /** Fetch HTML and return a cheerio root. */

@@ -22,8 +22,8 @@
       "ticker": "NIVABUPA",
       "exchange": "NSE",
       "company_website": "https://www.nivabupa.com",
-      "investor_relations_url": "https://www.nivabupa.com/investor-relations.html",
-      "financial_disclosure_url": "https://www.nivabupa.com/investor-relations/public-disclosures.html",
+      "investor_relations_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "financial_disclosure_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
       "irdai_registration_number": "153",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -39,8 +39,8 @@
       "ticker": "STARHEALTH",
       "exchange": "NSE",
       "company_website": "https://www.starhealth.in",
-      "investor_relations_url": "https://www.starhealth.in/investor-relations",
-      "financial_disclosure_url": "https://www.starhealth.in/disclosures/public-disclosures",
+      "investor_relations_url": "https://www.starhealth.in/investors/financial-information/",
+      "financial_disclosure_url": "https://www.starhealth.in/investors/financial-information/",
       "irdai_registration_number": "129",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -56,8 +56,8 @@
       "ticker": null,
       "exchange": null,
       "company_website": "https://www.careinsurance.com",
-      "investor_relations_url": "https://www.careinsurance.com/about-us/financial-information.html",
-      "financial_disclosure_url": "https://www.careinsurance.com/about-us/public-disclosures.html",
+      "investor_relations_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "financial_disclosure_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
       "irdai_registration_number": "148",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -74,7 +74,7 @@
       "exchange": null,
       "company_website": "https://www.adityabirlacapital.com/healthinsurance/",
       "investor_relations_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
-      "financial_disclosure_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/public-disclosures",
+      "financial_disclosure_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
       "irdai_registration_number": "153",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -90,8 +90,8 @@
       "ticker": null,
       "exchange": null,
       "company_website": "https://www.manipalcigna.com",
-      "investor_relations_url": "https://www.manipalcigna.com/public-disclosures",
-      "financial_disclosure_url": "https://www.manipalcigna.com/public-disclosures",
+      "investor_relations_url": "https://www.manipalcigna.com/disclosures/public-disclosures",
+      "financial_disclosure_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
       "irdai_registration_number": "151",
       "active_status": "active",
       "last_checked_at": "2026-05-28"

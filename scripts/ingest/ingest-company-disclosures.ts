@@ -69,16 +69,28 @@ export const ingestCompanyDisclosures: Fetcher = {
         let filename = `${t.company_id}-${new Date().toISOString().slice(0, 10)}.pdf`
         if (!isOfflineMode()) {
           const $ = await fetchHtml(url)
+          // Broad matcher: any PDF link whose URL or anchor text touches
+          // disclosure / financial / annual / quarterly / results / NL- /
+          // L- form vocabulary. Sorted so latest filename wins.
           const links = findLinks($, url, (href, text) => {
             if (!/\.pdf(\?|$)/i.test(href)) return false
-            const t = `${href} ${text}`.toLowerCase()
-            return /annual\s*report|public\s*disclosure|press\s*release|results/.test(t)
+            const blob = `${href} ${text}`.toLowerCase()
+            return /(annual[\s_\-]*report|public[\s_\-]*disclosure|financial[\s_\-]*disclosure|press[\s_\-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_\-]*\d|^l[\s_\-]*\d|financial[\s_\-]*information|investor[\s_\-]*presentation)/i.test(
+              blob,
+            )
           })
           if (links.length === 0) {
-            warnings.push(`No PDF link found on ${url} for ${t.company_id}`)
-            continue
+            // Last-resort: accept *any* PDF link on the page — better to
+            // pull something parseable than nothing.
+            const anyPdf = findLinks($, url, (href) => /\.pdf(\?|$)/i.test(href))
+            if (anyPdf.length === 0) {
+              warnings.push(`No PDF link found on ${url} for ${t.company_id}`)
+              continue
+            }
+            pdfUrl = anyPdf.sort().reverse()[0]
+          } else {
+            pdfUrl = links.sort().reverse()[0]
           }
-          pdfUrl = links.sort().reverse()[0]
           const last = pdfUrl.split('/').pop() ?? filename
           filename = `${t.company_id}-${last.split('?')[0]}`
         }
