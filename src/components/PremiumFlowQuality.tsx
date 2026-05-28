@@ -243,27 +243,28 @@ function RealFlowChart({
 }) {
   const [stage, setStage] = useState<Stage>('GWP')
 
-  // Each stage carries its plain-English labels: a short toggle pill
-  // ("Written premium"), a tooltip main line phrasing ("Premium written"),
-  // a one-sentence meaning, and the bar colour. No GWP/NWP/NEP abbreviations
-  // surface in user-facing copy — the legend, toggle, footer and tooltip
-  // all read in plain English.
-  const stageMeta: Record<Stage, { label: string; main: string; meaning: string; color: string }> = {
+  // Each stage carries plain-English copy + the official abbreviation so the
+  // chart reads for both first-time users and investors. Toggle pills, the
+  // tooltip main line and the legend all surface as "Written premium · GWP".
+  const stageMeta: Record<Stage, { label: string; abbrev: Stage; main: string; meaning: string; color: string }> = {
     GWP: {
       label: 'Written premium',
-      main: 'Premium written',
+      abbrev: 'GWP',
+      main: 'Written premium',
       meaning: 'Total premium written during the year.',
       color: FOCAL,
     },
     NWP: {
       label: 'Retained premium',
-      main: 'Premium retained',
+      abbrev: 'NWP',
+      main: 'Retained premium',
       meaning: 'Premium kept after reinsurance.',
       color: TEAL,
     },
     NEP: {
       label: 'Earned premium',
-      main: 'Premium earned',
+      abbrev: 'NEP',
+      main: 'Earned premium',
       meaning: 'Premium earned in the period.',
       color: NEP_BLUE,
     },
@@ -422,6 +423,14 @@ function RealFlowChart({
                   }}
                 />
                 {meta.label}
+                <span
+                  className={[
+                    'rounded px-1 py-px text-[9px] font-bold tracking-wider',
+                    isActive ? 'bg-white/15 text-white/90' : 'bg-soft-blue text-navy-primary/80',
+                  ].join(' ')}
+                >
+                  {meta.abbrev}
+                </span>
               </button>
             )
           })}
@@ -476,7 +485,8 @@ function RealFlowChart({
             content={({ active: isActive, payload }) => {
               if (!isActive || !payload?.length) return null
               const row = (payload[0].payload ?? {}) as typeof data[number]
-              const main = stageMeta[stage].main // e.g. "Premium written"
+              const main = stageMeta[stage].main // e.g. "Written premium"
+              const abbrev = stageMeta[stage].abbrev // e.g. "GWP"
               const meaning = stageMeta[stage].meaning // e.g. "Total premium written during the year."
               return (
                 <div className="min-w-[210px] max-w-[260px] overflow-hidden rounded-lg border border-soft-border bg-card shadow-card">
@@ -489,13 +499,17 @@ function RealFlowChart({
                   <div className="space-y-1.5 px-3 py-2">
                     {row.raw == null ? (
                       <p className="text-[11.5px] leading-snug text-ink-secondary">
-                        <span className="font-semibold text-navy-deep">{main}:</span>{' '}
+                        <span className="font-semibold text-navy-deep">
+                          {main} <span className="text-navy-primary/70">({abbrev})</span>:
+                        </span>{' '}
                         <span className="italic">data not available</span>
                       </p>
                     ) : (
                       <>
                         <p className="text-[12px] leading-snug">
-                          <span className="text-navy-deep">{main}:</span>{' '}
+                          <span className="text-navy-deep">
+                            {main} <span className="text-navy-primary/70">({abbrev})</span>:
+                          </span>{' '}
                           <span className="font-semibold tabular-nums text-navy-deep">{fmtCr(row.raw)}</span>
                         </p>
                         {row.yoyPct != null && row.prevPeriod ? (
@@ -523,7 +537,13 @@ function RealFlowChart({
                       </>
                     )}
                     <p className="border-t border-[#EEF1F7] pt-1.5 text-[10.5px] leading-snug text-ink-secondary">
-                      {row.raw == null ? 'Source did not report this for this year.' : meaning}
+                      {row.raw == null ? (
+                        'Source did not report this for this year.'
+                      ) : (
+                        <>
+                          <span className="font-semibold text-navy-deep/80">Meaning:</span> {meaning}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -571,13 +591,15 @@ function RealFlowChart({
       )}
       {stageReported === 1 && (
         <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
-          Limited history · only 1 year of {active.label.toLowerCase()} reported. Written premium has fuller history ({stageCoverage.GWP} of {rows.length} years).
+          Limited history · only 1 year of {active.label.toLowerCase()} ({active.abbrev}) reported. Written premium (GWP) has fuller history ({stageCoverage.GWP} of {rows.length} years).
         </p>
       )}
 
       {/* Single footer row — plain-English legend + basis + source. No duplicates. */}
       <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-soft-border pt-2.5 text-[10.5px] text-ink-secondary">
-        <LegendSwatch color={active.color}>{active.label}</LegendSwatch>
+        <LegendSwatch color={active.color}>
+          {active.label} · <span className="font-bold tracking-wider text-navy-primary/80">{active.abbrev}</span>
+        </LegendSwatch>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-px w-4" style={{ background: 'repeating-linear-gradient(90deg,#B68B3A 0 3px,transparent 3px 6px)' }} />
           Growth vs last year
