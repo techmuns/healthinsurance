@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Bar,
   BarChart,
@@ -10,7 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { MapPin, Sparkles } from 'lucide-react'
+import { Info, MapPin, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
@@ -38,15 +39,27 @@ const DIST_SOURCE = {
   },
 }
 
-// Calm channel palette — focal channels in teal/navy, support channels in
-// muted slate / champagne. Distribution Engine stays line-free and premium.
+// Channel palette tuned for the Distribution story: Brokers = teal (the
+// largest, diversified engine), Agents = strong navy (legacy push channel),
+// Banca = medium blue (institutional partner channel), Corporate Agents =
+// muted gold (premium supporting channel), Direct = cool slate (own book),
+// Others = light grey (catch-all). Colours map to meaning, not arbitrary.
 const CHANNEL_COLORS: Record<DistChannel, string> = {
-  Banca: '#27457E',
   Brokers: '#168E8E',
-  Agents: '#3D5F9F',
+  Agents: '#27457E',
+  Banca: '#4F7BCF',
   'Corporate Agents': '#B68B3A',
   Direct: '#8C97A8',
   Others: '#CCD3DC',
+}
+// Soft per-channel surface tints for chip backgrounds.
+const CHANNEL_TINT: Record<DistChannel, { bg: string; border: string; glow: string }> = {
+  Brokers: { bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)', border: '#BFE3E1', glow: 'rgba(22,142,142,0.18)' },
+  Agents: { bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)', border: '#D2DEF1', glow: 'rgba(39,69,126,0.18)' },
+  Banca: { bg: 'linear-gradient(135deg, #F2F5FC 0%, #EAF0FA 100%)', border: '#D6E2FA', glow: 'rgba(79,123,207,0.16)' },
+  'Corporate Agents': { bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)', border: '#EAD9B6', glow: 'rgba(182,139,58,0.18)' },
+  Direct: { bg: 'linear-gradient(135deg, #F7F8FB 0%, #EEF1F7 100%)', border: '#D6DAE2', glow: 'rgba(110,126,150,0.16)' },
+  Others: { bg: 'linear-gradient(135deg, #F7F8FB 0%, #EEF1F7 100%)', border: '#D6DAE2', glow: 'rgba(140,151,168,0.12)' },
 }
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
@@ -124,22 +137,31 @@ function ChannelChip({
   period?: string
 }) {
   const bar = CHANNEL_COLORS[channel]
+  const tint = CHANNEL_TINT[channel]
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-[#E4E8F0] bg-white/85 p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_8px_22px_rgba(23,43,77,0.05)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_30px_rgba(23,43,77,0.08)]">
+    <div
+      className="group relative overflow-hidden rounded-2xl border p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_18px_rgba(23,43,77,0.05)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(23,43,77,0.06),0_14px_30px_rgba(23,43,77,0.10)]"
+      style={{ background: tint.bg, borderColor: tint.border }}
+    >
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: bar }} />
-      <div className="flex items-baseline justify-between pl-2">
+      <span
+        className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full opacity-70 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
+        style={{ background: tint.glow }}
+      />
+      <div className="relative flex items-baseline justify-between pl-2">
         <p className="font-display text-[22px] leading-none text-navy-deep">
           {share.toFixed(1)}%
         </p>
         {largest && (
-          <span className="rounded-full bg-champagne-soft px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-champagne-deep">
+          <span className="inline-flex items-center gap-1 rounded-full bg-white px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide text-champagne-deep shadow-soft ring-1 ring-[#EAD9B6]">
+            <span className="h-1 w-1 rounded-full bg-champagne shadow-[0_0_4px_rgba(182,139,58,0.7)]" />
             Largest
           </span>
         )}
       </div>
-      <p className="mt-2 pl-2 text-[11.5px] font-medium text-navy-deep">{channel}</p>
+      <p className="relative mt-2 pl-2 text-[11.5px] font-medium text-navy-deep">{channel}</p>
       {period && (
-        <p className="pl-2 text-[10px] uppercase tracking-wide text-ink-secondary">{period}</p>
+        <p className="relative pl-2 text-[10px] uppercase tracking-wide text-ink-secondary">{period}</p>
       )}
     </div>
   )
@@ -174,7 +196,7 @@ function MainChartBlock() {
             How has {company.shortName}'s sourcing engine changed?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Channel mix · share of GWP · {data?.mix.length ? `${data.mix[0].period} → ${data.mix[data.mix.length - 1].period}` : 'no data'} · mock
+            Channel mix · share of GWP · {data?.mix.length ? `${data.mix[0].period} → ${data.mix[data.mix.length - 1].period}` : 'no data'}
           </p>
         </div>
       </header>
@@ -277,15 +299,67 @@ function MixTooltip({
   )
 }
 
+// Highlights distribution-story keywords inline (growth/balance words in
+// teal, concentration/single-channel words in champagne, fall/easing words
+// in muted slate). Matches in source order so phrases never double-wrap.
+function highlightDistRead(text: string): ReactNode[] {
+  const tokens: { match: RegExp; className: string }[] = [
+    { match: /broker share rising/i, className: 'font-semibold text-teal' },
+    { match: /broker share/i, className: 'font-semibold text-teal' },
+    { match: /banca gaining/i, className: 'font-semibold text-navy-primary' },
+    { match: /more balanced/i, className: 'font-semibold text-teal' },
+    { match: /balanced/i, className: 'font-semibold text-teal' },
+    { match: /more concentrated/i, className: 'font-semibold text-champagne-deep' },
+    { match: /single-channel/i, className: 'font-semibold text-champagne-deep' },
+    { match: /agency gaining/i, className: 'font-semibold text-navy-primary' },
+    { match: /agency compressing/i, className: 'font-semibold text-ink-secondary' },
+    { match: /direct rising/i, className: 'font-semibold text-teal' },
+  ]
+  const out: ReactNode[] = []
+  let cursor = 0
+  while (cursor < text.length) {
+    let nextMatch: { idx: number; len: number; className: string } | null = null
+    for (const t of tokens) {
+      const slice = text.slice(cursor)
+      const m = slice.match(t.match)
+      if (m && m.index != null) {
+        const absIdx = cursor + m.index
+        if (!nextMatch || absIdx < nextMatch.idx) {
+          nextMatch = { idx: absIdx, len: m[0].length, className: t.className }
+        }
+      }
+    }
+    if (!nextMatch) {
+      out.push(text.slice(cursor))
+      break
+    }
+    if (nextMatch.idx > cursor) out.push(text.slice(cursor, nextMatch.idx))
+    out.push(
+      <span key={`${nextMatch.idx}-${nextMatch.len}`} className={nextMatch.className}>
+        {text.slice(nextMatch.idx, nextMatch.idx + nextMatch.len)}
+      </span>,
+    )
+    cursor = nextMatch.idx + nextMatch.len
+  }
+  return out
+}
+
 function AiRead({ text }: { text: string }) {
   return (
-    <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-[#E1F2F1] bg-[#F2FAF9] px-3 py-1.5">
-      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal/15 text-teal">
+    <div
+      className="relative mt-3 flex items-center gap-2.5 overflow-hidden rounded-lg border border-[#EAD9B6] px-3 py-2 shadow-soft"
+      style={{ background: 'linear-gradient(135deg, #FBF6EA 0%, #FFFFFF 55%, #F1F8F6 100%)' }}
+    >
+      <span
+        className="pointer-events-none absolute -right-10 -bottom-8 h-20 w-20 rounded-full opacity-60 blur-2xl"
+        style={{ background: 'rgba(182,139,58,0.18)' }}
+      />
+      <span className="relative inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white text-champagne-deep shadow-soft ring-1 ring-[#EAD9B6]">
         <Sparkles className="h-2.5 w-2.5" />
       </span>
-      <p className="text-[12px] leading-snug text-navy-deep">
-        <span className="font-semibold">AI read · </span>
-        {text}
+      <p className="relative text-[12px] leading-snug text-navy-deep">
+        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">AI read</span>{' '}
+        <span className="text-ink-secondary">·</span> {highlightDistRead(text)}
       </p>
     </div>
   )
@@ -312,26 +386,59 @@ function DependenceCard() {
   const otherAvg = others.length
     ? others.reduce((s, r) => s + r.value, 0) / others.length
     : 0
+  // Signal chip — frames the chart's verdict before the eye reads the bar:
+  // Balanced (focal below peer avg), Moderate (within ±4pp), Concentration
+  // risk (focal materially above peer avg).
+  const peerLabel = peerGroup === 'All' ? 'peer' : peerGroup.toLowerCase()
+  const signal: { label: string; tone: 'positive' | 'navy' | 'warning' } = self
+    ? self.value < otherAvg - 4
+      ? { label: 'Balanced', tone: 'positive' }
+      : self.value > otherAvg + 4
+        ? { label: 'Concentration risk', tone: 'warning' }
+        : { label: 'Moderate dependence', tone: 'navy' }
+    : { label: 'Pending', tone: 'navy' }
+  const signalClass =
+    signal.tone === 'positive'
+      ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
+      : signal.tone === 'warning'
+        ? 'bg-champagne-soft text-champagne-deep ring-[#EAD9B6]'
+        : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
+  const insightTint =
+    signal.tone === 'positive'
+      ? 'border-[#BFE3E1] bg-[#F1F8F6]'
+      : signal.tone === 'warning'
+        ? 'border-[#EAD9B6] bg-[#FBF6EA]'
+        : 'border-[#D6E2FA] bg-[#F2F5FC]'
   const dependenceLine = self
     ? self.value < otherAvg - 4
-      ? `${company.shortName} is materially less agency-heavy than its ${peerGroup === 'All' ? 'peer' : peerGroup.toLowerCase()} peers — reducing single-channel dependence.`
+      ? `${company.shortName} is materially less agency-heavy than its ${peerLabel} peers — reducing single-channel dependence.`
       : self.value > otherAvg + 4
-        ? `${company.shortName} is more agency-reliant than its ${peerGroup === 'All' ? 'peer' : peerGroup.toLowerCase()} peers — single-channel risk to watch.`
-        : `${company.shortName}'s agency dependence sits close to the ${peerGroup === 'All' ? 'peer' : peerGroup.toLowerCase()} median.`
+        ? `${company.shortName} is more agency-reliant than its ${peerLabel} peers — single-channel risk to watch.`
+        : `${company.shortName}'s agency dependence sits close to the ${peerLabel} median.`
     : `Agency share not wired for ${company.shortName}.`
 
   return (
     <div className="card-surface p-5">
-      <header className="mb-3 border-b border-[#EEF1F7] pb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-          Channel Dependence
-        </p>
-        <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
-          Is growth dependent on one channel?
-        </h3>
-        <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-          Agent share by peer · latest period · mock
-        </p>
+      <header className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-[#EEF1F7] pb-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
+            Channel Dependence
+          </p>
+          <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
+            Is growth dependent on one channel?
+          </h3>
+          <p className="mt-0.5 text-[11.5px] text-ink-secondary">
+            Agent share by peer · latest period
+          </p>
+        </div>
+        <span
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold shadow-soft ring-1 ${signalClass}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${signal.tone === 'positive' ? 'bg-teal' : signal.tone === 'warning' ? 'bg-champagne' : 'bg-navy-primary'}`}
+          />
+          {signal.label}
+        </span>
       </header>
 
       {!gate.ok ? (
@@ -384,9 +491,14 @@ function DependenceCard() {
                   ) : null
                 }
               />
-              <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={22}>
+              <Bar dataKey="value" radius={[3, 5, 5, 3]} maxBarSize={22}>
                 {rows.map((r, i) => (
-                  <Cell key={i} fill={r.focal ? '#27457E' : '#A9BFE0'} />
+                  <Cell
+                    key={i}
+                    fill={r.focal ? '#27457E' : '#A9BFE0'}
+                    stroke={r.focal ? '#1B3260' : undefined}
+                    strokeWidth={r.focal ? 1 : 0}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -395,7 +507,10 @@ function DependenceCard() {
       )}
 
       {rows.length > 0 && (
-        <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">{dependenceLine}</p>
+        <div className={`mt-3 flex items-start gap-2 rounded-md border px-2.5 py-2 text-[11.5px] leading-snug text-navy-deep ${insightTint}`}>
+          <Info className={`mt-px h-3.5 w-3.5 shrink-0 ${signal.tone === 'positive' ? 'text-teal' : signal.tone === 'warning' ? 'text-champagne-deep' : 'text-navy-primary'}`} />
+          <span>{dependenceLine}</span>
+        </div>
       )}
       <div className="mt-3 flex justify-end">
         <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
@@ -437,8 +552,8 @@ function ReachDepthCard() {
                 className={[
                   'rounded-full px-2.5 py-1 text-[10.5px] font-medium transition-all duration-200',
                   active
-                    ? 'bg-navy-primary text-white shadow-soft'
-                    : 'text-ink-secondary hover:text-navy-primary',
+                    ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]'
+                    : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
                 ].join(' ')}
               >
                 {t}
@@ -452,7 +567,13 @@ function ReachDepthCard() {
         <ReachUnavailableState companyName={company.shortName} tab={tab} />
       ) : null /* Wire chart bodies here once region/tier/avg data is sourced. */}
       <div className="mt-3 flex justify-end">
-        <SourceTag source="Unavailable" provenance={{ source_name: 'Reach-depth (region / tier / city) not disclosed by Indian insurers — schema reserved.' }} />
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full bg-ice/70 px-2 py-0.5 text-[10px] text-ink-secondary ring-1 ring-soft-border"
+          title="Reach-depth (region / tier / city) not disclosed by Indian insurers — schema reserved."
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[#94A3B8]" />
+          Reserved schema · ingest pending
+        </span>
       </div>
     </div>
   )
@@ -467,18 +588,25 @@ function ReachUnavailableState({ companyName, tab }: { companyName: string; tab:
         : 'average premium by region or tier'
   return (
     <div
-      className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-6 text-center"
-      style={{ height: 196 }}
+      className="relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-[#D6E2FA] px-6 text-center"
+      style={{ height: 196, background: 'linear-gradient(135deg, #F7FAFD 0%, #EEF4FF 100%)' }}
     >
-      <span className="blob-c mb-3 inline-flex h-11 w-11 items-center justify-center bg-soft-blue text-navy-primary">
+      <span
+        className="pointer-events-none absolute -right-12 -top-10 h-28 w-28 rounded-full opacity-60 blur-2xl"
+        style={{ background: 'rgba(49,90,169,0.14)' }}
+      />
+      <span className="relative blob-c mb-2.5 inline-flex h-11 w-11 items-center justify-center bg-white text-navy-primary shadow-soft ring-1 ring-[#D6E2FA]">
         <MapPin className="h-5 w-5" />
       </span>
-      <p className="text-[13px] font-semibold text-navy-deep">
-        Reach-depth data unavailable
+      <p className="relative text-[12.5px] font-semibold text-navy-deep">
+        Region / tier data not yet ingested
       </p>
-      <p className="mt-1 max-w-sm text-[11.5px] leading-relaxed text-ink-secondary">
-        {tabHint} for {companyName} are not in the current dataset. Add
-        source-backed region / tier data to activate this view.
+      <p className="relative mt-1 max-w-sm text-[11px] leading-relaxed text-ink-secondary">
+        This view will activate once source-backed {tabHint} for {companyName} land in the dataset.
+      </p>
+      <p className="relative mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-2 py-0.5 text-[10px] text-ink-secondary ring-1 ring-[#D6E2FA]">
+        <Info className="h-2.5 w-2.5 text-navy-primary" />
+        Why it matters · reach depth shows whether growth is broad-based or concentrated.
       </p>
     </div>
   )
@@ -532,7 +660,7 @@ function TakeawayStrip() {
             Distribution Read
           </span>
         </span>
-        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{takeaway.text}</p>
+        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{highlightDistRead(takeaway.text)}</p>
         <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
       </div>
     </section>
