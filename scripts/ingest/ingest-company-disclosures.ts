@@ -147,7 +147,7 @@ export const ingestCompanyDisclosures: Fetcher = {
 // PDF filenames / anchor text that we definitely do NOT want (these are
 // statutory company-secretarial filings, brochures, policy wording etc. —
 // not financial disclosures).
-const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms)/i
+const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms|agent[\s\-_]*code|charter|appointment|sec[\s\-_]*201|composite[\s\-_]*scheme|cession)/i
 
 // Strong-signal financial / disclosure terms — preferred over anything else.
 const ALLOW_PDF = /(annual[\s_\-]*report|public[\s_\-]*disclosure|financial[\s_\-]*disclosure|press[\s_\-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_\-]*\d|^l[\s_\-]*\d|financial[\s_\-]*information|investor[\s_\-]*presentation|earnings)/i
@@ -239,15 +239,22 @@ function inferFY(filename: string, text: string): string {
  */
 function sanitiseExtracted(raw: Record<string, number | null>): Record<string, number | null> {
   const out: Record<string, number | null> = { ...raw }
-  // GWP / NWP / NEP / PAT: bounded between 1 and 200,000 Cr per insurer.
+  // GWP / NWP / NEP / PAT: bounded between 1 and 100,000 Cr per insurer
+  // (largest Indian insurer ~SBI Life with GWP ~₹85k Cr; +20% headroom).
   for (const k of ['gwp', 'nwp', 'nep', 'pat'] as const) {
     const v = out[k]
     if (v == null) continue
-    if (v < 1 || v > 200000) out[k] = null
+    if (v < 1 || v > 100000) out[k] = null
   }
-  // NWP ≤ GWP, NEP ≤ NWP. If violated, null the smaller / dependent value.
+  // PAT is much smaller — clamp at 20k Cr.
+  if (typeof out.pat === 'number' && Math.abs(out.pat) > 20000) out.pat = null
+  // NWP ≤ GWP, NEP ≤ NWP. If violated, null the dependent value.
   if (typeof out.gwp === 'number' && typeof out.nwp === 'number' && out.nwp > out.gwp * 1.1) out.nwp = null
   if (typeof out.nwp === 'number' && typeof out.nep === 'number' && out.nep > out.nwp * 1.1) out.nep = null
+  // If GWP itself is missing but NEP is huge, NEP is almost certainly a
+  // misread of an industry total — drop it.
+  if (out.gwp == null && typeof out.nep === 'number' && out.nep > 50000) out.nep = null
+  if (out.gwp == null && typeof out.nwp === 'number' && out.nwp > 50000) out.nwp = null
   // Combined ratio: ratio expressed as decimal (e.g. 1.15) → convert to %.
   if (typeof out.combined_ratio === 'number') {
     if (out.combined_ratio > 0 && out.combined_ratio < 5) out.combined_ratio = out.combined_ratio * 100
