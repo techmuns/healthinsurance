@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-05-28T12:31:57.128Z",
-  "last_failed_run": "2026-05-28T12:31:57.128Z",
+  "last_successful_run": "2026-05-28T12:35:56.297Z",
+  "last_failed_run": "2026-05-28T12:35:56.297Z",
   "sources_checked": 3,
   "sources_success": 1,
   "sources_failed": 1,
@@ -63,6 +63,7 @@
   ],
   "parser_warnings": [
     "[company_disclosures_batch] No financial PDF link found on https://www.starhealth.in/investors/financial-information/ (or sub-pages) for star-health",
+    "[company_disclosures_batch] aditya-birla: parsed 1191 chars from aditya-birla-complain-form.pdf but no patterns matched plausibility rules.",
     "[company_disclosures_batch] No financial PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures (or sub-pages) for manipalcigna",
     "[ownership_quarterly] Live parser not yet implemented."
   ],
@@ -79,7 +80,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T12:30:02.497Z",
+      "last_attempt_at": "2026-05-28T12:35:16.502Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -185,9 +186,9 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-28T12:30:05.762Z",
-      "last_success_at": "2026-05-28T12:30:05.762Z",
-      "records_fetched": 3
+      "last_attempt_at": "2026-05-28T12:35:19.619Z",
+      "last_success_at": "2026-05-28T12:35:19.619Z",
+      "records_fetched": 2
     },
     {
       "source_id": "distribution_extract",
@@ -199,7 +200,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-28T12:31:57.108Z",
+      "last_attempt_at": "2026-05-28T12:35:56.280Z",
       "last_success_at": null,
       "records_fetched": 0
     },
