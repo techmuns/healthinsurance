@@ -14,6 +14,13 @@ on:
     - cron: '0 5 8-14 2,5,8,11 1'
     # Annual — first Monday of December at 06:00 UTC.
     - cron: '0 6 1-7 12 1'
+  # Auto-trigger on changes to the ingest pipeline itself, so updates to a
+  # fetcher / workflow get exercised against live sources immediately.
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/ingest/**'
+      - '.github/workflows/insurance-data-ingest.yml'
   workflow_dispatch:
     inputs:
       cadence:
