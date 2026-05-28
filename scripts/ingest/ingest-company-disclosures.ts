@@ -26,6 +26,13 @@ interface CompanyMaster {
     company_id: string
     investor_relations_url: string | null
     financial_disclosure_url: string | null
+    /**
+     * Direct PDF URLs to try before falling back to the landing-page HTML
+     * walk. Required for IR pages that load PDF lists via JavaScript (Star
+     * Health, ManipalCigna, etc.) where there are no anchor tags to scrape.
+     * Tried in order; first one that downloads to a plausible PDF wins.
+     */
+    pdf_hints?: string[]
   }>
 }
 
@@ -68,7 +75,20 @@ export const ingestCompanyDisclosures: Fetcher = {
         let pdfUrl: string | null = null
         let filename = `${t.company_id}-${new Date().toISOString().slice(0, 10)}.pdf`
         if (!isOfflineMode()) {
-          pdfUrl = await discoverDisclosurePdf(url, t.company_id, 0)
+          // 1. Try direct PDF hints first — most reliable for JS-rendered IR
+          //    pages (Star Health, ManipalCigna, etc.). We only check that
+          //    the URL ends in .pdf; the subsequent fetch + plausibility-rule
+          //    extraction will reject the row if the body is garbage.
+          for (const hint of t.pdf_hints ?? []) {
+            if (/\.pdf(\?|$)/i.test(hint) && !DENY_PDF.test(hint.split('/').pop() ?? hint)) {
+              pdfUrl = hint
+              break
+            }
+          }
+          // 2. Fall back to the HTML walk if no hint resolved.
+          if (!pdfUrl) {
+            pdfUrl = await discoverDisclosurePdf(url, t.company_id, 0)
+          }
           if (!pdfUrl) {
             warnings.push(`No financial PDF link found on ${url} (or sub-pages) for ${t.company_id}`)
             continue
@@ -171,7 +191,7 @@ export const ingestCompanyDisclosures: Fetcher = {
 // PDF filenames / anchor text that we definitely do NOT want (these are
 // statutory company-secretarial filings, brochures, policy wording etc. —
 // not financial disclosures).
-const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms|agent[\s\-_]*code|charter|appointment|sec[\s\-_]*201|composite[\s\-_]*scheme|cession)/i
+const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|complain[\s\-_]*(form|t)|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms|agent[\s\-_]*code|charter|appointment|sec[\s\-_]*201|composite[\s\-_]*scheme|cession)/i
 
 // Strong-signal financial / disclosure terms — preferred over anything else.
 const ALLOW_PDF = /(annual[\s_\-]*report|public[\s_\-]*disclosure|financial[\s_\-]*disclosure|press[\s_\-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_\-]*\d|^l[\s_\-]*\d|financial[\s_\-]*information|investor[\s_\-]*presentation|earnings)/i

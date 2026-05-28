@@ -24,6 +24,10 @@
       "company_website": "https://www.nivabupa.com",
       "investor_relations_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
       "financial_disclosure_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "pdf_hints": [
+        "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+        "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2023-24.pdf"
+      ],
       "irdai_registration_number": "153",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -41,6 +45,10 @@
       "company_website": "https://www.starhealth.in",
       "investor_relations_url": "https://www.starhealth.in/investors/financial-information/",
       "financial_disclosure_url": "https://www.starhealth.in/investors/financial-information/",
+      "pdf_hints": [
+        "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "https://nsearchives.nseindia.com/annual_reports/AR_25334_STARHEALTH_2023_2024_30082024173246.pdf"
+      ],
       "irdai_registration_number": "129",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -58,6 +66,7 @@
       "company_website": "https://www.careinsurance.com",
       "investor_relations_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
       "financial_disclosure_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "pdf_hints": [],
       "irdai_registration_number": "148",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -75,6 +84,7 @@
       "company_website": "https://www.adityabirlacapital.com/healthinsurance/",
       "investor_relations_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
       "financial_disclosure_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "pdf_hints": [],
       "irdai_registration_number": "153",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -92,6 +102,7 @@
       "company_website": "https://www.manipalcigna.com",
       "investor_relations_url": "https://www.manipalcigna.com/disclosures/public-disclosures",
       "financial_disclosure_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "pdf_hints": [],
       "irdai_registration_number": "151",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
