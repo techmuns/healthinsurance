@@ -10,7 +10,7 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { id: 'overview', label: 'Executive Overview', shortLabel: 'Overview', icon: 'overview', question: 'What is the full investor signal right now?' },
-  { id: 'market', label: 'Market Landscape', shortLabel: 'Market', icon: 'market', question: 'Is the market growing, and which segment is gaining share?' },
+  { id: 'market', label: 'Market Engine', shortLabel: 'Market', icon: 'market', question: 'Where is the GI premium pool shifting, and is Niva gaining inside it?' },
   { id: 'growth', label: 'Company Growth', shortLabel: 'Growth', icon: 'growth', question: 'Who is growing fastest, and is the growth high quality?' },
   { id: 'distribution', label: 'Distribution', shortLabel: 'Distribution', icon: 'distribution', question: 'Is the sales engine scalable and not over-concentrated?' },
   { id: 'profitability', label: 'Profitability', shortLabel: 'Profit', icon: 'capital', question: 'Is growth converting into profit and strong capital returns?' },

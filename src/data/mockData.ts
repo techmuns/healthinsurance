@@ -833,6 +833,63 @@ export const marketKpis: { label: string; metric: Metric }[] = [
   { label: 'Top share gainer', metric: { ...m(null), period: 'FY25', status: 'Reported', source: 'Niva Bupa Health (mock)' } },
 ]
 
+// --- Market Engine (story flow: GI pool → health → SAHI → Niva) -----------
+// Absolute GI premium (₹ '000 Cr) split by Health / Motor / Others, FY15-FY26.
+// Mock values calibrated so health share rises from 22.8% (FY15) to 40.8% (FY26)
+// and health CAGR over the window is ~18.8%.
+export const giPremiumAbsolute: SeriesPoint[] = [
+  { label: 'FY15', Health: 19.2, Motor: 37.0, Others: 28.0 },
+  { label: 'FY16', Health: 24.4, Motor: 42.0, Others: 30.5 },
+  { label: 'FY17', Health: 30.4, Motor: 50.5, Others: 33.6 },
+  { label: 'FY18', Health: 37.0, Motor: 59.2, Others: 36.4 },
+  { label: 'FY19', Health: 44.7, Motor: 64.5, Others: 38.6 },
+  { label: 'FY20', Health: 51.0, Motor: 69.2, Others: 41.0 },
+  { label: 'FY21', Health: 58.6, Motor: 67.8, Others: 43.5 },
+  { label: 'FY22', Health: 73.6, Motor: 70.6, Others: 49.3 },
+  { label: 'FY23', Health: 90.7, Motor: 78.0, Others: 53.8 },
+  { label: 'FY24', Health: 108.3, Motor: 86.2, Others: 58.4 },
+  { label: 'FY25', Health: 123.6, Motor: 92.4, Others: 64.0 },
+  { label: 'FY26', Health: 137.0, Motor: 100.5, Others: 98.0 },
+]
+
+// Mix share (%) of total GI premium pool. Sums to 100 each year.
+export const giPremiumMix: SeriesPoint[] = [
+  { label: 'FY15', Health: 22.8, Motor: 43.9, Others: 33.3 },
+  { label: 'FY16', Health: 25.2, Motor: 43.4, Others: 31.5 },
+  { label: 'FY17', Health: 26.5, Motor: 44.1, Others: 29.4 },
+  { label: 'FY18', Health: 27.9, Motor: 44.6, Others: 27.5 },
+  { label: 'FY19', Health: 30.2, Motor: 43.7, Others: 26.1 },
+  { label: 'FY20', Health: 31.6, Motor: 42.9, Others: 25.5 },
+  { label: 'FY21', Health: 34.5, Motor: 39.9, Others: 25.6 },
+  { label: 'FY22', Health: 38.0, Motor: 36.5, Others: 25.5 },
+  { label: 'FY23', Health: 40.7, Motor: 35.0, Others: 24.3 },
+  { label: 'FY24', Health: 42.8, Motor: 34.1, Others: 23.1 },
+  { label: 'FY25', Health: 44.1, Motor: 33.0, Others: 22.9 },
+  { label: 'FY26', Health: 40.8, Motor: 29.9, Others: 29.3 },
+]
+
+// Share of health pool by carrier type — SAHI rising from 21.0% (FY18) to
+// 32.7% (FY26); PSU steadily ceding share. Sums to 100 each year.
+export const healthCarrierShare: SeriesPoint[] = [
+  { label: 'FY18', SAHI: 21.0, Private: 38.0, PSU: 41.0 },
+  { label: 'FY19', SAHI: 22.6, Private: 39.4, PSU: 38.0 },
+  { label: 'FY20', SAHI: 24.2, Private: 40.5, PSU: 35.3 },
+  { label: 'FY21', SAHI: 26.0, Private: 41.4, PSU: 32.6 },
+  { label: 'FY22', SAHI: 27.8, Private: 42.6, PSU: 29.6 },
+  { label: 'FY23', SAHI: 29.4, Private: 43.4, PSU: 27.2 },
+  { label: 'FY24', SAHI: 30.8, Private: 44.1, PSU: 25.1 },
+  { label: 'FY25', SAHI: 31.8, Private: 44.7, PSU: 23.5 },
+  { label: 'FY26', SAHI: 32.7, Private: 45.0, PSU: 22.3 },
+]
+
+// Niva retail market share trajectory FY23-FY26 (+196 bps over the window).
+export const nivaRetailShare: SeriesPoint[] = [
+  { label: 'FY23', share: 8.14 },
+  { label: 'FY24', share: 8.85 },
+  { label: 'FY25', share: 9.55 },
+  { label: 'FY26', share: 10.1 },
+]
+
 // =========================================================================
 //  SECTION 2 — COMPANY GROWTH ENGINE
 // =========================================================================
