@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Customized, LabelList, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, Customized, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SegmentedControl } from './SegmentedControl'
 import {
   compareQuarters,
@@ -217,19 +217,23 @@ function FlowTooltip({
 }
 
 /**
- * RealFlowChart — one bar per fiscal year. A stage toggle (GWP / NWP / NEP)
- * controls which metric the bars represent; a mode toggle (Value / YoY ₹ /
- * YoY %) controls whether the bars show absolute values, YoY change, or
- * YoY growth %. In Value mode, a dotted secondary line overlays the YoY %
- * for the stage so growth direction is visible alongside the magnitude.
+ * RealFlowChart — single premium-flow chart. One bar per fiscal year. A
+ * stage toggle (GWP / NWP / NEP) controls which premium metric the bars
+ * represent and the same bars transition (shrink) from the whole written
+ * premium down to the retained portion and then the earned portion.
  *
- * Missing-value rule: when the snapshot has no value for the selected
- * stage + mode combination, the bar is omitted (value = null) and a
- * compact slate "n/a" tag sits under the year tick. YoY entries that
- * require two consecutive reported years simply have no bar and no tag.
+ * YoY behaviour: between each adjacent pair of reported years a dotted
+ * connector rises (or falls) diagonally from the top of bar_i toward
+ * bar_{i+1}, turns at a right angle just before bar_{i+1}, and ends with a
+ * compact YoY% label at the elbow. Pairs with a missing endpoint draw no
+ * connector. The exact YoY ₹ change is in the tooltip.
+ *
+ * Missing-value rule: bars with no reported value are omitted (value
+ * stays null, never 0); the X-axis tick shows a small italic "n/a".
+ *
+ * Single source/footer row at the bottom — basis + period + status +
+ * source tag are all in one strip. No duplicate source label elsewhere.
  */
-type FlowMode = 'Value' | 'YoY ₹' | 'YoY %'
-
 function RealFlowChart({
   rows,
   companyName,
@@ -238,21 +242,19 @@ function RealFlowChart({
   companyName: string
 }) {
   const [stage, setStage] = useState<Stage>('GWP')
-  const [mode, setMode] = useState<FlowMode>('Value')
 
   const stageMeta: Record<Stage, { label: string; full: string; color: string; desc: string }> = {
-    GWP: { label: 'GWP · Written', full: 'Gross Written Premium', color: FOCAL, desc: 'Total premium written in the year' },
-    NWP: { label: 'NWP · Retained', full: 'Net Written Premium', color: TEAL, desc: 'Retained on Niva’s books after reinsurance ceded' },
-    NEP: { label: 'NEP · Earned', full: 'Net Earned Premium', color: NEP_BLUE, desc: 'Portion of retained premium recognised as earned' },
+    GWP: { label: 'GWP · Written', full: 'Gross Written Premium', color: FOCAL, desc: 'whole premium written' },
+    NWP: { label: 'NWP · Retained', full: 'Net Written Premium', color: TEAL, desc: 'retained on Niva’s books after reinsurance ceded' },
+    NEP: { label: 'NEP · Earned', full: 'Net Earned Premium', color: NEP_BLUE, desc: 'earned portion of retained premium' },
   }
   const active = stageMeta[stage]
   const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
 
-  // Per-row record carries all three raw values + the selected stage's value,
-  // its previous reported value, the YoY ₹ change, and the YoY %.
+  // Per-row record carries all three raw values plus the value being plotted
+  // and a back-walk to the previous reported year for YoY computation.
   const data = rows.map((r, i) => {
     const raw = r[stageKey]
-    // Walk back to the most recent year that actually reported this stage.
     let prevRaw: number | null = null
     let prevPeriod: string | null = null
     for (let j = i - 1; j >= 0; j--) {
@@ -265,7 +267,6 @@ function RealFlowChart({
     }
     const yoyAbs = raw != null && prevRaw != null ? raw - prevRaw : null
     const yoyPct = raw != null && prevRaw != null && prevRaw > 0 ? ((raw - prevRaw) / prevRaw) * 100 : null
-    const valueForMode: number | null = mode === 'Value' ? raw : mode === 'YoY ₹' ? yoyAbs : yoyPct
     return {
       period: r.fiscal_year,
       gwp: r.gwp,
@@ -276,104 +277,121 @@ function RealFlowChart({
       prevPeriod,
       yoyAbs,
       yoyPct,
-      value: valueForMode,
+      value: raw,
     }
   })
 
   const periodLabel = `${data[0].period}–${data[data.length - 1].period}`
   const stageReported = rows.filter((r) => r[stageKey] != null).length
-  const modeUsable = data.filter((d) => d.value != null).length
-  // Coverage counts per stage (computed in Value mode so the badges reflect
-  // the underlying snapshot rather than the YoY pair count).
   const stageCoverage = {
     GWP: rows.filter((r) => r.gwp != null).length,
     NWP: rows.filter((r) => r.nwp != null).length,
     NEP: rows.filter((r) => r.nep != null).length,
   }
 
-  // Y-axis formatters per mode.
-  const yFmt = (v: number) => {
-    if (mode === 'YoY %') return `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
-    if (mode === 'YoY ₹') return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : `${Math.round(v)}`
-    return axisCr(v)
-  }
-  const labelFmt = (v: number | null | undefined) => {
-    if (v == null) return ''
-    if (mode === 'YoY %') return `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
-    if (mode === 'YoY ₹') return `${v >= 0 ? '+' : ''}${compactCr(Math.abs(v)).replace('₹', '₹')}`
-    return compactCr(v)
+  // Per-pair YoY connector overlay — diagonal dotted line from top of one
+  // bar to a right-angle elbow just before the next bar, with a compact
+  // YoY% label sitting above the horizontal elbow segment. Reads the
+  // actual rendered bar geometry from Recharts' formattedGraphicalItems so
+  // the connector always lands on the visible bar top after animation.
+  const YoyConnectors = (cprops: {
+    formattedGraphicalItems?: {
+      item?: { props?: { dataKey?: string } }
+      props?: { data?: { x?: number; y?: number; width?: number; height?: number }[] }
+    }[]
+  }) => {
+    const items = cprops.formattedGraphicalItems ?? []
+    const valueLayer = items.find((it) => it.item?.props?.dataKey === 'value')?.props?.data ?? []
+    const nodes: JSX.Element[] = []
+    for (let i = 1; i < data.length; i++) {
+      const cur = data[i]
+      const prev = data[i - 1]
+      if (cur.raw == null || prev.raw == null || prev.raw <= 0) continue
+      const a = valueLayer[i - 1]
+      const b = valueLayer[i]
+      if (!a || !b) continue
+      const ax = (a.x ?? 0) + (a.width ?? 0) / 2
+      const ay = a.y ?? 0
+      const bx = (b.x ?? 0) + (b.width ?? 0) / 2
+      const by = b.y ?? 0
+      const halfA = (a.width ?? 0) / 2
+      const halfB = (b.width ?? 0) / 2
+      const x1 = ax + halfA // right edge of bar_{i-1} top
+      const y1 = ay - 2 // 2px gap above the bar
+      const x2 = bx - halfB // left edge of bar_i top
+      const y2 = by - 2
+      const elbowLen = Math.min(14, (x2 - x1) * 0.3)
+      const ex = x2 - elbowLen // elbow point (start of horizontal segment)
+      const yoyPct = ((cur.raw - prev.raw) / prev.raw) * 100
+      const positive = yoyPct >= 0
+      const color = positive ? '#2F855A' : '#B94A48'
+      const label = `${positive ? '+' : '−'}${Math.abs(yoyPct).toFixed(0)}%`
+      // Place the label LEFT of the elbow, in the empty gap between bars,
+      // so it never collides with the value LabelList sitting above bar_i.
+      const labelX = ex - 4
+      const labelY = y2 - 4
+      nodes.push(
+        <g key={`yoy-${i}`} pointerEvents="none">
+          <path
+            d={`M ${x1} ${y1} L ${ex} ${y2} L ${x2} ${y2}`}
+            stroke={color}
+            strokeOpacity={0.65}
+            strokeWidth={1}
+            strokeDasharray="3 3"
+            fill="none"
+          />
+          <circle cx={ex} cy={y2} r={1.6} fill={color} opacity={0.85} />
+          <text
+            x={labelX}
+            y={labelY}
+            textAnchor="end"
+            fontSize={9.5}
+            fontWeight={700}
+            fill={color}
+          >
+            {label}
+          </text>
+        </g>,
+      )
+    }
+    return <g>{nodes}</g>
   }
 
-  // For YoY modes, bar fill flips between positive (stage color) and negative
-  // (muted terracotta) to keep direction obvious without leaving the palette.
-  const barFillFor = (d: typeof data[number]): string => {
-    if (mode === 'Value') return active.color
-    return d.value != null && d.value < 0 ? RED : active.color
-  }
-
-  // Explainer text reflects the current stage + mode combination.
-  const explainer =
-    mode === 'Value'
-      ? `Showing ${active.full} · ${active.desc.toLowerCase()}`
-      : mode === 'YoY ₹'
-        ? `YoY ₹ change in ${active.full} · vs previous reported year`
-        : `YoY % growth in ${active.full} · vs previous reported year`
-
-  // For Value mode we overlay a dotted YoY% line on a secondary axis.
-  const yoyLineMax = Math.max(20, ...data.map((d) => Math.abs(d.yoyPct ?? 0)))
+  // Tiny sliver for missing-value bars so the n/a tick has something to anchor.
+  const realMax = Math.max(1, ...data.map((d) => d.raw ?? 0))
+  const placeholderHeight = realMax * 0.03
 
   return (
     <div>
-      {/* Toggles row — stage on the left, mode on the right */}
+      {/* Stage toggle row — drives the same bars through GWP → NWP → NEP. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
-            {(Object.keys(stageMeta) as Stage[]).map((s) => {
-              const meta = stageMeta[s]
-              const isActive = stage === s
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStage(s)}
-                  className={[
-                    'flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-200',
-                    isActive ? 'bg-card text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
-                  ].join(' ')}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color, opacity: isActive ? 1 : 0.5 }} />
-                  {meta.label}
-                </button>
-              )
-            })}
-          </div>
-          <div className="flex items-center gap-0.5 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
-            {(['Value', 'YoY ₹', 'YoY %'] as FlowMode[]).map((m) => {
-              const isActive = mode === m
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMode(m)}
-                  className={[
-                    'rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold transition-all duration-200',
-                    isActive ? 'bg-card text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
-                  ].join(' ')}
-                >
-                  {m}
-                </button>
-              )
-            })}
-          </div>
+        <div className="flex items-center gap-1 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
+          {(Object.keys(stageMeta) as Stage[]).map((s) => {
+            const meta = stageMeta[s]
+            const isActive = stage === s
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStage(s)}
+                className={[
+                  'flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-200',
+                  isActive ? 'bg-card text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
+                ].join(' ')}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color, opacity: isActive ? 1 : 0.5 }} />
+                {meta.label}
+              </button>
+            )
+          })}
         </div>
         <div className="text-[10px] text-ink-secondary">
-          {stageReported} of {rows.length} years reported · {mode !== 'Value' && modeUsable > 0 && `${modeUsable} ${mode === 'YoY ₹' ? 'change' : 'growth'} pts · `}
-          {explainer}
+          {stageReported} of {rows.length} years reported · Showing {active.full} · {active.desc}
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={200}>
-        <ComposedChart data={data} margin={{ top: 18, right: 8, left: -4, bottom: 14 }} barCategoryGap="42%">
+        <BarChart data={data} margin={{ top: 22, right: 12, left: -4, bottom: 14 }} barCategoryGap="42%">
           <defs>
             <pattern id="naHatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
               <rect width="5" height="5" fill="#F4F7FC" />
@@ -388,8 +406,7 @@ function RealFlowChart({
             tick={(props) => {
               const { x, y, payload } = props as { x: number; y: number; payload: { value: string } }
               const row = data.find((d) => d.period === payload.value)
-              const isMissing = row && row.value == null
-              const tag = mode === 'Value' ? 'n/a' : 'YoY n/a'
+              const isMissing = row && row.raw == null
               return (
                 <g transform={`translate(${x},${y})`}>
                   <text dy={12} textAnchor="middle" fill="#26303F" fontSize={11} fontWeight={600}>
@@ -397,7 +414,7 @@ function RealFlowChart({
                   </text>
                   {isMissing && (
                     <text dy={24} textAnchor="middle" fill="#94A3B8" fontSize={9} fontStyle="italic">
-                      {tag}
+                      n/a
                     </text>
                   )}
                 </g>
@@ -407,26 +424,12 @@ function RealFlowChart({
             height={32}
           />
           <YAxis
-            yAxisId="left"
-            tickFormatter={yFmt}
+            tickFormatter={axisCr}
             tickLine={false}
             axisLine={false}
             tick={{ fontSize: 10, fill: AXIS_TEXT }}
             width={42}
           />
-          {mode === 'Value' && (
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              tickFormatter={(v) => `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 10, fill: AXIS_TEXT }}
-              width={36}
-              domain={[-yoyLineMax, yoyLineMax]}
-            />
-          )}
-          {(mode === 'YoY ₹' || mode === 'YoY %') && <ReferenceLine yAxisId="left" y={0} stroke="#C7D2E0" strokeWidth={1} />}
           <Tooltip
             cursor={{ fill: 'rgba(39,69,126,0.04)' }}
             content={({ active: isActive, payload }) => {
@@ -478,12 +481,9 @@ function RealFlowChart({
               )
             }}
           />
-          {/* Placeholder layer — paints a small hatched sliver only when value is missing. */}
+          {/* Placeholder layer — tiny hatched sliver under each missing year. */}
           <Bar
-            yAxisId="left"
-            dataKey={(d: { value: number | null }) =>
-              d.value == null ? (mode === 'YoY %' ? yoyLineMax * 0.04 : Math.max(...data.map((x) => Math.abs(x.value ?? 0)), 1) * 0.04) : 0
-            }
+            dataKey={(d: { raw: number | null }) => (d.raw == null ? placeholderHeight : 0)}
             fill="url(#naHatch)"
             stroke="#C7D2E0"
             strokeDasharray="3 3"
@@ -492,91 +492,70 @@ function RealFlowChart({
             radius={[2, 2, 0, 0]}
             isAnimationActive={false}
           />
-          {/* Real value layer — animates as `stage` or `mode` change. */}
+          {/* Real bar — same bars transition smoothly when stage changes. */}
           <Bar
-            yAxisId="left"
             dataKey="value"
+            fill={active.color}
             maxBarSize={32}
             radius={[3, 3, 0, 0]}
-            animationDuration={420}
+            animationDuration={460}
             animationEasing="ease-out"
           >
-            {data.map((d) => (
-              <Cell key={d.period} fill={barFillFor(d)} />
-            ))}
             <LabelList
               dataKey="value"
               position="top"
-              formatter={labelFmt}
+              formatter={(v: number | null | undefined) => (v == null ? '' : compactCr(v))}
               fill="#172B4D"
               fontSize={9.5}
               fontWeight={700}
             />
           </Bar>
-          {/* Dotted YoY % overlay — Value mode only, when at least 2 YoY points exist. */}
-          {mode === 'Value' && data.some((d) => d.yoyPct != null) && (
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="yoyPct"
-              stroke="#B68B3A"
-              strokeWidth={1.4}
-              strokeDasharray="4 3"
-              dot={{ r: 2.5, fill: '#B68B3A', stroke: 'none' }}
-              activeDot={{ r: 4 }}
-              isAnimationActive={false}
-              connectNulls
-            />
-          )}
-        </ComposedChart>
+          {/* Per-pair YoY% connectors — diagonal + right-angle elbow + label. */}
+          <Customized component={YoyConnectors as never} />
+        </BarChart>
       </ResponsiveContainer>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
-        <LegendSwatch color={active.color}>{active.label}</LegendSwatch>
-        {mode === 'Value' && data.some((d) => d.yoyPct != null) && (
-          <span className="inline-flex items-center gap-1.5 text-ink-secondary">
-            <span className="inline-block h-px w-5" style={{ background: 'repeating-linear-gradient(90deg,#B68B3A 0 4px,transparent 4px 7px)' }} />
-            YoY % growth
-          </span>
-        )}
-        <span className="inline-flex items-center gap-1.5 text-ink-secondary">
-          <span className="inline-block h-2.5 w-3 rounded-sm border border-dashed border-[#C7D2E0] bg-[#F4F7FC]" />
-          n/a — source missing
-        </span>
-        <span className="text-ink-secondary">
-          Coverage · GWP {stageCoverage.GWP}/{rows.length} · NWP {stageCoverage.NWP}/{rows.length} · NEP {stageCoverage.NEP}/{rows.length}
-        </span>
-      </div>
-
-      {modeUsable === 0 && (
+      {stageReported === 0 && (
         <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
-          {mode === 'Value'
-            ? `${active.label} is not reported in this snapshot. Switch the stage toggle to see another metric.`
-            : `${mode} needs two consecutive reported years for ${active.label}. Switch stage or mode.`}
+          {active.label} is not reported in this snapshot. Switch the toggle to see another metric.
         </p>
       )}
-      {modeUsable === 1 && mode === 'Value' && (
+      {stageReported === 1 && (
         <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
           Limited history · only 1 year of {stage} reported in this snapshot. GWP has fuller history ({stageCoverage.GWP}/{rows.length} years).
         </p>
       )}
 
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <Pill>GWP / NWP / NEP · premium metrics (not profit)</Pill>
-        <Pill>{periodLabel}</Pill>
-        <Pill>Reported · null where source missing</Pill>
-      </div>
-
-      <div className="mt-3 flex justify-end">
-        <SourceTag
-          source="Company filing"
-          confidence="high"
-          period={periodLabel}
-          provenance={{
-            source_name: `${companyName} annual disclosures + live PDF parse — GWP / NWP / NEP per FY`,
-            source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
-          }}
-        />
+      {/* Single footer row — basis + period + status + source, no duplicates. */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-soft-border pt-2.5 text-[10.5px] text-ink-secondary">
+        <LegendSwatch color={active.color}>{active.label}</LegendSwatch>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-px w-4" style={{ background: 'repeating-linear-gradient(90deg,#2F855A 0 3px,transparent 3px 6px)' }} />
+          YoY %
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-3 rounded-sm border border-dashed border-[#C7D2E0] bg-[#F4F7FC]" />
+          n/a
+        </span>
+        <span>·</span>
+        <span>GWP / NWP / NEP (premium metrics)</span>
+        <span>·</span>
+        <span>{periodLabel}</span>
+        <span>·</span>
+        <span>Reported · null where source missing</span>
+        <span>·</span>
+        <span>
+          Source ·{' '}
+          <a
+            href="https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-navy-deep underline-offset-2 hover:underline"
+            title={`${companyName} annual disclosures + live PDF parse — GWP / NWP / NEP per FY`}
+          >
+            Company filing
+          </a>
+        </span>
       </div>
     </div>
   )
