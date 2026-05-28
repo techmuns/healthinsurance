@@ -162,9 +162,9 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
               <span className="font-semibold text-teal">Freshness: current</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 rounded-xl border border-[#C4841D3D] bg-[#FFF6E0E0] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
-            <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-            <span className="font-semibold text-signal-warning">{DATA_FRESHNESS.quality}</span>
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#16968438] bg-[#E8FAF4D9] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+            <ShieldCheck className="h-3.5 w-3.5 text-teal" />
+            <span className="font-semibold text-teal">{DATA_FRESHNESS.quality}</span>
           </div>
         </div>
       </header>

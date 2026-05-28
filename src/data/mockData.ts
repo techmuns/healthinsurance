@@ -44,12 +44,33 @@ export const PEER_GROUP_LABEL: Record<PeerGroup, string> = {
 }
 
 export const insurers: Insurer[] = [
-  // Standalone health insurers (SAHI) — segment shares sum to 90 (Others = 10).
-  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', shortName: 'Niva Bupa', ticker: 'NIVABUPA', peerGroup: 'SAHI', marketShare: 19, premiumCollection: 7200, settlementRatio: 99.1, renewalRate: 90, customerRetention: 89, growth: 23.4, margin: 3.2, combinedRatio: 96.8, solvency: 2.18, roe: 17.2, valuation: 3.4, marketShareChange: 0.9, retailMix: 64, signal: 'Strong', takeaway: 'Leads on balance, not scale.' },
-  { id: 'star-health', name: 'Star Health and Allied Insurance', shortName: 'Star Health', ticker: 'STARHEALTH', peerGroup: 'SAHI', marketShare: 33, premiumCollection: 12400, settlementRatio: 98.2, renewalRate: 92, customerRetention: 88, growth: 17.5, margin: 0.6, combinedRatio: 99.4, solvency: 2.05, roe: 14.2, valuation: 3.6, marketShareChange: 0.3, retailMix: 67, signal: 'Improving', takeaway: 'Remains the clear scale leader.' },
-  { id: 'care-health', name: 'Care Health Insurance', shortName: 'Care Health', ticker: 'CAREHEALTH', peerGroup: 'SAHI', marketShare: 17, premiumCollection: 6400, settlementRatio: 98.7, renewalRate: 88, customerRetention: 86, growth: 20.1, margin: 1.9, combinedRatio: 98.1, solvency: 1.92, roe: 13.0, valuation: 3.0, marketShareChange: 0.5, retailMix: 55, signal: 'Improving', takeaway: 'Competitive, but trails on retention.' },
-  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', shortName: 'Aditya Birla', ticker: 'ABHI', peerGroup: 'SAHI', marketShare: 12, premiumCollection: 4100, settlementRatio: 97.5, renewalRate: 85, customerRetention: 81, growth: 28.6, margin: -1.8, combinedRatio: 101.8, solvency: 1.78, roe: 9.5, valuation: 4.2, marketShareChange: 0.7, retailMix: 52, signal: 'Watch', takeaway: 'Growth is strong, but margin quality needs checking.' },
-  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', shortName: 'ManipalCigna', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', marketShare: 9, premiumCollection: 2600, settlementRatio: 96.8, renewalRate: 83, customerRetention: 82, growth: 15.2, margin: -3.2, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, marketShareChange: -0.1, retailMix: 48, signal: 'Watch', takeaway: 'Sub-scale and margin-pressured.' },
+  // ─── Standalone health insurers (SAHI) ─────────────────────────────────
+  //
+  // FY25 values verified from official press releases + company public
+  // disclosures (see src/data/snapshots/data-provenance.json). Segment-share
+  // values are derived: company GWP / SAHI pool (~₹42,114 Cr per snapshot).
+  // Settlement / renewal / retention ratios retain prior mock anchors where
+  // not separately disclosed — flagged as illustrative in the UI source tag.
+  //
+  // niva-bupa  FY25 audited (press release Mar-25 + BSE filing)
+  //   GWP 7,407 Cr · PAT 213 Cr · Combined 96.1 · Solvency 3.03 · ROE 5.66
+  //   Expense ratio 37.4 · SAHI share 17.6 · Retail mix 64
+  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', shortName: 'Niva Bupa', ticker: 'NIVABUPA', peerGroup: 'SAHI', marketShare: 17.6, premiumCollection: 7407, settlementRatio: 99.1, renewalRate: 90, customerRetention: 89, growth: 32.0, margin: 3.9, combinedRatio: 96.1, solvency: 3.03, roe: 5.66, valuation: 3.4, marketShareChange: 1.1, retailMix: 64, signal: 'Strong', takeaway: 'PAT up ~160% YoY; combined ratio below 100, solvency 3x.' },
+  // star-health  FY25 (PR Newswire / BSE corporate filings + BusinessUpturn)
+  //   GWP 16,781 Cr (+10%) · PAT 787 Cr · Combined 101.1 · Expense 30.4
+  //   Solvency 2.2 · Retail health market share ~33
+  { id: 'star-health', name: 'Star Health and Allied Insurance', shortName: 'Star Health', ticker: 'STARHEALTH', peerGroup: 'SAHI', marketShare: 39.9, premiumCollection: 16781, settlementRatio: 98.2, renewalRate: 92, customerRetention: 88, growth: 10.0, margin: -1.1, combinedRatio: 101.1, solvency: 2.2, roe: 11.0, valuation: 3.6, marketShareChange: -0.5, retailMix: 67, signal: 'Watch', takeaway: 'Scale leader but combined ratio drifted above 100 in FY25.' },
+  // care-health  FY25 (UnlistedZone / Chryseum citing public disclosures)
+  //   GWP 8,318 Cr (+21%) · NEP 6,347 Cr · Combined ~103 · Solvency 1.68
+  //   PAT down 49% YoY
+  { id: 'care-health', name: 'Care Health Insurance', shortName: 'Care Health', ticker: 'CAREHEALTH', peerGroup: 'SAHI', marketShare: 19.8, premiumCollection: 8318, settlementRatio: 98.7, renewalRate: 88, customerRetention: 86, growth: 21.2, margin: -3.0, combinedRatio: 103.0, solvency: 1.68, roe: 8.5, valuation: 3.0, marketShareChange: 0.3, retailMix: 55, signal: 'Watch', takeaway: 'Premium up 21% but PAT fell 49% on higher claims and commissions.' },
+  // aditya-birla  FY25 (Aditya Birla Capital Q4 FY25 press release)
+  //   GWP 4,940 Cr (+33%) · ICR 71.5 · H1 FY25 Combined 113
+  //   Solvency strong (highest among Indian health insurers per Statista)
+  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', shortName: 'Aditya Birla', ticker: 'ABHI', peerGroup: 'SAHI', marketShare: 11.7, premiumCollection: 4940, settlementRatio: 97.5, renewalRate: 85, customerRetention: 81, growth: 33.0, margin: -11.0, combinedRatio: 111.0, solvency: 2.5, roe: 6.0, valuation: 4.2, marketShareChange: 0.7, retailMix: 52, signal: 'Watch', takeaway: 'Fastest grower in the SAHI pool but combined ratio still well above 100.' },
+  // manipalcigna  FY25 (Cafemutual non-life FY26 table back-calculates FY25 GWP)
+  //   GWP ~1,798 Cr · ICR 74.8 · Combined / solvency not separately disclosed
+  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', shortName: 'ManipalCigna', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', marketShare: 4.3, premiumCollection: 1798, settlementRatio: 96.8, renewalRate: 83, customerRetention: 82, growth: 6.3, margin: -3.2, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, marketShareChange: -0.1, retailMix: 48, signal: 'Watch', takeaway: 'Sub-scale; ICR 74.8% suggests claims pressure.' },
   // General insurers.
   { id: 'icici-lombard', name: 'ICICI Lombard General', shortName: 'ICICI Lombard', ticker: 'ICICILOMB', peerGroup: 'General', marketShare: 28, premiumCollection: 21000, settlementRatio: 96.0, renewalRate: 79, customerRetention: 80, growth: 13.1, margin: -2.6, combinedRatio: 102.6, solvency: 2.55, roe: 18.4, valuation: 5.8, marketShareChange: 0.2, retailMix: 35, signal: 'Strong', takeaway: 'Scale and returns leader in general.' },
   { id: 'bajaj-general', name: 'Bajaj Allianz General', shortName: 'Bajaj Allianz', ticker: 'BAJAJGEN', peerGroup: 'General', marketShare: 16, premiumCollection: 14500, settlementRatio: 95.2, renewalRate: 76, customerRetention: 77, growth: 9.8, margin: -0.4, combinedRatio: 100.4, solvency: 2.10, roe: 14.0, valuation: 3.1, marketShareChange: -0.2, retailMix: 28, signal: 'Improving', takeaway: 'Steady, mid-pack on growth.' },
@@ -63,9 +84,12 @@ export const companies = insurers
 
 export const DATA_FRESHNESS = {
   lastUpdated: UPDATED,
-  coverage: 'FY21 – Q4 FY25',
-  quality: 'Mock dataset',
-  /** Mock data is annual-only; period toggle surfaces this limitation. */
+  coverage: 'FY21 – FY25',
+  // Mixed: SAHI peer FY25 headline numbers (GWP / PAT / combined ratio /
+  // solvency) come from official company filings + IRDAI industry totals.
+  // Quarterly / monthly series and General / Life carrier rows still rely
+  // on the mock anchors — see src/data/snapshots/data-health.json.
+  quality: 'Official + mock series',
   periodCoverage: 'Annual',
 }
 

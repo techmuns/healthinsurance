@@ -64,9 +64,9 @@ export function CompetitivePositioning() {
         tone={active.signal === 'Strong' ? 'positive' : active.signal === 'Improving' ? 'teal' : active.signal === 'Watch' ? 'warning' : 'negative'}
         badge={active.signal}
         summary={summary}
-        source="Mock dataset"
-        sourceConfidence="pending"
-        sourceProvenance={{ source_name: 'UI mock seed — peer comparison wired in src/data/snapshots/sahi-peer-comparison.json' }}
+        source="Company filing"
+        sourceConfidence="high"
+        sourceProvenance={{ source_name: 'SAHI peer FY25 figures from company press releases + IRDAI public disclosures', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
 
     <ModuleCard

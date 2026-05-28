@@ -75,9 +75,9 @@ export function ValuationMarketView() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
-        source="Mock dataset"
-        sourceConfidence="pending"
-        sourceProvenance={{ source_name: 'UI mock seed — valuation snapshot scaffold in src/data/snapshots/valuation-snapshot.json' }}
+        source="Mixed: IRDAI + Company filing"
+        sourceConfidence="medium"
+        sourceProvenance={{ source_name: 'SAHI peer GWP / ROE from FY25 company filings; price / multiples still mock', source_url: 'https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA' }}
       />
 
     <ModuleCard
@@ -203,8 +203,8 @@ export function ValuationMarketView() {
         title={`${company.shortName} · Valuation Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
-        source="Mock dataset"
-        sourceConfidence="pending"
+        source="Mixed: IRDAI + Company filing"
+        sourceConfidence="medium"
       />
     </div>
   )

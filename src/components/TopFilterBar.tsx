@@ -64,17 +64,18 @@ export function TopFilterBar({ section }: { section?: string }) {
 
         {/* Period */}
         <div>
-          <FieldLabel hint="Mock dataset is annual-only">Period</FieldLabel>
+          <FieldLabel hint="Monthly / quarterly series pending the next IRDAI ingestion run">Period</FieldLabel>
           <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
         </div>
 
         <div className="ml-auto flex items-end gap-4">
-          {/* Dataset — explicitly mock; live is not connected. */}
+          {/* Dataset — SAHI FY25 headline numbers are from official filings;
+              quarterly / monthly series + General / Life carriers still mock. */}
           <div>
-            <FieldLabel hint="Live data is not connected in this demo">Dataset</FieldLabel>
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-gold-soft px-2.5 py-1.5 text-[12px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
+            <FieldLabel hint="Hover any source tag for the underlying URL">Dataset</FieldLabel>
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-soft px-2.5 py-1.5 text-[12px] font-semibold text-teal ring-1 ring-[#CFE3DA]">
               <span className="h-1.5 w-1.5 rounded-full bg-current" />
-              Mock dataset
+              Official + mock series
             </span>
           </div>
 

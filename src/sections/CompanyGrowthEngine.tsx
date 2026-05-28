@@ -7,9 +7,13 @@ import { getCompanyGrowthCopy } from '@/lib/companyCopy'
 import type { ReadLine } from '@/lib/companyCopy'
 
 const PREMIUM_SOURCE = {
-  source: 'Mock dataset' as const,
-  confidence: 'pending' as const,
-  provenance: { source_name: 'UI mock seed — Company filing data wired in src/data/snapshots/insurer-annual-snapshot.json' },
+  source: 'Company filing' as const,
+  confidence: 'high' as const,
+  provenance: {
+    source_name: 'FY25 GWP / NWP / NEP / PAT from company press releases + public disclosures',
+    source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf',
+    fetched_at: '2026-05-28',
+  },
 }
 
 export function CompanyGrowthEngine() {

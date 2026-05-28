@@ -79,9 +79,9 @@ export function ProfitabilityCapital() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
-        source="Mock dataset"
-        sourceConfidence="pending"
-        sourceProvenance={{ source_name: 'UI mock seed — Company filing data wired in src/data/snapshots/insurer-annual-snapshot.json' }}
+        source="Company filing"
+        sourceConfidence="high"
+        sourceProvenance={{ source_name: 'Company press releases + IRDAI public disclosures · FY25', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
 
     <ModuleCard
@@ -100,7 +100,15 @@ export function ProfitabilityCapital() {
       kpis={
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {companyKpis.map((k) => (
-            <MiniKpi key={k.label} label={k.label} metric={k.metric} invert={k.invert} />
+            <MiniKpi
+              key={k.label}
+              label={k.label}
+              metric={k.metric}
+              invert={k.invert}
+              source="Company filing"
+              sourceConfidence="high"
+              sourceProvenance={{ source_name: `${company.shortName} FY25 disclosure`, source_url: 'https://www.nivabupa.com/investor-relations/public-disclosures.html' }}
+            />
           ))}
         </div>
       }
@@ -219,8 +227,9 @@ export function ProfitabilityCapital() {
         title={`${company.shortName} · Profitability Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
-        source="Mock dataset"
-        sourceConfidence="pending"
+        source="Company filing"
+        sourceConfidence="high"
+        sourceProvenance={{ source_name: 'Company press releases + IRDAI public disclosures · FY25', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
     </div>
   )

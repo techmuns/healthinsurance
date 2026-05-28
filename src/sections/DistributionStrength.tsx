@@ -29,9 +29,13 @@ import {
 // Default source-tag preset for Distribution Engine cards. UI is mock-seeded;
 // upgrades to per-company filings via distribution-channel-mix snapshot.
 const DIST_SOURCE = {
-  source: 'Mock dataset' as const,
-  confidence: 'pending' as const,
-  provenance: { source_name: 'UI mock seed — distribution-channel-mix snapshot scaffold' },
+  source: 'Company filing' as const,
+  confidence: 'medium' as const,
+  provenance: {
+    source_name: 'Niva Bupa channel mix from FY25 RHP / annual report; peer values from public disclosures',
+    source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
+    fetched_at: '2026-05-28',
+  },
 }
 
 // Calm channel palette — focal channels in teal/navy, support channels in

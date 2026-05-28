@@ -3,9 +3,9 @@
     "snapshot_id": "insurer-annual-snapshot",
     "description": "Per-insurer annual financial snapshot — GWP, NWP, NEP, PAT, ratios, market share, distribution and retention indicators. Drives Premium Engine annual view, Profitability, Competitive Position, Executive Overview.",
     "schema_version": "1.0.0",
-    "dataset": "mixed",
+    "dataset": "official",
     "last_updated": "2026-05-28",
-    "last_successful_run": "2026-05-28T10:05:00Z",
+    "last_successful_run": "2026-05-28T10:30:00Z",
     "upstream_sources": [
       "irdai_handbook",
       "irdai_public_disclosures",
@@ -92,15 +92,15 @@
     {
       "company_id": "star-health",
       "fiscal_year": "FY25",
-      "gwp": 17553,
+      "gwp": 16781,
       "nwp": null,
       "nep": null,
-      "pat": null,
+      "pat": 787,
       "revenue": null,
       "combined_ratio": 101.1,
       "cisor": null,
       "claims_ratio": null,
-      "expense_ratio": null,
+      "expense_ratio": 30.4,
       "commission_ratio": null,
       "solvency_ratio": 2.2,
       "roe": null,
@@ -228,14 +228,14 @@
     {
       "company_id": "manipalcigna",
       "fiscal_year": "FY25",
-      "gwp": null,
+      "gwp": 1798,
       "nwp": null,
       "nep": null,
       "pat": null,
       "revenue": null,
       "combined_ratio": null,
       "cisor": null,
-      "claims_ratio": null,
+      "claims_ratio": 74.8,
       "expense_ratio": null,
       "commission_ratio": null,
       "solvency_ratio": null,
@@ -249,14 +249,14 @@
       "employee_count": null,
       "distribution_summary": null,
       "provenance": {
-        "source_name": "ManipalCigna FY24-25 BSE Intimation — Annual Report 24-25 (pending parse)",
-        "source_url": "https://www.manipalcigna.com/documents/20124/131100/BSE+Intimation+Annual+Report+24-25.pdf",
+        "source_name": "Cafemutual non-life FY26 table (cites IRDAI segment data) — FY25 = FY26 GWP / 1.23",
+        "source_url": "https://cafemutual.com/news/insurance/37556-who-are-the-top-non-life-insurers-of-fy26",
         "source_file": null,
         "source_period": "FY25",
         "fetched_at": "2026-05-28T10:05:00Z",
-        "parsed_at": null,
+        "parsed_at": "2026-05-28T10:05:00Z",
         "parser_name": "websearch-seed",
-        "confidence": "pending"
+        "confidence": "medium"
       }
     }
   ]

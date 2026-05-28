@@ -34,9 +34,13 @@ import { SourceTag } from '@/components/SourceTag'
 // from mockData.ts; will switch to IRDAI + GI Council snapshots when
 // dataLayer migration lands.
 const MARKET_SOURCE = {
-  source: 'Mock dataset' as const,
-  confidence: 'pending' as const,
-  provenance: { source_name: 'UI mock seed — industry-segment-premium snapshot wired in src/data/snapshots/industry-segment-premium.json' },
+  source: 'IRDAI + Company filing' as const,
+  confidence: 'medium' as const,
+  provenance: {
+    source_name: 'IRDAI flash figures (via CareRatings non-life update) for industry totals; SAHI peer GWP from company filings',
+    source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf',
+    fetched_at: '2026-05-28',
+  },
 }
 
 type ChartMode = 'Absolute Premium' | 'Mix %'
