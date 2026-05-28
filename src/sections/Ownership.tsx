@@ -34,6 +34,9 @@ export function Ownership() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
+        source="Mock dataset"
+        sourceConfidence="pending"
+        sourceProvenance={{ source_name: 'UI mock seed — ownership snapshot scaffold in src/data/snapshots/ownership-snapshot.json' }}
       />
 
     <ModuleCard
@@ -61,12 +64,22 @@ export function Ownership() {
       ) : (
         <>
           {view === 'Trend' && (
-            <ChartFrame headline={headline} caption="Shareholding by holder type (%) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="Shareholding by holder type (%) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <StackedBarChart data={ownershipTrend} series={['Promoter', 'FII', 'DII', 'MF', 'PE', 'Public']} unit="%" />
             </ChartFrame>
           )}
           {view === 'Change' && (
-            <ChartFrame headline={headline} caption="Change in holding over the period (pp) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="Change in holding over the period (pp) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <HorizontalBarChart
                 data={ownershipChange.map((d) => ({ label: d.label as string, value: d.value as number, focal: d.label === 'FII' }))}
                 unit=" pp"
@@ -75,7 +88,13 @@ export function Ownership() {
             </ChartFrame>
           )}
           {view === 'Table' && (
-            <ChartFrame headline={headline} caption="Major holders · illustrative · mock" height="auto">
+            <ChartFrame
+              headline={headline}
+              caption="Major holders · illustrative · mock"
+              height="auto"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <div className="overflow-hidden rounded-xl2 border border-soft-border">
                 <table className="w-full text-left text-sm">
                   <thead className="bg-ice text-[11px] uppercase tracking-wide text-ink-secondary">
@@ -113,6 +132,8 @@ export function Ownership() {
         title={`${company.shortName} · Ownership Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
+        source="Mock dataset"
+        sourceConfidence="pending"
       />
     </div>
   )

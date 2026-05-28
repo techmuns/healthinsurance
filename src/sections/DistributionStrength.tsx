@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import { MapPin, Sparkles } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
+import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import {
@@ -24,6 +25,14 @@ import {
   getReachDepthData,
   hasCompanyDistributionData,
 } from '@/lib/distributionEngine'
+
+// Default source-tag preset for Distribution Engine cards. UI is mock-seeded;
+// upgrades to per-company filings via distribution-channel-mix snapshot.
+const DIST_SOURCE = {
+  source: 'Mock dataset' as const,
+  confidence: 'pending' as const,
+  provenance: { source_name: 'UI mock seed — distribution-channel-mix snapshot scaffold' },
+}
 
 // Calm channel palette — focal channels in teal/navy, support channels in
 // muted slate / champagne. Distribution Engine stays line-free and premium.
@@ -91,6 +100,9 @@ function HeroCard() {
                 <UnavailableChip key={i} />
               ))}
         </div>
+      </div>
+      <div className="relative mt-4 flex justify-end">
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={data?.latest?.period} />
       </div>
     </section>
   )
@@ -226,6 +238,9 @@ function MainChartBlock() {
           <AiRead text={getDistributionAIRead(company, peerGroup)} />
         </>
       )}
+      <div className="mt-3 flex justify-end">
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={data?.latest?.period} />
+      </div>
     </section>
   )
 }
@@ -378,6 +393,9 @@ function DependenceCard() {
       {rows.length > 0 && (
         <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">{dependenceLine}</p>
       )}
+      <div className="mt-3 flex justify-end">
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
+      </div>
     </div>
   )
 }
@@ -429,6 +447,9 @@ function ReachDepthCard() {
       {!reach ? (
         <ReachUnavailableState companyName={company.shortName} tab={tab} />
       ) : null /* Wire chart bodies here once region/tier/avg data is sourced. */}
+      <div className="mt-3 flex justify-end">
+        <SourceTag source="Unavailable" provenance={{ source_name: 'Reach-depth (region / tier / city) not disclosed by Indian insurers — schema reserved.' }} />
+      </div>
     </div>
   )
 }
@@ -508,6 +529,7 @@ function TakeawayStrip() {
           </span>
         </span>
         <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{takeaway.text}</p>
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
       </div>
     </section>
   )

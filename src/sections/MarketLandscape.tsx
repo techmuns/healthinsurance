@@ -28,6 +28,16 @@ import {
 } from '@/lib/companyCopy'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { EmptyState } from '@/components/EmptyState'
+import { SourceTag } from '@/components/SourceTag'
+
+// Default source-tag preset for Market Engine cards — UI currently reads
+// from mockData.ts; will switch to IRDAI + GI Council snapshots when
+// dataLayer migration lands.
+const MARKET_SOURCE = {
+  source: 'Mock dataset' as const,
+  confidence: 'pending' as const,
+  provenance: { source_name: 'UI mock seed — industry-segment-premium snapshot wired in src/data/snapshots/industry-segment-premium.json' },
+}
 
 type ChartMode = 'Absolute Premium' | 'Mix %'
 
@@ -87,6 +97,9 @@ function HeroCard() {
           <KpiPill value="18.8%" label="Health premium CAGR" tone="navy" sub="FY15 – FY26" />
           <KpiPill value="32.7%" label="SAHI share of health" tone="gold" sub="FY26" />
         </div>
+      </div>
+      <div className="relative mt-4 flex justify-end">
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY26" />
       </div>
     </section>
   )
@@ -246,6 +259,9 @@ function MainChartBlock() {
       {gate.ok && (
         <AiRead text="Health has moved from a support category to the main growth engine of general insurance." />
       )}
+      <div className="mt-3 flex justify-end">
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY15 → FY26" />
+      </div>
     </section>
   )
 }
@@ -445,6 +461,9 @@ function SahiShiftCard() {
         Within health, standalone health insurers are steadily gaining
         relevance as the market shifts away from PSU dominance.
       </p>
+      <div className="mt-2 flex justify-end">
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY18 → FY26" />
+      </div>
     </div>
   )
 }
@@ -596,6 +615,9 @@ function CompanyBridgeCard() {
       <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
         {bridge.closingLine}
       </p>
+      <div className="relative mt-2 flex justify-end">
+        <SourceTag source="Mock dataset" confidence="pending" period="FY23 → FY26" provenance={{ source_name: 'UI mock seed — company-specific retail share trajectory derived from snapshot' }} />
+      </div>
     </div>
   )
 }
@@ -636,6 +658,7 @@ function TakeawayStrip() {
           </span>
         </span>
         <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{line}</p>
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} />
       </div>
     </section>
   )

@@ -79,6 +79,9 @@ export function ProfitabilityCapital() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
+        source="Mock dataset"
+        sourceConfidence="pending"
+        sourceProvenance={{ source_name: 'UI mock seed — Company filing data wired in src/data/snapshots/insurer-annual-snapshot.json' }}
       />
 
     <ModuleCard
@@ -150,12 +153,19 @@ export function ProfitabilityCapital() {
       ) : (
         <>
           {view === 'P&L' && (
-            <ChartFrame headline={headline} caption="Revenue, operating profit & PAT (₹ Cr) · illustrative · mock">
+            <ChartFrame headline={headline} caption="Revenue, operating profit & PAT (₹ Cr) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending">
               <TrendLineChart data={plTrend} series={['Revenue', 'Operating', 'PAT']} />
             </ChartFrame>
           )}
           {view === 'Margin' && hasCR && (
-            <ChartFrame headline={headline} caption="Combined ratio and its components (%) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="Combined ratio and its components (%) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <TrendLineChart data={marginTrend} series={['Combined', 'Loss', 'Expense', 'Commission']} unit="%" />
             </ChartFrame>
           )}
@@ -167,7 +177,13 @@ export function ProfitabilityCapital() {
             />
           )}
           {view === 'Cost' && (
-            <ChartFrame headline={headline} caption="Key cost ratios · illustrative · mock" height={280}>
+            <ChartFrame
+              headline={headline}
+              caption="Key cost ratios · illustrative · mock"
+              height={280}
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <div className="grid h-full grid-cols-1 content-center gap-3 sm:grid-cols-3">
                 {costKpis.map((k) => (
                   <MiniKpi key={k.label} label={k.label} metric={k.metric} invert />
@@ -176,12 +192,22 @@ export function ProfitabilityCapital() {
             </ChartFrame>
           )}
           {view === 'Returns' && (
-            <ChartFrame headline={headline} caption="ROE & ROA (%) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="ROE & ROA (%) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <TrendLineChart data={returnsTrend} series={['ROE', 'ROA']} unit="%" />
             </ChartFrame>
           )}
           {view === 'Capital' && (
-            <ChartFrame headline={headline} caption="Solvency ratio vs regulatory floor (x) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="Solvency ratio vs regulatory floor (x) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <BandedLineChart data={solvencyTrend} lineKey="Solvency" floorKey="Floor" bandLow={1.5} bandHigh={2.5} />
             </ChartFrame>
           )}
@@ -193,6 +219,8 @@ export function ProfitabilityCapital() {
         title={`${company.shortName} · Profitability Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
+        source="Mock dataset"
+        sourceConfidence="pending"
       />
     </div>
   )

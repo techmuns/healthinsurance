@@ -64,6 +64,9 @@ export function CompetitivePositioning() {
         tone={active.signal === 'Strong' ? 'positive' : active.signal === 'Improving' ? 'teal' : active.signal === 'Watch' ? 'warning' : 'negative'}
         badge={active.signal}
         summary={summary}
+        source="Mock dataset"
+        sourceConfidence="pending"
+        sourceProvenance={{ source_name: 'UI mock seed — peer comparison wired in src/data/snapshots/sahi-peer-comparison.json' }}
       />
 
     <ModuleCard
@@ -92,6 +95,8 @@ export function CompetitivePositioning() {
           caption={`${group} peer group · value, rank and signal per metric · mock data`}
           height="auto"
           footnote={<BestInColumnLegend />}
+          source="Mock dataset"
+          sourceConfidence="pending"
         >
           <p className="mb-3 rounded-lg bg-ice/70 px-3 py-2 text-[12px] leading-relaxed text-ink-secondary">
             {summary}
@@ -105,6 +110,8 @@ export function CompetitivePositioning() {
           caption={`${group} peer group · mock data`}
           height="auto"
           footnote={<BestInColumnLegend />}
+          source="Mock dataset"
+          sourceConfidence="pending"
         >
           <HorizontalBarChart
             data={rankingData}
@@ -116,7 +123,13 @@ export function CompetitivePositioning() {
         </ChartFrame>
       )}
       {view === 'Table' && (
-        <ChartFrame headline="One peer table — sort any column to find the leader" caption={`${group} peer group · mock data`} height="auto">
+        <ChartFrame
+          headline="One peer table — sort any column to find the leader"
+          caption={`${group} peer group · mock data`}
+          height="auto"
+          source="Mock dataset"
+          sourceConfidence="pending"
+        >
           <PeerRankingTable rows={rows} />
         </ChartFrame>
       )}

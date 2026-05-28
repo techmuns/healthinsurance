@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { SignalBadge } from './SignalBadge'
+import { SourceTag, type SourceLabel, type SourceConfidence, type SourceProvenance } from './SourceTag'
 
 export type VerdictTone = 'teal' | 'positive' | 'navy' | 'warning' | 'negative'
 
@@ -23,13 +24,29 @@ export interface VerdictStripProps {
   summary: ReactNode
   /** Optional inline headline stats on the right. */
   stats?: { label: string; value: string }[]
+  /** Source tag rendered at the bottom-right corner of the strip. */
+  source?: SourceLabel | string
+  sourcePeriod?: string
+  sourceConfidence?: SourceConfidence
+  sourceProvenance?: SourceProvenance
 }
 
 /**
  * Answer-first page banner — the top of every section's story rhythm. States
  * the verdict, a one-line why, and a couple of headline numbers.
  */
-export function VerdictStrip({ eyebrow, verdict, tone, badge, summary, stats }: VerdictStripProps) {
+export function VerdictStrip({
+  eyebrow,
+  verdict,
+  tone,
+  badge,
+  summary,
+  stats,
+  source,
+  sourcePeriod,
+  sourceConfidence,
+  sourceProvenance,
+}: VerdictStripProps) {
   return (
     <section className="card-surface relative overflow-hidden p-4 sm:p-5">
       <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: accent[tone] }} />
@@ -53,6 +70,16 @@ export function VerdictStrip({ eyebrow, verdict, tone, badge, summary, stats }: 
           </div>
         )}
       </div>
+      {source && (
+        <div className="mt-2 flex justify-end pl-2.5">
+          <SourceTag
+            source={source}
+            period={sourcePeriod}
+            confidence={sourceConfidence}
+            provenance={sourceProvenance}
+          />
+        </div>
+      )}
     </section>
   )
 }

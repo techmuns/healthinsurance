@@ -33,6 +33,9 @@ export function ManagementEvents() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
+        source="Mock dataset"
+        sourceConfidence="pending"
+        sourceProvenance={{ source_name: 'UI mock seed — management-events snapshot scaffold' }}
       />
       <ManagementReadout />
       <EventFeed />
@@ -40,6 +43,8 @@ export function ManagementEvents() {
         title={`${company.shortName} · Management Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
+        source="Mock dataset"
+        sourceConfidence="pending"
       />
     </div>
   )

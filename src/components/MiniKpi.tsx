@@ -1,4 +1,5 @@
 import { SignalBadge } from './SignalBadge'
+import { SourceTag, type SourceLabel, type SourceConfidence, type SourceProvenance } from './SourceTag'
 import { formatChange, formatValue, statusTone } from '@/lib/format'
 import type { Metric } from '@/data/types'
 
@@ -6,6 +7,11 @@ export interface MiniKpiProps {
   label: string
   metric: Metric
   invert?: boolean
+  /** Source label rendered as a tiny tag at the bottom of the tile. */
+  source?: SourceLabel | string
+  sourcePeriod?: string
+  sourceConfidence?: SourceConfidence
+  sourceProvenance?: SourceProvenance
 }
 
 // Signal-tinted styling: positive → pale mint + teal accent, negative → pale
@@ -17,7 +23,15 @@ const tone = {
 }
 
 /** Compact KPI tile used inside module headers — key number large, muted sublabel. */
-export function MiniKpi({ label, metric, invert = false }: MiniKpiProps) {
+export function MiniKpi({
+  label,
+  metric,
+  invert = false,
+  source,
+  sourcePeriod,
+  sourceConfidence,
+  sourceProvenance,
+}: MiniKpiProps) {
   const pending = metric.value === null
   const change = metric.change
   const dir = change === undefined || change === 0 ? 'neutral' : (invert ? change < 0 : change > 0) ? 'positive' : 'negative'
@@ -40,6 +54,16 @@ export function MiniKpi({ label, metric, invert = false }: MiniKpiProps) {
           </span>
         )}
       </div>
+      {source && (
+        <div className="mt-2 flex justify-end">
+          <SourceTag
+            source={source}
+            period={sourcePeriod ?? (metric.period as string | undefined)}
+            confidence={sourceConfidence}
+            provenance={sourceProvenance}
+          />
+        </div>
+      )}
     </div>
   )
 }

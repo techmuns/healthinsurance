@@ -20,6 +20,7 @@ import {
   ZAxis,
 } from 'recharts'
 import type { SeriesPoint } from '@/data/types'
+import { SourceTag, type SourceLabel, type SourceConfidence, type SourceProvenance } from './SourceTag'
 
 // Primary deep blue leads (the focus colour); supporting series move to muted
 // teal / slate / gold so blue stays meaningful rather than monotonous.
@@ -41,10 +42,25 @@ export interface ChartFrameProps {
   height?: number | 'auto'
   children: ReactNode
   footnote?: ReactNode
+  /** Source tag rendered at the bottom-right of the chart. */
+  source?: SourceLabel | string
+  sourcePeriod?: string
+  sourceConfidence?: SourceConfidence
+  sourceProvenance?: SourceProvenance
 }
 
 /** Standard chart container: insight headline + chart + optional footnote strip. */
-export function ChartFrame({ headline, caption, height = 240, children, footnote }: ChartFrameProps) {
+export function ChartFrame({
+  headline,
+  caption,
+  height = 240,
+  children,
+  footnote,
+  source,
+  sourcePeriod,
+  sourceConfidence,
+  sourceProvenance,
+}: ChartFrameProps) {
   return (
     <div>
       <div className="mb-4">
@@ -53,6 +69,16 @@ export function ChartFrame({ headline, caption, height = 240, children, footnote
       </div>
       <div style={height === 'auto' ? { width: '100%' } : { width: '100%', height }}>{children}</div>
       {footnote && <div className="mt-3">{footnote}</div>}
+      {source && (
+        <div className="mt-2 flex justify-end">
+          <SourceTag
+            source={source}
+            period={sourcePeriod}
+            confidence={sourceConfidence}
+            provenance={sourceProvenance}
+          />
+        </div>
+      )}
     </div>
   )
 }

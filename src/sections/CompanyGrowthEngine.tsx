@@ -1,9 +1,16 @@
 import { Sparkles } from 'lucide-react'
 import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
+import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyGrowthCopy } from '@/lib/companyCopy'
 import type { ReadLine } from '@/lib/companyCopy'
+
+const PREMIUM_SOURCE = {
+  source: 'Mock dataset' as const,
+  confidence: 'pending' as const,
+  provenance: { source_name: 'UI mock seed — Company filing data wired in src/data/snapshots/insurer-annual-snapshot.json' },
+}
 
 export function CompanyGrowthEngine() {
   const company = useActiveCompany()
@@ -35,6 +42,9 @@ export function CompanyGrowthEngine() {
           </div>
         </header>
         <PremiumFlowQuality focalId={company.id} />
+        <div className="mt-3 flex justify-end">
+          <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
+        </div>
       </section>
 
       {/* Calculation basis strip for the derived-quarter logic. */}
@@ -106,6 +116,9 @@ function HeroCard({
 
         <p className="text-[13.5px] leading-relaxed text-ink-secondary">{summary}</p>
       </div>
+      <div className="relative mt-4 flex justify-end">
+        <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
+      </div>
     </section>
   )
 }
@@ -150,6 +163,9 @@ function GrowthInvestorRead({
             <p className="mt-1 pl-1.5 text-[12.5px] leading-snug text-navy-deep">{l.value}</p>
           </div>
         ))}
+      </div>
+      <div className="relative mt-3 flex justify-end">
+        <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
       </div>
     </section>
   )

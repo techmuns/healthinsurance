@@ -75,6 +75,9 @@ export function ValuationMarketView() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
+        source="Mock dataset"
+        sourceConfidence="pending"
+        sourceProvenance={{ source_name: 'UI mock seed — valuation snapshot scaffold in src/data/snapshots/valuation-snapshot.json' }}
       />
 
     <ModuleCard
@@ -151,12 +154,22 @@ export function ValuationMarketView() {
       ) : (
         <>
           {view === 'Trend' && (
-            <ChartFrame headline={headline} caption="P/GWP vs peer median (x) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="P/GWP vs peer median (x) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <TrendLineChart data={valuationTrend} series={['P/GWP', 'Peer median']} unit="x" />
             </ChartFrame>
           )}
           {view === 'Peer Comparison' && (
-            <ChartFrame headline={headline} caption="P/GWP by peer (x) · illustrative · mock">
+            <ChartFrame
+              headline={headline}
+              caption="P/GWP by peer (x) · illustrative · mock"
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <HorizontalBarChart
                 data={valuationPeers.map((d) => ({
                   label: d.label as string,
@@ -168,7 +181,12 @@ export function ValuationMarketView() {
             </ChartFrame>
           )}
           {view === 'Scatter' && (
-            <ChartFrame headline={headline} caption={`Growth vs valuation · ${company.shortName} highlighted · illustrative · mock`}>
+            <ChartFrame
+              headline={headline}
+              caption={`Growth vs valuation · ${company.shortName} highlighted · illustrative · mock`}
+              source="Mock dataset"
+              sourceConfidence="pending"
+            >
               <ScatterPlot
                 data={valuationScatter.map((d) => ({
                   ...d,
@@ -185,6 +203,8 @@ export function ValuationMarketView() {
         title={`${company.shortName} · Valuation Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
+        source="Mock dataset"
+        sourceConfidence="pending"
       />
     </div>
   )
