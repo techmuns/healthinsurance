@@ -85,12 +85,13 @@ export const ingestCompanyDisclosures: Fetcher = {
         )
 
         const { text } = await parsePdf(buffer)
-        const values = extractByPatterns(text, COMMON_PATTERNS)
+        const rawValues = extractByPatterns(text, COMMON_PATTERNS)
+        const values = sanitiseExtracted(rawValues)
         const fy = inferFY(filename, text)
         const populated = Object.values(values).filter((v) => v != null).length
 
         if (populated === 0) {
-          warnings.push(`${t.company_id}: parsed ${text.length} chars from ${filename} but no patterns matched.`)
+          warnings.push(`${t.company_id}: parsed ${text.length} chars from ${filename} but no patterns matched plausibility rules.`)
           continue
         }
 
@@ -146,7 +147,7 @@ export const ingestCompanyDisclosures: Fetcher = {
 // PDF filenames / anchor text that we definitely do NOT want (these are
 // statutory company-secretarial filings, brochures, policy wording etc. —
 // not financial disclosures).
-const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature)/i
+const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms)/i
 
 // Strong-signal financial / disclosure terms — preferred over anything else.
 const ALLOW_PDF = /(annual[\s_\-]*report|public[\s_\-]*disclosure|financial[\s_\-]*disclosure|press[\s_\-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_\-]*\d|^l[\s_\-]*\d|financial[\s_\-]*information|investor[\s_\-]*presentation|earnings)/i
@@ -195,26 +196,74 @@ const MONTH_TO_FY: Record<string, number> = {
   jan: 0, feb: 0, mar: 0, apr: 1, may: 1, jun: 1, jul: 1, aug: 1, sep: 1, oct: 1, nov: 1, dec: 1,
 }
 
+/**
+ * Annual reports mention multiple fiscal years (current + prior + 5-year
+ * history). The cover-page year is the one we want — prefer the FILENAME
+ * year, otherwise pick the most-recent FY token that appears more than
+ * once in the first 2000 chars (covers + first MD&A page).
+ */
 function inferFY(filename: string, text: string): string {
-  const haystack = `${filename} ${text.slice(0, 600)}`
-  // 1. Explicit FY 2024-25 / 2024-2025 patterns.
-  const explicit = haystack.match(/\b20(\d{2})\s*[-–/]\s*20?(\d{2})\b/)
-  if (explicit) {
-    const end = explicit[2]
+  // 1. Filename takes precedence — usually carries the canonical year.
+  const fnm = filename.match(/\b20(\d{2})\s*[-–_/]\s*20?(\d{2})\b/) ?? filename.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
+  if (fnm) {
+    const end = fnm[2] ?? fnm[1]
     return `FY${end.padStart(2, '0').slice(-2)}`
   }
-  // 2. FY25 / FY-2025 patterns.
-  const fy = haystack.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
-  if (fy) return `FY${fy[1].padStart(2, '0').slice(-2)}`
-  // 3. "Month YYYY" or "MonthYYYY" → map to fiscal year end.
-  const mm = haystack.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,\-_]*?(\d{4})/i)
-  if (mm) {
-    const monthOffset = MONTH_TO_FY[mm[1].toLowerCase().slice(0, 3)] ?? 0
-    const fyEnd = parseInt(mm[2], 10) + monthOffset
-    return `FY${String(fyEnd).slice(-2)}`
+  const fnmMonth = filename.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,\-_]*?(\d{4})/i)
+  if (fnmMonth) {
+    const monthOffset = MONTH_TO_FY[fnmMonth[1].toLowerCase().slice(0, 3)] ?? 0
+    return `FY${String(parseInt(fnmMonth[2], 10) + monthOffset).slice(-2)}`
   }
-  // 4. Last-ditch: bare 4-digit year → assume calendar year → FY = same year + 1 if before April.
-  const yr = haystack.match(/\b(20\d{2})\b/)
-  if (yr) return `FY${yr[1].slice(-2)}`
+  // 2. Otherwise: pick the most-frequent FY token in the first 2000 chars
+  //    of the PDF body — covers + initial MD&A — favouring the latest year
+  //    on a tie.
+  const head = text.slice(0, 2000)
+  const counts = new Map<number, number>()
+  for (const m of head.matchAll(/\b(?:FY[\s\-]?20?(\d{2})|20(\d{2})\s*[-–_/]\s*20?(\d{2}))\b/gi)) {
+    const yy = parseInt(m[1] ?? m[3] ?? m[2] ?? '0', 10)
+    if (yy >= 18 && yy <= 30) counts.set(yy, (counts.get(yy) ?? 0) + 1)
+  }
+  if (counts.size > 0) {
+    const sorted = [...counts.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0])
+    return `FY${String(sorted[0][0]).padStart(2, '0')}`
+  }
   return 'FY' + new Date().getFullYear().toString().slice(2)
+}
+
+/**
+ * Reject implausible extracted values so a misread regex doesn't poison
+ * the snapshot. Per-metric bands derived from the IRDAI universe of
+ * insurer sizes — no individual insurer has GWP > ₹200,000 Cr, no
+ * combined ratio is below 50 or above 200, solvency ratios live in
+ * 0.5-10x, ratios stored as decimal (e.g. "1.15") are normalised to %.
+ */
+function sanitiseExtracted(raw: Record<string, number | null>): Record<string, number | null> {
+  const out: Record<string, number | null> = { ...raw }
+  // GWP / NWP / NEP / PAT: bounded between 1 and 200,000 Cr per insurer.
+  for (const k of ['gwp', 'nwp', 'nep', 'pat'] as const) {
+    const v = out[k]
+    if (v == null) continue
+    if (v < 1 || v > 200000) out[k] = null
+  }
+  // NWP ≤ GWP, NEP ≤ NWP. If violated, null the smaller / dependent value.
+  if (typeof out.gwp === 'number' && typeof out.nwp === 'number' && out.nwp > out.gwp * 1.1) out.nwp = null
+  if (typeof out.nwp === 'number' && typeof out.nep === 'number' && out.nep > out.nwp * 1.1) out.nep = null
+  // Combined ratio: ratio expressed as decimal (e.g. 1.15) → convert to %.
+  if (typeof out.combined_ratio === 'number') {
+    if (out.combined_ratio > 0 && out.combined_ratio < 5) out.combined_ratio = out.combined_ratio * 100
+    if (out.combined_ratio < 50 || out.combined_ratio > 200) out.combined_ratio = null
+  }
+  // Claims / expense ratios: same decimal-vs-% normalisation, plausible 0-200%.
+  for (const k of ['claims_ratio', 'expense_ratio'] as const) {
+    const v = out[k]
+    if (v == null) continue
+    if (v > 0 && v < 5) out[k] = v * 100
+    const after = out[k]
+    if (typeof after === 'number' && (after < 0 || after > 200)) out[k] = null
+  }
+  // Solvency: 0.5-10x.
+  if (typeof out.solvency_ratio === 'number' && (out.solvency_ratio < 0.5 || out.solvency_ratio > 10)) out.solvency_ratio = null
+  // ROE: -100 to 100%.
+  if (typeof out.roe === 'number' && (out.roe < -100 || out.roe > 100)) out.roe = null
+  return out
 }
