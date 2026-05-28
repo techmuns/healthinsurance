@@ -3,9 +3,12 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Label,
+  LabelList,
   Legend,
   Line,
   LineChart,
+  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -25,11 +28,11 @@ type ChartMode = 'Absolute Premium' | 'Mix %'
 //   Health / Niva / SAHI → highlighted teal+navy
 //   Motor / Private      → muted slate
 //   Others / PSU         → softest grey
-const HEALTH = '#168E8E'       // structural-growth teal
-const NIVA = '#27457E'         // focal navy
+const HEALTH = '#168E8E'
+const NIVA = '#27457E'
 const SAHI = '#27457E'
 const PRIVATE = '#8C97A8'
-const PSU = '#C8CFDA'
+const PSU = '#B7BFCC'
 const MOTOR = '#94A3B5'
 const OTHERS = '#CCD3DC'
 const GRID = '#EEF1F7'
@@ -50,12 +53,10 @@ export function MarketLandscape() {
 function HeroCard() {
   return (
     <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7">
-      {/* Subtle atmospheric tints — gold + teal glow, kept low-intensity */}
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
       <div className="pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(22,142,142,0.08),transparent_65%)]" />
 
       <div className="relative grid items-center gap-6 lg:grid-cols-[1.25fr_1fr]">
-        {/* Left — narrative */}
         <div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-[#E7DCC4] bg-[#FBF3E2]/70 px-2.5 py-1">
             <Sparkles className="h-3 w-3 text-champagne-deep" />
@@ -72,26 +73,10 @@ function HeroCard() {
           </p>
         </div>
 
-        {/* Right — three KPI pills */}
         <div className="grid gap-3 sm:grid-cols-3">
-          <KpiPill
-            value="40.8%"
-            label="Health share of GI premium"
-            tone="teal"
-            sub="FY26"
-          />
-          <KpiPill
-            value="18.8%"
-            label="Health premium CAGR"
-            tone="navy"
-            sub="FY15 – FY26"
-          />
-          <KpiPill
-            value="32.7%"
-            label="SAHI share of health"
-            tone="gold"
-            sub="FY26"
-          />
+          <KpiPill value="40.8%" label="Health share of GI premium" tone="teal" sub="FY26" />
+          <KpiPill value="18.8%" label="Health premium CAGR" tone="navy" sub="FY15 – FY26" />
+          <KpiPill value="32.7%" label="SAHI share of health" tone="gold" sub="FY26" />
         </div>
       </div>
     </section>
@@ -117,23 +102,14 @@ function KpiPill({
         : { bar: '#27457E', tint: 'bg-soft-blue', text: 'text-navy-primary' }
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-[#E4E8F0] bg-white/85 p-3.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_8px_22px_rgba(23,43,77,0.05)] backdrop-blur transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_30px_rgba(23,43,77,0.08)]">
-      <span
-        className="absolute inset-y-0 left-0 w-[3px]"
-        style={{ background: accent.bar }}
-      />
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: accent.bar }} />
       <div className="flex items-baseline justify-between pl-2">
-        <p className={`font-display text-[22px] leading-none ${accent.text}`}>
-          {value}
-        </p>
-        <span
-          className={`rounded-full ${accent.tint} px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${accent.text}`}
-        >
+        <p className={`font-display text-[22px] leading-none ${accent.text}`}>{value}</p>
+        <span className={`rounded-full ${accent.tint} px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide ${accent.text}`}>
           {sub}
         </span>
       </div>
-      <p className="mt-2 pl-2 text-[11.5px] leading-snug text-ink-secondary">
-        {label}
-      </p>
+      <p className="mt-2 pl-2 text-[11.5px] leading-snug text-ink-secondary">{label}</p>
     </div>
   )
 }
@@ -142,31 +118,65 @@ function KpiPill({
 function MainChartBlock() {
   const [mode, setMode] = useState<ChartMode>('Mix %')
   const data = mode === 'Absolute Premium' ? giPremiumAbsolute : giPremiumMix
-  const unit = mode === 'Absolute Premium' ? ' ₹k Cr' : '%'
+  const isMix = mode === 'Mix %'
+  const unit = isMix ? '%' : ' ₹k Cr'
+  const lastIdx = data.length - 1
+
+  // End-of-chart series labels at FY26. Only renders for the last datum;
+  // Recharts places (x, y) at the top edge of each stacked band, so we nudge
+  // the text down a few px to seat it inside the band.
+  const endLabel = (name: 'Health' | 'Motor' | 'Others', color: string, bold: boolean) =>
+    (props: any) => {
+      const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
+      if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number') return null
+      const display =
+        typeof value === 'number'
+          ? isMix
+            ? `${value.toFixed(1)}%`
+            : `${value.toFixed(0)}k`
+          : ''
+      return (
+        <g>
+          <text
+            x={x + 8}
+            y={y + 11}
+            fill={color}
+            fontSize={11}
+            fontWeight={bold ? 700 : 600}
+            style={{ letterSpacing: 0.1 }}
+          >
+            {name}
+          </text>
+          <text x={x + 8} y={y + 24} fill={color} fontSize={10} opacity={0.78}>
+            {display}
+          </text>
+        </g>
+      )
+    }
 
   return (
     <section className="card-surface p-5 sm:p-6">
-      <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
+      {/* Strong card header — eyebrow + title + subtitle on the left, toggle pinned right.
+          A hairline divider separates the header from the chart so the card no longer
+          reads as a floating chart. */}
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#EEF1F7] pb-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
             Pool Shift
           </p>
-          <h2 className="mt-1 font-display text-[19px] leading-tight text-navy-deep">
+          <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
             Where is the GI premium pool shifting?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Health vs Motor vs Others, FY15 → FY26 · mock
+            Health vs Motor vs Others · FY15 → FY26 · mock
           </p>
         </div>
         <ChartToggle value={mode} onChange={setMode} />
       </header>
 
-      <div style={{ width: '100%', height: 320 }}>
+      <div style={{ width: '100%', height: 276 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 8, right: 18, left: -4, bottom: 4 }}
-          >
+          <AreaChart data={data} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
             <defs>
               <linearGradient id="healthFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={HEALTH} stopOpacity={0.55} />
@@ -193,42 +203,24 @@ function MainChartBlock() {
               tickLine={false}
               axisLine={{ stroke: GRID }}
               width={46}
-              unit={unit.trim() === '%' ? '%' : ''}
+              domain={isMix ? [0, 100] : ['auto', 'auto']}
+              ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
+              unit={isMix ? '%' : ''}
             />
             <Tooltip
               cursor={{ stroke: '#27457E', strokeOpacity: 0.18, strokeWidth: 1 }}
               content={<EngineTooltip unit={unit} highlight="Health" />}
             />
-            <Legend
-              wrapperStyle={{ fontSize: 11, paddingTop: 6 }}
-              iconType="circle"
-              align="right"
-              verticalAlign="top"
-            />
-            <Area
-              type="monotone"
-              dataKey="Others"
-              stackId="1"
-              stroke={OTHERS}
-              strokeWidth={1.2}
-              fill="url(#othersFill)"
-            />
-            <Area
-              type="monotone"
-              dataKey="Motor"
-              stackId="1"
-              stroke={MOTOR}
-              strokeWidth={1.2}
-              fill="url(#motorFill)"
-            />
-            <Area
-              type="monotone"
-              dataKey="Health"
-              stackId="1"
-              stroke={HEALTH}
-              strokeWidth={2.4}
-              fill="url(#healthFill)"
-            />
+            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="circle" align="right" verticalAlign="top" />
+            <Area type="monotone" dataKey="Others" stackId="1" stroke={OTHERS} strokeWidth={1.2} fill="url(#othersFill)">
+              <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
+            </Area>
+            <Area type="monotone" dataKey="Motor" stackId="1" stroke={MOTOR} strokeWidth={1.2} fill="url(#motorFill)">
+              <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
+            </Area>
+            <Area type="monotone" dataKey="Health" stackId="1" stroke={HEALTH} strokeWidth={2.4} fill="url(#healthFill)">
+              <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
+            </Area>
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -238,13 +230,7 @@ function MainChartBlock() {
   )
 }
 
-function ChartToggle({
-  value,
-  onChange,
-}: {
-  value: ChartMode
-  onChange: (v: ChartMode) => void
-}) {
+function ChartToggle({ value, onChange }: { value: ChartMode; onChange: (v: ChartMode) => void }) {
   const opts: ChartMode[] = ['Absolute Premium', 'Mix %']
   return (
     <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
@@ -258,9 +244,7 @@ function ChartToggle({
             aria-pressed={active}
             className={[
               'rounded-full px-3 py-1 text-[11.5px] font-medium transition-all duration-200',
-              active
-                ? 'bg-navy-primary text-white shadow-soft'
-                : 'text-ink-secondary hover:text-navy-primary',
+              active ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary',
             ].join(' ')}
           >
             {o}
@@ -298,13 +282,8 @@ function EngineTooltip({
               key={p.name}
               className={`flex items-center gap-1.5 ${p.name === highlight ? 'font-semibold text-navy-deep' : 'text-ink-secondary'}`}
             >
-              <span
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ background: p.color }}
-              />
-              <span className="text-[10.5px] uppercase tracking-wide">
-                {p.name}
-              </span>
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: p.color }} />
+              <span className="text-[10.5px] uppercase tracking-wide">{p.name}</span>
               <span className="text-[11.5px] tabular-nums">
                 {typeof p.value === 'number' ? p.value.toFixed(1) : p.value}
                 {unit.trim() === '%' ? '%' : ` ${unit.trim()}`}
@@ -318,11 +297,11 @@ function EngineTooltip({
 
 function AiRead({ text }: { text: string }) {
   return (
-    <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-[#E1F2F1] bg-[#F2FAF9] px-3.5 py-2.5">
-      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-teal/15 text-teal">
-        <Sparkles className="h-3 w-3" />
+    <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-[#E1F2F1] bg-[#F2FAF9] px-3 py-1.5">
+      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal/15 text-teal">
+        <Sparkles className="h-2.5 w-2.5" />
       </span>
-      <p className="text-[12.5px] leading-relaxed text-navy-deep">
+      <p className="text-[12px] leading-snug text-navy-deep">
         <span className="font-semibold">AI read · </span>
         {text}
       </p>
@@ -340,11 +319,32 @@ function BridgeBlock() {
   )
 }
 
+// Three-line trend — SAHI highlighted (thicker navy), Private muted slate,
+// PSU lightest grey. Right-side end labels make the up/down story instant.
 function SahiShiftCard() {
+  const data = healthCarrierShare
+  const lastIdx = data.length - 1
+
+  const seriesLabel = (name: 'SAHI' | 'Private' | 'PSU', color: string, bold: boolean) =>
+    (props: any) => {
+      const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
+      if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number') return null
+      return (
+        <g>
+          <text x={x + 8} y={y + 4} fill={color} fontSize={11} fontWeight={bold ? 700 : 600}>
+            {name}
+          </text>
+          <text x={x + 8} y={y + 16} fill={color} fontSize={10} opacity={0.8}>
+            {typeof value === 'number' ? `${value.toFixed(1)}%` : ''}
+          </text>
+        </g>
+      )
+    }
+
   return (
     <div className="card-surface p-5">
-      <header className="mb-3">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
+      <header className="mb-3 border-b border-[#EEF1F7] pb-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
           Inside Health
         </p>
         <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
@@ -355,27 +355,9 @@ function SahiShiftCard() {
         </p>
       </header>
 
-      <div style={{ width: '100%', height: 200 }}>
+      <div style={{ width: '100%', height: 196 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={healthCarrierShare}
-            margin={{ top: 6, right: 8, left: -8, bottom: 0 }}
-            stackOffset="expand"
-          >
-            <defs>
-              <linearGradient id="sahiFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={SAHI} stopOpacity={0.55} />
-                <stop offset="100%" stopColor={SAHI} stopOpacity={0.22} />
-              </linearGradient>
-              <linearGradient id="privateFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={PRIVATE} stopOpacity={0.4} />
-                <stop offset="100%" stopColor={PRIVATE} stopOpacity={0.15} />
-              </linearGradient>
-              <linearGradient id="psuFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={PSU} stopOpacity={0.55} />
-                <stop offset="100%" stopColor={PSU} stopOpacity={0.25} />
-              </linearGradient>
-            </defs>
+          <LineChart data={data} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
             <XAxis
               dataKey="label"
@@ -387,42 +369,46 @@ function SahiShiftCard() {
               tick={{ fontSize: 10.5, fill: AXIS }}
               tickLine={false}
               axisLine={{ stroke: GRID }}
-              tickFormatter={(v) => `${Math.round(v * 100)}%`}
               width={36}
+              domain={[15, 50]}
+              ticks={[20, 30, 40, 50]}
+              unit="%"
             />
             <Tooltip
               cursor={{ stroke: '#27457E', strokeOpacity: 0.15 }}
               content={<EngineTooltip unit="%" highlight="SAHI" />}
             />
-            <Legend
-              wrapperStyle={{ fontSize: 10.5, paddingTop: 4 }}
-              iconType="circle"
-            />
-            <Area
+            <Line
               type="monotone"
               dataKey="PSU"
-              stackId="h"
               stroke={PSU}
-              strokeWidth={1}
-              fill="url(#psuFill)"
-            />
-            <Area
+              strokeWidth={1.6}
+              dot={false}
+              activeDot={{ r: 3.5 }}
+            >
+              <LabelList dataKey="PSU" content={seriesLabel('PSU', '#7A8597', false)} />
+            </Line>
+            <Line
               type="monotone"
               dataKey="Private"
-              stackId="h"
               stroke={PRIVATE}
-              strokeWidth={1}
-              fill="url(#privateFill)"
-            />
-            <Area
+              strokeWidth={1.6}
+              dot={false}
+              activeDot={{ r: 3.5 }}
+            >
+              <LabelList dataKey="Private" content={seriesLabel('Private', '#6F7C90', false)} />
+            </Line>
+            <Line
               type="monotone"
               dataKey="SAHI"
-              stackId="h"
               stroke={SAHI}
-              strokeWidth={2.2}
-              fill="url(#sahiFill)"
-            />
-          </AreaChart>
+              strokeWidth={2.8}
+              dot={{ r: 3, fill: SAHI, strokeWidth: 0 }}
+              activeDot={{ r: 4.5 }}
+            >
+              <LabelList dataKey="SAHI" content={seriesLabel('SAHI', SAHI, true)} />
+            </Line>
+          </LineChart>
         </ResponsiveContainer>
       </div>
 
@@ -441,12 +427,19 @@ function NivaBridgeCard() {
     { value: '+196 bps', label: 'Retail market share gain', tone: 'gold' },
     { value: '10.1%', label: 'FY26 retail market share', tone: 'navy' },
   ]
+
+  const firstShare = nivaRetailShare[0].share as number
+  const lastShare = nivaRetailShare[nivaRetailShare.length - 1].share as number
+  const firstLabel = nivaRetailShare[0].label as string
+  const lastLabel = nivaRetailShare[nivaRetailShare.length - 1].label as string
+
   return (
     <div className="card-surface relative overflow-hidden p-5">
       <div className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(39,69,126,0.06),transparent_70%)]" />
-      <header className="relative mb-3 flex items-start justify-between gap-2">
+
+      <header className="relative mb-3 flex items-start justify-between gap-2 border-b border-[#EEF1F7] pb-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
             Bridge
           </p>
           <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
@@ -465,21 +458,19 @@ function NivaBridgeCard() {
         ))}
       </div>
 
-      <div className="relative mt-4 rounded-xl border border-[#E8EBF1] bg-[#FAFBFD] p-3">
+      <div className="relative mt-4 rounded-xl border border-[#E8EBF1] bg-[#FAFBFD] px-3 pb-2 pt-2.5">
         <div className="mb-1 flex items-baseline justify-between">
           <p className="text-[11px] font-semibold text-navy-deep">
             Niva retail market share
           </p>
-          <p className="text-[10px] uppercase tracking-wide text-ink-secondary">
-            FY23 → FY26
-          </p>
+          <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-1.5 py-0.5 text-[10px] font-semibold text-champagne-deep">
+            <ArrowUpRight className="h-2.5 w-2.5" />
+            +196 bps
+          </span>
         </div>
-        <div style={{ width: '100%', height: 96 }}>
+        <div style={{ width: '100%', height: 104 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={nivaRetailShare}
-              margin={{ top: 8, right: 8, left: -18, bottom: -6 }}
-            >
+            <LineChart data={nivaRetailShare} margin={{ top: 16, right: 36, left: 28, bottom: 0 }}>
               <defs>
                 <linearGradient id="nivaLine" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor={NIVA} stopOpacity={0.85} />
@@ -493,22 +484,13 @@ function NivaBridgeCard() {
                 tickLine={false}
                 axisLine={{ stroke: GRID }}
               />
-              <YAxis
-                tick={{ fontSize: 10, fill: AXIS }}
-                tickLine={false}
-                axisLine={{ stroke: GRID }}
-                width={32}
-                domain={['dataMin - 0.4', 'dataMax + 0.4']}
-                unit="%"
-              />
+              <YAxis hide domain={['dataMin - 0.5', 'dataMax + 0.7']} />
               <Tooltip
                 cursor={{ stroke: NIVA, strokeOpacity: 0.2 }}
                 content={({ active, payload, label }) =>
                   active && payload && payload[0] ? (
                     <div className="rounded-lg border border-[#E5E8EF] bg-white px-2.5 py-1.5 shadow-md">
-                      <p className="text-[10px] font-semibold text-navy-deep">
-                        {label}
-                      </p>
+                      <p className="text-[10px] font-semibold text-navy-deep">{label}</p>
                       <p className="text-[11px] tabular-nums text-navy-primary">
                         {Number(payload[0].value).toFixed(2)}%
                       </p>
@@ -521,9 +503,47 @@ function NivaBridgeCard() {
                 dataKey="share"
                 stroke="url(#nivaLine)"
                 strokeWidth={2.4}
-                dot={{ r: 3, fill: NIVA, strokeWidth: 0 }}
-                activeDot={{ r: 4 }}
+                // Endpoints (FY23 / FY26) render as solid navy dots; the two
+                // intermediate years use a lighter, smaller dot so the eye lands
+                // on the start-to-finish gain.
+                dot={(props) => {
+                  const { cx, cy, index } = props as { cx?: number; cy?: number; index?: number }
+                  if (cx == null || cy == null) return <g />
+                  const isEnd = index === 0 || index === nivaRetailShare.length - 1
+                  return (
+                    <circle
+                      cx={cx}
+                      cy={cy}
+                      r={isEnd ? 4.5 : 2.4}
+                      fill={isEnd ? NIVA : '#B7C2D6'}
+                      stroke={isEnd ? '#FFFFFF' : undefined}
+                      strokeWidth={isEnd ? 1.5 : 0}
+                    />
+                  )
+                }}
+                activeDot={{ r: 5 }}
               />
+              {/* Anchor labels for the FY23 start and FY26 end of the bridge. */}
+              <ReferenceDot x={firstLabel} y={firstShare} r={0} ifOverflow="extendDomain">
+                <Label
+                  value={`${firstShare.toFixed(2)}%`}
+                  position="top"
+                  offset={10}
+                  fill="#6B7280"
+                  fontSize={10}
+                  fontWeight={600}
+                />
+              </ReferenceDot>
+              <ReferenceDot x={lastLabel} y={lastShare} r={0} ifOverflow="extendDomain">
+                <Label
+                  value={`${lastShare.toFixed(2)}%`}
+                  position="top"
+                  offset={10}
+                  fill={NIVA}
+                  fontSize={11}
+                  fontWeight={700}
+                />
+              </ReferenceDot>
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -546,21 +566,14 @@ function MetricMini({
   label: string
   tone: 'teal' | 'navy' | 'gold'
 }) {
-  const bar =
-    tone === 'teal' ? '#168E8E' : tone === 'gold' ? '#B68B3A' : '#27457E'
+  const bar = tone === 'teal' ? '#168E8E' : tone === 'gold' ? '#B68B3A' : '#27457E'
   const text =
-    tone === 'teal'
-      ? 'text-teal'
-      : tone === 'gold'
-        ? 'text-champagne-deep'
-        : 'text-navy-primary'
+    tone === 'teal' ? 'text-teal' : tone === 'gold' ? 'text-champagne-deep' : 'text-navy-primary'
   return (
     <div className="relative overflow-hidden rounded-xl border border-[#E4E8F0] bg-white px-3 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(23,43,77,0.07)]">
       <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: bar }} />
       <p className={`font-display text-[17px] leading-none ${text}`}>{value}</p>
-      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">
-        {label}
-      </p>
+      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">{label}</p>
     </div>
   )
 }
@@ -568,16 +581,16 @@ function MetricMini({
 // ─── 4. TAKEAWAY STRIP ─────────────────────────────────────────────────────
 function TakeawayStrip() {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-[#D6E5DF] bg-gradient-to-r from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8] p-4 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_10px_24px_rgba(23,43,77,0.05)]">
-      <span className="absolute inset-y-0 left-0 w-1.5 bg-gradient-to-b from-teal to-champagne" />
-      <div className="flex flex-wrap items-center gap-3 pl-3">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 ring-1 ring-[#CFE3DA]">
+    <section className="relative overflow-hidden rounded-xl border border-[#D6E5DF] bg-gradient-to-r from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)]">
+      <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-teal to-champagne" />
+      <div className="flex flex-wrap items-center gap-3 pl-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-0.5 ring-1 ring-[#CFE3DA]">
           <span className="h-1.5 w-1.5 rounded-full bg-teal" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-teal">
             Market Read · Positive
           </span>
         </span>
-        <p className="flex-1 text-[13px] leading-relaxed text-navy-deep">
+        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">
           Health is the fastest structural pool in GI, SAHIs are gaining
           share, and{' '}
           <span className="font-semibold">
