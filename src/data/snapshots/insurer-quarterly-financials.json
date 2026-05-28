@@ -3,12 +3,41 @@
     "snapshot_id": "insurer-quarterly-financials",
     "description": "Quarterly company financials — GWP, NWP, NEP, PAT, combined ratio, solvency, ROE — drawn from quarterly disclosures.",
     "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
-    "upstream_sources": ["irdai_public_disclosures", "company_ir"],
+    "dataset": "mixed",
+    "last_updated": "2026-05-28",
+    "last_successful_run": "2026-05-28T12:40:18.285Z",
+    "upstream_sources": [
+      "irdai_public_disclosures",
+      "company_ir"
+    ],
     "parser_status": "pending",
     "notes": "Quarterly view in the UI shows EmptyState until this is populated. Do NOT synthesize quarterly numbers from annual data."
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "care-health",
+      "quarter": "Q3",
+      "fiscal_year": "FY25",
+      "gwp": null,
+      "nwp": null,
+      "nep": null,
+      "pat": 31,
+      "combined_ratio": 114.99999999999999,
+      "claims_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": 1.56,
+      "roe": null,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "care-health Q3 FY25 public disclosure",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_period": "Q3 FY25",
+        "fetched_at": "2026-05-28T12:39:51.266Z",
+        "parsed_at": "2026-05-28T12:40:05.477Z",
+        "parser_name": "ingest-company-disclosures",
+        "confidence": "high"
+      }
+    }
+  ]
 }

@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-05-28",
-    "last_successful_run": "2026-05-28T12:35:56.290Z",
+    "last_successful_run": "2026-05-28T12:40:18.283Z",
     "upstream_sources": [
       "irdai_handbook",
       "irdai_public_disclosures",
@@ -58,8 +58,8 @@
     {
       "company_id": "niva-bupa",
       "fiscal_year": "FY24",
-      "gwp": null,
-      "nwp": null,
+      "gwp": 7407,
+      "nwp": 3183.1,
       "nep": null,
       "pat": 82,
       "revenue": null,
@@ -79,12 +79,12 @@
       "employee_count": null,
       "distribution_summary": null,
       "provenance": {
-        "source_name": "niva-bupa disclosure (FY24)",
+        "source_name": "niva-bupa FY24 annual disclosure",
         "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
         "source_period": "FY24",
-        "fetched_at": "2026-05-28T12:35:19.619Z",
-        "parsed_at": "2026-05-28T12:35:32.748Z",
+        "fetched_at": "2026-05-28T12:39:51.266Z",
+        "parsed_at": "2026-05-28T12:39:56.522Z",
         "parser_name": "ingest-company-disclosures",
         "confidence": "high"
       }

@@ -152,19 +152,19 @@
       "confidence": "high"
     },
     "gwp::niva-bupa::FY24": {
-      "source_name": "niva-bupa disclosure (FY24)",
+      "source_name": "niva-bupa FY24 annual disclosure",
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY24",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "nwp::niva-bupa::FY24": {
-      "source_name": "niva-bupa disclosure (FY24)",
+      "source_name": "niva-bupa FY24 annual disclosure",
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY24",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "nep::niva-bupa::FY24": {
@@ -176,19 +176,19 @@
       "confidence": "high"
     },
     "combined_ratio::niva-bupa::FY24": {
-      "source_name": "niva-bupa disclosure (FY24)",
+      "source_name": "niva-bupa FY24 annual disclosure",
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY24",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "solvency_ratio::niva-bupa::FY24": {
-      "source_name": "niva-bupa disclosure (FY24)",
+      "source_name": "niva-bupa FY24 annual disclosure",
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY24",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "nwp::care-health::FY25": {
@@ -208,27 +208,27 @@
       "confidence": "high"
     },
     "pat::care-health::FY25": {
-      "source_name": "care-health disclosure (FY25)",
+      "source_name": "care-health Q3 FY25 public disclosure",
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
-      "source_period": "FY25",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "source_period": "Q3 FY25",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "combined_ratio::care-health::FY25": {
-      "source_name": "care-health disclosure (FY25)",
+      "source_name": "care-health Q3 FY25 public disclosure",
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
-      "source_period": "FY25",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "source_period": "Q3 FY25",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "solvency_ratio::care-health::FY25": {
-      "source_name": "care-health disclosure (FY25)",
+      "source_name": "care-health Q3 FY25 public disclosure",
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
-      "source_period": "FY25",
-      "fetched_at": "2026-05-28T12:35:19.619Z",
+      "source_period": "Q3 FY25",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     },
     "nep::aditya-birla::FY26": {
@@ -245,6 +245,14 @@
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/aditya-birla/aditya-birla-AgentCode.pdf",
       "source_period": "FY26",
       "fetched_at": "2026-05-28T12:30:05.762Z",
+      "confidence": "high"
+    },
+    "period_type::care-health::FY25": {
+      "source_name": "care-health Q3 FY25 public disclosure",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "Q3 FY25",
+      "fetched_at": "2026-05-28T12:39:51.266Z",
       "confidence": "high"
     }
   }

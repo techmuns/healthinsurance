@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-05-28T12:35:56.297Z",
-  "last_failed_run": "2026-05-28T12:35:56.297Z",
+  "last_successful_run": "2026-05-28T12:40:18.295Z",
+  "last_failed_run": "2026-05-28T12:40:18.295Z",
   "sources_checked": 3,
   "sources_success": 1,
   "sources_failed": 1,
@@ -37,7 +37,11 @@
     "combined_ratio::care-health::FY25",
     "solvency_ratio::care-health::FY25",
     "nep::aditya-birla::FY26",
-    "pat::aditya-birla::FY26"
+    "pat::aditya-birla::FY26",
+    "pat::care-health::Q3::FY25",
+    "combined_ratio::care-health::Q3::FY25",
+    "solvency_ratio::care-health::Q3::FY25",
+    "period_type::care-health::Q3::FY25"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -80,7 +84,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T12:35:16.502Z",
+      "last_attempt_at": "2026-05-28T12:39:48.035Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -186,8 +190,8 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-28T12:35:19.619Z",
-      "last_success_at": "2026-05-28T12:35:19.619Z",
+      "last_attempt_at": "2026-05-28T12:39:51.266Z",
+      "last_success_at": "2026-05-28T12:39:51.266Z",
       "records_fetched": 2
     },
     {
@@ -200,7 +204,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-28T12:35:56.280Z",
+      "last_attempt_at": "2026-05-28T12:40:18.276Z",
       "last_success_at": null,
       "records_fetched": 0
     },
