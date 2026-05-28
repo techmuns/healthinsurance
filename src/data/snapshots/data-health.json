@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-05-28T12:43:50.478Z",
-  "last_failed_run": "2026-05-28T12:43:50.478Z",
+  "last_successful_run": "2026-05-28T19:12:46.672Z",
+  "last_failed_run": "2026-05-28T19:12:46.672Z",
   "sources_checked": 3,
   "sources_success": 1,
   "sources_failed": 1,
@@ -45,7 +45,11 @@
     "gwp::niva-bupa::FY25",
     "nwp::niva-bupa::FY25",
     "combined_ratio::niva-bupa::FY25",
-    "solvency_ratio::niva-bupa::FY25"
+    "solvency_ratio::niva-bupa::FY25",
+    "gwp::star-health::FY25",
+    "nep::star-health::FY25",
+    "solvency_ratio::star-health::FY25",
+    "roe::star-health::FY25"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -70,8 +74,7 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[company_disclosures_batch] No financial PDF link found on https://www.starhealth.in/investors/financial-information/ (or sub-pages) for star-health",
-    "[company_disclosures_batch] aditya-birla: parsed 1191 chars from aditya-birla-complain-form.pdf but no patterns matched plausibility rules.",
+    "[company_disclosures_batch] No financial PDF link found on https://www.adityabirlacapital.com/healthinsurance/about-us/financials (or sub-pages) for aditya-birla",
     "[company_disclosures_batch] No financial PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures (or sub-pages) for manipalcigna",
     "[ownership_quarterly] Live parser not yet implemented."
   ],
@@ -88,7 +91,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T12:43:19.080Z",
+      "last_attempt_at": "2026-05-28T19:12:13.089Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -194,9 +197,9 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-28T12:43:22.227Z",
-      "last_success_at": "2026-05-28T12:43:22.227Z",
-      "records_fetched": 2
+      "last_attempt_at": "2026-05-28T19:12:16.280Z",
+      "last_success_at": "2026-05-28T19:12:16.280Z",
+      "records_fetched": 3
     },
     {
       "source_id": "distribution_extract",
@@ -208,7 +211,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-28T12:43:50.474Z",
+      "last_attempt_at": "2026-05-28T19:12:46.630Z",
       "last_success_at": null,
       "records_fetched": 0
     },
