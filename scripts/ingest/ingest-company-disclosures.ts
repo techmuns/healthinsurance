@@ -228,11 +228,16 @@ const MONTH_TO_FY: Record<string, number> = {
  */
 function inferFY(filename: string, text: string): string {
   // 1. Filename takes precedence — usually carries the canonical year.
-  const fnm = filename.match(/\b20(\d{2})\s*[-–_/]\s*20?(\d{2})\b/) ?? filename.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
-  if (fnm) {
-    const end = fnm[2] ?? fnm[1]
-    return `FY${end.padStart(2, '0').slice(-2)}`
+  //    Match the year-range pattern first (covers "2024-25", "2024-2025",
+  //    "FY-2024-25", "24_25" — handles 2 or 4 digit years on both sides
+  //    so the regex doesn't choke on the second-year being only 2 digits).
+  const fnmRange = filename.match(/(\d{2,4})\s*[-–_/]\s*(\d{2,4})/)
+  if (fnmRange) {
+    const end = fnmRange[2]
+    return `FY${end.slice(-2).padStart(2, '0')}`
   }
+  const fnmFy = filename.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
+  if (fnmFy) return `FY${fnmFy[1].padStart(2, '0').slice(-2)}`
   const fnmMonth = filename.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,\-_]*?(\d{4})/i)
   if (fnmMonth) {
     const monthOffset = MONTH_TO_FY[fnmMonth[1].toLowerCase().slice(0, 3)] ?? 0
