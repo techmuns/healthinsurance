@@ -19,17 +19,28 @@ import * as XLSX from 'xlsx'
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { RAW_ROOT, ensureDir, fileExists, isOfflineMode, writeRaw } from './util'
 
-// Real desktop-Chrome User-Agent so IRDAI / CDN-fronted insurer sites stop
-// returning 403 to the default Node fetch UA. Paired with Accept-Language
-// + Accept headers that mirror a normal browser request.
-const BROWSER_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  Accept:
-    'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.9',
-  'Accept-Encoding': 'gzip, deflate, br',
-  'Cache-Control': 'no-cache',
+// Real desktop-Chrome User-Agent + a full browser fingerprint so IRDAI /
+// CDN-fronted insurer sites stop returning 403 to the default Node fetch UA.
+function browserHeaders(url: string): Record<string, string> {
+  const u = new URL(url)
+  // IRDAI's WAF accepts requests that look like they originated from a real
+  // browsing session — Referer matching the site root + Sec-Fetch-* headers
+  // are what their CDN inspects.
+  return {
+    'User-Agent':
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    Accept:
+      'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Cache-Control': 'no-cache',
+    Referer: `${u.protocol}//${u.host}/`,
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+  }
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -46,7 +57,7 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
     try {
       const res = await fetch(url, {
         redirect: 'follow',
-        headers: BROWSER_HEADERS,
+        headers: browserHeaders(url),
       })
       if (res.status >= 500 || res.status === 429) {
         lastErr = new Error(`HTTP ${res.status} for ${url}`)
