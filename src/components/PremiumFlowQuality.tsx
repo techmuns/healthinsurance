@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Customized, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import {
   compareQuarters,
@@ -11,9 +10,11 @@ import {
   getPremiumFlow,
   getQualityMix,
   getRetentionCohort,
+  insurers,
 } from '@/data/mockData'
 import type { FlowPoint, MixSeries, RetentionNode } from '@/data/mockData'
-import type { Insurer } from '@/data/types'
+import { useFilters } from '@/state/filters'
+import { EmptyState } from './EmptyState'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
@@ -100,59 +101,6 @@ function Pill({ children }: { children: React.ReactNode }) {
   )
 }
 
-function CompanyMenu({ companies, value, onChange }: { companies: Insurer[]; value: string; onChange: (id: string) => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-  const current = companies.find((c) => c.id === value)
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-lg border border-soft-border bg-ice px-3 py-1.5 text-[13px] outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
-      >
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">Company</span>
-        <span className="font-semibold text-navy-deep">{current?.shortName ?? 'Select'}</span>
-        <ChevronDown className={['h-3.5 w-3.5 text-ink-secondary transition-transform', open ? 'rotate-180' : ''].join(' ')} />
-      </button>
-      {open && (
-        <div className="absolute right-0 z-20 mt-1.5 w-52 rounded-xl2 border border-soft-border bg-card p-1.5 shadow-card">
-          {companies.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => {
-                onChange(c.id)
-                setOpen(false)
-              }}
-              className={[
-                'flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[12.5px] transition-colors',
-                c.id === value ? 'bg-soft-blue font-semibold text-navy-deep' : 'text-ink-primary hover:bg-ice',
-              ].join(' ')}
-            >
-              <span className="h-2 w-2 shrink-0 rounded-sm" style={{ background: FOCAL }} />
-              {c.shortName}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 function Tabs({ value, onChange }: { value: Tab; onChange: (t: Tab) => void }) {
   const tabs: Tab[] = ['Flow', 'Mix', 'Retention']
   return (
@@ -207,13 +155,11 @@ function FlowTooltip({
   payload,
   stage,
   data,
-  showYoy,
 }: {
   active?: boolean
   payload?: { payload?: FlowPoint }[]
   stage: Stage
   data?: FlowPoint[]
-  showYoy?: boolean
 }) {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
@@ -224,10 +170,9 @@ function FlowTooltip({
     { k: 'NWP', label: 'NWP · Retained', value: d.nwp, color: TEAL },
     { k: 'NEP', label: 'NEP · Earned', value: d.nep, color: NEP_BLUE },
   ]
-  // YoY row — only shown when the chart view is "Absolute + YoY" and we
-  // have a previous period to compare against.
+  // YoY row — always shown when a previous period exists.
   let yoy: { value: number; prev: FlowPoint } | null = null
-  if (showYoy && data && data.length > 1) {
+  if (data && data.length > 1) {
     const idx = data.findIndex((p) => p.period === d.period)
     if (idx > 0) {
       const prev = data[idx - 1]
@@ -268,11 +213,8 @@ function FlowTooltip({
   )
 }
 
-type ChartView = 'Absolute' | 'Absolute + YoY'
-
 function FlowView({ companyId, period }: { companyId: string; period: Period }) {
   const [stage, setStage] = useState<Stage>('GWP')
-  const [chartView, setChartView] = useState<ChartView>('Absolute')
   const flow = getPremiumFlow(companyId, period)
   if (!flow) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Premium flow is not reported for this company.</div>
@@ -299,13 +241,11 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
         ? 'Teal = premium retained · muted terracotta = ceded to reinsurers.'
         : 'Steel = premium earned in the period · muted = retained but not yet earned.'
 
-  // YoY overlay — only renders when chartView === 'Absolute + YoY'. Reads the
-  // top-most stacked bar geometry from Recharts so the connector lands on the
-  // actual rendered bar tops regardless of the active stage.
+  // YoY overlay — always rendered. Reads the top-most stacked bar geometry
+  // from Recharts so the connector lands on the actual rendered bar tops
+  // regardless of the active stage.
   const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
-  const showYoy = chartView === 'Absolute + YoY'
   const YoyOverlay = (cprops: { formattedGraphicalItems?: { item?: { props?: { dataKey?: string } }; props?: { data?: { x?: number; y?: number; width?: number; height?: number }[] } }[] }) => {
-    if (!showYoy) return null
     const items = cprops.formattedGraphicalItems ?? []
     // Walk the stack from outermost layer inward to find the first layer that
     // has non-zero height for each index — that's the top of each bar.
@@ -391,26 +331,25 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
                 type="button"
                 onClick={() => setStage(s.k)}
                 className={['rounded-md px-3.5 py-1 text-[12px] font-semibold transition-all', on ? 'text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}
-                style={on ? { background: s.color } : undefined}
+                // Active button: stage colour fill + subtle gold inset underline
+                // as the "premium selected" accent.
+                style={on ? { background: s.color, boxShadow: 'inset 0 -2px 0 0 #B68B3A, 0 1px 2px rgba(23,43,77,0.05)' } : undefined}
               >
                 {s.k}
               </button>
             )
           })}
         </div>
-        <SegmentedControl<ChartView>
-          options={['Absolute', 'Absolute + YoY'] as ChartView[]}
-          value={chartView}
-          onChange={setChartView}
-          size="sm"
-        />
+        <span className="text-[11px] text-ink-secondary">
+          Highlighting <span className="font-semibold text-navy-deep">{stage}</span> · YoY shown between bars
+        </span>
       </div>
       <ResponsiveContainer width="100%" height={288}>
-        <BarChart data={data} margin={{ top: showYoy ? 30 : 18, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
+        <BarChart data={data} margin={{ top: 30, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
           <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
           <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
           <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
-          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip stage={stage} data={data} showYoy={showYoy} />} />
+          <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<FlowTooltip stage={stage} data={data} />} />
           <Bar dataKey="earned" stackId="flow" fill={stageSegColor('earned', stage)} maxBarSize={44} isAnimationActive={false}>
             {stage === 'NEP' && <LabelList content={makeLabel('nep')} />}
           </Bar>
@@ -424,9 +363,7 @@ function FlowView({ companyId, period }: { companyId: string; period: Period }) 
           <Customized component={YoyOverlay as any} />
         </BarChart>
       </ResponsiveContainer>
-      <p className="mt-2 text-[11.5px] text-ink-secondary">
-        Highlighting <span className="font-semibold text-navy-deep">{stage}</span> · {caption}
-      </p>
+      <p className="mt-2 text-[11.5px] text-ink-secondary">{caption}</p>
     </div>
   )
 }
@@ -670,18 +607,16 @@ function RetentionView({ companyId, period }: { companyId: string; period: Perio
 
 // --- Module shell ------------------------------------------------------------
 
-export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[]; focalId: string }) {
+export function PremiumFlowQuality({ focalId }: { focalId: string }) {
   const [tab, setTab] = useState<Tab>('Flow')
-  const [period, setPeriod] = useState<Period>('Yearly')
-  const [companyId, setCompanyId] = useState(focalId)
+  const { period: globalPeriod } = useFilters()
+  // Map global TimePeriod ('Annual' | 'Quarterly' | 'Monthly') to the internal
+  // Period the chart speaks ('Yearly' | 'Quarterly'). Monthly is not supported
+  // by the underlying premium series — gate it with an EmptyState below.
+  const period: Period = globalPeriod === 'Quarterly' ? 'Quarterly' : 'Yearly'
+  const periodUnavailable = globalPeriod === 'Monthly'
 
-  useEffect(() => {
-    if (!companies.some((c) => c.id === companyId)) {
-      setCompanyId(companies.some((c) => c.id === focalId) ? focalId : (companies[0]?.id ?? focalId))
-    }
-  }, [companies, companyId, focalId])
-
-  const company = companies.find((c) => c.id === companyId) ?? companies[0]
+  const company = insurers.find((c) => c.id === focalId) ?? insurers[0]
   const name = company?.shortName ?? 'Company'
   const periodLabel = period === 'Quarterly' ? 'Last 4 quarters' : 'FY21–FY25'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
@@ -743,36 +678,43 @@ export function PremiumFlowQuality({ companies, focalId }: { companies: Insurer[
 
   return (
     <div className="card-surface p-4 sm:p-5">
-      {/* Controls: tabs + company + period (minimal, no extra dropdowns) */}
+      {/* Controls: tabs only — company & period come from the global header. */}
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-soft-border pb-3">
         <Tabs value={tab} onChange={setTab} />
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <CompanyMenu companies={companies} value={companyId} onChange={setCompanyId} />
-          <SegmentedControl<Period> label="Period" options={['Yearly', 'Quarterly'] as Period[]} value={period} onChange={setPeriod} size="sm" />
-        </div>
       </div>
 
-      {/* Headline with gold accent + automatic period context */}
+      {/* Headline with gold accent + automatic period context (from header). */}
       <div className="mt-3.5 flex items-center gap-2.5">
         <span className="h-5 w-1.5 rounded-full" style={{ background: GOLD }} />
         <h3 className="font-display text-[18px] leading-tight text-navy-deep">{headline}</h3>
       </div>
       <p className="mt-1 pl-4 text-[12px] text-ink-secondary">
-        <span className="font-semibold text-navy-deep">{name}</span> · <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
+        <span className="font-semibold text-navy-deep">{name}</span> ·{' '}
+        <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
       </p>
 
       {/* Slim insight strip (shared treatment across all tabs) */}
-      {chips.length > 0 && (
+      {!periodUnavailable && chips.length > 0 && (
         <div className="mt-3.5">
           <SlimStrip chips={chips} />
         </div>
       )}
 
-      {/* Tab content */}
+      {/* Tab content — Monthly is not supported by the premium series. */}
       <div className="mt-4">
-        {tab === 'Flow' && company && <FlowView companyId={company.id} period={period} />}
-        {tab === 'Mix' && company && <MixView companyId={company.id} period={period} />}
-        {tab === 'Retention' && company && <RetentionView companyId={company.id} period={period} />}
+        {periodUnavailable ? (
+          <EmptyState
+            title="Premium series unavailable for monthly view"
+            body="Switch the period toggle in the header to Annual or Quarterly to see the premium engine."
+            height={300}
+          />
+        ) : (
+          <>
+            {tab === 'Flow' && company && <FlowView companyId={company.id} period={period} />}
+            {tab === 'Mix' && company && <MixView companyId={company.id} period={period} />}
+            {tab === 'Retention' && company && <RetentionView companyId={company.id} period={period} />}
+          </>
+        )}
       </div>
 
       {/* Basis tags */}

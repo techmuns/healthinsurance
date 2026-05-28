@@ -1,21 +1,13 @@
 import { Sparkles } from 'lucide-react'
 import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
-import { insurers } from '@/data/mockData'
-import { getFilteredInsurers } from '@/lib/insurers'
-import { useActiveCompany, useFilters } from '@/state/filters'
+import { useActiveCompany } from '@/state/filters'
 import { getCompanyGrowthCopy } from '@/lib/companyCopy'
 import type { ReadLine } from '@/lib/companyCopy'
 
 export function CompanyGrowthEngine() {
-  const filters = useFilters()
   const company = useActiveCompany()
   const copy = getCompanyGrowthCopy(company)
-
-  // Peer set for the Premium Engine company switcher (falls back to own segment).
-  const filtered = getFilteredInsurers(filters)
-  const inFiltered = filtered.some((i) => i.id === company.id)
-  const peerList = inFiltered ? filtered : insurers.filter((i) => i.peerGroup === company.peerGroup)
 
   return (
     <div className="space-y-5">
@@ -42,7 +34,7 @@ export function CompanyGrowthEngine() {
             </p>
           </div>
         </header>
-        <PremiumFlowQuality companies={peerList} focalId={company.id} />
+        <PremiumFlowQuality focalId={company.id} />
       </section>
 
       {/* Calculation basis strip for the derived-quarter logic. */}
