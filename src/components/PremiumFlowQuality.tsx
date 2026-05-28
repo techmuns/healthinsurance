@@ -217,17 +217,13 @@ function FlowTooltip({
 }
 
 /**
- * RealFlowChart — single connected premium-flow visual per year, showing
- * the GWP → NWP → NEP conversion as one stacked bar. Layer order from
- * bottom up:
- *   • NEP (deep steel blue) — premium earned in the period
- *   • NWP − NEP (rich teal) — premium retained but not yet earned
- *   • GWP − NWP (muted terracotta) — ceded to reinsurers
+ * RealFlowChart — one bar per fiscal year that animates between the GWP,
+ * NWP and NEP views as the user clicks the stage toggle above the chart.
  *
- * When NWP is missing, the deeper portion shows whichever of NEP / NWP is
- * known and the top section merges everything above it as a single
- * terracotta band. No layer is synthesised — segments simply don't appear
- * when their source value is absent from the snapshot.
+ * Missing-value rule: when the snapshot has no value for the selected
+ * stage in a given year, the bar is rendered as a small dashed placeholder
+ * (with `value = null` so Recharts doesn't paint it as a "real" zero) and
+ * a "— data unavailable" badge sits in its tick area.
  */
 function RealFlowChart({
   rows,
@@ -236,105 +232,188 @@ function RealFlowChart({
   rows: Array<{ fiscal_year: string; gwp: number | null; nwp: number | null; nep: number | null }>
   companyName: string
 }) {
+  const [stage, setStage] = useState<Stage>('GWP')
+
+  const stageMeta: Record<Stage, { label: string; full: string; color: string; desc: string }> = {
+    GWP: { label: 'GWP · Written', full: 'Gross Written Premium', color: FOCAL, desc: 'Total premium written in the year' },
+    NWP: { label: 'NWP · Retained', full: 'Net Written Premium', color: TEAL, desc: 'Retained on Niva’s books after reinsurance ceded' },
+    NEP: { label: 'NEP · Earned', full: 'Net Earned Premium', color: NEP_BLUE, desc: 'Portion of retained premium recognised as earned' },
+  }
+  const active = stageMeta[stage]
+
+  // Per-row record keeps all three raw values so the tooltip can show them
+  // even when the bar itself only paints the selected stage.
   const data = rows.map((r) => {
-    const gwp = r.gwp ?? 0
-    const nwp = r.nwp
-    const nep = r.nep
-    let earned = 0
-    let retained = 0
-    let ceded = 0
-    if (nwp != null && nep != null) {
-      earned = nep
-      retained = Math.max(0, nwp - nep)
-      ceded = Math.max(0, gwp - nwp)
-    } else if (nwp != null && nep == null) {
-      // NWP known, NEP missing — show NWP as the deeper section.
-      retained = nwp
-      ceded = Math.max(0, gwp - nwp)
-    } else if (nwp == null && nep != null) {
-      // NEP known, NWP missing — merge ceded + unearned into top band.
-      earned = nep
-      ceded = Math.max(0, gwp - nep)
-    } else {
-      ceded = gwp
+    const raw = stage === 'GWP' ? r.gwp : stage === 'NWP' ? r.nwp : r.nep
+    return {
+      period: r.fiscal_year,
+      gwp: r.gwp,
+      nwp: r.nwp,
+      nep: r.nep,
+      value: raw, // null => bar omitted; tick gets the "data unavailable" pill
     }
-    return { period: r.fiscal_year, gwp, nwpRaw: nwp, nepRaw: nep, earned, retained, ceded }
   })
 
-  // Pinned per-stage palette for the financial-flow story.
-  const NEP_FILL = '#4D7EA8'    // deep steel blue — premium earned
-  const NWP_FILL = '#148A87'    // rich teal — retained but unearned
-  const CEDED_FILL = '#D9B4AB'  // muted terracotta — ceded
+  const realValues = data.map((d) => d.value).filter((v): v is number => typeof v === 'number')
+  const yMax = realValues.length > 0 ? Math.max(...realValues) : 1
+  const placeholderHeight = yMax * 0.04 // ~4% sliver under the "data unavailable" pill
+  const periodLabel = `${data[0].period}–${data[data.length - 1].period}`
+
+  // Counts the data points feeding each toggle, surfaced under the chart as
+  // a coverage strip so the user can see at a glance which years are real.
+  const coverage = {
+    GWP: rows.filter((r) => r.gwp != null).length,
+    NWP: rows.filter((r) => r.nwp != null).length,
+    NEP: rows.filter((r) => r.nep != null).length,
+  }
 
   return (
     <div>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={data} margin={{ top: 24, right: 8, left: 0, bottom: 4 }} barCategoryGap="34%">
+      {/* Stage toggle — drives the bars below it */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
+        <div className="flex items-center gap-1 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
+          {(Object.keys(stageMeta) as Stage[]).map((s) => {
+            const meta = stageMeta[s]
+            const isActive = stage === s
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setStage(s)}
+                className={[
+                  'flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-semibold transition-all duration-200',
+                  isActive ? 'bg-card text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
+                ].join(' ')}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color, opacity: isActive ? 1 : 0.5 }} />
+                {meta.label}
+              </button>
+            )
+          })}
+        </div>
+        <div className="text-[10.5px] text-ink-secondary">
+          {coverage[stage]} of {rows.length} years available · {active.full}
+        </div>
+      </div>
+
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={data} margin={{ top: 28, right: 12, left: 0, bottom: 28 }} barCategoryGap="38%">
+          <defs>
+            <pattern id="naHatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="#F4F7FC" />
+              <line x1="0" y1="0" x2="0" y2="6" stroke="#C7D2E0" strokeWidth="1" />
+            </pattern>
+          </defs>
           <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
-          <XAxis dataKey="period" tickLine={false} axisLine={{ stroke: GRID }} tick={{ fontSize: 12, fill: '#26303F', fontWeight: 600 }} dy={4} />
-          <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={42} />
+          <XAxis
+            dataKey="period"
+            tickLine={false}
+            axisLine={{ stroke: GRID }}
+            tick={(props) => {
+              const { x, y, payload } = props as { x: number; y: number; payload: { value: string } }
+              const row = data.find((d) => d.period === payload.value)
+              const isMissing = row && row.value == null
+              return (
+                <g transform={`translate(${x},${y})`}>
+                  <text dy={14} textAnchor="middle" fill="#26303F" fontSize={12} fontWeight={600}>
+                    {payload.value}
+                  </text>
+                  {isMissing && (
+                    <g transform="translate(0, 26)">
+                      <rect x={-46} y={0} width={92} height={16} rx={8} fill="#FBF3E2" stroke="#F0E1BE" />
+                      <text x={0} y={11} textAnchor="middle" fill="#8C6B1A" fontSize={9.5} fontWeight={700}>
+                        — data unavailable
+                      </text>
+                    </g>
+                  )}
+                </g>
+              )
+            }}
+            interval={0}
+          />
+          <YAxis tickFormatter={axisCr} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: AXIS_TEXT }} width={44} />
           <Tooltip
-            cursor={{ fill: 'rgba(39,69,126,0.05)' }}
-            content={({ active, payload }) => {
-              if (!active || !payload?.length) return null
+            cursor={{ fill: 'rgba(39,69,126,0.04)' }}
+            content={({ active: isActive, payload }) => {
+              if (!isActive || !payload?.length) return null
               const row = (payload[0].payload ?? {}) as typeof data[number]
-              const retention = row.gwp > 0 && row.nwpRaw != null ? ((row.nwpRaw / row.gwp) * 100).toFixed(1) : null
+              const fmt = (v: number | null) => (v == null ? '—' : fmtCr(v))
+              const retention = row.gwp != null && row.gwp > 0 && row.nwp != null ? ((row.nwp / row.gwp) * 100).toFixed(1) : null
               const earnedRatio =
-                row.nwpRaw != null && row.nwpRaw > 0 && row.nepRaw != null
-                  ? ((row.nepRaw / row.nwpRaw) * 100).toFixed(1)
-                  : row.gwp > 0 && row.nepRaw != null
-                    ? ((row.nepRaw / row.gwp) * 100).toFixed(1)
+                row.nwp != null && row.nwp > 0 && row.nep != null
+                  ? ((row.nep / row.nwp) * 100).toFixed(1)
+                  : row.gwp != null && row.gwp > 0 && row.nep != null
+                    ? ((row.nep / row.gwp) * 100).toFixed(1)
                     : null
               return (
                 <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
                   <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{row.period}</p>
                   <div className="space-y-0.5">
-                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
-                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: FOCAL }} />GWP · Written</span>
-                      <span className="tabular-nums text-navy-deep">{fmtCr(row.gwp)}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
-                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: NWP_FILL }} />NWP · Retained</span>
-                      <span className="tabular-nums text-navy-deep">{row.nwpRaw != null ? fmtCr(row.nwpRaw) : '—'}</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-5 text-[11.5px]">
-                      <span className="flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-sm" style={{ background: NEP_FILL }} />NEP · Earned</span>
-                      <span className="tabular-nums text-navy-deep">{row.nepRaw != null ? fmtCr(row.nepRaw) : '—'}</span>
-                    </div>
+                    {[
+                      { k: 'GWP', label: 'GWP · Written', v: row.gwp, color: FOCAL },
+                      { k: 'NWP', label: 'NWP · Retained', v: row.nwp, color: TEAL },
+                      { k: 'NEP', label: 'NEP · Earned', v: row.nep, color: NEP_BLUE },
+                    ].map((r) => (
+                      <div
+                        key={r.k}
+                        className={['flex items-center justify-between gap-5 text-[11.5px]', r.k === stage ? 'font-semibold text-navy-deep' : 'text-ink-secondary'].join(' ')}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-sm" style={{ background: r.color }} />
+                          {r.label}
+                        </span>
+                        <span className="tabular-nums">{fmt(r.v)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
-                    {retention != null && <div>Retention ratio · <span className="font-semibold text-navy-deep">{retention}%</span></div>}
-                    {earnedRatio != null && <div>Earned ratio · <span className="font-semibold text-navy-deep">{earnedRatio}%</span></div>}
-                  </div>
+                  {(retention != null || earnedRatio != null) && (
+                    <div className="mt-1.5 border-t border-soft-border pt-1.5 text-[11px] text-ink-secondary">
+                      {retention != null && <div>Retention ratio · <span className="font-semibold text-navy-deep">{retention}%</span></div>}
+                      {earnedRatio != null && <div>Earned ratio · <span className="font-semibold text-navy-deep">{earnedRatio}%</span></div>}
+                    </div>
+                  )}
                 </div>
               )
             }}
           />
-          <Bar dataKey="earned" name="NEP" stackId="flow" fill={NEP_FILL} maxBarSize={48} isAnimationActive={false} />
-          <Bar dataKey="retained" name="NWP" stackId="flow" fill={NWP_FILL} maxBarSize={48} isAnimationActive={false} />
-          <Bar dataKey="ceded" name="Ceded" stackId="flow" fill={CEDED_FILL} maxBarSize={48} radius={[3, 3, 0, 0]} isAnimationActive={false}>
-            <LabelList dataKey="gwp" position="top" formatter={(v: number) => compactCr(v)} fill="#172B4D" fontSize={10} fontWeight={700} />
+          {/* Placeholder layer — paints a small hatched sliver only when value is missing. */}
+          <Bar
+            dataKey={(d: { value: number | null }) => (d.value == null ? placeholderHeight : 0)}
+            fill="url(#naHatch)"
+            stroke="#C7D2E0"
+            strokeDasharray="3 3"
+            strokeWidth={0.8}
+            maxBarSize={42}
+            radius={[3, 3, 0, 0]}
+            isAnimationActive={false}
+          />
+          {/* Real value layer — animates as `stage` changes. */}
+          <Bar dataKey="value" fill={active.color} maxBarSize={42} radius={[4, 4, 0, 0]} animationDuration={420} animationEasing="ease-out">
+            <LabelList dataKey="value" position="top" formatter={(v: number | null | undefined) => (v == null ? '' : compactCr(v))} fill="#172B4D" fontSize={10} fontWeight={700} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
 
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        <LegendSwatch color={CEDED_FILL}>Ceded to reinsurers</LegendSwatch>
-        <LegendSwatch color={NWP_FILL}>NWP · Retained</LegendSwatch>
-        <LegendSwatch color={NEP_FILL}>NEP · Earned</LegendSwatch>
+      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+        <LegendSwatch color={active.color}>{active.label}</LegendSwatch>
+        <span className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
+          <span className="inline-block h-2.5 w-3 rounded-sm border border-dashed border-[#C7D2E0] bg-[#F4F7FC]" />
+          Data unavailable for that year
+        </span>
+        <span className="text-[10.5px] text-ink-secondary">{active.desc}</span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        <Pill>Basis: GWP / NWP / NEP</Pill>
-        <Pill>Period: {data[0].period}–{data[data.length - 1].period}</Pill>
-        <Pill>Status: Reported / Derived</Pill>
+        <Pill>Basis: GWP / NWP / NEP · premium metrics (not profit)</Pill>
+        <Pill>Period: {periodLabel}</Pill>
+        <Pill>Status: Reported · null where source missing</Pill>
       </div>
 
       <div className="mt-3 flex justify-end">
         <SourceTag
           source="Company filing"
           confidence="high"
-          period={`${data[0].period}–${data[data.length - 1].period}`}
+          period={periodLabel}
           provenance={{
             source_name: `${companyName} annual disclosures + live PDF parse — GWP / NWP / NEP per FY`,
             source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
