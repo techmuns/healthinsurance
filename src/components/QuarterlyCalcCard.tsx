@@ -118,10 +118,12 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
   const primary = rows.find((r) => r.quarter !== null) ?? rows[0]
 
   return (
-    <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 p-3.5">
+    <div className="card-surface flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5">
       <div className="flex items-center gap-2">
-        <Calculator className="h-4 w-4 text-champagne-deep" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-navy-deep">Calculation Basis</span>
+        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-champagne-soft text-champagne-deep">
+          <Calculator className="h-3.5 w-3.5" />
+        </span>
+        <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-deep">Calculation Basis</span>
         <SignalBadge label="Derived" tone={statusTone.Derived} size="sm" />
       </div>
 
@@ -143,9 +145,9 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:border-muted-blue"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3 py-1 text-[11px] font-semibold text-navy-primary transition-all duration-200 hover:border-muted-blue hover:bg-card hover:shadow-soft"
       >
-        <Maximize2 className="h-3.5 w-3.5" />
+        <Maximize2 className="h-3 w-3" />
         Quarter calculation audit
       </button>
 

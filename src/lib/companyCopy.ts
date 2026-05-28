@@ -451,6 +451,75 @@ export function getCompanyManagementCopy(company: Insurer): SectionCopy {
   }
 }
 
+// ─── Company Growth (Premium Engine) ───────────────────────────────────────
+
+export function getCompanyGrowthCopy(company: Insurer): SectionCopy {
+  const growth = company.growth
+  const retail = company.retailMix
+  const hasRetail = retail > 0
+  const hasCR = company.combinedRatio > 0
+
+  let verdict: string
+  let tone: CopyTone
+  let badge: string
+  let summary: string
+  let readLines: ReadLine[]
+
+  if (hasRetail) {
+    if (growth >= 20 && retail >= 55) {
+      verdict = 'Growing — and the growth is high quality'
+      tone = 'teal'
+      badge = 'Strong'
+      summary = `${company.shortName}'s premium expansion (${pct(growth)}) is led by retail mix (${retail}%) and renewals — not low-margin group business — so the growth is more durable.`
+      readLines = [
+        { label: 'Why', value: `Retail mix, renewals and share gains drive premium at ${company.shortName}.` },
+        { label: 'Implication', value: `Growth quality is high if retention and earned-premium conversion stay strong.` },
+        { label: 'Watch', value: `Fresh-premium concentration by channel and claims pressure.` },
+        { label: 'Read', value: `Durable compounding if retail mix and renewal strength continue.` },
+      ]
+    } else if (growth >= 15) {
+      verdict = 'Growing — quality mix to watch'
+      tone = 'navy'
+      badge = 'Improving'
+      summary = `${company.shortName} is growing premium at ${pct(growth)}, but ${retail < 55 ? `retail mix sits at ${retail}%` : 'mix quality is mid-tier'} — growth durability depends on improving renewal share.`
+      readLines = [
+        { label: 'Why', value: `Solid GWP growth at ${pct(growth)} with ${retail}% retail mix.` },
+        { label: 'Implication', value: `Quality of growth is the differentiator; mix needs to keep improving.` },
+        { label: 'Watch', value: `Retail-mix trend and renewal premium share.` },
+        { label: 'Read', value: `Re-rating likely if the mix shifts toward retail.` },
+      ]
+    } else {
+      verdict = 'Slower compounder'
+      tone = 'warning'
+      badge = 'Watch'
+      summary = `${company.shortName}'s premium growth is ${pct(growth)} — below the sector tailwind; mix and renewal quality carry the long-term read.`
+      readLines = [
+        { label: 'Why', value: `Premium growth is trailing the segment pool.` },
+        { label: 'Implication', value: `Capital allocation needs to support faster fresh-business acquisition.` },
+        { label: 'Watch', value: `Net new policies and channel productivity.` },
+        { label: 'Read', value: `Watch for a growth inflection before re-rating.` },
+      ]
+    }
+  } else {
+    // Life carrier — combined ratio is N/A; quality comes from VNB-style mix.
+    verdict = 'Steady life compounder'
+    tone = 'navy'
+    badge = 'Stable'
+    summary = `${company.shortName} grows the life book at ${pct(growth)}; persistency and product mix carry the quality read on a life P&L.`
+    readLines = [
+      { label: 'Why', value: `Life premium grows ${pct(growth)} on a scale-led book.` },
+      { label: 'Implication', value: `Growth quality is VNB-led, not underwriting-led.` },
+      { label: 'Watch', value: `13M / 61M persistency and par/non-par mix shift.` },
+      { label: 'Read', value: `Steady compounding if persistency holds and mix tilts to non-par.` },
+    ]
+  }
+
+  // Silence unused but kept for future expansion of growth copy.
+  void hasCR
+
+  return { eyebrow: 'Growth Verdict', verdict, tone, badge, summary, readLines }
+}
+
 // ─── Convenience ──────────────────────────────────────────────────────────
 
 export function getCompanyById(id: string): Insurer {
