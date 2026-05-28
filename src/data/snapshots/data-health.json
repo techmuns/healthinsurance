@@ -1,9 +1,9 @@
 {
   "last_successful_run": "2026-05-28T10:05:00Z",
-  "last_failed_run": "2026-05-28T10:21:20.035Z",
-  "sources_checked": 6,
+  "last_failed_run": "2026-05-28T12:06:42.076Z",
+  "sources_checked": 3,
   "sources_success": 0,
-  "sources_failed": 3,
+  "sources_failed": 2,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
     "company.pat::niva-bupa::Annual",
@@ -45,14 +45,12 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[company_disclosures_batch] niva-bupa: Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/companies/niva-bupa",
-    "[company_disclosures_batch] star-health: Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/companies/star-health",
-    "[company_disclosures_batch] care-health: Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/companies/care-health",
-    "[company_disclosures_batch] aditya-birla: Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/companies/aditya-birla",
-    "[company_disclosures_batch] manipalcigna: Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/companies/manipalcigna",
-    "[distribution_extract] Offline mode — distribution extractor not run.",
-    "[ownership_quarterly] Offline mode — ownership fetcher not run.",
-    "[management_events_feed] Offline mode — management-events fetcher not run."
+    "[company_disclosures_batch] niva-bupa: HTTP 404 for https://www.nivabupa.com/investor-relations/public-disclosures.html",
+    "[company_disclosures_batch] star-health: HTTP 404 for https://www.starhealth.in/disclosures/public-disclosures",
+    "[company_disclosures_batch] care-health: HTTP 403 for https://www.careinsurance.com/about-us/public-disclosures.html",
+    "[company_disclosures_batch] No PDF link found on https://www.adityabirlacapital.com/healthinsurance/about-us/public-disclosures for aditya-birla",
+    "[company_disclosures_batch] manipalcigna: HTTP 404 for https://www.manipalcigna.com/public-disclosures",
+    "[ownership_quarterly] Live parser not yet implemented."
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -67,10 +65,10 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T10:21:20.018Z",
+      "last_attempt_at": "2026-05-28T12:06:35.816Z",
       "last_success_at": null,
       "records_fetched": 0,
-      "error": "Offline mode and no pre-staged file matching /\\.(xlsx|xls)$/i in /home/user/HealthInsurance/data/raw/irdai/monthly"
+      "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
     },
     {
       "source_id": "irdai_public_disclosures",
@@ -173,7 +171,7 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T10:21:20.022Z",
+      "last_attempt_at": "2026-05-28T12:06:35.934Z",
       "last_success_at": "2026-05-28T10:05:00Z",
       "records_fetched": 0
     },
@@ -187,7 +185,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-28T10:21:20.028Z",
+      "last_attempt_at": "2026-05-28T12:06:42.073Z",
       "last_success_at": null,
       "records_fetched": 0
     },
