@@ -34,7 +34,13 @@ export default function App() {
   return (
     <FilterProvider>
       <DashboardShell active={active} onNavigate={setActive}>
-        <Section onNavigate={setActive} />
+        {/* Soft page-change transition: each section fades + slides up gently
+            when `active` changes, so navigating between pages feels calm
+            rather than a hard jump. Keyed on `active` so React mounts a new
+            wrapper that runs the entry animation. */}
+        <div key={active} className="animate-page-enter">
+          <Section onNavigate={setActive} />
+        </div>
       </DashboardShell>
     </FilterProvider>
   )

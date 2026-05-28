@@ -16,7 +16,7 @@ const FilterContext = createContext<FilterContextValue | null>(null)
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [scope, setScope] = useState<Scope>('industry-overview')
   const [highlightedCompany, setHighlightedCompanyState] = useState(FOCAL_COMPANY)
-  const [peerGroup, setPeerGroup] = useState<PeerGroup>('SAHI')
+  const [peerGroup, setPeerGroupState] = useState<PeerGroup>('SAHI')
   const [period, setPeriod] = useState<TimePeriod>('Annual')
   const [dataset, setDataset] = useState<Dataset>('mock')
 
@@ -27,8 +27,24 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     setHighlightedCompanyState(id)
     const company = insurers.find((c) => c.id === id)
     if (company) {
-      setPeerGroup((prev) => (prev !== 'All' && prev !== company.peerGroup ? company.peerGroup : prev))
+      setPeerGroupState((prev) => (prev !== 'All' && prev !== company.peerGroup ? company.peerGroup : prev))
     }
+  }, [])
+
+  // Switching peer group is the primary lens: it filters which insurers
+  // appear in the Company dropdown and across every chart. If the currently
+  // highlighted company is not part of the new group, auto-snap to the first
+  // insurer in that group so the dashboard never sits on an "invisible"
+  // selection. 'All' keeps the existing highlight.
+  const setPeerGroup = useCallback((g: PeerGroup) => {
+    setPeerGroupState(g)
+    if (g === 'All') return
+    setHighlightedCompanyState((prev) => {
+      const cur = insurers.find((c) => c.id === prev)
+      if (cur && cur.peerGroup === g) return prev
+      const fallback = insurers.find((c) => c.peerGroup === g)
+      return fallback ? fallback.id : prev
+    })
   }, [])
 
   const value = useMemo(

@@ -29,22 +29,37 @@ export function TopFilterBar({ section }: { section?: string }) {
   } = useFilters()
   const isOverview = section === 'overview'
 
+  // Company dropdown options are scoped to the current peer group — picking
+  // a peer group first narrows the universe, then the user selects a
+  // company inside it. "All" shows every insurer.
+  const companyOptions = peerGroup === 'All' ? insurers : insurers.filter((c) => c.peerGroup === peerGroup)
+
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
       {/* Light, integrated control strip — calm and secondary to the content. */}
       <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-4 py-2 shadow-soft backdrop-blur-md">
-        {/* Company / highlight company — first control on the overview */}
+        {/* Peer group — primary lens; drives which companies appear below. */}
+        <div>
+          <FieldLabel hint="Universe lens — filters which insurers appear in the Company dropdown and across all charts">
+            Peer Group
+          </FieldLabel>
+          <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
+        </div>
+
+        <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
+
+        {/* Company / highlight company — filtered by selected peer group. */}
         <label className="block">
-          <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : undefined}>
+          <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : 'Choose from the current peer group'}>
             {isOverview ? 'Highlight' : 'Company'}
           </FieldLabel>
           <span className="relative block">
             <select
               value={highlightedCompany}
               onChange={(e) => setHighlightedCompany(e.target.value)}
-              className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-colors hover:border-muted-blue focus:border-navy-primary"
+              className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-all duration-200 hover:border-muted-blue focus:border-navy-primary"
             >
-              {insurers.map((c) => (
+              {companyOptions.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
@@ -55,12 +70,6 @@ export function TopFilterBar({ section }: { section?: string }) {
         </label>
 
         <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
-
-        {/* Peer group */}
-        <div>
-          <FieldLabel hint="Filters which insurers appear in charts and tables">Peer Group</FieldLabel>
-          <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
-        </div>
 
         {/* Period */}
         <div>

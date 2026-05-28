@@ -567,8 +567,8 @@ function RealFlowChart({
             fill={active.color}
             maxBarSize={32}
             radius={[3, 3, 0, 0]}
-            animationDuration={460}
-            animationEasing="ease-out"
+            animationDuration={650}
+            animationEasing="ease-in-out"
           >
             <LabelList
               dataKey="value"

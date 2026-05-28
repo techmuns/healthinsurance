@@ -81,10 +81,19 @@ export default {
           '0%': { opacity: '0', transform: 'translateX(24px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
         },
+        // Soft page-change entrance: a longer fade + small upward translate
+        // so swapping between Executive Overview / Premium Engine / etc.
+        // feels calm rather than a hard cut.
+        'page-enter': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '60%': { opacity: '1' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.4s ease-out both',
         'drawer-in': 'drawer-in 0.28s ease-out both',
+        'page-enter': 'page-enter 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both',
       },
     },
   },
