@@ -1,15 +1,17 @@
 // ---------------------------------------------------------------------------
-//  build-snapshots — turn fetcher results into validated snapshot files +
-//  update data-health.json + data-provenance.json.
+//  build-snapshots — write fetcher records into snapshot files + update
+//  data-health.json and data-provenance.json.
 //
 //  Contract:
 //    - Never overwrite a populated metric with `null` from a failed fetch.
+//      (Enforced inside snapshot-merge.mergeRecords.)
 //    - Log every issue to data/logs/build-snapshots.log.
-//    - Touch only snapshot files that actually changed (caller decides what
-//      to commit).
+//    - Update data-health.json with per-source status + warnings.
+//    - Update data-provenance.json with one entry per metric/company/period.
 // ---------------------------------------------------------------------------
 
-import type { FetchResult } from './types'
+import type { FetchResult, SnapshotRecord } from './types'
+import { mergeRecords } from './snapshot-merge'
 import { appendLog, nowIso, readSnapshot, writeSnapshot } from './util'
 
 interface HealthFile {
@@ -34,7 +36,47 @@ interface HealthFile {
   }>
 }
 
+interface ProvenanceFile {
+  _meta: { snapshot_id: string; description: string; schema_version: string; last_updated: string }
+  entries: Record<string, {
+    source_name: string
+    source_url: string
+    source_file?: string | null
+    source_period?: string | null
+    fetched_at: string | null
+    confidence: 'high' | 'medium' | 'low' | 'pending'
+  }>
+}
+
 export async function buildSnapshots(results: FetchResult[]) {
+  const allRecords: SnapshotRecord[] = []
+  for (const r of results) allRecords.push(...r.records)
+
+  // 1. Merge records into snapshot files (with null-overwrite guard).
+  const { snapshotsChanged, metricsUpdated } = await mergeRecords(allRecords)
+
+  // 2. Update data-provenance.json.
+  const provenance = await readSnapshot<ProvenanceFile>('data-provenance.json')
+  for (const rec of allRecords) {
+    const period = rec.keys.fiscal_year ?? rec.keys.period ?? rec.keys.quarter ?? rec.keys.month ?? 'unknown'
+    const company = rec.keys.company_id ?? 'INDUSTRY'
+    for (const [field, v] of Object.entries(rec.values)) {
+      if (v == null) continue
+      const key = `${field}::${company}::${period}`
+      provenance.entries[key] = {
+        source_name: rec.provenance.source_name,
+        source_url: rec.provenance.source_url,
+        source_file: rec.provenance.source_file ?? null,
+        source_period: rec.provenance.source_period ?? period,
+        fetched_at: rec.provenance.fetched_at,
+        confidence: rec.provenance.confidence,
+      }
+    }
+  }
+  provenance._meta.last_updated = nowIso().split('T')[0]
+  await writeSnapshot('data-provenance.json', provenance)
+
+  // 3. Update data-health.json.
   const health = await readSnapshot<HealthFile>('data-health.json')
   health.sources_checked = results.length
   health.sources_success = 0
@@ -42,12 +84,16 @@ export async function buildSnapshots(results: FetchResult[]) {
   health.parser_warnings = []
 
   for (const r of results) {
-    const existing = health.per_source.find((p) => p.source_id === r.source_id) ?? {
-      source_id: r.source_id,
-      status: 'pending' as const,
-      last_attempt_at: null,
-      last_success_at: null,
-      records_fetched: null,
+    let existing = health.per_source.find((p) => p.source_id === r.source_id)
+    if (!existing) {
+      existing = {
+        source_id: r.source_id,
+        status: 'pending',
+        last_attempt_at: null,
+        last_success_at: null,
+        records_fetched: null,
+      }
+      health.per_source.push(existing)
     }
     existing.last_attempt_at = r.fetched_at
     existing.records_fetched = r.records_fetched
@@ -65,13 +111,19 @@ export async function buildSnapshots(results: FetchResult[]) {
     if (r.warnings && r.warnings.length) {
       health.parser_warnings.push(...r.warnings.map((w) => `[${r.source_id}] ${w}`))
     }
-    if (!health.per_source.find((p) => p.source_id === r.source_id)) {
-      health.per_source.push(existing)
-    }
-    await appendLog('build-snapshots.log', { source_id: r.source_id, status: r.status, records_fetched: r.records_fetched })
+    await appendLog('build-snapshots.log', {
+      source_id: r.source_id,
+      status: r.status,
+      records_fetched: r.records_fetched,
+    })
   }
 
-  if (health.sources_success > 0) {
+  if (metricsUpdated.length > 0) {
+    // de-duplicate, then unique into existing
+    const set = new Set([...health.metrics_updated, ...metricsUpdated])
+    health.metrics_updated = Array.from(set)
+  }
+  if (snapshotsChanged.length > 0) {
     health.last_successful_run = nowIso()
   }
   if (health.sources_failed > 0) {
@@ -79,4 +131,6 @@ export async function buildSnapshots(results: FetchResult[]) {
   }
 
   await writeSnapshot('data-health.json', health)
+
+  return { snapshotsChanged, metricsUpdated }
 }
