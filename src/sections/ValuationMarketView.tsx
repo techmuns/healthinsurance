@@ -7,40 +7,79 @@ import { SegmentedControl } from '@/components/SegmentedControl'
 import { MiniKpi } from '@/components/MiniKpi'
 import { OrganicIconBlob } from '@/components/OrganicIconBlob'
 import { AreaMiniChart, ChartFrame, HorizontalBarChart, ScatterPlot, TrendLineChart } from '@/components/charts'
+import { EmptyState } from '@/components/EmptyState'
 import {
   priceVolume,
   streetView,
-  valuationKpis,
   valuationPeers,
   valuationScatter,
   valuationTrend,
 } from '@/data/mockData'
+import { useActiveCompany, useFilters } from '@/state/filters'
+import { getCompanyValuationCopy } from '@/lib/companyCopy'
+import { usePeriodGate } from '@/lib/usePeriodGate'
+import { getFilteredInsurers, getRankByMetric } from '@/lib/insurers'
+import type { Metric } from '@/data/types'
 
 type View = 'Trend' | 'Peer Comparison' | 'Scatter'
 
 export function ValuationMarketView() {
   const [view, setView] = useState<View>('Trend')
+  const company = useActiveCompany()
+  const { peerGroup } = useFilters()
+  const copy = getCompanyValuationCopy(company, peerGroup)
+  const gate = usePeriodGate()
+
+  const peerList = getFilteredInsurers({ peerGroup, highlightedCompany: company.id })
+  const peerVals = peerList.filter((i) => i.valuation > 0).map((i) => i.valuation)
+  const median = peerVals.length
+    ? peerVals.slice().sort((a, b) => a - b)[Math.floor(peerVals.length / 2)]
+    : company.valuation
+  const valRank = getRankByMetric('valuation', company, peerList)
 
   const upside = (((streetView.targetPrice - streetView.currentPrice) / streetView.currentPrice) * 100).toFixed(1)
   const headline = {
-    Trend: 'Off its peak, still a premium to peers',
-    'Peer Comparison': 'Above the peer median — earned on quality',
-    Scatter: 'Valuation looks reasonable vs growth',
+    Trend: `${company.shortName} P/GWP vs peer median`,
+    'Peer Comparison': `${company.shortName} vs peers on P/GWP`,
+    Scatter: `${company.shortName} growth vs valuation positioning`,
   }[view]
+
+  const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
+    value,
+    period: 'FY26',
+    source: 'Company filings (mock)',
+    status: value === null ? 'Pending' : 'Reported',
+    lastUpdated: '2026-05-23',
+    ...opts,
+  })
+
+  const companyKpis: { label: string; metric: Metric; invert?: boolean }[] = [
+    { label: 'P / GWP', metric: m(company.valuation, { unit: 'x' }) },
+    {
+      label: 'Premium to peer median',
+      metric: m(((company.valuation - median) / median) * 100, { unit: '%' }),
+      invert: true,
+    },
+    {
+      label: 'Valuation rank',
+      metric: m(valRank || null, { unit: peerList.length ? `/ ${peerList.length}` : '' }),
+    },
+    { label: 'ROE', metric: m(company.roe, { unit: '%' }) },
+  ]
 
   return (
     <div className="space-y-6">
       <VerdictStrip
-        eyebrow="Valuation Verdict"
-        verdict="Premium — but largely earned"
-        tone="navy"
-        badge="Fair"
-        summary="The stock trades above the peer median; the premium is backed by growth quality, solvency and share gains, leaving a limited margin of safety."
+        eyebrow={copy.eyebrow}
+        verdict={copy.verdict}
+        tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
+        badge={copy.badge}
+        summary={copy.summary}
       />
 
     <ModuleCard
       question="Is the stock pricing in too much optimism, or still offering upside?"
-      title="Valuation Compass"
+      title={`${company.shortName} · Valuation Compass`}
       icon="valuation"
       controls={
         <SegmentedControl<View>
@@ -53,19 +92,18 @@ export function ValuationMarketView() {
       }
       kpis={
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {valuationKpis.map((k) => (
-            <MiniKpi key={k.label} label={k.label} metric={k.metric} invert={k.label.includes('Premium')} />
+          {companyKpis.map((k) => (
+            <MiniKpi key={k.label} label={k.label} metric={k.metric} invert={k.invert} />
           ))}
         </div>
       }
       insight={
-        // Analyst Street View
         <div className="rounded-xl2 border border-soft-border bg-card p-5">
             <div className="mb-3 flex items-center gap-2.5">
               <OrganicIconBlob shape="blob-c" tone="soft" size="sm">
                 <Target />
               </OrganicIconBlob>
-              <p className="text-sm font-semibold text-navy-deep">Street View</p>
+              <p className="text-sm font-semibold text-navy-deep">Street View · illustrative</p>
             </div>
             <div className="flex gap-1.5">
               {[
@@ -91,46 +129,62 @@ export function ValuationMarketView() {
                 {upside}%
               </span>
             </div>
-            <p className="mt-3 rounded-lg bg-ice px-3 py-2 text-[11px] text-ink-secondary">{streetView.recentChange}</p>
+            <p className="mt-3 rounded-lg bg-ice px-3 py-2 text-[11px] text-ink-secondary">
+              Street consensus shape is illustrative — values do not yet swap per company.
+            </p>
         </div>
       }
-      dataStatus={valuationKpis}
+      dataStatus={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
       drawer={
-        <ChartFrame headline="Price & traded volume (indexed) — recent months" caption="mock data" height={180}>
+        <ChartFrame headline="Price & traded volume (indexed) — recent months" caption="illustrative · mock" height={180}>
           <AreaMiniChart data={priceVolume} dataKey="price" height={180} />
         </ChartFrame>
       }
       drawerTitle="Valuation — price & volume"
     >
-      {view === 'Trend' && (
-        <ChartFrame headline={headline} caption="P/GWP vs peer median (x) · mock data">
-          <TrendLineChart data={valuationTrend} series={['P/GWP', 'Peer median']} unit="x" />
-        </ChartFrame>
-      )}
-      {view === 'Peer Comparison' && (
-        <ChartFrame headline={headline} caption="P/GWP by peer (x) · mock data">
-          <HorizontalBarChart
-            data={valuationPeers.map((d) => ({ label: d.label as string, value: d.value as number, focal: String(d.label).includes('Niva Bupa') }))}
-            unit="x"
-          />
-        </ChartFrame>
-      )}
-      {view === 'Scatter' && (
-        <ChartFrame headline={headline} caption="Growth vs valuation · Niva Bupa highlighted · mock">
-          <ScatterPlot data={valuationScatter} />
-        </ChartFrame>
+      {!gate.ok ? (
+        <EmptyState
+          title="Data unavailable for this period"
+          body={gate.reason ?? 'Switch the period toggle to Annual to see the valuation series.'}
+          height={240}
+        />
+      ) : (
+        <>
+          {view === 'Trend' && (
+            <ChartFrame headline={headline} caption="P/GWP vs peer median (x) · illustrative · mock">
+              <TrendLineChart data={valuationTrend} series={['P/GWP', 'Peer median']} unit="x" />
+            </ChartFrame>
+          )}
+          {view === 'Peer Comparison' && (
+            <ChartFrame headline={headline} caption="P/GWP by peer (x) · illustrative · mock">
+              <HorizontalBarChart
+                data={valuationPeers.map((d) => ({
+                  label: d.label as string,
+                  value: d.value as number,
+                  focal: String(d.label).includes(company.shortName),
+                }))}
+                unit="x"
+              />
+            </ChartFrame>
+          )}
+          {view === 'Scatter' && (
+            <ChartFrame headline={headline} caption={`Growth vs valuation · ${company.shortName} highlighted · illustrative · mock`}>
+              <ScatterPlot
+                data={valuationScatter.map((d) => ({
+                  ...d,
+                  focal: d.name.includes(company.shortName),
+                }))}
+              />
+            </ChartFrame>
+          )}
+        </>
       )}
     </ModuleCard>
 
       <InvestorRead
-        title="Valuation Investor Read"
-        signal="Fair"
-        lines={[
-          { label: 'Why', value: 'Premium multiple is backed by growth quality and share gains.' },
-          { label: 'Implication', value: 'Acceptable entry, but limited margin of safety.' },
-          { label: 'Watch', value: 'Any slip in combined ratio or growth.' },
-          { label: 'Read', value: 'Own for quality; add on valuation resets.' },
-        ]}
+        title={`${company.shortName} · Valuation Investor Read`}
+        signal={copy.badge}
+        lines={copy.readLines}
       />
     </div>
   )

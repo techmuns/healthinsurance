@@ -60,10 +60,10 @@ export function CompetitivePositioning() {
     <div className="space-y-6">
       <VerdictStrip
         eyebrow="Competitive Verdict"
-        verdict="Top-2 on balance, not scale"
-        tone="navy"
-        badge="Stable"
-        summary="Niva leads SAHI peers on growth quality, solvency and settlement, but trails the scale leader on raw market share."
+        verdict={`${active.shortName} · ${active.signal}`}
+        tone={active.signal === 'Strong' ? 'positive' : active.signal === 'Improving' ? 'teal' : active.signal === 'Watch' ? 'warning' : 'negative'}
+        badge={active.signal}
+        summary={summary}
       />
 
     <ModuleCard

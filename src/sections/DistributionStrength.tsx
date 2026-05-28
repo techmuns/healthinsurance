@@ -7,6 +7,7 @@ import { MiniKpi } from '@/components/MiniKpi'
 import { SignalBadge } from '@/components/SignalBadge'
 import { ChartFrame, DualAxisChart, HorizontalBarChart, StackedBarChart } from '@/components/charts'
 import { Heatmap } from '@/components/Heatmap'
+import { EmptyState } from '@/components/EmptyState'
 import {
   channelGrowth,
   channelRisk,
@@ -15,32 +16,38 @@ import {
   distributionRiskBadges,
   productivity,
 } from '@/data/mockData'
+import { useActiveCompany } from '@/state/filters'
+import { getCompanyDistributionCopy } from '@/lib/companyCopy'
+import { usePeriodGate } from '@/lib/usePeriodGate'
 
 type View = 'Channel Share' | 'Channel Growth' | 'Productivity' | 'Risk'
 
 export function DistributionStrength() {
   const [view, setView] = useState<View>('Channel Share')
+  const company = useActiveCompany()
+  const copy = getCompanyDistributionCopy(company)
+  const gate = usePeriodGate()
 
   const headline = {
-    'Channel Share': 'Banca is taking a rising share of distribution — the key concentration watch-item',
-    'Channel Growth': 'Banca and brokers are driving growth while direct lags',
-    Productivity: 'Agent productivity is rising even as the agent base expands',
-    Risk: 'Distribution risk is concentrated in the banca channel',
+    'Channel Share': `${company.shortName} channel mix — share of GWP`,
+    'Channel Growth': `Channel growth for ${company.shortName}`,
+    Productivity: `Agent productivity for ${company.shortName}`,
+    Risk: `Channel risk profile for ${company.shortName}`,
   }[view]
 
   return (
     <div className="space-y-6">
       <VerdictStrip
-        eyebrow="Distribution Verdict"
-        verdict="Scalable, but banca-concentrated"
-        tone="warning"
-        badge="Watch"
-        summary="Agent productivity is rising as the base grows, but banca is taking a larger share of distribution — the key concentration watch-item."
+        eyebrow={copy.eyebrow}
+        verdict={copy.verdict}
+        tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
+        badge={copy.badge}
+        summary={copy.summary}
       />
 
     <ModuleCard
       question="Is the sales engine scalable, productive and not over-dependent on risky channels?"
-      title="Distribution Strength"
+      title={`${company.shortName} · Distribution Strength`}
       icon="distribution"
       controls={
         <SegmentedControl<View>
@@ -70,51 +77,56 @@ export function DistributionStrength() {
       }
       dataStatus={distributionKpis}
     >
-      {view === 'Channel Share' && (
-        <ChartFrame headline={headline} caption="Share of GWP by channel (%) · mock data">
-          <StackedBarChart data={channelShare} series={['Agents', 'Brokers', 'Banca', 'Direct', 'Digital']} unit="%" />
-        </ChartFrame>
-      )}
-      {view === 'Channel Growth' && (
-        <ChartFrame headline={headline} caption="YoY premium growth by channel, FY25 (%) · mock data">
-          <HorizontalBarChart
-            data={channelGrowth.map((d) => ({ label: d.label as string, value: d.value as number, focal: d.label === 'Banca' }))}
-            unit="%"
-            diverging
-          />
-        </ChartFrame>
-      )}
-      {view === 'Productivity' && (
-        <ChartFrame headline={headline} caption="Agents vs premium per agent (₹ L) · mock">
-          <DualAxisChart data={productivity} barKey="agents" lineKey="perAgent" barLabel="Active agents" lineLabel="Premium / agent (₹ L)" />
-        </ChartFrame>
-      )}
-      {view === 'Risk' && (
-        <ChartFrame headline={headline} caption="Channel concentration & growth-dependence (%) · mock data">
-          <Heatmap
-            columns={[
-              { key: 'concentration', label: 'GWP share', invert: true, format: (v) => `${v}%` },
-              { key: 'growthDependence', label: 'Growth dependence', invert: true, format: (v) => `${v}%` },
-            ]}
-            rows={channelRisk.map((c) => ({
-              label: c.channel,
-              values: { concentration: c.concentration, growthDependence: c.growthDependence },
-              focal: c.channel === 'Banca',
-            }))}
-          />
-        </ChartFrame>
+      {!gate.ok ? (
+        <EmptyState
+          title="Data unavailable for this period"
+          body={gate.reason ?? 'Switch the period toggle to Annual to see channel charts.'}
+          height={240}
+        />
+      ) : (
+        <>
+          {view === 'Channel Share' && (
+            <ChartFrame headline={headline} caption="Share of GWP by channel (%) · illustrative · mock">
+              <StackedBarChart data={channelShare} series={['Agents', 'Brokers', 'Banca', 'Direct', 'Digital']} unit="%" />
+            </ChartFrame>
+          )}
+          {view === 'Channel Growth' && (
+            <ChartFrame headline={headline} caption="YoY premium growth by channel · illustrative · mock">
+              <HorizontalBarChart
+                data={channelGrowth.map((d) => ({ label: d.label as string, value: d.value as number, focal: d.label === 'Banca' }))}
+                unit="%"
+                diverging
+              />
+            </ChartFrame>
+          )}
+          {view === 'Productivity' && (
+            <ChartFrame headline={headline} caption="Agents vs premium per agent (₹ L) · illustrative · mock">
+              <DualAxisChart data={productivity} barKey="agents" lineKey="perAgent" barLabel="Active agents" lineLabel="Premium / agent (₹ L)" />
+            </ChartFrame>
+          )}
+          {view === 'Risk' && (
+            <ChartFrame headline={headline} caption="Channel concentration & growth-dependence · illustrative · mock">
+              <Heatmap
+                columns={[
+                  { key: 'concentration', label: 'GWP share', invert: true, format: (v) => `${v}%` },
+                  { key: 'growthDependence', label: 'Growth dependence', invert: true, format: (v) => `${v}%` },
+                ]}
+                rows={channelRisk.map((c) => ({
+                  label: c.channel,
+                  values: { concentration: c.concentration, growthDependence: c.growthDependence },
+                  focal: c.channel === 'Banca',
+                }))}
+              />
+            </ChartFrame>
+          )}
+        </>
       )}
     </ModuleCard>
 
       <InvestorRead
-        title="Distribution Investor Read"
-        signal="Watch"
-        lines={[
-          { label: 'Why', value: 'Productivity is improving, but banca concentration is rising.' },
-          { label: 'Implication', value: 'Scalable engine — channel mix needs monitoring.' },
-          { label: 'Watch', value: 'Banca share of fresh premium.' },
-          { label: 'Read', value: 'De-risking via agency/digital would re-rate the channel story.' },
-        ]}
+        title={`${company.shortName} · Distribution Investor Read`}
+        signal={copy.badge}
+        lines={copy.readLines}
       />
     </div>
   )

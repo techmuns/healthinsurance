@@ -10,6 +10,7 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { commentary, events, promiseTracker, type EventItem } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
+import { getCompanyManagementCopy } from '@/lib/companyCopy'
 
 type MgmtView = 'Current Commentary' | 'Promise Tracker'
 type Topic = 'Growth' | 'Margin' | 'Distribution' | 'Regulation' | 'Capital'
@@ -22,26 +23,23 @@ const impactTone = {
 } as const
 
 export function ManagementEvents() {
+  const company = useActiveCompany()
+  const copy = getCompanyManagementCopy(company)
   return (
     <div className="space-y-6">
       <VerdictStrip
-        eyebrow="Governance Signal"
-        verdict="Credible team, one watch-item"
-        tone="navy"
-        badge="On Track"
-        summary="Track record on growth, margin and retail-mix guidance is broadly on track; the open item is closing the banca-concentration gap to guidance."
+        eyebrow={copy.eyebrow}
+        verdict={copy.verdict}
+        tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
+        badge={copy.badge}
+        summary={copy.summary}
       />
       <ManagementReadout />
       <EventFeed />
       <InvestorRead
-        title="Management Investor Read"
-        signal="On Track"
-        lines={[
-          { label: 'Why', value: 'Measurable promises have broadly been delivered.' },
-          { label: 'Implication', value: 'Credible management where targets are quantified.' },
-          { label: 'Watch', value: 'Banca-concentration gap to guidance.' },
-          { label: 'Read', value: 'No governance red flags; execution credibility intact.' },
-        ]}
+        title={`${company.shortName} · Management Investor Read`}
+        signal={copy.badge}
+        lines={copy.readLines}
       />
     </div>
   )

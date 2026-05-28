@@ -19,8 +19,15 @@ import {
   giPremiumAbsolute,
   giPremiumMix,
   healthCarrierShare,
-  nivaRetailShare,
 } from '@/data/mockData'
+import { useActiveCompany, useFilters } from '@/state/filters'
+import {
+  getCompanyMarketBridge,
+  getCompanyMarketEngineHeroSub,
+  getCompanyTakeawayLine,
+} from '@/lib/companyCopy'
+import { usePeriodGate } from '@/lib/usePeriodGate'
+import { EmptyState } from '@/components/EmptyState'
 
 type ChartMode = 'Absolute Premium' | 'Mix %'
 
@@ -51,6 +58,8 @@ export function MarketLandscape() {
 
 // ─── 1. HERO CARD ──────────────────────────────────────────────────────────
 function HeroCard() {
+  const company = useActiveCompany()
+  const heroSub = getCompanyMarketEngineHeroSub(company)
   return (
     <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7">
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
@@ -69,7 +78,7 @@ function HeroCard() {
             general insurance.
           </h1>
           <p className="mt-2.5 max-w-xl text-[13.5px] leading-relaxed text-ink-secondary">
-            The industry tailwind is strong before we even look at Niva Bupa.
+            {heroSub}
           </p>
         </div>
 
@@ -117,6 +126,7 @@ function KpiPill({
 // ─── 2. MAIN CHART BLOCK ───────────────────────────────────────────────────
 function MainChartBlock() {
   const [mode, setMode] = useState<ChartMode>('Mix %')
+  const gate = usePeriodGate()
   const data = mode === 'Absolute Premium' ? giPremiumAbsolute : giPremiumMix
   const isMix = mode === 'Mix %'
   const unit = isMix ? '%' : ' ₹k Cr'
@@ -174,6 +184,13 @@ function MainChartBlock() {
         <ChartToggle value={mode} onChange={setMode} />
       </header>
 
+      {!gate.ok ? (
+        <EmptyState
+          title="Data unavailable for this period"
+          body={gate.reason ?? 'Switch the period toggle to Annual to see the GI pool shift.'}
+          height={276}
+        />
+      ) : (
       <div style={{ width: '100%', height: 276 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
@@ -224,8 +241,11 @@ function MainChartBlock() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      )}
 
-      <AiRead text="Health has moved from a support category to the main growth engine of general insurance." />
+      {gate.ok && (
+        <AiRead text="Health has moved from a support category to the main growth engine of general insurance." />
+      )}
     </section>
   )
 }
@@ -314,7 +334,7 @@ function BridgeBlock() {
   return (
     <section className="grid gap-5 lg:grid-cols-2">
       <SahiShiftCard />
-      <NivaBridgeCard />
+      <CompanyBridgeCard />
     </section>
   )
 }
@@ -324,6 +344,7 @@ function BridgeBlock() {
 function SahiShiftCard() {
   const data = healthCarrierShare
   const lastIdx = data.length - 1
+  const gate = usePeriodGate()
 
   const seriesLabel = (name: 'SAHI' | 'Private' | 'PSU', color: string, bold: boolean) =>
     (props: any) => {
@@ -355,6 +376,13 @@ function SahiShiftCard() {
         </p>
       </header>
 
+      {!gate.ok ? (
+        <EmptyState
+          title="Data unavailable for this period"
+          body={gate.reason ?? 'Carrier-share series is annual-only.'}
+          height={196}
+        />
+      ) : (
       <div style={{ width: '100%', height: 196 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
@@ -411,6 +439,7 @@ function SahiShiftCard() {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      )}
 
       <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
         Within health, standalone health insurers are steadily gaining
@@ -420,18 +449,24 @@ function SahiShiftCard() {
   )
 }
 
-function NivaBridgeCard() {
-  const chips: { value: string; label: string; tone: 'teal' | 'navy' | 'gold' }[] = [
-    { value: '28.2%', label: 'Niva GWP CAGR · FY23–FY26', tone: 'teal' },
-    { value: '24.6%', label: 'Retail GWP CAGR', tone: 'navy' },
-    { value: '+196 bps', label: 'Retail market share gain', tone: 'gold' },
-    { value: '10.1%', label: 'FY26 retail market share', tone: 'navy' },
-  ]
+function CompanyBridgeCard() {
+  const company = useActiveCompany()
+  const { peerGroup } = useFilters()
+  const gate = usePeriodGate()
+  const bridge = getCompanyMarketBridge(company, peerGroup)
 
-  const firstShare = nivaRetailShare[0].share as number
-  const lastShare = nivaRetailShare[nivaRetailShare.length - 1].share as number
-  const firstLabel = nivaRetailShare[0].label as string
-  const lastLabel = nivaRetailShare[nivaRetailShare.length - 1].label as string
+  const trajectory = bridge.trajectory
+  const firstShare = trajectory[0].share
+  const lastShare = trajectory[trajectory.length - 1].share
+  const firstLabel = trajectory[0].label
+  const lastLabel = trajectory[trajectory.length - 1].label
+
+  const badgeClass =
+    bridge.badgeTone === 'teal'
+      ? 'bg-teal-soft text-teal'
+      : bridge.badgeTone === 'warning'
+        ? 'bg-champagne-soft text-champagne-deep'
+        : 'bg-soft-blue text-navy-primary'
 
   return (
     <div className="card-surface relative overflow-hidden p-5">
@@ -443,17 +478,17 @@ function NivaBridgeCard() {
             Bridge
           </p>
           <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
-            Niva is riding the specialist shift
+            {bridge.title}
           </h3>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full bg-teal-soft px-2 py-0.5 text-[10px] font-semibold text-teal">
+        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${badgeClass}`}>
           <ArrowUpRight className="h-3 w-3" />
-          Gaining share
+          {bridge.badge}
         </span>
       </header>
 
       <div className="relative grid grid-cols-2 gap-2.5">
-        {chips.map((c) => (
+        {bridge.chips.map((c) => (
           <MetricMini key={c.label} value={c.value} label={c.label} tone={c.tone} />
         ))}
       </div>
@@ -461,16 +496,24 @@ function NivaBridgeCard() {
       <div className="relative mt-4 rounded-xl border border-[#E8EBF1] bg-[#FAFBFD] px-3 pb-2 pt-2.5">
         <div className="mb-1 flex items-baseline justify-between">
           <p className="text-[11px] font-semibold text-navy-deep">
-            Niva retail market share
+            {bridge.miniTitle}
           </p>
           <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-1.5 py-0.5 text-[10px] font-semibold text-champagne-deep">
             <ArrowUpRight className="h-2.5 w-2.5" />
-            +196 bps
+            {company.marketShareChange >= 0 ? '+' : ''}
+            {Math.round(company.marketShareChange * 100)} bps
           </span>
         </div>
+        {!gate.ok ? (
+          <EmptyState
+            title="Data unavailable for this period"
+            body={gate.reason ?? 'Switch to Annual to see the share trajectory.'}
+            height={104}
+          />
+        ) : (
         <div style={{ width: '100%', height: 104 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={nivaRetailShare} margin={{ top: 16, right: 36, left: 28, bottom: 0 }}>
+            <LineChart data={trajectory} margin={{ top: 16, right: 36, left: 28, bottom: 0 }}>
               <defs>
                 <linearGradient id="nivaLine" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor={NIVA} stopOpacity={0.85} />
@@ -509,7 +552,7 @@ function NivaBridgeCard() {
                 dot={(props) => {
                   const { cx, cy, index } = props as { cx?: number; cy?: number; index?: number }
                   if (cx == null || cy == null) return <g />
-                  const isEnd = index === 0 || index === nivaRetailShare.length - 1
+                  const isEnd = index === 0 || index === trajectory.length - 1
                   return (
                     <circle
                       cx={cx}
@@ -547,11 +590,11 @@ function NivaBridgeCard() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+        )}
       </div>
 
       <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
-        Niva is not just present in the right market — it is gaining share
-        inside it.
+        {bridge.closingLine}
       </p>
     </div>
   )
@@ -580,6 +623,8 @@ function MetricMini({
 
 // ─── 4. TAKEAWAY STRIP ─────────────────────────────────────────────────────
 function TakeawayStrip() {
+  const company = useActiveCompany()
+  const line = getCompanyTakeawayLine(company)
   return (
     <section className="relative overflow-hidden rounded-xl border border-[#D6E5DF] bg-gradient-to-r from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)]">
       <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-teal to-champagne" />
@@ -587,16 +632,10 @@ function TakeawayStrip() {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-0.5 ring-1 ring-[#CFE3DA]">
           <span className="h-1.5 w-1.5 rounded-full bg-teal" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-teal">
-            Market Read · Positive
+            Market Read
           </span>
         </span>
-        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">
-          Health is the fastest structural pool in GI, SAHIs are gaining
-          share, and{' '}
-          <span className="font-semibold">
-            Niva is compounding faster than the market.
-          </span>
-        </p>
+        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{line}</p>
       </div>
     </section>
   )
