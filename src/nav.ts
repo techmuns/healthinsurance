@@ -23,6 +23,6 @@ export const navItems: NavItem[] = [
 /** Sidebar grouping — keeps the rail scannable without changing the labels. */
 export const navGroups: { label: string; itemIds: string[] }[] = [
   { label: 'Market', itemIds: ['overview', 'market', 'growth', 'distribution'] },
-  { label: 'Company', itemIds: ['profitability', 'peers', 'valuation'] },
+  { label: 'Company', itemIds: ['profitability', 'valuation', 'peers'] },
   { label: 'Governance', itemIds: ['ownership', 'management'] },
 ]
