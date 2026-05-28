@@ -5,5 +5,111 @@
     "schema_version": "1.0.0",
     "last_updated": "2026-05-28"
   },
-  "entries": {}
+  "entries": {
+    "company.gwp::niva-bupa::Annual": {
+      "source_name": "Niva Bupa Press Release — Results March 2025",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.pat::niva-bupa::Annual": {
+      "source_name": "Niva Bupa Press Release — Results March 2025",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.combined_ratio::niva-bupa::Annual": {
+      "source_name": "Niva Bupa Press Release — Results March 2025",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.solvency_ratio::niva-bupa::Annual": {
+      "source_name": "Niva Bupa Press Release — Results March 2025",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.expense_ratio::niva-bupa::Annual": {
+      "source_name": "Niva Bupa Press Release — Results March 2025",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.gwp::star-health::Annual": {
+      "source_name": "Star Health Q1 FY26 Press Release (references FY25 prior-year audited figures)",
+      "source_url": "https://www.prnewswire.com/in/news-releases/star-health-insurance-reports-strong-performance-q1fy26-pat-grows-44-to-inr-438-cr-ifrs-premium-grows-13-302517057.html",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.combined_ratio::star-health::Annual": {
+      "source_name": "Star Health Q1 FY26 Press Release",
+      "source_url": "https://www.prnewswire.com/in/news-releases/star-health-insurance-reports-strong-performance-q1fy26-pat-grows-44-to-inr-438-cr-ifrs-premium-grows-13-302517057.html",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.solvency_ratio::star-health::Annual": {
+      "source_name": "Star Health Annual Report FY25 references",
+      "source_url": "https://www.starhealth.in/investors/annual-report/",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.market_share::star-health::Annual": {
+      "source_name": "Star Health Annual Report references — retail health market share",
+      "source_url": "https://www.starhealth.in/investors/annual-report/",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.gwp::care-health::Annual": {
+      "source_name": "Care Health Insurance Public Disclosures FY25",
+      "source_url": "https://www.careinsurance.com/public-disclosures.html",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.nep::care-health::Annual": {
+      "source_name": "Care Health Insurance Public Disclosures FY25",
+      "source_url": "https://www.careinsurance.com/public-disclosures.html",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "company.gwp::aditya-birla::Annual": {
+      "source_name": "Aditya Birla Capital Q4 FY25 & FY25 Results Press Release",
+      "source_url": "https://www.adityabirla.com/media/press-releases/aditya-birla-capital-announces-q4fy25-and-fy25-results/",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "company.claims_ratio::aditya-birla::Annual": {
+      "source_name": "Aditya Birla Health Insurance ICR FY25 (parent press release)",
+      "source_url": "https://www.adityabirla.com/media/press-releases/aditya-birla-capital-announces-q4fy25-and-fy25-results/",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "high"
+    },
+    "industry.gi_premium.health::INDUSTRY::Annual": {
+      "source_name": "CareRatings Non-Life Insurance Update — March 2025 (references IRDAI flash figures)",
+      "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    },
+    "industry.gi_premium.motor::INDUSTRY::Annual": {
+      "source_name": "CareRatings Non-Life Insurance Update — March 2025",
+      "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T10:05:00Z",
+      "confidence": "medium"
+    }
+  }
 }

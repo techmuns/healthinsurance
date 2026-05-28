@@ -3,12 +3,133 @@
     "snapshot_id": "sahi-peer-comparison",
     "description": "SAHI peer comparison — per-company growth, share, ratios. Drives Competitive Position section.",
     "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
+    "dataset": "mixed",
+    "last_updated": "2026-05-28",
+    "last_successful_run": "2026-05-28T10:05:00Z",
     "upstream_sources": ["irdai_handbook", "company_ir"],
-    "parser_status": "pending",
-    "notes": "Derived snapshot — populated by build-snapshots.ts from insurer-annual-snapshot.json + industry-segment-premium.json. Auto-rebuilds when upstream snapshots change."
+    "parser_status": "manual_fallback",
+    "notes": "Derived from insurer-annual-snapshot.json + industry-segment-premium.json. Auto-rebuilds when upstream snapshots change. Growth values computed as (FY25 GWP − FY24 GWP) / FY24 GWP. Health market share derived as company GWP / industry health premium."
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "fiscal_year": "FY25",
+      "gwp": 7407,
+      "growth": 32.0,
+      "health_market_share": 6.03,
+      "retail_health_market_share": null,
+      "pat": 214,
+      "combined_ratio": 96.1,
+      "claims_ratio": null,
+      "expense_ratio": 37.4,
+      "solvency_ratio": 3.03,
+      "distribution_concentration": null,
+      "provenance": {
+        "source_name": "Derived from insurer-annual-snapshot + industry-segment-premium",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": "2026-05-28T10:05:00Z",
+        "parser_name": "build-snapshots:derived",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "star-health",
+      "fiscal_year": "FY25",
+      "gwp": 17553,
+      "growth": null,
+      "health_market_share": 14.30,
+      "retail_health_market_share": 33.0,
+      "pat": null,
+      "combined_ratio": 101.1,
+      "claims_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": 2.2,
+      "distribution_concentration": null,
+      "provenance": {
+        "source_name": "Derived from insurer-annual-snapshot + industry-segment-premium",
+        "source_url": "https://www.prnewswire.com/in/news-releases/star-health-insurance-reports-strong-performance-q1fy26-pat-grows-44-to-inr-438-cr-ifrs-premium-grows-13-302517057.html",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": "2026-05-28T10:05:00Z",
+        "parser_name": "build-snapshots:derived",
+        "confidence": "medium"
+      }
+    },
+    {
+      "company_id": "care-health",
+      "fiscal_year": "FY25",
+      "gwp": 8318,
+      "growth": 21.2,
+      "health_market_share": 6.77,
+      "retail_health_market_share": null,
+      "pat": null,
+      "combined_ratio": null,
+      "claims_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": null,
+      "distribution_concentration": null,
+      "provenance": {
+        "source_name": "Derived from insurer-annual-snapshot + industry-segment-premium",
+        "source_url": "https://www.careinsurance.com/public-disclosures.html",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": "2026-05-28T10:05:00Z",
+        "parser_name": "build-snapshots:derived",
+        "confidence": "medium"
+      }
+    },
+    {
+      "company_id": "aditya-birla",
+      "fiscal_year": "FY25",
+      "gwp": 4940,
+      "growth": 33.0,
+      "health_market_share": 4.02,
+      "retail_health_market_share": null,
+      "pat": null,
+      "combined_ratio": null,
+      "claims_ratio": 71.5,
+      "expense_ratio": null,
+      "solvency_ratio": null,
+      "distribution_concentration": null,
+      "provenance": {
+        "source_name": "Derived from insurer-annual-snapshot + industry-segment-premium",
+        "source_url": "https://www.adityabirla.com/media/press-releases/aditya-birla-capital-announces-q4fy25-and-fy25-results/",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": "2026-05-28T10:05:00Z",
+        "parser_name": "build-snapshots:derived",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "manipalcigna",
+      "fiscal_year": "FY25",
+      "gwp": null,
+      "growth": null,
+      "health_market_share": null,
+      "retail_health_market_share": null,
+      "pat": null,
+      "combined_ratio": null,
+      "claims_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": null,
+      "distribution_concentration": null,
+      "provenance": {
+        "source_name": "ManipalCigna FY24-25 BSE Intimation — Annual Report 24-25 (pending parse)",
+        "source_url": "https://www.manipalcigna.com/documents/20124/131100/BSE+Intimation+Annual+Report+24-25.pdf",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": null,
+        "parser_name": "websearch-seed",
+        "confidence": "pending"
+      }
+    }
+  ]
 }

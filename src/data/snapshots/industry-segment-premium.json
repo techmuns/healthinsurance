@@ -3,12 +3,37 @@
     "snapshot_id": "industry-segment-premium",
     "description": "Industry-wide GI segment premium (Health / Motor / Fire / Crop / Marine / Other). Drives Market Engine main chart.",
     "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
+    "dataset": "mixed",
+    "last_updated": "2026-05-28",
+    "last_successful_run": "2026-05-28T10:05:00Z",
     "upstream_sources": ["irdai_handbook", "gi_council", "irdai_monthly_business"],
-    "parser_status": "pending",
-    "notes": "Empty until ingest-irdai-annual.ts + ingest-distribution.ts (industry helpers) run. UI continues to render the existing historical illustration until populated."
+    "parser_status": "manual_fallback",
+    "notes": "FY25 row seeded from CareRatings Non-Life Insurance Update (referencing IRDAI flash figures). Health-segment value derived from the 40% share IRDAI flagged in FY25. Awaiting ingest-irdai-annual.ts to pull the canonical handbook PDF and replace seeded values."
   },
-  "data": []
+  "data": [
+    {
+      "period_type": "annual",
+      "period": "FY25",
+      "fiscal_year": "FY25",
+      "health_premium": 122800,
+      "motor_premium": 99093,
+      "fire_premium": null,
+      "crop_premium": null,
+      "marine_premium": null,
+      "other_premium": null,
+      "total_gi_premium": 307000,
+      "health_share": 40.0,
+      "motor_share": 32.3,
+      "provenance": {
+        "source_name": "CareRatings Non-Life Insurance Update — March 2025 (IRDAI flash figures)",
+        "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
+        "source_file": null,
+        "source_period": "FY25",
+        "fetched_at": "2026-05-28T10:05:00Z",
+        "parsed_at": "2026-05-28T10:05:00Z",
+        "parser_name": "websearch-seed",
+        "confidence": "medium"
+      }
+    }
+  ]
 }
