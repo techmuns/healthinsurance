@@ -150,6 +150,86 @@
       "source_period": "FY26",
       "fetched_at": "2026-05-28T12:12:14.594Z",
       "confidence": "high"
+    },
+    "gwp::niva-bupa::FY24": {
+      "source_name": "niva-bupa disclosure (FY24)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "nwp::niva-bupa::FY24": {
+      "source_name": "niva-bupa disclosure (FY24)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "nep::niva-bupa::FY24": {
+      "source_name": "niva-bupa disclosure (FY24)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "combined_ratio::niva-bupa::FY24": {
+      "source_name": "niva-bupa disclosure (FY24)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "solvency_ratio::niva-bupa::FY24": {
+      "source_name": "niva-bupa disclosure (FY24)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "nwp::care-health::FY25": {
+      "source_name": "care-health disclosure (FY25)",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "nep::care-health::FY25": {
+      "source_name": "care-health disclosure (FY25)",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "pat::care-health::FY25": {
+      "source_name": "care-health disclosure (FY25)",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "combined_ratio::care-health::FY25": {
+      "source_name": "care-health disclosure (FY25)",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
+    },
+    "solvency_ratio::care-health::FY25": {
+      "source_name": "care-health disclosure (FY25)",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-28T12:16:06.590Z",
+      "confidence": "high"
     }
   }
 }

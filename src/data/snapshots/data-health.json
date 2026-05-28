@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-05-28T12:12:34.930Z",
-  "last_failed_run": "2026-05-28T12:12:34.930Z",
+  "last_successful_run": "2026-05-28T12:16:35.112Z",
+  "last_failed_run": "2026-05-28T12:16:35.112Z",
   "sources_checked": 3,
   "sources_success": 1,
   "sources_failed": 1,
@@ -25,7 +25,17 @@
     "nep::care-health::FY26",
     "pat::care-health::FY26",
     "combined_ratio::care-health::FY26",
-    "solvency_ratio::care-health::FY26"
+    "solvency_ratio::care-health::FY26",
+    "gwp::niva-bupa::FY24",
+    "nwp::niva-bupa::FY24",
+    "nep::niva-bupa::FY24",
+    "combined_ratio::niva-bupa::FY24",
+    "solvency_ratio::niva-bupa::FY24",
+    "nwp::care-health::FY25",
+    "nep::care-health::FY25",
+    "pat::care-health::FY25",
+    "combined_ratio::care-health::FY25",
+    "solvency_ratio::care-health::FY25"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -50,10 +60,9 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[company_disclosures_batch] niva-bupa: parsed 30175 chars from niva-bupa-MGT-7_FY%202024-25.pdf but no patterns matched.",
-    "[company_disclosures_batch] No PDF link found on https://www.starhealth.in/investors/financial-information/ for star-health",
-    "[company_disclosures_batch] aditya-birla: parsed 17926 chars from aditya-birla-GrievanceRedressalPolicy_New.pdf but no patterns matched.",
-    "[company_disclosures_batch] No PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures for manipalcigna",
+    "[company_disclosures_batch] No financial PDF link found on https://www.starhealth.in/investors/financial-information/ (or sub-pages) for star-health",
+    "[company_disclosures_batch] aditya-birla: parsed 6109 chars from aditya-birla-CitizenCharter.pdf but no patterns matched.",
+    "[company_disclosures_batch] No financial PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures (or sub-pages) for manipalcigna",
     "[ownership_quarterly] Live parser not yet implemented."
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
@@ -69,7 +78,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T12:12:11.469Z",
+      "last_attempt_at": "2026-05-28T12:16:03.286Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -175,9 +184,9 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-28T12:12:14.594Z",
-      "last_success_at": "2026-05-28T12:12:14.594Z",
-      "records_fetched": 1
+      "last_attempt_at": "2026-05-28T12:16:06.590Z",
+      "last_success_at": "2026-05-28T12:16:06.590Z",
+      "records_fetched": 2
     },
     {
       "source_id": "distribution_extract",
@@ -189,7 +198,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-28T12:12:34.920Z",
+      "last_attempt_at": "2026-05-28T12:16:35.101Z",
       "last_success_at": null,
       "records_fetched": 0
     },
