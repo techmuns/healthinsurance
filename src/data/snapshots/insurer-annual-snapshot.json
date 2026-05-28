@@ -3,9 +3,9 @@
     "snapshot_id": "insurer-annual-snapshot",
     "description": "Per-insurer annual financial snapshot — GWP, NWP, NEP, PAT, ratios, market share, distribution and retention indicators. Drives Premium Engine annual view, Profitability, Competitive Position, Executive Overview.",
     "schema_version": "1.0.0",
-    "dataset": "official",
+    "dataset": "mixed",
     "last_updated": "2026-05-28",
-    "last_successful_run": "2026-05-28T10:30:00Z",
+    "last_successful_run": "2026-05-28T12:12:34.926Z",
     "upstream_sources": [
       "irdai_handbook",
       "irdai_public_disclosures",
@@ -257,6 +257,29 @@
         "parsed_at": "2026-05-28T10:05:00Z",
         "parser_name": "websearch-seed",
         "confidence": "medium"
+      }
+    },
+    {
+      "company_id": "care-health",
+      "fiscal_year": "FY26",
+      "gwp": null,
+      "nwp": 134082,
+      "nep": 135982,
+      "pat": 31,
+      "combined_ratio": 1.15,
+      "claims_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": 1.56,
+      "roe": null,
+      "provenance": {
+        "source_name": "care-health disclosure (FY26)",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_period": "FY26",
+        "fetched_at": "2026-05-28T12:12:14.594Z",
+        "parsed_at": "2026-05-28T12:12:29.733Z",
+        "parser_name": "ingest-company-disclosures",
+        "confidence": "high"
       }
     }
   ]
