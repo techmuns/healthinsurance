@@ -6,19 +6,49 @@ import { useActiveCompany } from '@/state/filters'
 import { getCompanyGrowthCopy } from '@/lib/companyCopy'
 import type { ReadLine } from '@/lib/companyCopy'
 
-const PREMIUM_SOURCE = {
-  source: 'Company filing' as const,
-  confidence: 'high' as const,
-  provenance: {
-    source_name: 'FY25 GWP / NWP / NEP / PAT from company press releases + public disclosures',
-    source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf',
-    fetched_at: '2026-05-28',
-  },
+// Per-company provenance — Niva Bupa / Star Health / Aditya Birla numbers
+// come directly from each company's press release / annual report. Care
+// Health and ManipalCigna FY25 values are derived from IRDAI public
+// disclosures via Cafemutual / disclosure-aggregator citations until the
+// L-form PDF parser lands.
+function getPremiumSource(companyId: string) {
+  if (companyId === 'care-health' || companyId === 'manipalcigna') {
+    return {
+      source: 'Derived from IRDAI' as const,
+      confidence: 'medium' as const,
+      provenance: {
+        source_name:
+          companyId === 'care-health'
+            ? 'Care Health FY25 Public Disclosures (IRDAI format), re-aggregated by UnlistedZone / Chryseum'
+            : 'Cafemutual non-life FY26 ranking citing IRDAI segment data',
+        source_url:
+          companyId === 'care-health'
+            ? 'https://www.careinsurance.com/public-disclosures.html'
+            : 'https://cafemutual.com/news/insurance/37556-who-are-the-top-non-life-insurers-of-fy26',
+        fetched_at: '2026-05-28',
+      },
+    }
+  }
+  return {
+    source: 'Company filing' as const,
+    confidence: 'high' as const,
+    provenance: {
+      source_name: 'FY25 GWP / PAT / combined ratio / solvency from company press release',
+      source_url:
+        companyId === 'star-health'
+          ? 'https://www.businessupturn.com/business/corporates/star-health-insurance-posts-rs-787-crore-profit-in-fy25-gwp-grows-10-to-rs-16781-crore/'
+          : companyId === 'aditya-birla'
+            ? 'https://www.adityabirla.com/media/press-releases/aditya-birla-capital-announces-q4fy25-and-fy25-results/'
+            : 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf',
+      fetched_at: '2026-05-28',
+    },
+  }
 }
 
 export function CompanyGrowthEngine() {
   const company = useActiveCompany()
   const copy = getCompanyGrowthCopy(company)
+  const PREMIUM_SOURCE = getPremiumSource(company.id)
 
   return (
     <div className="space-y-5">
@@ -28,6 +58,7 @@ export function CompanyGrowthEngine() {
         badge={copy.badge}
         summary={copy.summary}
         tone={copy.tone}
+        source={PREMIUM_SOURCE}
       />
 
       {/* Premium Engine — keeps the existing Flow / Mix / Retention chart untouched. */}
@@ -55,10 +86,17 @@ export function CompanyGrowthEngine() {
       <QuarterlyCalcCard company={company} />
 
       {/* Light, premium investor read — replaces the heavy navy InsightBox panel. */}
-      <GrowthInvestorRead signal={copy.badge} lines={copy.readLines} companyName={company.shortName} />
+      <GrowthInvestorRead
+        signal={copy.badge}
+        lines={copy.readLines}
+        companyName={company.shortName}
+        source={PREMIUM_SOURCE}
+      />
     </div>
   )
 }
+
+type PremiumSourcePack = ReturnType<typeof getPremiumSource>
 
 // ─── HERO CARD ─────────────────────────────────────────────────────────────
 function HeroCard({
@@ -67,12 +105,14 @@ function HeroCard({
   badge,
   summary,
   tone,
+  source,
 }: {
   eyebrow: string
   verdict: string
   badge: string
   summary: string
   tone: 'teal' | 'navy' | 'positive' | 'warning' | 'negative'
+  source: PremiumSourcePack
 }) {
   const accent =
     tone === 'teal' || tone === 'positive'
@@ -121,7 +161,7 @@ function HeroCard({
         <p className="text-[13.5px] leading-relaxed text-ink-secondary">{summary}</p>
       </div>
       <div className="relative mt-4 flex justify-end">
-        <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
+        <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />
       </div>
     </section>
   )
@@ -132,10 +172,12 @@ function GrowthInvestorRead({
   signal,
   lines,
   companyName,
+  source,
 }: {
   signal: string
   lines: ReadLine[]
   companyName: string
+  source: PremiumSourcePack
 }) {
   return (
     <section className="card-surface relative overflow-hidden p-5">
@@ -169,7 +211,7 @@ function GrowthInvestorRead({
         ))}
       </div>
       <div className="relative mt-3 flex justify-end">
-        <SourceTag source={PREMIUM_SOURCE.source} confidence={PREMIUM_SOURCE.confidence} provenance={PREMIUM_SOURCE.provenance} />
+        <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />
       </div>
     </section>
   )

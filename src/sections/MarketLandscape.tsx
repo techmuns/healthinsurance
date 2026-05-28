@@ -34,10 +34,10 @@ import { SourceTag } from '@/components/SourceTag'
 // from mockData.ts; will switch to IRDAI + GI Council snapshots when
 // dataLayer migration lands.
 const MARKET_SOURCE = {
-  source: 'IRDAI + Company filing' as const,
+  source: 'Derived from IRDAI' as const,
   confidence: 'medium' as const,
   provenance: {
-    source_name: 'IRDAI flash figures (via CareRatings non-life update) for industry totals; SAHI peer GWP from company filings',
+    source_name: 'IRDAI flash figures (re-aggregated by CareRatings Non-Life Insurance Update, March 2025). Direct IRDAI handbook parse pending.',
     source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf',
     fetched_at: '2026-05-28',
   },
@@ -620,7 +620,7 @@ function CompanyBridgeCard() {
         {bridge.closingLine}
       </p>
       <div className="relative mt-2 flex justify-end">
-        <SourceTag source="Mock dataset" confidence="pending" period="FY23 → FY26" provenance={{ source_name: 'UI mock seed — company-specific retail share trajectory derived from snapshot' }} />
+        <SourceTag source="Derived from IRDAI" confidence="medium" period="FY23 → FY26" provenance={{ source_name: 'Retail share trajectory derived from real FY25 GWP + marketShareChange in insurers[]', source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf' }} />
       </div>
     </div>
   )

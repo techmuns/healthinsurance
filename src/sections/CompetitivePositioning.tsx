@@ -64,9 +64,9 @@ export function CompetitivePositioning() {
         tone={active.signal === 'Strong' ? 'positive' : active.signal === 'Improving' ? 'teal' : active.signal === 'Watch' ? 'warning' : 'negative'}
         badge={active.signal}
         summary={summary}
-        source="Company filing"
+        source="Company filing + IRDAI disclosures"
         sourceConfidence="high"
-        sourceProvenance={{ source_name: 'SAHI peer FY25 figures from company press releases + IRDAI public disclosures', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
+        sourceProvenance={{ source_name: 'Niva Bupa / Star Health / Aditya Birla: direct from company press releases. Care Health / ManipalCigna: derived from IRDAI public disclosures via Cafemutual / disclosure aggregators. SAHI segment shares derived from FY25 GWP totals.', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
 
     <ModuleCard

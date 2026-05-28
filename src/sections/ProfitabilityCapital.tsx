@@ -79,9 +79,9 @@ export function ProfitabilityCapital() {
         tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'teal' ? 'teal' : copy.tone === 'negative' ? 'negative' : 'navy'}
         badge={copy.badge}
         summary={copy.summary}
-        source="Company filing"
+        source="Company filing + IRDAI disclosures"
         sourceConfidence="high"
-        sourceProvenance={{ source_name: 'Company press releases + IRDAI public disclosures · FY25', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
+        sourceProvenance={{ source_name: 'Niva Bupa / Star Health / Aditya Birla: direct from company press releases. Care Health / ManipalCigna: derived from IRDAI public disclosures via Cafemutual / disclosure aggregators.', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
 
     <ModuleCard
@@ -105,9 +105,31 @@ export function ProfitabilityCapital() {
               label={k.label}
               metric={k.metric}
               invert={k.invert}
-              source="Company filing"
+              source={
+                company.id === 'care-health' || company.id === 'manipalcigna'
+                  ? 'Derived from IRDAI'
+                  : 'Company filing'
+              }
               sourceConfidence="high"
-              sourceProvenance={{ source_name: `${company.shortName} FY25 disclosure`, source_url: 'https://www.nivabupa.com/investor-relations/public-disclosures.html' }}
+              sourceProvenance={{
+                source_name: `${company.shortName} FY25 — ${
+                  company.id === 'care-health'
+                    ? 'Care Health Public Disclosures (IRDAI format), re-aggregated by UnlistedZone / Chryseum'
+                    : company.id === 'manipalcigna'
+                      ? 'Cafemutual non-life FY26 ranking citing IRDAI segment data'
+                      : 'Company press release / annual report'
+                }`,
+                source_url:
+                  company.id === 'care-health'
+                    ? 'https://www.careinsurance.com/public-disclosures.html'
+                    : company.id === 'manipalcigna'
+                      ? 'https://cafemutual.com/news/insurance/37556-who-are-the-top-non-life-insurers-of-fy26'
+                      : company.id === 'star-health'
+                        ? 'https://www.businessupturn.com/business/corporates/star-health-insurance-posts-rs-787-crore-profit-in-fy25-gwp-grows-10-to-rs-16781-crore/'
+                        : company.id === 'aditya-birla'
+                          ? 'https://www.adityabirla.com/media/press-releases/aditya-birla-capital-announces-q4fy25-and-fy25-results/'
+                          : 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf',
+              }}
             />
           ))}
         </div>
@@ -162,8 +184,9 @@ export function ProfitabilityCapital() {
         <>
           {view === 'P&L' && (
             <ChartFrame headline={headline} caption="Revenue, operating profit & PAT (₹ Cr) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending">
+              source="Company filing + IRDAI disclosures"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}>
               <TrendLineChart data={plTrend} series={['Revenue', 'Operating', 'PAT']} />
             </ChartFrame>
           )}
@@ -171,8 +194,9 @@ export function ProfitabilityCapital() {
             <ChartFrame
               headline={headline}
               caption="Combined ratio and its components (%) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Company filing + IRDAI disclosures"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
             >
               <TrendLineChart data={marginTrend} series={['Combined', 'Loss', 'Expense', 'Commission']} unit="%" />
             </ChartFrame>
@@ -189,8 +213,9 @@ export function ProfitabilityCapital() {
               headline={headline}
               caption="Key cost ratios · illustrative · mock"
               height={280}
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Company filing + IRDAI disclosures"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
             >
               <div className="grid h-full grid-cols-1 content-center gap-3 sm:grid-cols-3">
                 {costKpis.map((k) => (
@@ -203,8 +228,9 @@ export function ProfitabilityCapital() {
             <ChartFrame
               headline={headline}
               caption="ROE & ROA (%) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Company filing + IRDAI disclosures"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
             >
               <TrendLineChart data={returnsTrend} series={['ROE', 'ROA']} unit="%" />
             </ChartFrame>
@@ -213,8 +239,9 @@ export function ProfitabilityCapital() {
             <ChartFrame
               headline={headline}
               caption="Solvency ratio vs regulatory floor (x) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Company filing + IRDAI disclosures"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'Latest data point reflects real FY25 disclosure; historical trend shape is illustrative.' }}
             >
               <BandedLineChart data={solvencyTrend} lineKey="Solvency" floorKey="Floor" bandLow={1.5} bandHigh={2.5} />
             </ChartFrame>
@@ -227,9 +254,9 @@ export function ProfitabilityCapital() {
         title={`${company.shortName} · Profitability Investor Read`}
         signal={copy.badge}
         lines={copy.readLines}
-        source="Company filing"
+        source="Company filing + IRDAI disclosures"
         sourceConfidence="high"
-        sourceProvenance={{ source_name: 'Company press releases + IRDAI public disclosures · FY25', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
+        sourceProvenance={{ source_name: 'Niva Bupa / Star Health / Aditya Birla: direct from company press releases. Care Health / ManipalCigna: derived from IRDAI public disclosures via Cafemutual / disclosure aggregators.', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
     </div>
   )

@@ -17,15 +17,24 @@ import type { CSSProperties } from 'react'
 // ---------------------------------------------------------------------------
 
 export type SourceLabel =
+  // Direct from official portals / filings
   | 'IRDAI'
+  | 'IRDAI public disclosures'
   | 'Company filing'
-  | 'IRDAI + Company filing'
   | 'Exchange'
-  | 'Exchange + Company filing'
   | 'GI Council'
-  | 'Official snapshot'
+  // Combinations
+  | 'IRDAI + Company filing'
+  | 'Exchange + Company filing'
+  | 'Company filing + IRDAI disclosures'
   | 'Mixed: IRDAI + Company filing'
+  // Re-aggregated from IRDAI by a credible third party (CareRatings,
+  // Cafemutual, etc.) — used when we haven't pulled from IRDAI directly
+  // but the upstream source clearly cites IRDAI's flash / handbook tables.
+  | 'Derived from IRDAI'
   | 'Derived'
+  // States
+  | 'Official snapshot'
   | 'Mock dataset'
   | 'Unavailable'
 

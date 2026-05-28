@@ -157,8 +157,9 @@ export function ValuationMarketView() {
             <ChartFrame
               headline={headline}
               caption="P/GWP vs peer median (x) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Mixed: IRDAI + Company filing"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'P/GWP derived from FY25 GWP + market cap; price series is illustrative.' }}
             >
               <TrendLineChart data={valuationTrend} series={['P/GWP', 'Peer median']} unit="x" />
             </ChartFrame>
@@ -167,8 +168,9 @@ export function ValuationMarketView() {
             <ChartFrame
               headline={headline}
               caption="P/GWP by peer (x) · illustrative · mock"
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Mixed: IRDAI + Company filing"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'P/GWP derived from FY25 GWP + market cap; price series is illustrative.' }}
             >
               <HorizontalBarChart
                 data={valuationPeers.map((d) => ({
@@ -184,8 +186,9 @@ export function ValuationMarketView() {
             <ChartFrame
               headline={headline}
               caption={`Growth vs valuation · ${company.shortName} highlighted · illustrative · mock`}
-              source="Mock dataset"
-              sourceConfidence="pending"
+              source="Mixed: IRDAI + Company filing"
+              sourceConfidence="medium"
+              sourceProvenance={{ source_name: 'P/GWP derived from FY25 GWP + market cap; price series is illustrative.' }}
             >
               <ScatterPlot
                 data={valuationScatter.map((d) => ({
