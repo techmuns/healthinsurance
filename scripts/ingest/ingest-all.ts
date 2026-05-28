@@ -1,3 +1,4 @@
+// Re-trigger workflow — verify Phase 2 parser fixes against IRDAI + insurer IR.
 // ---------------------------------------------------------------------------
 //  ingest-all — entry point for the GitHub Actions workflow.
 //
