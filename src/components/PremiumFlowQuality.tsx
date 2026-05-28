@@ -21,24 +21,25 @@ type Stage = 'GWP' | 'NWP' | 'NEP'
 type MixType = 'Customer' | 'Channel' | 'Quality'
 type MixView = 'Share' | 'Value'
 
-// Color meaning: deep blue = core premium / retail, teal = retained / renewal /
-// positive, steel = earned / broker, amber = agency / fresh / watch, soft red =
-// leakage / drop-off, green = direct, gold = accents, grey = inactive.
-const FOCAL = '#27457E'
-const TEAL = '#168E8E'
-const NEP_BLUE = '#3D7396'
+// Color meaning (financial story): deep navy = written premium / foundation
+// (GWP); rich teal = retained / healthy quality (NWP); muted terracotta =
+// ceded / leakage / friction; steel blue = earned / realized (NEP); soft mist
+// grey = inactive context. Mix-tab support colours stay as semantic accents.
+const FOCAL = '#234A84'      // GWP — deep navy
+const TEAL = '#148A87'       // NWP — rich teal
+const NEP_BLUE = '#4D7EA8'   // NEP — steel blue
 const AMBER = '#C2902F'
-const RED = '#C8635A'
+const RED = '#C97A6B'        // ceded / leakage — muted terracotta
 const GOLD = '#B68B3A'
 const GREEN = '#3F9B6B'
 const SLATE = '#64748B'
 const GREY = '#94A3B8'
 const GRID = '#ECEFF5'
 const AXIS_TEXT = '#6B7280'
-// Inactive / muted segment fills for the Flow conversion bar.
-const MUTE_NEAR = '#D3DBE6'
-const MUTE_FAR = '#E7EBF1'
-const CEDED_MUTE = 'rgba(199, 93, 90, 0.34)'
+// Inactive / muted segment fills for the Flow conversion bar (mist greys).
+const MUTE_NEAR = '#D9E1EA'
+const MUTE_FAR = '#E7ECF2'
+const CEDED_MUTE = 'rgba(201, 122, 107, 0.32)'
 
 // Elegant, professional segment palette shared by the Mix tab.
 const SEG_COLORS: Record<string, string> = {
