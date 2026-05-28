@@ -3,9 +3,23 @@ import { Crown } from 'lucide-react'
 import { leaderMetricDefs } from '@/lib/insurers'
 import type { Insurer } from '@/data/types'
 
-// Neutral medal tones; navy is reserved for the highlighted company's bar.
-const rankBadge = ['bg-champagne text-white', 'bg-[#9AA3AF] text-white', 'bg-[#BCC2CB] text-white']
-const peerBar = ['bg-teal', 'bg-[#6E7E96]', 'bg-[#9FB1C6]']
+// Rank-coded medal palette — #1 champagne prestige, #2 cool slate-blue,
+// #3 muted teal. Highlighted company always overrides with navy.
+const rankBadge = [
+  'bg-gradient-to-br from-champagne to-champagne-deep text-white shadow-soft ring-1 ring-[#EAD9B6]',
+  'bg-gradient-to-br from-[#7E8AA1] to-[#5E6C82] text-white shadow-soft ring-1 ring-[#CBD3DE]',
+  'bg-gradient-to-br from-teal to-[#0E6F6D] text-white shadow-soft ring-1 ring-[#BFE3E1]',
+]
+const peerBarFill = [
+  'linear-gradient(90deg, #D5B36A 0%, #B68B3A 100%)', // #1 champagne
+  'linear-gradient(90deg, #A0ACC0 0%, #6E7E96 100%)', // #2 slate
+  'linear-gradient(90deg, #3CB1AE 0%, #168E8E 100%)', // #3 teal
+]
+const peerTrack = [
+  'rgba(182,139,58,0.10)',
+  'rgba(110,126,150,0.10)',
+  'rgba(22,142,142,0.10)',
+]
 
 export function IndustryLeaders({
   insurers,
@@ -44,8 +58,8 @@ export function IndustryLeaders({
               className={[
                 'rounded-full px-2.5 py-1 text-[10.5px] font-medium transition-all duration-200',
                 on
-                  ? 'bg-navy-primary text-white shadow-soft'
-                  : 'bg-ice text-ink-secondary hover:text-navy-primary',
+                  ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]'
+                  : 'bg-ice text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
               ].join(' ')}
               aria-pressed={on}
             >
@@ -59,13 +73,17 @@ export function IndustryLeaders({
       <div className="space-y-2">
         {top3.map((r, i) => {
           const focal = r.id === highlightId
+          const barFill = focal
+            ? 'linear-gradient(90deg, #315AA9 0%, #1F3F7F 100%)'
+            : peerBarFill[i]
+          const trackBg = focal ? 'rgba(49,90,169,0.10)' : peerTrack[i]
           return (
             <div
               key={r.id}
               role="button"
               title={`Select ${r.shortName}`}
               onClick={() => onSelect?.(r.id)}
-              className={`relative cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:bg-ice/70'}`}
+              className={`relative cursor-pointer rounded-md px-1.5 py-1 transition-all duration-200 ${focal ? 'focal-mark' : 'hover:-translate-y-0.5 hover:bg-ice/70'}`}
             >
               {r.id === leaderId && (
                 <Crown
@@ -75,7 +93,9 @@ export function IndustryLeaders({
               )}
               <div className="mb-1 flex items-center gap-2">
                 <span
-                  className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold ${focal ? 'bg-navy-primary text-white' : rankBadge[i]}`}
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                    focal ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]' : rankBadge[i]
+                  }`}
                 >
                   {i + 1}
                 </span>
@@ -84,10 +104,10 @@ export function IndustryLeaders({
                 </span>
                 <span className="text-[12px] font-semibold tabular-nums text-navy-deep">{def.format(r[def.key])}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-ice">
+              <div className="h-2 overflow-hidden rounded-full" style={{ background: trackBg }}>
                 <div
-                  className={`h-full rounded-full transition-all duration-300 ${focal ? 'bg-navy-primary' : peerBar[i % peerBar.length]}`}
-                  style={{ width: `${Math.round((r[def.key] / max) * 100)}%` }}
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{ width: `${Math.round((r[def.key] / max) * 100)}%`, background: barFill }}
                 />
               </div>
             </div>

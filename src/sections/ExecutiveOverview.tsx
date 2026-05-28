@@ -18,13 +18,37 @@ import { navItems } from '@/nav'
 import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
 // Retail-investor translation layer — plain-English read before the data.
-// Card copy is built per selected company inside the component; tints are fixed.
-// Mostly-white cards; per-card identity comes from a thin left accent line, a
-// soft icon medallion and a subtle corner glow, with a navy/teal icon anchor.
-const tintClass: Record<'green' | 'teal' | 'amber', { accent: string; medallion: string; icon: string; glow: string }> = {
-  green: { accent: 'border-l-teal', medallion: 'bg-teal-soft', icon: 'text-teal', glow: 'rgba(22,142,142,0.22)' },
-  teal: { accent: 'border-l-navy-primary', medallion: 'bg-soft-blue', icon: 'text-navy-primary', glow: 'rgba(49,90,169,0.18)' },
-  amber: { accent: 'border-l-gold', medallion: 'bg-gold-soft', icon: 'text-navy-primary', glow: 'rgba(183,121,31,0.20)' },
+// Each card carries its own tinted gradient background so meaning is felt
+// before it is read: green/teal = positive operating support, navy/blue =
+// structural positioning, amber/champagne = watch / caution.
+const tintClass: Record<
+  'green' | 'teal' | 'amber',
+  { accent: string; medallion: string; icon: string; glow: string; bg: string; border: string }
+> = {
+  green: {
+    accent: 'border-l-teal',
+    medallion: 'bg-white text-teal ring-1 ring-[#BFE3E1]',
+    icon: 'text-teal',
+    glow: 'rgba(22,142,142,0.22)',
+    bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)',
+    border: '#C8E2DD',
+  },
+  teal: {
+    accent: 'border-l-navy-primary',
+    medallion: 'bg-white text-navy-primary ring-1 ring-[#D6E2FA]',
+    icon: 'text-navy-primary',
+    glow: 'rgba(49,90,169,0.20)',
+    bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)',
+    border: '#D2DEF1',
+  },
+  amber: {
+    accent: 'border-l-champagne',
+    medallion: 'bg-white text-champagne-deep ring-1 ring-[#EFE2C2]',
+    icon: 'text-champagne-deep',
+    glow: 'rgba(182,139,58,0.22)',
+    bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)',
+    border: '#EAD9B6',
+  },
 }
 
 // Curated "next click" destinations — icons reused from nav, with a plain-English
@@ -116,9 +140,17 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
 
   return (
     <div className="space-y-6">
-      {/* A. Compact, filter-aware hero */}
-      <header className="card-surface relative min-h-[170px] rounded-[28px] px-5 py-5 sm:px-6">
+      {/* A. Compact, filter-aware hero — layered navy → champagne backdrop */}
+      <header className="card-surface relative min-h-[170px] overflow-hidden rounded-[28px] px-5 py-5 sm:px-6">
         <HeaderRibbonArt />
+        {/* Layered ambient backdrop: subtle navy gradient + champagne glow + teal accent */}
+        <span
+          className="pointer-events-none absolute inset-0 opacity-[0.55]"
+          style={{
+            background:
+              'radial-gradient(circle at 12% 25%, rgba(238,244,255,0.7) 0%, transparent 50%), radial-gradient(circle at 92% 90%, rgba(244,236,219,0.65) 0%, transparent 55%), radial-gradient(circle at 75% 15%, rgba(225,242,241,0.55) 0%, transparent 45%)',
+          }}
+        />
 
         {/* About this view — floating top-right */}
         <div className="absolute right-5 top-5 z-20 sm:right-6 sm:top-6">
@@ -134,7 +166,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
               {isCompanyView ? 'in focus' : 'highlighted'}
             </span>
           </div>
-          <h1 className="font-display text-[26px] leading-[1.1] text-navy-deep sm:text-[30px]">
+          <h1 className="font-display text-[27px] leading-[1.1] text-navy-deep sm:text-[31px]">
             {isCompanyView ? company.name : 'Insurance Investment Dashboard'}
           </h1>
           <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
@@ -145,24 +177,24 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
         </div>
 
         {/* Status chips — float lower-right on desktop, flow under title on mobile */}
-        <div className="relative z-20 mt-5 flex flex-wrap gap-3 sm:absolute sm:bottom-6 sm:right-6 sm:mt-0">
-          <div className="flex items-center gap-1.5 rounded-xl border border-[#2956A02E] bg-[#FFFFFFC7] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
-            <Clock className="h-3.5 w-3.5 text-muted-blue" />
+        <div className="relative z-20 mt-5 flex flex-wrap gap-2.5 sm:absolute sm:bottom-6 sm:right-6 sm:mt-0">
+          <div className="flex items-center gap-1.5 rounded-lg border border-[#D6E2FA] bg-white/85 px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
+            <Clock className="h-3.5 w-3.5 text-navy-primary" />
             <span className="text-ink-secondary">Updated</span>
             <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
           </div>
           {annualOnly ? (
-            <div className="flex items-center gap-1.5 rounded-xl border border-[#C4841D3D] bg-[#FFF6E0E0] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-signal-warning" />
-              <span className="font-semibold text-signal-warning">Annual mock data only</span>
+            <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF6EA] px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-champagne-deep" />
+              <span className="font-semibold text-champagne-deep">Annual mock data only</span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 rounded-xl border border-[#16968438] bg-[#E8FAF4D9] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
               <BadgeCheck className="h-3.5 w-3.5 text-teal" />
-              <span className="font-semibold text-teal">Freshness: current</span>
+              <span className="font-semibold text-teal">Freshness · current</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 rounded-xl border border-[#16968438] bg-[#E8FAF4D9] px-3.5 py-2 text-[12.5px] shadow-soft backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
             <ShieldCheck className="h-3.5 w-3.5 text-teal" />
             <span className="font-semibold text-teal">{DATA_FRESHNESS.quality}</span>
           </div>
@@ -182,9 +214,9 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             </h2>
             <p className="mt-0.5 text-[12px] text-ink-secondary">A quick read on {company.shortName}.</p>
           </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3 py-1 text-[11px] font-semibold text-white shadow-soft">
-            <span className="h-1.5 w-1.5 rounded-full bg-champagne" />
-            Highlighted: {company.shortName}
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(23,43,77,0.18)] ring-1 ring-[#1B3260]">
+            <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.7)]" />
+            Highlighted · {company.shortName}
           </span>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -193,22 +225,27 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             return (
               <div
                 key={r.title}
-                className={`relative overflow-hidden rounded-xl border border-soft-border border-l-[3px] ${tint.accent} bg-card p-3.5 shadow-[0_6px_18px_rgba(23,43,77,0.08)]`}
+                className={`group relative overflow-hidden rounded-xl border border-l-[4px] ${tint.accent} p-3.5 shadow-[0_4px_14px_rgba(23,43,77,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(23,43,77,0.10)]`}
+                style={{ background: tint.bg, borderColor: tint.border }}
               >
                 <span
-                  className="pointer-events-none absolute -right-7 -top-7 h-20 w-20 rounded-full blur-2xl"
+                  className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl transition-opacity duration-200 group-hover:opacity-90"
+                  style={{ background: tint.glow }}
+                />
+                <span
+                  className="pointer-events-none absolute -bottom-10 -left-6 h-20 w-20 rounded-full opacity-60 blur-3xl"
                   style={{ background: tint.glow }}
                 />
                 <div className="relative flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className={`inline-flex h-6 w-6 items-center justify-center rounded-lg ${tint.medallion}`}>
+                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg shadow-soft ${tint.medallion}`}>
                       <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-navy-deep">{r.title}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-navy-deep">{r.title}</span>
                   </div>
                   <SignalBadge label={r.status} tone={r.tone} size="sm" />
                 </div>
-                <p className="relative mt-2 text-[12px] font-medium leading-snug text-ink-primary">{r.text}</p>
+                <p className="relative mt-2.5 text-[12.5px] font-medium leading-snug text-navy-deep/90">{r.text}</p>
               </div>
             )
           })}
@@ -223,15 +260,33 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           note={`${groupLabel} · ${company.shortName} highlighted`}
         />
         <div className="grid gap-4 lg:grid-cols-2">
-          <div className="card-surface card-interactive p-4">
-            <div className="mb-3 flex items-baseline justify-between gap-2">
-              <p className="text-[12px] font-semibold text-navy-deep">Market Share</p>
+          <div
+            className="card-surface card-interactive relative overflow-hidden p-4"
+            style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F4F7FC 100%)' }}
+          >
+            <span
+              className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-50 blur-3xl"
+              style={{ background: 'radial-gradient(circle, rgba(49,90,169,0.16) 0%, transparent 70%)' }}
+            />
+            <div className="relative mb-3 flex items-baseline justify-between gap-2">
+              <p className="font-display text-[14px] text-navy-deep">Market Share</p>
               <span className="text-[10.5px] text-ink-secondary">{shareContext}</span>
             </div>
-            <MarketShareDonut data={slices} onSelect={filters.setHighlightedCompany} />
+            <div className="relative">
+              <MarketShareDonut data={slices} onSelect={filters.setHighlightedCompany} />
+            </div>
           </div>
-          <div className="card-surface card-interactive p-4">
-            <IndustryLeaders insurers={filtered} highlightId={company.id} onSelect={filters.setHighlightedCompany} />
+          <div
+            className="card-surface card-interactive relative overflow-hidden p-4"
+            style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #FBF6EA 100%)' }}
+          >
+            <span
+              className="pointer-events-none absolute -right-10 -bottom-10 h-32 w-32 rounded-full opacity-50 blur-3xl"
+              style={{ background: 'radial-gradient(circle, rgba(182,139,58,0.18) 0%, transparent 70%)' }}
+            />
+            <div className="relative">
+              <IndustryLeaders insurers={filtered} highlightId={company.id} onSelect={filters.setHighlightedCompany} />
+            </div>
           </div>
         </div>
         <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
@@ -264,16 +319,21 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
               key={link.id}
               type="button"
               onClick={() => onNavigate?.(link.id)}
-              className="card-surface card-interactive group flex items-center gap-2.5 p-3 text-left"
+              className="group relative flex items-center gap-2.5 overflow-hidden rounded-xl border border-soft-border p-3 text-left shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-[#D6E2FA] hover:shadow-[0_8px_24px_rgba(23,43,77,0.10)]"
+              style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F4F7FC 80%, #EEF4FF 100%)' }}
             >
+              <span
+                className="pointer-events-none absolute -right-6 -bottom-6 h-16 w-16 rounded-full opacity-0 blur-2xl transition-opacity duration-200 group-hover:opacity-100"
+                style={{ background: 'rgba(49,90,169,0.18)' }}
+              />
               <OrganicIconBlob shape="blob-d" tone="navySoft" size="sm">
                 <Icon name={link.icon} />
               </OrganicIconBlob>
-              <div className="min-w-0">
+              <div className="relative min-w-0">
                 <p className="text-[13px] font-semibold text-navy-deep">{link.label}</p>
                 <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{link.learn}</p>
               </div>
-              <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-ink-secondary transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight className="relative ml-auto h-4 w-4 shrink-0 text-navy-primary transition-transform group-hover:translate-x-1" />
             </button>
           ))}
         </div>
