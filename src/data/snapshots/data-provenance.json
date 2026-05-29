@@ -13,6 +13,20 @@
       "fetched_at": "2026-05-28T10:05:00Z",
       "confidence": "high"
     },
+    "company.nwp::niva-bupa::Annual": {
+      "source_name": "Niva Bupa FY2024-25 Annual Report — Schedule 1 'Premium Earned [Net]'. FY25 Net Written Premium 5,369.43 Cr (Gross Direct Premium 6,762.23 − reinsurance ceded 1,392.80, IRDAI 1/n basis).",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-29T08:10:05Z",
+      "confidence": "high"
+    },
+    "company.nep::niva-bupa::Annual": {
+      "source_name": "Niva Bupa FY2024-25 Annual Report — Schedule 1 'Premium Earned [Net]'. FY25 Net Earned Premium 4,894.46 Cr.",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "source_period": "FY25",
+      "fetched_at": "2026-05-29T08:10:05Z",
+      "confidence": "high"
+    },
     "company.pat::niva-bupa::Annual": {
       "source_name": "Niva Bupa Press Release — Results March 2025",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf",

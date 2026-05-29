@@ -67,6 +67,12 @@ export interface InsurerAnnualRow {
   company_id: string
   fiscal_year: string
   gwp: number | null
+  // Revenue-Account "Gross Direct Premium" (the basis NWP/NEP are computed on).
+  // Differs from headline `gwp` only when IRDAI's 1/n long-term-premium rule
+  // applies (e.g. Niva Bupa FY25: gross_direct_premium 6,762 Cr vs gwp 7,407 Cr).
+  // The Premium-Engine Flow chart uses this for a consistent GWP→NWP→NEP basis;
+  // `gwp` stays the headline for market-share / growth views.
+  gross_direct_premium?: number | null
   nwp: number | null
   nep: number | null
   pat: number | null

@@ -237,9 +237,13 @@ function FlowTooltip({
 function RealFlowChart({
   rows,
   companyName,
+  basisNote,
 }: {
   rows: Array<{ fiscal_year: string; gwp: number | null; nwp: number | null; nep: number | null }>
   companyName: string
+  // Optional caption when the gross-premium basis isn't the headline figure
+  // (e.g. IRDAI 1/n long-term-premium recognition). Shown above the footer.
+  basisNote?: string
 }) {
   const [stage, setStage] = useState<Stage>('GWP')
 
@@ -592,6 +596,12 @@ function RealFlowChart({
       {stageReported === 1 && (
         <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
           Limited history · only 1 year of {active.label.toLowerCase()} ({active.abbrev}) reported. Written premium (GWP) has fuller history ({stageCoverage.GWP} of {rows.length} years).
+        </p>
+      )}
+      {basisNote && (
+        <p className="mt-2 flex items-start gap-1.5 rounded-md border border-soft-border bg-ice/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-ink-secondary">
+          <span aria-hidden className="mt-px text-[11px] font-bold text-navy-primary/70">&#9432;</span>
+          <span>{basisNote}</span>
         </p>
       )}
 
@@ -1360,16 +1370,17 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             return <RetentionView companyId={focalId} period={period} />
           }
           // Flow tab: render from real snapshot annual rows for this company.
-          const rows = (annualSnapshot.data as Array<{
+          const annualRows = (annualSnapshot.data as Array<{
             company_id: string
             fiscal_year: string
             gwp: number | null
+            gross_direct_premium?: number | null
             nwp: number | null
             nep: number | null
           }>)
             .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
             .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
-          if (rows.length === 0) {
+          if (annualRows.length === 0) {
             return (
               <EmptyState
                 title={`Annual premium history not yet ingested for ${name}`}
@@ -1378,7 +1389,29 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
               />
             )
           }
-          return <RealFlowChart rows={rows} companyName={name} />
+          // The flow uses the Revenue-Account "Gross Direct Premium" when present,
+          // so GWP→NWP→NEP stay one consistent basis (cession = GWP − NWP reads
+          // true). Where that differs materially from the headline GWP — IRDAI's
+          // 1/n long-term-premium rule, e.g. Niva Bupa FY25 — surface a compact
+          // note so the wider written→retained gap isn't misread as reinsurance.
+          // The headline `gwp` is left untouched for market-share / growth views.
+          const oneByN = annualRows.filter(
+            (r) =>
+              typeof r.gross_direct_premium === 'number' &&
+              typeof r.gwp === 'number' &&
+              Math.abs(r.gwp - r.gross_direct_premium) > Math.max(50, r.gwp * 0.02),
+          )
+          const basisNote =
+            oneByN.length === 1
+              ? `${oneByN[0].fiscal_year} gross premium shown on the IRDAI 1/n basis (${fmtCr(oneByN[0].gross_direct_premium as number)}); headline GWP ${fmtCr(oneByN[0].gwp as number)}.`
+              : oneByN.length > 1
+                ? `${oneByN.map((r) => r.fiscal_year).join(', ')} gross premium shown on the IRDAI 1/n (Revenue-Account) basis; headline GWP differs.`
+                : undefined
+          const rows = annualRows.map((r) => ({
+            ...r,
+            gwp: typeof r.gross_direct_premium === 'number' ? r.gross_direct_premium : r.gwp,
+          }))
+          return <RealFlowChart rows={rows} companyName={name} basisNote={basisNote} />
         })()}
       </div>
 
