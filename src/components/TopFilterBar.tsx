@@ -1,5 +1,6 @@
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
+import { DataRangeControl } from './DataRangeControl'
 import { useFilters } from '@/state/filters'
 import { insurers, DATA_FRESHNESS } from '@/data/mockData'
 import type { PeerGroup, TimePeriod } from '@/data/types'
@@ -68,6 +69,17 @@ export function TopFilterBar({ section }: { section?: string }) {
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-secondary" />
           </span>
         </label>
+
+        <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
+
+        {/* Data Range — dashboard-wide active window. Granularity follows the
+            Period toggle (FY / quarter / month). Drives every clipped chart. */}
+        <div>
+          <FieldLabel hint="Active window — every chart, card and table is clipped to this range">
+            Data Range
+          </FieldLabel>
+          <DataRangeControl />
+        </div>
 
         <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
 

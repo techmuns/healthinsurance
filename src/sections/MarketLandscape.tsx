@@ -21,7 +21,7 @@ import {
   giPremiumMix,
   healthCarrierShare,
 } from '@/data/mockData'
-import { useActiveCompany, useFilters } from '@/state/filters'
+import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import {
   getCompanyMarketBridge,
   getCompanyMarketEngineHeroSub,
@@ -182,9 +182,10 @@ function MainChartBlock() {
   const [mode, setMode] = useState<ChartMode>('Mix %')
   const gate = usePeriodGate()
   const data = mode === 'Absolute Premium' ? giPremiumAbsolute : giPremiumMix
+  const { data: clipped } = useRangeClip(data)
   const isMix = mode === 'Mix %'
   const unit = isMix ? '%' : ' ₹k Cr'
-  const lastIdx = data.length - 1
+  const lastIdx = clipped.length - 1
 
   // End-of-chart series labels at FY26. Only renders for the last datum;
   // Recharts places (x, y) at the top edge of each stacked band, so we nudge
@@ -254,10 +255,16 @@ function MainChartBlock() {
           body={gate.reason ?? 'Switch the period toggle to Annual to see the GI pool shift.'}
           height={276}
         />
+      ) : clipped.length === 0 ? (
+        <EmptyState
+          title="Data not available from source"
+          body="No reported years fall inside the selected Data Range. Widen the range in the top bar."
+          height={276}
+        />
       ) : (
       <div style={{ width: '100%', height: 276 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
+          <AreaChart data={clipped} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
             <defs>
               <linearGradient id="healthFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={HEALTH} stopOpacity={0.55} />
@@ -412,7 +419,8 @@ function BridgeBlock() {
 // PSU lightest grey. Right-side end labels make the up/down story instant.
 function SahiShiftCard() {
   const data = healthCarrierShare
-  const lastIdx = data.length - 1
+  const { data: clipped } = useRangeClip(data)
+  const lastIdx = clipped.length - 1
   const gate = usePeriodGate()
 
   const seriesLabel = (name: 'SAHI' | 'Private' | 'PSU', color: string, bold: boolean) =>
@@ -457,10 +465,16 @@ function SahiShiftCard() {
           body={gate.reason ?? 'Carrier-share series is annual-only.'}
           height={196}
         />
+      ) : clipped.length === 0 ? (
+        <EmptyState
+          title="Data not available from source"
+          body="No reported years fall inside the selected Data Range. Widen the range in the top bar."
+          height={196}
+        />
       ) : (
       <div style={{ width: '100%', height: 196 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
+          <LineChart data={clipped} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
             <XAxis
               dataKey="label"

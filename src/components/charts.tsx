@@ -21,6 +21,7 @@ import {
 } from 'recharts'
 import type { SeriesPoint } from '@/data/types'
 import { SourceTag, type SourceLabel, type SourceConfidence, type SourceProvenance } from './SourceTag'
+import { useRangeClip } from '@/state/filters'
 
 // Primary deep blue leads (the focus colour); supporting series move to muted
 // teal / slate / gold so blue stays meaningful rather than monotonous.
@@ -83,6 +84,26 @@ export function ChartFrame({
   )
 }
 
+/** Muted state shown when the active Data Range excludes every point of a
+ *  time series — honest "source missing for this window", never zeroed data. */
+export function RangeUnavailable({ height = 240 }: { height?: number }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/50 text-center"
+      style={{ height }}
+    >
+      <span className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-soft-blue text-navy-primary/70">
+        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+          <rect x="3" y="4" width="18" height="17" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />
+        </svg>
+      </span>
+      <p className="text-[12.5px] font-medium text-ink-secondary">Data not available from source</p>
+      <p className="mt-0.5 text-[11px] text-ink-secondary/75">No reported points in the selected range</p>
+    </div>
+  )
+}
+
 export function ChartEmpty({ height = 240 }: { height?: number }) {
   return (
     <div
@@ -112,9 +133,11 @@ export interface TrendChartProps {
 }
 
 export function TrendLineChart({ data, series, height = 240, unit }: TrendChartProps) {
+  const { data: clipped } = useRangeClip(data)
+  if (clipped.length === 0) return <RangeUnavailable height={height} />
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
+      <LineChart data={clipped} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
         <YAxis {...axisProps} width={44} unit={unit} />
@@ -137,9 +160,11 @@ export function TrendLineChart({ data, series, height = 240, unit }: TrendChartP
 }
 
 export function StackedBarChart({ data, series, height = 240, unit }: TrendChartProps) {
+  const { data: clipped } = useRangeClip(data)
+  if (clipped.length === 0) return <RangeUnavailable height={height} />
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barCategoryGap="28%">
+      <BarChart data={clipped} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barCategoryGap="28%">
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
         <YAxis {...axisProps} width={44} unit={unit} />
@@ -161,9 +186,11 @@ export function StackedBarChart({ data, series, height = 240, unit }: TrendChart
 }
 
 export function GroupedBarChart({ data, series, height = 240, unit }: TrendChartProps) {
+  const { data: clipped } = useRangeClip(data)
+  if (clipped.length === 0) return <RangeUnavailable height={height} />
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barGap={4} barCategoryGap="24%">
+      <BarChart data={clipped} margin={{ top: 8, right: 16, left: -8, bottom: 0 }} barGap={4} barCategoryGap="24%">
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
         <YAxis {...axisProps} width={44} unit={unit} />
@@ -261,9 +288,11 @@ export function BandedLineChart({
   lineKey: string
   floorKey?: string
 }) {
+  const { data: clipped } = useRangeClip(data)
+  if (clipped.length === 0) return <RangeUnavailable height={height} />
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <LineChart data={data} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
+      <LineChart data={clipped} margin={{ top: 8, right: 16, left: -8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
         <YAxis {...axisProps} width={44} domain={[0, 'auto']} />
@@ -295,9 +324,11 @@ export function DualAxisChart({
   lineLabel: string
   height?: number
 }) {
+  const { data: clipped } = useRangeClip(data)
+  if (clipped.length === 0) return <RangeUnavailable height={height} />
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ComposedChart data={data} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+      <ComposedChart data={clipped} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
         <XAxis dataKey="label" {...axisProps} />
         <YAxis yAxisId="left" {...axisProps} width={52} />

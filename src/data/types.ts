@@ -4,6 +4,8 @@
 // system can always render source, status and freshness alongside a number.
 // ---------------------------------------------------------------------------
 
+import type { DateRange } from '@/lib/dateRange'
+
 export type DataStatus = 'Reported' | 'Derived' | 'Estimated' | 'Pending'
 
 export type Signal = 'Strong' | 'Improving' | 'Watch' | 'Weak'
@@ -95,6 +97,8 @@ export interface DashboardFilters {
   highlightedCompany: string
   peerGroup: PeerGroup
   period: TimePeriod
+  /** Dashboard-wide active data range (absolute fiscal-month indices). */
+  range: DateRange
   dataset: Dataset
   updatedAsOf: string
 }

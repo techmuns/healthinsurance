@@ -40,7 +40,8 @@ import { BasisTag } from '@/components/BasisTag'
 import { SourceTag } from '@/components/SourceTag'
 import { profitabilityBasis } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
-import { useActiveCompany } from '@/state/filters'
+import { useActiveCompany, useFilters } from '@/state/filters'
+import { labelInRange } from '@/lib/dateRange'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Metric, Insurer } from '@/data/types'
 
@@ -1178,8 +1179,10 @@ function EnhancedInvestorRead({ company, series, accent }: { company: Insurer; s
 export function ProfitabilityCapital() {
   const [view, setView] = useState<View>('P&L')
   const company = useActiveCompany()
+  const { range } = useFilters()
   const copy = getCompanyProfitabilityCopy(company)
-  const series = getAnnualSeries(company.id)
+  // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
+  const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
 
   const hasCR = company.combinedRatio > 0
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }

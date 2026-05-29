@@ -18,6 +18,7 @@ import { EmptyState } from './EmptyState'
 import { SourceTag } from './SourceTag'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { distributionEngineMix, DIST_CHANNELS } from '@/lib/distributionEngine'
+import { formatRange, labelInRange } from '@/lib/dateRange'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
@@ -216,23 +217,38 @@ function FlowTooltip({
   )
 }
 
+/** Small leakage / ratio callout pill — the shared treatment for the
+ *  contextual strip under the Premium Engine bars. */
+function CalloutPill({ color, label, value, muted = false }: { color: string; label: string; value: string; muted?: boolean }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-soft-border bg-ice/60 px-2 py-1">
+      <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: color }} />
+      <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
+      <span className={['text-[12px] font-semibold tabular-nums', muted ? 'text-ink-secondary' : 'text-navy-deep'].join(' ')}>{value}</span>
+    </span>
+  )
+}
+
 /**
- * RealFlowChart — single premium-flow chart. One bar per fiscal year. A
- * stage toggle (GWP / NWP / NEP) controls which premium metric the bars
- * represent and the same bars transition (shrink) from the whole written
- * premium down to the retained portion and then the earned portion.
+ * RealFlowChart — the Premium Engine "lens".
  *
- * YoY behaviour: between each adjacent pair of reported years a dotted
- * connector rises (or falls) diagonally from the top of bar_i toward
- * bar_{i+1}, turns at a right angle just before bar_{i+1}, and ends with a
- * compact YoY% label at the elbow. Pairs with a missing endpoint draw no
- * connector. The exact YoY ₹ change is in the tooltip.
+ * One fixed-width, fixed-position bar per fiscal year whose FULL height is that
+ * year's gross written premium (the GWP base). The stage toggle (Gross · GWP /
+ * Retained · NWP / Earned · NEP) is a lens: the bar never moves or resizes —
+ * only its fill changes. The strongly-coloured region recedes GWP → NWP → NEP
+ * while the portion above fades to muted blue-grey leakage bands:
+ *   • reinsurance leakage = GWP − NWP   (ceded to reinsurers)
+ *   • timing leakage      = NWP − NEP   (unearned-premium movement)
  *
- * Missing-value rule: bars with no reported value are omitted (value
- * stays null, never 0); the X-axis tick shows a small italic "n/a".
+ * The value pill glides down with the fill (600ms ease-in-out) so the same
+ * premium bar visibly reduces step by step; bands cross-fade their colour
+ * (~520ms). Missing values are never zero — a year with no GWP renders a
+ * hatched n/a placeholder, and a year missing the active metric renders a
+ * muted "n/a" bar.
  *
- * Single source/footer row at the bottom — basis + period + status +
- * source tag are all in one strip. No duplicate source label elsewhere.
+ * Data semantics preserved: the flow uses the Revenue-Account gross premium
+ * (passed in as `gwp`) so cession reads true, the 1/n `basisNote` still
+ * surfaces, and the company-filing source stays in the footer.
  */
 function RealFlowChart({
   rows,
@@ -241,160 +257,63 @@ function RealFlowChart({
 }: {
   rows: Array<{ fiscal_year: string; gwp: number | null; nwp: number | null; nep: number | null }>
   companyName: string
-  // Optional caption when the gross-premium basis isn't the headline figure
-  // (e.g. IRDAI 1/n long-term-premium recognition). Shown above the footer.
   basisNote?: string
 }) {
   const [stage, setStage] = useState<Stage>('GWP')
+  const [hover, setHover] = useState<number | null>(null)
 
-  // Each stage carries plain-English copy + the official abbreviation so the
-  // chart reads for both first-time users and investors. Toggle pills, the
-  // tooltip main line and the legend all surface as "Written premium · GWP".
-  const stageMeta: Record<Stage, { label: string; abbrev: Stage; main: string; meaning: string; color: string }> = {
-    GWP: {
-      label: 'Written premium',
-      abbrev: 'GWP',
-      main: 'Written premium',
-      meaning: 'Total premium written during the year.',
-      color: FOCAL,
-    },
-    NWP: {
-      label: 'Retained premium',
-      abbrev: 'NWP',
-      main: 'Retained premium',
-      meaning: 'Premium kept after reinsurance.',
-      color: TEAL,
-    },
-    NEP: {
-      label: 'Earned premium',
-      abbrev: 'NEP',
-      main: 'Earned premium',
-      meaning: 'Premium earned in the period.',
-      color: NEP_BLUE,
-    },
+  // Strong, on-brand fills per lens + calm muted blue-greys for leakage (never
+  // red — leakage is friction, not a risk event). Reinsurance sits a touch
+  // deeper than timing so the two leakage zones read as distinct in Earned view.
+  const STRONG: Record<Stage, string> = { GWP: FOCAL, NWP: TEAL, NEP: NEP_BLUE }
+  const MUTE_REINS = '#C3D0E0'
+  const MUTE_TIMING = '#DCE4EE'
+
+  const stageMeta: Record<Stage, { word: string; abbrev: Stage; meaning: string }> = {
+    GWP: { word: 'Gross', abbrev: 'GWP', meaning: 'Total premium written during the year.' },
+    NWP: { word: 'Retained', abbrev: 'NWP', meaning: 'Premium kept after reinsurance cession.' },
+    NEP: { word: 'Earned', abbrev: 'NEP', meaning: 'Premium earned after unearned-premium movement.' },
   }
   const active = stageMeta[stage]
   const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
 
-  // Per-row record carries all three raw values plus the value being plotted
-  // and a back-walk to the previous reported year for YoY computation.
+  // Per-year computed record + back-walk to the previous *reported* year for YoY.
   const data = rows.map((r, i) => {
-    const raw = r[stageKey]
-    let prevRaw: number | null = null
+    const gwp = r.gwp
+    const nwp = r.nwp
+    const nep = r.nep
+    const sel = r[stageKey]
+    let prev: number | null = null
     let prevPeriod: string | null = null
     for (let j = i - 1; j >= 0; j--) {
       const v = rows[j][stageKey]
       if (v != null) {
-        prevRaw = v
+        prev = v
         prevPeriod = rows[j].fiscal_year
         break
       }
     }
-    const yoyAbs = raw != null && prevRaw != null ? raw - prevRaw : null
-    const yoyPct = raw != null && prevRaw != null && prevRaw > 0 ? ((raw - prevRaw) / prevRaw) * 100 : null
-    return {
-      period: r.fiscal_year,
-      gwp: r.gwp,
-      nwp: r.nwp,
-      nep: r.nep,
-      raw,
-      prevRaw,
-      prevPeriod,
-      yoyAbs,
-      yoyPct,
-      value: raw,
-    }
+    const yoyPct = sel != null && prev != null && prev > 0 ? (sel / prev - 1) * 100 : null
+    const reinsuranceLeakage = gwp != null && nwp != null ? gwp - nwp : null
+    const timingLeakage = nwp != null && nep != null ? nwp - nep : null
+    const retentionRatio = gwp != null && nwp != null && gwp > 0 ? (nwp / gwp) * 100 : null
+    const earnedOnGross = gwp != null && nep != null && gwp > 0 ? (nep / gwp) * 100 : null
+    return { period: r.fiscal_year, gwp, nwp, nep, sel, prevPeriod, yoyPct, reinsuranceLeakage, timingLeakage, retentionRatio, earnedOnGross }
   })
 
-  const periodLabel = `${data[0].period}–${data[data.length - 1].period}`
-  const stageReported = rows.filter((r) => r[stageKey] != null).length
-  const stageCoverage = {
-    GWP: rows.filter((r) => r.gwp != null).length,
-    NWP: rows.filter((r) => r.nwp != null).length,
-    NEP: rows.filter((r) => r.nep != null).length,
-  }
+  const maxGwp = Math.max(1, ...data.map((d) => d.gwp ?? 0))
+  const PLOT = 218 // px — height of the tallest (GWP) bar
+  const stageReported = data.filter((d) => d.sel != null).length
 
-  // Per-pair YoY connector overlay — diagonal dotted line from top of one
-  // bar to a right-angle elbow just before the next bar, with a compact
-  // YoY% label sitting above the horizontal elbow segment. Reads the
-  // actual rendered bar geometry from Recharts' formattedGraphicalItems so
-  // the connector always lands on the visible bar top after animation.
-  const YoyConnectors = (cprops: {
-    formattedGraphicalItems?: {
-      item?: { props?: { dataKey?: string } }
-      props?: { data?: { x?: number; y?: number; width?: number; height?: number }[] }
-    }[]
-  }) => {
-    const items = cprops.formattedGraphicalItems ?? []
-    const valueLayer = items.find((it) => it.item?.props?.dataKey === 'value')?.props?.data ?? []
-    const nodes: JSX.Element[] = []
-    for (let i = 1; i < data.length; i++) {
-      const cur = data[i]
-      const prev = data[i - 1]
-      if (cur.raw == null || prev.raw == null || prev.raw <= 0) continue
-      const a = valueLayer[i - 1]
-      const b = valueLayer[i]
-      if (!a || !b) continue
-      const ax = (a.x ?? 0) + (a.width ?? 0) / 2
-      const ay = a.y ?? 0
-      const bx = (b.x ?? 0) + (b.width ?? 0) / 2
-      const by = b.y ?? 0
-      const halfA = (a.width ?? 0) / 2
-      const halfB = (b.width ?? 0) / 2
-      const x1 = ax + halfA // right edge of bar_{i-1} top
-      const y1 = ay - 2 // 2px gap above the bar
-      const x2 = bx - halfB // left edge of bar_i top
-      const y2 = by - 2
-      const elbowLen = Math.min(14, (x2 - x1) * 0.3)
-      const ex = x2 - elbowLen // elbow point (start of horizontal segment)
-      const yoyPct = ((cur.raw - prev.raw) / prev.raw) * 100
-      const positive = yoyPct >= 0
-      // YoY connector uses champagne/gold per the page palette — growth momentum
-      // is an "investor attention" colour, not a sign-of-direction colour.
-      // Direction stays visible via the +/− prefix on the label.
-      const connector = '#B68B3A'
-      const labelColor = positive ? '#B68B3A' : '#9C7430'
-      const label = `${positive ? '+' : '−'}${Math.abs(yoyPct).toFixed(0)}%`
-      // Place the label LEFT of the elbow, in the empty gap between bars,
-      // so it never collides with the value LabelList sitting above bar_i.
-      const labelX = ex - 4
-      const labelY = y2 - 4
-      nodes.push(
-        <g key={`yoy-${i}`} pointerEvents="none">
-          <path
-            d={`M ${x1} ${y1} L ${ex} ${y2} L ${x2} ${y2}`}
-            stroke={connector}
-            strokeOpacity={0.7}
-            strokeWidth={1.1}
-            strokeDasharray="3 3"
-            fill="none"
-          />
-          <circle cx={ex} cy={y2} r={1.8} fill={connector} opacity={0.9} />
-          <text
-            x={labelX}
-            y={labelY}
-            textAnchor="end"
-            fontSize={9.5}
-            fontWeight={700}
-            fill={labelColor}
-          >
-            {label}
-          </text>
-        </g>,
-      )
-    }
-    return <g>{nodes}</g>
-  }
-
-  // Tiny sliver for missing-value bars so the n/a tick has something to anchor.
-  const realMax = Math.max(1, ...data.map((d) => d.raw ?? 0))
-  const placeholderHeight = realMax * 0.03
+  // The contextual callout follows the hovered year, else the latest reported.
+  const latest = [...data].reverse().find((d) => d.gwp != null) ?? data[data.length - 1]
+  const focus = hover != null && data[hover] ? data[hover] : latest
 
   return (
     <div>
-      {/* Stage toggle row — drives the same bars through GWP → NWP → NEP. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-2">
-        <div className="flex items-center gap-1 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
+      {/* Lens toggle + plain-English meaning of the active metric. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pb-3">
+        <div className="inline-flex items-center gap-1 rounded-full bg-ice p-0.5 ring-1 ring-soft-border">
           {(Object.keys(stageMeta) as Stage[]).map((s) => {
             const meta = stageMeta[s]
             const isActive = stage === s
@@ -404,34 +323,14 @@ function RealFlowChart({
                 type="button"
                 onClick={() => setStage(s)}
                 className={[
-                  'flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold transition-all duration-200',
-                  isActive
-                    ? 'text-white shadow-soft ring-1'
-                    : 'text-ink-secondary hover:text-navy-deep',
+                  'flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-semibold transition-all duration-200',
+                  isActive ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-deep',
                 ].join(' ')}
-                style={
-                  isActive
-                    ? {
-                        background: `linear-gradient(135deg, ${meta.color} 0%, #172B4D 100%)`,
-                        boxShadow: `0 1px 3px ${meta.color}40, inset 0 0 0 1px ${meta.color}80`,
-                      }
-                    : undefined
-                }
               >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: isActive ? '#FFFFFF' : STRONG[s], opacity: isActive ? 0.9 : 0.75 }} />
+                {meta.word}
                 <span
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{
-                    background: isActive ? '#FFFFFF' : meta.color,
-                    opacity: isActive ? 1 : 0.5,
-                    boxShadow: isActive ? `0 0 6px ${meta.color}` : undefined,
-                  }}
-                />
-                {meta.label}
-                <span
-                  className={[
-                    'rounded px-1 py-px text-[9px] font-bold tracking-wider',
-                    isActive ? 'bg-white/15 text-white/90' : 'bg-soft-blue text-navy-primary/80',
-                  ].join(' ')}
+                  className={['rounded px-1 py-px text-[9px] font-bold tracking-wider', isActive ? 'bg-white/20 text-white' : 'bg-soft-blue text-navy-primary/80'].join(' ')}
                 >
                   {meta.abbrev}
                 </span>
@@ -440,162 +339,137 @@ function RealFlowChart({
           })}
         </div>
         <div className="text-[10px] text-ink-secondary">
-          {stageReported} of {rows.length} years reported · <span className="font-semibold text-navy-deep">{active.meaning}</span>
+          {stageReported} of {data.length} yrs · <span className="font-semibold text-navy-deep">{active.meaning}</span>
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={data} margin={{ top: 22, right: 12, left: -4, bottom: 14 }} barCategoryGap="42%">
-          <defs>
-            <pattern id="naHatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
-              <rect width="5" height="5" fill="#F4F7FC" />
-              <line x1="0" y1="0" x2="0" y2="5" stroke="#C7D2E0" strokeWidth="0.8" />
-            </pattern>
-          </defs>
-          <CartesianGrid vertical={false} stroke={GRID} strokeDasharray="2 4" />
-          <XAxis
-            dataKey="period"
-            tickLine={false}
-            axisLine={{ stroke: GRID }}
-            tick={(props) => {
-              const { x, y, payload } = props as { x: number; y: number; payload: { value: string } }
-              const row = data.find((d) => d.period === payload.value)
-              const isMissing = row && row.raw == null
-              return (
-                <g transform={`translate(${x},${y})`}>
-                  <text dy={12} textAnchor="middle" fill="#26303F" fontSize={11} fontWeight={600}>
-                    {payload.value}
-                  </text>
-                  {isMissing && (
-                    <text dy={24} textAnchor="middle" fill="#94A3B8" fontSize={9} fontStyle="italic">
-                      n/a
-                    </text>
-                  )}
-                </g>
+      {/* Plot — fixed-position bars; only the fill changes between lenses. */}
+      <div className="pt-8">
+        <div className="relative flex items-end justify-between gap-2 border-b border-soft-border sm:gap-5" style={{ height: PLOT }}>
+          {data.map((d, i) => {
+            const hasGwp = d.gwp != null
+            const dim = hover != null && hover !== i ? 0.82 : 1
+            // Column body — bottom-aligned bar so all bars share one baseline.
+            let body: JSX.Element
+            if (!hasGwp) {
+              body = (
+                <div
+                  className="w-full max-w-[68px] rounded-t-[5px] border border-dashed border-[#C7D2E0]"
+                  style={{ height: 14, background: 'repeating-linear-gradient(45deg,#F4F7FC 0 4px,#E8EEF5 4px 8px)' }}
+                  title="Data not available from source"
+                />
               )
-            }}
-            interval={0}
-            height={32}
-          />
-          <YAxis
-            tickFormatter={axisCr}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fontSize: 10, fill: AXIS_TEXT }}
-            width={42}
-          />
-          <Tooltip
-            cursor={{ fill: 'rgba(39,69,126,0.04)' }}
-            content={({ active: isActive, payload }) => {
-              if (!isActive || !payload?.length) return null
-              const row = (payload[0].payload ?? {}) as typeof data[number]
-              const main = stageMeta[stage].main // e.g. "Written premium"
-              const abbrev = stageMeta[stage].abbrev // e.g. "GWP"
-              const meaning = stageMeta[stage].meaning // e.g. "Total premium written during the year."
-              return (
-                <div className="min-w-[210px] max-w-[260px] overflow-hidden rounded-lg border border-soft-border bg-card shadow-card">
-                  <div
-                    className="border-b border-[#E8EBF1] px-3 py-1.5"
-                    style={{ background: 'linear-gradient(135deg, #F7FAFD 0%, #FFFFFF 100%)' }}
-                  >
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">{row.period}</p>
-                  </div>
-                  <div className="space-y-1.5 px-3 py-2">
-                    {row.raw == null ? (
-                      <p className="text-[11.5px] leading-snug text-ink-secondary">
-                        <span className="font-semibold text-navy-deep">
-                          {main} <span className="text-navy-primary/70">({abbrev})</span>:
-                        </span>{' '}
-                        <span className="italic">data not available</span>
-                      </p>
-                    ) : (
-                      <>
-                        <p className="text-[12px] leading-snug">
-                          <span className="text-navy-deep">
-                            {main} <span className="text-navy-primary/70">({abbrev})</span>:
-                          </span>{' '}
-                          <span className="font-semibold tabular-nums text-navy-deep">{fmtCr(row.raw)}</span>
-                        </p>
-                        {row.yoyPct != null && row.prevPeriod ? (
-                          <>
-                            <p className="text-[11.5px] leading-snug">
-                              <span className="font-semibold text-champagne-deep">
-                                {row.yoyPct >= 0 ? 'Up' : 'Down'} {Math.abs(row.yoyPct).toFixed(0)}%
-                              </span>{' '}
-                              <span className="text-ink-secondary">vs {row.prevPeriod}</span>
-                            </p>
-                            {row.yoyAbs != null && (
-                              <p className="text-[11px] leading-snug text-ink-secondary">
-                                {row.yoyAbs >= 0 ? 'Increase' : 'Decrease'}:{' '}
-                                <span className="font-semibold tabular-nums text-navy-deep">
-                                  {fmtCr(Math.abs(row.yoyAbs))}
-                                </span>
-                              </p>
-                            )}
-                          </>
-                        ) : row.prevRaw == null ? (
-                          <p className="text-[11px] leading-snug italic text-ink-secondary">
-                            No earlier year to compare growth.
-                          </p>
-                        ) : null}
-                      </>
-                    )}
-                    <p className="border-t border-[#EEF1F7] pt-1.5 text-[10.5px] leading-snug text-ink-secondary">
-                      {row.raw == null ? (
-                        'Source did not report this for this year.'
-                      ) : (
-                        <>
-                          <span className="font-semibold text-navy-deep/80">Meaning:</span> {meaning}
-                        </>
-                      )}
-                    </p>
-                  </div>
+            } else if (d.sel == null) {
+              // GWP exists but the active metric is not reported this year.
+              const barH = (d.gwp! / maxGwp) * PLOT
+              body = (
+                <div
+                  className="flex w-full max-w-[68px] items-center justify-center rounded-t-[5px] border border-dashed border-[#C7D2E0]"
+                  style={{ height: barH, background: 'repeating-linear-gradient(45deg,#F4F7FC 0 5px,#E8EEF5 5px 10px)', opacity: dim, transition: 'opacity 200ms' }}
+                  title="Data not available from source"
+                >
+                  <span className="text-[9px] italic text-ink-secondary">n/a</span>
                 </div>
               )
-            }}
-          />
-          {/* Placeholder layer — tiny hatched sliver under each missing year. */}
-          <Bar
-            dataKey={(d: { raw: number | null }) => (d.raw == null ? placeholderHeight : 0)}
-            fill="url(#naHatch)"
-            stroke="#C7D2E0"
-            strokeDasharray="3 3"
-            strokeWidth={0.6}
-            maxBarSize={32}
-            radius={[2, 2, 0, 0]}
-            isAnimationActive={false}
-          />
-          {/* Real bar — same bars transition smoothly when stage changes. */}
-          <Bar
-            dataKey="value"
-            fill={active.color}
-            maxBarSize={32}
-            radius={[3, 3, 0, 0]}
-            animationDuration={650}
-            animationEasing="ease-in-out"
-          >
-            <LabelList
-              dataKey="value"
-              position="top"
-              formatter={(v: number | null | undefined) => (v == null ? '' : compactCr(v))}
-              fill="#172B4D"
-              fontSize={9.5}
-              fontWeight={700}
+            } else {
+              const barH = (d.gwp! / maxGwp) * PLOT
+              const nwpFrac = d.nwp != null ? d.nwp / d.gwp! : 1
+              const nepFrac = d.nep != null ? d.nep / d.gwp! : nwpFrac
+              const earnedH = barH * nepFrac
+              const timingH = Math.max(0, barH * (nwpFrac - nepFrac))
+              const reinsH = Math.max(0, barH * (1 - nwpFrac))
+              const fillFrac = stage === 'GWP' ? 1 : stage === 'NWP' ? nwpFrac : nepFrac
+              const fillH = barH * fillFrac
+              const earnedColor = STRONG[stage]
+              const timingColor = stage === 'GWP' ? STRONG.GWP : stage === 'NWP' ? STRONG.NWP : MUTE_TIMING
+              const reinsColor = stage === 'GWP' ? STRONG.GWP : MUTE_REINS
+              const bandTx = 'background-color 520ms ease-in-out'
+              body = (
+                <>
+                  {/* Value pill — rides the top of the strong fill as the lens changes. */}
+                  <div
+                    className="pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-md bg-white/85 px-1.5 py-0.5 text-center shadow-[0_1px_3px_rgba(23,43,77,0.10)] ring-1 ring-black/[0.05] backdrop-blur-sm"
+                    style={{ bottom: fillH, transition: 'bottom 600ms ease-in-out' }}
+                  >
+                    <div className="font-display text-[12px] leading-none text-navy-deep">{fmtCr(d.sel)}</div>
+                    {d.yoyPct != null && (
+                      <div className="mt-0.5 text-[9.5px] font-bold leading-none" style={{ color: d.yoyPct >= 0 ? GOLD : '#9C7430' }}>
+                        {d.yoyPct >= 0 ? '+' : '−'}
+                        {Math.abs(d.yoyPct).toFixed(0)}% YoY
+                      </div>
+                    )}
+                  </div>
+                  {/* The bar — three stacked bands; only colours animate per lens. */}
+                  <div
+                    className="flex w-full max-w-[68px] flex-col-reverse overflow-hidden rounded-t-[5px] ring-1 ring-inset ring-black/[0.05]"
+                    style={{ height: barH, opacity: dim, transition: 'opacity 200ms' }}
+                  >
+                    <div style={{ height: earnedH, background: earnedColor, transition: bandTx }} />
+                    <div style={{ height: timingH, background: timingColor, transition: bandTx }} />
+                    <div style={{ height: reinsH, background: reinsColor, transition: bandTx }} />
+                  </div>
+                </>
+              )
+            }
+            return (
+              <div
+                key={d.period}
+                className="relative flex h-full flex-1 flex-col items-center justify-end"
+                onMouseEnter={() => setHover(i)}
+                onMouseLeave={() => setHover(null)}
+              >
+                {body}
+              </div>
+            )
+          })}
+        </div>
+        {/* Period axis — honest labels; missing years flagged italic n/a. */}
+        <div className="mt-2 flex justify-between gap-2 sm:gap-5">
+          {data.map((d) => (
+            <div key={d.period} className="flex-1 text-center">
+              <div className="text-[11px] font-semibold text-navy-deep">{d.period}</div>
+              {d.gwp == null && <div className="text-[9px] italic text-ink-secondary">n/a</div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Contextual leakage + ratio callouts — follow the hovered year, else latest. */}
+      <div className="mt-3.5 flex flex-wrap items-center gap-x-2 gap-y-1.5">
+        <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{focus.period}</span>
+        {stage === 'GWP' && (
+          <>
+            <CalloutPill color={FOCAL} label="Gross written" value={focus.gwp != null ? fmtCr(focus.gwp) : 'Data not available from source'} />
+            <span className="text-[11px] italic text-ink-secondary">Full premium base — leakage is removed under Retained &amp; Earned.</span>
+          </>
+        )}
+        {stage === 'NWP' && (
+          <>
+            <CalloutPill color={TEAL} label="Retention" value={focus.retentionRatio != null ? pct(focus.retentionRatio) : 'n/a'} />
+            <CalloutPill
+              color={MUTE_REINS}
+              muted
+              label="Reinsurance leakage"
+              value={
+                focus.reinsuranceLeakage != null
+                  ? `${fmtCr(focus.reinsuranceLeakage)}${focus.retentionRatio != null ? ` · ${pct(100 - focus.retentionRatio)}` : ''}`
+                  : 'Data not available from source'
+              }
             />
-          </Bar>
-          {/* Per-pair YoY% connectors — diagonal + right-angle elbow + label. */}
-          <Customized component={YoyConnectors as never} />
-        </BarChart>
-      </ResponsiveContainer>
+          </>
+        )}
+        {stage === 'NEP' && (
+          <>
+            <CalloutPill color={NEP_BLUE} label="Earned / Gross" value={focus.earnedOnGross != null ? pct(focus.earnedOnGross) : 'n/a'} />
+            <CalloutPill color={MUTE_REINS} muted label="Reinsurance leakage" value={focus.reinsuranceLeakage != null ? fmtCr(focus.reinsuranceLeakage) : 'Data not available from source'} />
+            <CalloutPill color={MUTE_TIMING} muted label="Timing leakage" value={focus.timingLeakage != null ? fmtCr(focus.timingLeakage) : 'Data not available from source'} />
+          </>
+        )}
+      </div>
 
       {stageReported === 0 && (
         <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
-          {active.label} is not reported in this snapshot. Switch the toggle to see another metric.
-        </p>
-      )}
-      {stageReported === 1 && (
-        <p className="mt-2 rounded-md bg-[#FBF3E2] px-2.5 py-1.5 text-[10.5px] text-[#8C6B1A]">
-          Limited history · only 1 year of {active.label.toLowerCase()} ({active.abbrev}) reported. Written premium (GWP) has fuller history ({stageCoverage.GWP} of {rows.length} years).
+          {active.word} premium ({active.abbrev}) is not reported in the selected range. Switch the lens or widen the Data Range.
         </p>
       )}
       {basisNote && (
@@ -605,15 +479,22 @@ function RealFlowChart({
         </p>
       )}
 
-      {/* Single footer row — plain-English legend + basis + source. No duplicates. */}
+      {/* Single footer — legend + calc note + source. No duplicates. */}
       <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-soft-border pt-2.5 text-[10.5px] text-ink-secondary">
-        <LegendSwatch color={active.color}>
-          {active.label} · <span className="font-bold tracking-wider text-navy-primary/80">{active.abbrev}</span>
-        </LegendSwatch>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block h-px w-4" style={{ background: 'repeating-linear-gradient(90deg,#B68B3A 0 3px,transparent 3px 6px)' }} />
-          Growth vs last year
+          <span className="inline-block h-2.5 w-2.5 rounded-[3px]" style={{ background: STRONG[stage] }} />
+          {active.word} · <span className="font-bold tracking-wider text-navy-primary/80">{active.abbrev}</span>
         </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-[3px]" style={{ background: MUTE_REINS }} />
+          Reinsurance leakage
+        </span>
+        {stage === 'NEP' && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="inline-block h-2.5 w-2.5 rounded-[3px]" style={{ background: MUTE_TIMING }} />
+            Timing leakage
+          </span>
+        )}
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-3 rounded-sm border border-dashed border-[#C7D2E0] bg-[#F4F7FC]" />
           Data not available
@@ -621,7 +502,7 @@ function RealFlowChart({
         <span>·</span>
         <span>Premium metrics, not profit</span>
         <span>·</span>
-        <span>{periodLabel}</span>
+        <span>Leakage = GWP − NWP and NWP − NEP where available</span>
         <span>·</span>
         <span>Missing values are source unavailable, not zero</span>
         <span>·</span>
@@ -1242,7 +1123,10 @@ export function RetentionView({ companyId, period }: { companyId: string; period
 
 export function PremiumFlowQuality({ focalId }: { focalId: string }) {
   const [tab, setTab] = useState<Tab>('Flow')
-  const { period: globalPeriod } = useFilters()
+  const { period: globalPeriod, range } = useFilters()
+  // Dashboard-wide active window, in the current period's vocabulary
+  // (FY22–FY25 / Q1 FY23–Q4 FY25 / Apr 2022–Mar 2025).
+  const rangeLabel = formatRange(range, globalPeriod)
   // Map global TimePeriod ('Annual' | 'Quarterly' | 'Monthly') to the internal
   // Period the chart speaks ('Yearly' | 'Quarterly'). Monthly is not supported
   // by the underlying premium series — gate it with an EmptyState below.
@@ -1264,9 +1148,14 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
         ? `${annualRowsForFocal[0]}–${annualRowsForFocal[annualRowsForFocal.length - 1]}`
         : 'Annual'
   const lastIdx = (period === 'Quarterly' ? compareQuarters.length : compareYears.length) - 1
-  const headline = tab === 'Flow' ? 'From Gross Premium to Earned Premium' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Renewal & Stickiness'
+  const headline =
+    tab === 'Flow' ? 'Premium Engine: Gross → Retained → Earned' : tab === 'Mix' ? 'Where Premium Comes From' : 'Customer Renewal & Stickiness'
   const tabPhrase =
     tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal performance and customer stay path'
+  // On the Flow lens the subtitle reflects the selected Data Range and the
+  // conversion story; other tabs keep their period-derived context.
+  const subPeriod = tab === 'Flow' ? rangeLabel : periodLabel
+  const subTail = tab === 'Flow' ? 'How written premium converts into earned premium' : tabPhrase
 
   void useMemo<Chip[]>(() => {
     if (!company) return []
@@ -1334,7 +1223,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
       </div>
       <p className="mt-1 pl-4 text-[12px] text-ink-secondary">
         <span className="font-semibold text-navy-deep">{name}</span> ·{' '}
-        <span className="font-semibold" style={{ color: GOLD }}>{periodLabel}</span> · {tabPhrase}
+        <span className="font-semibold" style={{ color: GOLD }}>{subPeriod}</span> · {subTail}
       </p>
 
       {/* Slim insight strip removed — chips derived from mock anchors are
@@ -1370,7 +1259,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             return <RetentionView companyId={focalId} period={period} />
           }
           // Flow tab: render from real snapshot annual rows for this company.
-          const annualRows = (annualSnapshot.data as Array<{
+          const allCompanyRows = (annualSnapshot.data as Array<{
             company_id: string
             fiscal_year: string
             gwp: number | null
@@ -1380,11 +1269,24 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
           }>)
             .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
             .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
-          if (annualRows.length === 0) {
+          if (allCompanyRows.length === 0) {
             return (
               <EmptyState
                 title={`Annual premium history not yet ingested for ${name}`}
                 body="ingest-company-disclosures.ts will populate per-year GWP / NWP / NEP from the company's annual report on the next scheduled run."
+                height={300}
+              />
+            )
+          }
+          // Clip to the dashboard-wide Data Range. Years outside the window are
+          // never shown; if the window excludes every reported year, surface an
+          // honest "not available from source" state rather than an empty axis.
+          const annualRows = allCompanyRows.filter((r) => labelInRange(r.fiscal_year, range))
+          if (annualRows.length === 0) {
+            return (
+              <EmptyState
+                title="Data not available from source"
+                body={`No reported premium years for ${name} fall inside ${rangeLabel}. Widen the Data Range in the top bar.`}
                 height={300}
               />
             )

@@ -1,13 +1,16 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Dataset, DashboardFilters, PeerGroup, Scope, TimePeriod } from '@/data/types'
+import type { SeriesPoint } from '@/data/types'
 import { insurers, FOCAL_COMPANY, DATA_FRESHNESS } from '@/data/mockData'
+import { DEFAULT_RANGE, isPeriodLabel, labelInRange, type DateRange } from '@/lib/dateRange'
 
 interface FilterContextValue extends DashboardFilters {
   setScope: (s: Scope) => void
   setHighlightedCompany: (id: string) => void
   setPeerGroup: (g: PeerGroup) => void
   setPeriod: (t: TimePeriod) => void
+  setRange: (r: DateRange) => void
   setDataset: (d: Dataset) => void
 }
 
@@ -18,6 +21,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [highlightedCompany, setHighlightedCompanyState] = useState(FOCAL_COMPANY)
   const [peerGroup, setPeerGroupState] = useState<PeerGroup>('SAHI')
   const [period, setPeriod] = useState<TimePeriod>('Annual')
+  const [range, setRange] = useState<DateRange>(DEFAULT_RANGE)
   const [dataset, setDataset] = useState<Dataset>('mock')
 
   // Highlighting a company snaps the peer group to that company's segment when
@@ -53,15 +57,17 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       highlightedCompany,
       peerGroup,
       period,
+      range,
       dataset,
       updatedAsOf: DATA_FRESHNESS.lastUpdated,
       setScope,
       setHighlightedCompany,
       setPeerGroup,
       setPeriod,
+      setRange,
       setDataset,
     }),
-    [scope, highlightedCompany, peerGroup, period, dataset, setHighlightedCompany],
+    [scope, highlightedCompany, peerGroup, period, range, dataset, setHighlightedCompany],
   )
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
@@ -77,4 +83,23 @@ export function useFilters() {
 export function useActiveCompany() {
   const { highlightedCompany } = useFilters()
   return insurers.find((c) => c.id === highlightedCompany) ?? insurers[0]
+}
+
+/**
+ * Clip any time-series array to the dashboard-wide range.
+ *
+ * Rows whose `label` is a recognised period (FY / quarter / month) are kept
+ * only when they fall inside the active range; rows with non-period labels
+ * (category charts, rankings) are returned untouched. Returns `{ data, clipped,
+ * hasPeriodAxis }` so callers can show a "Data not available from source" state
+ * when the range excludes every point.
+ */
+export function useRangeClip<T extends SeriesPoint>(data: T[]): { data: T[]; clipped: boolean; hasPeriodAxis: boolean } {
+  const { range } = useFilters()
+  return useMemo(() => {
+    const hasPeriodAxis = data.some((d) => typeof d.label === 'string' && isPeriodLabel(d.label))
+    if (!hasPeriodAxis) return { data, clipped: false, hasPeriodAxis: false }
+    const next = data.filter((d) => typeof d.label === 'string' && labelInRange(d.label, range))
+    return { data: next, clipped: next.length !== data.length, hasPeriodAxis: true }
+  }, [data, range])
 }
