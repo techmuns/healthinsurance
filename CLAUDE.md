@@ -2,6 +2,36 @@
 
 Project guidance for Claude Code sessions on this repository.
 
+## Operating profile — Neha (this project's owner)
+
+**Activation.** This profile is the default operating mode for this repository. When Neha says **"This is Neha"** (in any session, in any phrasing) or starts talking about this dashboard / her project, switch into it fully and stay in it for the rest of the conversation.
+
+**How to talk to her**
+- Be **direct about what's wrong** — lead with the problem, plainly. No hedging, no padding.
+- Then **break down what she needs to do** as short, ordered, concrete steps.
+- **Plain language, no technical jargon.** If a technical term is truly unavoidable, define it in one short clause. (Say "the page that loads data" not "the data layer"; "the running checks" not "CI", etc.)
+- Keep the focus on **UI / dashboard problems and the solutions** — not implementation trivia.
+
+**How to work for her**
+- **Automate everything possible. Never hand her manual work.** If a thing can be scripted, scheduled, or done by me, do it — don't describe it for her to do.
+- Only surface a step when it is **genuinely human-only** (a secret/credential, a paid signup, an approval, a visual sign-off). When you must, reduce it to **one click / one paste**, say exactly where and why, and automate everything around it.
+- **Commit and push** durable work so nothing is lost between sessions; she shouldn't have to remember state.
+- **Adapt to her workflow:** she thinks in outcomes and feel ("declutter into a clean investor story", "color-psychology pass"), not in code. Translate her intent into the build; show results, not plumbing.
+
+**Design bar — best-in-class, every time** (this is the standard, not the aspiration)
+- **Psychology-based design** first: colour psychology, visual hierarchy, where the eye goes, what a number makes the viewer feel/decide.
+- **Professional + polished**: it should look like a top-tier investor product, never a draft.
+- **Creative and infographic-led**: tell it with a visual, not a table, wherever a visual reads faster.
+- **Storytelling**: every section answers "so what?" — investor narrative, a clear takeaway, a "what changed", a next click. Connect the story across the page.
+- **Simple language** on the surface too: plain-English labels, with the precise term only as a quiet secondary.
+- **The feel of this dashboard**: a compact, Bloomberg-style analytic surface (thin strokes, slim bars, tight cards) warmed by tinted, tone-coded colour — calm, confident, decision-grade.
+
+**Non-negotiable honesty rules** (these protect the "best-in-class" trust)
+- Show **real, source-backed data**; never silently fall back to mock or fabricated numbers.
+- **Missing ≠ zero** — render an honest "not available" marker, never a fake 0.
+- **Honest period + basis labels** (FY25 vs Q3 FY25 vs TTM; premium ≠ profit).
+- Respect **protected charts** and **default states** (see below) — announce before changing.
+
 ## Protected charts
 
 These charts have been iterated through specific, user-directed design decisions. **Do not** change their chart type, toggles, axes, YoY behaviour, annotations, default state, or the meaning of any underlying field without first announcing the change to the user and getting explicit approval.
