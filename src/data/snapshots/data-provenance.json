@@ -226,7 +226,7 @@
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_period": "Q3 FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "combined_ratio::care-health::FY25": {
@@ -234,7 +234,7 @@
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_period": "Q3 FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "solvency_ratio::care-health::FY25": {
@@ -242,7 +242,7 @@
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_period": "Q3 FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "nep::aditya-birla::FY26": {
@@ -266,7 +266,7 @@
       "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
       "source_period": "Q3 FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "gwp::niva-bupa::FY25": {
@@ -274,7 +274,7 @@
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "nwp::niva-bupa::FY25": {
@@ -282,7 +282,7 @@
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "combined_ratio::niva-bupa::FY25": {
@@ -290,7 +290,7 @@
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "solvency_ratio::niva-bupa::FY25": {
@@ -298,7 +298,7 @@
       "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "gwp::star-health::FY25": {
@@ -306,7 +306,7 @@
       "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "nep::star-health::FY25": {
@@ -314,7 +314,7 @@
       "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "solvency_ratio::star-health::FY25": {
@@ -322,7 +322,7 @@
       "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     },
     "roe::star-health::FY25": {
@@ -330,7 +330,7 @@
       "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "source_period": "FY25",
-      "fetched_at": "2026-05-29T17:22:34.536Z",
+      "fetched_at": "2026-05-29T17:27:43.779Z",
       "confidence": "high"
     }
   }

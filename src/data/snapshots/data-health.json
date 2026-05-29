@@ -1,6 +1,6 @@
 {
   "last_successful_run": "2026-05-28T19:12:46.672Z",
-  "last_failed_run": "2026-05-29T17:23:04.980Z",
+  "last_failed_run": "2026-05-29T17:31:32.517Z",
   "sources_checked": 3,
   "sources_success": 1,
   "sources_failed": 1,
@@ -76,7 +76,9 @@
   "parser_warnings": [
     "[company_disclosures_batch] No financial PDF link found on https://www.adityabirlacapital.com/healthinsurance/about-us/financials (or sub-pages) for aditya-birla",
     "[company_disclosures_batch] No financial PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures (or sub-pages) for manipalcigna",
-    "[ownership_quarterly] Live parser not yet implemented."
+    "[ownership_quarterly] Live parser not yet implemented.",
+    "[validation-rejected] insurer-annual-snapshot niva-bupa/FY25: NEP (4894.46) > NWP (3183.1).",
+    "[validation-rejected] insurer-annual-snapshot star-health/FY25: NEP (14822.2012) > GWP (23)."
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -91,7 +93,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-29T17:22:31.360Z",
+      "last_attempt_at": "2026-05-29T17:27:40.659Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -197,8 +199,8 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-29T17:22:34.536Z",
-      "last_success_at": "2026-05-29T17:22:34.536Z",
+      "last_attempt_at": "2026-05-29T17:27:43.779Z",
+      "last_success_at": "2026-05-29T17:27:43.779Z",
       "records_fetched": 3
     },
     {
@@ -211,7 +213,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-29T17:23:04.976Z",
+      "last_attempt_at": "2026-05-29T17:31:32.512Z",
       "last_success_at": null,
       "records_fetched": 0
     },
