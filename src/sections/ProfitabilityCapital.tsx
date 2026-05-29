@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import {
   Area,
   AreaChart,
@@ -6,6 +7,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  ComposedChart,
   Pie,
   PieChart,
   Line,
@@ -22,7 +24,9 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { SignalBadge } from '@/components/SignalBadge'
 import { BasisTag } from '@/components/BasisTag'
+import { SourceTag } from '@/components/SourceTag'
 import { profitabilityBasis } from '@/data/mockData'
+import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Metric, Insurer } from '@/data/types'
@@ -103,19 +107,21 @@ const PALETTE = {
   border: '#E8EBF1',
 } as const
 
-type Tone = 'positive' | 'warning' | 'negative' | 'neutral'
+type Tone = 'positive' | 'warning' | 'negative' | 'neutral' | 'navy'
 
 const toneDot: Record<Tone, string> = {
   positive: 'bg-signal-positive',
   warning: 'bg-signal-warning',
   negative: 'bg-signal-negative',
   neutral: 'bg-muted-blue',
+  navy: 'bg-navy-primary',
 }
 const toneText: Record<Tone, string> = {
   positive: 'text-signal-positive',
   warning: 'text-signal-warning',
   negative: 'text-signal-negative',
   neutral: 'text-ink-secondary',
+  navy: 'text-navy-primary',
 }
 
 function combinedTone(v: number): { label: string; tone: Tone } {
@@ -457,6 +463,528 @@ function BridgeStep({ label, value, caption, tone, isLast }: { label: string; va
 }
 
 // ---------------------------------------------------------------------------
+// Real annual snapshot series (focal company) — drives the new story layers.
+// Only real reported values are used; missing inputs stay null (never 0) and
+// surface as compact "pending" states per the dashboard's data-integrity rules.
+// ---------------------------------------------------------------------------
+
+interface AnnualPoint {
+  fy: string
+  gwp: number | null
+  nep: number | null
+  pat: number | null
+  combinedRatio: number | null
+  expenseRatio: number | null
+  solvency: number | null
+}
+
+// Plausibility bounds — several non-focal rows in the snapshot still carry
+// placeholder/unit-error values (e.g. gwp 23, combined_ratio 1.15, nep 135982).
+// Anything outside a sane range is treated as missing (null) rather than shown,
+// so the story layers degrade to honest "pending" states instead of garbage.
+function inRange(v: unknown, lo: number, hi: number): number | null {
+  return typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null
+}
+
+function getAnnualSeries(companyId: string): AnnualPoint[] {
+  return (annualSnapshot.data as Array<Record<string, unknown>>)
+    .filter((r) => r.company_id === companyId)
+    .map((r) => ({
+      fy: String(r.fiscal_year),
+      gwp: inRange(r.gwp, 100, 100000),
+      nep: inRange(r.nep, 100, 100000),
+      pat: typeof r.pat === 'number' && Number.isFinite(r.pat) && Math.abs(r.pat) <= 20000 ? r.pat : null,
+      combinedRatio: inRange(r.combined_ratio, 40, 250),
+      expenseRatio: inRange(r.expense_ratio, 2, 90),
+      solvency: inRange(r.solvency_ratio, 0.3, 8),
+    }))
+    .sort((a, b) => a.fy.localeCompare(b.fy))
+}
+
+/**
+ * Derived underwriting result (₹ Cr) = NEP × (1 − combined ratio). A transparent,
+ * standard proxy for core insurance profit before investment/other income; used
+ * because net claims / commission line items aren't separately reported per year.
+ * Returns null when either input is missing (never coerced to 0).
+ */
+function underwritingResult(p: AnnualPoint): number | null {
+  if (p.nep == null || p.combinedRatio == null) return null
+  return Math.round(p.nep * (1 - p.combinedRatio / 100))
+}
+
+const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
+
+const toneBg: Record<Tone, string> = {
+  positive: 'bg-[#F2F8F4]',
+  warning: 'bg-[#FDF7E8]',
+  negative: 'bg-[#FBF1F1]',
+  neutral: 'bg-soft-blue/70',
+  navy: 'bg-soft-blue/70',
+}
+
+// Compact pending state — never a large blank box. Says exactly what's missing.
+function PendingNote({ children }: { children: string }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-dashed border-soft-border bg-ice/50 px-3 py-2.5 text-[11px] leading-snug text-ink-secondary">
+      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-blue/60" />
+      <span>{children}</span>
+    </div>
+  )
+}
+
+// Shared compact section header (champagne eyebrow + display title + subtitle).
+function StoryHeader({ eyebrow, title, subtitle, right }: { eyebrow: string; title: string; subtitle?: string; right?: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start gap-2">
+        <span className="mt-0.5 h-4 w-1 shrink-0 rounded-full" style={{ background: PALETTE.champagne }} />
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">{eyebrow}</p>
+          <h3 className="font-display text-[15px] leading-tight text-navy-deep">{title}</h3>
+          {subtitle && <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{subtitle}</p>}
+        </div>
+      </div>
+      {right && <div className="shrink-0">{right}</div>}
+    </div>
+  )
+}
+
+// ─── (B) Profitability Bridge — operations → shareholder returns ─────────────
+function ProfitabilityBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const hasCR = company.combinedRatio > 0
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingResult(latest) : null
+  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
+  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
+  const roeTone: Tone = company.roe >= 12 ? 'positive' : company.roe >= 5 ? 'warning' : 'negative'
+  const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
+  const uwTone: Tone = uw == null ? 'neutral' : uw > 0 ? 'positive' : 'negative'
+  const patTone: Tone = patMargin == null ? 'neutral' : patMargin > 3 ? 'positive' : patMargin > 0 ? 'warning' : 'negative'
+  const period = latest?.fy ?? 'FY25'
+  return (
+    <section className="card-surface p-4">
+      <StoryHeader
+        eyebrow="Profitability Bridge"
+        title="How operations convert into shareholder returns"
+        subtitle="Read left → right: underwriting discipline becomes underwriting profit, then net margin, then ROE — all backed by capital."
+        right={<span className="text-[9.5px] text-ink-secondary">{period}</span>}
+      />
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+        <BridgeStep label="Combined Ratio" value={hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'} caption={hasCR ? (ct.tone === 'positive' ? 'Underwriting discipline' : ct.tone === 'warning' ? 'Watch zone' : 'Loss-making') : 'Life carrier'} tone={hasCR ? ct.tone : 'neutral'} />
+        <BridgeStep
+          label="Underwriting Profit"
+          value={uw == null ? 'Pending' : crc(uw)}
+          caption={uw == null ? 'Awaiting inputs' : uw > 0 ? 'Core engine profitable' : 'Core engine in loss'}
+          tone={uwTone}
+        />
+        <BridgeStep
+          label="PAT Margin"
+          value={patMargin == null ? 'Pending' : `${patMargin.toFixed(1)}%`}
+          caption={patMargin == null ? 'Awaiting PAT' : patMargin > 3 ? 'Healthy conversion' : patMargin > 0 ? 'Thin conversion' : 'No conversion'}
+          tone={patTone}
+        />
+        <BridgeStep label="ROE" value={`${company.roe.toFixed(1)}%`} caption={roeTone === 'positive' ? 'Strong return' : roeTone === 'warning' ? 'Still scaling' : 'Sub-cost'} tone={roeTone} />
+        <BridgeStep label="Solvency" value={`${company.solvency.toFixed(2)}x`} caption="Capital support" tone={solvencyTone} isLast />
+      </div>
+      <div className="mt-2.5 flex justify-end">
+        <SourceTag source="Company filing + IRDAI disclosures" period={period} confidence="high" />
+      </div>
+    </section>
+  )
+}
+
+// ─── (D) Underwriting Profit Trend — derived core profit, CR overlay ─────────
+function UnderwritingProfitTrend({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const data = series.map((p) => ({ fy: p.fy, uw: underwritingResult(p), cr: p.combinedRatio }))
+  const usable = data.filter((d) => d.uw != null) as { fy: string; uw: number; cr: number | null }[]
+  const enough = usable.length >= 2
+  const latest = usable[usable.length - 1]
+  const turned = enough && usable.some((d) => d.uw < 0) && latest.uw > 0
+  return (
+    <section className="card-surface p-4">
+      <StoryHeader
+        eyebrow="Underwriting Profit Trend"
+        title="Core insurance profitability"
+        subtitle="Core insurance profitability before investment and other income · derived as NEP × (1 − combined ratio)."
+        right={
+          enough ? (
+            <SignalBadge label={latest.uw > 0 ? (turned ? 'Turned positive' : 'In profit') : 'In loss'} tone={latest.uw > 0 ? 'positive' : 'negative'} size="sm" />
+          ) : undefined
+        }
+      />
+      <div className="mt-3">
+        {enough ? (
+          <ResponsiveContainer width="100%" height={208}>
+            <ComposedChart data={usable} margin={{ top: 12, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
+              <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
+              <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+              <YAxis yAxisId="uw" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={46} tickFormatter={(v: number) => `₹${v}`} />
+              <YAxis yAxisId="cr" orientation="right" tick={{ fontSize: 9.5, fill: PALETTE.champagne }} tickLine={false} axisLine={false} width={30} unit="%" domain={['dataMin - 3', 'dataMax + 3']} />
+              <Tooltip
+                cursor={{ fill: 'rgba(39,69,126,0.03)' }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null
+                  const row = payload[0]?.payload as { uw: number; cr: number | null }
+                  return (
+                    <div className="rounded-lg border border-soft-border bg-card px-3 py-2 text-[11px] shadow-card">
+                      <p className="mb-1 font-semibold text-navy-deep">{label}</p>
+                      <p className="flex items-center justify-between gap-4">
+                        <span className="text-ink-secondary">Underwriting {row.uw < 0 ? 'loss' : 'profit'}</span>
+                        <span className="font-semibold tabular-nums text-navy-deep">{crc(row.uw)}</span>
+                      </p>
+                      {row.cr != null && (
+                        <p className="flex items-center justify-between gap-4">
+                          <span className="text-ink-secondary">Combined ratio</span>
+                          <span className="font-semibold tabular-nums" style={{ color: PALETTE.champagne }}>{row.cr.toFixed(1)}%</span>
+                        </p>
+                      )}
+                    </div>
+                  )
+                }}
+              />
+              <ReferenceLine yAxisId="uw" y={0} stroke={PALETTE.navy} strokeOpacity={0.35} />
+              <Bar yAxisId="uw" dataKey="uw" name="Underwriting profit" radius={[3, 3, 0, 0]} maxBarSize={40}>
+                {usable.map((d, i) => {
+                  const isLast = i === usable.length - 1
+                  const fill = d.uw < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.teal
+                  return <Cell key={d.fy} fill={fill} stroke={isLast ? PALETTE.navyDeep : 'none'} strokeWidth={isLast ? 1.2 : 0} />
+                })}
+              </Bar>
+              <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.5} dot={{ r: 2.5, fill: PALETTE.champagne }} activeDot={{ r: 4 }} connectNulls />
+            </ComposedChart>
+          </ResponsiveContainer>
+        ) : (
+          <PendingNote>{`Underwriting profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years. Combined ratio overlay shown where available.`}</PendingNote>
+        )}
+      </div>
+      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
+          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.emerald }} /> Underwriting profit</span>
+          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.coral }} /> Underwriting loss</span>
+          <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>
+        </div>
+        <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
+      </div>
+    </section>
+  )
+}
+
+// ─── (E) Operating Leverage — is premium growing faster than expenses? ───────
+function operatingLeverage(company: Insurer, series: AnnualPoint[]) {
+  const gwps = series.filter((p) => p.gwp != null)
+  const lg = gwps[gwps.length - 1]
+  const pg = gwps[gwps.length - 2]
+  const gwpGrowth = lg && pg && pg.gwp ? ((lg.gwp! - pg.gwp!) / pg.gwp!) * 100 : company.growth > 0 ? company.growth : null
+  const exp = series.filter((p) => p.expenseRatio != null)
+  const expFrom = exp.length ? exp[0].expenseRatio : null
+  const expTo = exp.length ? exp[exp.length - 1].expenseRatio : null
+  const expDelta = expFrom != null && expTo != null && exp.length >= 2 ? expTo - expFrom : null
+  const pats = series.filter((p) => p.pat != null)
+  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+  const hiGrowth = gwpGrowth != null && gwpGrowth >= 20
+  let verdict: string
+  let tone: Tone
+  if (gwpGrowth == null || expDelta == null) {
+    verdict = 'Pending'
+    tone = 'neutral'
+  } else if (hiGrowth && expDelta < -0.2) {
+    verdict = 'Scale benefit emerging'
+    tone = 'positive'
+  } else if (hiGrowth && expDelta > 0.2) {
+    verdict = 'Growth not yet converting into leverage'
+    tone = 'warning'
+  } else if (expDelta < -0.2) {
+    verdict = 'Costs easing, growth modest'
+    tone = 'positive'
+  } else {
+    verdict = 'No clear operating leverage'
+    tone = 'warning'
+  }
+  return { gwpGrowth, expFrom, expTo, expDelta, patYoY, verdict, tone, expSeries: exp }
+}
+
+function OperatingLeverageCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const ol = operatingLeverage(company, series)
+  const hasData = ol.gwpGrowth != null && ol.expDelta != null
+  const chips: { label: string; value: string; tone: Tone }[] = []
+  if (ol.gwpGrowth != null) chips.push({ label: 'GWP growth', value: `+${ol.gwpGrowth.toFixed(0)}%`, tone: 'positive' })
+  if (ol.expFrom != null && ol.expTo != null && ol.expSeries.length >= 2) chips.push({ label: 'Expense (EoM) ratio', value: `${ol.expFrom.toFixed(1)}% → ${ol.expTo.toFixed(1)}%`, tone: ol.expDelta != null && ol.expDelta < 0 ? 'positive' : 'warning' })
+  else if (ol.expTo != null) chips.push({ label: 'Expense (EoM) ratio', value: `${ol.expTo.toFixed(1)}%`, tone: 'neutral' })
+  if (ol.patYoY != null) chips.push({ label: 'PAT', value: `+${ol.patYoY.toFixed(0)}% YoY`, tone: 'positive' })
+
+  const sentence =
+    !hasData
+      ? `Operating-leverage call pending for ${company.shortName} — needs an expense-ratio history alongside premium growth.`
+      : ol.tone === 'positive' && ol.expDelta != null && ol.expDelta < 0
+        ? `Expense (EoM) ratio improved ${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}% even as GWP grew ~${ol.gwpGrowth!.toFixed(0)}% — the early signature of operating leverage as scale outpaces costs.`
+        : ol.tone === 'warning'
+          ? `GWP grew ~${ol.gwpGrowth!.toFixed(0)}% but the expense ratio moved ${ol.expDelta! >= 0 ? `up ${ol.expDelta!.toFixed(1)}pp` : `down ${Math.abs(ol.expDelta!).toFixed(1)}pp`} — growth is not yet translating cleanly into leverage.`
+          : `GWP grew ~${ol.gwpGrowth!.toFixed(0)}% with the expense ratio easing ${Math.abs(ol.expDelta!).toFixed(1)}pp.`
+
+  return (
+    <section className="card-surface flex h-full flex-col p-4">
+      <StoryHeader
+        eyebrow="Operating Leverage"
+        title="Is premium growing faster than expenses?"
+        right={<SignalBadge label={ol.verdict === 'Pending' ? 'Pending' : ol.verdict === 'Scale benefit emerging' || ol.verdict === 'Costs easing, growth modest' ? 'Emerging' : 'Watch'} tone={ol.tone === 'neutral' ? 'navy' : ol.tone} size="sm" />}
+      />
+      {hasData ? (
+        <>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {chips.map((c) => (
+              <div key={c.label} className={`rounded-md px-2.5 py-1.5 ${toneBg[c.tone]}`}>
+                <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{c.label}</p>
+                <p className={`font-display text-[14px] leading-tight ${toneText[c.tone]}`}>{c.value}</p>
+              </div>
+            ))}
+          </div>
+          {ol.expSeries.length >= 2 && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-[9.5px] text-ink-secondary">EoM ratio trend</span>
+              <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={120} height={26} />
+              <span className="text-[9.5px] font-semibold" style={{ color: PALETTE.emerald }}>{ol.expDelta! < 0 ? `↓ ${Math.abs(ol.expDelta!).toFixed(1)}pp` : `↑ ${ol.expDelta!.toFixed(1)}pp`}</span>
+            </div>
+          )}
+          <p className="mt-3 text-[11.5px] leading-relaxed text-navy-deep/85">{sentence}</p>
+        </>
+      ) : (
+        <div className="mt-3">
+          <PendingNote>{sentence}</PendingNote>
+          {chips.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {chips.map((c) => (
+                <div key={c.label} className={`rounded-md px-2.5 py-1.5 ${toneBg[c.tone]}`}>
+                  <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{c.label}</p>
+                  <p className={`font-display text-[14px] leading-tight ${toneText[c.tone]}`}>{c.value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      <div className="mt-auto flex justify-end pt-3">
+        <SourceTag source={hasData ? 'IRDAI + Company filing' : 'Pending'} period={hasData ? 'FY24→FY25' : undefined} confidence={hasData ? 'high' : 'pending'} />
+      </div>
+    </section>
+  )
+}
+
+// ─── (F) ROE Explanation — why ROE is at its current level ───────────────────
+function RoeExplanationCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const roe = company.roe
+  const hasRoe = roe > 0
+  const pats = series.filter((p) => p.pat != null)
+  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
+  const gwps = series.filter((p) => p.gwp != null)
+  const gwpGrowth = gwps.length >= 2 && gwps[gwps.length - 2].gwp ? ((gwps[gwps.length - 1].gwp! - gwps[gwps.length - 2].gwp!) / gwps[gwps.length - 2].gwp!) * 100 : company.growth > 0 ? company.growth : null
+  const exp = series.filter((p) => p.expenseRatio != null)
+  const expImproving = exp.length >= 2 ? (exp[exp.length - 1].expenseRatio as number) < (exp[0].expenseRatio as number) : null
+
+  const state: { label: string; tone: Tone } =
+    patYoY == null
+      ? { label: 'Pending', tone: 'neutral' }
+      : patYoY > 8
+        ? { label: 'Improving', tone: 'positive' }
+        : patYoY < -8
+          ? { label: 'Pressure', tone: 'negative' }
+          : { label: 'Stable', tone: 'navy' }
+
+  const moderate = hasRoe && roe < 10
+  const sentence =
+    patYoY == null
+      ? `ROE drivers pending for ${company.shortName} — a reported PAT trajectory is needed to explain the trend.`
+      : state.label === 'Improving' && moderate
+        ? `ROE of ${roe.toFixed(1)}% is improving as PAT scales far faster than equity (PAT ${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY)${expImproving ? ', helped by underwriting discipline and operating leverage' : ''} — but the level stays moderate while a large post-IPO capital base sits high relative to current profits.`
+        : state.label === 'Improving'
+          ? `ROE of ${roe.toFixed(1)}% is improving as PAT (${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY) scales faster than equity, supported by better underwriting discipline and operating leverage.`
+          : state.label === 'Pressure'
+            ? `ROE of ${roe.toFixed(1)}% is under pressure as PAT contracts (${patYoY.toFixed(0)}% YoY) against a steady equity base.`
+            : `ROE of ${roe.toFixed(1)}% is broadly stable; PAT and equity are scaling at similar rates.`
+
+  const drivers: { label: string; value: string; tone: Tone }[] = [
+    { label: 'PAT margin', value: patMargin != null ? `${patMargin.toFixed(1)}%` : '—', tone: patMargin != null && patMargin > 3 ? 'positive' : 'neutral' },
+    { label: 'Premium growth', value: gwpGrowth != null ? `+${gwpGrowth.toFixed(0)}%` : '—', tone: gwpGrowth != null && gwpGrowth >= 20 ? 'positive' : 'neutral' },
+    { label: 'Operating leverage', value: expImproving == null ? 'Pending' : expImproving ? 'Improving' : 'Flat', tone: expImproving ? 'positive' : 'neutral' },
+    { label: 'Capital base', value: company.solvency > 0 ? `${company.solvency.toFixed(2)}x` : '—', tone: 'neutral' },
+  ]
+
+  return (
+    <section className="card-surface flex h-full flex-col p-4">
+      <StoryHeader
+        eyebrow="ROE Explanation"
+        title="Why ROE is where it is"
+        right={<SignalBadge label={state.label} tone={state.tone === 'neutral' ? 'navy' : state.tone} size="sm" />}
+      />
+      <div className="mt-3 flex items-end gap-2">
+        <span className="font-display text-[30px] leading-none text-navy-deep">{hasRoe ? `${roe.toFixed(1)}%` : '—'}</span>
+        <span className="mb-0.5 text-[10px] text-ink-secondary">return on equity · estimated</span>
+      </div>
+      {/* Driver bridge: PAT margin + growth + operating leverage + capital → ROE */}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        {drivers.map((d, i) => (
+          <div key={d.label} className="contents">
+            <div className={`rounded-md px-2 py-1 ${toneBg[d.tone]}`}>
+              <p className="text-[8px] font-semibold uppercase tracking-wide text-ink-secondary">{d.label}</p>
+              <p className={`text-[12px] font-semibold leading-tight ${toneText[d.tone]}`}>{d.value}</p>
+            </div>
+            {i < drivers.length - 1 && <span className="text-[12px] font-semibold text-ink-secondary/50">+</span>}
+          </div>
+        ))}
+        <span className="text-[12px] font-semibold text-ink-secondary/50">=</span>
+        <div className="rounded-md bg-soft-blue px-2 py-1">
+          <p className="text-[8px] font-semibold uppercase tracking-wide text-ink-secondary">ROE</p>
+          <p className="text-[12px] font-semibold leading-tight text-navy-deep">{hasRoe ? `${roe.toFixed(1)}%` : '—'}</p>
+        </div>
+      </div>
+      <p className="mt-3 text-[11.5px] leading-relaxed text-navy-deep/85">{sentence}</p>
+      <div className="mt-auto flex justify-end pt-3">
+        <SourceTag source={hasRoe ? 'Company filing · estimated' : 'Pending'} period="FY25" confidence={hasRoe ? 'medium' : 'pending'} />
+      </div>
+    </section>
+  )
+}
+
+// ─── (G) Capital Comfort Link — solvency in the context of profitability ─────
+function CapitalComfortStrip({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const solvency = company.solvency
+  const strong = solvency >= 2
+  const adequate = solvency >= 1.5
+  const pats = series.filter((p) => p.pat != null)
+  const profitRising = pats.length >= 2 && pats[pats.length - 1].pat! > pats[pats.length - 2].pat!
+  const hasSignals = solvency > 0 && pats.length >= 2
+
+  let line: string
+  let tone: Tone
+  if (!hasSignals) {
+    line = `Capital–profitability linkage pending for ${company.shortName} — solvency or PAT trajectory not yet reported.`
+    tone = 'neutral'
+  } else if (!adequate && profitRising) {
+    line = `Profitability is improving, but at ${solvency.toFixed(2)}x the capital headroom above the 1.5x floor needs monitoring as growth consumes capital.`
+    tone = 'warning'
+  } else if (strong && profitRising) {
+    line = `Solvency at ${solvency.toFixed(2)}x sits well above the 1.5x regulatory floor, so ${company.shortName} can absorb growth while profitability scales — profits are compounding without straining the balance sheet.`
+    tone = 'positive'
+  } else if (strong && !profitRising) {
+    line = `Capital is comfortable at ${solvency.toFixed(2)}x, but converting it into profit remains the key gap for ${company.shortName}.`
+    tone = 'navy'
+  } else {
+    line = `Solvency of ${solvency.toFixed(2)}x is adequate; the capital–profitability balance is the item to watch as growth continues.`
+    tone = 'navy'
+  }
+
+  const accent = tone === 'positive' ? PALETTE.emerald : tone === 'warning' ? PALETTE.amber : PALETTE.navy
+
+  return (
+    <section className="card-surface relative overflow-hidden p-4">
+      <span className="absolute inset-y-0 left-0 w-1" style={{ background: accent }} />
+      <div className="flex items-start justify-between gap-3 pl-2">
+        <div className="flex-1">
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Comfort</p>
+          <p className="mt-1 max-w-3xl text-[12px] leading-relaxed text-navy-deep/90">{line}</p>
+        </div>
+        {solvency > 0 && (
+          <div className="shrink-0 rounded-md border border-soft-border bg-white/70 px-2.5 py-1 text-center">
+            <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">Solvency</p>
+            <p className="font-display text-[16px] leading-none text-navy-deep">{solvency.toFixed(2)}x</p>
+            <p className="text-[8.5px] text-ink-secondary">vs 1.5x floor</p>
+          </div>
+        )}
+      </div>
+      <div className="mt-2 flex justify-end">
+        <SourceTag source={hasSignals ? 'IRDAI + Company filing' : 'Pending'} period="FY25" confidence={hasSignals ? 'high' : 'pending'} />
+      </div>
+    </section>
+  )
+}
+
+// ─── (H) Enhanced Investor Read — full profitability story, dynamic ──────────
+function buildProfitabilityRead(company: Insurer, series: AnnualPoint[]) {
+  const hasCR = company.combinedRatio > 0
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingResult(latest) : null
+  const pats = series.filter((p) => p.pat != null)
+  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+  const patRising = patYoY != null && patYoY > 8
+  const exp = series.filter((p) => p.expenseRatio != null)
+  const expImproving = exp.length >= 2 ? (exp[exp.length - 1].expenseRatio as number) < (exp[0].expenseRatio as number) : null
+  const solvency = company.solvency
+  const solvencyStrong = solvency >= 2
+  const solvencyWeak = solvency > 0 && solvency < 1.5
+  const crWeak = hasCR && company.combinedRatio > 105
+
+  let quality: string
+  let qualityTone: Tone
+  if (solvencyWeak) {
+    quality = 'Capital comfort is the key risk to profitability-led growth.'
+    qualityTone = 'negative'
+  } else if (crWeak && expImproving === false) {
+    quality = 'Growth is not yet translating into operating leverage.'
+    qualityTone = 'warning'
+  } else if (uw != null && uw > 0 && patRising && solvencyStrong) {
+    quality = 'Profitability improvement looks high quality.'
+    qualityTone = 'positive'
+  } else if (patRising) {
+    quality = 'Profitability is improving, but the quality of earnings needs verification.'
+    qualityTone = 'warning'
+  } else {
+    quality = 'Profitability signals are mixed — watch the next print.'
+    qualityTone = 'navy'
+  }
+
+  const rich = uw != null && patYoY != null
+  const lead = rich
+    ? `${company.shortName}'s profitability is improving through disciplined underwriting${hasCR ? ` (combined ratio ${company.combinedRatio.toFixed(1)}%)` : ''}, ${uw > 0 ? 'a positive and rising underwriting profit' : 'gradual underwriting repair'}${expImproving ? ', and operating leverage as premium scales faster than expenses' : ''}. PAT is ${patYoY >= 0 ? 'accelerating' : 'softening'} (${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY) and solvency at ${solvency.toFixed(2)}x sits ${solvencyStrong ? 'comfortably above' : 'near'} the 1.5x regulatory floor — ${solvencyStrong ? 'supporting continued growth without immediate balance-sheet stress' : 'so capital headroom is the watch-item'}.`
+    : `${company.shortName}'s profitability read leans on ${hasCR ? `a ${company.combinedRatio.toFixed(1)}% combined ratio and ` : ''}${solvency > 0 ? `${solvency.toFixed(2)}x solvency` : 'reported capital'}; underwriting-profit and PAT trajectory are pending for a full quality call.`
+
+  const why = rich
+    ? `Combined ratio ${hasCR ? `at ${company.combinedRatio.toFixed(1)}% ` : ''}is driving ${uw > 0 ? `~${crc(uw)} of derived underwriting profit` : 'underwriting toward break-even'}; PAT ${patYoY >= 0 ? 'up' : 'down'} ${Math.abs(patYoY!).toFixed(0)}% YoY${expImproving ? ' as the expense ratio falls' : ''}.`
+    : `Combined ratio${hasCR ? ` of ${company.combinedRatio.toFixed(1)}%` : ' is N/A for this carrier'} and ${solvency.toFixed(2)}x solvency anchor the read until per-year profit data lands.`
+
+  const watch = solvencyWeak
+    ? 'Capital trajectory each quarter, and whether profit conversion outpaces capital consumption.'
+    : crWeak
+      ? 'A clear move below 100 on combined ratio, and the expense-ratio trend.'
+      : 'Next combined-ratio print, claims-ratio drift, and that PAT keeps compounding faster than equity.'
+
+  return { quality, qualityTone, lead, why, watch }
+}
+
+function EnhancedInvestorRead({ company, series, accent }: { company: Insurer; series: AnnualPoint[]; accent: string }) {
+  const read = buildProfitabilityRead(company, series)
+  const lines = [
+    { label: 'Why', value: read.why },
+    { label: 'What it means', value: read.quality },
+    { label: 'Watch next', value: read.watch },
+  ]
+  return (
+    <section className="card-surface relative overflow-hidden p-4" style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 110%)` }}>
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${accent} 100%)` }} />
+      <div className="flex flex-wrap items-baseline justify-between gap-2 pl-2.5">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
+          <h3 className="mt-0 font-display text-[15px] text-navy-deep">So what?</h3>
+        </div>
+        <span className="text-[9.5px] text-ink-secondary">FY25 · {company.shortName}</span>
+      </div>
+      <p className="mt-2 max-w-4xl pl-2.5 text-[12px] font-medium leading-relaxed text-navy-deep">{read.lead}</p>
+      <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 pl-2.5 sm:grid-cols-[110px_1fr]">
+        {lines.map((line) => (
+          <div key={line.label} className="contents">
+            <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
+            <dd className="text-[11.5px] leading-relaxed text-navy-deep/85">{line.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-2.5 flex justify-end">
+        <SourceTag source="Company filing + IRDAI disclosures" period="FY25" confidence="high" />
+      </div>
+    </section>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main section
 // ---------------------------------------------------------------------------
 
@@ -464,6 +992,7 @@ export function ProfitabilityCapital() {
   const [view, setView] = useState<View>('P&L')
   const company = useActiveCompany()
   const copy = getCompanyProfitabilityCopy(company)
+  const series = getAnnualSeries(company.id)
 
   const hasCR = company.combinedRatio > 0
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
@@ -473,7 +1002,6 @@ export function ProfitabilityCapital() {
   const crSeries = COMBINED_RATIO_QUARTERS[company.id]
   const cost = COST_RATIOS[company.id]
 
-  const growthTone: Tone = company.growth >= 20 ? 'positive' : company.growth >= 10 ? 'neutral' : 'warning'
   const netMarginTone: Tone = mm.netMargin > 5 ? 'positive' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'neutral' : 'negative'
   const roeTone: Tone = company.roe >= 12 ? 'positive' : company.roe >= 5 ? 'warning' : 'negative'
   const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
@@ -593,7 +1121,10 @@ export function ProfitabilityCapital() {
         </div>
       </section>
 
-      {/* ─── MAIN STORY — tabs drive the central chart, right rail keeps mini-visuals ─── */}
+      {/* ─── (B) PROFITABILITY BRIDGE — operations → shareholder returns ─── */}
+      <ProfitabilityBridge company={company} series={series} />
+
+      {/* ─── (C) MAIN STORY — tabs drive the central chart, right rail keeps mini-visuals ─── */}
       <ModuleCard
         question="Is premium growth converting into profit, underwriting discipline and strong capital returns?"
         title={`${company.shortName} · Profitability Story`}
@@ -693,32 +1224,6 @@ export function ProfitabilityCapital() {
                 <span className="text-[9.5px] text-ink-secondary">FY25</span>
               </div>
               {cost ? <PremiumFunnel loss={cost.loss} commission={cost.commission} expense={cost.expense} hasCR={hasCR} /> : <PremiumFunnel loss={0} commission={0} expense={0} hasCR={false} />}
-            </div>
-            <div className="rounded-xl border border-soft-border bg-white p-4">
-              <div className="mb-2.5 flex items-baseline justify-between">
-                <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profit Bridge</p>
-                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">From growth to capital strength</h3>
-                </div>
-                <span className="text-[9.5px] text-ink-secondary">FY25 · TTM</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                <BridgeStep label="GWP Growth" value={`${company.growth.toFixed(0)}%`} caption="Growth engine" tone={growthTone} />
-                <BridgeStep
-                  label="Combined Ratio"
-                  value={hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}
-                  caption={hasCR ? (ct.tone === 'positive' ? 'Underwriting profit' : ct.tone === 'warning' ? 'Watch zone' : 'Loss-making') : 'Life carrier'}
-                  tone={hasCR ? ct.tone : 'neutral'}
-                />
-                <BridgeStep
-                  label="Net Margin"
-                  value={hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}
-                  caption={hasTrend ? (mm.netMargin > 5 ? 'Profit conversion' : mm.netMargin > 0 ? 'Thin conversion' : 'No conversion') : 'Pending'}
-                  tone={hasTrend ? netMarginTone : 'neutral'}
-                />
-                <BridgeStep label="ROE" value={`${company.roe.toFixed(1)}%`} caption={roeTone === 'positive' ? 'Strong return' : roeTone === 'warning' ? 'Early signal' : 'Sub-cost'} tone={roeTone} />
-                <BridgeStep label="Solvency" value={`${company.solvency.toFixed(2)}x`} caption="Capital cushion" tone={solvencyTone} isLast />
-              </div>
             </div>
           </div>
         )}
@@ -888,28 +1393,20 @@ export function ProfitabilityCapital() {
         <BasisTag info={profitabilityBasis} className="mt-3" />
       </ModuleCard>
 
-      {/* ─── SO WHAT — tinted, sharp investor read ─── */}
-      <section
-        className="card-surface relative overflow-hidden p-4"
-        style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 110%)` }}
-      >
-        <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${heroTone} 100%)` }} />
-        <div className="flex flex-wrap items-baseline justify-between gap-2 pl-2.5">
-          <div>
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
-            <h3 className="mt-0 font-display text-[15px] text-navy-deep">So what?</h3>
-          </div>
-          <span className="text-[9.5px] text-ink-secondary">FY25 · {company.shortName}</span>
-        </div>
-        <dl className="mt-2 grid grid-cols-1 gap-x-5 gap-y-1.5 pl-2.5 sm:grid-cols-[100px_1fr]">
-          {copy.readLines.map((line, i) => (
-            <div key={line.label} className="contents">
-              <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
-              <dd className={`text-[11.5px] leading-relaxed ${i === 1 ? 'font-medium text-navy-deep' : 'text-navy-deep/85'}`}>{line.value}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {/* ─── (D) UNDERWRITING PROFIT TREND — derived core profit, CR overlay ─── */}
+      <UnderwritingProfitTrend company={company} series={series} />
+
+      {/* ─── (E) OPERATING LEVERAGE + (F) ROE EXPLANATION — paired, compact ─── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <OperatingLeverageCard company={company} series={series} />
+        <RoeExplanationCard company={company} series={series} />
+      </div>
+
+      {/* ─── (G) CAPITAL COMFORT LINK — solvency in profitability context ─── */}
+      <CapitalComfortStrip company={company} series={series} />
+
+      {/* ─── (H) SO WHAT — enhanced, full-story investor read ─── */}
+      <EnhancedInvestorRead company={company} series={series} accent={heroTone} />
     </div>
   )
 }
