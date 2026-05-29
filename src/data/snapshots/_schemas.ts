@@ -89,6 +89,16 @@ export interface InsurerAnnualRow {
   group_mix: number | null
   renewal_rate: number | null
   claims_settlement_ratio: number | null
+  // Per-company summary fields that feed the Executive-Overview `Insurer`
+  // universe. Nullable: a missing value renders as N/A, never zero.
+  customer_retention: number | null
+  /** GWP growth YoY (%). Derived from prior-year GWP where two years exist;
+   *  otherwise carries the value cited in the company's own results release. */
+  growth_yoy: number | null
+  /** Segment market-share change YoY (pp). */
+  market_share_change: number | null
+  /** Price / GWP multiple (x). Listed insurers only; null for unlisted. */
+  valuation_p_gwp: number | null
   branch_count: number | null
   employee_count: number | null
   distribution_summary: string | null
