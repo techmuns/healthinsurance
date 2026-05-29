@@ -45,8 +45,18 @@ export function validatePremiumFlow(row: {
 }): ValidationIssue | null {
   const { gwp, nwp, nep } = row
   if (gwp == null && nwp == null && nep == null) return null
+  // Premium figures must be positive.
+  for (const [name, v] of [['GWP', gwp], ['NWP', nwp], ['NEP', nep]] as const) {
+    if (typeof v === 'number' && v <= 0) {
+      return { level: 'error', message: `${name} (${v}) must be positive.` }
+    }
+  }
+  // GWP ≥ NWP ≥ NEP. (Catches e.g. Star gwp=23 alongside nep=14822.)
   if (typeof gwp === 'number' && typeof nwp === 'number' && nwp > gwp) {
     return { level: 'error', message: `NWP (${nwp}) > GWP (${gwp}).` }
+  }
+  if (typeof gwp === 'number' && typeof nep === 'number' && nep > gwp) {
+    return { level: 'error', message: `NEP (${nep}) > GWP (${gwp}).` }
   }
   if (typeof nwp === 'number' && typeof nep === 'number' && nep > nwp + 0.001) {
     return { level: 'error', message: `NEP (${nep}) > NWP (${nwp}).` }
@@ -63,8 +73,13 @@ export function validateRatios(row: {
   roe?: number | null
 }): ValidationIssue[] {
   const out: ValidationIssue[] = []
-  if (typeof row.combined_ratio === 'number' && (row.combined_ratio < 50 || row.combined_ratio > 200)) {
-    out.push({ level: 'warning', message: `Combined ratio ${row.combined_ratio}% is outside the plausible 50–200% band.` })
+  if (typeof row.combined_ratio === 'number') {
+    if (row.combined_ratio < 50 || row.combined_ratio > 250) {
+      // e.g. 1.15 (stored as a fraction) or 11500 (a unit error).
+      out.push({ level: 'error', message: `Combined ratio ${row.combined_ratio} is implausible (expected a percentage ~80–150%).` })
+    } else if (row.combined_ratio > 150) {
+      out.push({ level: 'warning', message: `Combined ratio ${row.combined_ratio}% is unusually high.` })
+    }
   }
   if (typeof row.claims_ratio === 'number' && (row.claims_ratio < 0 || row.claims_ratio > 200)) {
     out.push({ level: 'warning', message: `Claims ratio ${row.claims_ratio}% is implausible.` })
@@ -111,4 +126,23 @@ export function validateDistributionRow(row: Record<string, unknown>): Validatio
   const sumIssue = validateChannelMixSum(row as never)
   if (sumIssue) out.push(sumIssue)
   return out
+}
+
+/**
+ * Source files that are not financial disclosures — if a parser pulled numbers
+ * from one of these, the values are noise. Used by snapshot-merge as a gate.
+ */
+export const SUSPECT_SOURCE_FILE = /AgentCode|CitizenCharter|complain|Grievance|AgentList|brochure|policy-?wording/i
+
+/** Dispatch the right validators for a snapshot target. */
+export function validateByTarget(target: string, row: Record<string, unknown>): ValidationIssue[] {
+  switch (target) {
+    case 'insurer-annual-snapshot':
+    case 'insurer-quarterly-financials':
+      return validateAnnualRow(row)
+    case 'distribution-channel-mix':
+      return validateDistributionRow(row)
+    default:
+      return []
+  }
 }

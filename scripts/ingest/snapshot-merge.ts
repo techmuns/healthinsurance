@@ -11,6 +11,7 @@
 
 import type { SnapshotRecord, SnapshotTarget } from './types'
 import { nowIso, readSnapshot, writeSnapshot } from './util'
+import { SUSPECT_SOURCE_FILE, validateByTarget } from './validate-insurance-data'
 
 type Row = Record<string, unknown> & { provenance?: unknown }
 type Snapshot = {
@@ -92,6 +93,7 @@ function mergeValues(
 export async function mergeRecords(records: SnapshotRecord[]): Promise<{
   snapshotsChanged: SnapshotTarget[]
   metricsUpdated: string[]
+  rejected: string[]
 }> {
   // Group records by target.
   const byTarget = new Map<SnapshotTarget, SnapshotRecord[]>()
@@ -102,6 +104,7 @@ export async function mergeRecords(records: SnapshotRecord[]): Promise<{
 
   const snapshotsChanged: SnapshotTarget[] = []
   const metricsUpdated: string[] = []
+  const rejected: string[] = []
 
   for (const [target, group] of byTarget) {
     const file = TARGET_FILES[target]
@@ -110,6 +113,25 @@ export async function mergeRecords(records: SnapshotRecord[]): Promise<{
 
     for (const rec of group) {
       const existing = findRow(snap, rec.keys)
+
+      // Validation gate: build the would-be-merged row and reject implausible
+      // parser output (NEP>GWP, fraction combined ratios, non-financial source
+      // files) instead of writing it. Prior good values are preserved.
+      const candidate: Row = { ...(existing ?? rec.keys) }
+      for (const [k, v] of Object.entries(rec.values)) if (v != null) candidate[k] = v
+      const srcFile = String((rec.provenance as { source_file?: string })?.source_file ?? '')
+      const errors = validateByTarget(target, candidate as Record<string, unknown>).filter(
+        (i) => i.level === 'error',
+      )
+      if (errors.length > 0 || (srcFile && SUSPECT_SOURCE_FILE.test(srcFile))) {
+        rejected.push(
+          `${target} ${Object.values(rec.keys).join('/')}: ${
+            errors.map((e) => e.message).join('; ') || `suspect source file ${srcFile}`
+          }`,
+        )
+        continue
+      }
+
       if (existing) {
         const { row, changed } = mergeValues(existing, rec.values, rec.provenance)
         if (changed) {
@@ -143,5 +165,5 @@ export async function mergeRecords(records: SnapshotRecord[]): Promise<{
     }
   }
 
-  return { snapshotsChanged, metricsUpdated }
+  return { snapshotsChanged, metricsUpdated, rejected }
 }

@@ -52,8 +52,8 @@ export async function buildSnapshots(results: FetchResult[]) {
   const allRecords: SnapshotRecord[] = []
   for (const r of results) allRecords.push(...r.records)
 
-  // 1. Merge records into snapshot files (with null-overwrite guard).
-  const { snapshotsChanged, metricsUpdated } = await mergeRecords(allRecords)
+  // 1. Merge records into snapshot files (null-overwrite guard + validation gate).
+  const { snapshotsChanged, metricsUpdated, rejected } = await mergeRecords(allRecords)
 
   // 2. Update data-provenance.json.
   const provenance = await readSnapshot<ProvenanceFile>('data-provenance.json')
@@ -116,6 +116,10 @@ export async function buildSnapshots(results: FetchResult[]) {
       status: r.status,
       records_fetched: r.records_fetched,
     })
+  }
+
+  if (rejected.length > 0) {
+    health.parser_warnings.push(...rejected.map((r) => `[validation-rejected] ${r}`))
   }
 
   if (metricsUpdated.length > 0) {
