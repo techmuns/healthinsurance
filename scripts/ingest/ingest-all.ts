@@ -13,6 +13,7 @@ import { ingestCompanyDisclosures } from './ingest-company-disclosures'
 import { ingestDistribution } from './ingest-distribution'
 import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
+import { ingestValuation } from './ingest-valuation'
 import { buildSnapshots } from './build-snapshots'
 import { appendLog } from './util'
 
@@ -23,13 +24,16 @@ const ALL: Fetcher[] = [
   ingestDistribution,
   ingestOwnership,
   ingestManagementEvents,
+  ingestValuation,
 ]
 
 const CADENCE = (process.env.CADENCE ?? 'all').toLowerCase()
 
 function shouldRun(f: Fetcher): boolean {
+  // 'daily' fetchers (e.g. valuation) are cheap and idempotent, so they ride
+  // along on the 'monthly' and 'all' cadences to keep them exercised.
   if (CADENCE === 'all') return true
-  if (CADENCE === 'monthly') return f.frequency === 'monthly'
+  if (CADENCE === 'monthly') return f.frequency === 'monthly' || f.frequency === 'daily'
   if (CADENCE === 'quarterly') return f.frequency === 'quarterly' || f.frequency === 'monthly'
   if (CADENCE === 'annual') return f.frequency === 'annual'
   return true

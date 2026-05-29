@@ -103,6 +103,13 @@ export function validateFiscalYear(fy: string): ValidationIssue | null {
   if (!/^FY\d{2,4}$/.test(fy)) {
     return { level: 'error', message: `Fiscal year "${fy}" does not match FYxx pattern. Run normaliseFy first.` }
   }
+  // Recency guard: a parser that pulls "2005" (→ FY05) out of a recent filing is
+  // mis-reading the period. These insurers' disclosures are all post-2015.
+  const digits = Number(fy.slice(2))
+  const year = digits < 100 ? 2000 + digits : digits
+  if (year < 2015 || year > 2031) {
+    return { level: 'error', message: `Fiscal year "${fy}" (→ ${year}) is outside the expected 2015–2031 window — likely a mis-parse.` }
+  }
   return null
 }
 
