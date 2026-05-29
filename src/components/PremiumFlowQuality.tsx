@@ -1233,7 +1233,9 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
           empty state only when no real rows exist for the company. */}
       <div className="mt-4">
         {(() => {
-          if (periodUnavailable) {
+          // Monthly isn't wired for Mix / Retention; the Flow tab falls through
+          // to its own annual-only gate below so it gives a consistent message.
+          if (periodUnavailable && tab !== 'Flow') {
             return (
               <EmptyState
                 title="Monthly view not yet wired"
@@ -1257,6 +1259,19 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
           }
           if (tab === 'Retention') {
             return <RetentionView companyId={focalId} period={period} />
+          }
+          // Flow tab is annual-only: the source reports GWP / NWP / NEP per
+          // fiscal year, not per quarter or month. Honour the Period toggle by
+          // showing an explicit "not reported" state instead of annual bars
+          // under a quarterly/monthly header. (Monthly is already caught above.)
+          if (globalPeriod !== 'Annual') {
+            return (
+              <EmptyState
+                title={`${globalPeriod} premium flow not reported from source`}
+                body={`Only annual GWP / NWP / NEP is reported for ${name}. Switch Period to Annual to see the Gross → Retained → Earned conversion; use the Data Range to narrow the years.`}
+                height={300}
+              />
+            )
           }
           // Flow tab: render from real snapshot annual rows for this company.
           const allCompanyRows = (annualSnapshot.data as Array<{
