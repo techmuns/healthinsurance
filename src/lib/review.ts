@@ -30,7 +30,7 @@ export const scorecardMetrics: MetricConfig[] = [
   { key: 'combinedRatio', label: 'Combined Ratio', short: 'Combined', invert: true, naWhenZero: true, format: (v) => `${v.toFixed(1)}%` },
   { key: 'roe', label: 'ROE', short: 'ROE', format: (v) => `${v.toFixed(1)}%` },
   { key: 'solvency', label: 'Solvency', short: 'Solvency', format: (v) => `${v.toFixed(2)}x` },
-  { key: 'valuation', label: 'Valuation (P/GWP)', short: 'Valuation', invert: true, format: (v) => `${v.toFixed(1)}x` },
+  { key: 'valuation', label: 'Valuation (P/GWP)', short: 'Valuation', invert: true, naWhenZero: true, format: (v) => `${v.toFixed(1)}x` },
 ]
 
 function median(xs: number[]): number {
@@ -92,7 +92,8 @@ export function profitabilitySignal(c: Insurer): ReviewSignal {
 }
 
 export function valuationSignal(c: Insurer, list: Insurer[]): ReviewSignal {
-  const med = median(list.map((i) => i.valuation)) || c.valuation
+  if (c.valuation === 0) return 'Stable' // unlisted — no market valuation
+  const med = median(list.map((i) => i.valuation).filter((v) => v > 0)) || c.valuation
   const r = c.valuation / med
   if (r < 0.9) return 'Improving' // cheaper than peers
   if (r <= 1.05) return 'Stable' // fair

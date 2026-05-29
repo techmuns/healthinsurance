@@ -13,6 +13,7 @@ import type {
   SeriesPoint,
   Signal,
 } from './types'
+import { getInsurers, getFocalCompanyId, getDataFreshness } from '@/lib/dataLayer'
 
 const UPDATED = '2026-05-23'
 
@@ -34,7 +35,7 @@ const m = (
 // `margin` is underwriting margin (100 − combined ratio). Life carriers report
 // no combined ratio, so combinedRatio/margin/retailMix are 0 (= N/A) for them.
 
-export const FOCAL_COMPANY = 'niva-bupa'
+export const FOCAL_COMPANY = getFocalCompanyId()
 
 export const PEER_GROUP_LABEL: Record<PeerGroup, string> = {
   SAHI: 'Standalone health insurers',
@@ -43,51 +44,18 @@ export const PEER_GROUP_LABEL: Record<PeerGroup, string> = {
   All: 'Full insurer universe',
 }
 
-export const insurers: Insurer[] = [
-  // ─── Standalone health insurers (SAHI) — FY25 audited ──────────────────
-  // niva-bupa  Press release Mar-25 + BSE FY25 disclosure
-  { id: 'niva-bupa', name: 'Niva Bupa Health Insurance', shortName: 'Niva Bupa', ticker: 'NIVABUPA', peerGroup: 'SAHI', marketShare: 17.6, premiumCollection: 7407, settlementRatio: 99.1, renewalRate: 90, customerRetention: 89, growth: 32.0, margin: 3.9, combinedRatio: 96.1, solvency: 3.03, roe: 5.66, valuation: 3.4, marketShareChange: 1.1, retailMix: 64, signal: 'Strong', takeaway: 'PAT up ~160% YoY; combined ratio below 100, solvency 3x.' },
-  // star-health  BSE filings + Business Upturn FY25 audited
-  { id: 'star-health', name: 'Star Health and Allied Insurance', shortName: 'Star Health', ticker: 'STARHEALTH', peerGroup: 'SAHI', marketShare: 39.9, premiumCollection: 16781, settlementRatio: 98.2, renewalRate: 92, customerRetention: 88, growth: 10.0, margin: -1.1, combinedRatio: 101.1, solvency: 2.2, roe: 11.0, valuation: 3.6, marketShareChange: -0.5, retailMix: 67, signal: 'Watch', takeaway: 'Scale leader but combined ratio drifted above 100 in FY25.' },
-  // care-health  Public Disclosures FY25 (via UnlistedZone / Chryseum)
-  { id: 'care-health', name: 'Care Health Insurance', shortName: 'Care Health', ticker: 'CAREHEALTH', peerGroup: 'SAHI', marketShare: 19.8, premiumCollection: 8318, settlementRatio: 98.7, renewalRate: 88, customerRetention: 86, growth: 21.2, margin: -3.0, combinedRatio: 103.0, solvency: 1.68, roe: 8.5, valuation: 3.0, marketShareChange: 0.3, retailMix: 55, signal: 'Watch', takeaway: 'Premium up 21% but PAT fell 49% on higher claims and commissions.' },
-  // aditya-birla  Aditya Birla Capital Q4 FY25 press release
-  { id: 'aditya-birla', name: 'Aditya Birla Health Insurance', shortName: 'Aditya Birla', ticker: 'ABHI', peerGroup: 'SAHI', marketShare: 11.7, premiumCollection: 4940, settlementRatio: 97.5, renewalRate: 85, customerRetention: 81, growth: 33.0, margin: -11.0, combinedRatio: 111.0, solvency: 2.5, roe: 6.0, valuation: 4.2, marketShareChange: 0.7, retailMix: 52, signal: 'Watch', takeaway: 'Fastest grower in the SAHI pool but combined ratio still well above 100.' },
-  // manipalcigna  Cafemutual non-life FY26 table (FY25 base)
-  { id: 'manipalcigna', name: 'ManipalCigna Health Insurance', shortName: 'ManipalCigna', ticker: 'MANIPALCIGNA', peerGroup: 'SAHI', marketShare: 4.3, premiumCollection: 1798, settlementRatio: 96.8, renewalRate: 83, customerRetention: 82, growth: 6.3, margin: -3.2, combinedRatio: 103.2, solvency: 1.70, roe: 8.1, valuation: 2.6, marketShareChange: -0.1, retailMix: 48, signal: 'Watch', takeaway: 'Sub-scale; ICR 74.8% suggests claims pressure.' },
-  // ─── General insurers — FY25 audited ───────────────────────────────────
-  // icici-lombard  Annual Report FY25 + CARE Ratings press release
-  //   GDPI 26,833 (+8.3%) · PAT 2,508 (+30.7%) · CR 102.8 · Sol 2.69 · ROE 19.1
-  { id: 'icici-lombard', name: 'ICICI Lombard General', shortName: 'ICICI Lombard', ticker: 'ICICIGI', peerGroup: 'General', marketShare: 8.74, premiumCollection: 26833, settlementRatio: 96.0, renewalRate: 79, customerRetention: 80, growth: 8.3, margin: -2.8, combinedRatio: 102.8, solvency: 2.69, roe: 19.1, valuation: 5.8, marketShareChange: 0.1, retailMix: 35, signal: 'Strong', takeaway: 'PAT +30.7% YoY, ROAE 19.1%; combined ratio improving toward 100.' },
-  // bajaj-general  Bajaj Allianz FY25 annual report
-  //   GWP 21,583 (+5%) · PAT 1,832 (+18%) · CR ~104 (Q1 103.7, claims pressure)
-  { id: 'bajaj-general', name: 'Bajaj Allianz General', shortName: 'Bajaj Allianz', ticker: 'BAJAJGEN', peerGroup: 'General', marketShare: 7.03, premiumCollection: 21583, settlementRatio: 95.2, renewalRate: 76, customerRetention: 77, growth: 5.0, margin: -4.0, combinedRatio: 104.0, solvency: 2.10, roe: 16.0, valuation: 3.1, marketShareChange: -0.2, retailMix: 28, signal: 'Improving', takeaway: 'Highest-ever PAT of ₹1,832 Cr; combined ratio elevated on claims.' },
-  // ─── Life insurers — FY25 audited (no combined ratio for life P&L) ─────
-  // hdfc-life  HDFC Life 12M FY25 press release
-  //   Total premium 70,824 (NBP 33,365 + renewal) · PAT 1,802 (+15%)
-  //   Sol 1.94 · VNB margin 25.6%
-  { id: 'hdfc-life', name: 'HDFC Life', shortName: 'HDFC Life', ticker: 'HDFCLIFE', peerGroup: 'Life', marketShare: 8.3, premiumCollection: 70824, settlementRatio: 99.5, renewalRate: 87, customerRetention: 84, growth: 12.0, margin: 0, combinedRatio: 0, solvency: 1.94, roe: 10.9, valuation: 2.2, marketShareChange: 0.3, retailMix: 0, signal: 'Improving', takeaway: 'PAT +15%, VNB margin 25.6%; steady compounding on the life book.' },
-  // sbi-life  SBI Life integrated annual report FY25
-  //   GWP 84,980 (+4%) · PAT 2,413 (+27%) · Sol 1.96 · VNB margin 27.8%
-  { id: 'sbi-life', name: 'SBI Life', shortName: 'SBI Life', ticker: 'SBILIFE', peerGroup: 'Life', marketShare: 9.5, premiumCollection: 84980, settlementRatio: 99.8, renewalRate: 89, customerRetention: 86, growth: 4.0, margin: 0, combinedRatio: 0, solvency: 1.96, roe: 14.0, valuation: 1.8, marketShareChange: -0.4, retailMix: 0, signal: 'Improving', takeaway: 'PAT +27% to ₹2,413 Cr; VNB margin 27.8%, scale leader.' },
-]
+// The canonical insurer universe is now built from the official-source
+// snapshots (company-master + insurer-annual-snapshot) via the data layer.
+// Adding a company or a new fiscal year is a snapshot/ingest change — no edit
+// here. Growth, margin, signal, takeaway and share-change are derived.
+export const insurers: Insurer[] = getInsurers()
 
 /** Back-compat alias — the highlight dropdown reads this. */
 export const companies = insurers
 
-export const DATA_FRESHNESS = {
-  lastUpdated: UPDATED,
-  coverage: 'FY23 – FY25',
-  // Every value rendered on the dashboard is either:
-  //   • a real FY25 figure from a company press release / IRDAI flash /
-  //     IRDAI public disclosure (cited in src/data/snapshots/), or
-  //   • an explicit "not yet ingested" empty state (Ownership, Management
-  //     Events, Valuation, Premium Engine per-period charts, non-Niva
-  //     Distribution mix).
-  // No synthetic time-series, no mock peer rows.
-  quality: 'Official',
-  periodCoverage: 'Annual',
-}
+// Freshness is derived from the annual snapshot meta (last_updated, coverage,
+// dataset quality) so it reflects the real data, not a hardcoded date.
+export const DATA_FRESHNESS = getDataFreshness()
 
 // =========================================================================
 //  QUARTERLY REVIEW LAYER  (PE quarterly-review logic — mock)

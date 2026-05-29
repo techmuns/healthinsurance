@@ -27,7 +27,7 @@ import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
-import type { TimePeriod, PeerGroup } from '@/data/types'
+import type { TimePeriod, PeerGroup, Insurer, Signal } from '@/data/types'
 
 type Dataset = 'official' | 'mixed' | 'mock' | 'pending'
 
@@ -78,6 +78,8 @@ export interface CompanyMasterEntry {
   listed_status: 'listed' | 'unlisted'
   ticker: string | null
   investor_relations_url: string | null
+  active_status?: 'active' | 'inactive'
+  is_focal?: boolean
 }
 
 export function getCompanyMaster(): CompanyMasterEntry[] {
@@ -257,4 +259,138 @@ export function lookupProvenance(
 
 export function getDataProvenance(metricId: string, companyId: string, period: TimePeriod) {
   return lookupProvenance(metricId, companyId, period)
+}
+
+// ─── Executive-Overview Insurer universe (built from snapshots) ─────────────
+// The dashboard's canonical company model. Built from company-master (identity)
+// + the latest annual snapshot row per company (financials). Derived fields
+// (growth, margin, signal, takeaway, share-change) recompute automatically as
+// new annual rows are ingested — no UI edit required for new data/companies.
+
+interface InsurerAnnualLike {
+  company_id: string
+  fiscal_year: string
+  gwp: number | null
+  combined_ratio: number | null
+  solvency_ratio: number | null
+  roe: number | null
+  market_share: number | null
+  retail_mix: number | null
+  renewal_rate: number | null
+  claims_settlement_ratio: number | null
+  customer_retention?: number | null
+  growth_yoy?: number | null
+  market_share_change?: number | null
+  valuation_p_gwp?: number | null
+}
+
+function fyNum(fy: string): number {
+  const m = /FY(\d{2,4})/.exec(fy)
+  return m ? Number(m[1]) : 0
+}
+
+/** Annual rows for a company, newest fiscal year first. */
+function annualRowsFor(companyId: string): InsurerAnnualLike[] {
+  return (annualSnapshot.data as InsurerAnnualLike[])
+    .filter((r) => r.company_id === companyId)
+    .sort((a, b) => fyNum(b.fiscal_year) - fyNum(a.fiscal_year))
+}
+
+function deriveSignal(combinedRatio: number, growth: number, roe: number): Signal {
+  if (combinedRatio > 0) {
+    if (combinedRatio < 100) return growth >= 10 ? 'Strong' : 'Improving'
+    if (combinedRatio <= 103) return 'Watch'
+    return growth >= 20 ? 'Watch' : 'Weak'
+  }
+  // Life carriers report no combined ratio — lean on ROE.
+  return roe >= 10 ? 'Improving' : 'Watch'
+}
+
+function deriveTakeaway(i: Insurer): string {
+  const g = `GWP ${i.growth > 0 ? '+' : ''}${i.growth.toFixed(0)}% YoY`
+  return i.combinedRatio > 0
+    ? `Combined ratio ${i.combinedRatio.toFixed(1)}%, ${g}.`
+    : `ROE ${i.roe.toFixed(1)}%, ${g}.`
+}
+
+function round1(v: number): number {
+  return Math.round(v * 10) / 10
+}
+
+function buildInsurer(c: CompanyMasterEntry): Insurer {
+  const rows = annualRowsFor(c.company_id)
+  const latest = rows[0] ?? null
+  const prior = rows.find((r, idx) => idx > 0 && r.gwp != null) ?? null
+
+  const gwp = latest?.gwp ?? 0
+  const combinedRatio = latest?.combined_ratio ?? 0 // 0 = N/A (life)
+  const roe = latest?.roe ?? 0
+  const marketShare = latest?.market_share ?? 0
+
+  // Prefer a true YoY derivation when two years exist (auto-updates on ingest),
+  // else fall back to the value cited on the latest row.
+  const growth = round1(
+    latest?.gwp != null && prior?.gwp ? (latest.gwp / prior.gwp - 1) * 100 : latest?.growth_yoy ?? 0,
+  )
+  // Use the reported YoY pp change directly: historical market_share rows in the
+  // snapshot can be on a different basis (overall-health vs segment pool), so
+  // deriving latest-minus-prior would mix bases.
+  const marketShareChange = round1(latest?.market_share_change ?? 0)
+
+  const insurer: Insurer = {
+    id: c.company_id,
+    name: c.display_name,
+    shortName: c.short_name,
+    ticker: c.ticker ?? '',
+    peerGroup: c.peer_group,
+    marketShare,
+    premiumCollection: gwp,
+    settlementRatio: latest?.claims_settlement_ratio ?? 0,
+    renewalRate: latest?.renewal_rate ?? 0,
+    customerRetention: latest?.customer_retention ?? 0,
+    growth,
+    margin: combinedRatio > 0 ? round1(100 - combinedRatio) : 0,
+    combinedRatio,
+    solvency: latest?.solvency_ratio ?? 0,
+    roe,
+    valuation: latest?.valuation_p_gwp ?? 0, // 0 = N/A (unlisted)
+    marketShareChange,
+    retailMix: latest?.retail_mix ?? 0,
+    signal: 'Watch',
+    takeaway: '',
+  }
+  insurer.signal = deriveSignal(combinedRatio, growth, roe)
+  insurer.takeaway = deriveTakeaway(insurer)
+  return insurer
+}
+
+/** The canonical insurer universe, in company-master order. */
+export function getInsurers(): Insurer[] {
+  return getCompanyMaster()
+    .filter((c) => c.active_status !== 'inactive')
+    .map(buildInsurer)
+}
+
+/** Focal company id — data-driven via company-master `is_focal`, else first. */
+export function getFocalCompanyId(): string {
+  const master = getCompanyMaster()
+  return master.find((c) => c.is_focal)?.company_id ?? master[0]?.company_id ?? 'niva-bupa'
+}
+
+/** Dashboard freshness, derived from the annual snapshot meta + coverage. */
+export function getDataFreshness(): {
+  lastUpdated: string
+  coverage: string
+  quality: string
+  periodCoverage: string
+} {
+  const annual = annualSnapshot.data as InsurerAnnualLike[]
+  const fys = [...new Set(annual.map((r) => r.fiscal_year))].sort((a, b) => fyNum(a) - fyNum(b))
+  const meta = (annualSnapshot as MetaBlock)._meta
+  return {
+    lastUpdated: meta.last_updated ?? '—',
+    coverage: fys.length ? `${fys[0]} – ${fys[fys.length - 1]}` : 'n/a',
+    quality: meta.dataset === 'official' ? 'Official' : 'Mixed',
+    periodCoverage: 'Annual',
+  }
 }

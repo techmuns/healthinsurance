@@ -13,6 +13,7 @@
   "data": [
     {
       "company_id": "niva-bupa",
+      "is_focal": true,
       "display_name": "Niva Bupa Health Insurance",
       "short_name": "Niva Bupa",
       "legal_name": "Niva Bupa Health Insurance Company Limited",

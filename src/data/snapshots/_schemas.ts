@@ -59,6 +59,8 @@ export interface CompanyMasterRow {
   irdai_registration_number: string | null
   active_status: 'active' | 'inactive'
   last_checked_at: string | null
+  /** Default-highlighted company on load (exactly one row sets this true). */
+  is_focal?: boolean
 }
 
 // ─── insurer-annual-snapshot ───────────────────────────────────────────────
