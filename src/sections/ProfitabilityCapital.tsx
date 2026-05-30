@@ -554,7 +554,9 @@ interface EngineStage {
   explore: string
 }
 
-const ORANGE = '#C2691C'
+const ORANGE = '#C2691C' // shareholder return — controlled amber-orange (monitor, not danger)
+const GOLD = '#C99A2E' // profit conversion — warm gold (value creation, not warning)
+const DEEP_GREEN = '#1E6B4A' // capital support — deepest green (safety, resilience)
 
 function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage[] {
   const hasCR = company.combinedRatio > 0
@@ -594,7 +596,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       metricLabel: 'PAT margin',
       value: patMargin == null ? 'Pending' : `${patMargin.toFixed(1)}%`,
       missing: patMargin == null,
-      color: PALETTE.amber,
+      color: GOLD,
       Icon: IndianRupee,
       explore: 'Premium is now being tested for how much converts into PAT and margin.',
     },
@@ -616,7 +618,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       metricLabel: 'Solvency',
       value: solvency > 0 ? `${solvency.toFixed(2)}x` : 'n/a',
       missing: !(solvency > 0),
-      color: PALETTE.emerald,
+      color: DEEP_GREEN,
       Icon: Shield,
       explore: 'See the capital buffer backing all of this growth.',
     },
@@ -688,20 +690,20 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
                 {/* soft halo — always-on for the selected node, fades in on hover otherwise */}
                 <span
                   aria-hidden
-                  className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity duration-300 ${selected ? 'h-[112px] w-[112px] opacity-100' : 'h-[94px] w-[94px] opacity-0 group-hover:opacity-90'}`}
-                  style={{ background: selected ? `${s.color}3b` : `${s.color}29` }}
+                  className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity duration-300 ${selected ? 'h-[118px] w-[118px] opacity-100' : 'h-[94px] w-[94px] opacity-0 group-hover:opacity-90'}`}
+                  style={{ background: selected ? `${s.color}4d` : `${s.color}2b` }}
                 />
                 <span
                   aria-hidden
                   className="absolute -inset-[6px] rounded-full border transition-all duration-300"
-                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.85 : 0.22, transform: selected ? 'scale(1.06)' : 'scale(1)' }}
+                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.92 : 0.2, transform: selected ? 'scale(1.06)' : 'scale(1)' }}
                 />
                 <div
                   className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[3px]"
                   style={{
                     borderColor: s.color,
                     transform: selected ? 'translateY(-3px) scale(1.05)' : 'translateY(0)',
-                    boxShadow: selected ? `0 16px 32px ${s.color}66` : `0 6px 16px ${s.color}26`,
+                    boxShadow: selected ? `0 18px 34px ${s.color}73` : `0 6px 16px ${s.color}1f`,
                     opacity: s.missing && !selected ? 0.6 : 1,
                   }}
                 >
@@ -750,7 +752,7 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
       <div className="mt-6 flex justify-center">
         <div
           className="flex w-full max-w-2xl flex-col items-center gap-0.5 rounded-xl border px-5 py-2.5 text-center"
-          style={{ borderColor: '#E7ECF6', background: 'linear-gradient(135deg, #F7FAFF 0%, #FBF6EC 100%)' }}
+          style={{ borderColor: `${active.color}33`, background: `linear-gradient(135deg, ${active.color}12 0%, ${active.color}05 100%)` }}
         >
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.color }} />
@@ -1053,10 +1055,10 @@ function ProfitVelocityCard({ company }: { company: Insurer }) {
   const hasTrend = patSeries !== undefined
   const tone: Tone = mm.netMargin > 5 ? 'positive' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'neutral' : 'negative'
   return (
-    <div className="relative overflow-hidden rounded-lg border border-soft-border px-3 py-2.5" style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, #FFFFFF 100%)` }}>
+    <div className="relative overflow-hidden rounded-lg border border-[#ECE0C5] px-3 py-2.5" style={{ background: 'linear-gradient(135deg, #FBF4E3 0%, #FFFEFB 100%)' }}>
       <div className="flex items-center justify-between">
         <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">Profit Velocity</p>
-        <SignalBadge label={tone === 'positive' ? 'Healthy' : tone === 'warning' ? 'Thin' : tone === 'neutral' ? 'Pending' : 'Loss'} tone={tone === 'neutral' ? 'navy' : tone} size="sm" />
+        <SignalBadge label={tone === 'positive' ? 'Healthy' : tone === 'warning' ? 'Thin' : tone === 'neutral' ? 'Pending' : 'Loss'} tone={tone === 'positive' ? 'teal' : tone === 'neutral' ? 'navy' : tone} size="sm" />
       </div>
       <div className="mt-1 flex items-baseline gap-2">
         <span className="font-display text-[19px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}</span>
@@ -1080,9 +1082,9 @@ function ProfitVelocityCard({ company }: { company: Insurer }) {
 function CapitalBufferCard({ company }: { company: Insurer }) {
   const tone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
   return (
-    <div className="relative overflow-hidden rounded-lg border border-[#EFE2C2] px-3 py-2.5" style={{ background: `linear-gradient(135deg, ${PALETTE.champagneSoft} 0%, #FFFBF1 100%)` }}>
+    <div className="relative overflow-hidden rounded-lg border border-[#CDE7D8] px-3 py-2.5" style={{ background: 'linear-gradient(135deg, #E9F5EE 0%, #F5FBF8 100%)' }}>
       <div className="flex items-center justify-between">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Capital Buffer</p>
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/90">Capital Buffer</p>
         <SignalBadge label={tone === 'positive' ? 'Comfortable' : tone === 'warning' ? 'Adequate' : 'Tight'} tone={tone} size="sm" />
       </div>
       <div className="mt-1 flex items-baseline gap-2">
@@ -1099,7 +1101,7 @@ function CapitalBufferCard({ company }: { company: Insurer }) {
 function RoeGaugeCard({ company }: { company: Insurer }) {
   const roeTone: Tone = company.roe >= 12 ? 'positive' : company.roe >= 5 ? 'warning' : 'negative'
   return (
-    <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, ${PALETTE.champagneSoft} 100%)` }}>
+    <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: 'linear-gradient(135deg, #FBF1E5 0%, #FFF9F2 100%)' }}>
       <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · FY25</p>
       <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{company.roe.toFixed(1)}%</p>
       <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
@@ -1233,9 +1235,9 @@ function NodeInvestorRead({ read, accent }: { read: NodeRead; accent: string }) 
 const DETAIL_ACCENT: Record<NodeId, string> = {
   underwriting: PALETTE.emerald,
   core: PALETTE.teal,
-  conversion: PALETTE.amber,
+  conversion: GOLD,
   returns: ORANGE,
-  capital: PALETTE.emerald,
+  capital: DEEP_GREEN,
 }
 
 const DETAIL_SOURCE: Record<NodeId, { source: string; period?: string; confidence: 'high' | 'medium' | 'pending' }> = {
