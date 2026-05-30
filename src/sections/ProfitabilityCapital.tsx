@@ -1408,56 +1408,58 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
 
       {cost && cr != null ? (
         <>
-          {/* Engine flow: ₹100 base → cost chambers → combined-ratio output → surplus */}
-          <div className="mt-4 flex items-stretch gap-2.5">
-            {/* Premium base — the input */}
-            <div className="flex w-[78px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
-              <span className="text-[7.5px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E9D49A' }}>Premium base</span>
-              <span className="mt-1 font-display text-[22px] leading-none">₹100</span>
-              <span className="mt-1 text-[7.5px] leading-tight text-white/70">received</span>
-            </div>
+          {/* Engine flow: ₹100 base → cost chambers → combined-ratio output → surplus.
+              Scrolls horizontally on narrow screens so labels never truncate. */}
+          <div className="mt-4 -mx-1 overflow-x-auto px-1 pb-1">
+            <div className="flex items-stretch gap-1.5">
+              {/* Premium base — the input */}
+              <div className="flex w-[84px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
+                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.08em]" style={{ color: '#E9D49A' }}>Premium base</span>
+                <span className="mt-1 font-display text-[22px] leading-none">₹100</span>
+                <span className="mt-1 text-[8px] leading-tight text-white/70">received</span>
+              </div>
 
-            {/* Cost chambers — width ∝ amount absorbed, claims clearly largest */}
-            <div className="flex min-w-0 flex-1 items-stretch gap-1.5">
-              {chambers.map((c, i) => (
-                <Fragment key={c.key}>
-                  {i > 0 && <span className="flex shrink-0 items-center text-[12px] font-bold text-ink-secondary/40">−</span>}
-                  <div
-                    className="flex min-w-0 flex-col justify-between rounded-xl border px-2.5 py-2"
-                    style={{ background: c.bg, borderColor: c.border, flexGrow: c.raw, flexBasis: 0, minWidth: 64 }}
-                    title={`${c.label} ${c.raw.toFixed(1)}% of premium`}
-                  >
-                    <div className="flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-sm" style={{ background: c.color }} />
-                      <span className="truncate text-[8px] font-bold uppercase tracking-[0.05em] text-navy-deep">{c.label}</span>
+              {/* Cost chambers — width ∝ amount absorbed; the meter shows relative weight */}
+              <div className="flex min-w-0 flex-1 items-stretch gap-1.5">
+                {chambers.map((c, i) => (
+                  <Fragment key={c.key}>
+                    {i > 0 && <span className="flex w-2.5 shrink-0 items-center justify-center text-[12px] font-bold text-ink-secondary/40">−</span>}
+                    <div
+                      className="flex flex-col justify-between rounded-xl border px-2.5 py-2"
+                      style={{ background: c.bg, borderColor: c.border, flexGrow: c.raw, flexBasis: 0, minWidth: 92 }}
+                    >
+                      <div className="flex items-start gap-1">
+                        <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-sm" style={{ background: c.color }} />
+                        <span className="text-[8.5px] font-bold uppercase leading-tight tracking-[0.04em] text-navy-deep">{c.label}</span>
+                      </div>
+                      <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: c.color }}>₹{c.raw.toFixed(1)}</span>
+                      {/* absorption meter — visual weight of this cost */}
+                      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/70">
+                        <div className="h-full rounded-full" style={{ width: `${(c.raw / maxRaw) * 100}%`, background: c.color }} />
+                      </div>
+                      <span className="mt-1 text-[8px] leading-tight text-ink-secondary">{c.sub}</span>
                     </div>
-                    <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: c.color }}>₹{c.raw.toFixed(1)}</span>
-                    {/* absorption meter — visual weight of this cost */}
-                    <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/70">
-                      <div className="h-full rounded-full" style={{ width: `${(c.raw / maxRaw) * 100}%`, background: c.color }} />
-                    </div>
-                    <span className="mt-1 truncate text-[7.5px] text-ink-secondary">{c.sub}</span>
-                  </div>
-                </Fragment>
-              ))}
-            </div>
+                  </Fragment>
+                ))}
+              </div>
 
-            {/* Combined ratio — the central output card, against the break-even */}
-            <div className="flex shrink-0 items-center text-[12px] font-bold" style={{ color: crColor }}>=</div>
-            <div className="relative flex w-[92px] shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white px-2 py-2.5 text-center" style={{ borderColor: crColor, boxShadow: `0 10px 22px ${crColor}33` }}>
-              <span className="text-[7.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Combined ratio</span>
-              <span className="mt-1 font-display text-[24px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
-              <span className="mt-1 inline-flex items-center gap-0.5 text-[7.5px] font-semibold" style={{ color: PALETTE.amber }}>
-                <span className="inline-block h-0 w-3 border-t border-dashed" style={{ borderColor: PALETTE.amber }} /> vs 100%
-              </span>
-            </div>
+              {/* Combined ratio — the central output card, against the break-even */}
+              <span className="flex w-2.5 shrink-0 items-center justify-center text-[12px] font-bold" style={{ color: crColor }}>=</span>
+              <div className="relative flex w-[100px] shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white px-2 py-2.5 text-center" style={{ borderColor: crColor, boxShadow: `0 10px 22px ${crColor}33` }}>
+                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.06em] text-ink-secondary">Combined ratio</span>
+                <span className="mt-1 font-display text-[24px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
+                <span className="mt-1 inline-flex items-center gap-0.5 text-[8px] font-semibold" style={{ color: PALETTE.amber }}>
+                  <span className="inline-block h-0 w-3 border-t border-dashed" style={{ borderColor: PALETTE.amber }} /> vs 100%
+                </span>
+              </div>
 
-            {/* Surplus — the positive outcome */}
-            <div className="flex shrink-0 items-center text-[14px] font-bold" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>→</div>
-            <div className="flex w-[88px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: below ? `linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)` : '#FBEFEF', borderColor: below ? '#BFE0CE' : '#EFD4D3', boxShadow: below ? `0 12px 24px ${PALETTE.emerald}33` : undefined }}>
-              <span className="text-[7.5px] font-bold uppercase tracking-[0.08em]" style={{ color: below ? '#1C5C3F' : '#9A3B39' }}>{below ? 'Surplus' : 'Deficit'}</span>
-              <span className="mt-1 font-display text-[22px] leading-none" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
-              <span className="mt-1 text-[7.5px] leading-tight text-ink-secondary">below 100%</span>
+              {/* Surplus — the positive outcome */}
+              <span className="flex w-2.5 shrink-0 items-center justify-center text-[14px] font-bold" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>→</span>
+              <div className="flex w-[96px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: below ? `linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)` : '#FBEFEF', borderColor: below ? '#BFE0CE' : '#EFD4D3', boxShadow: below ? `0 12px 24px ${PALETTE.emerald}33` : undefined }}>
+                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.06em]" style={{ color: below ? '#1C5C3F' : '#9A3B39' }}>{below ? 'Surplus' : 'Deficit'}</span>
+                <span className="mt-1 font-display text-[22px] leading-none" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
+                <span className="mt-1 text-[8px] leading-tight text-ink-secondary">below 100%</span>
+              </div>
             </div>
           </div>
 
