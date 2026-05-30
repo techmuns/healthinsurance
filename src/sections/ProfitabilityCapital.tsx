@@ -1888,37 +1888,35 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
 // Returns proof — PAT trajectory with a Yearly (header-range-driven, real
 // annual PAT) ⇄ Quarterly (FY25) toggle. Yearly follows the selected years.
 function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series: AnnualPoint[]; cardStyle: { background: string; borderColor: string } }) {
-  const [view, setView] = useState<TrendView>('Yearly')
-  const patSeries = NET_PROFIT_QUARTERS[company.id]
+  // Real annual PAT only (audited filings). No standalone-quarter PAT is sourced
+  // (earnings calls report it cumulatively / on a mixed IGAAP-IFRS basis), so we
+  // show the honest annual trajectory rather than a fabricated quarterly series.
   const yearPoints = series.map((p) => ({ label: p.fy, pat: p.pat }))
-  const quarterPoints = patSeries ? QUARTER_LABELS.map((label, i) => ({ label, pat: patSeries[i] })) : []
   const yearsWithPat = yearPoints.filter((p) => p.pat != null).length
-  const points = view === 'Yearly' ? yearPoints : quarterPoints
-  const hasQuarterly = patSeries !== undefined
-  const canShow = view === 'Yearly' ? yearsWithPat >= 1 : hasQuarterly
+  const latestPatFy = series.find((p) => p.pat != null)?.fy ?? 'FY25'
   return (
     <div className="rounded-xl border p-4" style={cardStyle}>
       <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Proof · PAT Pool</p>
-          <h3 className="mt-0 font-display text-[14px] text-navy-deep">{view === 'Yearly' ? 'PAT trajectory · by year' : 'PAT trajectory · Q1–Q4 FY25'}</h3>
+          <h3 className="mt-0 font-display text-[14px] text-navy-deep">PAT trajectory · by year</h3>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
-          <TrendViewToggle value={view} onChange={setView} accent={ORANGE} />
-        </div>
+        <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
       </div>
-      {canShow ? (
-        view === 'Yearly' && yearsWithPat < 2 ? (
-          <PendingNote>Widen the year range in the header to see the PAT trend — only one reported year is in range.</PendingNote>
-        ) : (
-          <QuarterlyPatBars points={points} accent={ORANGE} />
-        )
+      {yearsWithPat >= 2 ? (
+        <QuarterlyPatBars points={yearPoints} accent={ORANGE} />
+      ) : yearsWithPat === 1 ? (
+        <PendingNote>Widen the year range in the header to see the PAT trend — only one reported year is in range.</PendingNote>
       ) : (
         <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
           Data pending — PAT not reported for {company.shortName}
         </div>
       )}
+      <p className="mt-3 flex items-center gap-1.5 text-[10px] leading-snug text-ink-secondary">
+        <Sparkles className="h-3 w-3 shrink-0" style={{ color: ORANGE }} />
+        Real annual PAT from company filings; the range follows the header.
+      </p>
+      <SourceTag source="Company filing" period={latestPatFy} confidence="high" provenance={undefined} />
     </div>
   )
 }
