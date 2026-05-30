@@ -140,14 +140,20 @@ const STATUTORY_CR: Record<string, StatutoryCR> = {
   },
 }
 
+// Real FY25 cost split for the focal company, decomposed from Niva Bupa's IRDAI
+// public disclosure (Mar-2025, full-year/YTD column of the NL-form analytical
+// ratios):
+//   • loss (claims)  = Net Incurred Claims to Net Earned Premium = 61.22%
+//   • commission     = Net Commission Ratio                      = 19.83%
+//   • expense (opex) = Combined Ratio − claims − commission      = 20.17%
+// The three sum to the real statutory combined ratio (101.22%), so the ₹100
+// engine reconciles with the combined-ratio headline shown above it. Opex is the
+// exact arithmetic residual of the published combined ratio (no separate opex
+// ratio is published in this form). Peers are omitted — no verified cost split
+// has been sourced for them yet — so their cards render an honest "Data pending"
+// rather than a fabricated number.
 const COST_RATIOS: Record<string, { loss: number; commission: number; expense: number }> = {
-  'niva-bupa': { loss: 62.8, commission: 13.4, expense: 20.6 },
-  'star-health': { loss: 66.8, commission: 10.2, expense: 22.4 },
-  'care-health': { loss: 64.2, commission: 12.1, expense: 21.8 },
-  'aditya-birla': { loss: 65.0, commission: 12.2, expense: 24.6 },
-  manipalcigna: { loss: 66.4, commission: 11.6, expense: 25.2 },
-  'icici-lombard': { loss: 74.2, commission: 4.6, expense: 23.8 },
-  'bajaj-general': { loss: 73.8, commission: 4.0, expense: 22.6 },
+  'niva-bupa': { loss: 61.22, commission: 19.83, expense: 20.17 },
 }
 
 const QUARTER_LABELS = ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25']
@@ -1564,7 +1570,7 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
 
           {stat && (
             <p className="mt-1.5 text-[9.5px] leading-snug text-ink-secondary">
-              Shown on the <span className="font-semibold text-navy-deep">IRDAI statutory (public-disclosure)</span> basis. The company-reported combined ratio for {stat.reportedFY} is {stat.reported.toFixed(1)}% — the cost split above sums to that reported figure.
+              Shown on the <span className="font-semibold text-navy-deep">IRDAI statutory (public-disclosure)</span> basis: the claims, commission and opex split above are the real FY25 ratios and sum to the {stat.statutory.toFixed(1)}% statutory combined ratio. The company-reported combined ratio for {stat.reportedFY} is {stat.reported.toFixed(1)}% (a slightly different basis).
             </p>
           )}
 
