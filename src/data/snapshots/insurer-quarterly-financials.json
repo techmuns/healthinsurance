@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-05-30",
-    "last_successful_run": "2026-05-30T15:34:00.983Z",
+    "last_successful_run": "2026-05-30T17:10:38.696Z",
     "upstream_sources": [
       "irdai_public_disclosures",
       "company_ir"
@@ -49,19 +49,19 @@
       "pat": null,
       "revenue": null,
       "combined_ratio": 130,
-      "claims_ratio": null,
+      "claims_ratio": 77.86,
       "expense_ratio": null,
-      "commission_ratio": null,
+      "commission_ratio": 20.17,
       "solvency_ratio": 2.86,
       "roe": null,
       "period_type": "quarterly",
       "provenance": {
         "source_name": "niva-bupa Q1 FY26 public disclosure",
-        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/WebsitePublicDisclosuresJun2021.pdf",
-        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresJun2021.pdf",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-June-25.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-June-25.pdf",
         "source_period": "Q1 FY26",
-        "fetched_at": "2026-05-30T15:23:11.939Z",
-        "parsed_at": "2026-05-30T15:25:28.891Z",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:32.193Z",
         "parser_name": "ingest-quarterly-disclosures",
         "confidence": "high"
       }
@@ -710,6 +710,237 @@
         "source_period": "Q3 FY15",
         "fetched_at": "2026-05-30T15:23:11.939Z",
         "parsed_at": "2026-05-30T15:31:48.546Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY26",
+      "combined_ratio": 86.12,
+      "claims_ratio": 56.76,
+      "commission_ratio": 16.06,
+      "expense_ratio": null,
+      "solvency_ratio": 2.49,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q4 FY26 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+        "source_period": "Q4 FY26",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:25.153Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q3",
+      "fiscal_year": "FY26",
+      "combined_ratio": 108.19,
+      "claims_ratio": 72.3,
+      "commission_ratio": 17.98,
+      "expense_ratio": null,
+      "solvency_ratio": 2.49,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q3 FY26 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Dec-25.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Dec-25.pdf",
+        "source_period": "Q3 FY26",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:27.696Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q2",
+      "fiscal_year": "FY26",
+      "combined_ratio": 111.72,
+      "claims_ratio": 71.2,
+      "commission_ratio": 19.3,
+      "expense_ratio": null,
+      "solvency_ratio": 2.85,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q2 FY26 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Sep-25.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Sep-25.pdf",
+        "source_period": "Q2 FY26",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:29.933Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY25",
+      "combined_ratio": 92.78,
+      "claims_ratio": 56.41,
+      "commission_ratio": 17.67,
+      "expense_ratio": null,
+      "solvency_ratio": 3.03,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q4 FY25 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2025.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2025.pdf",
+        "source_period": "Q4 FY25",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:34.510Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q3",
+      "fiscal_year": "FY25",
+      "combined_ratio": 108.29,
+      "claims_ratio": 65.14,
+      "commission_ratio": 22.63,
+      "expense_ratio": null,
+      "solvency_ratio": 3.03,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q3 FY25 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Dec-2024.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Dec-2024.pdf",
+        "source_period": "Q3 FY25",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:36.756Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q2",
+      "fiscal_year": "FY25",
+      "combined_ratio": 101.3,
+      "claims_ratio": 61.15,
+      "commission_ratio": 20.12,
+      "expense_ratio": null,
+      "solvency_ratio": 2.25,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q2 FY25 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-public-disclosure-SEP-24.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-public-disclosure-SEP-24.pdf",
+        "source_period": "Q2 FY25",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:39.046Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q1",
+      "fiscal_year": "FY25",
+      "combined_ratio": 106,
+      "claims_ratio": 64,
+      "commission_ratio": 20,
+      "expense_ratio": null,
+      "solvency_ratio": 2.39,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q1 FY25 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-public-disclosure-Jun-24.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-public-disclosure-Jun-24.pdf",
+        "source_period": "Q1 FY25",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:41.161Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY24",
+      "combined_ratio": 89,
+      "claims_ratio": 51,
+      "commission_ratio": 18,
+      "expense_ratio": null,
+      "solvency_ratio": 2.55,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q4 FY24 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-disclosure-Reports-March-2024.pdf?v=1.1",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Public-disclosure-Reports-March-2024.pdf",
+        "source_period": "Q4 FY24",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:43.757Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q1",
+      "fiscal_year": "FY24",
+      "combined_ratio": 108,
+      "claims_ratio": 65,
+      "commission_ratio": 17,
+      "expense_ratio": null,
+      "solvency_ratio": 1.74,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q1 FY24 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Websit-Public-Disclosure-Jun-2023.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Websit-Public-Disclosure-Jun-2023.pdf",
+        "source_period": "Q1 FY24",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:46.943Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY23",
+      "combined_ratio": 92,
+      "claims_ratio": 48,
+      "commission_ratio": 9,
+      "expense_ratio": null,
+      "solvency_ratio": 1.671,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q4 FY23 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+        "source_period": "Q4 FY23",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:49.613Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY22",
+      "combined_ratio": 103,
+      "claims_ratio": 49,
+      "commission_ratio": 10,
+      "expense_ratio": null,
+      "solvency_ratio": null,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "niva-bupa Q4 FY22 public disclosure",
+        "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Mar-2022.pdf?v=1.0",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Mar-2022.pdf",
+        "source_period": "Q4 FY22",
+        "fetched_at": "2026-05-30T17:00:01.796Z",
+        "parsed_at": "2026-05-30T17:01:52.974Z",
         "parser_name": "ingest-quarterly-disclosures",
         "confidence": "high"
       }
