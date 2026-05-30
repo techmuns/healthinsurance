@@ -28,6 +28,7 @@ import {
   BarChart3,
   Cog,
   ChevronRight,
+  MousePointerClick,
   Database,
   type LucideIcon,
 } from 'lucide-react'
@@ -550,7 +551,7 @@ interface EngineStage {
   missing: boolean
   color: string
   Icon: LucideIcon
-  read: string
+  explore: string
 }
 
 const ORANGE = '#C2691C'
@@ -573,11 +574,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       missing: !hasCR,
       color: PALETTE.emerald,
       Icon: ShieldCheck,
-      read: !hasCR
-        ? `${company.shortName} is a life carrier — combined ratio does not apply on this basis.`
-        : company.combinedRatio < 100
-          ? `Combined ratio of ${company.combinedRatio.toFixed(1)}% sits below 100% — underwriting is profitable before investment income.`
-          : `Combined ratio of ${company.combinedRatio.toFixed(1)}% is above 100% — underwriting is loss-making before investment income.`,
+      explore: 'See whether claims and costs stay within every ₹100 of premium.',
     },
     {
       id: 'core',
@@ -588,12 +585,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       missing: uw == null,
       color: PALETTE.teal,
       Icon: Gauge,
-      read:
-        uw == null
-          ? 'Awaiting reported NEP and combined ratio to size core operating profit.'
-          : uw > 0
-            ? `That discipline throws off about ${crc(uw)} of core underwriting profit.`
-            : `Core underwriting is running a ${crc(uw)} loss.`,
+      explore: 'Trace how that discipline turns into real underwriting profit.',
     },
     {
       id: 'conversion',
@@ -604,10 +596,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       missing: patMargin == null,
       color: PALETTE.amber,
       Icon: IndianRupee,
-      read:
-        patMargin == null
-          ? 'Awaiting reported PAT to measure how premium converts to profit.'
-          : `About ${patMargin.toFixed(1)}% of premium converts into reported profit after tax and other lines.`,
+      explore: 'Premium is now being tested for how much converts into PAT and margin.',
     },
     {
       id: 'returns',
@@ -618,7 +607,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       missing: !(roe > 0),
       color: ORANGE,
       Icon: BarChart3,
-      read: roe > 0 ? `That profit earns shareholders a ${roe.toFixed(1)}% return on equity.` : 'Return on equity is pending for this carrier.',
+      explore: 'Follow profit through to the return shareholders actually earn.',
     },
     {
       id: 'capital',
@@ -629,7 +618,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
       missing: !(solvency > 0),
       color: PALETTE.emerald,
       Icon: Shield,
-      read: solvency > 0 ? `A ${solvency.toFixed(2)}x solvency cushion funds growth well above the 1.5x regulatory floor.` : 'Solvency is pending for this carrier.',
+      explore: 'See the capital buffer backing all of this growth.',
     },
   ]
 }
@@ -637,67 +626,86 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage
 function ProfitabilityEngine({ company, series, selectedId, onSelect }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void }) {
   const stages = buildEngineStages(company, series)
   const active = stages.find((s) => s.id === selectedId) ?? stages[0]
+  const selectedIndex = stages.findIndex((s) => s.id === selectedId)
 
   return (
     <section className="card-surface p-5">
-      {/* Header — gear eyebrow + story subtitle */}
-      <div className="flex items-center gap-2.5">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: PALETTE.champagneSoft }}>
-          <Cog className="h-4 w-4" style={{ color: PALETTE.champagne }} />
-        </span>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Engine</p>
-          <p className="text-[11.5px] leading-snug text-ink-secondary">Tap a stage to explore it — from underwriting discipline to shareholder returns</p>
+      {/* Header — Story Map title, plain-English direction, interactive cue */}
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+        <div className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: PALETTE.champagneSoft }}>
+            <Cog className="h-4 w-4" style={{ color: PALETTE.champagne }} />
+          </span>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Profitability Story Map</p>
+            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">Click a stage to explore how premium flows into profit, ROE and capital strength.</p>
+            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice/70 px-2.5 py-0.5 text-[9.5px] font-medium text-ink-secondary">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
+              Interactive analysis · 5 stages · Click to drill down
+            </span>
+          </div>
         </div>
+        <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold text-navy-primary" style={{ borderColor: '#D6E2FA', background: PALETTE.softBlue }}>
+          <MousePointerClick className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} />
+          Choose a stage below
+        </span>
       </div>
 
-      {/* Flow — five clickable nodes, soft gradient connectors */}
+      {/* Flow — five clickable nodes; connectors brighten up to the active stage */}
       <div className="mt-7 flex flex-col gap-7 md:flex-row md:items-start md:gap-0">
         {stages.map((s, i) => {
           const selected = s.id === selectedId
+          const connectorActive = i <= selectedIndex
           return (
             <button
               key={s.id}
               type="button"
               onClick={() => onSelect(s.id)}
               aria-pressed={selected}
-              aria-label={`${s.label} — ${s.metricLabel} ${s.value}`}
-              className="group relative flex min-w-0 flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35 md:flex-1"
+              aria-label={`View ${s.label} — ${s.metricLabel} ${s.value}`}
+              className="group relative flex min-w-0 cursor-pointer flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35 md:flex-1"
             >
-              {/* gradient connector: previous node centre → this node centre */}
+              {/* gradient connector: previous → this; brighter/thicker up to the selected stage */}
               {i > 0 && (
                 <span
                   aria-hidden
-                  className="absolute left-[-50%] right-1/2 top-[39px] z-0 hidden h-[2px] -translate-y-1/2 md:block"
-                  style={{ background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: 0.5 }}
+                  className="absolute left-[-50%] right-1/2 top-[39px] z-0 hidden -translate-y-1/2 md:block"
+                  style={{ height: connectorActive ? 3 : 2, background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: connectorActive ? 0.9 : 0.3 }}
                 />
               )}
               {i > 0 && (
                 <span
                   aria-hidden
-                  className="absolute left-0 top-[39px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-soft-border bg-white shadow-sm md:flex"
+                  className="absolute left-0 top-[39px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-sm md:flex"
+                  style={{ borderColor: connectorActive ? s.color : PALETTE.border }}
                 >
-                  <ChevronRight className="h-2.5 w-2.5" style={{ color: s.color }} />
+                  <ChevronRight className="h-2.5 w-2.5" style={{ color: s.color, opacity: connectorActive ? 1 : 0.5 }} />
                 </span>
               )}
 
               {/* Node */}
               <div className="relative z-10">
+                {/* soft halo — always-on for the selected node, fades in on hover otherwise */}
+                <span
+                  aria-hidden
+                  className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity duration-300 ${selected ? 'h-[112px] w-[112px] opacity-100' : 'h-[94px] w-[94px] opacity-0 group-hover:opacity-90'}`}
+                  style={{ background: selected ? `${s.color}3b` : `${s.color}29` }}
+                />
                 <span
                   aria-hidden
                   className="absolute -inset-[6px] rounded-full border transition-all duration-300"
-                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.75 : 0.24, transform: selected ? 'scale(1.05)' : 'scale(1)' }}
+                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.85 : 0.22, transform: selected ? 'scale(1.06)' : 'scale(1)' }}
                 />
                 <div
-                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[2px]"
+                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[3px]"
                   style={{
                     borderColor: s.color,
-                    transform: selected ? 'translateY(-3px) scale(1.04)' : 'translateY(0)',
-                    boxShadow: selected ? `0 14px 30px ${s.color}59` : `0 6px 16px ${s.color}26`,
+                    transform: selected ? 'translateY(-3px) scale(1.05)' : 'translateY(0)',
+                    boxShadow: selected ? `0 16px 32px ${s.color}66` : `0 6px 16px ${s.color}26`,
                     opacity: s.missing && !selected ? 0.6 : 1,
                   }}
                 >
-                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={selected ? 1.9 : 1.6} />
+                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={selected ? 2 : 1.6} />
                 </div>
                 <span
                   className="absolute -top-2 left-1/2 z-20 flex h-[18px] w-[18px] -translate-x-1/2 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
@@ -708,7 +716,7 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
               </div>
 
               {/* Label + single metric */}
-              <p className="mt-3.5 font-display text-[13px] font-semibold leading-tight transition-colors" style={{ color: selected ? PALETTE.navyDeep : '#3C4A63' }}>
+              <p className="mt-3.5 font-display text-[13px] leading-tight transition-colors" style={{ color: selected ? PALETTE.navyDeep : '#41506B', fontWeight: selected ? 700 : 600 }}>
                 {s.label}
               </p>
               <span aria-hidden className="my-1.5 h-px w-6" style={{ background: selected ? s.color : PALETTE.border }} />
@@ -720,21 +728,38 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
                   {s.value}
                 </p>
               )}
+
+              {/* Clickable affordance — "Viewing" when active, a quiet "Explore" cue otherwise */}
+              {selected ? (
+                <span className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white shadow-sm" style={{ background: s.color }}>
+                  <span className="h-1 w-1 rounded-full bg-white/90" />
+                  Viewing
+                </span>
+              ) : (
+                <span className="mt-2 inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary/80 transition-colors group-hover:border-muted-blue group-hover:text-navy-primary">
+                  Explore
+                  <ChevronRight className="h-2.5 w-2.5" />
+                </span>
+              )}
             </button>
           )
         })}
       </div>
 
-      {/* Active indicator — calm "you are viewing" line (switch on click only) */}
-      <div className="mt-6 flex min-h-[26px] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 text-center">
-        <span className="inline-flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.color }} />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-secondary">You are viewing</span>
-        </span>
-        <p className="text-[11.5px] leading-snug text-navy-deep/85">
-          <span className="font-semibold" style={{ color: active.color }}>{active.label}</span>
-          <span className="text-ink-secondary"> — {active.read}</span>
-        </p>
+      {/* Active-stage status bar — a control surface (navy + gold), updates on click only */}
+      <div className="mt-6 flex justify-center">
+        <div
+          className="flex w-full max-w-2xl flex-col items-center gap-0.5 rounded-xl border px-5 py-2.5 text-center"
+          style={{ borderColor: '#E7ECF6', background: 'linear-gradient(135deg, #F7FAFF 0%, #FBF6EC 100%)' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.color }} />
+            <span className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Viewing</span>
+            <span aria-hidden className="text-ink-secondary/40">·</span>
+            <span className="font-display text-[13px] leading-none text-navy-deep">{active.label}</span>
+          </div>
+          <p className="text-[11px] leading-snug text-ink-secondary">{active.explore}</p>
+        </div>
       </div>
 
       {/* Source */}
