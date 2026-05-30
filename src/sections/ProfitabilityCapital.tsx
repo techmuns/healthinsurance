@@ -77,16 +77,12 @@ const ILLUSTRATIVE: ResolvedSource = { source: 'Illustrative', confidence: 'pend
 // Mock data (FY25 basis · ₹ Cr where applicable)
 // ---------------------------------------------------------------------------
 
-const NET_PROFIT_QUARTERS: Record<string, [number, number, number, number]> = {
-  'niva-bupa': [142, 178, 215, 268],
-  'star-health': [195, 212, 178, 202],
-  'care-health': [120, 132, 118, 96],
-  'aditya-birla': [-78, -52, -28, -12],
-  manipalcigna: [-22, -15, -8, -5],
-  'icici-lombard': [580, 612, 645, 671],
-  'bajaj-general': [410, 438, 480, 504],
-  'hdfc-life': [415, 432, 455, 500],
-  'sbi-life': [560, 588, 615, 650],
+// Real annual PAT (₹ Cr) for the company, drawn from the audited annual
+// snapshot — only reported years, never a fabricated quarterly series. Returns
+// the values in fiscal order; an empty array means PAT is unreported (the UI
+// then shows an honest "pending" state rather than a mock number).
+function realPatValues(series: AnnualPoint[]): number[] {
+  return series.map((p) => p.pat).filter((v): v is number => v != null)
 }
 
 // Quarterly combined ratio drift around the FY25 anchor — same shape as the
@@ -156,18 +152,18 @@ const COST_RATIOS: Record<string, { loss: number; commission: number; expense: n
 
 const QUARTER_LABELS = ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25']
 
-function getMarginMetrics(company: Insurer) {
-  const series = NET_PROFIT_QUARTERS[company.id]
-  if (!series || company.premiumCollection <= 0) return { netMargin: 0, yoyImprovement: 0, latestPat: 0, ttmPat: 0 }
-  const ttmPat = series.reduce((s, v) => s + v, 0)
-  const netMargin = (ttmPat / company.premiumCollection) * 100
-  const priorAvg = (series[0] + series[1] + series[2]) / 3
-  const yoyImprovement = priorAvg === 0 ? 0 : ((series[3] - priorAvg) / Math.abs(priorAvg)) * 100
+// Net margin from REAL audited data only: latest fiscal year that reports both
+// PAT and GWP → PAT / GWP. Returns null (honest "pending") when unreported —
+// never a fabricated quarterly sum. Same-year basis so it stays consistent with
+// the selected Data Range.
+function getMarginMetrics(series: AnnualPoint[]): { netMargin: number | null; latestPat: number | null; latestFy: string | null } {
+  const withBoth = series.filter((p) => p.pat != null && p.gwp != null && p.gwp > 0)
+  const latest = withBoth[withBoth.length - 1]
+  if (!latest) return { netMargin: null, latestPat: null, latestFy: null }
   return {
-    netMargin: Math.round(netMargin * 10) / 10,
-    yoyImprovement: Math.round(yoyImprovement * 10) / 10,
-    latestPat: series[3],
-    ttmPat,
+    netMargin: Math.round((latest.pat! / latest.gwp!) * 1000) / 10,
+    latestPat: latest.pat!,
+    latestFy: latest.fy,
   }
 }
 
@@ -1113,18 +1109,19 @@ function ConversionBridge({ company, series }: { company: Insurer; series: Annua
 // growth — the cleaner replacement for the old Profit-Velocity + Operating-
 // Leverage cards (reuses the operatingLeverage helper + sparklines).
 function ConversionQuality({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const mm = getMarginMetrics(company)
-  const patSeries = NET_PROFIT_QUARTERS[company.id]
-  const hasTrend = patSeries !== undefined
+  const mm = getMarginMetrics(series)
+  const patSeries = realPatValues(series)
+  const hasMargin = mm.netMargin != null
+  const hasPatTrend = patSeries.length >= 2
   const ol = operatingLeverage(company, series)
-  const netTone: ChipTone = mm.netMargin > 5 ? 'teal' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'navy' : 'negative'
+  const netTone: ChipTone = mm.netMargin == null ? 'navy' : mm.netMargin > 5 ? 'teal' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'navy' : 'negative'
   const hasExp = ol.expFrom != null && ol.expTo != null && ol.expSeries.length >= 2
   const expImproving = ol.expDelta != null && ol.expDelta < 0
   const patUp = ol.patYoY != null && ol.patYoY > 0
   const patStrong = ol.patYoY != null && ol.patYoY >= 50
-  const marginFit = hasTrend ? fitTrend(patSeries) : null
+  const marginFit = hasPatTrend ? fitTrend(patSeries) : null
   const marginUp = marginFit == null ? false : marginFit.slope >= 0
-  const conclusion = patUp || (hasTrend && mm.netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
+  const conclusion = patUp || (mm.netMargin != null && mm.netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
 
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
@@ -1136,12 +1133,12 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
       <div className="mt-4 space-y-4">
         <div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin · TTM</span>
-            <SignalBadge label={hasTrend ? (mm.netMargin > 5 ? 'Healthy' : mm.netMargin > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasTrend ? netTone : 'navy'} size="sm" />
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin{mm.latestFy ? ` · ${mm.latestFy}` : ''}</span>
+            <SignalBadge label={hasMargin ? (mm.netMargin! > 5 ? 'Healthy' : mm.netMargin! > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasMargin ? netTone : 'navy'} size="sm" />
           </div>
           <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="font-display text-[22px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'Data pending'}</span>
-            {hasTrend && (
+            <span className="font-display text-[22px] leading-none text-navy-deep">{hasMargin ? `${mm.netMargin!.toFixed(1)}%` : 'Data pending'}</span>
+            {hasPatTrend && (
               <div className="flex flex-col items-end gap-0.5">
                 <TrendPill label={marginFit == null ? 'Trend pending' : marginUp ? 'Expanding' : 'Easing'} dir={marginFit == null ? 'flat' : marginUp ? 'up' : 'down'} color={marginUp ? GOLD : PALETTE.coral} />
                 <div className="h-[24px] w-[88px] shrink-0">
@@ -1421,8 +1418,8 @@ function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[]): { labe
     return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'In profit', tone: 'teal' } : { label: 'In loss', tone: 'negative' }
   }
   if (id === 'conversion') {
-    if (NET_PROFIT_QUARTERS[company.id] === undefined) return { label: 'Pending', tone: 'navy' }
-    const mm = getMarginMetrics(company)
+    const mm = getMarginMetrics(series)
+    if (mm.netMargin == null) return { label: 'Pending', tone: 'navy' }
     return mm.netMargin > 5 ? { label: 'Healthy', tone: 'teal' } : mm.netMargin > 0 ? { label: 'Thin', tone: 'warning' } : { label: 'Loss', tone: 'negative' }
   }
   if (id === 'returns') {
@@ -1672,16 +1669,17 @@ function DisciplineQuality({ company }: { company: Insurer }) {
 // is shown by block offset (boosters sit high, the drag sits low) so the story
 // reads instantly: profit is improving, ROE still early because capital is large.
 function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const mm = getMarginMetrics(company)
+  const mm = getMarginMetrics(series)
   const ol = operatingLeverage(company, series)
-  const patSeries = NET_PROFIT_QUARTERS[company.id]
-  const hasTrend = patSeries !== undefined
+  const patSeries = realPatValues(series)
+  const hasPatTrend = patSeries.length >= 2
+  const hasPat = patSeries.length >= 1
   const roe = company.roe
   const roeModerate = roe > 0 && roe < 10
 
   const boosters = [
     { key: 'patg', kicker: 'Booster', label: 'PAT growth', value: ol.patYoY == null ? 'n/a' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`, sub: 'Profit pool expanding', color: PALETTE.emerald, bg: '#EAF5EE', border: '#CFE7DA' },
-    { key: 'margin', kicker: 'Booster', label: 'Net margin', value: hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'n/a', sub: 'Conversion improving', color: GOLD, bg: '#FBF1D8', border: '#E9D49A' },
+    { key: 'margin', kicker: 'Booster', label: 'Net margin', value: mm.netMargin != null ? `${mm.netMargin.toFixed(1)}%` : 'n/a', sub: 'Conversion improving', color: GOLD, bg: '#FBF1D8', border: '#E9D49A' },
     { key: 'lev', kicker: 'Booster', label: 'Op. leverage', value: ol.expDelta == null ? 'n/a' : ol.expDelta < 0 ? `↓${Math.abs(ol.expDelta).toFixed(1)}pp` : `↑${ol.expDelta.toFixed(1)}pp`, sub: 'Expenses easing', color: PALETTE.teal, bg: '#E7F4F3', border: '#C9E5E3' },
   ]
 
@@ -1701,9 +1699,9 @@ function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoi
         <div className="flex w-[96px] shrink-0 flex-col justify-between rounded-xl px-3 py-3 text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.emerald} 0%, #1F6B49 100%)` }}>
           <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/85">PAT pool</span>
           <div className="mt-2">
-            {hasTrend ? <Sparkline values={patSeries} tone="positive" width={70} height={22} /> : null}
-            <span className="mt-1 block font-display text-[15px] leading-none text-white">{hasTrend ? `₹${patSeries[patSeries.length - 1]} Cr` : 'n/a'}</span>
-            <span className="text-[8px] text-white/75">Q4 · rising</span>
+            {hasPatTrend ? <Sparkline values={patSeries} tone="positive" width={70} height={22} /> : null}
+            <span className="mt-1 block font-display text-[15px] leading-none text-white">{hasPat ? `₹${patSeries[patSeries.length - 1]} Cr` : 'n/a'}</span>
+            <span className="text-[8px] text-white/75">{mm.latestFy ? `${mm.latestFy} · reported` : 'pending'}</span>
           </div>
         </div>
 
@@ -2026,33 +2024,37 @@ export function ProfitabilityCapital() {
 
   const hasCR = company.combinedRatio > 0
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
-  const mm = getMarginMetrics(company)
-  const hasTrend = NET_PROFIT_QUARTERS[company.id] !== undefined
+  const mm = getMarginMetrics(series)
   // Combined ratio is now sourced from real, verified IRDAI statutory filings
   // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
   // data-status row reflects that instead of the blanket mock label below.
   const statCR = STATUTORY_CR[company.id]
 
   // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
+  // Every row maps to a real, source-backed value drawn from the annual
+  // snapshot (audited FY25 Annual Report) or the IRDAI statutory disclosures —
+  // no mock fallbacks. A value of null renders an honest "Pending" row.
+  const annualUrl = 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf'
   const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
     value,
     period: 'FY25',
-    source: 'Company filings (mock)',
+    source: 'Company annual report',
     status: value === null ? 'Pending' : 'Reported',
-    lastUpdated: '2025-05-23',
+    lastUpdated: '2026-05-30',
+    sourceUrl: annualUrl,
     ...opts,
   })
   const companyKpis: { label: string; metric: Metric }[] = [
-    { label: 'GWP growth', metric: m(company.growth, { unit: '%' }) },
+    { label: 'GWP growth', metric: m(company.growth > 0 ? company.growth : null, { unit: '%' }) },
     {
       label: 'Combined ratio',
       metric: statCR
-        ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', lastUpdated: '2026-05-30' })
+        ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', sourceUrl: statCR.sourceUrl })
         : m(hasCR ? company.combinedRatio : null, { unit: '%' }),
     },
-    { label: 'Net margin', metric: m(hasTrend ? mm.netMargin : null, { unit: '%', period: 'TTM' }) },
-    { label: 'ROE', metric: m(company.roe, { unit: '%' }) },
-    { label: 'Solvency', metric: m(company.solvency, { unit: 'x' }) },
+    { label: 'Net margin', metric: m(mm.netMargin, { unit: '%', period: mm.latestFy ?? 'FY25' }) },
+    { label: 'ROE', metric: m(company.roe > 0 ? company.roe : null, { unit: '%' }) },
+    { label: 'Solvency', metric: m(company.solvency > 0 ? company.solvency : null, { unit: 'x' }) },
   ]
 
   const verdictSummary = !hasCR
