@@ -807,16 +807,33 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
                   )
                 }}
               />
-              <ReferenceLine yAxisId="uw" y={0} stroke={PALETTE.navy} strokeOpacity={0.35} />
+              {/* Zero baseline — the key reference: above it is underwriting profit. */}
+              <ReferenceLine
+                yAxisId="uw"
+                y={0}
+                stroke={PALETTE.navy}
+                strokeOpacity={0.55}
+                strokeWidth={1.2}
+                label={{ value: 'Above ₹0 = underwriting profit', position: 'insideTopLeft', fontSize: 8.5, fill: PALETTE.navy, opacity: 0.75 }}
+              />
+              {/* Turnaround marker — points at the first year that crosses into profit. */}
+              {crossIdx >= 0 && (
+                <ReferenceLine
+                  yAxisId="uw"
+                  x={usable[crossIdx].fy}
+                  stroke="transparent"
+                  label={{ value: '↳ Turned positive', position: 'top', fontSize: 9, fill: PALETTE.emerald, fontWeight: 700 }}
+                />
+              )}
+              {/* Combined ratio — secondary, subtle overlay so it doesn't compete with the bars. */}
+              <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.2} strokeOpacity={0.6} dot={{ r: 2, fill: PALETTE.champagne }} activeDot={{ r: 3.5 }} connectNulls />
               <Bar yAxisId="uw" dataKey="uw" name="Underwriting profit" radius={[3, 3, 0, 0]} maxBarSize={40}>
-                {usable.map((d, i) => {
-                  const isLast = i === usable.length - 1
-                  const fill = d.uw < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.teal
-                  return <Cell key={d.fy} fill={fill} stroke={isLast ? PALETTE.navyDeep : 'none'} strokeWidth={isLast ? 1.2 : 0} />
+                {usable.map((d) => {
+                  const strongest = d.uw > 0 && d.uw === maxUw
+                  const fill = d.uw < 0 ? PALETTE.coral : strongest ? PALETTE.emerald : PALETTE.teal
+                  return <Cell key={d.fy} fill={fill} stroke={strongest ? PALETTE.navyDeep : 'none'} strokeWidth={strongest ? 1.4 : 0} />
                 })}
               </Bar>
-              {fit && <Line yAxisId="uw" type="linear" dataKey="trend" name="UW trend" stroke={trendColor} strokeWidth={1.4} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
-              <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.5} dot={{ r: 2.5, fill: PALETTE.champagne }} activeDot={{ r: 4 }} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
         ) : (
