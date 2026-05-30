@@ -198,16 +198,22 @@ function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values:
   )
 }
 
-// Combined ratio quarterly line with green strong / amber watch / red weak bands.
-function CombinedRatioBandedTrend({ series }: { series: number[] }) {
-  const fit = fitTrend(series)
-  const data = QUARTER_LABELS.map((label, i) => ({ label, cr: series[i], trend: fit ? fit.fitted[i] : null }))
-  const yMin = Math.min(94, ...series) - 1
-  const yMax = Math.max(112, ...series) + 1
+// Combined-ratio trajectory with green strong / amber watch / red weak bands.
+// Period-generic: feed it `{ label, cr }` points (annual FY or quarterly). Null
+// combined ratios bridge via connectNulls and never read as 0; < 2 real points
+// shows "Trend pending" instead of a faked line.
+function CombinedRatioBandedTrend({ points }: { points: { label: string; cr: number | null }[] }) {
+  const crs = points.map((p) => p.cr)
+  const real = crs.filter((v): v is number => v != null)
+  const enough = real.length >= 2
+  const fit = enough ? fitTrend(crs) : null
+  const data = points.map((p, i) => ({ label: p.label, cr: p.cr, trend: fit ? fit.fitted[i] : null }))
+  const yMin = (real.length ? Math.min(94, ...real) : 94) - 2
+  const yMax = (real.length ? Math.max(108, ...real) : 112) + 2
   // Lower combined ratio is better, so a falling fit = improving discipline.
   const dir = !fit ? 'flat' : fit.slope < -0.15 ? 'down' : fit.slope > 0.15 ? 'up' : 'flat'
-  const label = !fit ? 'Trend pending' : dir === 'down' ? 'Improving' : dir === 'up' ? 'Rising' : 'Stable'
-  const trendColor = !fit ? '#94A3B8' : dir === 'down' ? PALETTE.emerald : dir === 'up' ? PALETTE.coral : PALETTE.navy
+  const label = !enough ? 'Trend pending' : dir === 'down' ? 'Improving' : dir === 'up' ? 'Rising' : 'Stable'
+  const trendColor = !enough ? '#94A3B8' : dir === 'down' ? PALETTE.emerald : dir === 'up' ? PALETTE.coral : PALETTE.navy
   return (
     <div>
       <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
@@ -220,44 +226,78 @@ function CombinedRatioBandedTrend({ series }: { series: number[] }) {
           <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
           <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.08} />
           <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.07} />
-          <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} />
+          <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} label={{ value: '100% break-even', position: 'insideTopRight', fontSize: 8.5, fill: PALETTE.amber }} />
           {fit && <Line type="linear" dataKey="trend" stroke={trendColor} strokeWidth={1.4} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
-          <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} />
+          <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} connectNulls />
         </LineChart>
       </ResponsiveContainer>
     </div>
   )
 }
 
-// Quarterly PAT bars with the latest quarter highlighted + a smooth trendline.
-function QuarterlyPatBars({ series, accent = PALETTE.amber }: { series: number[]; accent?: string }) {
-  const fit = fitTrend(series)
-  const data = QUARTER_LABELS.map((label, i) => ({ label, pat: series[i], trend: fit ? fit.fitted[i] : null }))
-  const positive = series[series.length - 1] >= 0
+// PAT bars with the latest period highlighted + a smooth trendline. Period-
+// generic: feed `{ label, pat }` points (annual FY or quarterly). Null PATs are
+// omitted (never 0); < 2 real points shows "Trend pending".
+function QuarterlyPatBars({ points, accent = PALETTE.amber, unitLabel = 'PAT' }: { points: { label: string; pat: number | null }[]; accent?: string; unitLabel?: string }) {
+  const pats = points.map((p) => p.pat)
+  const real = pats.filter((v): v is number => v != null)
+  const enough = real.length >= 2
+  const fit = enough ? fitTrend(pats) : null
+  const data = points.map((p, i) => ({ label: p.label, pat: p.pat, trend: fit ? fit.fitted[i] : null }))
+  const positive = real.length ? real[real.length - 1] >= 0 : true
+  const lastRealIdx = data.map((d) => d.pat != null).lastIndexOf(true)
   const dir = !fit ? 'flat' : fit.slope > 0.5 ? 'up' : fit.slope < -0.5 ? 'down' : 'flat'
-  const label = !fit ? 'Trend pending' : dir === 'up' ? 'PAT scaling' : dir === 'down' ? 'PAT easing' : 'PAT stable'
-  const trendColor = !fit ? '#94A3B8' : dir === 'down' ? PALETTE.coral : accent
+  const label = !enough ? 'Trend pending' : dir === 'up' ? `${unitLabel} scaling` : dir === 'down' ? `${unitLabel} easing` : `${unitLabel} stable`
+  const trendColor = !enough ? '#94A3B8' : dir === 'down' ? PALETTE.coral : accent
   return (
     <div>
       <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
       <ResponsiveContainer width="100%" height={172}>
-        <ComposedChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="36%">
+        <ComposedChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="34%">
           <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
           <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={38} />
-          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`₹${v.toLocaleString('en-IN')} Cr`, n === 'trend' ? 'Trend' : 'PAT']} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
+          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`₹${v.toLocaleString('en-IN')} Cr`, n === 'trend' ? 'Trend' : unitLabel]} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
           <ReferenceLine y={0} stroke={PALETTE.border} />
-          <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={32}>
+          <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={annualBarWidth(data.length)}>
             {data.map((d, i) => {
-              const isLast = i === data.length - 1
-              const color = d.pat < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
-              const strokeC = d.pat < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
+              const isLast = i === lastRealIdx
+              const v = d.pat ?? 0
+              const color = v < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
+              const strokeC = v < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
               return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1 : 0.4} />
             })}
           </Bar>
-          {fit && <Line type="monotone" dataKey="trend" stroke={trendColor} strokeWidth={1.6} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
+          {fit && <Line type="monotone" dataKey="trend" stroke={trendColor} strokeWidth={1.6} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} connectNulls />}
         </ComposedChart>
       </ResponsiveContainer>
+    </div>
+  )
+}
+
+// Slim annual bars, slightly wider quarterly — keeps the Bloomberg-style feel.
+const annualBarWidth = (n: number) => (n <= 4 ? 42 : 30)
+
+// Compact two-option period toggle (Yearly ⇄ Quarterly) used on the trajectory
+// charts so the selected-year header range drives the Yearly view.
+type TrendView = 'Yearly' | 'Quarterly'
+function TrendViewToggle({ value, onChange, accent }: { value: TrendView; onChange: (v: TrendView) => void; accent: string }) {
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-white/70 p-0.5">
+      {(['Yearly', 'Quarterly'] as TrendView[]).map((v) => {
+        const on = v === value
+        return (
+          <button
+            key={v}
+            type="button"
+            onClick={() => onChange(v)}
+            className="rounded-full px-2 py-0.5 text-[9.5px] font-semibold transition-colors"
+            style={on ? { background: accent, color: '#fff' } : { color: '#6B7488' }}
+          >
+            {v}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -1314,10 +1354,17 @@ function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string;
 // break-even line, the gap is the underwriting surplus. The headline combined
 // ratio is the authoritative snapshot value (company.combinedRatio), never the
 // re-summed components, so the page reads one consistent number.
-function CombinedRatioWaterfall({ company }: { company: Insurer }) {
+function CombinedRatioWaterfall({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const cost = COST_RATIOS[company.id]
   const hasCR = company.combinedRatio > 0
   const crSeries = COMBINED_RATIO_QUARTERS[company.id]
+  const [view, setView] = useState<TrendView>('Yearly')
+  // Yearly trajectory follows the header's Data Range (annual snapshot, real
+  // combined ratios; missing years bridge as null). Quarterly is the FY25 view.
+  const yearPoints = series.map((p) => ({ label: p.fy, cr: p.combinedRatio }))
+  const quarterPoints = crSeries ? QUARTER_LABELS.map((label, i) => ({ label, cr: crSeries[i] })) : []
+  const trajPoints = view === 'Yearly' ? yearPoints : quarterPoints
+  const yearsWithCR = yearPoints.filter((p) => p.cr != null).length
   // Authoritative combined ratio (snapshot) anchors the whole section.
   const cr = hasCR ? company.combinedRatio : null
   const surplus = cr != null ? Math.round((100 - cr) * 10) / 10 : null
@@ -1412,10 +1459,19 @@ function CombinedRatioWaterfall({ company }: { company: Insurer }) {
             </div>
           </div>
 
-          {hasCR && crSeries && (
+          {hasCR && (
             <div className="mt-4 border-t border-[#DCEDE3] pt-3">
-              <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Quarterly trajectory · Q1–Q4 FY25</p>
-              <CombinedRatioBandedTrend series={crSeries} />
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">
+                  {view === 'Yearly' ? 'Combined ratio trajectory · by year' : 'Combined ratio trajectory · Q1–Q4 FY25'}
+                </p>
+                <TrendViewToggle value={view} onChange={setView} accent={PALETTE.emerald} />
+              </div>
+              {view === 'Yearly' && yearsWithCR < 2 ? (
+                <PendingNote>Pick a wider year range in the header to see the combined-ratio trend — only one reported year is in range.</PendingNote>
+              ) : (
+                <CombinedRatioBandedTrend points={trajPoints} />
+              )}
             </div>
           )}
         </>
@@ -1710,12 +1766,48 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
   return ''
 }
 
+// Returns proof — PAT trajectory with a Yearly (header-range-driven, real
+// annual PAT) ⇄ Quarterly (FY25) toggle. Yearly follows the selected years.
+function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series: AnnualPoint[]; cardStyle: { background: string; borderColor: string } }) {
+  const [view, setView] = useState<TrendView>('Yearly')
+  const patSeries = NET_PROFIT_QUARTERS[company.id]
+  const yearPoints = series.map((p) => ({ label: p.fy, pat: p.pat }))
+  const quarterPoints = patSeries ? QUARTER_LABELS.map((label, i) => ({ label, pat: patSeries[i] })) : []
+  const yearsWithPat = yearPoints.filter((p) => p.pat != null).length
+  const points = view === 'Yearly' ? yearPoints : quarterPoints
+  const hasQuarterly = patSeries !== undefined
+  const canShow = view === 'Yearly' ? yearsWithPat >= 1 : hasQuarterly
+  return (
+    <div className="rounded-xl border p-4" style={cardStyle}>
+      <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Proof · PAT Pool</p>
+          <h3 className="mt-0 font-display text-[14px] text-navy-deep">{view === 'Yearly' ? 'PAT trajectory · by year' : 'PAT trajectory · Q1–Q4 FY25'}</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
+          <TrendViewToggle value={view} onChange={setView} accent={ORANGE} />
+        </div>
+      </div>
+      {canShow ? (
+        view === 'Yearly' && yearsWithPat < 2 ? (
+          <PendingNote>Widen the year range in the header to see the PAT trend — only one reported year is in range.</PendingNote>
+        ) : (
+          <QuarterlyPatBars points={points} accent={ORANGE} />
+        )
+      ) : (
+        <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
+          Data pending — PAT not reported for {company.shortName}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Insurer; series: AnnualPoint[] }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
   const status = lensStatus(id, company, series)
-  const patSeries = NET_PROFIT_QUARTERS[company.id]
-  const hasTrend = patSeries !== undefined
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
   let body: ReactNode = null
@@ -1724,7 +1816,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
     case 'underwriting':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <CombinedRatioWaterfall company={company} />
+          <CombinedRatioWaterfall company={company} series={series} />
           <DisciplineQuality company={company} />
         </div>
       )
@@ -1750,22 +1842,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
         <div className="space-y-4">
           <ReturnBridge company={company} series={series} />
           <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-            <div className="rounded-xl border p-4" style={cardStyle}>
-              <div className="mb-2.5 flex items-baseline justify-between">
-                <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Proof · PAT Pool</p>
-                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
-                </div>
-                <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
-              </div>
-              {hasTrend ? (
-                <QuarterlyPatBars series={patSeries} accent={ORANGE} />
-              ) : (
-                <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
-                  Data pending — quarterly PAT not reported for {company.shortName}
-                </div>
-              )}
-            </div>
+            <PatPoolCard company={company} series={series} cardStyle={cardStyle} />
             <RoeGaugeCard company={company} />
           </div>
         </div>
