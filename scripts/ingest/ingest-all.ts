@@ -10,6 +10,7 @@ import type { Fetcher } from './types'
 import { ingestIrdaiMonthly } from './ingest-irdai-monthly'
 import { ingestIrdaiAnnual } from './ingest-irdai-annual'
 import { ingestCompanyDisclosures } from './ingest-company-disclosures'
+import { ingestQuarterlyDisclosures } from './ingest-quarterly-disclosures'
 import { ingestDistribution } from './ingest-distribution'
 import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
@@ -21,6 +22,7 @@ const ALL: Fetcher[] = [
   ingestIrdaiMonthly,
   ingestIrdaiAnnual,
   ingestCompanyDisclosures,
+  ingestQuarterlyDisclosures,
   ingestDistribution,
   ingestOwnership,
   ingestManagementEvents,
