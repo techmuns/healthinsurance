@@ -101,6 +101,49 @@ const COMBINED_RATIO_QUARTERS: Record<string, [number, number, number, number]> 
   'bajaj-general': [103.0, 103.4, 103.7, 104.0],
 }
 
+// Real IRDAI public-disclosure (statutory) combined ratio for the focal company,
+// extracted and cross-validated from Niva Bupa's quarterly NL-form filings
+// (see scripts/ingest/disclosure-extract.ts). The statutory basis is stricter
+// than the company-reported headline (FY25: 101.2% vs 96.8%); standalone
+// quarters swing seasonally and run above the full-year figure. Peers stay on
+// the company-reported seed basis so the peer scorecard remains like-for-like.
+interface StatutoryCR {
+  statutory: number // full-year statutory combined ratio (latest complete FY)
+  statutoryFY: string
+  reported: number // company-reported combined ratio, same period
+  reportedFY: string
+  annual: { fy: string; cr: number }[]
+  quarters: { label: string; cr: number }[]
+  sourceUrl: string
+}
+
+const STATUTORY_CR: Record<string, StatutoryCR> = {
+  'niva-bupa': {
+    statutory: 101.2,
+    statutoryFY: 'FY25',
+    reported: 96.8,
+    reportedFY: 'FY25',
+    annual: [
+      { fy: 'FY22', cr: 107 },
+      { fy: 'FY23', cr: 97 },
+      { fy: 'FY24', cr: 99 },
+      { fy: 'FY25', cr: 101.2 },
+      { fy: 'FY26', cr: 103.4 },
+    ],
+    quarters: [
+      { label: 'Q1 FY25', cr: 106 },
+      { label: 'Q2 FY25', cr: 101.3 },
+      { label: 'Q3 FY25', cr: 108.29 },
+      { label: 'Q4 FY25', cr: 92.78 },
+      { label: 'Q1 FY26', cr: 116.97 },
+      { label: 'Q2 FY26', cr: 111.72 },
+      { label: 'Q3 FY26', cr: 108.19 },
+      { label: 'Q4 FY26', cr: 86.12 },
+    ],
+    sourceUrl: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
+  },
+}
+
 const COST_RATIOS: Record<string, { loss: number; commission: number; expense: number }> = {
   'niva-bupa': { loss: 62.8, commission: 13.4, expense: 20.6 },
   'star-health': { loss: 66.8, commission: 10.2, expense: 22.4 },
@@ -1411,17 +1454,28 @@ function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string;
 // re-summed components, so the page reads one consistent number.
 function CombinedRatioWaterfall({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const cost = COST_RATIOS[company.id]
-  const hasCR = company.combinedRatio > 0
+  // Focal company: lead with the IRDAI statutory combined ratio (verified from
+  // quarterly filings), keeping the company-reported number alongside. Peers
+  // stay on the company-reported seed value.
+  const stat = STATUTORY_CR[company.id]
+  const hasCR = stat != null || company.combinedRatio > 0
   const crSeries = COMBINED_RATIO_QUARTERS[company.id]
   const [view, setView] = useState<TrendView>('Yearly')
-  // Yearly trajectory follows the header's Data Range (annual snapshot, real
-  // combined ratios; missing years bridge as null). Quarterly is the FY25 view.
-  const yearPoints = series.map((p) => ({ label: p.fy, cr: p.combinedRatio }))
-  const quarterPoints = crSeries ? QUARTER_LABELS.map((label, i) => ({ label, cr: crSeries[i] })) : []
+  // Yearly trajectory: statutory annual series for the focal company, else the
+  // header-range snapshot series. Quarterly: real statutory standalone quarters
+  // for the focal company, else the (mock) quarterly drift.
+  const yearPoints = stat
+    ? stat.annual.map((p) => ({ label: p.fy, cr: p.cr as number | null }))
+    : series.map((p) => ({ label: p.fy, cr: p.combinedRatio }))
+  const quarterPoints = stat
+    ? stat.quarters.map((q) => ({ label: q.label, cr: q.cr as number | null }))
+    : crSeries
+      ? QUARTER_LABELS.map((label, i) => ({ label, cr: crSeries[i] }))
+      : []
   const trajPoints = view === 'Yearly' ? yearPoints : quarterPoints
   const yearsWithCR = yearPoints.filter((p) => p.cr != null).length
-  // Authoritative combined ratio (snapshot) anchors the whole section.
-  const cr = hasCR ? company.combinedRatio : null
+  // Authoritative combined ratio anchors the whole section (statutory for focal).
+  const cr = stat ? stat.statutory : hasCR ? company.combinedRatio : null
   const surplus = cr != null ? Math.round((100 - cr) * 10) / 10 : null
   const below = surplus != null && surplus > 0
   const crColor = cr == null ? PALETTE.navy : cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
@@ -1511,11 +1565,17 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
             {below ? `Claims, commission and opex absorb ₹${cr.toFixed(1)} of every ₹100 — the remaining ₹${(surplus as number).toFixed(1)} is underwriting surplus, before any investment income.` : `Costs absorb more than the ₹100 premium received — underwriting is loss-making before investment income.`}
           </p>
 
+          {stat && (
+            <p className="mt-1.5 text-[9.5px] leading-snug text-ink-secondary">
+              Shown on the <span className="font-semibold text-navy-deep">IRDAI statutory (public-disclosure)</span> basis. The company-reported combined ratio for {stat.reportedFY} is {stat.reported.toFixed(1)}% — the cost split above sums to that reported figure.
+            </p>
+          )}
+
           {hasCR && (
             <div className="mt-4 border-t border-[#DCEDE3] pt-3">
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">
-                  {view === 'Yearly' ? 'Combined ratio trajectory · by year' : 'Combined ratio trajectory · Q1–Q4 FY25'}
+                  {view === 'Yearly' ? 'Combined ratio trajectory · by year' : stat ? 'Combined ratio · by quarter · statutory' : 'Combined ratio trajectory · Q1–Q4 FY25'}
                 </p>
                 <TrendViewToggle value={view} onChange={setView} accent={PALETTE.emerald} />
               </div>
@@ -1523,6 +1583,12 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
                 <PendingNote>Pick a wider year range in the header to see the combined-ratio trend — only one reported year is in range.</PendingNote>
               ) : (
                 <CombinedRatioBandedTrend points={trajPoints} />
+              )}
+              {stat && (
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <p className="text-[9px] leading-snug text-ink-secondary">{view === 'Yearly' ? 'Full-year statutory combined ratio (YTD basis), per IRDAI filings.' : 'Standalone-quarter statutory combined ratio — seasonal swing (Q1 peak, Q4 trough).'}</p>
+                  <SourceTag source="IRDAI public disclosures" period={`${stat.statutoryFY}–FY26`} confidence="high" provenance={{ source_name: 'Niva Bupa quarterly public disclosures (IRDAI NL-form)', source_url: stat.sourceUrl }} />
+                </div>
               )}
             </div>
           )}
@@ -1541,10 +1607,13 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
 // no large empty gaps.
 function DisciplineQuality({ company }: { company: Insurer }) {
   const cost = COST_RATIOS[company.id]
-  const cr = COMBINED_RATIO_QUARTERS[company.id]
-  const q1 = cr ? cr[0] : null
-  const q4 = cr ? cr[cr.length - 1] : null
+  // Real statutory standalone quarters for the focal company, else mock drift.
+  const stat = STATUTORY_CR[company.id]
+  const qvals = stat ? stat.quarters.map((q) => q.cr) : (COMBINED_RATIO_QUARTERS[company.id] ?? null)
+  const q1 = qvals ? qvals[0] : null
+  const q4 = qvals ? qvals[qvals.length - 1] : null
   const improving = q1 != null && q4 != null && q4 < q1
+  const trendNote = stat ? `${stat.quarters[0].label} → ${stat.quarters[stat.quarters.length - 1].label} · statutory` : 'Q1 → Q4 FY25'
   const blocks: { label: string; value: string; note: string; chip: { label: string; tone: ChipTone }; spark?: number[] }[] = [
     {
       label: 'Claims ratio',
@@ -1561,9 +1630,9 @@ function DisciplineQuality({ company }: { company: Insurer }) {
     {
       label: 'Combined ratio trend',
       value: q1 != null && q4 != null ? `${q1.toFixed(1)}% → ${q4.toFixed(1)}%` : 'Data pending',
-      note: 'Q1 → Q4 FY25',
+      note: trendNote,
       chip: q1 != null && q4 != null ? (improving ? { label: 'Improving', tone: 'teal' } : { label: 'Flat', tone: 'navy' }) : { label: 'Pending', tone: 'navy' },
-      spark: cr ?? undefined,
+      spark: qvals ?? undefined,
     },
   ]
   return (
