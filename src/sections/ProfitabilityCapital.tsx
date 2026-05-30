@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Area,
@@ -1371,22 +1371,16 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
   const below = surplus != null && surplus > 0
   const crColor = cr == null ? PALETTE.navy : cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
 
-  // Cost components (real ratios). Scale them to the authoritative combined
-  // ratio so the stack height exactly meets the cr line (parts may sum slightly
-  // differently on a full-year vs Q4 basis); labels still show the true ratios.
-  const rawSum = cost ? cost.loss + cost.commission + cost.expense : null
-  const k = cost && rawSum && cr != null ? cr / rawSum : 1
-  const stack = cost
+  // Cost components (real ratios). The chamber widths are proportional to the
+  // real ratios; the combined-ratio output uses the authoritative snapshot value.
+  const chambers = cost
     ? [
-        { key: 'claims', label: 'Claims', sub: 'Largest cost', raw: cost.loss, color: PALETTE.coral },
-        { key: 'comm', label: 'Commission', sub: 'Distribution', raw: cost.commission, color: PALETTE.amber },
-        { key: 'opex', label: 'Opex', sub: 'Operating', raw: cost.expense, color: PALETTE.navy },
+        { key: 'claims', label: 'Claims', sub: 'Largest cost absorber', raw: cost.loss, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' },
+        { key: 'comm', label: 'Commission', sub: 'Distribution cost', raw: cost.commission, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE' },
+        { key: 'opex', label: 'Opex', sub: 'Operating cost', raw: cost.expense, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' },
       ]
     : []
-
-  const H = 230
-  const MAX = 100 // the ₹100 premium container is the full height
-  const px = (v: number) => (v / MAX) * H
+  const maxRaw = chambers.length ? Math.max(...chambers.map((c) => c.raw)) : 1
 
   return (
     <div className="rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
@@ -1397,67 +1391,68 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of premium, claims, commission and opex fill the container — what stays under the 100% line is underwriting surplus.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of premium, costs are absorbed — what stays below 100% is underwriting surplus.</p>
 
       {cost && cr != null ? (
         <>
-          <div className="mt-2.5 flex items-baseline gap-2">
-            <span className="font-display text-[30px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
-            <span className="text-[11px] font-semibold" style={{ color: crColor }}>combined ratio{below ? ' · below break-even' : ' · above break-even'}</span>
-          </div>
+          {/* Engine flow: ₹100 base → cost chambers → combined-ratio output → surplus */}
+          <div className="mt-4 flex items-stretch gap-2.5">
+            {/* Premium base — the input */}
+            <div className="flex w-[78px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
+              <span className="text-[7.5px] font-bold uppercase tracking-[0.1em]" style={{ color: '#E9D49A' }}>Premium base</span>
+              <span className="mt-1 font-display text-[22px] leading-none">₹100</span>
+              <span className="mt-1 text-[7.5px] leading-tight text-white/70">received</span>
+            </div>
 
-          <div className="mt-4 flex items-stretch gap-4">
-            {/* The ₹100 premium container — fills with cost, surplus pocket on top */}
-            <div className="flex shrink-0 flex-col items-center">
-              <span className="mb-1 text-[8px] font-bold uppercase tracking-[0.1em] text-ink-secondary">₹100 premium</span>
-              <div className="relative w-[112px] overflow-hidden rounded-xl border-2 bg-white" style={{ height: H, borderColor: '#CFE2D5' }}>
-                {/* surplus pocket (top, green) */}
-                {below && (
-                  <div className="absolute inset-x-0 top-0 flex items-center justify-center" style={{ height: px(surplus as number), background: `${PALETTE.emerald}24` }}>
-                    <span className="font-display text-[13px]" style={{ color: PALETTE.emerald }}>+₹{(surplus as number).toFixed(1)}</span>
+            {/* Cost chambers — width ∝ amount absorbed, claims clearly largest */}
+            <div className="flex min-w-0 flex-1 items-stretch gap-1.5">
+              {chambers.map((c, i) => (
+                <Fragment key={c.key}>
+                  {i > 0 && <span className="flex shrink-0 items-center text-[12px] font-bold text-ink-secondary/40">−</span>}
+                  <div
+                    className="flex min-w-0 flex-col justify-between rounded-xl border px-2.5 py-2"
+                    style={{ background: c.bg, borderColor: c.border, flexGrow: c.raw, flexBasis: 0, minWidth: 64 }}
+                    title={`${c.label} ${c.raw.toFixed(1)}% of premium`}
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-sm" style={{ background: c.color }} />
+                      <span className="truncate text-[8px] font-bold uppercase tracking-[0.05em] text-navy-deep">{c.label}</span>
+                    </div>
+                    <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: c.color }}>₹{c.raw.toFixed(1)}</span>
+                    {/* absorption meter — visual weight of this cost */}
+                    <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/70">
+                      <div className="h-full rounded-full" style={{ width: `${(c.raw / maxRaw) * 100}%`, background: c.color }} />
+                    </div>
+                    <span className="mt-1 truncate text-[7.5px] text-ink-secondary">{c.sub}</span>
                   </div>
-                )}
-                {/* cost stack (fills from the bottom up to the combined ratio) */}
-                <div className="absolute inset-x-0 bottom-0 flex flex-col" style={{ height: px(cr) }}>
-                  {stack.map((s) => {
-                    const h = px(s.raw * k)
-                    return (
-                      <div key={s.key} className="flex items-center justify-center" style={{ height: h, background: `${s.color}d9` }} title={`${s.label} ${s.raw.toFixed(1)}%`}>
-                        {h > 18 && <span className="font-display text-[12px] leading-none text-white">₹{s.raw.toFixed(1)}</span>}
-                      </div>
-                    )
-                  })}
-                </div>
-                {/* 100% break-even line — the central reference, at the very top */}
-                <div className="absolute inset-x-0 top-0 z-10 border-t-2 border-dashed" style={{ borderColor: PALETTE.amber }} />
-                {/* combined-ratio fill line */}
-                <div className="absolute inset-x-0 z-10 border-t-2" style={{ top: px(surplus as number), borderColor: crColor }} />
-              </div>
-              <span className="mt-1 text-[8px] font-semibold" style={{ color: PALETTE.amber }}>↑ 100% break-even</span>
+                </Fragment>
+              ))}
             </div>
 
-            {/* Legend / build-up read */}
-            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
-              {stack.map((s) => (
-                <div key={s.key} className="flex items-center justify-between rounded-lg border bg-white/70 px-2.5 py-1.5" style={{ borderColor: `${s.color}3a` }}>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
-                    <span className="text-[10.5px] font-semibold text-navy-deep">{s.label}</span>
-                    <span className="text-[9px] text-ink-secondary">{s.sub}</span>
-                  </span>
-                  <span className="font-display text-[13px] text-navy-deep">{s.raw.toFixed(1)}%</span>
-                </div>
-              ))}
-              <div className="mt-0.5 flex items-center justify-between rounded-lg border px-2.5 py-1.5" style={{ background: below ? `${PALETTE.emerald}14` : `${PALETTE.coral}12`, borderColor: below ? `${PALETTE.emerald}4d` : `${PALETTE.coral}40` }}>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-sm" style={{ background: below ? PALETTE.emerald : PALETTE.coral }} />
-                  <span className="text-[10.5px] font-semibold text-navy-deep">{below ? 'Underwriting surplus' : 'Underwriting deficit'}</span>
-                </span>
-                <span className="font-display text-[14px]" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
-              </div>
-              <p className="mt-1 text-[10px] leading-snug text-ink-secondary">{below ? 'Cost stayed below the ₹100 premium received — the book funds itself.' : 'Cost exceeded premium received — underwriting is loss-making.'}</p>
+            {/* Combined ratio — the central output card, against the break-even */}
+            <div className="flex shrink-0 items-center text-[12px] font-bold" style={{ color: crColor }}>=</div>
+            <div className="relative flex w-[92px] shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white px-2 py-2.5 text-center" style={{ borderColor: crColor, boxShadow: `0 10px 22px ${crColor}33` }}>
+              <span className="text-[7.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Combined ratio</span>
+              <span className="mt-1 font-display text-[24px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
+              <span className="mt-1 inline-flex items-center gap-0.5 text-[7.5px] font-semibold" style={{ color: PALETTE.amber }}>
+                <span className="inline-block h-0 w-3 border-t border-dashed" style={{ borderColor: PALETTE.amber }} /> vs 100%
+              </span>
+            </div>
+
+            {/* Surplus — the positive outcome */}
+            <div className="flex shrink-0 items-center text-[14px] font-bold" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>→</div>
+            <div className="flex w-[88px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: below ? `linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)` : '#FBEFEF', borderColor: below ? '#BFE0CE' : '#EFD4D3', boxShadow: below ? `0 12px 24px ${PALETTE.emerald}33` : undefined }}>
+              <span className="text-[7.5px] font-bold uppercase tracking-[0.08em]" style={{ color: below ? '#1C5C3F' : '#9A3B39' }}>{below ? 'Surplus' : 'Deficit'}</span>
+              <span className="mt-1 font-display text-[22px] leading-none" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
+              <span className="mt-1 text-[7.5px] leading-tight text-ink-secondary">below 100%</span>
             </div>
           </div>
+
+          {/* One-line read of the flow */}
+          <p className="mt-3 flex items-center gap-1.5 text-[10.5px] leading-snug text-navy-deep/85">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
+            {below ? `Claims, commission and opex absorb ₹${cr.toFixed(1)} of every ₹100 — the remaining ₹${(surplus as number).toFixed(1)} is underwriting surplus, before any investment income.` : `Costs absorb more than the ₹100 premium received — underwriting is loss-making before investment income.`}
+          </p>
 
           {hasCR && (
             <div className="mt-4 border-t border-[#DCEDE3] pt-3">
