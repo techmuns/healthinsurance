@@ -773,7 +773,7 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
 }
 
 // ─── (D) Underwriting Profit Trend — derived core profit, CR overlay ─────────
-function UnderwritingProfitTrend({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
   const data = series.map((p) => ({ fy: p.fy, uw: underwritingResult(p), cr: p.combinedRatio }))
   const usable = data.filter((d) => d.uw != null) as { fy: string; uw: number; cr: number | null }[]
   const enough = usable.length >= 2
@@ -787,7 +787,7 @@ function UnderwritingProfitTrend({ company, series }: { company: Insurer; series
         ? 'Core underwriting is profitable, with combined ratio holding below 100%.'
         : 'Core underwriting is still in loss as combined ratio sits above 100%.'
   return (
-    <section className="card-surface p-4">
+    <section className="card-surface p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
         eyebrow="Underwriting Profit Trend"
         title="Core insurance profitability"
@@ -889,7 +889,7 @@ function operatingLeverage(company: Insurer, series: AnnualPoint[]) {
   return { gwpGrowth, expFrom, expTo, expDelta, patYoY, verdict, tone, expSeries: exp }
 }
 
-function OperatingLeverageCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+function OperatingLeverageCard({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
   const ol = operatingLeverage(company, series)
   const hasData = ol.gwpGrowth != null && ol.expDelta != null
   const chips: { label: string; value: string; tone: Tone }[] = []
@@ -906,7 +906,7 @@ function OperatingLeverageCard({ company, series }: { company: Insurer; series: 
         : 'Premium is growing, but expenses have not yet eased into operating leverage.'
 
   return (
-    <section className="card-surface flex h-full flex-col p-4">
+    <section className="card-surface flex h-full flex-col p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
         eyebrow="Operating Leverage"
         title="Is premium growing faster than expenses?"
@@ -954,7 +954,7 @@ function OperatingLeverageCard({ company, series }: { company: Insurer; series: 
 }
 
 // ─── (F) ROE Explanation — why ROE is at its current level ───────────────────
-function RoeExplanationCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+function RoeExplanationCard({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
   const roe = company.roe
   const hasRoe = roe > 0
   const pats = series.filter((p) => p.pat != null)
@@ -995,7 +995,7 @@ function RoeExplanationCard({ company, series }: { company: Insurer; series: Ann
   ]
 
   return (
-    <section className="card-surface flex h-full flex-col p-4">
+    <section className="card-surface flex h-full flex-col p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
         eyebrow="ROE Explanation"
         title="Why ROE is where it is"
@@ -1205,7 +1205,7 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
   }
 }
 
-function NodeInvestorRead({ read, accent }: { read: NodeRead; accent: string }) {
+function NodeInvestorRead({ read, accent, src }: { read: NodeRead; accent: string; src: { source: string; period?: string; confidence: 'high' | 'medium' | 'pending' } }) {
   const lines = [
     { label: 'Why', value: read.why },
     { label: 'What it means', value: read.meaning },
@@ -1226,30 +1226,145 @@ function NodeInvestorRead({ read, accent }: { read: NodeRead; accent: string }) 
             </div>
           ))}
         </dl>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
+          <BasisTag info={profitabilityBasis} />
+          <SourceTag source={src.source} period={src.period} confidence={src.confidence} />
+        </div>
       </div>
     </section>
   )
 }
 
-// ─── Detail panel — one story at a time, calm fade/slide on node change ───────
-const DETAIL_ACCENT: Record<NodeId, string> = {
-  underwriting: PALETTE.emerald,
-  core: PALETTE.teal,
-  conversion: GOLD,
-  returns: ORANGE,
-  capital: DEEP_GREEN,
+// ─── Detail panel — one focused, stage-coloured drill-down per selected node ──
+// Every stage renders the same shell: an Active-lens header, a tight analysis
+// grid whose cards inherit the stage tint, then a single Investor Read with the
+// source/basis strip. No cross-stage cards; missing data shows "Data pending".
+
+type ChipTone = 'positive' | 'warning' | 'negative' | 'navy' | 'teal'
+
+interface LensMeta {
+  label: string
+  line: string
+  accent: string
+  cardBg: string
+  cardBorder: string
+  headFrom: string
+  headTo: string
+  headBorder: string
+  source: string
+  period?: string
+  confidence: 'high' | 'medium' | 'pending'
 }
 
-const DETAIL_SOURCE: Record<NodeId, { source: string; period?: string; confidence: 'high' | 'medium' | 'pending' }> = {
-  underwriting: { source: 'IRDAI disclosures · derived', period: 'Q1–Q4 FY25', confidence: 'high' },
-  core: { source: 'Company filing · derived', period: 'FY series', confidence: 'high' },
-  conversion: { source: 'Company filing + IRDAI disclosures', period: 'FY25', confidence: 'high' },
-  returns: { source: 'Company filing', period: 'Q1–Q4 FY25', confidence: 'high' },
-  capital: { source: 'IRDAI disclosures', period: 'FY25', confidence: 'high' },
+const LENS: Record<NodeId, LensMeta> = {
+  underwriting: {
+    label: 'Underwriting discipline',
+    line: 'Does the carrier keep claims and costs inside every ₹100 of premium?',
+    accent: PALETTE.emerald,
+    cardBg: '#F4FAF6',
+    cardBorder: '#DCEDE3',
+    headFrom: '#EAF5EE',
+    headTo: '#F6FBF8',
+    headBorder: '#D2E8DC',
+    source: 'IRDAI disclosures · derived',
+    period: 'Q1–Q4 FY25',
+    confidence: 'high',
+  },
+  core: {
+    label: 'Core profitability',
+    line: 'Is underwriting itself turning a profit, before investment income?',
+    accent: PALETTE.teal,
+    cardBg: '#F0F8F7',
+    cardBorder: '#D2E8E6',
+    headFrom: '#E5F4F3',
+    headTo: '#F4FBFA',
+    headBorder: '#C9E5E3',
+    source: 'Company filing · derived',
+    period: 'FY series',
+    confidence: 'high',
+  },
+  conversion: {
+    label: 'Profit conversion',
+    line: 'How much of premium growth reaches reported profit?',
+    accent: GOLD,
+    cardBg: '#FCF7EA',
+    cardBorder: '#ECE1C8',
+    headFrom: '#FAF2E1',
+    headTo: '#FFFDF8',
+    headBorder: '#EADFC2',
+    source: 'Company filing + IRDAI disclosures',
+    period: 'FY25',
+    confidence: 'high',
+  },
+  returns: {
+    label: 'Shareholder return',
+    line: 'What return does that profit earn for shareholders?',
+    accent: ORANGE,
+    cardBg: '#FCF4EC',
+    cardBorder: '#EFDDCB',
+    headFrom: '#FBEFE4',
+    headTo: '#FFF9F3',
+    headBorder: '#EFD9C4',
+    source: 'Company filing',
+    period: 'Q1–Q4 FY25',
+    confidence: 'high',
+  },
+  capital: {
+    label: 'Capital support',
+    line: 'Is there enough capital cushion to fund growth safely?',
+    accent: DEEP_GREEN,
+    cardBg: '#EFF7F2',
+    cardBorder: '#CFE7DA',
+    headFrom: '#E7F4ED',
+    headTo: '#F5FBF8',
+    headBorder: '#CCE5D8',
+    source: 'IRDAI disclosures',
+    period: 'FY25',
+    confidence: 'high',
+  },
+}
+
+function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[]): { label: string; tone: ChipTone } {
+  if (id === 'underwriting') {
+    if (!(company.combinedRatio > 0)) return { label: 'N/A', tone: 'navy' }
+    return company.combinedRatio < 100 ? { label: 'Strong', tone: 'positive' } : company.combinedRatio <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+  }
+  if (id === 'core') {
+    const latest = series[series.length - 1] as AnnualPoint | undefined
+    const uw = latest ? underwritingResult(latest) : null
+    return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'In profit', tone: 'teal' } : { label: 'In loss', tone: 'negative' }
+  }
+  if (id === 'conversion') {
+    if (NET_PROFIT_QUARTERS[company.id] === undefined) return { label: 'Pending', tone: 'navy' }
+    const mm = getMarginMetrics(company)
+    return mm.netMargin > 5 ? { label: 'Healthy', tone: 'teal' } : mm.netMargin > 0 ? { label: 'Thin', tone: 'warning' } : { label: 'Loss', tone: 'negative' }
+  }
+  if (id === 'returns') {
+    return company.roe <= 0 ? { label: 'Pending', tone: 'navy' } : company.roe >= 12 ? { label: 'Strong', tone: 'positive' } : company.roe >= 5 ? { label: 'Improving', tone: 'warning' } : { label: 'Sub-CoC', tone: 'negative' }
+  }
+  return company.solvency <= 0 ? { label: 'Pending', tone: 'navy' } : company.solvency >= 2 ? { label: 'Comfortable', tone: 'positive' } : company.solvency >= 1.5 ? { label: 'Adequate', tone: 'warning' } : { label: 'Tight', tone: 'negative' }
+}
+
+function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string; tone: ChipTone } }) {
+  return (
+    <div className="relative overflow-hidden rounded-xl border px-4 py-3" style={{ borderColor: meta.headBorder, background: `linear-gradient(135deg, ${meta.headFrom} 0%, ${meta.headTo} 100%)` }}>
+      <span className="absolute inset-y-0 left-0 w-1" style={{ background: meta.accent }} />
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 pl-2.5">
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-champagne">Active lens</p>
+          <h3 className="font-display text-[15px] leading-tight text-navy-deep">{meta.label}</h3>
+          <p className="mt-0.5 max-w-xl text-[11px] leading-snug text-ink-secondary">{meta.line}</p>
+        </div>
+        <SignalBadge label={status.label} tone={status.tone} size="sm" />
+      </div>
+    </div>
+  )
 }
 
 function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Insurer; series: AnnualPoint[] }) {
   const reads = buildNodeReads(company, series)
+  const meta = LENS[id]
+  const status = lensStatus(id, company, series)
   const hasCR = company.combinedRatio > 0
   const cost = COST_RATIOS[company.id]
   const crSeries = COMBINED_RATIO_QUARTERS[company.id]
@@ -1257,15 +1372,17 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
   const hasTrend = patSeries !== undefined
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
   const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
+  // Soft stage tint shared by every chart card in the active lens.
+  const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
   let body: ReactNode = null
 
   switch (id) {
     case 'underwriting':
       body = (
-        <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-          <div className="space-y-4">
-            <div className="rounded-xl border border-soft-border bg-white p-4">
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
+            <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
                   <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
@@ -1277,76 +1394,62 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
                 <>
                   <CombinedRatioBandedTrend series={crSeries} />
                   <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10.5px]">
-                    <div className="rounded bg-[#EAF3EE] px-2 py-1">
-                      <span className="font-semibold text-signal-positive">&lt;100</span>
-                      <span className="ml-1 text-ink-secondary">strong</span>
-                    </div>
-                    <div className="rounded bg-[#FBF3E2] px-2 py-1">
-                      <span className="font-semibold text-signal-warning">100–105</span>
-                      <span className="ml-1 text-ink-secondary">watch</span>
-                    </div>
-                    <div className="rounded bg-[#F8ECEC] px-2 py-1">
-                      <span className="font-semibold text-signal-negative">&gt;105</span>
-                      <span className="ml-1 text-ink-secondary">weak</span>
-                    </div>
+                    <div className="rounded bg-[#EAF3EE] px-2 py-1"><span className="font-semibold text-signal-positive">&lt;100</span><span className="ml-1 text-ink-secondary">strong</span></div>
+                    <div className="rounded bg-[#FBF3E2] px-2 py-1"><span className="font-semibold text-signal-warning">100–105</span><span className="ml-1 text-ink-secondary">watch</span></div>
+                    <div className="rounded bg-[#F8ECEC] px-2 py-1"><span className="font-semibold text-signal-negative">&gt;105</span><span className="ml-1 text-ink-secondary">weak</span></div>
                   </div>
                 </>
               ) : (
                 <p className="text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply.</p>
               )}
             </div>
-            <div className="rounded-xl border border-soft-border bg-white p-4">
-              <div className="mb-2.5 flex items-baseline justify-between">
-                <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
-                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
-                </div>
-                <span className="text-[9.5px] text-ink-secondary">FY25</span>
-              </div>
-              {cost ? (
-                <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1fr]">
-                  <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
-                  <div className="space-y-2.5">
-                    {[
-                      { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
-                      { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
-                      { label: 'Opex (expense ratio)', value: cost.expense, color: PALETTE.navy, note: cost.expense > 24 ? 'Investing for scale' : 'Lean opex' },
-                    ].map((r) => (
-                      <div key={r.label}>
-                        <div className="flex items-baseline justify-between">
-                          <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep">
-                            <span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />
-                            {r.label}
-                          </span>
-                          <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
-                        </div>
-                        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-ice">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} />
-                        </div>
-                        <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
-              )}
+            <div className="flex flex-col gap-3.5">
+              <UnderwritingPulseCard company={company} />
             </div>
           </div>
-          <div className="flex flex-col gap-3.5">
-            <UnderwritingPulseCard company={company} />
+          <div className="rounded-xl border p-4" style={cardStyle}>
+            <div className="mb-2.5 flex items-baseline justify-between">
+              <div>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
+                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
+              </div>
+              <span className="text-[9.5px] text-ink-secondary">FY25</span>
+            </div>
+            {cost ? (
+              <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1.1fr]">
+                <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
+                <div className="space-y-2.5">
+                  {[
+                    { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
+                    { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
+                    { label: 'Opex (expense ratio)', value: cost.expense, color: PALETTE.navy, note: cost.expense > 24 ? 'Investing for scale' : 'Lean opex' },
+                  ].map((r) => (
+                    <div key={r.label}>
+                      <div className="flex items-baseline justify-between">
+                        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />{r.label}</span>
+                        <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
+                      </div>
+                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/70"><div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} /></div>
+                      <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
+            )}
           </div>
         </div>
       )
       break
     case 'core':
-      body = <UnderwritingProfitTrend company={company} series={series} />
+      body = <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
       break
     case 'conversion':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
           <div className="space-y-4">
-            <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
                   <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium Funnel</p>
@@ -1360,7 +1463,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
                 <PremiumFunnel loss={0} commission={0} expense={0} hasCR={false} />
               )}
             </div>
-            <OperatingLeverageCard company={company} series={series} />
+            <OperatingLeverageCard company={company} series={series} tintBg={meta.cardBg} />
           </div>
           <div className="flex flex-col gap-3.5">
             <ProfitVelocityCard company={company} />
@@ -1372,7 +1475,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
       body = (
         <div className="space-y-4">
           <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-            <div className="rounded-xl border border-soft-border bg-white p-4">
+            <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
                   <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
@@ -1383,8 +1486,8 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
               {hasTrend ? (
                 <QuarterlyPatBars series={patSeries} />
               ) : (
-                <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-soft-border bg-ice/60 text-[11.5px] text-ink-secondary">
-                  Quarterly PAT pending for {company.shortName}
+                <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
+                  Data pending — quarterly PAT not reported for {company.shortName}
                 </div>
               )}
             </div>
@@ -1392,14 +1495,14 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
               <RoeGaugeCard company={company} />
             </div>
           </div>
-          <RoeExplanationCard company={company} series={series} />
+          <RoeExplanationCard company={company} series={series} tintBg={meta.cardBg} />
         </div>
       )
       break
     case 'capital':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-          <div className="rounded-xl border border-soft-border bg-white p-4">
+          <div className="rounded-xl border p-4" style={cardStyle}>
             <div className="mb-2.5 flex items-baseline justify-between">
               <div>
                 <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Lens</p>
@@ -1408,33 +1511,12 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
               <SignalBadge label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'} tone={solvencyTone} size="sm" />
             </div>
             <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[1fr_1fr]">
-              <SemiGauge
-                value={company.solvency}
-                min={1}
-                max={3.5}
-                unit="x"
-                zones={[
-                  { from: 1, to: 1.5, color: PALETTE.coral },
-                  { from: 1.5, to: 2, color: PALETTE.amber },
-                  { from: 2, to: 3.5, color: PALETTE.emerald },
-                ]}
-              />
+              <SemiGauge value={company.solvency} min={1} max={3.5} unit="x" zones={[{ from: 1, to: 1.5, color: PALETTE.coral }, { from: 1.5, to: 2, color: PALETTE.amber }, { from: 2, to: 3.5, color: PALETTE.emerald }]} />
               <div className="space-y-1.5 text-[11.5px]">
-                <div className="flex items-center justify-between rounded bg-[#F8ECEC] px-2.5 py-1.5">
-                  <span className="text-navy-deep">Regulatory floor</span>
-                  <span className="font-semibold text-signal-negative">1.50x</span>
-                </div>
-                <div className="flex items-center justify-between rounded bg-[#FBF3E2] px-2.5 py-1.5">
-                  <span className="text-navy-deep">Sector median</span>
-                  <span className="font-semibold text-signal-warning">~2.10x</span>
-                </div>
-                <div className="flex items-center justify-between rounded bg-[#EAF3EE] px-2.5 py-1.5">
-                  <span className="text-navy-deep">{company.shortName}</span>
-                  <span className="font-semibold text-signal-positive">{company.solvency.toFixed(2)}x</span>
-                </div>
-                <p className="pt-0.5 text-[10px] text-ink-secondary">
-                  {company.solvency >= 2 ? `Cushion of ${(company.solvency - 1.5).toFixed(2)}x above the regulatory floor.` : company.solvency >= 1.5 ? 'Above floor but below sector median.' : 'Capital cushion thin — watch quarterly trajectory.'}
-                </p>
+                <div className="flex items-center justify-between rounded bg-[#F8ECEC] px-2.5 py-1.5"><span className="text-navy-deep">Regulatory floor</span><span className="font-semibold text-signal-negative">1.50x</span></div>
+                <div className="flex items-center justify-between rounded bg-[#FBF3E2] px-2.5 py-1.5"><span className="text-navy-deep">Sector median</span><span className="font-semibold text-signal-warning">~2.10x</span></div>
+                <div className="flex items-center justify-between rounded bg-[#EAF3EE] px-2.5 py-1.5"><span className="text-navy-deep">{company.shortName}</span><span className="font-semibold text-signal-positive">{company.solvency.toFixed(2)}x</span></div>
+                <p className="pt-0.5 text-[10px] text-ink-secondary">{company.solvency >= 2 ? `Cushion of ${(company.solvency - 1.5).toFixed(2)}x above the regulatory floor.` : company.solvency >= 1.5 ? 'Above floor but below sector median.' : 'Capital cushion thin — watch quarterly trajectory.'}</p>
               </div>
             </div>
           </div>
@@ -1448,16 +1530,11 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
       body = null
   }
 
-  const src = DETAIL_SOURCE[id]
-
   return (
     <div key={id} className="animate-fade-in space-y-4">
+      <LensHeader meta={meta} status={status} />
       {body}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
-        <BasisTag info={profitabilityBasis} />
-        <SourceTag source={src.source} period={src.period} confidence={src.confidence} />
-      </div>
-      <NodeInvestorRead read={reads[id]} accent={DETAIL_ACCENT[id]} />
+      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={{ source: meta.source, period: meta.period, confidence: meta.confidence }} />
     </div>
   )
 }
