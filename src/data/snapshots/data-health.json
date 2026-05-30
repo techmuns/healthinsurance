@@ -1,7 +1,7 @@
 {
   "last_successful_run": "2026-05-30T15:34:00.988Z",
-  "last_failed_run": "2026-05-30T15:34:00.988Z",
-  "sources_checked": 4,
+  "last_failed_run": "2026-05-30T15:48:56.615Z",
+  "sources_checked": 5,
   "sources_success": 2,
   "sources_failed": 1,
   "metrics_updated": [
@@ -127,6 +127,9 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
+    "[irdai_quarterly_disclosures] https://irdai.gov.in/online-public-disclosures: HTTP 403 for https://irdai.gov.in/online-public-disclosures",
+    "[irdai_quarterly_disclosures] https://irdai.gov.in/public-disclosures: HTTP 403 for https://irdai.gov.in/public-disclosures",
+    "[irdai_quarterly_disclosures] https://irdai.gov.in/web/guest/public-disclosures: HTTP 403 for https://irdai.gov.in/web/guest/public-disclosures",
     "[company_disclosures_batch] No financial PDF link found on https://www.adityabirlacapital.com/healthinsurance/about-us/financials (or sub-pages) for aditya-birla",
     "[company_disclosures_batch] No financial PDF link found on https://www.manipalcigna.com/disclosures/financial-disclosures (or sub-pages) for manipalcigna",
     "[company_quarterly_disclosures] niva-bupa: could not infer quarter from niva-bupa-FinancialResultsQ1FY2223.pdf — skipped.",
@@ -1720,7 +1723,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-05-30T15:22:42.616Z",
+      "last_attempt_at": "2026-05-30T15:37:23.459Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -1826,8 +1829,8 @@
     {
       "source_id": "company_disclosures_batch",
       "status": "success",
-      "last_attempt_at": "2026-05-30T15:22:45.817Z",
-      "last_success_at": "2026-05-30T15:22:45.817Z",
+      "last_attempt_at": "2026-05-30T15:37:36.036Z",
+      "last_success_at": "2026-05-30T15:37:36.036Z",
       "records_fetched": 3
     },
     {
@@ -1840,7 +1843,7 @@
     {
       "source_id": "ownership_quarterly",
       "status": "pending",
-      "last_attempt_at": "2026-05-30T15:33:43.773Z",
+      "last_attempt_at": "2026-05-30T15:48:39.130Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -1854,9 +1857,16 @@
     {
       "source_id": "company_quarterly_disclosures",
       "status": "success",
-      "last_attempt_at": "2026-05-30T15:23:11.939Z",
-      "last_success_at": "2026-05-30T15:23:11.939Z",
+      "last_attempt_at": "2026-05-30T15:38:04.152Z",
+      "last_success_at": "2026-05-30T15:38:04.152Z",
       "records_fetched": 45
+    },
+    {
+      "source_id": "irdai_quarterly_disclosures",
+      "status": "pending",
+      "last_attempt_at": "2026-05-30T15:37:26.690Z",
+      "last_success_at": null,
+      "records_fetched": 0
     }
   ]
 }
