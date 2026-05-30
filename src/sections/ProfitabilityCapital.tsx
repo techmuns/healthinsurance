@@ -2028,6 +2028,10 @@ export function ProfitabilityCapital() {
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
   const mm = getMarginMetrics(company)
   const hasTrend = NET_PROFIT_QUARTERS[company.id] !== undefined
+  // Combined ratio is now sourced from real, verified IRDAI statutory filings
+  // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
+  // data-status row reflects that instead of the blanket mock label below.
+  const statCR = STATUTORY_CR[company.id]
 
   // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
   const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
@@ -2040,7 +2044,12 @@ export function ProfitabilityCapital() {
   })
   const companyKpis: { label: string; metric: Metric }[] = [
     { label: 'GWP growth', metric: m(company.growth, { unit: '%' }) },
-    { label: 'Combined ratio', metric: m(hasCR ? company.combinedRatio : null, { unit: '%' }) },
+    {
+      label: 'Combined ratio',
+      metric: statCR
+        ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', lastUpdated: '2026-05-30' })
+        : m(hasCR ? company.combinedRatio : null, { unit: '%' }),
+    },
     { label: 'Net margin', metric: m(hasTrend ? mm.netMargin : null, { unit: '%', period: 'TTM' }) },
     { label: 'ROE', metric: m(company.roe, { unit: '%' }) },
     { label: 'Solvency', metric: m(company.solvency, { unit: 'x' }) },
