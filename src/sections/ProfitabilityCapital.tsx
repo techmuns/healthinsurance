@@ -310,29 +310,6 @@ function SemiGauge({ value, min, max, zones, unit = 'x', size = 180 }: {
   )
 }
 
-// Underwriting Pulse — strip with green/amber/red zones and a position marker.
-function CombinedRatioStrip({ value }: { value: number }) {
-  const min = 92
-  const max = 112
-  const pct = ((Math.max(min, Math.min(max, value)) - min) / (max - min)) * 100
-  return (
-    <div>
-      <div className="relative h-1.5 w-full overflow-hidden rounded-full">
-        <div className="absolute inset-y-0 left-0" style={{ width: `${((100 - min) / (max - min)) * 100}%`, background: PALETTE.emerald, opacity: 0.28 }} />
-        <div className="absolute inset-y-0" style={{ left: `${((100 - min) / (max - min)) * 100}%`, width: `${((105 - 100) / (max - min)) * 100}%`, background: PALETTE.amber, opacity: 0.28 }} />
-        <div className="absolute inset-y-0" style={{ left: `${((105 - min) / (max - min)) * 100}%`, right: 0, background: PALETTE.coral, opacity: 0.28 }} />
-        <div className="absolute -top-0.5 bottom-[-2px]" style={{ left: `calc(${pct}% - 1px)`, width: 2, background: PALETTE.navyDeep, boxShadow: '0 0 0 1.5px white' }} />
-      </div>
-      <div className="mt-1 flex justify-between text-[9px] text-ink-secondary">
-        <span>92</span>
-        <span>100</span>
-        <span>105</span>
-        <span>112</span>
-      </div>
-    </div>
-  )
-}
-
 // Mini area chart for the right-rail Profit Velocity card.
 function MiniPatArea({ values }: { values: number[] }) {
   const data = values.map((v, i) => ({ i, v }))
@@ -1108,28 +1085,6 @@ function RoeExplanationCard({ company, series, tintBg }: { company: Insurer; ser
 }
 
 // ─── (G) Status cards — small, node-scoped signals (only the relevant one) ───
-function UnderwritingPulseCard({ company }: { company: Insurer }) {
-  const hasCR = company.combinedRatio > 0
-  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
-  return (
-    <div className="relative overflow-hidden rounded-lg border border-[#D9EBE0] px-3 py-2.5" style={{ background: 'linear-gradient(135deg, #F4F9F6 0%, #EAF4F1 100%)' }}>
-      <div className="flex items-center justify-between">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/80">Underwriting Pulse</p>
-        <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
-      </div>
-      <div className="mt-1 flex items-baseline gap-2">
-        <span className="font-display text-[19px] leading-none text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}</span>
-        <span className="text-[9.5px] text-ink-secondary">Combined ratio · FY25</span>
-      </div>
-      {hasCR && (
-        <div className="mt-2">
-          <CombinedRatioStrip value={company.combinedRatio} />
-        </div>
-      )}
-    </div>
-  )
-}
-
 function CapitalBufferCard({ company }: { company: Insurer }) {
   const tone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
   return (
@@ -1408,6 +1363,115 @@ function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string;
   )
 }
 
+// Reusable zoned meter — a thick track with green/amber/red zones and labelled
+// markers. Drives the Underwriting "Discipline Meter" (combined ratio vs 100)
+// and the Capital "Solvency Cushion" (solvency vs the 1.5x floor).
+function ZoneMeter({ min, max, zones, markers }: { min: number; max: number; zones: { to: number; color: string }[]; markers: { value: number; label: string; color: string }[] }) {
+  const span = max - min || 1
+  const pos = (v: number) => Math.max(0, Math.min(100, ((v - min) / span) * 100))
+  const segs: { w: number; color: string }[] = []
+  let prev = min
+  for (const z of zones) {
+    segs.push({ w: ((z.to - prev) / span) * 100, color: z.color })
+    prev = z.to
+  }
+  return (
+    <div className="px-1 pb-4 pt-6">
+      <div className="relative">
+        <div className="flex h-2.5 w-full overflow-hidden rounded-full ring-1 ring-soft-border/60">
+          {segs.map((s, i) => (
+            <div key={i} style={{ width: `${s.w}%`, background: s.color, opacity: 0.32 }} />
+          ))}
+        </div>
+        {markers.map((m) => (
+          <div key={m.label} className="absolute top-0 -translate-x-1/2" style={{ left: `${pos(m.value)}%` }}>
+            <span className="absolute bottom-[13px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[8.5px] font-semibold leading-none" style={{ color: m.color }}>{m.label}</span>
+            <span className="block h-2.5 w-[3px] rounded-full" style={{ background: m.color, boxShadow: '0 0 0 2px #fff' }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Reusable closing insight strip — one soft, stage-tinted takeaway line.
+function InsightStrip({ line, accent }: { line: string; accent: string }) {
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: `${accent}10`, borderColor: `${accent}3a` }}>
+      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: accent }} />
+      <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{line}</p>
+    </div>
+  )
+}
+
+// Core-profitability proof rail — the derived underwriting result headline.
+function CoreResultCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingResult(latest) : null
+  const hasCR = company.combinedRatio > 0
+  return (
+    <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F0F8F7', borderColor: '#D2E8E6' }}>
+      <div className="flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.teal }} />
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Core Result</p>
+      </div>
+      <div className="mt-3">
+        <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Underwriting result · FY</p>
+        <p className="mt-0.5 font-display text-[24px] leading-none" style={{ color: uw == null ? '#94A3B8' : uw >= 0 ? PALETTE.teal : PALETTE.coral }}>{uw == null ? 'Data pending' : crc(uw)}</p>
+        <p className="mt-1 text-[9.5px] text-ink-secondary">≈ NEP × (1 − combined ratio)</p>
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-[#D2E8E6] pt-2.5">
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio</span>
+        <span className="font-display text-[15px] text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'n/a'}</span>
+      </div>
+      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Profit from insurance itself, before any investment income.</p>
+    </div>
+  )
+}
+
+// One-line proof takeaway per lens (real values; honest pending states).
+function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): string {
+  const hasCR = company.combinedRatio > 0
+  const cost = COST_RATIOS[company.id]
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingResult(latest) : null
+  const uwSpread = cost ? Math.round((100 - (cost.loss + cost.commission + cost.expense)) * 10) / 10 : null
+  const ol = operatingLeverage(company, series)
+  switch (id) {
+    case 'underwriting':
+      return !hasCR
+        ? `${company.shortName} reports on a life basis — discipline is read through returns and capital, not combined ratio.`
+        : company.combinedRatio < 100
+          ? 'Combined ratio holds below 100 — underwriting is profitable before any investment income, the foundation of the whole story.'
+          : 'Combined ratio sits above 100 — underwriting is loss-making, so reported profit leans on investment income.'
+    case 'core':
+      return uw == null
+        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
+        : uw > 0
+          ? `Core underwriting now throws off about ${crc(uw)} of profit — the engine works before any investment income.`
+          : `Core underwriting is still running a ${crc(uw)} deficit; reported profit leans on investment income.`
+    case 'conversion':
+      return uwSpread == null
+        ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
+        : uwSpread > 0
+          ? ol.expDelta != null && ol.expDelta < 0
+            ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — an early proof of operating leverage.'
+            : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
+          : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
+    case 'returns':
+      return company.roe <= 0
+        ? 'Return on equity is pending for this carrier.'
+        : company.roe < 10
+          ? 'ROE is building as PAT scales, but stays moderate against the large post-IPO equity base.'
+          : 'ROE sits at a healthy level as PAT scales against the equity base.'
+    case 'capital':
+      return company.solvency > 0
+        ? `At ${company.solvency.toFixed(2)}x, solvency sits well above the 1.5x floor — capital comfortably funds growth and absorbs shocks.`
+        : 'Solvency is pending for this carrier.'
+  }
+  return ''
+}
+
 function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Insurer; series: AnnualPoint[] }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
@@ -1419,109 +1483,92 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
   const hasTrend = patSeries !== undefined
   const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
   const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
-  // Soft stage tint shared by every chart card in the active lens.
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
   let body: ReactNode = null
 
   switch (id) {
-    case 'underwriting':
+    case 'underwriting': {
+      const crColor = !hasCR ? PALETTE.navy : company.combinedRatio < 100 ? PALETTE.emerald : company.combinedRatio <= 105 ? PALETTE.amber : PALETTE.coral
+      const crVerdict = !hasCR ? '' : company.combinedRatio < 100 ? 'Profitable underwriting' : company.combinedRatio <= 105 ? 'Watch zone' : 'Loss-making'
       body = (
-        <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-            <div className="rounded-xl border p-4" style={cardStyle}>
-              <div className="mb-2.5 flex items-baseline justify-between">
-                <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
-                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Combined ratio trajectory · Q1–Q4 FY25</h3>
-                </div>
-                <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
-              </div>
-              {hasCR && crSeries ? (
-                <>
-                  <CombinedRatioBandedTrend series={crSeries} />
-                  <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10.5px]">
-                    <div className="rounded bg-[#EAF3EE] px-2 py-1"><span className="font-semibold text-signal-positive">&lt;100</span><span className="ml-1 text-ink-secondary">strong</span></div>
-                    <div className="rounded bg-[#FBF3E2] px-2 py-1"><span className="font-semibold text-signal-warning">100–105</span><span className="ml-1 text-ink-secondary">watch</span></div>
-                    <div className="rounded bg-[#F8ECEC] px-2 py-1"><span className="font-semibold text-signal-negative">&gt;105</span><span className="ml-1 text-ink-secondary">weak</span></div>
-                  </div>
-                </>
-              ) : (
-                <p className="text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply.</p>
-              )}
-            </div>
-            <div className="flex flex-col gap-3.5">
-              <UnderwritingPulseCard company={company} />
-            </div>
-          </div>
+        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
           <div className="rounded-xl border p-4" style={cardStyle}>
-            <div className="mb-2.5 flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
-                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Discipline Meter</p>
+                <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined ratio vs the 100% break-even</h3>
               </div>
-              <span className="text-[9.5px] text-ink-secondary">FY25</span>
+              <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
             </div>
+            {hasCR && crSeries ? (
+              <>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="font-display text-[30px] leading-none" style={{ color: crColor }}>{company.combinedRatio.toFixed(1)}%</span>
+                  <span className="text-[11px] font-semibold" style={{ color: crColor }}>{crVerdict}</span>
+                </div>
+                <ZoneMeter
+                  min={88}
+                  max={112}
+                  zones={[{ to: 100, color: PALETTE.emerald }, { to: 105, color: PALETTE.amber }, { to: 112, color: PALETTE.coral }]}
+                  markers={[{ value: company.combinedRatio, label: `${company.combinedRatio.toFixed(1)}%`, color: crColor }, { value: 100, label: '100', color: PALETTE.amber }]}
+                />
+                <div className="border-t border-[#DCEDE3] pt-3">
+                  <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Quarterly trajectory · Q1–Q4 FY25</p>
+                  <CombinedRatioBandedTrend series={crSeries} />
+                </div>
+              </>
+            ) : (
+              <p className="mt-3 text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply on this basis.</p>
+            )}
+          </div>
+          <div className="flex h-full flex-col rounded-xl border p-4" style={cardStyle}>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Cost Anatomy</p>
+            <p className="mt-0.5 text-[10px] text-ink-secondary">Where every ₹100 of premium goes</p>
             {cost ? (
-              <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1.1fr]">
+              <div className="mt-1 flex flex-1 flex-col justify-center">
                 <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
-                <div className="space-y-2.5">
+                <div className="mt-2 space-y-1">
                   {[
-                    { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
-                    { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
-                    { label: 'Opex (expense ratio)', value: cost.expense, color: PALETTE.navy, note: cost.expense > 24 ? 'Investing for scale' : 'Lean opex' },
+                    { label: 'Claims', value: cost.loss, color: PALETTE.coral },
+                    { label: 'Commission', value: cost.commission, color: PALETTE.amber },
+                    { label: 'Opex', value: cost.expense, color: PALETTE.navy },
                   ].map((r) => (
-                    <div key={r.label}>
-                      <div className="flex items-baseline justify-between">
-                        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />{r.label}</span>
-                        <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
-                      </div>
-                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/70"><div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} /></div>
-                      <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
+                    <div key={r.label} className="flex items-center justify-between text-[10.5px]">
+                      <span className="inline-flex items-center gap-1.5 text-navy-deep"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />{r.label}</span>
+                      <span className="font-display text-[12px] text-navy-deep">{r.value.toFixed(1)}%</span>
                     </div>
                   ))}
                 </div>
               </div>
             ) : (
-              <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
+              <p className="mt-3 text-[11.5px] text-ink-secondary">Claims / commission / opex split is not reported on a life basis.</p>
             )}
           </div>
         </div>
       )
       break
+    }
     case 'core':
-      body = <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
-      break
-    case 'conversion': {
-      const conv = COST_RATIOS[company.id]
-      const uwSpread = conv ? Math.round((100 - (conv.loss + conv.commission + conv.expense)) * 10) / 10 : null
-      const olc = operatingLeverage(company, series)
-      const insightLine =
-        uwSpread == null
-          ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
-          : uwSpread > 0
-            ? olc.expDelta != null && olc.expDelta < 0
-              ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — an early proof of operating leverage.'
-              : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
-            : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
       body = (
-        <div className="space-y-3">
-          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-            <ConversionBridge company={company} series={series} />
-            <ConversionQuality company={company} series={series} />
-          </div>
-          <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: '#FBF4E3', borderColor: '#ECE1C8' }}>
-            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
-            <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{insightLine}</p>
-          </div>
+        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+          <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
+          <CoreResultCard company={company} series={series} />
         </div>
       )
       break
-    }
+    case 'conversion':
+      body = (
+        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+          <ConversionBridge company={company} series={series} />
+          <ConversionQuality company={company} series={series} />
+        </div>
+      )
+      break
     case 'returns':
       body = (
         <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
+          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
             <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
@@ -1546,26 +1593,39 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
         </div>
       )
       break
-    case 'capital':
+    case 'capital': {
+      const cushion = company.solvency - 1.5
       body = (
-        <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
+        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
           <div className="rounded-xl border p-4" style={cardStyle}>
-            <div className="mb-2.5 flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Lens</p>
-                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Solvency vs regulatory comfort zone</h3>
+                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Solvency Cushion</p>
+                <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Capital vs the 1.5x regulatory floor</h3>
               </div>
               <SignalBadge label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'} tone={solvencyTone} size="sm" />
             </div>
-            <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[1fr_1fr]">
-              <SemiGauge value={company.solvency} min={1} max={3.5} unit="x" zones={[{ from: 1, to: 1.5, color: PALETTE.coral }, { from: 1.5, to: 2, color: PALETTE.amber }, { from: 2, to: 3.5, color: PALETTE.emerald }]} />
-              <div className="space-y-1.5 text-[11.5px]">
-                <div className="flex items-center justify-between rounded bg-[#F8ECEC] px-2.5 py-1.5"><span className="text-navy-deep">Regulatory floor</span><span className="font-semibold text-signal-negative">1.50x</span></div>
-                <div className="flex items-center justify-between rounded bg-[#FBF3E2] px-2.5 py-1.5"><span className="text-navy-deep">Sector median</span><span className="font-semibold text-signal-warning">~2.10x</span></div>
-                <div className="flex items-center justify-between rounded bg-[#EAF3EE] px-2.5 py-1.5"><span className="text-navy-deep">{company.shortName}</span><span className="font-semibold text-signal-positive">{company.solvency.toFixed(2)}x</span></div>
-                <p className="pt-0.5 text-[10px] text-ink-secondary">{company.solvency >= 2 ? `Cushion of ${(company.solvency - 1.5).toFixed(2)}x above the regulatory floor.` : company.solvency >= 1.5 ? 'Above floor but below sector median.' : 'Capital cushion thin — watch quarterly trajectory.'}</p>
-              </div>
-            </div>
+            {company.solvency > 0 ? (
+              <>
+                <div className="mt-2 flex items-baseline gap-2">
+                  <span className="font-display text-[30px] leading-none" style={{ color: DEEP_GREEN }}>{company.solvency.toFixed(2)}x</span>
+                  <span className="text-[11px] font-semibold" style={{ color: DEEP_GREEN }}>{cushion > 0 ? `+${cushion.toFixed(2)}x above floor` : 'below floor'}</span>
+                </div>
+                <ZoneMeter
+                  min={1}
+                  max={3.5}
+                  zones={[{ to: 1.5, color: PALETTE.coral }, { to: 2, color: PALETTE.amber }, { to: 3.5, color: PALETTE.emerald }]}
+                  markers={[{ value: 1.5, label: '1.5x', color: PALETTE.coral }, { value: 2.1, label: '~2.1x', color: PALETTE.amber }, { value: company.solvency, label: `${company.solvency.toFixed(2)}x`, color: DEEP_GREEN }]}
+                />
+                <div className="flex flex-wrap gap-x-3.5 gap-y-1 border-t border-[#CFE7DA] pt-3 text-[9.5px] text-ink-secondary">
+                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.coral }} />Regulatory floor 1.5x</span>
+                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.amber }} />Sector median ~2.1x</span>
+                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: DEEP_GREEN }} />{company.shortName} {company.solvency.toFixed(2)}x</span>
+                </div>
+              </>
+            ) : (
+              <p className="mt-3 text-[12px] text-ink-secondary">Solvency is pending for {company.shortName}.</p>
+            )}
           </div>
           <div className="flex flex-col gap-3.5">
             <CapitalBufferCard company={company} />
@@ -1573,6 +1633,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
         </div>
       )
       break
+    }
     default:
       body = null
   }
@@ -1581,6 +1642,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
     <div key={id} className="animate-fade-in space-y-4">
       <LensHeader meta={meta} status={status} />
       {body}
+      <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
       <NodeInvestorRead read={reads[id]} accent={meta.accent} src={{ source: meta.source, period: meta.period, confidence: meta.confidence }} />
     </div>
   )
