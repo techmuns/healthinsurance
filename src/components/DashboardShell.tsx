@@ -112,7 +112,7 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
         </main>
 
         <footer className="border-t border-soft-border px-6 py-4 text-center text-[11px] text-ink-secondary">
-          Insurance Investment Dashboard · Illustrative mock data · Built for design demonstration
+          Insurance Investment Dashboard · Headline figures sourced from company filings &amp; IRDAI disclosures · Some quarterly splits illustrative
         </footer>
       </div>
     </div>

@@ -42,8 +42,36 @@ import { profitabilityBasis } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
+import { lookupProvenance } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Metric, Insurer } from '@/data/types'
+
+// ---------------------------------------------------------------------------
+// Source provenance — resolve a real, clickable filing URL for a metric so each
+// SourceTag links to the exact document the number came from. Annual combined
+// ratio / solvency / PAT / expense are real (snapshot + provenance); quarterly
+// splits and the cost breakdown are illustrative and carry no fake link.
+// ---------------------------------------------------------------------------
+
+interface ResolvedSource {
+  source: string
+  confidence: 'high' | 'medium' | 'low' | 'pending'
+  provenance?: { source_name?: string; source_url?: string; fetched_at?: string | null }
+  illustrative?: boolean
+}
+
+function realSource(metric: string, companyId: string): ResolvedSource | null {
+  const p = lookupProvenance(`company.${metric}`, companyId, 'Annual')
+  if (!p?.source_url) return null
+  return {
+    source: 'Company filing',
+    confidence: p.confidence,
+    provenance: { source_name: p.source_name, source_url: p.source_url, fetched_at: p.fetched_at },
+  }
+}
+
+// A quiet "illustrative" tag for mock-derived visuals — no fake source link.
+const ILLUSTRATIVE: ResolvedSource = { source: 'Illustrative', confidence: 'pending', illustrative: true }
 
 // ---------------------------------------------------------------------------
 // Mock data (FY25 basis · ₹ Cr where applicable)
@@ -737,9 +765,16 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect }: { compan
         </div>
       </div>
 
-      {/* Source */}
+      {/* Source — links to the real filing for the headline combined ratio */}
       <div className="mt-4 flex justify-end">
-        <SourceTag source="Company filing + IRDAI disclosures" period={series[series.length - 1]?.fy ?? 'FY25'} confidence="high" />
+        {(() => {
+          const s = realSource('combined_ratio', company.id) ?? realSource('solvency_ratio', company.id)
+          return s ? (
+            <SourceTag source={s.source} period={series[series.length - 1]?.fy ?? 'FY25'} confidence={s.confidence} provenance={s.provenance} />
+          ) : (
+            <SourceTag source="Company filing" period={series[series.length - 1]?.fy ?? 'FY25'} confidence="high" />
+          )
+        })()}
       </div>
     </section>
   )
@@ -846,7 +881,14 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.coral }} /> Underwriting loss</span>
           <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>
         </div>
-        <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
+        {(() => {
+          const s = enough ? realSource('combined_ratio', company.id) : null
+          return s ? (
+            <SourceTag source="Company filing · derived" period={`${usable[0].fy}–${latest.fy}`} confidence={s.confidence} provenance={s.provenance} />
+          ) : (
+            <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
+          )
+        })()}
       </div>
     </section>
   )
@@ -1206,7 +1248,7 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
   }
 }
 
-function NodeInvestorRead({ read, accent, src }: { read: NodeRead; accent: string; src: { source: string; period?: string; confidence: 'high' | 'medium' | 'pending' } }) {
+function NodeInvestorRead({ read, accent, src, period }: { read: NodeRead; accent: string; src: ResolvedSource; period?: string }) {
   const lines = [
     { label: 'Why', value: read.why },
     { label: 'What it means', value: read.meaning },
@@ -1229,7 +1271,7 @@ function NodeInvestorRead({ read, accent, src }: { read: NodeRead; accent: strin
         </dl>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
           <BasisTag info={profitabilityBasis} />
-          <SourceTag source={src.source} period={src.period} confidence={src.confidence} />
+          <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
         </div>
       </div>
     </section>
@@ -1814,6 +1856,24 @@ function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series:
   )
 }
 
+// Resolve the real filing source for each lens's primary metric. Underwriting,
+// core, conversion and returns rest on real annual figures (combined ratio /
+// PAT); capital on solvency. If a real source can't be resolved we fall back to
+// a quiet, link-free label rather than inventing one.
+const LENS_METRIC: Record<NodeId, string> = {
+  underwriting: 'combined_ratio',
+  core: 'combined_ratio',
+  conversion: 'pat',
+  returns: 'pat',
+  capital: 'solvency_ratio',
+}
+
+function lensSource(id: NodeId, companyId: string): ResolvedSource {
+  // Real filing link where the lens rests on a real metric; otherwise a quiet,
+  // link-free "illustrative" tag rather than implying a source we don't have.
+  return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
+}
+
 function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Insurer; series: AnnualPoint[] }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
@@ -1875,7 +1935,7 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
       <LensHeader meta={meta} status={status} />
       {body}
       <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
-      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={{ source: meta.source, period: meta.period, confidence: meta.confidence }} />
+      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={meta.period} />
     </div>
   )
 }
