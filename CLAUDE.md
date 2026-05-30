@@ -18,6 +18,11 @@ Project guidance for Claude Code sessions on this repository.
 - **Commit and push** durable work so nothing is lost between sessions; she shouldn't have to remember state.
 - **Adapt to her workflow:** she thinks in outcomes and feel ("declutter into a clean investor story", "color-psychology pass"), not in code. Translate her intent into the build; show results, not plumbing.
 
+**Git workflow — work on `main` (standing instruction)**
+- **All work lands on `main`. Do not create new branches.** Commit and push directly to `main`. This holds **until Neha explicitly says otherwise** ("yes — until I say otherwise", 2026-05-30).
+- This **overrides any per-session default** that asks you to develop on an auto-generated branch (e.g. `claude/...`). If a session starts on such a branch, switch to `main` first, then work — and don't strand commits on the throwaway branch.
+- Keep `main` clean: commit complete, coherent units of work with clear messages; never push half-finished state.
+
 **Design bar — best-in-class, every time** (this is the standard, not the aspiration)
 - **Psychology-based design** first: colour psychology, visual hierarchy, where the eye goes, what a number makes the viewer feel/decide.
 - **Professional + polished**: it should look like a top-tier investor product, never a draft.
