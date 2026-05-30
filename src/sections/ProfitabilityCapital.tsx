@@ -20,8 +20,6 @@ import {
   YAxis,
 } from 'recharts'
 import {
-  TrendingUp,
-  TrendingDown,
   Sparkles,
   ShieldCheck,
   Shield,
@@ -30,14 +28,13 @@ import {
   BarChart3,
   Cog,
   ChevronRight,
-  ArrowRightLeft,
+  Database,
   type LucideIcon,
 } from 'lucide-react'
-import { ModuleCard } from '@/components/ModuleCard'
-import { SegmentedControl } from '@/components/SegmentedControl'
 import { SignalBadge } from '@/components/SignalBadge'
 import { BasisTag } from '@/components/BasisTag'
 import { SourceTag } from '@/components/SourceTag'
+import { DataStatusDrawer } from '@/components/DataStatusDrawer'
 import { profitabilityBasis } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
@@ -137,8 +134,6 @@ function combinedTone(v: number): { label: string; tone: Tone } {
   return { label: 'Weak', tone: 'negative' }
 }
 
-type View = 'P&L' | 'Margin' | 'Cost' | 'Returns' | 'Capital'
-
 // ---------------------------------------------------------------------------
 // Chart building blocks
 // ---------------------------------------------------------------------------
@@ -152,26 +147,6 @@ function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values:
         <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
           <Line type="monotone" dataKey="v" stroke={stroke} strokeWidth={1.3} dot={false} isAnimationActive={false} />
         </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-// Compact upward area sparkline for the verdict PAT callout.
-function HeroPatSparkline({ values, color }: { values: number[]; color: string }) {
-  const data = values.map((v, i) => ({ i, v }))
-  return (
-    <div className="h-[42px] w-[112px] shrink-0">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 6, right: 6, bottom: 2, left: 2 }}>
-          <defs>
-            <linearGradient id="heroPatFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.26} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.7} fill="url(#heroPatFill)" isAnimationActive={false} />
-        </AreaChart>
       </ResponsiveContainer>
     </div>
   )
@@ -558,12 +533,16 @@ function StoryHeader({ eyebrow, title, subtitle, right }: { eyebrow: string; tit
   )
 }
 
-// ─── (B) Profitability Engine — premium → profit → capital, one infographic ──
-// Replaces the old "Profitability Bridge" KPI strip. Each metric appears exactly
-// once; values reuse the same derivations so the story stays honest and dynamic
-// across companies. Missing inputs render as "n/a"/"Pending", never coerced to 0.
+// ─── (B) Profitability Story Map — the clickable navigation brain ────────────
+// The five-node infographic now *controls* the page: clicking a node reveals
+// only that node's charts, status and investor read below. Each metric appears
+// exactly once; values reuse the same honest derivations so the story stays
+// dynamic across companies. Missing inputs render as "n/a"/"Pending", never 0.
+
+type NodeId = 'underwriting' | 'core' | 'conversion' | 'returns' | 'capital'
 
 interface EngineStage {
+  id: NodeId
   n: number
   label: string
   metricLabel: string
@@ -574,23 +553,19 @@ interface EngineStage {
   read: string
 }
 
-function ProfitabilityEngine({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const [hovered, setHovered] = useState<number | null>(null)
+const ORANGE = '#C2691C'
+
+function buildEngineStages(company: Insurer, series: AnnualPoint[]): EngineStage[] {
   const hasCR = company.combinedRatio > 0
   const latest = series[series.length - 1] as AnnualPoint | undefined
   const uw = latest ? underwritingResult(latest) : null
   const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
   const roe = company.roe
   const solvency = company.solvency
-  const period = latest?.fy ?? 'FY25'
 
-  // Fixed stage palette tells the green → amber → green story; tones are not
-  // re-derived per value (the interpretation copy below carries the nuance).
-  const tealSoft = '#D5ECEB'
-  const orange = '#C2691C'
-
-  const stages: EngineStage[] = [
+  return [
     {
+      id: 'underwriting',
       n: 1,
       label: 'Underwriting discipline',
       metricLabel: 'Combined ratio',
@@ -605,6 +580,7 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
           : `Combined ratio of ${company.combinedRatio.toFixed(1)}% is above 100% — underwriting is loss-making before investment income.`,
     },
     {
+      id: 'core',
       n: 2,
       label: 'Core profitability',
       metricLabel: 'Underwriting profit',
@@ -620,6 +596,7 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
             : `Core underwriting is running a ${crc(uw)} loss.`,
     },
     {
+      id: 'conversion',
       n: 3,
       label: 'Profit conversion',
       metricLabel: 'PAT margin',
@@ -633,16 +610,18 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
           : `About ${patMargin.toFixed(1)}% of premium converts into reported profit after tax and other lines.`,
     },
     {
+      id: 'returns',
       n: 4,
       label: 'Shareholder return',
       metricLabel: 'ROE',
       value: roe > 0 ? `${roe.toFixed(1)}%` : 'n/a',
       missing: !(roe > 0),
-      color: orange,
+      color: ORANGE,
       Icon: BarChart3,
       read: roe > 0 ? `That profit earns shareholders a ${roe.toFixed(1)}% return on equity.` : 'Return on equity is pending for this carrier.',
     },
     {
+      id: 'capital',
       n: 5,
       label: 'Capital support',
       metricLabel: 'Solvency',
@@ -653,46 +632,11 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
       read: solvency > 0 ? `A ${solvency.toFixed(2)}x solvency cushion funds growth well above the 1.5x regulatory floor.` : 'Solvency is pending for this carrier.',
     },
   ]
+}
 
-  const insights: { label: string; text: string; color: string; soft: string; Icon: LucideIcon }[] = [
-    {
-      label: 'Discipline',
-      text: !hasCR
-        ? 'Returns and capital carry the read on a life basis.'
-        : company.combinedRatio < 100
-          ? 'Combined ratio below 100% shows underwriting control.'
-          : 'Combined ratio above 100% — underwriting discipline is the watch-item.',
-      color: PALETTE.emerald,
-      soft: PALETTE.emeraldSoft,
-      Icon: ShieldCheck,
-    },
-    {
-      label: 'Conversion',
-      text:
-        uw == null || patMargin == null
-          ? 'Profit conversion firms up once the full P&L lands.'
-          : uw > 0 && patMargin > 0
-            ? 'Underwriting profit is flowing into reported profitability.'
-            : 'Reported profit is leaning on investment income, not underwriting.',
-      color: PALETTE.teal,
-      soft: tealSoft,
-      Icon: ArrowRightLeft,
-    },
-    {
-      label: 'Returns',
-      text: roe <= 0 ? 'ROE anchors the shareholder-return story.' : roe < 12 ? 'ROE is improving but still has room to scale.' : 'ROE sits comfortably above the cost of capital.',
-      color: PALETTE.amber,
-      soft: PALETTE.amberSoft,
-      Icon: TrendingUp,
-    },
-    {
-      label: 'Capital cushion',
-      text: solvency > 0 ? `${solvency.toFixed(2)}x solvency supports growth and resilience.` : 'A solvency cushion supports growth and resilience.',
-      color: PALETTE.emerald,
-      soft: PALETTE.emeraldSoft,
-      Icon: Shield,
-    },
-  ]
+function ProfitabilityEngine({ company, series, selectedId, onSelect }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void }) {
+  const stages = buildEngineStages(company, series)
+  const active = stages.find((s) => s.id === selectedId) ?? stages[0]
 
   return (
     <section className="card-surface p-5">
@@ -703,33 +647,35 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
         </span>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Engine</p>
-          <p className="text-[11.5px] leading-snug text-ink-secondary">From underwriting discipline to shareholder returns</p>
+          <p className="text-[11.5px] leading-snug text-ink-secondary">Tap a stage to explore it — from underwriting discipline to shareholder returns</p>
         </div>
       </div>
 
-      {/* Flow — five connected nodes, soft gradient connectors */}
+      {/* Flow — five clickable nodes, soft gradient connectors */}
       <div className="mt-7 flex flex-col gap-7 md:flex-row md:items-start md:gap-0">
         {stages.map((s, i) => {
-          const isHover = hovered === i
+          const selected = s.id === selectedId
           return (
-            <div
-              key={s.n}
-              className="relative flex min-w-0 flex-col items-center px-1 text-center md:flex-1"
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => onSelect(s.id)}
+              aria-pressed={selected}
+              aria-label={`${s.label} — ${s.metricLabel} ${s.value}`}
+              className="group relative flex min-w-0 flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35 md:flex-1"
             >
               {/* gradient connector: previous node centre → this node centre */}
               {i > 0 && (
                 <span
                   aria-hidden
-                  className="absolute left-[-50%] right-1/2 top-[38px] z-0 hidden h-[2px] -translate-y-1/2 md:block"
-                  style={{ background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: 0.55 }}
+                  className="absolute left-[-50%] right-1/2 top-[39px] z-0 hidden h-[2px] -translate-y-1/2 md:block"
+                  style={{ background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: 0.5 }}
                 />
               )}
               {i > 0 && (
                 <span
                   aria-hidden
-                  className="absolute left-0 top-[38px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-soft-border bg-white shadow-sm md:flex"
+                  className="absolute left-0 top-[39px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-soft-border bg-white shadow-sm md:flex"
                 >
                   <ChevronRight className="h-2.5 w-2.5" style={{ color: s.color }} />
                 </span>
@@ -739,19 +685,19 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
               <div className="relative z-10">
                 <span
                   aria-hidden
-                  className="absolute -inset-[6px] rounded-full border border-dashed transition-opacity duration-300"
-                  style={{ borderColor: s.color, opacity: isHover ? 0.5 : 0.28 }}
+                  className="absolute -inset-[6px] rounded-full border transition-all duration-300"
+                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.75 : 0.24, transform: selected ? 'scale(1.05)' : 'scale(1)' }}
                 />
                 <div
-                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300"
+                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[2px]"
                   style={{
                     borderColor: s.color,
-                    transform: isHover ? 'translateY(-3px)' : 'translateY(0)',
-                    boxShadow: isHover ? `0 12px 26px ${s.color}55` : `0 6px 16px ${s.color}26`,
-                    opacity: s.missing ? 0.6 : 1,
+                    transform: selected ? 'translateY(-3px) scale(1.04)' : 'translateY(0)',
+                    boxShadow: selected ? `0 14px 30px ${s.color}59` : `0 6px 16px ${s.color}26`,
+                    opacity: s.missing && !selected ? 0.6 : 1,
                   }}
                 >
-                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={1.6} />
+                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={selected ? 1.9 : 1.6} />
                 </div>
                 <span
                   className="absolute -top-2 left-1/2 z-20 flex h-[18px] w-[18px] -translate-x-1/2 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
@@ -762,8 +708,10 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
               </div>
 
               {/* Label + single metric */}
-              <p className="mt-3.5 font-display text-[13px] font-semibold leading-tight text-navy-deep">{s.label}</p>
-              <span aria-hidden className="my-1.5 h-px w-6" style={{ background: PALETTE.border }} />
+              <p className="mt-3.5 font-display text-[13px] font-semibold leading-tight transition-colors" style={{ color: selected ? PALETTE.navyDeep : '#3C4A63' }}>
+                {s.label}
+              </p>
+              <span aria-hidden className="my-1.5 h-px w-6" style={{ background: selected ? s.color : PALETTE.border }} />
               <p className="text-[9.5px] uppercase tracking-wide text-ink-secondary">{s.metricLabel}</p>
               {s.missing ? (
                 <p className="font-display text-[14px] italic leading-none text-ink-secondary/80">{s.value}</p>
@@ -772,44 +720,26 @@ function ProfitabilityEngine({ company, series }: { company: Insurer; series: An
                   {s.value}
                 </p>
               )}
-            </div>
+            </button>
           )
         })}
       </div>
 
-      {/* Per-stage read on hover — no always-on breadcrumb; reserved height
-          keeps the layout calm (no jump). */}
-      <div className="mt-5 flex min-h-[26px] items-center justify-center px-4 text-center">
-        {hovered != null && (
-          <p className="text-[11.5px] leading-snug text-navy-deep/80 transition-opacity duration-300">
-            <span className="font-semibold" style={{ color: stages[hovered].color }}>
-              {stages[hovered].label}:
-            </span>{' '}
-            {stages[hovered].read}
-          </p>
-        )}
-      </div>
-
-      {/* Insight strip — four light reads, no repeated KPI cards */}
-      <div className="mt-5 rounded-xl border border-soft-border bg-ice/60 p-3.5">
-        <div className="grid grid-cols-1 gap-x-5 gap-y-3.5 sm:grid-cols-2 lg:grid-cols-4">
-          {insights.map((it) => (
-            <div key={it.label} className="flex items-start gap-2.5">
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full" style={{ background: it.soft }}>
-                <it.Icon className="h-3.5 w-3.5" style={{ color: it.color }} strokeWidth={1.8} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[11px] font-semibold text-navy-deep">{it.label}</p>
-                <p className="mt-0.5 text-[10.5px] leading-snug text-ink-secondary">{it.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Active indicator — calm "you are viewing" line (switch on click only) */}
+      <div className="mt-6 flex min-h-[26px] flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 text-center">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.color }} />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-secondary">You are viewing</span>
+        </span>
+        <p className="text-[11.5px] leading-snug text-navy-deep/85">
+          <span className="font-semibold" style={{ color: active.color }}>{active.label}</span>
+          <span className="text-ink-secondary"> — {active.read}</span>
+        </p>
       </div>
 
       {/* Source */}
-      <div className="mt-3 flex justify-end">
-        <SourceTag source="Company filing + IRDAI disclosures" period={period} confidence="high" />
+      <div className="mt-4 flex justify-end">
+        <SourceTag source="Company filing + IRDAI disclosures" period={series[series.length - 1]?.fy ?? 'FY25'} confidence="high" />
       </div>
     </section>
   )
@@ -1069,311 +999,325 @@ function RoeExplanationCard({ company, series }: { company: Insurer; series: Ann
   )
 }
 
-// ─── (G) Enhanced Investor Read — full profitability story, dynamic ──────────
-function buildProfitabilityRead(company: Insurer, series: AnnualPoint[]) {
+// ─── (G) Status cards — small, node-scoped signals (only the relevant one) ───
+function UnderwritingPulseCard({ company }: { company: Insurer }) {
   const hasCR = company.combinedRatio > 0
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const pats = series.filter((p) => p.pat != null)
-  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
-  const patRising = patYoY != null && patYoY > 8
-  const exp = series.filter((p) => p.expenseRatio != null)
-  const expImproving = exp.length >= 2 ? (exp[exp.length - 1].expenseRatio as number) < (exp[0].expenseRatio as number) : null
-  const solvency = company.solvency
-  const solvencyStrong = solvency >= 2
-  const solvencyWeak = solvency > 0 && solvency < 1.5
-  const crWeak = hasCR && company.combinedRatio > 105
-
-  let quality: string
-  let qualityTone: Tone
-  if (solvencyWeak) {
-    quality = 'Capital comfort is the key risk to profitability-led growth.'
-    qualityTone = 'negative'
-  } else if (crWeak && expImproving === false) {
-    quality = 'Growth is not yet translating into operating leverage.'
-    qualityTone = 'warning'
-  } else if (uw != null && uw > 0 && patRising && solvencyStrong) {
-    quality = expImproving
-      ? 'Profitability improvement looks higher quality because premium growth is scaling faster than expenses.'
-      : 'Profitability improvement looks higher quality, backed by underwriting profit and a strong capital base.'
-    qualityTone = 'positive'
-  } else if (patRising) {
-    quality = 'Profitability is improving, but the quality of earnings needs verification.'
-    qualityTone = 'warning'
-  } else {
-    quality = 'Profitability signals are mixed — watch the next print.'
-    qualityTone = 'navy'
-  }
-
-  const rich = uw != null && patYoY != null
-  const lead = rich
-    ? `${company.shortName}'s profitability is improving through disciplined underwriting, ${uw > 0 ? 'positive underwriting profit' : 'gradual underwriting repair'}${expImproving ? ', and operating leverage' : ''}. Solvency ${solvencyStrong ? 'remains comfortable' : solvency >= 1.5 ? 'is adequate' : 'is tight'}, supporting continued growth.`
-    : `${company.shortName}'s profitability read leans on ${hasCR ? `a ${company.combinedRatio.toFixed(1)}% combined ratio and ` : ''}${solvency > 0 ? `${solvency.toFixed(2)}x solvency` : 'reported capital'}; underwriting-profit and PAT trajectory are pending for a full read.`
-
-  const why = rich
-    ? `Combined ratio ${hasCR ? (company.combinedRatio < 100 ? 'below 100% ' : 'above 100% ') : ''}is ${uw > 0 ? 'driving underwriting profit' : 'pushing underwriting toward break-even'}.`
-    : `Combined ratio${hasCR ? ` of ${company.combinedRatio.toFixed(1)}%` : ' is N/A for this carrier'} and ${solvency.toFixed(2)}x solvency anchor the read until per-year profit data lands.`
-
-  const watch = solvencyWeak
-    ? 'Capital trajectory each quarter, and whether profit conversion outpaces capital consumption.'
-    : crWeak
-      ? 'A clear move below 100 on combined ratio, and the expense-ratio trend.'
-      : 'Claims ratio, combined ratio, and whether PAT continues compounding faster than equity.'
-
-  return { quality, qualityTone, lead, why, watch }
+  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-[#D9EBE0] px-3 py-2.5" style={{ background: 'linear-gradient(135deg, #F4F9F6 0%, #EAF4F1 100%)' }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/80">Underwriting Pulse</p>
+        <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
+      </div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="font-display text-[19px] leading-none text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}</span>
+        <span className="text-[9.5px] text-ink-secondary">Combined ratio · FY25</span>
+      </div>
+      {hasCR && (
+        <div className="mt-2">
+          <CombinedRatioStrip value={company.combinedRatio} />
+        </div>
+      )}
+    </div>
+  )
 }
 
-function EnhancedInvestorRead({ company, series, accent }: { company: Insurer; series: AnnualPoint[]; accent: string }) {
-  const read = buildProfitabilityRead(company, series)
+function ProfitVelocityCard({ company }: { company: Insurer }) {
+  const mm = getMarginMetrics(company)
+  const patSeries = NET_PROFIT_QUARTERS[company.id]
+  const hasTrend = patSeries !== undefined
+  const tone: Tone = mm.netMargin > 5 ? 'positive' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'neutral' : 'negative'
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-soft-border px-3 py-2.5" style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, #FFFFFF 100%)` }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">Profit Velocity</p>
+        <SignalBadge label={tone === 'positive' ? 'Healthy' : tone === 'warning' ? 'Thin' : tone === 'neutral' ? 'Pending' : 'Loss'} tone={tone === 'neutral' ? 'navy' : tone} size="sm" />
+      </div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="font-display text-[19px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}</span>
+        <span className="text-[9.5px] text-ink-secondary">net margin · TTM</span>
+      </div>
+      {hasTrend && (
+        <>
+          <div className="mt-1.5">
+            <MiniPatArea values={patSeries} />
+          </div>
+          <p className={`mt-0.5 text-[9.5px] ${mm.yoyImprovement >= 0 ? toneText.positive : toneText.negative}`}>
+            PAT {mm.yoyImprovement >= 0 ? '+' : ''}
+            {mm.yoyImprovement.toFixed(1)}% vs prior 3Q avg
+          </p>
+        </>
+      )}
+    </div>
+  )
+}
+
+function CapitalBufferCard({ company }: { company: Insurer }) {
+  const tone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-[#EFE2C2] px-3 py-2.5" style={{ background: `linear-gradient(135deg, ${PALETTE.champagneSoft} 0%, #FFFBF1 100%)` }}>
+      <div className="flex items-center justify-between">
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Capital Buffer</p>
+        <SignalBadge label={tone === 'positive' ? 'Comfortable' : tone === 'warning' ? 'Adequate' : 'Tight'} tone={tone} size="sm" />
+      </div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="font-display text-[19px] leading-none text-navy-deep">{company.solvency.toFixed(2)}x</span>
+        <span className="text-[9.5px] text-ink-secondary">vs 1.5x floor</span>
+      </div>
+      <div className="mt-1">
+        <MiniSolvencyDial value={company.solvency} />
+      </div>
+    </div>
+  )
+}
+
+function RoeGaugeCard({ company }: { company: Insurer }) {
+  const roeTone: Tone = company.roe >= 12 ? 'positive' : company.roe >= 5 ? 'warning' : 'negative'
+  return (
+    <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, ${PALETTE.champagneSoft} 100%)` }}>
+      <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · FY25</p>
+      <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{company.roe.toFixed(1)}%</p>
+      <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
+        {roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
+      </p>
+      <SemiGauge
+        value={company.roe}
+        min={0}
+        max={22}
+        unit="%"
+        zones={[
+          { from: 0, to: 5, color: PALETTE.coral },
+          { from: 5, to: 12, color: PALETTE.amber },
+          { from: 12, to: 22, color: PALETTE.emerald },
+        ]}
+        size={150}
+      />
+    </div>
+  )
+}
+
+// ─── Per-node Investor Read — So what? / Why / What it means / Watch next ─────
+interface NodeRead {
+  soWhat: string
+  why: string
+  meaning: string
+  watch: string
+}
+
+function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId, NodeRead> {
+  const hasCR = company.combinedRatio > 0
+  const cost = COST_RATIOS[company.id]
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingResult(latest) : null
+  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
+  const roe = company.roe
   const solvency = company.solvency
-  const solvTone: Tone = solvency >= 2 ? 'positive' : solvency >= 1.5 ? 'warning' : 'negative'
-  const solvLabel = solvency >= 2 ? 'Comfortable' : solvency >= 1.5 ? 'Adequate' : 'Tight'
-  const solvChipCls =
-    solvTone === 'positive'
-      ? 'bg-[#EAF3EE] ring-[#CDE6D7]'
-      : solvTone === 'warning'
-        ? 'bg-[#FBF3E2] ring-[#F0E1BE]'
-        : 'bg-[#F8ECEC] ring-[#EBCFCE]'
+  const pats = series.filter((p) => p.pat != null)
+  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+  const costAbsorb = cost ? cost.loss + cost.commission + cost.expense : null
+  const profit100 = costAbsorb != null ? Math.max(0, 100 - costAbsorb) : null
+  const roeModerate = roe > 0 && roe < 10
+
+  return {
+    underwriting: {
+      soWhat: !hasCR
+        ? `${company.shortName} is a life carrier — combined ratio does not apply; returns and capital carry the read.`
+        : company.combinedRatio < 100
+          ? 'Combined ratio below 100% shows underwriting control and supports core profitability.'
+          : 'Combined ratio above 100% — underwriting discipline is the watch-item.',
+      why: costAbsorb != null
+        ? `Claims, commission and opex absorb ₹${costAbsorb.toFixed(0)} of every ₹100 of premium.`
+        : 'Claims and cost split is not reported on this basis.',
+      meaning: !hasCR
+        ? 'Profitability is read through returns and capital instead of combined ratio.'
+        : company.combinedRatio < 100
+          ? 'Underwriting is profitable before any investment income.'
+          : 'Reported profit is leaning on investment income, not underwriting.',
+      watch: hasCR && company.combinedRatio < 100
+        ? 'That combined ratio holds below 100, and the claims-ratio trend.'
+        : 'A clear move below 100 on combined ratio, and the claims-ratio trend.',
+    },
+    core: {
+      soWhat: uw == null
+        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
+        : uw > 0
+          ? 'Core underwriting has turned profitable as combined ratio moved below 100%.'
+          : 'Core underwriting is still in loss; reported profit leans on investment income.',
+      why: uw == null ? 'Needs reported NEP and combined ratio to size core operating profit.' : `Underwriting result ≈ NEP × (1 − combined ratio) = ${crc(uw)}.`,
+      meaning: 'This is profit from insurance itself, before any investment income.',
+      watch: 'Whether underwriting profit compounds as premium scales.',
+    },
+    conversion: {
+      soWhat: 'Premium growth is translating into reported profit after claims, commissions and expenses.',
+      why: patMargin == null
+        ? 'Awaiting reported PAT to measure how premium converts to profit.'
+        : profit100 != null
+          ? `About ${patMargin.toFixed(1)}% of premium reaches profit after tax; ₹${profit100.toFixed(0)} of every ₹100 stays as underwriting profit.`
+          : `About ${patMargin.toFixed(1)}% of premium reaches reported profit after tax.`,
+      meaning: 'Premium ≠ profit — this is how much of the top line reaches the bottom line.',
+      watch: 'Whether PAT margin widens as scale benefits land.',
+    },
+    returns: {
+      soWhat: roe <= 0
+        ? 'Return on equity is pending for this carrier.'
+        : roeModerate
+          ? 'ROE is improving as PAT scales, but remains moderate because the post-IPO capital base is still large.'
+          : 'ROE sits at a healthy level as PAT scales against the equity base.',
+      why: patYoY == null ? `Return on equity of ${roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}.` : `PAT ${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY on a ${roe.toFixed(1)}% return on equity.`,
+      meaning: roeModerate ? 'Returns are real but moderate against a large post-IPO equity base.' : 'Returns are scaling with profitability.',
+      watch: 'Whether PAT keeps compounding faster than equity.',
+    },
+    capital: {
+      soWhat: solvency > 0
+        ? `${solvency.toFixed(2)}x solvency gives growth support and resilience versus the 1.5x regulatory floor.`
+        : 'Solvency is pending for this carrier.',
+      why: solvency > 0 ? `A cushion of ${(solvency - 1.5).toFixed(2)}x above the 1.5x regulatory floor.` : 'Awaiting reported solvency ratio.',
+      meaning: 'Strong capital funds growth without near-term capital-raise risk.',
+      watch: 'Quarterly solvency trajectory as growth consumes capital.',
+    },
+  }
+}
+
+function NodeInvestorRead({ read, accent }: { read: NodeRead; accent: string }) {
   const lines = [
     { label: 'Why', value: read.why },
-    { label: 'What it means', value: read.quality },
+    { label: 'What it means', value: read.meaning },
     { label: 'Watch next', value: read.watch },
   ]
   return (
-    <section className="card-surface relative overflow-hidden p-4" style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 110%)` }}>
+    <section className="card-surface relative overflow-hidden p-4" style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 125%)` }}>
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${accent} 100%)` }} />
-      <div className="flex flex-wrap items-start justify-between gap-2 pl-2.5">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
-          <h3 className="mt-0 font-display text-[15px] text-navy-deep">So what?</h3>
-        </div>
-        {solvency > 0 && (
-          <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 ring-1 ${solvChipCls}`} title="vs 1.5x regulatory floor">
-            <span className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">Solvency</span>
-            <span className="font-display text-[13px] leading-none text-navy-deep">{solvency.toFixed(2)}x</span>
-            <span aria-hidden className="text-ink-secondary/40">·</span>
-            <span className={`text-[10px] font-semibold ${toneText[solvTone]}`}>{solvLabel}</span>
-          </div>
-        )}
-      </div>
-      <p className="mt-2 max-w-4xl pl-2.5 text-[12px] font-medium leading-relaxed text-navy-deep">{read.lead}</p>
-      <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 pl-2.5 sm:grid-cols-[110px_1fr]">
-        {lines.map((line) => (
-          <div key={line.label} className="contents">
-            <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
-            <dd className="text-[11.5px] leading-relaxed text-navy-deep/85">{line.value}</dd>
-          </div>
-        ))}
-      </dl>
-      <div className="mt-2.5 flex justify-end">
-        <SourceTag source="Company filing + IRDAI disclosures" period="FY25" confidence="high" />
+      <div className="pl-2.5">
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
+        <h3 className="mt-0 font-display text-[15px] leading-tight text-navy-deep">So what?</h3>
+        <p className="mt-1.5 max-w-3xl text-[12px] font-medium leading-relaxed text-navy-deep">{read.soWhat}</p>
+        <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 sm:grid-cols-[120px_1fr]">
+          {lines.map((line) => (
+            <div key={line.label} className="contents">
+              <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
+              <dd className="text-[11.5px] leading-relaxed text-navy-deep/85">{line.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Main section
-// ---------------------------------------------------------------------------
+// ─── Detail panel — one story at a time, calm fade/slide on node change ───────
+const DETAIL_ACCENT: Record<NodeId, string> = {
+  underwriting: PALETTE.emerald,
+  core: PALETTE.teal,
+  conversion: PALETTE.amber,
+  returns: ORANGE,
+  capital: PALETTE.emerald,
+}
 
-export function ProfitabilityCapital() {
-  const [view, setView] = useState<View>('P&L')
-  const company = useActiveCompany()
-  const { range } = useFilters()
-  const copy = getCompanyProfitabilityCopy(company)
-  // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
-  const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
+const DETAIL_SOURCE: Record<NodeId, { source: string; period?: string; confidence: 'high' | 'medium' | 'pending' }> = {
+  underwriting: { source: 'IRDAI disclosures · derived', period: 'Q1–Q4 FY25', confidence: 'high' },
+  core: { source: 'Company filing · derived', period: 'FY series', confidence: 'high' },
+  conversion: { source: 'Company filing + IRDAI disclosures', period: 'FY25', confidence: 'high' },
+  returns: { source: 'Company filing', period: 'Q1–Q4 FY25', confidence: 'high' },
+  capital: { source: 'IRDAI disclosures', period: 'FY25', confidence: 'high' },
+}
 
+function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Insurer; series: AnnualPoint[] }) {
+  const reads = buildNodeReads(company, series)
   const hasCR = company.combinedRatio > 0
-  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
-  const mm = getMarginMetrics(company)
+  const cost = COST_RATIOS[company.id]
+  const crSeries = COMBINED_RATIO_QUARTERS[company.id]
   const patSeries = NET_PROFIT_QUARTERS[company.id]
   const hasTrend = patSeries !== undefined
-  const crSeries = COMBINED_RATIO_QUARTERS[company.id]
-  const cost = COST_RATIOS[company.id]
-
-  const netMarginTone: Tone = mm.netMargin > 5 ? 'positive' : mm.netMargin > 0 ? 'warning' : mm.netMargin === 0 ? 'neutral' : 'negative'
-  const roeTone: Tone = company.roe >= 12 ? 'positive' : company.roe >= 5 ? 'warning' : 'negative'
+  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
   const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
 
-  const trendTone: 'positive' | 'navy' | 'negative' = !hasTrend
-    ? 'navy'
-    : patSeries[3] < 0
-      ? 'negative'
-      : patSeries[3] >= patSeries[0]
-        ? 'positive'
-        : 'navy'
+  let body: ReactNode = null
 
-  // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
-  const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
-    value,
-    period: 'FY25',
-    source: 'Company filings (mock)',
-    status: value === null ? 'Pending' : 'Reported',
-    lastUpdated: '2025-05-23',
-    ...opts,
-  })
-  const companyKpis: { label: string; metric: Metric; invert?: boolean }[] = [
-    { label: 'GWP growth', metric: m(company.growth, { unit: '%' }) },
-    { label: 'Combined ratio', metric: m(hasCR ? company.combinedRatio : null, { unit: '%' }), invert: true },
-    { label: 'Net margin', metric: m(hasTrend ? mm.netMargin : null, { unit: '%', period: 'TTM' }) },
-    { label: 'ROE', metric: m(company.roe, { unit: '%' }) },
-    { label: 'Solvency', metric: m(company.solvency, { unit: 'x' }) },
-  ]
-
-  const verdictHeadline = !hasCR
-    ? 'Returns and capital are the story'
-    : ct.tone === 'positive'
-      ? 'Premium growth is converting into profit'
-      : ct.tone === 'warning'
-        ? 'Growth ahead of underwriting discipline'
-        : 'Growth not yet converting into profit'
-
-  const verdictSummary = !hasCR
-    ? `Life carrier — ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency anchor the read.`
-    : ct.tone === 'positive'
-      ? `Combined ratio ${company.combinedRatio.toFixed(1)}%, ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency — underwriting discipline is translating into capital returns.`
-      : ct.tone === 'warning'
-        ? `Combined ratio ${company.combinedRatio.toFixed(1)}% sits in the watch band; ROE ${company.roe.toFixed(1)}% holds while solvency stays at ${company.solvency.toFixed(2)}x.`
-        : `Combined ratio ${company.combinedRatio.toFixed(1)}% is loss-making; profitability hinges on the ${company.solvency.toFixed(2)}x capital cushion.`
-
-  const heroTone = ct.tone === 'positive' ? PALETTE.emerald : ct.tone === 'warning' ? PALETTE.amber : ct.tone === 'negative' ? PALETTE.coral : PALETTE.navy
-  return (
-    <div className="space-y-5">
-      {/* ─── HERO — gradient strip, verdict, single PAT callout ─── */}
-      <section className="card-surface relative overflow-hidden p-4">
-        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-60"
-          style={{
-            background: `radial-gradient(circle at 80% 30%, ${PALETTE.champagneSoft} 0%, transparent 60%), radial-gradient(circle at 60% 80%, ${PALETTE.softBlue} 0%, transparent 60%)`,
-          }}
-        />
-        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-3 pl-2">
-          <div className="min-w-[240px] flex-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="h-2.5 w-2.5 text-champagne" />
-              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Verdict</span>
-            </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2">
-              <h2 className="font-display text-[19px] leading-tight text-navy-deep">{verdictHeadline}</h2>
-              <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
-            </div>
-            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{verdictSummary}</p>
-          </div>
-
-          {hasTrend && (
-            <div className="flex items-center gap-4 sm:border-l sm:border-soft-border/80 sm:pl-5">
-              <div>
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-secondary">PAT · Q4 FY25</p>
-                <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">₹{patSeries[3]} Cr</p>
-                <span
-                  className={`mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium ${mm.yoyImprovement >= 0 ? 'text-signal-positive' : 'text-signal-negative'}`}
-                  title="Approximate YoY improvement — quarterly FY24 PAT is not separately reported, so this figure is illustrative."
-                >
-                  {mm.yoyImprovement >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  ~{Math.abs(Math.round(mm.yoyImprovement))}% vs Q4 FY24
-                </span>
-              </div>
-              <HeroPatSparkline values={patSeries} color={trendTone === 'negative' ? PALETTE.coral : PALETTE.emerald} />
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ─── (B) PROFITABILITY ENGINE — premium → profit → capital, one infographic ─── */}
-      <ProfitabilityEngine company={company} series={series} />
-
-      {/* ─── (C) MAIN STORY — tabs drive the central chart, right rail keeps mini-visuals ─── */}
-      <ModuleCard
-        question="Is premium growth converting into profit, underwriting discipline and strong capital returns?"
-        title={`${company.shortName} · Profitability Story`}
-        icon="capital"
-        controls={
-          <SegmentedControl<View>
-            label="View lens"
-            options={['P&L', 'Margin', 'Cost', 'Returns', 'Capital'] as View[]}
-            value={view}
-            onChange={setView}
-            size="sm"
-          />
-        }
-        insight={
-          <div className="flex flex-col gap-2.5">
-            {/* Underwriting Pulse */}
-            <div
-              className="relative overflow-hidden rounded-lg border border-[#D9EBE0] px-3 py-2.5"
-              style={{ background: `linear-gradient(135deg, #F4F9F6 0%, #EAF4F1 100%)` }}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/80">Underwriting Pulse</p>
+  switch (id) {
+    case 'underwriting':
+      body = (
+        <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
+          <div className="space-y-4">
+            <div className="rounded-xl border border-soft-border bg-white p-4">
+              <div className="mb-2.5 flex items-baseline justify-between">
+                <div>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
+                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Combined ratio trajectory · Q1–Q4 FY25</h3>
+                </div>
                 <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
               </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-[19px] leading-none text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'N/A'}</span>
-                <span className="text-[9.5px] text-ink-secondary">Combined ratio · FY25</span>
-              </div>
-              {hasCR && (
-                <div className="mt-2">
-                  <CombinedRatioStrip value={company.combinedRatio} />
-                </div>
-              )}
-            </div>
-
-            {/* Profit Velocity */}
-            <div
-              className="relative overflow-hidden rounded-lg border border-soft-border px-3 py-2.5"
-              style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, #FFFFFF 100%)` }}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">Profit Velocity</p>
-                <SignalBadge
-                  label={netMarginTone === 'positive' ? 'Healthy' : netMarginTone === 'warning' ? 'Thin' : netMarginTone === 'neutral' ? 'Pending' : 'Loss'}
-                  tone={netMarginTone === 'neutral' ? 'navy' : netMarginTone}
-                  size="sm"
-                />
-              </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-[19px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : '—'}</span>
-                <span className="text-[9.5px] text-ink-secondary">net margin · TTM</span>
-              </div>
-              {hasTrend && (
+              {hasCR && crSeries ? (
                 <>
-                  <div className="mt-1.5"><MiniPatArea values={patSeries} /></div>
-                  <p className={`mt-0.5 text-[9.5px] ${mm.yoyImprovement >= 0 ? toneText.positive : toneText.negative}`}>
-                    PAT {mm.yoyImprovement >= 0 ? '+' : ''}
-                    {mm.yoyImprovement.toFixed(1)}% vs prior 3Q avg
-                  </p>
+                  <CombinedRatioBandedTrend series={crSeries} />
+                  <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10.5px]">
+                    <div className="rounded bg-[#EAF3EE] px-2 py-1">
+                      <span className="font-semibold text-signal-positive">&lt;100</span>
+                      <span className="ml-1 text-ink-secondary">strong</span>
+                    </div>
+                    <div className="rounded bg-[#FBF3E2] px-2 py-1">
+                      <span className="font-semibold text-signal-warning">100–105</span>
+                      <span className="ml-1 text-ink-secondary">watch</span>
+                    </div>
+                    <div className="rounded bg-[#F8ECEC] px-2 py-1">
+                      <span className="font-semibold text-signal-negative">&gt;105</span>
+                      <span className="ml-1 text-ink-secondary">weak</span>
+                    </div>
+                  </div>
                 </>
+              ) : (
+                <p className="text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply.</p>
               )}
             </div>
-
-            {/* Capital Buffer */}
-            <div
-              className="relative overflow-hidden rounded-lg border border-[#EFE2C2] px-3 py-2.5"
-              style={{ background: `linear-gradient(135deg, ${PALETTE.champagneSoft} 0%, #FFFBF1 100%)` }}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Capital Buffer</p>
-                <SignalBadge
-                  label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'}
-                  tone={solvencyTone}
-                  size="sm"
-                />
+            <div className="rounded-xl border border-soft-border bg-white p-4">
+              <div className="mb-2.5 flex items-baseline justify-between">
+                <div>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
+                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
+                </div>
+                <span className="text-[9.5px] text-ink-secondary">FY25</span>
               </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <span className="font-display text-[19px] leading-none text-navy-deep">{company.solvency.toFixed(2)}x</span>
-                <span className="text-[9.5px] text-ink-secondary">vs 1.5x floor</span>
-              </div>
-              <div className="mt-1"><MiniSolvencyDial value={company.solvency} /></div>
+              {cost ? (
+                <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1fr]">
+                  <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
+                  <div className="space-y-2.5">
+                    {[
+                      { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
+                      { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
+                      { label: 'Opex (expense ratio)', value: cost.expense, color: PALETTE.navy, note: cost.expense > 24 ? 'Investing for scale' : 'Lean opex' },
+                    ].map((r) => (
+                      <div key={r.label}>
+                        <div className="flex items-baseline justify-between">
+                          <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep">
+                            <span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />
+                            {r.label}
+                          </span>
+                          <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
+                        </div>
+                        <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-ice">
+                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} />
+                        </div>
+                        <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
+              )}
             </div>
           </div>
-        }
-        dataStatus={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
-        dataBasis={profitabilityBasis}
-      >
-        {/* ───── Morphing chart per tab ───── */}
-        {view === 'P&L' && (
+          <div className="flex flex-col gap-3.5">
+            <UnderwritingPulseCard company={company} />
+          </div>
+        </div>
+      )
+      break
+    case 'core':
+      body = <UnderwritingProfitTrend company={company} series={series} />
+      break
+    case 'conversion':
+      body = (
+        <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
           <div className="space-y-4">
             <div className="rounded-xl border border-soft-border bg-white p-4">
               <div className="mb-2.5 flex items-baseline justify-between">
@@ -1383,94 +1327,32 @@ export function ProfitabilityCapital() {
                 </div>
                 <span className="text-[9.5px] text-ink-secondary">FY25</span>
               </div>
-              {cost ? <PremiumFunnel loss={cost.loss} commission={cost.commission} expense={cost.expense} hasCR={hasCR} /> : <PremiumFunnel loss={0} commission={0} expense={0} hasCR={false} />}
+              {cost ? (
+                <PremiumFunnel loss={cost.loss} commission={cost.commission} expense={cost.expense} hasCR={hasCR} />
+              ) : (
+                <PremiumFunnel loss={0} commission={0} expense={0} hasCR={false} />
+              )}
             </div>
+            <OperatingLeverageCard company={company} series={series} />
           </div>
-        )}
-
-        {view === 'Margin' && (
-          <div className="rounded-xl border border-soft-border bg-white p-4">
-            <div className="mb-2.5 flex items-baseline justify-between">
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Margin Lens</p>
-                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Combined ratio trajectory · Q1–Q4 FY25</h3>
-              </div>
-              <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
-            </div>
-            {hasCR && crSeries ? (
-              <>
-                <CombinedRatioBandedTrend series={crSeries} />
-                <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[10.5px]">
-                  <div className="rounded bg-[#EAF3EE] px-2 py-1">
-                    <span className="font-semibold text-signal-positive">&lt;100</span>
-                    <span className="ml-1 text-ink-secondary">strong</span>
-                  </div>
-                  <div className="rounded bg-[#FBF3E2] px-2 py-1">
-                    <span className="font-semibold text-signal-warning">100–105</span>
-                    <span className="ml-1 text-ink-secondary">watch</span>
-                  </div>
-                  <div className="rounded bg-[#F8ECEC] px-2 py-1">
-                    <span className="font-semibold text-signal-negative">&gt;105</span>
-                    <span className="ml-1 text-ink-secondary">weak</span>
-                  </div>
+          <div className="flex flex-col gap-3.5">
+            <ProfitVelocityCard company={company} />
+          </div>
+        </div>
+      )
+      break
+    case 'returns':
+      body = (
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
+            <div className="rounded-xl border border-soft-border bg-white p-4">
+              <div className="mb-2.5 flex items-baseline justify-between">
+                <div>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
+                  <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
                 </div>
-              </>
-            ) : (
-              <p className="text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply.</p>
-            )}
-          </div>
-        )}
-
-        {view === 'Cost' && (
-          <div className="rounded-xl border border-soft-border bg-white p-4">
-            <div className="mb-2.5 flex items-baseline justify-between">
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost Lens</p>
-                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Anatomy of every ₹100 of premium</h3>
+                <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
               </div>
-              <span className="text-[9.5px] text-ink-secondary">FY25 mock</span>
-            </div>
-            {cost ? (
-              <div className="grid grid-cols-1 items-center gap-4 lg:grid-cols-[1fr_1fr]">
-                <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
-                <div className="space-y-2.5">
-                  {[
-                    { label: 'Claims (loss ratio)', value: cost.loss, color: PALETTE.coral, note: cost.loss > 70 ? 'Above sector ~70%' : 'Below sector ~70%' },
-                    { label: 'Commission', value: cost.commission, color: PALETTE.amber, note: cost.commission > 13 ? 'High retail mix' : 'Within band' },
-                    { label: 'Opex (expense ratio)', value: cost.expense, color: PALETTE.navy, note: cost.expense > 24 ? 'Investing for scale' : 'Lean opex' },
-                  ].map((r) => (
-                    <div key={r.label}>
-                      <div className="flex items-baseline justify-between">
-                        <span className="inline-flex items-center gap-1.5 text-[11.5px] text-navy-deep">
-                          <span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />
-                          {r.label}
-                        </span>
-                        <span className="font-display text-[13px] text-navy-deep">{r.value.toFixed(1)}%</span>
-                      </div>
-                      <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-ice">
-                        <div className="h-full rounded-full" style={{ width: `${Math.min(100, r.value)}%`, background: r.color }} />
-                      </div>
-                      <p className="mt-0.5 text-[10px] text-ink-secondary">{r.note}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="text-[11.5px] text-ink-secondary">{company.shortName} is a life carrier — claims / commission / opex split is not reported on this P&C basis.</p>
-            )}
-          </div>
-        )}
-
-        {view === 'Returns' && (
-          <div className="rounded-xl border border-soft-border bg-white p-4">
-            <div className="mb-2.5 flex items-baseline justify-between">
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
-                <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
-              </div>
-              <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.6fr_1fr]">
               {hasTrend ? (
                 <QuarterlyPatBars series={patSeries} />
               ) : (
@@ -1478,44 +1360,25 @@ export function ProfitabilityCapital() {
                   Quarterly PAT pending for {company.shortName}
                 </div>
               )}
-              <div
-                className="relative overflow-hidden rounded-lg p-3.5"
-                style={{ background: `linear-gradient(135deg, ${PALETTE.softBlue} 0%, ${PALETTE.champagneSoft} 100%)` }}
-              >
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · FY25</p>
-                <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{company.roe.toFixed(1)}%</p>
-                <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
-                  {roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
-                </p>
-                <SemiGauge
-                  value={company.roe}
-                  min={0}
-                  max={22}
-                  unit="%"
-                  zones={[
-                    { from: 0, to: 5, color: PALETTE.coral },
-                    { from: 5, to: 12, color: PALETTE.amber },
-                    { from: 12, to: 22, color: PALETTE.emerald },
-                  ]}
-                  size={150}
-                />
-              </div>
+            </div>
+            <div className="flex flex-col gap-3.5">
+              <RoeGaugeCard company={company} />
             </div>
           </div>
-        )}
-
-        {view === 'Capital' && (
+          <RoeExplanationCard company={company} series={series} />
+        </div>
+      )
+      break
+    case 'capital':
+      body = (
+        <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
           <div className="rounded-xl border border-soft-border bg-white p-4">
             <div className="mb-2.5 flex items-baseline justify-between">
               <div>
                 <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital Lens</p>
                 <h3 className="mt-0 font-display text-[14px] text-navy-deep">Solvency vs regulatory comfort zone</h3>
               </div>
-              <SignalBadge
-                label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'}
-                tone={solvencyTone}
-                size="sm"
-              />
+              <SignalBadge label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'} tone={solvencyTone} size="sm" />
             </div>
             <div className="grid grid-cols-1 items-center gap-3 lg:grid-cols-[1fr_1fr]">
               <SemiGauge
@@ -1548,22 +1411,123 @@ export function ProfitabilityCapital() {
               </div>
             </div>
           </div>
-        )}
+          <div className="flex flex-col gap-3.5">
+            <CapitalBufferCard company={company} />
+          </div>
+        </div>
+      )
+      break
+    default:
+      body = null
+  }
 
-        <BasisTag info={profitabilityBasis} className="mt-3" />
-      </ModuleCard>
+  const src = DETAIL_SOURCE[id]
 
-      {/* ─── (D) UNDERWRITING PROFIT TREND — derived core profit, CR overlay ─── */}
-      <UnderwritingProfitTrend company={company} series={series} />
-
-      {/* ─── (E) OPERATING LEVERAGE + (F) ROE EXPLANATION — paired, compact ─── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <OperatingLeverageCard company={company} series={series} />
-        <RoeExplanationCard company={company} series={series} />
+  return (
+    <div key={id} className="animate-fade-in space-y-4">
+      {body}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-0.5">
+        <BasisTag info={profitabilityBasis} />
+        <SourceTag source={src.source} period={src.period} confidence={src.confidence} />
       </div>
+      <NodeInvestorRead read={reads[id]} accent={DETAIL_ACCENT[id]} />
+    </div>
+  )
+}
 
-      {/* ─── (G) SO WHAT — investor read; capital comfort folded in as a chip ─── */}
-      <EnhancedInvestorRead company={company} series={series} accent={heroTone} />
+// ---------------------------------------------------------------------------
+// Main section — Profitability Story Map (clickable engine drives the page)
+// ---------------------------------------------------------------------------
+
+const STORY_QUESTION = 'Is premium growth converting into profit, underwriting discipline and strong capital returns?'
+
+export function ProfitabilityCapital() {
+  const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
+  const [statusOpen, setStatusOpen] = useState(false)
+  const company = useActiveCompany()
+  const { range } = useFilters()
+  const copy = getCompanyProfitabilityCopy(company)
+  // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
+  const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
+
+  const hasCR = company.combinedRatio > 0
+  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
+  const mm = getMarginMetrics(company)
+  const hasTrend = NET_PROFIT_QUARTERS[company.id] !== undefined
+
+  // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
+  const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
+    value,
+    period: 'FY25',
+    source: 'Company filings (mock)',
+    status: value === null ? 'Pending' : 'Reported',
+    lastUpdated: '2025-05-23',
+    ...opts,
+  })
+  const companyKpis: { label: string; metric: Metric }[] = [
+    { label: 'GWP growth', metric: m(company.growth, { unit: '%' }) },
+    { label: 'Combined ratio', metric: m(hasCR ? company.combinedRatio : null, { unit: '%' }) },
+    { label: 'Net margin', metric: m(hasTrend ? mm.netMargin : null, { unit: '%', period: 'TTM' }) },
+    { label: 'ROE', metric: m(company.roe, { unit: '%' }) },
+    { label: 'Solvency', metric: m(company.solvency, { unit: 'x' }) },
+  ]
+
+  const verdictSummary = !hasCR
+    ? `Life carrier — ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency anchor the read.`
+    : ct.tone === 'positive'
+      ? `Combined ratio ${company.combinedRatio.toFixed(1)}%, ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency — discipline is translating into capital returns.`
+      : ct.tone === 'warning'
+        ? `Combined ratio ${company.combinedRatio.toFixed(1)}% sits in the watch band; ROE ${company.roe.toFixed(1)}% holds while solvency stays at ${company.solvency.toFixed(2)}x.`
+        : `Combined ratio ${company.combinedRatio.toFixed(1)}% is loss-making; profitability hinges on the ${company.solvency.toFixed(2)}x capital cushion.`
+
+  const heroTone = ct.tone === 'positive' ? PALETTE.emerald : ct.tone === 'warning' ? PALETTE.amber : ct.tone === 'negative' ? PALETTE.coral : PALETTE.navy
+
+  return (
+    <div className="space-y-5">
+      {/* ─── PAGE HEADER — title · question · verdict · data status ─── */}
+      <section className="card-surface relative overflow-hidden p-4">
+        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-60"
+          style={{ background: `radial-gradient(circle at 80% 30%, ${PALETTE.champagneSoft} 0%, transparent 60%), radial-gradient(circle at 60% 80%, ${PALETTE.softBlue} 0%, transparent 60%)` }}
+        />
+        <div className="relative flex flex-wrap items-start justify-between gap-x-5 gap-y-3 pl-2">
+          <div className="min-w-[260px] flex-1">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-2.5 w-2.5 text-champagne" />
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · FY25</span>
+            </div>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+              <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
+              <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
+            </div>
+            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
+            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{verdictSummary}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusOpen(true)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary"
+          >
+            <Database className="h-3.5 w-3.5" />
+            Data status
+          </button>
+        </div>
+      </section>
+
+      {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
+      <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} />
+
+      {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
+      <ProfitabilityDetail id={selectedNode} company={company} series={series} />
+
+      <DataStatusDrawer
+        open={statusOpen}
+        onClose={() => setStatusOpen(false)}
+        moduleName={`${company.shortName} · Profitability Story`}
+        entries={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
+        basis={profitabilityBasis}
+      />
     </div>
   )
 }
