@@ -36,9 +36,14 @@ function firstPct(text: string, label: RegExp): number | null {
  * carry no financials and should be skipped).
  */
 export function isPublicDisclosureForm(text: string): boolean {
-  const head = text.slice(0, 8000)
-  // Must carry the analytical ratios block AND premium schedules.
-  return /Combined Ratio/i.test(text) && /(Net Earned Premium|Gross Direct Premium|NL-\d)/i.test(head)
+  const head = text.slice(0, 12000)
+  // The modern IRDAI analytical-ratios table marks each ratio row with a
+  // trailing "**" (e.g. `Combined Ratio** 116.97%116.97%106.09%106.09%`). That
+  // marker is the signature of the 4-column layout this extractor is validated
+  // against. Older public-disclosure layouts lack it and are NOT reliably
+  // parseable here, so we treat only the "**" form as a parseable disclosure;
+  // everything else is skipped upstream rather than guessed at.
+  return /Combined Ratio\*\*/.test(text) && /(Net Earned Premium|Gross Direct Premium|NL-\d)/i.test(head)
 }
 
 export interface DisclosureValues {
@@ -57,8 +62,8 @@ export function extractDisclosure(text: string): Record<string, number | null> |
   if (!isPublicDisclosureForm(text)) return null
 
   const raw: DisclosureValues = {
-    // First % after the label = current standalone quarter.
-    combined_ratio: firstPct(text, /Combined Ratio\*{0,2}\s*([\d.]+)\s*%/i),
+    // First % after the "**" label = current standalone quarter (col 1 of 4).
+    combined_ratio: firstPct(text, /Combined Ratio\*\*\s*([\d.]+)\s*%/i),
     // "Net Incurred Claims to Net Earned Premium" analytical line.
     claims_ratio:
       firstPct(text, /Net Incurred Claims[^%]{0,50}?([\d.]+)\s*%/i) ??
@@ -72,6 +77,11 @@ export function extractDisclosure(text: string): Record<string, number | null> |
     // "Solvency Margin Ratio (No. of times) 2.85" — the short label form.
     solvency_ratio: firstPct(text, /Solvency Margin Ratio \(No\.?\s*of\s*times\)\s*([\d.]+)/i),
   }
+  // Combined ratio is the anchor metric of this form. If the "**" table is
+  // present but the ratio can't be read, we don't trust the rest — return null
+  // so the caller skips the file rather than emitting a partial (possibly wrong)
+  // row. Honesty: a misread is worse than an honest "pending".
+  if (raw.combined_ratio == null) return null
   // Run through the shared plausibility sanitiser (decimal→%, band checks,
   // component cross-check vs combined ratio).
   return sanitiseQuarterly(raw as unknown as Record<string, number | null>)

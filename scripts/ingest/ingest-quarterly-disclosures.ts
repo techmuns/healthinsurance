@@ -23,8 +23,7 @@ import { readdir, readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
 import { appendLog, ensureDir, isOfflineMode, nowIso, readSnapshot, RAW_ROOT } from './util'
-import { extractByPatterns, fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
-import { QUARTERLY_PATTERNS, sanitiseQuarterly } from './quarterly-extract'
+import { fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
 import { extractDisclosure } from './disclosure-extract'
 
 const SOURCE_ID = 'company_quarterly_disclosures'
@@ -93,13 +92,14 @@ export const ingestQuarterlyDisclosures: Fetcher = {
               warnings.push(`${t.company_id}: could not infer quarter from ${filename} — skipped.`)
               continue
             }
-            // Prefer the IRDAI NL-form disclosure extractor (handles the real
-            // 4-column ratios layout); fall back to the generic anchored
-            // patterns for press-release / results PDFs.
-            const values = extractDisclosure(text) ?? sanitiseQuarterly(extractByPatterns(text, QUARTERLY_PATTERNS))
-            const populated = Object.values(values).filter((v) => v != null).length
-            if (populated === 0) {
-              warnings.push(`${t.company_id} ${quarter} ${fy}: parsed ${text.length} chars but no financial patterns matched.`)
+            // Trust ONLY the validated IRDAI NL-form extractor (the modern
+            // 4-column analytical-ratios table). Older / partial layouts mis-read
+            // under the generic patterns — which produced impossible values such
+            // as a 200% commission ratio — so we skip them honestly rather than
+            // emit a guess. Missing ≠ zero: an unparsed quarter stays pending.
+            const values = extractDisclosure(text)
+            if (!values) {
+              warnings.push(`${t.company_id} ${quarter} ${fy}: not in the validated NL-form layout — skipped (no guess).`)
               continue
             }
             records.push({
