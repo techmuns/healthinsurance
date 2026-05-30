@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Area,
@@ -833,89 +833,147 @@ function operatingLeverage(company: Insurer, series: AnnualPoint[]) {
   return { gwpGrowth, expFrom, expTo, expDelta, patYoY, verdict, tone, expSeries: exp }
 }
 
-// ─── Profit-conversion infographic — the Premium-to-Profit Conversion Bridge ──
-// One connected flow (₹100 GWP → claims → commission → opex → underwriting
-// profit → PAT) plus a compact Conversion-Quality proof rail. Real values only;
-// a life carrier (no P&C split) or missing PAT degrades to "Data pending".
+// ─── Profit-conversion infographic — the ₹100 Premium-to-Profit Engine ───────
+// Input (₹100 GWP) → a splitting stream into proportional absorption bands
+// (claims biggest, then opex, commission) → a small retained underwriting-profit
+// band → the PAT-margin output badge. Magnitude is shown by band height + stream
+// thickness. Real values only; a life carrier / missing PAT shows "Data pending".
 function ConversionBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const cost = COST_RATIOS[company.id]
   const latest = series[series.length - 1] as AnnualPoint | undefined
   const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
-  const absorbed = cost ? cost.loss + cost.commission + cost.expense : null
-  const uwProfit = absorbed != null ? Math.round((100 - absorbed) * 10) / 10 : null
 
-  const steps = cost
-    ? [
-        { key: 'gwp', label: 'GWP in', value: '₹100', color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA', op: '', hero: false },
-        { key: 'claims', label: 'Claims', value: `−₹${cost.loss.toFixed(1)}`, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3', op: '−', hero: false },
-        { key: 'comm', label: 'Commission', value: `−₹${cost.commission.toFixed(1)}`, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE', op: '−', hero: false },
-        { key: 'opex', label: 'Opex', value: `−₹${cost.expense.toFixed(1)}`, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA', op: '−', hero: false },
-        { key: 'uw', label: 'Underwriting profit', value: `${(uwProfit ?? 0) < 0 ? '−' : ''}₹${Math.abs(uwProfit ?? 0).toFixed(1)}`, color: (uwProfit ?? 0) >= 0 ? PALETTE.teal : PALETTE.coral, bg: (uwProfit ?? 0) >= 0 ? '#E7F4F3' : '#FBEFEF', border: (uwProfit ?? 0) >= 0 ? '#C9E5E3' : '#EFD4D3', op: '=', hero: false },
-        { key: 'pat', label: 'PAT margin', value: patMargin == null ? 'n/a' : `${patMargin.toFixed(1)}%`, color: GOLD, bg: '#FBF1D8', border: '#E9D49A', op: '→', hero: true },
-      ]
-    : []
-
-  const interp =
-    uwProfit == null
-      ? ''
-      : uwProfit > 0
-        ? 'Most premium is still absorbed by claims and operating cost, but the remaining spread has turned positive.'
-        : 'Premium is still fully absorbed by claims and cost — the underwriting spread has not yet turned positive.'
-
-  return (
-    <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
+  const header = (
+    <>
       <div className="flex items-baseline justify-between">
         <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Conversion Bridge</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium-to-Profit Conversion Bridge</h3>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Conversion Engine</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium-to-Profit Conversion Engine</h3>
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of GWP, see how much is absorbed before profit is created.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of GWP, see what gets absorbed before profit is created.</p>
+    </>
+  )
 
-      {cost ? (
-        <>
-          <div className="mt-3.5 flex flex-wrap items-stretch gap-y-2">
-            {steps.map((s, i) => (
-              <Fragment key={s.key}>
-                {i > 0 && (
-                  <div className="flex items-center px-1">
-                    <span
-                      className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm"
-                      style={{ borderColor: s.op === '→' ? '#E9D49A' : '#E7ECF6', color: s.op === '→' ? GOLD : '#9AA6B8' }}
-                    >
-                      {s.op}
-                    </span>
-                  </div>
-                )}
-                <div
-                  className="flex min-w-[92px] flex-1 flex-col justify-between rounded-xl border px-3 py-2.5"
-                  style={{ background: s.bg, borderColor: s.border, boxShadow: s.hero ? `0 10px 22px ${GOLD}3d` : undefined }}
-                >
-                  <div className="flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                    <span className="truncate text-[8px] font-bold uppercase tracking-[0.08em] text-ink-secondary">{s.label}</span>
-                  </div>
-                  <p className="mt-2 font-display leading-none" style={{ color: s.color, fontSize: s.hero ? 20 : 17 }}>
-                    {s.value}
-                  </p>
-                </div>
-              </Fragment>
-            ))}
-          </div>
-          {interp && <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">{interp}</p>}
-        </>
-      ) : (
+  if (!cost) {
+    return (
+      <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
+        {header}
         <div className="mt-3">
-          <PendingNote>{`${company.shortName} reports on a life basis — the ₹100 premium-to-profit bridge needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
+          <PendingNote>{`${company.shortName} reports on a life basis — the ₹100 premium-to-profit engine needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
         </div>
-      )}
+      </div>
+    )
+  }
+
+  const absorbed = cost.loss + cost.commission + cost.expense
+  const uwProfit = Math.round((100 - absorbed) * 10) / 10
+  const uwPos = uwProfit >= 0
+
+  const bands = [
+    { key: 'claims', label: 'Claims', sub: 'Largest absorption', amount: cost.loss, display: `₹${cost.loss.toFixed(1)}`, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' },
+    { key: 'opex', label: 'Opex', sub: 'Operating cost', amount: cost.expense, display: `₹${cost.expense.toFixed(1)}`, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' },
+    { key: 'comm', label: 'Commission', sub: 'Distribution cost', amount: cost.commission, display: `₹${cost.commission.toFixed(1)}`, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE' },
+    {
+      key: 'uw',
+      label: uwPos ? 'Underwriting profit' : 'Underwriting loss',
+      sub: uwPos ? 'Spread retained' : 'Spread negative',
+      amount: Math.max(Math.abs(uwProfit), 1.5),
+      display: `${uwPos ? '' : '−'}₹${Math.abs(uwProfit).toFixed(1)}`,
+      color: uwPos ? PALETTE.teal : PALETTE.coral,
+      bg: uwPos ? '#E7F4F3' : '#FBEFEF',
+      border: uwPos ? '#C9E5E3' : '#EFD4D3',
+    },
+  ]
+
+  const BASE = 22
+  const SPAN = 150
+  const GAP = 8
+  const heights = bands.map((b) => BASE + (b.amount / 100) * SPAN)
+  const totalH = Math.round(heights.reduce((s, h) => s + h, 0) + GAP * (bands.length - 1))
+  const centers: number[] = []
+  let acc = 0
+  heights.forEach((h) => {
+    centers.push(acc + h / 2)
+    acc += h + GAP
+  })
+
+  return (
+    <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
+      {header}
+      <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.16em] text-champagne">₹100 premium journey</p>
+
+      <div className="mt-1.5 flex items-stretch gap-0" style={{ height: totalH }}>
+        {/* Input — the premium that enters the engine */}
+        <div className="flex w-[86px] shrink-0 flex-col items-center justify-center rounded-xl px-2 text-center" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
+          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#E9D49A' }}>Premium in</span>
+          <span className="mt-1 font-display text-[24px] leading-none text-white">₹100</span>
+          <span className="mt-1 text-[8.5px] leading-snug text-white/70">GWP received</span>
+        </div>
+
+        {/* Splitting stream — thickness proportional to amount absorbed */}
+        <svg className="shrink-0" width={34} height={totalH} viewBox={`0 0 34 ${totalH}`} aria-hidden>
+          {bands.map((b, i) => (
+            <path
+              key={b.key}
+              d={`M0 ${totalH / 2} C 22 ${totalH / 2}, 12 ${centers[i]}, 34 ${centers[i]}`}
+              fill="none"
+              stroke={b.color}
+              strokeOpacity={0.42}
+              strokeWidth={Math.max(2.5, (b.amount / 100) * 40)}
+              strokeLinecap="round"
+            />
+          ))}
+        </svg>
+
+        {/* Absorption + retained-profit bands */}
+        <div className="flex min-w-0 flex-1 flex-col" style={{ gap: GAP }}>
+          {bands.map((b, i) => (
+            <div
+              key={b.key}
+              className="relative flex items-center justify-between overflow-hidden rounded-lg border pl-3.5 pr-3"
+              style={{ height: heights[i], background: b.bg, borderColor: b.border }}
+            >
+              <span className="absolute inset-y-0 left-0 w-1" style={{ background: b.color }} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: b.color }} />
+                  <span className="truncate text-[9px] font-bold uppercase tracking-[0.1em] text-navy-deep">{b.label}</span>
+                </div>
+                {heights[i] > 46 && <span className="mt-0.5 block pl-3 text-[9.5px] text-ink-secondary">{b.sub}</span>}
+              </div>
+              <span className="shrink-0 font-display leading-none" style={{ color: b.color, fontSize: heights[i] > 90 ? 21 : heights[i] > 42 ? 16 : 14 }}>
+                {b.display}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Flow to output */}
+        <div className="flex shrink-0 items-center px-1">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm" style={{ borderColor: '#E9D49A', color: GOLD }}>
+            →
+          </span>
+        </div>
+
+        {/* Output — the final reported-profit conversion */}
+        <div
+          className="flex w-[112px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 text-center"
+          style={{ background: 'linear-gradient(160deg, #FBF1D8 0%, #FFFAEC 100%)', borderColor: '#E9D49A', boxShadow: `0 14px 28px ${GOLD}40` }}
+        >
+          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#9A7B1E' }}>PAT margin</span>
+          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: GOLD }}>{patMargin == null ? 'n/a' : `${patMargin.toFixed(1)}%`}</span>
+          <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">Reported profit conversion</span>
+        </div>
+      </div>
     </div>
   )
 }
 
-// Compact proof rail that replaces the separate Profit-Velocity + Operating-
-// Leverage cards: net margin, expense-ratio trend and PAT growth in one panel.
+// Compact proof rail beside the engine: net margin, expense-ratio trend and PAT
+// growth — the cleaner replacement for the old Profit-Velocity + Operating-
+// Leverage cards (reuses the operatingLeverage helper + sparklines).
 function ConversionQuality({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const mm = getMarginMetrics(company)
   const patSeries = NET_PROFIT_QUARTERS[company.id]
@@ -926,6 +984,7 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
   const expImproving = ol.expDelta != null && ol.expDelta < 0
   const patUp = ol.patYoY != null && ol.patYoY > 0
   const patStrong = ol.patYoY != null && ol.patYoY >= 50
+  const conclusion = patUp || (hasTrend && mm.netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
 
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
@@ -934,41 +993,43 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
         <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Conversion Quality</p>
       </div>
 
-      <div className="mt-3">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin · TTM</span>
-          <SignalBadge label={hasTrend ? (mm.netMargin > 5 ? 'Healthy' : mm.netMargin > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasTrend ? netTone : 'navy'} size="sm" />
+      <div className="mt-4 space-y-4">
+        <div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin · TTM</span>
+            <SignalBadge label={hasTrend ? (mm.netMargin > 5 ? 'Healthy' : mm.netMargin > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasTrend ? netTone : 'navy'} size="sm" />
+          </div>
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <span className="font-display text-[22px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'Data pending'}</span>
+            {hasTrend && (
+              <div className="h-[26px] w-[88px] shrink-0">
+                <MiniPatArea values={patSeries} />
+              </div>
+            )}
+          </div>
         </div>
-        <div className="mt-0.5 flex items-end justify-between gap-2">
-          <span className="font-display text-[18px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'Data pending'}</span>
-          {hasTrend && (
-            <div className="w-[92px] shrink-0">
-              <MiniPatArea values={patSeries} />
-            </div>
-          )}
+
+        <div className="border-t border-[#ECE1C8] pt-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Expense ratio</span>
+            <SignalBadge label={hasExp ? (expImproving ? 'Improving' : 'Flat') : 'Pending'} tone={hasExp && expImproving ? 'teal' : 'navy'} size="sm" />
+          </div>
+          <div className="mt-1 flex items-end justify-between gap-2">
+            <span className="font-display text-[16px] leading-none text-navy-deep">{hasExp ? `${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}%` : 'Data pending'}</span>
+            {ol.expSeries.length >= 2 && <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={70} height={24} />}
+          </div>
+        </div>
+
+        <div className="border-t border-[#ECE1C8] pt-3.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT growth · YoY</span>
+            <SignalBadge label={ol.patYoY == null ? 'Pending' : patStrong ? 'Strong' : patUp ? 'Rising' : 'Falling'} tone={ol.patYoY == null ? 'navy' : patUp ? 'positive' : 'negative'} size="sm" />
+          </div>
+          <span className="mt-1 block font-display text-[22px] leading-none text-navy-deep">{ol.patYoY == null ? 'Data pending' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`}</span>
         </div>
       </div>
 
-      <div className="mt-3 border-t border-[#ECE1C8] pt-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Expense ratio</span>
-          <SignalBadge label={hasExp ? (expImproving ? 'Improving' : 'Flat') : 'Pending'} tone={hasExp && expImproving ? 'teal' : 'navy'} size="sm" />
-        </div>
-        <div className="mt-0.5 flex items-center justify-between gap-2">
-          <span className="font-display text-[15px] leading-none text-navy-deep">{hasExp ? `${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}%` : 'Data pending'}</span>
-          {ol.expSeries.length >= 2 && <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={66} height={22} />}
-        </div>
-      </div>
-
-      <div className="mt-3 border-t border-[#ECE1C8] pt-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT growth · YoY</span>
-          <SignalBadge label={ol.patYoY == null ? 'Pending' : patStrong ? 'Strong' : patUp ? 'Rising' : 'Falling'} tone={ol.patYoY == null ? 'navy' : patUp ? 'positive' : 'negative'} size="sm" />
-        </div>
-        <span className="mt-0.5 block font-display text-[18px] leading-none text-navy-deep">{ol.patYoY == null ? 'Data pending' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`}</span>
-      </div>
-
-      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Premium ≠ profit — these proof points test how efficiently premium converts.</p>
+      <p className="mt-auto pt-4 text-[10.5px] font-medium leading-snug text-navy-deep/80">{conclusion}</p>
     </div>
   )
 }
@@ -1431,14 +1492,32 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
     case 'core':
       body = <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
       break
-    case 'conversion':
+    case 'conversion': {
+      const conv = COST_RATIOS[company.id]
+      const uwSpread = conv ? Math.round((100 - (conv.loss + conv.commission + conv.expense)) * 10) / 10 : null
+      const olc = operatingLeverage(company, series)
+      const insightLine =
+        uwSpread == null
+          ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
+          : uwSpread > 0
+            ? olc.expDelta != null && olc.expDelta < 0
+              ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — an early proof of operating leverage.'
+              : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
+            : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
       body = (
-        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <ConversionBridge company={company} series={series} />
-          <ConversionQuality company={company} series={series} />
+        <div className="space-y-3">
+          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+            <ConversionBridge company={company} series={series} />
+            <ConversionQuality company={company} series={series} />
+          </div>
+          <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: '#FBF4E3', borderColor: '#ECE1C8' }}>
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: GOLD }} />
+            <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{insightLine}</p>
+          </div>
         </div>
       )
       break
+    }
     case 'returns':
       body = (
         <div className="space-y-4">
