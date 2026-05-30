@@ -4,7 +4,6 @@ import {
   Area,
   AreaChart,
   Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   ComposedChart,
@@ -30,6 +29,9 @@ import {
   ChevronRight,
   MousePointerClick,
   Database,
+  TrendingUp,
+  TrendingDown,
+  Minus,
   type LucideIcon,
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -139,6 +141,49 @@ function combinedTone(v: number): { label: string; tone: Tone } {
 // Chart building blocks
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Trendline helpers — a least-squares fit over a time series plus a compact
+// direction pill, so every time-series chart can carry an elegant trendline and
+// a plain-English direction. With < 2 real points we return null, and callers
+// show "Trend pending" rather than faking a line.
+// ---------------------------------------------------------------------------
+
+interface TrendFit {
+  fitted: number[]
+  slope: number
+}
+
+function fitTrend(values: (number | null | undefined)[]): TrendFit | null {
+  const pts = values
+    .map((v, i) => [i, v] as const)
+    .filter(([, v]) => typeof v === 'number' && Number.isFinite(v)) as [number, number][]
+  if (pts.length < 2) return null
+  const n = pts.length
+  let sx = 0, sy = 0, sxy = 0, sxx = 0
+  for (const [x, y] of pts) {
+    sx += x
+    sy += y
+    sxy += x * y
+    sxx += x * x
+  }
+  const denom = n * sxx - sx * sx
+  const slope = denom === 0 ? 0 : (n * sxy - sx * sy) / denom
+  const intercept = (sy - slope * sx) / n
+  return { fitted: values.map((_, i) => intercept + slope * i), slope }
+}
+
+function TrendPill({ label, dir, color }: { label: string; dir: 'up' | 'down' | 'flat'; color: string }) {
+  const Icon = dir === 'up' ? TrendingUp : dir === 'down' ? TrendingDown : Minus
+  const muted = label === 'Trend pending'
+  const c = muted ? '#94A3B8' : color
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border bg-white/85 px-2 py-0.5 text-[9px] font-semibold shadow-sm" style={{ borderColor: `${c}55`, color: c }}>
+      <Icon className="h-2.5 w-2.5" />
+      {label}
+    </span>
+  )
+}
+
 function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values: number[]; tone?: 'positive' | 'navy' | 'negative'; height?: number; width?: number }) {
   const stroke = tone === 'positive' ? PALETTE.emerald : tone === 'negative' ? PALETTE.coral : PALETTE.navy
   const data = values.map((v, i) => ({ i, v }))
@@ -155,48 +200,65 @@ function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values:
 
 // Combined ratio quarterly line with green strong / amber watch / red weak bands.
 function CombinedRatioBandedTrend({ series }: { series: number[] }) {
-  const data = QUARTER_LABELS.map((label, i) => ({ label, cr: series[i] }))
+  const fit = fitTrend(series)
+  const data = QUARTER_LABELS.map((label, i) => ({ label, cr: series[i], trend: fit ? fit.fitted[i] : null }))
   const yMin = Math.min(94, ...series) - 1
   const yMax = Math.max(112, ...series) + 1
+  // Lower combined ratio is better, so a falling fit = improving discipline.
+  const dir = !fit ? 'flat' : fit.slope < -0.15 ? 'down' : fit.slope > 0.15 ? 'up' : 'flat'
+  const label = !fit ? 'Trend pending' : dir === 'down' ? 'Improving' : dir === 'up' ? 'Rising' : 'Stable'
+  const trendColor = !fit ? '#94A3B8' : dir === 'down' ? PALETTE.emerald : dir === 'up' ? PALETTE.coral : PALETTE.navy
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <LineChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={36} unit="%" />
-        <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number) => [`${v.toFixed(1)}%`, 'Combined ratio']} />
-        <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
-        <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.08} />
-        <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.07} />
-        <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} />
-        <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} />
-      </LineChart>
-    </ResponsiveContainer>
+    <div>
+      <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
+      <ResponsiveContainer width="100%" height={172}>
+        <LineChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+          <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={36} unit="%" />
+          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`${v.toFixed(1)}%`, n === 'trend' ? 'Trend' : 'Combined ratio']} />
+          <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
+          <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.08} />
+          <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.07} />
+          <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} />
+          {fit && <Line type="linear" dataKey="trend" stroke={trendColor} strokeWidth={1.4} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
+          <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
-// Quarterly PAT bars with the latest quarter highlighted.
-function QuarterlyPatBars({ series }: { series: number[] }) {
-  const data = QUARTER_LABELS.map((label, i) => ({ label, pat: series[i] }))
+// Quarterly PAT bars with the latest quarter highlighted + a smooth trendline.
+function QuarterlyPatBars({ series, accent = PALETTE.amber }: { series: number[]; accent?: string }) {
+  const fit = fitTrend(series)
+  const data = QUARTER_LABELS.map((label, i) => ({ label, pat: series[i], trend: fit ? fit.fitted[i] : null }))
   const positive = series[series.length - 1] >= 0
+  const dir = !fit ? 'flat' : fit.slope > 0.5 ? 'up' : fit.slope < -0.5 ? 'down' : 'flat'
+  const label = !fit ? 'Trend pending' : dir === 'up' ? 'PAT scaling' : dir === 'down' ? 'PAT easing' : 'PAT stable'
+  const trendColor = !fit ? '#94A3B8' : dir === 'down' ? PALETTE.coral : accent
   return (
-    <ResponsiveContainer width="100%" height={180}>
-      <BarChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="36%">
-        <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={38} />
-        <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number) => [`₹${v.toLocaleString('en-IN')} Cr`, 'PAT']} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
-        <ReferenceLine y={0} stroke={PALETTE.border} />
-        <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={32}>
-          {data.map((d, i) => {
-            const isLast = i === data.length - 1
-            const color = d.pat < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
-            const strokeC = d.pat < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
-            return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1 : 0.4} />
-          })}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div>
+      <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
+      <ResponsiveContainer width="100%" height={172}>
+        <ComposedChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="36%">
+          <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
+          <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+          <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={38} />
+          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`₹${v.toLocaleString('en-IN')} Cr`, n === 'trend' ? 'Trend' : 'PAT']} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
+          <ReferenceLine y={0} stroke={PALETTE.border} />
+          <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={32}>
+            {data.map((d, i) => {
+              const isLast = i === data.length - 1
+              const color = d.pat < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
+              const strokeC = d.pat < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
+              return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1 : 0.4} />
+            })}
+          </Bar>
+          {fit && <Line type="monotone" dataKey="trend" stroke={trendColor} strokeWidth={1.6} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   )
 }
 
@@ -650,6 +712,11 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
   const enough = usable.length >= 2
   const latest = usable[usable.length - 1]
   const turned = enough && usable.some((d) => d.uw < 0) && latest.uw > 0
+  const fit = fitTrend(usable.map((d) => d.uw))
+  const trendData = enough ? usable.map((d, i) => ({ ...d, trend: fit ? fit.fitted[i] : null })) : usable
+  const trendDir = !fit ? 'flat' : fit.slope > 0.5 ? 'up' : fit.slope < -0.5 ? 'down' : 'flat'
+  const trendLabel = !enough ? 'Trend pending' : turned ? 'Turning positive' : trendDir === 'up' ? 'Improving' : trendDir === 'down' ? 'Softening' : 'Stable'
+  const trendColor = !enough ? '#94A3B8' : trendDir === 'down' && !turned ? PALETTE.coral : PALETTE.teal
   const insightLine = !enough
     ? `Underwriting-profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years.`
     : turned
@@ -669,10 +736,15 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
           ) : undefined
         }
       />
-      <div className="mt-3">
+      {enough && (
+        <div className="mt-2 flex justify-end">
+          <TrendPill label={trendLabel} dir={trendDir} color={trendColor} />
+        </div>
+      )}
+      <div className="mt-2">
         {enough ? (
           <ResponsiveContainer width="100%" height={208}>
-            <ComposedChart data={usable} margin={{ top: 12, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
+            <ComposedChart data={trendData} margin={{ top: 12, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
               <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
               <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
               <YAxis yAxisId="uw" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={46} tickFormatter={(v: number) => `₹${v}`} />
@@ -707,6 +779,7 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
                   return <Cell key={d.fy} fill={fill} stroke={isLast ? PALETTE.navyDeep : 'none'} strokeWidth={isLast ? 1.2 : 0} />
                 })}
               </Bar>
+              {fit && <Line yAxisId="uw" type="linear" dataKey="trend" name="UW trend" stroke={trendColor} strokeWidth={1.4} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
               <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.5} dot={{ r: 2.5, fill: PALETTE.champagne }} activeDot={{ r: 4 }} connectNulls />
             </ComposedChart>
           </ResponsiveContainer>
@@ -911,6 +984,8 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
   const expImproving = ol.expDelta != null && ol.expDelta < 0
   const patUp = ol.patYoY != null && ol.patYoY > 0
   const patStrong = ol.patYoY != null && ol.patYoY >= 50
+  const marginFit = hasTrend ? fitTrend(patSeries) : null
+  const marginUp = marginFit == null ? false : marginFit.slope >= 0
   const conclusion = patUp || (hasTrend && mm.netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
 
   return (
@@ -929,8 +1004,11 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
           <div className="mt-1 flex items-end justify-between gap-2">
             <span className="font-display text-[22px] leading-none text-navy-deep">{hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'Data pending'}</span>
             {hasTrend && (
-              <div className="h-[26px] w-[88px] shrink-0">
-                <MiniPatArea values={patSeries} />
+              <div className="flex flex-col items-end gap-0.5">
+                <TrendPill label={marginFit == null ? 'Trend pending' : marginUp ? 'Expanding' : 'Easing'} dir={marginFit == null ? 'flat' : marginUp ? 'up' : 'down'} color={marginUp ? GOLD : PALETTE.coral} />
+                <div className="h-[24px] w-[88px] shrink-0">
+                  <MiniPatArea values={patSeries} />
+                </div>
               </div>
             )}
           </div>
@@ -1021,10 +1099,7 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
   const uw = latest ? underwritingResult(latest) : null
   const roe = company.roe
   const solvency = company.solvency
-  const pats = series.filter((p) => p.pat != null)
-  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
   const costAbsorb = cost ? cost.loss + cost.commission + cost.expense : null
-  const roeModerate = roe > 0 && roe < 10
 
   return {
     underwriting: {
@@ -1064,14 +1139,10 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
       watch: 'PAT margin, claims ratio, expense ratio and underwriting profit.',
     },
     returns: {
-      soWhat: roe <= 0
-        ? 'Return on equity is pending for this carrier.'
-        : roeModerate
-          ? 'ROE is improving as PAT scales, but remains moderate because the post-IPO capital base is still large.'
-          : 'ROE sits at a healthy level as PAT scales against the equity base.',
-      why: patYoY == null ? `Return on equity of ${roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}.` : `PAT ${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY on a ${roe.toFixed(1)}% return on equity.`,
-      meaning: roeModerate ? 'Returns are real but moderate against a large post-IPO equity base.' : 'Returns are scaling with profitability.',
-      watch: 'Whether PAT keeps compounding faster than equity.',
+      soWhat: roe <= 0 ? 'Return on equity is pending for this carrier.' : 'ROE is improving, but it is not yet a mature high-return profile.',
+      why: 'PAT growth and margin improvement are helping, while the large capital base still dilutes returns.',
+      meaning: 'Future ROE expansion depends on profit compounding faster than equity growth.',
+      watch: 'PAT growth, ROE trend, solvency and capital deployment.',
     },
     capital: {
       soWhat: solvency > 0
@@ -1368,60 +1439,80 @@ function DisciplineQuality({ company }: { company: Insurer }) {
 
 // Shareholder-return "PAT-to-ROE Return Bridge" — the drivers that build ROE
 // flow left→right into the ROE output; the large capital base is the drag.
+// Shareholder-return "PAT-to-ROE Return Engine" — a rising PAT pool feeds three
+// lifting boosters (PAT growth, margin, operating leverage); the large capital
+// base is a visible drag/weight; the result lands in the ROE output. Lift/drag
+// is shown by block offset (boosters sit high, the drag sits low) so the story
+// reads instantly: profit is improving, ROE still early because capital is large.
 function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const mm = getMarginMetrics(company)
   const ol = operatingLeverage(company, series)
-  const hasTrend = NET_PROFIT_QUARTERS[company.id] !== undefined
+  const patSeries = NET_PROFIT_QUARTERS[company.id]
+  const hasTrend = patSeries !== undefined
   const roe = company.roe
   const roeModerate = roe > 0 && roe < 10
-  const drivers = [
-    { key: 'patg', label: 'PAT growth', value: ol.patYoY == null ? 'n/a' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`, color: PALETTE.emerald, bg: '#EAF5EE', border: '#CFE7DA', op: '' },
-    { key: 'margin', label: 'Net margin', value: hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'n/a', color: GOLD, bg: '#FBF1D8', border: '#E9D49A', op: '+' },
-    { key: 'lev', label: 'Op. leverage', value: ol.expDelta == null ? 'n/a' : ol.expDelta < 0 ? `↓${Math.abs(ol.expDelta).toFixed(1)}pp` : `↑${ol.expDelta.toFixed(1)}pp`, color: PALETTE.teal, bg: '#E7F4F3', border: '#C9E5E3', op: '+' },
-    { key: 'cap', label: 'Capital base', value: 'Large', color: '#7E8AA0', bg: '#F1F3F7', border: '#DBE0E8', op: '−' },
+
+  const boosters = [
+    { key: 'patg', kicker: 'Booster', label: 'PAT growth', value: ol.patYoY == null ? 'n/a' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`, sub: 'Profit pool expanding', color: PALETTE.emerald, bg: '#EAF5EE', border: '#CFE7DA' },
+    { key: 'margin', kicker: 'Booster', label: 'Net margin', value: hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'n/a', sub: 'Conversion improving', color: GOLD, bg: '#FBF1D8', border: '#E9D49A' },
+    { key: 'lev', kicker: 'Booster', label: 'Op. leverage', value: ol.expDelta == null ? 'n/a' : ol.expDelta < 0 ? `↓${Math.abs(ol.expDelta).toFixed(1)}pp` : `↑${ol.expDelta.toFixed(1)}pp`, sub: 'Expenses easing', color: PALETTE.teal, bg: '#E7F4F3', border: '#C9E5E3' },
   ]
-  const flow: ReactNode[] = []
-  drivers.forEach((d, i) => {
-    if (i > 0) {
-      flow.push(
-        <div key={`c-${d.key}`} className="flex shrink-0 items-center px-0.5">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none text-ink-secondary shadow-sm" style={{ borderColor: '#E7ECF6' }}>{d.op}</span>
-        </div>,
-      )
-    }
-    flow.push(
-      <div key={d.key} className="flex min-w-[82px] flex-1 flex-col justify-between rounded-xl border px-3 py-2.5" style={{ background: d.bg, borderColor: d.border }}>
-        <div className="flex items-center gap-1">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: d.color }} />
-          <span className="truncate text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">{d.label}</span>
-        </div>
-        <span className="mt-2 font-display text-[16px] leading-none" style={{ color: d.color }}>{d.value}</span>
-      </div>,
-    )
-  })
-  flow.push(
-    <div key="c-eq" className="flex shrink-0 items-center px-0.5">
-      <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm" style={{ borderColor: '#EFD9C4', color: ORANGE }}>=</span>
-    </div>,
-  )
-  flow.push(
-    <div key="roe" className="flex w-[104px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #FBEFE4 0%, #FFF7F0 100%)', borderColor: '#EFD9C4', boxShadow: `0 12px 26px ${ORANGE}33` }}>
-      <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#9A5A1E' }}>ROE output</span>
-      <span className="mt-1 font-display text-[24px] leading-none" style={{ color: ORANGE }}>{roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}</span>
-      <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">Return on equity</span>
-    </div>,
-  )
+
   return (
     <div className="rounded-xl border p-4" style={{ background: '#FCF4EC', borderColor: '#EFDDCB' }}>
       <div className="flex items-baseline justify-between">
         <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Return Bridge</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">PAT-to-ROE Return Bridge</h3>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Return Engine</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">PAT-to-ROE Return Engine</h3>
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How reported profit and its drivers build into the return shareholders earn.</p>
-      <div className="mt-3.5 flex flex-wrap items-stretch gap-y-2">{flow}</div>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Rising profit and its boosters lift the return; the large capital base drags it back before ROE.</p>
+
+      <div className="mt-4 flex items-stretch gap-2">
+        {/* Rising PAT pool — the source */}
+        <div className="flex w-[96px] shrink-0 flex-col justify-between rounded-xl px-3 py-3 text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.emerald} 0%, #1F6B49 100%)` }}>
+          <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/85">PAT pool</span>
+          <div className="mt-2">
+            {hasTrend ? <Sparkline values={patSeries} tone="positive" width={70} height={22} /> : null}
+            <span className="mt-1 block font-display text-[15px] leading-none text-white">{hasTrend ? `₹${patSeries[patSeries.length - 1]} Cr` : 'n/a'}</span>
+            <span className="text-[8px] text-white/75">Q4 · rising</span>
+          </div>
+        </div>
+
+        {/* Boosters lift; capital base drags — central engine */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex flex-1 items-stretch gap-1.5">
+            {boosters.map((b, i) => (
+              <div key={b.key} className="flex flex-1 flex-col">
+                <div className="mb-0.5 flex items-center justify-center"><TrendingUp className="h-3 w-3" style={{ color: b.color }} /></div>
+                <div className="flex flex-1 flex-col justify-between rounded-xl border px-2.5 py-2" style={{ background: b.bg, borderColor: b.border, marginTop: i === 1 ? 0 : 6 }}>
+                  <span className="truncate text-[8px] font-bold uppercase tracking-[0.05em] text-ink-secondary">{b.label}</span>
+                  <span className="mt-1.5 font-display text-[16px] leading-none" style={{ color: b.color }}>{b.value}</span>
+                  <span className="mt-1 block text-[8px] leading-tight text-ink-secondary">{b.sub}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Capital base — the drag/weight, sitting low and full-width */}
+          <div className="mt-2 flex items-center justify-between rounded-xl border px-3 py-2" style={{ background: '#F1F3F7', borderColor: '#DBE0E8' }}>
+            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.05em] text-ink-secondary">
+              <TrendingDown className="h-3 w-3" style={{ color: '#8A93A6' }} />
+              Capital base drag
+            </span>
+            <span className="font-display text-[13px] leading-none text-[#6B7488]">Large · post-IPO</span>
+          </div>
+        </div>
+
+        {/* Arrow + ROE output destination */}
+        <div className="flex shrink-0 items-center"><ChevronRight className="h-5 w-5" style={{ color: ORANGE }} /></div>
+        <div className="flex w-[110px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #FBEFE4 0%, #FFF7F0 100%)', borderColor: '#EFD9C4', boxShadow: `0 14px 28px ${ORANGE}3a` }}>
+          <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#9A5A1E' }}>ROE output</span>
+          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: ORANGE }}>{roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}</span>
+          <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">Early return signal</span>
+        </div>
+      </div>
+
       <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">{roeModerate ? 'ROE is improving as PAT scales, but stays moderate because the post-IPO capital base is still large.' : roe > 0 ? 'ROE is scaling with profitability as PAT compounds against the equity base.' : 'ROE drivers are pending for this carrier.'}</p>
     </div>
   )
@@ -1612,13 +1703,13 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
             <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">PAT Pool</p>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Proof · PAT Pool</p>
                   <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
                 </div>
                 <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
               </div>
               {hasTrend ? (
-                <QuarterlyPatBars series={patSeries} />
+                <QuarterlyPatBars series={patSeries} accent={ORANGE} />
               ) : (
                 <div className="flex h-[180px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
                   Data pending — quarterly PAT not reported for {company.shortName}
