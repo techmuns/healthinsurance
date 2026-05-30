@@ -175,49 +175,6 @@ function CombinedRatioBandedTrend({ series }: { series: number[] }) {
   )
 }
 
-// Donut of where each rupee of premium goes; center label shows combined ratio.
-function CostDonut({ cost, combinedRatio }: { cost: { loss: number; commission: number; expense: number }; combinedRatio: number }) {
-  const data = [
-    { label: 'Claims', value: cost.loss, color: PALETTE.coral },
-    { label: 'Commission', value: cost.commission, color: PALETTE.amber },
-    { label: 'Opex', value: cost.expense, color: PALETTE.navy },
-  ]
-  return (
-    <div className="relative h-[180px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={data}
-            dataKey="value"
-            cx="50%"
-            cy="50%"
-            innerRadius="80%"
-            outerRadius="94%"
-            startAngle={90}
-            endAngle={-270}
-            stroke="#fff"
-            strokeWidth={1}
-            paddingAngle={1}
-            isAnimationActive={false}
-          >
-            {data.map((d) => (
-              <Cell key={d.label} fill={d.color} />
-            ))}
-          </Pie>
-          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, _n, p) => [`${v.toFixed(1)}%`, p.payload.label]} />
-        </PieChart>
-      </ResponsiveContainer>
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-[9.5px] uppercase tracking-wide text-ink-secondary">Combined Ratio</span>
-        <span className="font-display text-[24px] leading-none text-navy-deep">{combinedRatio.toFixed(1)}%</span>
-        <span className={`mt-0.5 text-[10px] ${combinedRatio < 100 ? toneText.positive : combinedRatio <= 105 ? toneText.warning : toneText.negative}`}>
-          {combinedRatio < 100 ? 'Underwriting profit' : combinedRatio <= 105 ? 'Watch zone' : 'Loss-making'}
-        </span>
-      </div>
-    </div>
-  )
-}
-
 // Quarterly PAT bars with the latest quarter highlighted.
 function QuarterlyPatBars({ series }: { series: number[] }) {
   const data = QUARTER_LABELS.map((label, i) => ({ label, pat: series[i] }))
@@ -420,13 +377,6 @@ function underwritingResult(p: AnnualPoint): number | null {
 
 const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
 
-const toneBg: Record<Tone, string> = {
-  positive: 'bg-[#F2F8F4]',
-  warning: 'bg-[#FDF7E8]',
-  negative: 'bg-[#FBF1F1]',
-  neutral: 'bg-soft-blue/70',
-  navy: 'bg-soft-blue/70',
-}
 
 // Compact pending state — never a large blank box. Says exactly what's missing.
 function PendingNote({ children }: { children: string }) {
@@ -1011,79 +961,6 @@ function ConversionQuality({ company, series }: { company: Insurer; series: Annu
   )
 }
 
-// ─── (F) ROE Explanation — why ROE is at its current level ───────────────────
-function RoeExplanationCard({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
-  const roe = company.roe
-  const hasRoe = roe > 0
-  const pats = series.filter((p) => p.pat != null)
-  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
-  const gwps = series.filter((p) => p.gwp != null)
-  const gwpGrowth = gwps.length >= 2 && gwps[gwps.length - 2].gwp ? ((gwps[gwps.length - 1].gwp! - gwps[gwps.length - 2].gwp!) / gwps[gwps.length - 2].gwp!) * 100 : company.growth > 0 ? company.growth : null
-  const exp = series.filter((p) => p.expenseRatio != null)
-  const expImproving = exp.length >= 2 ? (exp[exp.length - 1].expenseRatio as number) < (exp[0].expenseRatio as number) : null
-
-  const state: { label: string; tone: Tone } =
-    patYoY == null
-      ? { label: 'Pending', tone: 'neutral' }
-      : patYoY > 8
-        ? { label: 'Improving', tone: 'positive' }
-        : patYoY < -8
-          ? { label: 'Pressure', tone: 'negative' }
-          : { label: 'Stable', tone: 'navy' }
-
-  const moderate = hasRoe && roe < 10
-  const sentence =
-    patYoY == null
-      ? `ROE drivers pending for ${company.shortName}.`
-      : state.label === 'Improving' && moderate
-        ? 'ROE is improving as PAT scales faster than equity, but remains moderate because the post-IPO capital base is still large.'
-        : state.label === 'Improving'
-          ? `ROE is improving as PAT scales faster than equity (PAT ${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}% YoY).`
-          : state.label === 'Pressure'
-            ? `ROE is under pressure as PAT contracts ${patYoY.toFixed(0)}% YoY.`
-            : 'ROE is broadly stable; PAT and equity are scaling at similar rates.'
-
-  const drivers: { label: string; value: string; tone: Tone }[] = [
-    { label: 'PAT margin', value: patMargin != null ? `${patMargin.toFixed(1)}%` : '—', tone: patMargin != null && patMargin > 3 ? 'positive' : 'neutral' },
-    { label: 'Premium growth', value: gwpGrowth == null ? '—' : gwpGrowth >= 20 ? 'Strong' : gwpGrowth >= 10 ? 'Steady' : 'Soft', tone: gwpGrowth != null && gwpGrowth >= 20 ? 'positive' : 'neutral' },
-    { label: 'Operating leverage', value: expImproving == null ? 'Pending' : expImproving ? 'Improving' : 'Flat', tone: expImproving ? 'positive' : 'neutral' },
-    { label: 'Capital base', value: company.solvency > 0 ? `${company.solvency.toFixed(2)}x` : '—', tone: 'neutral' },
-  ]
-
-  return (
-    <section className="card-surface flex h-full flex-col p-4" style={tintBg ? { background: tintBg } : undefined}>
-      <StoryHeader
-        eyebrow="ROE Explanation"
-        title="Why ROE is where it is"
-        right={<SignalBadge label={state.label} tone={state.tone === 'neutral' ? 'navy' : state.tone} size="sm" />}
-      />
-      {/* Compact ROE bridge: PAT margin + growth + operating leverage + capital → ROE */}
-      <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        {drivers.map((d, i) => (
-          <div key={d.label} className="contents">
-            <div className={`rounded-md px-2 py-1 ${toneBg[d.tone]}`}>
-              <p className="text-[8px] font-semibold uppercase tracking-wide text-ink-secondary">{d.label}</p>
-              <p className={`text-[12px] font-semibold leading-tight ${toneText[d.tone]}`}>{d.value}</p>
-            </div>
-            {i < drivers.length - 1 && <span className="text-[12px] font-semibold text-ink-secondary/50">+</span>}
-          </div>
-        ))}
-        <span className="text-[12px] font-semibold text-ink-secondary/50">=</span>
-        <div className="rounded-md bg-soft-blue px-2 py-1">
-          <p className="text-[8px] font-semibold uppercase tracking-wide text-ink-secondary">ROE</p>
-          <p className="text-[12px] font-semibold leading-tight text-navy-deep">{hasRoe ? `${roe.toFixed(1)}%` : '—'}</p>
-        </div>
-      </div>
-      <p className="mt-3 text-[11.5px] leading-relaxed text-navy-deep/85">{sentence}</p>
-      <div className="mt-auto flex justify-end pt-3">
-        <SourceTag source={hasRoe ? 'Company filing · estimated' : 'Pending'} period="FY25" confidence={hasRoe ? 'medium' : 'pending'} />
-      </div>
-    </section>
-  )
-}
-
 // ─── (G) Status cards — small, node-scoped signals (only the relevant one) ───
 function CapitalBufferCard({ company }: { company: Insurer }) {
   const tone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
@@ -1363,33 +1240,253 @@ function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string;
   )
 }
 
-// Reusable zoned meter — a thick track with green/amber/red zones and labelled
-// markers. Drives the Underwriting "Discipline Meter" (combined ratio vs 100)
-// and the Capital "Solvency Cushion" (solvency vs the 1.5x floor).
-function ZoneMeter({ min, max, zones, markers }: { min: number; max: number; zones: { to: number; color: string }[]; markers: { value: number; label: string; color: string }[] }) {
-  const span = max - min || 1
-  const pos = (v: number) => Math.max(0, Math.min(100, ((v - min) / span) * 100))
-  const segs: { w: number; color: string }[] = []
-  let prev = min
-  for (const z of zones) {
-    segs.push({ w: ((z.to - prev) / span) * 100, color: z.color })
-    prev = z.to
-  }
+// Underwriting "Combined Ratio Control Engine" — a cost build-up waterfall:
+// claims + commission + opex climb toward the combined ratio and stay under the
+// 100% break-even; the gap to 100 is the underwriting surplus.
+function CombinedRatioWaterfall({ company }: { company: Insurer }) {
+  const cost = COST_RATIOS[company.id]
+  const hasCR = company.combinedRatio > 0
+  const crSeries = COMBINED_RATIO_QUARTERS[company.id]
+  const claims = cost?.loss ?? 0
+  const comm = cost?.commission ?? 0
+  const opex = cost?.expense ?? 0
+  const cr = cost ? Math.round((claims + comm + opex) * 10) / 10 : null
+  const surplus = cr != null ? Math.round((100 - cr) * 10) / 10 : null
+  const crColor = cr == null ? PALETTE.navy : cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
+  const H = 182
+  const MAX = 112
+  const y = (v: number) => ((MAX - v) / MAX) * H
+  const cols =
+    cost && cr != null
+      ? [
+          { key: 'claims', label: 'Claims', sub: 'absorbed', from: 0, to: claims, color: PALETTE.coral },
+          { key: 'comm', label: 'Commission', sub: 'cost', from: claims, to: claims + comm, color: PALETTE.amber },
+          { key: 'opex', label: 'Operating', sub: 'cost', from: claims + comm, to: claims + comm + opex, color: PALETTE.navy },
+          { key: 'surplus', label: 'Surplus', sub: 'below 100', from: cr, to: 100, color: PALETTE.emerald, surplus: true },
+        ]
+      : []
   return (
-    <div className="px-1 pb-4 pt-6">
-      <div className="relative">
-        <div className="flex h-2.5 w-full overflow-hidden rounded-full ring-1 ring-soft-border/60">
-          {segs.map((s, i) => (
-            <div key={i} style={{ width: `${s.w}%`, background: s.color, opacity: 0.32 }} />
-          ))}
+    <div className="rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Control Engine</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined Ratio Control Engine</h3>
         </div>
-        {markers.map((m) => (
-          <div key={m.label} className="absolute top-0 -translate-x-1/2" style={{ left: `${pos(m.value)}%` }}>
-            <span className="absolute bottom-[13px] left-1/2 -translate-x-1/2 whitespace-nowrap text-[8.5px] font-semibold leading-none" style={{ color: m.color }}>{m.label}</span>
-            <span className="block h-2.5 w-[3px] rounded-full" style={{ background: m.color, boxShadow: '0 0 0 2px #fff' }} />
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
+      </div>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How claims, commission and opex build up — and stay under the 100% break-even.</p>
+
+      {cost && cr != null ? (
+        <>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="font-display text-[28px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
+            <span className="text-[11px] font-semibold" style={{ color: crColor }}>combined ratio</span>
+            {surplus != null && surplus > 0 && <span className="text-[11px] text-ink-secondary">· {surplus.toFixed(1)}% surplus</span>}
+          </div>
+
+          <div className="relative mt-4" style={{ height: H }}>
+            <div className="absolute inset-x-0 z-10 border-t border-dashed" style={{ top: y(100), borderColor: PALETTE.amber }}>
+              <span className="absolute right-0 top-[-12px] text-[8.5px] font-semibold" style={{ color: PALETTE.amber }}>100% break-even</span>
+            </div>
+            <div className="absolute inset-x-0 z-[5] border-t-2" style={{ top: y(cr), borderColor: crColor, opacity: 0.45 }} />
+            <div className="flex h-full items-end gap-2">
+              {cols.map((c) => {
+                const top = y(c.to)
+                const h = Math.max(y(c.from) - y(c.to), 16)
+                const val = c.surplus ? (surplus as number) : c.to - c.from
+                return (
+                  <div key={c.key} className="relative h-full flex-1">
+                    <div className="absolute inset-x-0 flex items-center justify-center rounded-lg border" style={{ top, height: h, background: `${c.color}1f`, borderColor: `${c.color}66` }}>
+                      <span className="font-display text-[13px] leading-none" style={{ color: c.color }}>{c.surplus ? `+${val.toFixed(1)}` : val.toFixed(1)}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <div className="mt-1.5 flex gap-2">
+            {cols.map((c) => (
+              <div key={c.key} className="flex-1 text-center leading-tight">
+                <div className="flex items-center justify-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-sm" style={{ background: c.color }} />
+                  <span className="text-[8.5px] font-bold uppercase tracking-[0.04em] text-navy-deep">{c.label}</span>
+                </div>
+                <span className="text-[8.5px] text-ink-secondary">{c.sub}</span>
+              </div>
+            ))}
+          </div>
+
+          {hasCR && crSeries && (
+            <div className="mt-3 border-t border-[#DCEDE3] pt-3">
+              <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Quarterly trajectory · Q1–Q4 FY25</p>
+              <CombinedRatioBandedTrend series={crSeries} />
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="mt-3">
+          <PendingNote>{`${company.shortName} reports on a life basis — the combined-ratio build-up needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Underwriting proof rail — loss ratio, expense ratio and the quarterly trend.
+function DisciplineQuality({ company }: { company: Insurer }) {
+  const cost = COST_RATIOS[company.id]
+  const cr = COMBINED_RATIO_QUARTERS[company.id]
+  const q1 = cr ? cr[0] : null
+  const q4 = cr ? cr[cr.length - 1] : null
+  const improving = q1 != null && q4 != null && q4 < q1
+  const rows: { label: string; value: string; chip: { label: string; tone: ChipTone }; top: boolean }[] = [
+    { label: 'Loss ratio · claims', value: cost ? `${cost.loss.toFixed(1)}%` : 'Data pending', chip: cost ? (cost.loss > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: 'Pending', tone: 'navy' }, top: false },
+    { label: 'Expense ratio · comm + opex', value: cost ? `${(cost.commission + cost.expense).toFixed(1)}%` : 'Data pending', chip: { label: 'Cost base', tone: 'navy' }, top: true },
+    { label: 'Combined ratio · Q1→Q4', value: q1 != null && q4 != null ? `${q1.toFixed(1)}% → ${q4.toFixed(1)}%` : 'Data pending', chip: q1 != null && q4 != null ? (improving ? { label: 'Improving', tone: 'teal' } : { label: 'Flat', tone: 'navy' }) : { label: 'Pending', tone: 'navy' }, top: true },
+  ]
+  return (
+    <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
+      <div className="flex items-center gap-1.5">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.emerald }} />
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Discipline Quality</p>
+      </div>
+      <div className="mt-4 space-y-4">
+        {rows.map((r) => (
+          <div key={r.label} className={r.top ? 'border-t border-[#DCEDE3] pt-3.5' : ''}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{r.label}</span>
+              <SignalBadge label={r.chip.label} tone={r.chip.tone} size="sm" />
+            </div>
+            <span className="mt-1 block font-display text-[16px] leading-none text-navy-deep">{r.value}</span>
           </div>
         ))}
       </div>
+      <p className="mt-auto pt-4 text-[10.5px] font-medium leading-snug text-navy-deep/80">Costs stay inside ₹100 of premium — the book is self-funding.</p>
+    </div>
+  )
+}
+
+// Shareholder-return "PAT-to-ROE Return Bridge" — the drivers that build ROE
+// flow left→right into the ROE output; the large capital base is the drag.
+function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const mm = getMarginMetrics(company)
+  const ol = operatingLeverage(company, series)
+  const hasTrend = NET_PROFIT_QUARTERS[company.id] !== undefined
+  const roe = company.roe
+  const roeModerate = roe > 0 && roe < 10
+  const drivers = [
+    { key: 'patg', label: 'PAT growth', value: ol.patYoY == null ? 'n/a' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`, color: PALETTE.emerald, bg: '#EAF5EE', border: '#CFE7DA', op: '' },
+    { key: 'margin', label: 'Net margin', value: hasTrend ? `${mm.netMargin.toFixed(1)}%` : 'n/a', color: GOLD, bg: '#FBF1D8', border: '#E9D49A', op: '+' },
+    { key: 'lev', label: 'Op. leverage', value: ol.expDelta == null ? 'n/a' : ol.expDelta < 0 ? `↓${Math.abs(ol.expDelta).toFixed(1)}pp` : `↑${ol.expDelta.toFixed(1)}pp`, color: PALETTE.teal, bg: '#E7F4F3', border: '#C9E5E3', op: '+' },
+    { key: 'cap', label: 'Capital base', value: 'Large', color: '#7E8AA0', bg: '#F1F3F7', border: '#DBE0E8', op: '−' },
+  ]
+  const flow: ReactNode[] = []
+  drivers.forEach((d, i) => {
+    if (i > 0) {
+      flow.push(
+        <div key={`c-${d.key}`} className="flex shrink-0 items-center px-0.5">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none text-ink-secondary shadow-sm" style={{ borderColor: '#E7ECF6' }}>{d.op}</span>
+        </div>,
+      )
+    }
+    flow.push(
+      <div key={d.key} className="flex min-w-[82px] flex-1 flex-col justify-between rounded-xl border px-3 py-2.5" style={{ background: d.bg, borderColor: d.border }}>
+        <div className="flex items-center gap-1">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: d.color }} />
+          <span className="truncate text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">{d.label}</span>
+        </div>
+        <span className="mt-2 font-display text-[16px] leading-none" style={{ color: d.color }}>{d.value}</span>
+      </div>,
+    )
+  })
+  flow.push(
+    <div key="c-eq" className="flex shrink-0 items-center px-0.5">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm" style={{ borderColor: '#EFD9C4', color: ORANGE }}>=</span>
+    </div>,
+  )
+  flow.push(
+    <div key="roe" className="flex w-[104px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #FBEFE4 0%, #FFF7F0 100%)', borderColor: '#EFD9C4', boxShadow: `0 12px 26px ${ORANGE}33` }}>
+      <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#9A5A1E' }}>ROE output</span>
+      <span className="mt-1 font-display text-[24px] leading-none" style={{ color: ORANGE }}>{roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}</span>
+      <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">Return on equity</span>
+    </div>,
+  )
+  return (
+    <div className="rounded-xl border p-4" style={{ background: '#FCF4EC', borderColor: '#EFDDCB' }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Return Bridge</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">PAT-to-ROE Return Bridge</h3>
+        </div>
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
+      </div>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How reported profit and its drivers build into the return shareholders earn.</p>
+      <div className="mt-3.5 flex flex-wrap items-stretch gap-y-2">{flow}</div>
+      <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">{roeModerate ? 'ROE is improving as PAT scales, but stays moderate because the post-IPO capital base is still large.' : roe > 0 ? 'ROE is scaling with profitability as PAT compounds against the equity base.' : 'ROE drivers are pending for this carrier.'}</p>
+    </div>
+  )
+}
+
+// Capital "Solvency Cushion Bridge" — floor + cushion = solvency, over a comfort
+// reservoir that fills toward the carrier's solvency.
+function SolvencyCushionBridge({ company }: { company: Insurer }) {
+  const s = company.solvency
+  const floor = 1.5
+  const cushion = s > 0 ? Math.round((s - floor) * 100) / 100 : null
+  const MINS = 1
+  const MAXS = 3.6
+  const pct = (v: number) => Math.max(0, Math.min(100, ((v - MINS) / (MAXS - MINS)) * 100))
+  return (
+    <div className="rounded-xl border p-4" style={{ background: '#EFF7F2', borderColor: '#CFE7DA' }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cushion Bridge</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Solvency Cushion Bridge</h3>
+        </div>
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
+      </div>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How far capital sits above the 1.5x regulatory floor.</p>
+
+      {s > 0 && cushion != null ? (
+        <>
+          <div className="mt-3.5 flex items-stretch gap-2">
+            <div className="flex flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: '#FBEFEF', borderColor: '#EFD4D3' }}>
+              <span className="text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">Regulatory floor</span>
+              <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: PALETTE.coral }}>1.50x</span>
+            </div>
+            <div className="flex shrink-0 items-center px-0.5"><span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold shadow-sm" style={{ borderColor: '#CFE7DA', color: DEEP_GREEN }}>+</span></div>
+            <div className="flex flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: '#E9F5EE', borderColor: '#CDE7D8' }}>
+              <span className="text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">Cushion above floor</span>
+              <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: DEEP_GREEN }}>+{cushion.toFixed(2)}x</span>
+            </div>
+            <div className="flex shrink-0 items-center px-0.5"><span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold shadow-sm" style={{ borderColor: '#CFE7DA', color: DEEP_GREEN }}>=</span></div>
+            <div className="flex w-[100px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)', borderColor: '#BFE0CE', boxShadow: `0 12px 26px ${DEEP_GREEN}33` }}>
+              <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#1C5C3F' }}>Solvency</span>
+              <span className="mt-1 font-display text-[24px] leading-none" style={{ color: DEEP_GREEN }}>{s.toFixed(2)}x</span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="relative h-3 w-full overflow-hidden rounded-full ring-1 ring-soft-border/60">
+              <div className="absolute inset-y-0 left-0" style={{ width: `${pct(1.5)}%`, background: PALETTE.coral, opacity: 0.26 }} />
+              <div className="absolute inset-y-0" style={{ left: `${pct(1.5)}%`, width: `${pct(2) - pct(1.5)}%`, background: PALETTE.amber, opacity: 0.26 }} />
+              <div className="absolute inset-y-0" style={{ left: `${pct(2)}%`, right: 0, background: PALETTE.emerald, opacity: 0.26 }} />
+              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct(s)}%`, background: DEEP_GREEN, opacity: 0.5 }} />
+              <div className="absolute inset-y-[-2px] w-[3px] -translate-x-1/2 rounded-full" style={{ left: `${pct(1.5)}%`, background: PALETTE.coral, boxShadow: '0 0 0 2px #fff' }} />
+              <div className="absolute inset-y-[-2px] w-[3px] -translate-x-1/2 rounded-full" style={{ left: `${pct(s)}%`, background: DEEP_GREEN, boxShadow: '0 0 0 2px #fff' }} />
+            </div>
+            <div className="mt-1.5 flex flex-wrap gap-x-3.5 gap-y-1 text-[9px] text-ink-secondary">
+              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.coral }} />Floor 1.5x</span>
+              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.amber }} />Sector ~2.1x</span>
+              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: DEEP_GREEN }} />Comfort zone</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="mt-3">
+          <PendingNote>{`Solvency is pending for ${company.shortName}.`}</PendingNote>
+        </div>
+      )}
     </div>
   )
 }
@@ -1442,31 +1539,31 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
       return !hasCR
         ? `${company.shortName} reports on a life basis — discipline is read through returns and capital, not combined ratio.`
         : company.combinedRatio < 100
-          ? 'Combined ratio holds below 100 — underwriting is profitable before any investment income, the foundation of the whole story.'
-          : 'Combined ratio sits above 100 — underwriting is loss-making, so reported profit leans on investment income.'
+          ? 'Combined ratio below 100% means the core insurance book is producing underwriting profit before investment income.'
+          : 'Combined ratio sits above 100% — underwriting is loss-making, so reported profit leans on investment income.'
     case 'core':
       return uw == null
         ? 'Core underwriting profit is pending reported NEP and combined ratio.'
         : uw > 0
-          ? `Core underwriting now throws off about ${crc(uw)} of profit — the engine works before any investment income.`
+          ? `Core underwriting has turned positive (${crc(uw)}) as the combined ratio moved below 100%.`
           : `Core underwriting is still running a ${crc(uw)} deficit; reported profit leans on investment income.`
     case 'conversion':
       return uwSpread == null
         ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
         : uwSpread > 0
           ? ol.expDelta != null && ol.expDelta < 0
-            ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — an early proof of operating leverage.'
+            ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — early proof of operating leverage.'
             : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
           : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
     case 'returns':
       return company.roe <= 0
         ? 'Return on equity is pending for this carrier.'
         : company.roe < 10
-          ? 'ROE is building as PAT scales, but stays moderate against the large post-IPO equity base.'
+          ? 'ROE is improving as PAT scales, but the return profile is still early because the capital base remains large.'
           : 'ROE sits at a healthy level as PAT scales against the equity base.'
     case 'capital':
       return company.solvency > 0
-        ? `At ${company.solvency.toFixed(2)}x, solvency sits well above the 1.5x floor — capital comfortably funds growth and absorbs shocks.`
+        ? `${company.solvency.toFixed(2)}x solvency gives the company a strong capital cushion to support growth and absorb volatility.`
         : 'Solvency is pending for this carrier.'
   }
   return ''
@@ -1476,79 +1573,21 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
   const status = lensStatus(id, company, series)
-  const hasCR = company.combinedRatio > 0
-  const cost = COST_RATIOS[company.id]
-  const crSeries = COMBINED_RATIO_QUARTERS[company.id]
   const patSeries = NET_PROFIT_QUARTERS[company.id]
   const hasTrend = patSeries !== undefined
-  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
-  const solvencyTone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
   let body: ReactNode = null
 
   switch (id) {
-    case 'underwriting': {
-      const crColor = !hasCR ? PALETTE.navy : company.combinedRatio < 100 ? PALETTE.emerald : company.combinedRatio <= 105 ? PALETTE.amber : PALETTE.coral
-      const crVerdict = !hasCR ? '' : company.combinedRatio < 100 ? 'Profitable underwriting' : company.combinedRatio <= 105 ? 'Watch zone' : 'Loss-making'
+    case 'underwriting':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <div className="rounded-xl border p-4" style={cardStyle}>
-            <div className="flex items-baseline justify-between">
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Discipline Meter</p>
-                <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined ratio vs the 100% break-even</h3>
-              </div>
-              <SignalBadge label={ct.label} tone={ct.tone === 'neutral' ? 'navy' : ct.tone} size="sm" />
-            </div>
-            {hasCR && crSeries ? (
-              <>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="font-display text-[30px] leading-none" style={{ color: crColor }}>{company.combinedRatio.toFixed(1)}%</span>
-                  <span className="text-[11px] font-semibold" style={{ color: crColor }}>{crVerdict}</span>
-                </div>
-                <ZoneMeter
-                  min={88}
-                  max={112}
-                  zones={[{ to: 100, color: PALETTE.emerald }, { to: 105, color: PALETTE.amber }, { to: 112, color: PALETTE.coral }]}
-                  markers={[{ value: company.combinedRatio, label: `${company.combinedRatio.toFixed(1)}%`, color: crColor }, { value: 100, label: '100', color: PALETTE.amber }]}
-                />
-                <div className="border-t border-[#DCEDE3] pt-3">
-                  <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Quarterly trajectory · Q1–Q4 FY25</p>
-                  <CombinedRatioBandedTrend series={crSeries} />
-                </div>
-              </>
-            ) : (
-              <p className="mt-3 text-[12px] text-ink-secondary">{company.shortName} is a life carrier — combined ratio does not apply on this basis.</p>
-            )}
-          </div>
-          <div className="flex h-full flex-col rounded-xl border p-4" style={cardStyle}>
-            <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Cost Anatomy</p>
-            <p className="mt-0.5 text-[10px] text-ink-secondary">Where every ₹100 of premium goes</p>
-            {cost ? (
-              <div className="mt-1 flex flex-1 flex-col justify-center">
-                <CostDonut cost={cost} combinedRatio={company.combinedRatio} />
-                <div className="mt-2 space-y-1">
-                  {[
-                    { label: 'Claims', value: cost.loss, color: PALETTE.coral },
-                    { label: 'Commission', value: cost.commission, color: PALETTE.amber },
-                    { label: 'Opex', value: cost.expense, color: PALETTE.navy },
-                  ].map((r) => (
-                    <div key={r.label} className="flex items-center justify-between text-[10.5px]">
-                      <span className="inline-flex items-center gap-1.5 text-navy-deep"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: r.color }} />{r.label}</span>
-                      <span className="font-display text-[12px] text-navy-deep">{r.value.toFixed(1)}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <p className="mt-3 text-[11.5px] text-ink-secondary">Claims / commission / opex split is not reported on a life basis.</p>
-            )}
-          </div>
+          <CombinedRatioWaterfall company={company} />
+          <DisciplineQuality company={company} />
         </div>
       )
       break
-    }
     case 'core':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
@@ -1568,11 +1607,12 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
     case 'returns':
       body = (
         <div className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+          <ReturnBridge company={company} series={series} />
+          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
             <div className="rounded-xl border p-4" style={cardStyle}>
               <div className="mb-2.5 flex items-baseline justify-between">
                 <div>
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Returns Lens</p>
+                  <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">PAT Pool</p>
                   <h3 className="mt-0 font-display text-[14px] text-navy-deep">Quarterly PAT trajectory · Q1–Q4 FY25</h3>
                 </div>
                 <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
@@ -1585,55 +1625,19 @@ function ProfitabilityDetail({ id, company, series }: { id: NodeId; company: Ins
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-3.5">
-              <RoeGaugeCard company={company} />
-            </div>
+            <RoeGaugeCard company={company} />
           </div>
-          <RoeExplanationCard company={company} series={series} tintBg={meta.cardBg} />
         </div>
       )
       break
-    case 'capital': {
-      const cushion = company.solvency - 1.5
+    case 'capital':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <div className="rounded-xl border p-4" style={cardStyle}>
-            <div className="flex items-baseline justify-between">
-              <div>
-                <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Solvency Cushion</p>
-                <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Capital vs the 1.5x regulatory floor</h3>
-              </div>
-              <SignalBadge label={solvencyTone === 'positive' ? 'Comfortable' : solvencyTone === 'warning' ? 'Adequate' : 'Tight'} tone={solvencyTone} size="sm" />
-            </div>
-            {company.solvency > 0 ? (
-              <>
-                <div className="mt-2 flex items-baseline gap-2">
-                  <span className="font-display text-[30px] leading-none" style={{ color: DEEP_GREEN }}>{company.solvency.toFixed(2)}x</span>
-                  <span className="text-[11px] font-semibold" style={{ color: DEEP_GREEN }}>{cushion > 0 ? `+${cushion.toFixed(2)}x above floor` : 'below floor'}</span>
-                </div>
-                <ZoneMeter
-                  min={1}
-                  max={3.5}
-                  zones={[{ to: 1.5, color: PALETTE.coral }, { to: 2, color: PALETTE.amber }, { to: 3.5, color: PALETTE.emerald }]}
-                  markers={[{ value: 1.5, label: '1.5x', color: PALETTE.coral }, { value: 2.1, label: '~2.1x', color: PALETTE.amber }, { value: company.solvency, label: `${company.solvency.toFixed(2)}x`, color: DEEP_GREEN }]}
-                />
-                <div className="flex flex-wrap gap-x-3.5 gap-y-1 border-t border-[#CFE7DA] pt-3 text-[9.5px] text-ink-secondary">
-                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.coral }} />Regulatory floor 1.5x</span>
-                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.amber }} />Sector median ~2.1x</span>
-                  <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: DEEP_GREEN }} />{company.shortName} {company.solvency.toFixed(2)}x</span>
-                </div>
-              </>
-            ) : (
-              <p className="mt-3 text-[12px] text-ink-secondary">Solvency is pending for {company.shortName}.</p>
-            )}
-          </div>
-          <div className="flex flex-col gap-3.5">
-            <CapitalBufferCard company={company} />
-          </div>
+          <SolvencyCushionBridge company={company} />
+          <CapitalBufferCard company={company} />
         </div>
       )
       break
-    }
     default:
       body = null
   }
