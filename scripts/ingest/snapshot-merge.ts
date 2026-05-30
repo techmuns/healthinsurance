@@ -68,12 +68,19 @@ function mergeValues(
 ): { row: Row; changed: boolean } {
   let changed = false
   const out: Row = { ...existing }
-  const existingProv = (existing.provenance as { confidence?: string } | undefined) ?? {}
+  const existingProv = (existing.provenance as { confidence?: string; parser_name?: string } | undefined) ?? {}
   const existingPinned = existingProv.confidence === 'high'
   const incomingFromParser = incomingProvenance?.parser_name?.startsWith('ingest-') ?? false
+  // A parser may correct its OWN prior high-confidence write — same parser_name,
+  // re-parsed from the same source with improved logic (e.g. a fixed extractor
+  // replacing an earlier mis-read). It still may NOT clobber a value written by
+  // a DIFFERENT parser or a hand-curated seed, which is what the pin guard
+  // protects (e.g. quarterly disclosures vs audited FY25-annual values).
+  const sameParser =
+    !!incomingProvenance?.parser_name && existingProv.parser_name === incomingProvenance.parser_name
   // Pin guard: if existing row is high-confidence and the incoming write
-  // comes from an automated parser, only fill empty fields.
-  const fillOnly = existingPinned && incomingFromParser
+  // comes from a DIFFERENT automated parser, only fill empty fields.
+  const fillOnly = existingPinned && incomingFromParser && !sameParser
   for (const [k, v] of Object.entries(incoming)) {
     if (v == null) continue // never overwrite populated with null
     if (fillOnly && existing[k] != null) continue // pin guard
