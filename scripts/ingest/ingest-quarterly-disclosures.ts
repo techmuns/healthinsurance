@@ -19,10 +19,13 @@
 //  "pending") — never coerced to a guess.
 // ---------------------------------------------------------------------------
 
+import { readdir, readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
-import { appendLog, isOfflineMode, nowIso, readSnapshot } from './util'
+import { appendLog, ensureDir, isOfflineMode, nowIso, readSnapshot, RAW_ROOT } from './util'
 import { extractByPatterns, fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
 import { QUARTERLY_PATTERNS, sanitiseQuarterly } from './quarterly-extract'
+import { extractDisclosure } from './disclosure-extract'
 
 const SOURCE_ID = 'company_quarterly_disclosures'
 const PEERS = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
@@ -70,12 +73,19 @@ export const ingestQuarterlyDisclosures: Fetcher = {
           const last = (pdfUrl.split('/').pop() ?? 'q.pdf').split('?')[0]
           const filename = `${t.company_id}-${last}`
           try {
-            const { buffer, raw_file, mode } = await fetchOrLoadRaw(
-              pdfUrl,
-              `companies/${t.company_id}`,
-              filename,
-              /\.pdf$/i,
-            )
+            // Offline: pdfUrl is already an absolute path to the exact staged
+            // file — read it directly (fetchOrLoadRaw's dir-scan would otherwise
+            // always pick the same alpha-first file for every iteration).
+            let buffer: Buffer
+            let raw_file: string
+            let mode: 'live' | 'offline'
+            if (isOfflineMode()) {
+              buffer = await readFile(pdfUrl)
+              raw_file = pdfUrl
+              mode = 'offline'
+            } else {
+              ;({ buffer, raw_file, mode } = await fetchOrLoadRaw(pdfUrl, `companies/${t.company_id}`, filename, /\.pdf$/i))
+            }
             const { text } = await parsePdf(buffer)
             const quarter = inferQuarter(text, filename)
             const fy = inferFY(filename, text)
@@ -83,10 +93,13 @@ export const ingestQuarterlyDisclosures: Fetcher = {
               warnings.push(`${t.company_id}: could not infer quarter from ${filename} — skipped.`)
               continue
             }
-            const values = sanitiseQuarterly(extractByPatterns(text, QUARTERLY_PATTERNS))
+            // Prefer the IRDAI NL-form disclosure extractor (handles the real
+            // 4-column ratios layout); fall back to the generic anchored
+            // patterns for press-release / results PDFs.
+            const values = extractDisclosure(text) ?? sanitiseQuarterly(extractByPatterns(text, QUARTERLY_PATTERNS))
             const populated = Object.values(values).filter((v) => v != null).length
             if (populated === 0) {
-              warnings.push(`${t.company_id} ${quarter} ${fy}: parsed ${text.length} chars but no patterns matched.`)
+              warnings.push(`${t.company_id} ${quarter} ${fy}: parsed ${text.length} chars but no financial patterns matched.`)
               continue
             }
             records.push({
@@ -149,9 +162,10 @@ async function resolveQuarterlyPdfs(
   if (hints.length) return dedupe(hints)
 
   if (isOfflineMode()) {
-    // Offline with no hints: nothing to resolve by URL. The merge step can
-    // still replay any staged quarterly PDFs if hints are added later.
-    return []
+    // Offline: re-parse the public-disclosure PDFs already staged under
+    // data/raw/companies/<id>/ (e.g. ones a prior live CI run downloaded). Only
+    // the IRDAI "Public Disclosure" filings carry the NL-form financials.
+    return dedupe(await stagedDisclosurePdfs(t.company_id))
   }
 
   if (!landing) {
@@ -190,6 +204,24 @@ async function walkForQuarterlyPdfs(url: string, depth: number): Promise<string[
 
 const dedupe = (xs: string[]): string[] => [...new Set(xs)]
 
+// Staged IRDAI "Public Disclosure" PDFs for a company (offline replay). Filters
+// to the quarterly NL-form filings — names containing "Public Disclosure" with a
+// month/quarter token — and excludes annual / debt / TPA disclosures.
+async function stagedDisclosurePdfs(companyId: string): Promise<string[]> {
+  const dir = resolve(RAW_ROOT, 'companies', companyId)
+  await ensureDir(dir)
+  const entries = await readdir(dir).catch(() => [] as string[])
+  return entries
+    .filter((e) => /\.pdf$/i.test(e))
+    .filter((e) => /public[\s_-]?disclosure/i.test(e))
+    .filter((e) => /(jun|sep|dec|mar|q[1-4]|quarter|june|march)/i.test(e))
+    .filter((e) => !/(debt|tpa|annual|qualitative|quantative|quantitative)/i.test(e))
+    .map((e) => resolve(dir, e))
+}
+
+// Month → fiscal quarter (Apr-Mar FY): Jun=Q1, Sep=Q2, Dec=Q3, Mar=Q4.
+const MONTH_Q: Record<string, string> = { jun: 'Q1', jul: 'Q1', sep: 'Q2', oct: 'Q2', dec: 'Q3', jan: 'Q3', mar: 'Q4', apr: 'Q4' }
+
 // Quarter inference — file/anchor + first 2k chars of the PDF body.
 function inferQuarter(text: string, filename: string): string | null {
   const hay = `${filename} ${text.slice(0, 2000)}`
@@ -197,6 +229,13 @@ function inferQuarter(text: string, filename: string): string | null {
   if (q) return `Q${q[1]}`
   if (/(?:9|nine)[\s_-]?month|9m\b/i.test(hay)) return 'Q3'
   if (/h1\b|half[\s_-]?year|six[\s_-]?month/i.test(hay)) return 'Q2'
+  // Month-name in the filename / "quarter ended <Month>" — the reliable signal
+  // for IRDAI website disclosures (e.g. "...Public-Disclosure-Sep-25.pdf").
+  const monthMatch = hay.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,'_-]*(?:20)?\d{2}/i)
+  if (monthMatch) {
+    const q2 = MONTH_Q[monthMatch[1].toLowerCase().slice(0, 3)]
+    if (q2) return q2
+  }
   if (/quarter\s+ended\s+(?:30|31)\s*june|jun/i.test(hay)) return 'Q1'
   if (/quarter\s+ended\s+(?:30|31)\s*sep/i.test(hay)) return 'Q2'
   if (/quarter\s+ended\s+(?:30|31)\s*dec/i.test(hay)) return 'Q3'
@@ -210,6 +249,15 @@ function inferFY(filename: string, text: string): string {
   if (range) return `FY${range[2].slice(-2).padStart(2, '0')}`
   const fy = filename.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
   if (fy) return `FY${fy[1].padStart(2, '0').slice(-2)}`
+  // Month-year in the filename (e.g. "Sep-25", "Mar-2025"): Apr-Mar fiscal year,
+  // so Apr-Dec belong to FY(year+1), Jan-Mar to FY(year).
+  const my = filename.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,'_-]*(?:20)?(\d{2})\b/i)
+  if (my) {
+    const mo = my[1].toLowerCase().slice(0, 3)
+    const yy = parseInt(my[2], 10)
+    const janToMar = ['jan', 'feb', 'mar'].includes(mo)
+    return `FY${String(janToMar ? yy : yy + 1).padStart(2, '0')}`
+  }
   const head = text.slice(0, 2000)
   const counts = new Map<number, number>()
   for (const m of head.matchAll(/\bFY[\s-]?20?(\d{2})\b/gi)) {
