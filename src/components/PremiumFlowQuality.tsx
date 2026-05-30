@@ -266,8 +266,8 @@ function RealFlowChart({
   // red — leakage is friction, not a risk event). Reinsurance sits a touch
   // deeper than timing so the two leakage zones read as distinct in Earned view.
   const STRONG: Record<Stage, string> = { GWP: FOCAL, NWP: TEAL, NEP: NEP_BLUE }
-  const MUTE_REINS = '#C3D0E0'
-  const MUTE_TIMING = '#DCE4EE'
+  const MUTE_REINS = '#C79A48'
+  const MUTE_TIMING = '#9AA6B6'
 
   const stageMeta: Record<Stage, { word: string; abbrev: Stage; meaning: string }> = {
     GWP: { word: 'Gross', abbrev: 'GWP', meaning: 'Total premium written during the year.' },
