@@ -752,39 +752,35 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
   const enough = usable.length >= 2
   const latest = usable[usable.length - 1]
   const turned = enough && usable.some((d) => d.uw < 0) && latest.uw > 0
-  const fit = fitTrend(usable.map((d) => d.uw))
-  const trendData = enough ? usable.map((d, i) => ({ ...d, trend: fit ? fit.fitted[i] : null })) : usable
-  const trendDir = !fit ? 'flat' : fit.slope > 0.5 ? 'up' : fit.slope < -0.5 ? 'down' : 'flat'
-  const trendLabel = !enough ? 'Trend pending' : turned ? 'Turning positive' : trendDir === 'up' ? 'Improving' : trendDir === 'down' ? 'Softening' : 'Stable'
-  const trendColor = !enough ? '#94A3B8' : trendDir === 'down' && !turned ? PALETTE.coral : PALETTE.teal
-  const insightLine = !enough
+  // First year underwriting crosses from loss into profit — the turnaround point.
+  let crossIdx = -1
+  for (let i = 1; i < usable.length; i++) {
+    if (usable[i - 1].uw < 0 && usable[i].uw >= 0) {
+      crossIdx = i
+      break
+    }
+  }
+  // Strongest profit year gets the boldest green (usually the latest).
+  const maxUw = enough ? Math.max(...usable.map((d) => d.uw)) : 0
+  const subtitle = !enough
     ? `Underwriting-profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years.`
-    : turned
-      ? 'Core underwriting turned profitable as combined ratio moved below 100%.'
-      : latest.uw > 0
-        ? 'Core underwriting is profitable, with combined ratio holding below 100%.'
-        : 'Core underwriting is still in loss as combined ratio sits above 100%.'
+    : 'Core underwriting moved from loss to profit as combined ratio fell below 100%.'
   return (
     <section className="card-surface p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
-        eyebrow="Underwriting Profit Trend"
-        title="Core insurance profitability"
-        subtitle={insightLine}
+        eyebrow="Core Profitability"
+        title="Underwriting Profit Turnaround"
+        subtitle={subtitle}
         right={
           enough ? (
             <SignalBadge label={latest.uw > 0 ? (turned ? 'Turned positive' : 'In profit') : 'In loss'} tone={latest.uw > 0 ? 'positive' : 'negative'} size="sm" />
           ) : undefined
         }
       />
-      {enough && (
-        <div className="mt-2 flex justify-end">
-          <TrendPill label={trendLabel} dir={trendDir} color={trendColor} />
-        </div>
-      )}
-      <div className="mt-2">
+      <div className="mt-3">
         {enough ? (
           <ResponsiveContainer width="100%" height={208}>
-            <ComposedChart data={trendData} margin={{ top: 12, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
+            <ComposedChart data={usable} margin={{ top: 18, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
               <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
               <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
               <YAxis yAxisId="uw" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={46} tickFormatter={(v: number) => `₹${v}`} />
@@ -832,11 +828,6 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.emerald }} /> Underwriting profit</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.coral }} /> Underwriting loss</span>
           <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>
-          {fit && (
-            <span className="inline-flex items-center gap-1.5">
-              <span className="inline-block h-0 w-4 border-t-2 border-dashed" style={{ borderColor: trendColor }} /> Profit trendline
-            </span>
-          )}
         </div>
         <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
       </div>
@@ -1742,7 +1733,7 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
       return uw == null
         ? 'Core underwriting profit is pending reported NEP and combined ratio.'
         : uw > 0
-          ? `Core underwriting has turned positive (${crc(uw)}) as the combined ratio moved below 100%.`
+          ? 'Core underwriting has turned positive — the key proof is profit bars moving above zero, not an artificial trendline.'
           : `Core underwriting is still running a ${crc(uw)} deficit; reported profit leans on investment income.`
     case 'conversion':
       return uwSpread == null
