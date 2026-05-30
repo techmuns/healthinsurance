@@ -1106,19 +1106,17 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
       soWhat: !hasCR
         ? `${company.shortName} is a life carrier — combined ratio does not apply; returns and capital carry the read.`
         : company.combinedRatio < 100
-          ? 'Combined ratio below 100% shows underwriting control and supports core profitability.'
-          : 'Combined ratio above 100% — underwriting discipline is the watch-item.',
+          ? 'Underwriting discipline has improved because total insurance cost is below premium received.'
+          : 'Underwriting discipline is the watch-item — total insurance cost is above premium received.',
       why: costAbsorb != null
-        ? `Claims, commission and opex absorb ₹${costAbsorb.toFixed(0)} of every ₹100 of premium.`
+        ? 'Claims, commission and opex are staying inside the ₹100 premium base.'
         : 'Claims and cost split is not reported on this basis.',
       meaning: !hasCR
         ? 'Profitability is read through returns and capital instead of combined ratio.'
         : company.combinedRatio < 100
-          ? 'Underwriting is profitable before any investment income.'
+          ? 'The company is no longer relying only on investment income to show profit.'
           : 'Reported profit is leaning on investment income, not underwriting.',
-      watch: hasCR && company.combinedRatio < 100
-        ? 'That combined ratio holds below 100, and the claims-ratio trend.'
-        : 'A clear move below 100 on combined ratio, and the claims-ratio trend.',
+      watch: 'Claims ratio, expense ratio and whether combined ratio stays below 100%.',
     },
     core: {
       soWhat: uw == null
@@ -1311,84 +1309,111 @@ function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string;
   )
 }
 
-// Underwriting "Combined Ratio Control Engine" — a cost build-up waterfall:
-// claims + commission + opex climb toward the combined ratio and stay under the
-// 100% break-even; the gap to 100 is the underwriting surplus.
+// Underwriting "Combined Ratio Discipline Engine" — a ₹100 premium container
+// fills with claims + commission + opex; if the cost stack stays under the 100%
+// break-even line, the gap is the underwriting surplus. The headline combined
+// ratio is the authoritative snapshot value (company.combinedRatio), never the
+// re-summed components, so the page reads one consistent number.
 function CombinedRatioWaterfall({ company }: { company: Insurer }) {
   const cost = COST_RATIOS[company.id]
   const hasCR = company.combinedRatio > 0
   const crSeries = COMBINED_RATIO_QUARTERS[company.id]
-  const claims = cost?.loss ?? 0
-  const comm = cost?.commission ?? 0
-  const opex = cost?.expense ?? 0
-  const cr = cost ? Math.round((claims + comm + opex) * 10) / 10 : null
+  // Authoritative combined ratio (snapshot) anchors the whole section.
+  const cr = hasCR ? company.combinedRatio : null
   const surplus = cr != null ? Math.round((100 - cr) * 10) / 10 : null
+  const below = surplus != null && surplus > 0
   const crColor = cr == null ? PALETTE.navy : cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
-  const H = 182
-  const MAX = 112
-  const y = (v: number) => ((MAX - v) / MAX) * H
-  const cols =
-    cost && cr != null
-      ? [
-          { key: 'claims', label: 'Claims', sub: 'absorbed', from: 0, to: claims, color: PALETTE.coral },
-          { key: 'comm', label: 'Commission', sub: 'cost', from: claims, to: claims + comm, color: PALETTE.amber },
-          { key: 'opex', label: 'Operating', sub: 'cost', from: claims + comm, to: claims + comm + opex, color: PALETTE.navy },
-          { key: 'surplus', label: 'Surplus', sub: 'below 100', from: cr, to: 100, color: PALETTE.emerald, surplus: true },
-        ]
-      : []
+
+  // Cost components (real ratios). Scale them to the authoritative combined
+  // ratio so the stack height exactly meets the cr line (parts may sum slightly
+  // differently on a full-year vs Q4 basis); labels still show the true ratios.
+  const rawSum = cost ? cost.loss + cost.commission + cost.expense : null
+  const k = cost && rawSum && cr != null ? cr / rawSum : 1
+  const stack = cost
+    ? [
+        { key: 'claims', label: 'Claims', sub: 'Largest cost', raw: cost.loss, color: PALETTE.coral },
+        { key: 'comm', label: 'Commission', sub: 'Distribution', raw: cost.commission, color: PALETTE.amber },
+        { key: 'opex', label: 'Opex', sub: 'Operating', raw: cost.expense, color: PALETTE.navy },
+      ]
+    : []
+
+  const H = 230
+  const MAX = 100 // the ₹100 premium container is the full height
+  const px = (v: number) => (v / MAX) * H
+
   return (
     <div className="rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
       <div className="flex items-baseline justify-between">
         <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Control Engine</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined Ratio Control Engine</h3>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Discipline Engine</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined Ratio Discipline Engine</h3>
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How claims, commission and opex build up — and stay under the 100% break-even.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of premium, claims, commission and opex fill the container — what stays under the 100% line is underwriting surplus.</p>
 
       {cost && cr != null ? (
         <>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-display text-[28px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
-            <span className="text-[11px] font-semibold" style={{ color: crColor }}>combined ratio</span>
-            {surplus != null && surplus > 0 && <span className="text-[11px] text-ink-secondary">· {surplus.toFixed(1)}% surplus</span>}
+          <div className="mt-2.5 flex items-baseline gap-2">
+            <span className="font-display text-[30px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
+            <span className="text-[11px] font-semibold" style={{ color: crColor }}>combined ratio{below ? ' · below break-even' : ' · above break-even'}</span>
           </div>
 
-          <div className="relative mt-4" style={{ height: H }}>
-            <div className="absolute inset-x-0 z-10 border-t border-dashed" style={{ top: y(100), borderColor: PALETTE.amber }}>
-              <span className="absolute right-0 top-[-12px] text-[8.5px] font-semibold" style={{ color: PALETTE.amber }}>100% break-even</span>
-            </div>
-            <div className="absolute inset-x-0 z-[5] border-t-2" style={{ top: y(cr), borderColor: crColor, opacity: 0.45 }} />
-            <div className="flex h-full items-end gap-2">
-              {cols.map((c) => {
-                const top = y(c.to)
-                const h = Math.max(y(c.from) - y(c.to), 16)
-                const val = c.surplus ? (surplus as number) : c.to - c.from
-                return (
-                  <div key={c.key} className="relative h-full flex-1">
-                    <div className="absolute inset-x-0 flex items-center justify-center rounded-lg border" style={{ top, height: h, background: `${c.color}1f`, borderColor: `${c.color}66` }}>
-                      <span className="font-display text-[13px] leading-none" style={{ color: c.color }}>{c.surplus ? `+${val.toFixed(1)}` : val.toFixed(1)}</span>
-                    </div>
+          <div className="mt-4 flex items-stretch gap-4">
+            {/* The ₹100 premium container — fills with cost, surplus pocket on top */}
+            <div className="flex shrink-0 flex-col items-center">
+              <span className="mb-1 text-[8px] font-bold uppercase tracking-[0.1em] text-ink-secondary">₹100 premium</span>
+              <div className="relative w-[112px] overflow-hidden rounded-xl border-2 bg-white" style={{ height: H, borderColor: '#CFE2D5' }}>
+                {/* surplus pocket (top, green) */}
+                {below && (
+                  <div className="absolute inset-x-0 top-0 flex items-center justify-center" style={{ height: px(surplus as number), background: `${PALETTE.emerald}24` }}>
+                    <span className="font-display text-[13px]" style={{ color: PALETTE.emerald }}>+₹{(surplus as number).toFixed(1)}</span>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-          <div className="mt-1.5 flex gap-2">
-            {cols.map((c) => (
-              <div key={c.key} className="flex-1 text-center leading-tight">
-                <div className="flex items-center justify-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-sm" style={{ background: c.color }} />
-                  <span className="text-[8.5px] font-bold uppercase tracking-[0.04em] text-navy-deep">{c.label}</span>
+                )}
+                {/* cost stack (fills from the bottom up to the combined ratio) */}
+                <div className="absolute inset-x-0 bottom-0 flex flex-col" style={{ height: px(cr) }}>
+                  {stack.map((s) => {
+                    const h = px(s.raw * k)
+                    return (
+                      <div key={s.key} className="flex items-center justify-center" style={{ height: h, background: `${s.color}d9` }} title={`${s.label} ${s.raw.toFixed(1)}%`}>
+                        {h > 18 && <span className="font-display text-[12px] leading-none text-white">₹{s.raw.toFixed(1)}</span>}
+                      </div>
+                    )
+                  })}
                 </div>
-                <span className="text-[8.5px] text-ink-secondary">{c.sub}</span>
+                {/* 100% break-even line — the central reference, at the very top */}
+                <div className="absolute inset-x-0 top-0 z-10 border-t-2 border-dashed" style={{ borderColor: PALETTE.amber }} />
+                {/* combined-ratio fill line */}
+                <div className="absolute inset-x-0 z-10 border-t-2" style={{ top: px(surplus as number), borderColor: crColor }} />
               </div>
-            ))}
+              <span className="mt-1 text-[8px] font-semibold" style={{ color: PALETTE.amber }}>↑ 100% break-even</span>
+            </div>
+
+            {/* Legend / build-up read */}
+            <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5">
+              {stack.map((s) => (
+                <div key={s.key} className="flex items-center justify-between rounded-lg border bg-white/70 px-2.5 py-1.5" style={{ borderColor: `${s.color}3a` }}>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />
+                    <span className="text-[10.5px] font-semibold text-navy-deep">{s.label}</span>
+                    <span className="text-[9px] text-ink-secondary">{s.sub}</span>
+                  </span>
+                  <span className="font-display text-[13px] text-navy-deep">{s.raw.toFixed(1)}%</span>
+                </div>
+              ))}
+              <div className="mt-0.5 flex items-center justify-between rounded-lg border px-2.5 py-1.5" style={{ background: below ? `${PALETTE.emerald}14` : `${PALETTE.coral}12`, borderColor: below ? `${PALETTE.emerald}4d` : `${PALETTE.coral}40` }}>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-sm" style={{ background: below ? PALETTE.emerald : PALETTE.coral }} />
+                  <span className="text-[10.5px] font-semibold text-navy-deep">{below ? 'Underwriting surplus' : 'Underwriting deficit'}</span>
+                </span>
+                <span className="font-display text-[14px]" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
+              </div>
+              <p className="mt-1 text-[10px] leading-snug text-ink-secondary">{below ? 'Cost stayed below the ₹100 premium received — the book funds itself.' : 'Cost exceeded premium received — underwriting is loss-making.'}</p>
+            </div>
           </div>
 
           {hasCR && crSeries && (
-            <div className="mt-3 border-t border-[#DCEDE3] pt-3">
+            <div className="mt-4 border-t border-[#DCEDE3] pt-3">
               <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Quarterly trajectory · Q1–Q4 FY25</p>
               <CombinedRatioBandedTrend series={crSeries} />
             </div>
@@ -1403,17 +1428,35 @@ function CombinedRatioWaterfall({ company }: { company: Insurer }) {
   )
 }
 
-// Underwriting proof rail — loss ratio, expense ratio and the quarterly trend.
+// Underwriting proof rail — three compact proof blocks (claims ratio, expense
+// ratio, combined-ratio trend) with a self-funding conclusion. Balanced height,
+// no large empty gaps.
 function DisciplineQuality({ company }: { company: Insurer }) {
   const cost = COST_RATIOS[company.id]
   const cr = COMBINED_RATIO_QUARTERS[company.id]
   const q1 = cr ? cr[0] : null
   const q4 = cr ? cr[cr.length - 1] : null
   const improving = q1 != null && q4 != null && q4 < q1
-  const rows: { label: string; value: string; chip: { label: string; tone: ChipTone }; top: boolean }[] = [
-    { label: 'Loss ratio · claims', value: cost ? `${cost.loss.toFixed(1)}%` : 'Data pending', chip: cost ? (cost.loss > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: 'Pending', tone: 'navy' }, top: false },
-    { label: 'Expense ratio · comm + opex', value: cost ? `${(cost.commission + cost.expense).toFixed(1)}%` : 'Data pending', chip: { label: 'Cost base', tone: 'navy' }, top: true },
-    { label: 'Combined ratio · Q1→Q4', value: q1 != null && q4 != null ? `${q1.toFixed(1)}% → ${q4.toFixed(1)}%` : 'Data pending', chip: q1 != null && q4 != null ? (improving ? { label: 'Improving', tone: 'teal' } : { label: 'Flat', tone: 'navy' }) : { label: 'Pending', tone: 'navy' }, top: true },
+  const blocks: { label: string; value: string; note: string; chip: { label: string; tone: ChipTone }; spark?: number[] }[] = [
+    {
+      label: 'Claims ratio',
+      value: cost ? `${cost.loss.toFixed(1)}%` : 'Data pending',
+      note: 'Largest cost absorber',
+      chip: cost ? (cost.loss > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: 'Pending', tone: 'navy' },
+    },
+    {
+      label: 'Expense ratio',
+      value: cost ? `${(cost.commission + cost.expense).toFixed(1)}%` : 'Data pending',
+      note: 'Commission + opex',
+      chip: { label: 'Cost base', tone: 'navy' },
+    },
+    {
+      label: 'Combined ratio trend',
+      value: q1 != null && q4 != null ? `${q1.toFixed(1)}% → ${q4.toFixed(1)}%` : 'Data pending',
+      note: 'Q1 → Q4 FY25',
+      chip: q1 != null && q4 != null ? (improving ? { label: 'Improving', tone: 'teal' } : { label: 'Flat', tone: 'navy' }) : { label: 'Pending', tone: 'navy' },
+      spark: cr ?? undefined,
+    },
   ]
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
@@ -1421,18 +1464,25 @@ function DisciplineQuality({ company }: { company: Insurer }) {
         <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.emerald }} />
         <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Discipline Quality</p>
       </div>
-      <div className="mt-4 space-y-4">
-        {rows.map((r) => (
-          <div key={r.label} className={r.top ? 'border-t border-[#DCEDE3] pt-3.5' : ''}>
+      <div className="mt-3 flex flex-1 flex-col gap-2.5">
+        {blocks.map((b) => (
+          <div key={b.label} className="rounded-lg border border-[#DCEDE3] bg-white/70 px-3 py-2.5">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{r.label}</span>
-              <SignalBadge label={r.chip.label} tone={r.chip.tone} size="sm" />
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{b.label}</span>
+              <SignalBadge label={b.chip.label} tone={b.chip.tone} size="sm" />
             </div>
-            <span className="mt-1 block font-display text-[16px] leading-none text-navy-deep">{r.value}</span>
+            <div className="mt-1 flex items-end justify-between gap-2">
+              <span className="font-display text-[18px] leading-none text-navy-deep">{b.value}</span>
+              {b.spark && b.spark.length >= 2 && <Sparkline values={b.spark} tone="positive" width={64} height={22} />}
+            </div>
+            <span className="mt-0.5 block text-[9px] text-ink-secondary">{b.note}</span>
           </div>
         ))}
       </div>
-      <p className="mt-auto pt-4 text-[10.5px] font-medium leading-snug text-navy-deep/80">Costs stay inside ₹100 of premium — the book is self-funding.</p>
+      <div className="mt-3 flex items-start gap-1.5 rounded-lg px-3 py-2" style={{ background: `${PALETTE.emerald}12` }}>
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
+        <p className="text-[10.5px] font-medium leading-snug text-navy-deep/85">Costs stayed inside ₹100 of premium — the book is self-funding.</p>
+      </div>
     </div>
   )
 }
@@ -1630,7 +1680,7 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
       return !hasCR
         ? `${company.shortName} reports on a life basis — discipline is read through returns and capital, not combined ratio.`
         : company.combinedRatio < 100
-          ? 'Combined ratio below 100% means the core insurance book is producing underwriting profit before investment income.'
+          ? 'Combined ratio below 100% means the core insurance book is producing underwriting surplus before investment income.'
           : 'Combined ratio sits above 100% — underwriting is loss-making, so reported profit leans on investment income.'
     case 'core':
       return uw == null
