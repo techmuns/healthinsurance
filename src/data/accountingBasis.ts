@@ -63,7 +63,7 @@ export function basisStatus(value: number | null | undefined): 'Official' | 'Not
 
 /** The standing data note shown alongside the basis lens. */
 export const BASIS_EXPLAINER =
-  'IGAAP/Statutory and IFRS are separate accounting bases. Profitability should not be compared unless the selected basis is clear.'
+  'Check basis before comparing profit.'
 
 /** A single period's profit stack on one accounting basis. `null` => NA. */
 export interface BasisProfit {

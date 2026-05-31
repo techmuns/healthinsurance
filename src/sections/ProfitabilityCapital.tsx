@@ -633,11 +633,11 @@ function BasisBanner({ ctx, company }: { ctx: BasisCtx; company: Insurer }) {
       <BasisPill basis={ctx.basis} />
       {ctx.tracked ? (
         <p className="text-[10.5px] leading-snug text-ink-secondary">
-          Headline figures shown on the <span className="font-semibold text-navy-deep">{BASIS_LABEL[ctx.basis]}</span> basis ({ctx.pLabel}). The cost-split and trajectory engines below stay on the statutory disclosure basis — the only basis with that granularity — so bases are never mixed in one calculation.
+          On <span className="font-semibold text-navy-deep">{BASIS_LABEL[ctx.basis]}</span> basis ({ctx.pLabel}). Engines below stay statutory — never mixed.
         </p>
       ) : (
         <p className="text-[10.5px] leading-snug text-ink-secondary">
-          {company.shortName} is not tracked on IFRS — IFRS figures show <span className="italic">NA</span>. IFRS profitability is tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
+          {company.shortName}: no IFRS data (<span className="italic">NA</span>). Tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
         </p>
       )}
     </div>
@@ -720,7 +720,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: crVal == null,
       color: PALETTE.emerald,
       Icon: ShieldCheck,
-      explore: 'See whether claims and costs stay within every ₹100 of premium.',
+      explore: 'Are costs below ₹100 premium?',
     },
     {
       id: 'core',
@@ -731,7 +731,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: ctx.isIfrs || uw == null,
       color: PALETTE.teal,
       Icon: Gauge,
-      explore: 'Trace how that discipline turns into real underwriting profit.',
+      explore: 'Discipline into underwriting profit.',
     },
     {
       id: 'conversion',
@@ -742,7 +742,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: pmVal == null,
       color: GOLD,
       Icon: IndianRupee,
-      explore: 'Premium is now being tested for how much converts into PAT and margin.',
+      explore: 'See how premium converts into PAT.',
     },
     {
       id: 'returns',
@@ -753,7 +753,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: roeVal == null,
       color: ORANGE,
       Icon: BarChart3,
-      explore: 'Follow profit through to the return shareholders actually earn.',
+      explore: 'Profit to shareholder return.',
     },
     {
       id: 'capital',
@@ -764,7 +764,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: !(solvency > 0),
       color: DEEP_GREEN,
       Icon: Shield,
-      explore: 'See the capital buffer backing all of this growth.',
+      explore: 'Capital backing the growth.',
     },
   ]
 }
@@ -784,10 +784,10 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { c
           </span>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Profitability Story Map</p>
-            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">Click a stage to explore how premium flows into profit, ROE and capital strength.</p>
+            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">Track how premium becomes profit.</p>
             <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice/70 px-2.5 py-0.5 text-[9.5px] font-medium text-ink-secondary">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
-              Interactive analysis · 5 stages · Click to drill down
+              5 stages · click to explore
             </span>
           </div>
         </div>
@@ -795,7 +795,7 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { c
           <BasisPill basis={ctx.basis} />
           <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold text-navy-primary" style={{ borderColor: '#D6E2FA', background: PALETTE.softBlue }}>
             <MousePointerClick className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} />
-            Choose a stage below
+            Pick a stage
           </span>
         </div>
       </div>
@@ -944,8 +944,8 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
   // Strongest profit year gets the boldest green (usually the latest).
   const maxUw = enough ? Math.max(...usable.map((d) => d.uw)) : 0
   const subtitle = !enough
-    ? `Underwriting-profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years.`
-    : 'Core underwriting moved from loss to profit as combined ratio fell below 100%.'
+    ? `Trend pending for ${company.shortName} — needs 2+ years of NEP and combined ratio.`
+    : 'Underwriting moved from loss to profit.'
   return (
     <section className="card-surface p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
@@ -1018,7 +1018,7 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
             </ComposedChart>
           </ResponsiveContainer>
         ) : (
-          <PendingNote>{`Underwriting profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years. Combined ratio overlay shown where available.`}</PendingNote>
+          <PendingNote>{`Trend pending for ${company.shortName} — needs 2+ years of NEP and combined ratio.`}</PendingNote>
         )}
       </div>
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
@@ -1099,7 +1099,7 @@ function ConversionBridge({ company, series, ctx }: { company: Insurer; series: 
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">{periodTag}</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of GWP, see what gets absorbed before profit is created.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">₹100 premium → profit.</p>
     </>
   )
 
@@ -1108,7 +1108,7 @@ function ConversionBridge({ company, series, ctx }: { company: Insurer; series: 
       <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
         {header}
         <div className="mt-3">
-          <PendingNote>{`${company.shortName} reports on a life basis — the ₹100 premium-to-profit engine needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
+          <PendingNote>{`${company.shortName} is a life carrier — needs a claims / commission / opex split. Pending.`}</PendingNote>
         </div>
       </div>
     )
@@ -1242,7 +1242,7 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
   const patStrong = patYoY != null && patYoY >= 50
   const marginFit = hasPatTrend ? fitTrend(patSeries) : null
   const marginUp = marginFit == null ? false : marginFit.slope >= 0
-  const conclusion = patUp || (netMargin != null && netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
+  const conclusion = patUp || (netMargin != null && netMargin > 0) ? 'Premium is turning into profit.' : 'Conversion still building — watch costs.'
 
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
@@ -1372,51 +1372,51 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
   return {
     underwriting: {
       soWhat: !hasCR
-        ? `${company.shortName} is a life carrier — combined ratio does not apply; returns and capital carry the read.`
+        ? `${company.shortName} is a life carrier — read returns and capital.`
         : company.combinedRatio < 100
-          ? 'Underwriting discipline has improved because total insurance cost is below premium received.'
-          : 'Underwriting discipline is the watch-item — total insurance cost is above premium received.',
+          ? 'Discipline improving — total cost below premium.'
+          : 'Watch discipline — total cost above premium.',
       why: costAbsorb != null
-        ? 'Claims, commission and opex are staying inside the ₹100 premium base.'
-        : 'Claims and cost split is not reported on this basis.',
+        ? 'Claims, commission and opex stay inside ₹100.'
+        : 'Cost split not reported on this basis.',
       meaning: !hasCR
-        ? 'Profitability is read through returns and capital instead of combined ratio.'
+        ? 'Read via returns and capital.'
         : company.combinedRatio < 100
-          ? 'The company is no longer relying only on investment income to show profit.'
-          : 'Reported profit is leaning on investment income, not underwriting.',
-      watch: 'Claims ratio, expense ratio and whether combined ratio stays below 100%.',
+          ? 'No longer leaning on investment income.'
+          : 'Profit leans on investment income.',
+      watch: 'Claims, expense, combined ratio vs 100%.',
     },
     core: {
       soWhat: uw == null
-        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
+        ? 'Underwriting profit pending NEP and combined ratio.'
         : uw > 0
-          ? 'Core underwriting has turned profitable as combined ratio moved below 100%.'
-          : 'Core underwriting is still in loss; reported profit leans on investment income.',
-      why: uw == null ? 'Needs reported NEP and combined ratio to size core operating profit.' : `Underwriting result ≈ NEP × (1 − combined ratio) = ${crc(uw)}.`,
-      meaning: 'This is profit from insurance itself, before any investment income.',
-      watch: 'Whether underwriting profit compounds as premium scales.',
+          ? 'Underwriting profitable — combined below 100%.'
+          : 'Underwriting in loss; profit leans on investments.',
+      why: uw == null ? 'Needs NEP and combined ratio.' : `Underwriting ≈ NEP × (1 − combined) = ${crc(uw)}.`,
+      meaning: 'Insurance profit, before investments.',
+      watch: 'Does underwriting profit grow with premium?',
     },
     conversion: {
       soWhat: uw != null && uw > 0
-        ? 'Premium growth is converting into reported profit, but the conversion is still thin.'
-        : 'Premium is not yet converting into underwriting profit; reported profit leans on investment income.',
-      why: 'Claims, commission and opex still absorb most of the premium base.',
-      meaning: 'Improving expense leverage can expand profit conversion if claims stay controlled.',
-      watch: 'PAT margin, claims ratio, expense ratio and underwriting profit.',
+        ? 'Premium converting to profit, but thin.'
+        : 'Premium not yet converting; profit leans on investments.',
+      why: 'Claims, commission and opex absorb most premium.',
+      meaning: 'Better expense leverage can lift conversion.',
+      watch: 'PAT margin, claims, expense, underwriting profit.',
     },
     returns: {
-      soWhat: roe <= 0 ? 'Return on equity is pending for this carrier.' : 'ROE is improving, but it is not yet a mature high-return profile.',
-      why: 'PAT growth and margin improvement are helping, while the large capital base still dilutes returns.',
-      meaning: 'Future ROE expansion depends on profit compounding faster than equity growth.',
-      watch: 'PAT growth, ROE trend, solvency and capital deployment.',
+      soWhat: roe <= 0 ? 'ROE pending.' : 'ROE improving, not yet mature.',
+      why: 'PAT and margin help; large capital dilutes ROE.',
+      meaning: 'ROE rises if profit outgrows equity.',
+      watch: 'PAT growth, ROE, solvency, capital use.',
     },
     capital: {
       soWhat: solvency > 0
-        ? `${solvency.toFixed(2)}x solvency gives growth support and resilience versus the 1.5x regulatory floor.`
-        : 'Solvency is pending for this carrier.',
-      why: solvency > 0 ? `A cushion of ${(solvency - 1.5).toFixed(2)}x above the 1.5x regulatory floor.` : 'Awaiting reported solvency ratio.',
-      meaning: 'Strong capital funds growth without near-term capital-raise risk.',
-      watch: 'Quarterly solvency trajectory as growth consumes capital.',
+        ? `${solvency.toFixed(2)}x solvency — strong cushion vs the 1.5x floor.`
+        : 'Solvency pending.',
+      why: solvency > 0 ? `${(solvency - 1.5).toFixed(2)}x above the 1.5x floor.` : 'Awaiting solvency ratio.',
+      meaning: 'Strong capital funds growth, low raise risk.',
+      watch: 'Solvency trend as growth uses capital.',
     },
   }
 }
@@ -1487,7 +1487,7 @@ interface LensMeta {
 const LENS: Record<NodeId, LensMeta> = {
   underwriting: {
     label: 'Underwriting discipline',
-    line: 'Does the carrier keep claims and costs inside every ₹100 of premium?',
+    line: 'Are costs below premium?',
     accent: PALETTE.emerald,
     cardBg: '#F4FAF6',
     cardBorder: '#DCEDE3',
@@ -1500,7 +1500,7 @@ const LENS: Record<NodeId, LensMeta> = {
   },
   core: {
     label: 'Core profitability',
-    line: 'Is underwriting itself turning a profit, before investment income?',
+    line: 'Underwriting profit before investments?',
     accent: PALETTE.teal,
     cardBg: '#F0F8F7',
     cardBorder: '#D2E8E6',
@@ -1513,7 +1513,7 @@ const LENS: Record<NodeId, LensMeta> = {
   },
   conversion: {
     label: 'Profit conversion',
-    line: 'How much of premium growth reaches reported profit?',
+    line: 'How much premium becomes profit?',
     accent: GOLD,
     cardBg: '#FCF7EA',
     cardBorder: '#ECE1C8',
@@ -1526,7 +1526,7 @@ const LENS: Record<NodeId, LensMeta> = {
   },
   returns: {
     label: 'Shareholder return',
-    line: 'What return does that profit earn for shareholders?',
+    line: 'Return earned for shareholders.',
     accent: ORANGE,
     cardBg: '#FCF4EC',
     cardBorder: '#EFDDCB',
@@ -1539,7 +1539,7 @@ const LENS: Record<NodeId, LensMeta> = {
   },
   capital: {
     label: 'Capital support',
-    line: 'Is there enough capital cushion to fund growth safely?',
+    line: 'Enough capital to fund growth?',
     accent: DEEP_GREEN,
     cardBg: '#EFF7F2',
     cardBorder: '#CFE7DA',
@@ -1646,7 +1646,7 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of premium, costs are absorbed — what stays below 100% is underwriting surplus.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">₹100 premium vs claims and costs.</p>
 
       {cost && cr != null ? (
         <>
@@ -1708,12 +1708,12 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
           {/* One-line read of the flow */}
           <p className="mt-3 flex items-center gap-1.5 text-[10.5px] leading-snug text-navy-deep/85">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
-            {below ? `Claims, commission and opex absorb ₹${cr.toFixed(1)} of every ₹100 — the remaining ₹${(surplus as number).toFixed(1)} is underwriting surplus, before any investment income.` : `Costs absorb more than the ₹100 premium received — underwriting is loss-making before investment income.`}
+            {below ? `Claims and costs take ₹${cr.toFixed(1)} of ₹100 — ₹${(surplus as number).toFixed(1)} is surplus.` : `Costs exceed ₹100 — underwriting is loss-making.`}
           </p>
 
           {stat && (
             <p className="mt-1.5 text-[9.5px] leading-snug text-ink-secondary">
-              Shown on the <span className="font-semibold text-navy-deep">IRDAI statutory (public-disclosure)</span> basis: the claims, commission and opex split above are the real FY25 ratios and sum to the {stat.statutory.toFixed(1)}% statutory combined ratio. The company-reported combined ratio for {stat.reportedFY} is {stat.reported.toFixed(1)}% (a slightly different basis).
+              <span className="font-semibold text-navy-deep">IRDAI statutory</span> basis: claims + commission + opex = {stat.statutory.toFixed(1)}% combined. Company-reported: {stat.reported.toFixed(1)}% ({stat.reportedFY}).
             </p>
           )}
 
@@ -1726,13 +1726,13 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
                 <TrendViewToggle value={view} onChange={setView} accent={PALETTE.emerald} />
               </div>
               {view === 'Yearly' && yearsWithCR < 2 ? (
-                <PendingNote>Pick a wider year range in the header to see the combined-ratio trend — only one reported year is in range.</PendingNote>
+                <PendingNote>Widen the year range to see the trend.</PendingNote>
               ) : (
                 <CombinedRatioBandedTrend points={trajPoints} />
               )}
               {stat && (
                 <div className="mt-2 flex items-center justify-between gap-2">
-                  <p className="text-[9px] leading-snug text-ink-secondary">{view === 'Yearly' ? 'Full-year statutory combined ratio (YTD basis), per IRDAI filings.' : 'Standalone-quarter statutory combined ratio — seasonal swing (Q1 peak, Q4 trough).'}</p>
+                  <p className="text-[9px] leading-snug text-ink-secondary">{view === 'Yearly' ? 'Full-year statutory combined ratio, per IRDAI.' : 'Standalone-quarter statutory combined ratio.'}</p>
                   <SourceTag source="IRDAI public disclosures" period={`${stat.statutoryFY}–FY26`} confidence="high" provenance={{ source_name: 'Niva Bupa quarterly public disclosures (IRDAI NL-form)', source_url: stat.sourceUrl }} />
                 </div>
               )}
@@ -1741,7 +1741,7 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
         </>
       ) : (
         <div className="mt-3">
-          <PendingNote>{`${company.shortName} reports on a life basis — the combined-ratio build-up needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
+          <PendingNote>{`${company.shortName} is a life carrier — needs a claims / commission / opex split. Pending.`}</PendingNote>
         </div>
       )}
     </div>
@@ -1809,7 +1809,7 @@ function DisciplineQuality({ company, ctx }: { company: Insurer; ctx: BasisCtx }
       </div>
       <div className="mt-3 flex items-start gap-1.5 rounded-lg px-3 py-2" style={{ background: `${PALETTE.emerald}12` }}>
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
-        <p className="text-[10.5px] font-medium leading-snug text-navy-deep/85">Costs stayed inside ₹100 of premium — the book is self-funding.</p>
+        <p className="text-[10.5px] font-medium leading-snug text-navy-deep/85">Costs inside ₹100 — the book self-funds.</p>
       </div>
     </div>
   )
@@ -1846,7 +1846,7 @@ function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoi
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Rising profit and its boosters lift the return; the large capital base drags it back before ROE.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Profit lifts ROE; the capital base drags it.</p>
 
       <div className="mt-4 flex items-stretch gap-2">
         {/* Rising PAT pool — the source */}
@@ -1915,7 +1915,7 @@ function SolvencyCushionBridge({ company }: { company: Insurer }) {
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How far capital sits above the 1.5x regulatory floor.</p>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Capital above the 1.5x floor.</p>
 
       {s > 0 && cushion != null ? (
         <>
@@ -1954,7 +1954,7 @@ function SolvencyCushionBridge({ company }: { company: Insurer }) {
         </>
       ) : (
         <div className="mt-3">
-          <PendingNote>{`Solvency is pending for ${company.shortName}.`}</PendingNote>
+          <PendingNote>{`Solvency pending for ${company.shortName}.`}</PendingNote>
         </div>
       )}
     </div>
@@ -1991,7 +1991,7 @@ function CoreResultCard({ company, series }: { company: Insurer; series: AnnualP
         <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio</span>
         <span className="font-display text-[15px] text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'n/a'}</span>
       </div>
-      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Profit from insurance itself, before any investment income.</p>
+      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Insurance profit, before investment income.</p>
     </div>
   )
 }
@@ -2007,34 +2007,34 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
   switch (id) {
     case 'underwriting':
       return !hasCR
-        ? `${company.shortName} reports on a life basis — discipline is read through returns and capital, not combined ratio.`
+        ? `${company.shortName} is a life carrier — read returns and capital.`
         : company.combinedRatio < 100
-          ? 'Combined ratio below 100% means the core insurance book is producing underwriting surplus before investment income.'
-          : 'Combined ratio sits above 100% — underwriting is loss-making, so reported profit leans on investment income.'
+          ? 'Combined below 100% — underwriting surplus before investments.'
+          : 'Combined above 100% — underwriting loss; profit leans on investments.'
     case 'core':
       return uw == null
-        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
+        ? 'Underwriting profit pending NEP and combined ratio.'
         : uw > 0
-          ? 'Core underwriting has turned positive — the key proof is profit bars moving above zero, not an artificial trendline.'
-          : `Core underwriting is still running a ${crc(uw)} deficit; reported profit leans on investment income.`
+          ? 'Underwriting has turned positive — bars above zero.'
+          : `Underwriting still in a ${crc(uw)} deficit; profit leans on investments.`
     case 'conversion':
       return uwSpread == null
-        ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
+        ? `${company.shortName} is a life carrier — ₹100 conversion read pending.`
         : uwSpread > 0
           ? ol.expDelta != null && ol.expDelta < 0
-            ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — early proof of operating leverage.'
-            : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
-          : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
+            ? 'Claims and costs absorb most of the ₹100, but the spread is positive — early operating leverage.'
+            : 'Claims and costs absorb most of the ₹100, but the spread is positive.'
+          : 'Claims and costs absorb the ₹100 — spread not yet positive.'
     case 'returns':
       return company.roe <= 0
-        ? 'Return on equity is pending for this carrier.'
+        ? 'ROE pending.'
         : company.roe < 10
-          ? 'ROE is improving as PAT scales, but the return profile is still early because the capital base remains large.'
-          : 'ROE sits at a healthy level as PAT scales against the equity base.'
+          ? 'ROE improving as PAT scales — still early, large capital base.'
+          : 'Healthy ROE as PAT scales against equity.'
     case 'capital':
       return company.solvency > 0
-        ? `${company.solvency.toFixed(2)}x solvency gives the company a strong capital cushion to support growth and absorb volatility.`
-        : 'Solvency is pending for this carrier.'
+        ? `${company.solvency.toFixed(2)}x solvency — strong cushion for growth and volatility.`
+        : 'Solvency pending.'
   }
   return ''
 }
@@ -2060,7 +2060,7 @@ function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series:
       {yearsWithPat >= 2 ? (
         <QuarterlyPatBars points={yearPoints} accent={ORANGE} />
       ) : yearsWithPat === 1 ? (
-        <PendingNote>Widen the year range in the header to see the PAT trend — only one reported year is in range.</PendingNote>
+        <PendingNote>Widen the year range to see the PAT trend.</PendingNote>
       ) : (
         <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
           Data pending — PAT not reported for {company.shortName}
@@ -2068,7 +2068,7 @@ function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series:
       )}
       <p className="mt-3 flex items-center gap-1.5 text-[10px] leading-snug text-ink-secondary">
         <Sparkles className="h-3 w-3 shrink-0" style={{ color: ORANGE }} />
-        Real annual PAT from company filings; the range follows the header.
+        Real annual PAT; range follows the header.
       </p>
       <SourceTag source="Company filing" period={latestPatFy} confidence="high" provenance={undefined} />
     </div>
@@ -2167,7 +2167,7 @@ function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { i
 // Main section — Profitability Story Map (clickable engine drives the page)
 // ---------------------------------------------------------------------------
 
-const STORY_QUESTION = 'Is premium growth converting into profit, underwriting discipline and strong capital returns?'
+const STORY_QUESTION = 'Is premium turning into profit and returns?'
 
 export function ProfitabilityCapital() {
   const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
@@ -2230,15 +2230,15 @@ export function ProfitabilityCapital() {
   ]
 
   const reportedVerdict = !hasCR
-    ? `Life carrier — ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency anchor the read.`
+    ? `Life carrier — ROE ${company.roe.toFixed(1)}%, ${company.solvency.toFixed(2)}x solvency.`
     : ct.tone === 'positive'
-      ? `Combined ratio ${company.combinedRatio.toFixed(1)}%, ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency — discipline is translating into capital returns.`
+      ? `Combined ${company.combinedRatio.toFixed(1)}% · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency — discipline becoming returns.`
       : ct.tone === 'warning'
-        ? `Combined ratio ${company.combinedRatio.toFixed(1)}% sits in the watch band; ROE ${company.roe.toFixed(1)}% holds while solvency stays at ${company.solvency.toFixed(2)}x.`
-        : `Combined ratio ${company.combinedRatio.toFixed(1)}% is loss-making; profitability hinges on the ${company.solvency.toFixed(2)}x capital cushion.`
+        ? `Combined ${company.combinedRatio.toFixed(1)}% in watch band · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency.`
+        : `Combined ${company.combinedRatio.toFixed(1)}% loss-making · profit hinges on ${company.solvency.toFixed(2)}x cushion.`
   const basisVerdict = basisCtx.tracked
-    ? `On the ${BASIS_LABEL[basis]} basis (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`}, combined ratio ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`}, PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Always check the basis before comparing profitability.`
-    : `${company.shortName} is not tracked on IFRS — showing NA. IFRS profitability is tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
+    ? `${BASIS_LABEL[basis]} (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`} · combined ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`} · PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Check basis before comparing.`
+    : `${company.shortName}: no IFRS data. Tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
   const verdictSummary = basisCtx.isIfrs ? basisVerdict : reportedVerdict
 
   const basisHeroCR = basisCtx.isIfrs ? basisCtx.combinedRatio : hasCR ? company.combinedRatio : null
