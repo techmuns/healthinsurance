@@ -2084,7 +2084,7 @@ function lensSource(id: NodeId, companyId: string): ResolvedSource {
   return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
 }
 
-function ProfitabilityDetail({ id, company, series, ctx }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
+function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; onOpenAcctDetail: () => void }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
   const status = lensStatus(id, company, series, ctx)
@@ -2111,9 +2111,12 @@ function ProfitabilityDetail({ id, company, series, ctx }: { id: NodeId; company
       break
     case 'conversion':
       body = (
-        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <ConversionBridge company={company} series={series} ctx={ctx} />
-          <ConversionQuality company={company} series={series} ctx={ctx} />
+        <div className="space-y-4">
+          <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis={ctx.basis} onOpenDetail={onOpenAcctDetail} />
+          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+            <ConversionBridge company={company} series={series} ctx={ctx} />
+            <ConversionQuality company={company} series={series} ctx={ctx} />
+          </div>
         </div>
       )
       break
@@ -2282,14 +2285,11 @@ export function ProfitabilityCapital() {
         </div>
       </section>
 
-      {/* ─── ACCOUNTING-BASIS LENS — IGAAP vs IFRS PAT · explainer · detail drawer ─── */}
-      <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis={basis} onOpenDetail={() => setAcctOpen(true)} />
-
       {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
       <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} />
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} />
+      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
 
       <DataStatusDrawer
         open={statusOpen}
