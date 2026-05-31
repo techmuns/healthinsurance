@@ -1,22 +1,26 @@
 // ---------------------------------------------------------------------------
-// Accounting-basis profitability (IGAAP / statutory vs IFRS)
+// Accounting-basis profitability — IGAAP / Statutory vs IFRS
 //
-// PE-research input: the standalone-health (SAHI) profitability stack tracked by
-// the PE research team on BOTH accounting bases, because PAT, PAT margin, growth
-// and the cost ratios can tell very different stories depending on the basis.
+// The standalone-health (SAHI) profitability stack on BOTH accounting bases,
+// because PAT, PAT margin, growth and the cost ratios can tell very different
+// stories depending on the basis:
 //   • Niva Bupa FY26: IGAAP PAT ₹131 Cr (−39% YoY) vs IFRS PAT ₹366 Cr (+80% YoY)
+//
+// Source: the insurers' own published accounts — statutory accounts / IRDAI
+// statutory disclosures for IGAAP / Statutory, and the IFRS accounts (annual
+// report / investor presentation) for IFRS. Surfaces tag each figure with the
+// appropriate filing source (see `BASIS_SOURCE_LABEL`) — never a third-party or
+// research label.
 //
 // This is intentionally a separate, hand-curated module — NOT one of the
 // auto-ingested `src/data/snapshots/*` files — so the scheduled ingest pipeline
-// never overwrites research-desk input. Every figure here is sourced from the
-// companies' own filings, compiled by the PE research team; surfaces that show
-// it must tag it as "PE research" (see `BASIS_SOURCE`). Missing cells are `null`
-// (rendered as an honest "NA"), never coerced to 0 or guessed.
+// never overwrites it. Missing cells are `null` (rendered as an honest "NA"),
+// never coerced to 0 and never derived across bases.
 //
 // Premium ≠ profit: PAT / PAT margin / combined ratio here are PROFIT measures.
 // ---------------------------------------------------------------------------
 
-export type AccountingBasis = 'reported' | 'igaap' | 'ifrs'
+export type AccountingBasis = 'igaap' | 'ifrs'
 
 /** Periods carried in the basis dataset (annual FY + standalone Q4). */
 export type BasisPeriod = 'FY23' | 'FY24' | 'FY25' | 'FY26' | 'Q4FY25' | 'Q4FY26'
@@ -25,32 +29,39 @@ export const ANNUAL_PERIODS: BasisPeriod[] = ['FY23', 'FY24', 'FY25', 'FY26']
 export const Q4_PERIODS: BasisPeriod[] = ['Q4FY25', 'Q4FY26']
 
 export const BASIS_OPTIONS: { value: AccountingBasis; label: string; full: string }[] = [
-  { value: 'reported', label: 'Reported', full: 'Reported / Default' },
-  { value: 'igaap', label: 'IGAAP', full: 'IGAAP / Statutory' },
+  { value: 'igaap', label: 'IGAAP / Statutory', full: 'IGAAP / Statutory' },
   { value: 'ifrs', label: 'IFRS', full: 'IFRS' },
 ]
 
 export const BASIS_LABEL: Record<AccountingBasis, string> = {
-  reported: 'Reported',
-  igaap: 'IGAAP',
-  ifrs: 'IFRS',
-}
-
-export const BASIS_FULL: Record<AccountingBasis, string> = {
-  reported: 'Reported / Default',
   igaap: 'IGAAP / Statutory',
   ifrs: 'IFRS',
 }
 
-/** Where the basis numbers come from — surfaced on source tags. */
-export const BASIS_SOURCE = {
-  label: 'PE research',
-  detail: 'PE research desk · compiled from company filings (statutory & IFRS accounts)',
-} as const
+export const BASIS_FULL: Record<AccountingBasis, string> = {
+  igaap: 'IGAAP / Statutory',
+  ifrs: 'IFRS',
+}
 
-/** The standing investor caution shown alongside the basis lens. */
+/**
+ * Source label per accounting basis — the kind of filing a number comes from.
+ * IGAAP/Statutory figures are the companies' statutory accounts / IRDAI statutory
+ * disclosures; IFRS figures are the companies' IFRS accounts (annual report /
+ * investor presentation). No third-party / research label is ever used.
+ */
+export const BASIS_SOURCE_LABEL: Record<AccountingBasis, string> = {
+  igaap: 'Company filing',
+  ifrs: 'Annual report',
+}
+
+/** Status word for a basis value: present => Official, missing => Not available. */
+export function basisStatus(value: number | null | undefined): 'Official' | 'Not available' {
+  return value == null ? 'Not available' : 'Official'
+}
+
+/** The standing data note shown alongside the basis lens. */
 export const BASIS_EXPLAINER =
-  'PAT differs across IGAAP and IFRS because the accounting recognition basis differs. Always check the selected basis before comparing profitability, ROE, or valuation.'
+  'IGAAP/Statutory and IFRS are separate accounting bases. Profitability should not be compared unless the selected basis is clear.'
 
 /** A single period's profit stack on one accounting basis. `null` => NA. */
 export interface BasisProfit {
@@ -195,23 +206,10 @@ export function getBasisPatGrowth(companyId: string, basis: 'igaap' | 'ifrs', pe
   return ((cur - old) / Math.abs(old)) * 100
 }
 
-/** Reported net worth (₹ Cr) for the FY (basis-neutral); null when unavailable. */
-export function getBasisNetWorth(companyId: string, period: BasisPeriod): number | null {
-  return PROFIT_BY_BASIS[companyId]?.netWorth[period] ?? null
-}
-
-/**
- * Derived ROE (%) on a basis = PAT(basis) / net worth × 100, annual periods only.
- * Net worth is reported (statutory) and not basis-split, so this is an *indicative*
- * ROE on basis-specific PAT — callers must label it as derived. Null when missing.
- */
-export function getBasisRoe(companyId: string, basis: 'igaap' | 'ifrs', period: BasisPeriod): number | null {
-  if (!ANNUAL_PERIODS.includes(period)) return null
-  const pat = getBasisProfit(companyId, basis, period)?.pat
-  const nw = getBasisNetWorth(companyId, period)
-  if (pat == null || nw == null || nw === 0) return null
-  return (pat / nw) * 100
-}
+// ROE on a basis is intentionally NOT derived here: there is no IFRS equity to
+// compute IFRS ROE cleanly, and mixing IFRS PAT with statutory net worth would
+// blend bases. IFRS ROE is surfaced as NA; IGAAP/Statutory ROE comes from the
+// existing reported figures. Net worth is retained on the dataset for reference.
 
 export function isAnnual(period: BasisPeriod): boolean {
   return ANNUAL_PERIODS.includes(period)

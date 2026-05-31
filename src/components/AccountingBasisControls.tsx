@@ -3,10 +3,9 @@ import { SegmentedControl } from './SegmentedControl'
 import { BASIS_OPTIONS, BASIS_LABEL, BASIS_EXPLAINER, type AccountingBasis } from '@/data/accountingBasis'
 
 // Tone per basis — subtle, on-palette colour coding so the eye can tell at a
-// glance which accounting lens a number is on. Reported = neutral slate,
-// IGAAP = navy (statutory), IFRS = teal (the contrasting lens).
+// glance which accounting lens a number is on:
+// IGAAP / Statutory = navy, IFRS = teal (the contrasting lens).
 export const BASIS_TONE: Record<AccountingBasis, string> = {
-  reported: '#64748B',
   igaap: '#27457E',
   ifrs: '#168E8E',
 }

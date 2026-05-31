@@ -7,7 +7,8 @@ import {
   getBasisPatGrowth,
   periodLabel,
   hasBasisData,
-  BASIS_SOURCE,
+  basisStatus,
+  BASIS_SOURCE_LABEL,
   BASIS_TRACKED_COMPANIES,
   type AccountingBasis,
   type BasisPeriod,
@@ -74,8 +75,9 @@ function BasisColumn({
         {missing ? 'NA' : crc(pat)}
       </span>
       <span className="mt-1 text-[9px] uppercase tracking-wide text-ink-secondary">PAT</span>
-      <div className="mt-2 border-t border-soft-border/60 pt-1.5">
+      <div className="mt-2 flex items-center justify-between gap-2 border-t border-soft-border/60 pt-1.5">
         <GrowthDir g={growth} />
+        <span className="text-[8.5px] font-semibold uppercase tracking-wide" style={{ color: missing ? '#94A3B8' : tone }}>{basisStatus(pat)}</span>
       </div>
     </div>
   )
@@ -91,18 +93,22 @@ function buildInterpretation(
 ): string {
   const p = periodLabel(period)
   if (igaapPat == null && ifrsPat == null) return `Neither basis reports PAT for ${companyShort} in ${p}.`
-  if (igaapPat == null) return `Only the IFRS basis reports ${companyShort}'s ${p} PAT (${crc(ifrsPat)}); IGAAP is not available for this period.`
-  if (ifrsPat == null) return `Only the IGAAP basis reports ${companyShort}'s ${p} PAT (${crc(igaapPat)}); IFRS is not available for this period.`
+  if (igaapPat == null) return `Only IFRS reports ${companyShort}'s ${p} PAT (${crc(ifrsPat)}); IGAAP / Statutory is not available for this period.`
+  if (ifrsPat == null) return `Only IGAAP / Statutory reports ${companyShort}'s ${p} PAT (${crc(igaapPat)}); IFRS is not available for this period.`
+  const igaapPos = igaapPat > 0
+  const ifrsPos = ifrsPat > 0
   const gap = ifrsPat - igaapPat
-  const higher = gap >= 0 ? 'IFRS' : 'IGAAP'
-  const flips =
-    igaapG != null && ifrsG != null && Math.sign(igaapG) !== Math.sign(ifrsG) && Math.abs(igaapG) > 1 && Math.abs(ifrsG) > 1
-  const small = igaapPat !== 0 && Math.abs(gap) / Math.abs(igaapPat) < 0.1
-  if (flips) {
-    return `The profitability story flips with the lens: on IGAAP ${companyShort}'s ${p} PAT ${igaapG! >= 0 ? 'rose' : 'fell'} (${igaapG! >= 0 ? '+' : ''}${igaapG!.toFixed(0)}%), but on IFRS it ${ifrsG! >= 0 ? 'rose' : 'fell'} (${ifrsG! >= 0 ? '+' : ''}${ifrsG!.toFixed(0)}%). ${higher} is the more favourable read, by ${crc(Math.abs(gap))}.`
-  }
-  if (small) return `Both bases tell a similar ${p} story for ${companyShort} — within ${crc(Math.abs(gap))} of each other.`
-  return `${higher} shows the stronger ${p} read — ${crc(Math.abs(gap))} ${gap >= 0 ? 'above' : 'below'} the IGAAP figure. Check the basis before comparing to peers or valuation.`
+  const higher = gap >= 0 ? 'IFRS' : 'IGAAP / Statutory'
+  let lead: string
+  if (igaapPos && ifrsPos) lead = `${companyShort} is profitable on both bases in ${p} — IGAAP / Statutory ${crc(igaapPat)} and IFRS ${crc(ifrsPat)}.`
+  else if (igaapPos && !ifrsPos) lead = `${companyShort} is profitable on IGAAP / Statutory (${crc(igaapPat)}) but loss-making on IFRS (${crc(ifrsPat)}) in ${p}.`
+  else if (!igaapPos && ifrsPos) lead = `${companyShort} is loss-making on IGAAP / Statutory (${crc(igaapPat)}) but profitable on IFRS (${crc(ifrsPat)}) in ${p}.`
+  else lead = `${companyShort} is loss-making on both bases in ${p} — IGAAP / Statutory ${crc(igaapPat)} and IFRS ${crc(ifrsPat)}.`
+  const flips = igaapG != null && ifrsG != null && Math.sign(igaapG) !== Math.sign(ifrsG) && Math.abs(igaapG) > 1 && Math.abs(ifrsG) > 1
+  const tail = flips
+    ? ` The direction even flips: IGAAP ${igaapG! >= 0 ? '+' : ''}${igaapG!.toFixed(0)}% vs IFRS ${ifrsG! >= 0 ? '+' : ''}${ifrsG!.toFixed(0)}% YoY — ${higher} is the more favourable read.`
+    : ` ${higher} reads ${crc(Math.abs(gap))} higher; keep the basis clear before comparing to peers or valuation.`
+  return lead + tail
 }
 
 const PERIOD_CHOICES: BasisPeriod[] = ['FY25', 'FY26', 'Q4FY26']
@@ -215,7 +221,7 @@ export function PatBasisCompareCard({
           <Layers className="h-3.5 w-3.5" />
           View accounting detail
         </button>
-        <SourceTag source={BASIS_SOURCE.label} period={periodLabel(period)} confidence="medium" provenance={{ source_name: BASIS_SOURCE.detail }} />
+        <SourceTag source={BASIS_SOURCE_LABEL[pageBasis]} period={periodLabel(period)} confidence="high" />
       </div>
     </section>
   )

@@ -1,5 +1,4 @@
 import { Drawer } from './Drawer'
-import { SourceTag } from './SourceTag'
 import { BASIS_TONE } from './AccountingBasisControls'
 import {
   getBasisProfit,
@@ -7,7 +6,7 @@ import {
   periodLabel,
   ANNUAL_PERIODS,
   Q4_PERIODS,
-  BASIS_SOURCE,
+  BASIS_SOURCE_LABEL,
   BASIS_EXPLAINER,
   BASIS_LABEL,
   type BasisPeriod,
@@ -44,11 +43,12 @@ function BasisTable({ companyId, basis }: { companyId: string; basis: 'igaap' | 
   const tone = BASIS_TONE[basis]
   return (
     <div className="overflow-x-auto">
-      <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="h-2 w-2 rounded-sm" style={{ background: tone }} />
-        <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: tone }}>
-          {BASIS_LABEL[basis]} basis
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-sm" style={{ background: tone }} />
+          <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: tone }}>{BASIS_LABEL[basis]} basis</span>
         </span>
+        <span className="text-[9px] text-ink-secondary">Source · {BASIS_SOURCE_LABEL[basis]}</span>
       </div>
       <table className="w-full border-collapse">
         <thead>
@@ -98,7 +98,7 @@ export function AccountingDetailDrawer({
       footer={
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="max-w-md text-[10px] leading-snug text-ink-secondary">{BASIS_EXPLAINER}</p>
-          <SourceTag source={BASIS_SOURCE.label} confidence="medium" provenance={{ source_name: BASIS_SOURCE.detail }} />
+          <span className="text-[10px] text-ink-secondary">Official where reported · NA where not available</span>
         </div>
       }
     >

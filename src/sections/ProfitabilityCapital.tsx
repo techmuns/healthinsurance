@@ -35,28 +35,26 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
-import { BasisTag } from '@/components/BasisTag'
 import { SourceTag } from '@/components/SourceTag'
 import { DataStatusDrawer } from '@/components/DataStatusDrawer'
-import { profitabilityBasis } from '@/data/mockData'
+import type { BasisInfo } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Metric, Insurer } from '@/data/types'
-import { AccountingBasisToggle, BasisPill } from '@/components/AccountingBasisControls'
+import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import {
   getBasisProfit,
   getBasisPatGrowth,
-  getBasisRoe,
   latestAnnualWithPat,
   hasBasisData,
   periodLabel,
   BASIS_LABEL,
-  BASIS_SOURCE,
+  BASIS_SOURCE_LABEL,
   BASIS_TRACKED_COMPANIES,
   type AccountingBasis,
   type BasisPeriod,
@@ -569,21 +567,26 @@ function underwritingResult(p: AnnualPoint): number | null {
 const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
 
 // ---------------------------------------------------------------------------
-// Accounting-basis lens — resolves the headline profit scalars for the selected
-// basis (Reported / IGAAP / IFRS) at the latest annual period with data. On the
-// default 'reported' basis `isBasis` is false and every component keeps its
-// existing behaviour; on IGAAP / IFRS the headline numbers (PAT margin, combined
-// ratio, claims, expense, ROE) switch to the PE-research basis dataset, with NA
-// where a basis/period is unreported. The granular cost-split and trajectory
-// engines stay on the statutory disclosure basis (the only basis with that
-// granularity) — never silently mixed; a banner makes this explicit.
+// Accounting-basis lens — two real bases: IGAAP / Statutory (the default) and
+// IFRS. IGAAP / Statutory IS the dashboard's existing statutory data path, so
+// every company keeps working and `isIfrs` is false. IFRS is an overlay sourced
+// from the insurers' IFRS accounts (annual report / investor presentation):
+// PAT, PAT margin, PAT growth and the combined / claims / expense ratios switch
+// to the IFRS dataset, with NA where a period is unreported. ROE on IFRS is NA —
+// there is no IFRS equity to compute it cleanly, and it is never derived from
+// statutory net worth. The granular cost-split and trajectory engines stay on
+// the statutory disclosure basis (the only basis with that granularity) — never
+// silently mixed; a banner makes that explicit when IFRS is selected.
 // ---------------------------------------------------------------------------
 interface BasisCtx {
   basis: AccountingBasis
-  isBasis: boolean
+  /** true only for IFRS — the overlay. IGAAP / Statutory uses the base path. */
+  isIfrs: boolean
   tracked: boolean
   period: BasisPeriod | null
   pLabel: string
+  /** Source label for the selected basis (Company filing / Annual report). */
+  sourceLabel: string
   pat: number | null
   patMargin: number | null
   patGrowth: number | null
@@ -595,32 +598,36 @@ interface BasisCtx {
 
 function buildBasisCtx(company: Insurer, basis: AccountingBasis): BasisCtx {
   const tracked = hasBasisData(company.id)
-  if (basis === 'reported') {
-    return { basis, isBasis: false, tracked, period: null, pLabel: 'FY25', pat: null, patMargin: null, patGrowth: null, combinedRatio: null, claimsRatio: null, expenseRatio: null, roe: null }
+  const sourceLabel = BASIS_SOURCE_LABEL[basis]
+  if (basis === 'igaap') {
+    // IGAAP / Statutory = the existing statutory data path; components use their
+    // own reported-statutory values. No overlay or period anchor needed.
+    return { basis, isIfrs: false, tracked, period: null, pLabel: 'FY25', sourceLabel, pat: null, patMargin: null, patGrowth: null, combinedRatio: null, claimsRatio: null, expenseRatio: null, roe: null }
   }
-  const period = latestAnnualWithPat(company.id, basis) ?? 'FY26'
-  const bp = getBasisProfit(company.id, basis, period)
+  const period = latestAnnualWithPat(company.id, 'ifrs') ?? 'FY26'
+  const bp = getBasisProfit(company.id, 'ifrs', period)
   return {
     basis,
-    isBasis: true,
+    isIfrs: true,
     tracked,
     period,
     pLabel: periodLabel(period),
+    sourceLabel,
     pat: bp?.pat ?? null,
     patMargin: bp?.patMarginGwp ?? null,
-    patGrowth: getBasisPatGrowth(company.id, basis, period),
+    patGrowth: getBasisPatGrowth(company.id, 'ifrs', period),
     combinedRatio: bp?.combinedRatio ?? null,
     claimsRatio: bp?.claimsRatio ?? null,
     expenseRatio: bp?.expenseRatio ?? null,
-    roe: getBasisRoe(company.id, basis, period),
+    roe: null, // IFRS ROE not available (no IFRS equity reported) — never derived
   }
 }
 
-// Explicit basis context inside the detail panel, shown only when a non-default
-// basis is selected — so the investor knows which lens the headline numbers use
+// Explicit basis context inside the detail panel, shown only when IFRS is
+// selected — so the investor knows the headline numbers are on the IFRS lens
 // and that the granular engines below remain on the statutory disclosure basis.
 function BasisBanner({ ctx, company }: { ctx: BasisCtx; company: Insurer }) {
-  if (!ctx.isBasis) return null
+  if (!ctx.isIfrs) return null
   return (
     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-soft-border bg-ice/60 px-3.5 py-2">
       <BasisPill basis={ctx.basis} />
@@ -630,7 +637,7 @@ function BasisBanner({ ctx, company }: { ctx: BasisCtx; company: Insurer }) {
         </p>
       ) : (
         <p className="text-[10.5px] leading-snug text-ink-secondary">
-          {company.shortName} is not tracked on IGAAP/IFRS — basis figures show <span className="italic">NA</span>. Dual-basis profitability is tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
+          {company.shortName} is not tracked on IFRS — IFRS figures show <span className="italic">NA</span>. IFRS profitability is tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
         </p>
       )}
     </div>
@@ -695,12 +702,13 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
   const uw = latest ? underwritingResult(latest) : null
   const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
   const solvency = company.solvency
-  // Basis-aware headline scalars: on IGAAP/IFRS these switch to the basis dataset
-  // (NA where unreported); on the default Reported basis they keep prior values.
-  const crVal = ctx.isBasis ? ctx.combinedRatio : hasCR ? company.combinedRatio : null
-  const pmVal = ctx.isBasis ? ctx.patMargin : patMargin
-  const roeVal = ctx.isBasis ? ctx.roe : company.roe > 0 ? company.roe : null
-  const naWord = ctx.isBasis ? 'NA' : 'n/a'
+  // Basis-aware headline scalars: IGAAP / Statutory uses the existing statutory
+  // values; IFRS switches to the IFRS dataset (NA where unreported). Underwriting
+  // profit is a statutory measure, so it shows NA on IFRS (never derived).
+  const crVal = ctx.isIfrs ? ctx.combinedRatio : hasCR ? company.combinedRatio : null
+  const pmVal = ctx.isIfrs ? ctx.patMargin : patMargin
+  const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
+  const naWord = ctx.isIfrs ? 'NA' : 'n/a'
 
   return [
     {
@@ -719,8 +727,8 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       n: 2,
       label: 'Core profitability',
       metricLabel: 'Underwriting profit',
-      value: uw == null ? 'Pending' : crc(uw),
-      missing: uw == null,
+      value: ctx.isIfrs ? 'NA' : uw == null ? 'Pending' : crc(uw),
+      missing: ctx.isIfrs || uw == null,
       color: PALETTE.teal,
       Icon: Gauge,
       explore: 'Trace how that discipline turns into real underwriting profit.',
@@ -730,7 +738,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       n: 3,
       label: 'Profit conversion',
       metricLabel: 'PAT margin',
-      value: pmVal == null ? (ctx.isBasis ? naWord : 'Pending') : `${pmVal.toFixed(1)}%`,
+      value: pmVal == null ? (ctx.isIfrs ? naWord : 'Pending') : `${pmVal.toFixed(1)}%`,
       missing: pmVal == null,
       color: GOLD,
       Icon: IndianRupee,
@@ -784,7 +792,7 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { c
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          {ctx.isBasis && <BasisPill basis={ctx.basis} />}
+          <BasisPill basis={ctx.basis} />
           <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold text-navy-primary" style={{ borderColor: '#D6E2FA', background: PALETTE.softBlue }}>
             <MousePointerClick className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} />
             Choose a stage below
@@ -1078,9 +1086,9 @@ function ConversionBridge({ company, series, ctx }: { company: Insurer; series: 
   // The PAT-margin output switches with the selected accounting basis; the ₹100
   // cost split below stays on the statutory disclosure basis (made explicit by
   // the panel banner), so the two bases are never blended inside one number.
-  const patMargin = ctx.isBasis ? ctx.patMargin : reportedMargin
-  const periodTag = ctx.isBasis ? ctx.pLabel : 'FY25'
-  const outputCaption = ctx.isBasis ? `${BASIS_LABEL[ctx.basis]} profit conversion` : 'Reported profit conversion'
+  const patMargin = ctx.isIfrs ? ctx.patMargin : reportedMargin
+  const periodTag = ctx.isIfrs ? ctx.pLabel : 'FY25'
+  const outputCaption = ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} profit conversion` : 'Reported profit conversion'
 
   const header = (
     <>
@@ -1202,7 +1210,7 @@ function ConversionBridge({ company, series, ctx }: { company: Insurer; series: 
           style={{ background: 'linear-gradient(160deg, #FBF1D8 0%, #FFFAEC 100%)', borderColor: '#E9D49A', boxShadow: `0 14px 28px ${GOLD}40` }}
         >
           <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#9A7B1E' }}>PAT margin</span>
-          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: GOLD }}>{patMargin == null ? (ctx.isBasis ? 'NA' : 'n/a') : `${patMargin.toFixed(1)}%`}</span>
+          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: GOLD }}>{patMargin == null ? (ctx.isIfrs ? 'NA' : 'n/a') : `${patMargin.toFixed(1)}%`}</span>
           <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">{outputCaption}</span>
           <span className="mt-1.5"><BasisPill basis={ctx.basis} /></span>
         </div>
@@ -1221,12 +1229,12 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
   // Basis-aware headline scalars (single period on IGAAP/IFRS). The reported PAT
   // sparkline/trend is suppressed on a non-reported basis so a reported trend is
   // never shown beside a basis number.
-  const netMargin = ctx.isBasis ? ctx.patMargin : mm.netMargin
-  const netFy = ctx.isBasis ? ctx.pLabel : mm.latestFy
+  const netMargin = ctx.isIfrs ? ctx.patMargin : mm.netMargin
+  const netFy = ctx.isIfrs ? ctx.pLabel : mm.latestFy
   const hasMargin = netMargin != null
-  const patYoY = ctx.isBasis ? ctx.patGrowth : ol.patYoY
-  const expSingle = ctx.isBasis ? ctx.expenseRatio : null
-  const hasPatTrend = !ctx.isBasis && patSeries.length >= 2
+  const patYoY = ctx.isIfrs ? ctx.patGrowth : ol.patYoY
+  const expSingle = ctx.isIfrs ? ctx.expenseRatio : null
+  const hasPatTrend = !ctx.isIfrs && patSeries.length >= 2
   const netTone: ChipTone = netMargin == null ? 'navy' : netMargin > 5 ? 'teal' : netMargin > 0 ? 'warning' : netMargin === 0 ? 'navy' : 'negative'
   const hasExp = ol.expFrom != null && ol.expTo != null && ol.expSeries.length >= 2
   const expImproving = ol.expDelta != null && ol.expDelta < 0
@@ -1248,12 +1256,12 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
           <div className="flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5">
               <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin{netFy ? ` · ${netFy}` : ''}</span>
-              {ctx.isBasis && <BasisPill basis={ctx.basis} />}
+              <BasisPill basis={ctx.basis} />
             </span>
             <SignalBadge label={hasMargin ? (netMargin! > 5 ? 'Healthy' : netMargin! > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasMargin ? netTone : 'navy'} size="sm" />
           </div>
           <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="font-display text-[22px] leading-none text-navy-deep">{hasMargin ? `${netMargin!.toFixed(1)}%` : ctx.isBasis ? 'NA' : 'Data pending'}</span>
+            <span className="font-display text-[22px] leading-none text-navy-deep">{hasMargin ? `${netMargin!.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending'}</span>
             {hasPatTrend && (
               <div className="flex flex-col items-end gap-0.5">
                 <TrendPill label={marginFit == null ? 'Trend pending' : marginUp ? 'Expanding' : 'Easing'} dir={marginFit == null ? 'flat' : marginUp ? 'up' : 'down'} color={marginUp ? GOLD : PALETTE.coral} />
@@ -1267,16 +1275,16 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
 
         <div className="border-t border-[#ECE1C8] pt-3.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Expense ratio{ctx.isBasis ? ` · ${ctx.pLabel}` : ''}</span>
-            {ctx.isBasis ? (
+            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Expense ratio{ctx.isIfrs ? ` · ${ctx.pLabel}` : ''}</span>
+            {ctx.isIfrs ? (
               <SignalBadge label={expSingle == null ? 'NA' : BASIS_LABEL[ctx.basis]} tone="navy" size="sm" />
             ) : (
               <SignalBadge label={hasExp ? (expImproving ? 'Improving' : 'Flat') : 'Pending'} tone={hasExp && expImproving ? 'teal' : 'navy'} size="sm" />
             )}
           </div>
           <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="font-display text-[16px] leading-none text-navy-deep">{ctx.isBasis ? (expSingle == null ? 'NA' : `${expSingle.toFixed(1)}%`) : hasExp ? `${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}%` : 'Data pending'}</span>
-            {!ctx.isBasis && ol.expSeries.length >= 2 && <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={70} height={24} />}
+            <span className="font-display text-[16px] leading-none text-navy-deep">{ctx.isIfrs ? (expSingle == null ? 'NA' : `${expSingle.toFixed(1)}%`) : hasExp ? `${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}%` : 'Data pending'}</span>
+            {!ctx.isIfrs && ol.expSeries.length >= 2 && <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={70} height={24} />}
           </div>
         </div>
 
@@ -1285,7 +1293,7 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
             <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT growth · YoY</span>
             <SignalBadge label={patYoY == null ? 'Pending' : patStrong ? 'Strong' : patUp ? 'Rising' : 'Falling'} tone={patYoY == null ? 'navy' : patUp ? 'positive' : 'negative'} size="sm" />
           </div>
-          <span className="mt-1 block font-display text-[22px] leading-none text-navy-deep">{patYoY == null ? (ctx.isBasis ? 'NA' : 'Data pending') : `${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}%`}</span>
+          <span className="mt-1 block font-display text-[22px] leading-none text-navy-deep">{patYoY == null ? (ctx.isIfrs ? 'NA' : 'Data pending') : `${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}%`}</span>
         </div>
       </div>
 
@@ -1315,19 +1323,19 @@ function CapitalBufferCard({ company }: { company: Insurer }) {
 }
 
 function RoeGaugeCard({ company, ctx }: { company: Insurer; ctx: BasisCtx }) {
-  const roeVal = ctx.isBasis ? ctx.roe : company.roe > 0 ? company.roe : null
+  const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
   const roeTone: Tone = roeVal == null ? 'neutral' : roeVal >= 12 ? 'positive' : roeVal >= 5 ? 'warning' : 'negative'
   return (
     <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: 'linear-gradient(135deg, #FBF1E5 0%, #FFF9F2 100%)' }}>
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · {ctx.isBasis ? ctx.pLabel : 'FY25'}</p>
-        {ctx.isBasis && <BasisPill basis={ctx.basis} />}
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · {ctx.isIfrs ? ctx.pLabel : 'FY25'}</p>
+        <BasisPill basis={ctx.basis} />
       </div>
       <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{roeVal == null ? 'NA' : `${roeVal.toFixed(1)}%`}</p>
       <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
-        {roeVal == null ? (ctx.isBasis ? 'Not available on this basis' : 'Return pending') : roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
+        {roeVal == null ? (ctx.isIfrs ? 'Not available on this basis' : 'Return pending') : roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
       </p>
-      {ctx.isBasis && roeVal != null && <p className="text-[8.5px] leading-snug text-ink-secondary">Derived · {BASIS_LABEL[ctx.basis]} PAT ÷ net worth</p>}
+      {ctx.isIfrs && <p className="text-[8.5px] leading-snug text-ink-secondary">ROE not reported on IFRS (no IFRS equity) — shown as NA, not derived.</p>}
       <SemiGauge
         value={roeVal ?? 0}
         min={0}
@@ -1426,9 +1434,9 @@ function NodeInvestorRead({ read, accent, src, period, ctx }: { read: NodeRead; 
         <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
         <h3 className="mt-0 font-display text-[15px] leading-tight text-navy-deep">So what?</h3>
         <p className="mt-1.5 max-w-3xl text-[12px] font-medium leading-relaxed text-navy-deep">{read.soWhat}</p>
-        {ctx.isBasis && (
+        {ctx.isIfrs && (
           <p className="mt-1.5 max-w-3xl text-[11px] leading-relaxed text-ink-secondary">
-            Figures shown on the <span className="font-semibold text-navy-deep">{BASIS_LABEL[ctx.basis]}</span> basis ({ctx.pLabel}). PAT can read very differently on IGAAP vs IFRS — see the “PAT by Accounting Basis” card above for the side-by-side.
+            Figures shown on the <span className="font-semibold text-navy-deep">IFRS</span> basis ({ctx.pLabel}). PAT can read very differently on IGAAP / Statutory vs IFRS — see the “PAT by Accounting Basis” card in the Profit conversion stage.
           </p>
         )}
         <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 sm:grid-cols-[120px_1fr]">
@@ -1440,15 +1448,15 @@ function NodeInvestorRead({ read, accent, src, period, ctx }: { read: NodeRead; 
           ))}
         </dl>
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
-          {ctx.isBasis ? (
-            <span className="inline-flex items-center gap-1.5">
-              <BasisPill basis={ctx.basis} />
-              <span className="text-[10px] text-ink-secondary">PE research · {ctx.pLabel}</span>
-            </span>
+          <span className="inline-flex items-center gap-1.5">
+            <BasisPill basis={ctx.basis} />
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{ctx.isIfrs && ctx.pat == null ? 'Not available' : 'Official'}</span>
+          </span>
+          {ctx.isIfrs ? (
+            <SourceTag source={ctx.sourceLabel} period={ctx.pLabel} confidence="high" />
           ) : (
-            <BasisTag info={profitabilityBasis} />
+            <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
           )}
-          <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
         </div>
       </div>
     </section>
@@ -1546,23 +1554,24 @@ const LENS: Record<NodeId, LensMeta> = {
 
 function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: ChipTone } {
   if (id === 'underwriting') {
-    const cr = ctx.isBasis ? ctx.combinedRatio : company.combinedRatio > 0 ? company.combinedRatio : null
-    if (cr == null) return { label: ctx.isBasis ? 'NA' : 'N/A', tone: 'navy' }
+    const cr = ctx.isIfrs ? ctx.combinedRatio : company.combinedRatio > 0 ? company.combinedRatio : null
+    if (cr == null) return { label: ctx.isIfrs ? 'NA' : 'N/A', tone: 'navy' }
     return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
   }
   if (id === 'core') {
+    if (ctx.isIfrs) return { label: 'NA', tone: 'navy' }
     const latest = series[series.length - 1] as AnnualPoint | undefined
     const uw = latest ? underwritingResult(latest) : null
     return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'In profit', tone: 'teal' } : { label: 'In loss', tone: 'negative' }
   }
   if (id === 'conversion') {
-    const pm = ctx.isBasis ? ctx.patMargin : getMarginMetrics(series).netMargin
-    if (pm == null) return { label: ctx.isBasis ? 'NA' : 'Pending', tone: 'navy' }
+    const pm = ctx.isIfrs ? ctx.patMargin : getMarginMetrics(series).netMargin
+    if (pm == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
     return pm > 5 ? { label: 'Healthy', tone: 'teal' } : pm > 0 ? { label: 'Thin', tone: 'warning' } : { label: 'Loss', tone: 'negative' }
   }
   if (id === 'returns') {
-    const roe = ctx.isBasis ? ctx.roe : company.roe > 0 ? company.roe : null
-    if (roe == null) return { label: ctx.isBasis ? 'NA' : 'Pending', tone: 'navy' }
+    const roe = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
+    if (roe == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
     return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'warning' } : { label: 'Sub-CoC', tone: 'negative' }
   }
   return company.solvency <= 0 ? { label: 'Pending', tone: 'navy' } : company.solvency >= 2 ? { label: 'Comfortable', tone: 'positive' } : company.solvency >= 1.5 ? { label: 'Adequate', tone: 'warning' } : { label: 'Tight', tone: 'negative' }
@@ -1747,8 +1756,8 @@ function DisciplineQuality({ company, ctx }: { company: Insurer; ctx: BasisCtx }
   // On IGAAP/IFRS, claims & expense come straight from the basis dataset (single
   // period); on Reported they use the statutory cost split. The combined-ratio
   // trend block below stays on the statutory quarterly basis (labelled).
-  const claimsVal = ctx.isBasis ? ctx.claimsRatio : cost ? cost.loss : null
-  const expenseVal = ctx.isBasis ? ctx.expenseRatio : cost ? cost.commission + cost.expense : null
+  const claimsVal = ctx.isIfrs ? ctx.claimsRatio : cost ? cost.loss : null
+  const expenseVal = ctx.isIfrs ? ctx.expenseRatio : cost ? cost.commission + cost.expense : null
   // Real statutory standalone quarters for the focal company, else mock drift.
   const stat = STATUTORY_CR[company.id]
   const qvals = stat ? stat.quarters.map((q) => q.cr) : (COMBINED_RATIO_QUARTERS[company.id] ?? null)
@@ -1759,15 +1768,15 @@ function DisciplineQuality({ company, ctx }: { company: Insurer; ctx: BasisCtx }
   const blocks: { label: string; value: string; note: string; chip: { label: string; tone: ChipTone }; spark?: number[] }[] = [
     {
       label: 'Claims ratio',
-      value: claimsVal != null ? `${claimsVal.toFixed(1)}%` : ctx.isBasis ? 'NA' : 'Data pending',
-      note: ctx.isBasis ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Largest cost absorber',
-      chip: claimsVal != null ? (claimsVal > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: ctx.isBasis ? 'NA' : 'Pending', tone: 'navy' },
+      value: claimsVal != null ? `${claimsVal.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending',
+      note: ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Largest cost absorber',
+      chip: claimsVal != null ? (claimsVal > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' },
     },
     {
       label: 'Expense ratio',
-      value: expenseVal != null ? `${expenseVal.toFixed(1)}%` : ctx.isBasis ? 'NA' : 'Data pending',
-      note: ctx.isBasis ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Commission + opex',
-      chip: { label: ctx.isBasis ? BASIS_LABEL[ctx.basis] : 'Cost base', tone: 'navy' },
+      value: expenseVal != null ? `${expenseVal.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending',
+      note: ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Commission + opex',
+      chip: { label: ctx.isIfrs ? BASIS_LABEL[ctx.basis] : 'Cost base', tone: 'navy' },
     },
     {
       label: 'Combined ratio trend',
@@ -2149,7 +2158,7 @@ function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { i
       <BasisBanner ctx={ctx} company={company} />
       {body}
       <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
-      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isBasis ? ctx.pLabel : meta.period} ctx={ctx} />
+      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
     </div>
   )
 }
@@ -2164,7 +2173,7 @@ export function ProfitabilityCapital() {
   const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
   const [statusOpen, setStatusOpen] = useState(false)
   const [acctOpen, setAcctOpen] = useState(false)
-  const [basis, setBasis] = useState<AccountingBasis>('reported')
+  const [basis, setBasis] = useState<AccountingBasis>('igaap')
   const company = useActiveCompany()
   const { range } = useFilters()
   const copy = getCompanyProfitabilityCopy(company)
@@ -2178,7 +2187,7 @@ export function ProfitabilityCapital() {
   // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
   // data-status row reflects that instead of the blanket mock label below.
   const statCR = STATUTORY_CR[company.id]
-  // Accounting-basis lens (Reported / IGAAP / IFRS) — drives the headline scalars.
+  // Accounting-basis lens (IGAAP / Statutory · IFRS) — drives the headline scalars.
   const basisCtx = buildBasisCtx(company, basis)
 
   // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
@@ -2199,22 +2208,22 @@ export function ProfitabilityCapital() {
     { label: 'GWP growth', metric: m(company.growth > 0 ? company.growth : null, { unit: '%' }) },
     {
       label: 'Combined ratio',
-      metric: basisCtx.isBasis
-        ? m(basisCtx.combinedRatio, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: BASIS_SOURCE.label, sourceUrl: undefined })
+      metric: basisCtx.isIfrs
+        ? m(basisCtx.combinedRatio, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
         : statCR
           ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', sourceUrl: statCR.sourceUrl })
           : m(hasCR ? company.combinedRatio : null, { unit: '%' }),
     },
     {
       label: 'Net margin',
-      metric: basisCtx.isBasis
-        ? m(basisCtx.patMargin, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: BASIS_SOURCE.label, sourceUrl: undefined })
+      metric: basisCtx.isIfrs
+        ? m(basisCtx.patMargin, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
         : m(mm.netMargin, { unit: '%', period: mm.latestFy ?? 'FY25' }),
     },
     {
       label: 'ROE',
-      metric: basisCtx.isBasis
-        ? m(basisCtx.roe, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: BASIS_SOURCE.label, sourceUrl: undefined })
+      metric: basisCtx.isIfrs
+        ? m(basisCtx.roe, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
         : m(company.roe > 0 ? company.roe : null, { unit: '%' }),
     },
     { label: 'Solvency', metric: m(company.solvency > 0 ? company.solvency : null, { unit: 'x' }) },
@@ -2229,11 +2238,11 @@ export function ProfitabilityCapital() {
         : `Combined ratio ${company.combinedRatio.toFixed(1)}% is loss-making; profitability hinges on the ${company.solvency.toFixed(2)}x capital cushion.`
   const basisVerdict = basisCtx.tracked
     ? `On the ${BASIS_LABEL[basis]} basis (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`}, combined ratio ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`}, PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Always check the basis before comparing profitability.`
-    : `${company.shortName} is not tracked on IGAAP/IFRS — showing NA. Dual-basis profitability is tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
-  const verdictSummary = basisCtx.isBasis ? basisVerdict : reportedVerdict
+    : `${company.shortName} is not tracked on IFRS — showing NA. IFRS profitability is tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
+  const verdictSummary = basisCtx.isIfrs ? basisVerdict : reportedVerdict
 
-  const basisHeroCR = basisCtx.isBasis ? basisCtx.combinedRatio : hasCR ? company.combinedRatio : null
-  const heroTone = basisCtx.isBasis
+  const basisHeroCR = basisCtx.isIfrs ? basisCtx.combinedRatio : hasCR ? company.combinedRatio : null
+  const heroTone = basisCtx.isIfrs
     ? basisHeroCR == null
       ? PALETTE.navy
       : basisHeroCR < 100
@@ -2248,6 +2257,15 @@ export function ProfitabilityCapital() {
         : ct.tone === 'negative'
           ? PALETTE.coral
           : PALETTE.navy
+
+  // Data-status footer reflects the selected accounting basis + its source.
+  const drawerBasis: BasisInfo = {
+    basis: 'PAT / ratios',
+    method: 'As reported',
+    accounting: BASIS_LABEL[basis],
+    source: basisCtx.sourceLabel,
+    status: 'Reported',
+  }
 
   return (
     <div className="space-y-5">
@@ -2267,9 +2285,11 @@ export function ProfitabilityCapital() {
             <div className="mt-0.5 flex flex-wrap items-center gap-2">
               <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
               <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
+              <BasisPill basis={basis} />
             </div>
             <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
             <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{verdictSummary}</p>
+            <BasisExplainer className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <AccountingBasisToggle value={basis} onChange={setBasis} />
@@ -2296,7 +2316,7 @@ export function ProfitabilityCapital() {
         onClose={() => setStatusOpen(false)}
         moduleName={`${company.shortName} · Profitability Story`}
         entries={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
-        basis={profitabilityBasis}
+        basis={drawerBasis}
       />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
