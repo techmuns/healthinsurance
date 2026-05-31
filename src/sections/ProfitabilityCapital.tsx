@@ -47,7 +47,6 @@ import type { Metric, Insurer } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
-import { EarningsBridge } from '@/components/EarningsBridge'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
 import { getEarningsBridge } from '@/data/earningsBridge'
 import {
@@ -2499,11 +2498,9 @@ export function ProfitabilityCapital() {
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
 
-      {/* ─── PROFIT QUALITY CHECK — is PAT underwriting-led or investment-led? ─── */}
+      {/* ─── PROFIT QUALITY CHECK — compact investment-vs-underwriting signal;
+              its Details button opens the full GWP → PAT accounting bridge drawer ─── */}
       <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
-
-      {/* ─── EARNINGS BRIDGE — GWP → PAT reconciliation (the detailed proof) ─── */}
-      <EarningsBridge companyId={company.id} companyShort={company.shortName} />
 
       <DataStatusDrawer
         open={statusOpen}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GitMerge, Layers } from 'lucide-react'
+import { Layers } from 'lucide-react'
 import { Drawer } from './Drawer'
 import {
   getEarningsBridge, BRIDGE_SOURCE, BRIDGE_SOURCE_URL,
@@ -77,74 +77,6 @@ function Waterfall({ b }: { b: BridgeFigures }) {
   )
 }
 
-/**
- * Premium → PAT earnings bridge — reconciles underwriting result with PAT to
- * show whether profit is core-underwriting-led or investment-income-led.
- * IGAAP is the full audited waterfall; IFRS shows its disclosed PAT + the
- * IGAAP→IFRS delta (the granular IFRS split is not separately disclosed).
- * Omitted entirely (returns null) for companies without an audited bridge.
- */
-export function EarningsBridge({ companyId, companyShort }: { companyId: string; companyShort: string }) {
-  const years = getEarningsBridge(companyId)
-  const [fy, setFy] = useState(years[0]?.fy ?? '')
-  const [methodOpen, setMethodOpen] = useState(false)
-  if (years.length === 0) return null
-  const yr = years.find((y) => y.fy === fy) ?? years[0]
-  const b = yr.igaap
-
-  return (
-    <section className="card-surface p-5">
-      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-        <div className="flex items-start gap-2">
-          <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full" style={{ background: '#EEF4FF' }}>
-            <GitMerge className="h-3.5 w-3.5 text-navy-primary" />
-          </span>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Premium-to-Profit Engine</p>
-            <h3 className="mt-0.5 font-display text-[15px] leading-tight text-navy-deep">From premium collected to final profit</h3>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
-            {years.map((y) => {
-              const on = y.fy === yr.fy
-              return (
-                <button key={y.fy} type="button" onClick={() => setFy(y.fy)} className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold transition-colors" style={on ? { background: NAVY, color: '#fff' } : { color: '#6B7488' }}>
-                  {y.fy}
-                </button>
-              )
-            })}
-          </div>
-          <button type="button" onClick={() => setMethodOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary">
-            <Layers className="h-3.5 w-3.5" /> Details
-          </button>
-        </div>
-      </div>
-
-      {/* IGAAP waterfall | IFRS column */}
-      <div className="mt-3 grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-        <div className="rounded-xl border border-soft-border p-3.5">
-          <p className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: NAVY }}>IGAAP / Statutory · {yr.fy}</p>
-          <Waterfall b={b} />
-        </div>
-        <div className="flex flex-col rounded-xl border p-3.5" style={{ borderColor: `${TEAL}40`, background: `${TEAL}08` }}>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: TEAL }}>IFRS · {yr.fy}</p>
-          {yr.ifrsPat != null ? (
-            <>
-              <p className="mt-1.5 font-display text-[26px] leading-none text-navy-deep">₹{yr.ifrsPat.toLocaleString('en-IN')} Cr</p>
-              <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Profit after tax</p>
-            </>
-          ) : (
-            <p className="mt-2 text-[11px] text-ink-secondary">IFRS PAT not reported for {companyShort}.</p>
-          )}
-        </div>
-      </div>
-
-      <MethodologyDrawer open={methodOpen} onClose={() => setMethodOpen(false)} companyShort={companyShort} b={b} fy={yr.fy} ifrsPat={yr.ifrsPat} />
-    </section>
-  )
-}
-
 function Formula({ label, body }: { label: string; body: string }) {
   return (
     <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2">
@@ -162,12 +94,62 @@ const METHOD_TABS: { id: MethodTab; label: string }[] = [
   { id: 'sources', label: 'Source links' },
 ]
 
-function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { open: boolean; onClose: () => void; companyShort: string; b: BridgeFigures; fy: string; ifrsPat: number | null }) {
+/**
+ * Premium → PAT earnings bridge, presented entirely inside a drawer (the main
+ * Profitability page keeps only the compact Profit-Quality signal). One slide-out
+ * holds the full detail: a year toggle, the IGAAP audited waterfall + the
+ * separately-disclosed IFRS PAT, and the Basis / Formula / Reported numbers /
+ * Source links tabs. It reconciles underwriting result with PAT to show whether
+ * profit is core-underwriting-led or investment-income-led.
+ * Renders null for companies without an audited bridge.
+ */
+export function EarningsBridgeDrawer({ open, onClose, companyId, companyShort }: { open: boolean; onClose: () => void; companyId: string; companyShort: string }) {
+  const years = getEarningsBridge(companyId)
+  const [fy, setFy] = useState(years[0]?.fy ?? '')
   const [tab, setTab] = useState<MethodTab>('basis')
+  if (years.length === 0) return null
+  const yr = years.find((y) => y.fy === fy) ?? years[0]
+  const b = yr.igaap
+  const ifrsPat = yr.ifrsPat
+
   return (
-    <Drawer open={open} onClose={onClose} title={`${companyShort} · Earnings bridge — accounting & method`} subtitle={`How every line of the ${fy} premium → profit reconciliation is derived.`}>
+    <Drawer open={open} onClose={onClose} title={`${companyShort} · Premium-to-Profit Engine`} subtitle={`From premium collected to final profit — the full ${yr.fy} accounting bridge, source & method.`}>
+      {/* Year toggle — the bridge below recomputes for the picked FY */}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[11px] font-medium text-ink-secondary">The audited GWP → PAT bridge, by financial year.</p>
+        <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+          {years.map((y) => {
+            const on = y.fy === yr.fy
+            return (
+              <button key={y.fy} type="button" onClick={() => setFy(y.fy)} className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold transition-colors" style={on ? { background: NAVY, color: '#fff' } : { color: '#6B7488' }}>
+                {y.fy}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* IGAAP waterfall | IFRS column — the visual bridge */}
+      <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+        <div className="rounded-xl border border-soft-border p-3.5">
+          <p className="mb-1 text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: NAVY }}>IGAAP / Statutory · {yr.fy}</p>
+          <Waterfall b={b} />
+        </div>
+        <div className="flex flex-col rounded-xl border p-3.5" style={{ borderColor: `${TEAL}40`, background: `${TEAL}08` }}>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.14em]" style={{ color: TEAL }}>IFRS · {yr.fy}</p>
+          {ifrsPat != null ? (
+            <>
+              <p className="mt-1.5 font-display text-[26px] leading-none text-navy-deep">₹{ifrsPat.toLocaleString('en-IN')} Cr</p>
+              <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Profit after tax</p>
+            </>
+          ) : (
+            <p className="mt-2 text-[11px] text-ink-secondary">IFRS PAT not reported for {companyShort}.</p>
+          )}
+        </div>
+      </div>
+
       {/* Scannable tabs — Basis · Formula · Reported numbers · Source links */}
-      <div className="mb-4 flex flex-wrap gap-1 border-b border-soft-border">
+      <div className="mb-4 mt-5 flex flex-wrap gap-1 border-b border-soft-border">
         {METHOD_TABS.map((t) => {
           const on = tab === t.id
           return (
@@ -189,9 +171,9 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
           <div className="space-y-3">
             <div className="rounded-lg border px-3 py-2.5" style={{ borderColor: `${NAVY}22`, background: `${NAVY}06` }}>
               <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why this matters</p>
-              <p className="mt-1 text-[11.5px] leading-relaxed">PAT is positive mainly because investment income offsets the underwriting loss. The {fy} statutory view shows that loss; IFRS PAT may differ due to the accounting recognition basis.</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed">PAT is positive mainly because investment income offsets the underwriting loss. The {yr.fy} statutory view shows that loss; IFRS PAT may differ due to the accounting recognition basis.</p>
             </div>
-            <p>IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
+            <p>IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {yr.fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
             <p>IGAAP PAT and IFRS PAT differ because of recognition basis. IFRS does not separately disclose the underwriting and investment split in the same way.</p>
             <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2.5">
               <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why earlier views could differ</p>
@@ -211,7 +193,7 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
 
         {tab === 'numbers' && (
           <div>
-            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{fy} figures (₹ Cr) — reported vs derived</p>
+            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{yr.fy} figures (₹ Cr) — reported vs derived</p>
             <table className="w-full border-collapse">
               <tbody>
                 {[
@@ -236,7 +218,7 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
                 ))}
               </tbody>
             </table>
-            <p className="mt-2 text-[10px] text-ink-secondary">IGAAP lines reconcile exactly to reported PAT; tax was nil in {fy} (carried-forward losses).</p>
+            <p className="mt-2 text-[10px] text-ink-secondary">IGAAP lines reconcile exactly to reported PAT; tax was nil in {yr.fy} (carried-forward losses).</p>
           </div>
         )}
 
@@ -249,7 +231,7 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
               className="flex items-center justify-between gap-3 rounded-lg border border-soft-border bg-ice/40 px-3 py-2.5 transition-colors hover:border-muted-blue hover:bg-white"
             >
               <span>
-                <span className="block text-[11.5px] font-semibold text-navy-deep">{companyShort} · {fy} Annual Report</span>
+                <span className="block text-[11.5px] font-semibold text-navy-deep">{companyShort} · {yr.fy} Annual Report</span>
                 <span className="block text-[10px] text-ink-secondary">{BRIDGE_SOURCE} — Form B-RA + Form B-PL</span>
               </span>
               <Layers className="h-3.5 w-3.5 shrink-0 text-muted-blue" />

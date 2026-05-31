@@ -1,5 +1,7 @@
-import { TrendingDown, TrendingUp, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { TrendingDown, TrendingUp, Sparkles, Layers } from 'lucide-react'
 import { SourceTag } from './SourceTag'
+import { EarningsBridgeDrawer } from './EarningsBridge'
 import { getEarningsBridge, earningsQuality, BRIDGE_SOURCE } from '@/data/earningsBridge'
 
 const NAVY = '#172B4D'
@@ -17,6 +19,7 @@ const cr = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toL
  * Omitted (returns null) for companies without an audited bridge.
  */
 export function ProfitQualityCheck({ companyId, companyShort }: { companyId: string; companyShort: string }) {
+  const [bridgeOpen, setBridgeOpen] = useState(false)
   const years = getEarningsBridge(companyId)
   if (years.length === 0) return null
   const yr = years[0] // latest reported FY
@@ -78,9 +81,14 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
             <h3 className="mt-0.5 font-display text-[15px] leading-tight text-navy-deep">Where does the profit come from?</h3>
           </div>
         </div>
-        <span className="shrink-0 rounded-full border px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide" style={{ borderColor: `${badgeTone}55`, background: `${badgeTone}14`, color: badgeTone }}>
-          {badge}
-        </span>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="rounded-full border px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-wide" style={{ borderColor: `${badgeTone}55`, background: `${badgeTone}14`, color: badgeTone }}>
+            {badge}
+          </span>
+          <button type="button" onClick={() => setBridgeOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary">
+            <Layers className="h-3.5 w-3.5" /> Details
+          </button>
+        </div>
       </div>
 
       {/* Verdict band — the single most telling quality number + the read */}
@@ -119,9 +127,11 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] leading-snug text-ink-secondary">{companyShort} · {yr.fy} · audited basis (matches the bridge below)</p>
+        <p className="text-[10px] leading-snug text-ink-secondary">{companyShort} · {yr.fy} · audited basis (full bridge in Details)</p>
         <SourceTag source={BRIDGE_SOURCE} period={yr.fy} confidence="high" />
       </div>
+
+      <EarningsBridgeDrawer open={bridgeOpen} onClose={() => setBridgeOpen(false)} companyId={companyId} companyShort={companyShort} />
     </section>
   )
 }
