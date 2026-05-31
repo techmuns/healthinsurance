@@ -92,7 +92,6 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
   if (years.length === 0) return null
   const yr = years.find((y) => y.fy === fy) ?? years[0]
   const b = yr.igaap
-  const ifrsDelta = yr.ifrsPat != null ? yr.ifrsPat - b.pat : null
 
   return (
     <section className="card-surface p-5">
@@ -135,12 +134,6 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
             <>
               <p className="mt-1.5 font-display text-[26px] leading-none text-navy-deep">₹{yr.ifrsPat.toLocaleString('en-IN')} Cr</p>
               <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Profit after tax</p>
-              {ifrsDelta != null && (
-                <p className="mt-2 text-[11px] leading-snug text-ink-secondary">
-                  IGAAP → IFRS: ₹{b.pat} → ₹{yr.ifrsPat} Cr ({signed(ifrsDelta)} Cr), mainly the 1/n premium-recognition basis.
-                </p>
-              )}
-              <p className="mt-auto pt-2 text-[10px] leading-snug text-ink-secondary/80">Underwriting / investment split not separately disclosed on IFRS.</p>
             </>
           ) : (
             <p className="mt-2 text-[11px] text-ink-secondary">IFRS PAT not reported for {companyShort}.</p>
@@ -204,6 +197,7 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
               <p className="mt-1 text-[11.5px] leading-relaxed">PAT is positive mainly because investment income offsets the underwriting loss. The {fy} statutory view shows that loss; IFRS PAT may differ due to the accounting recognition basis.</p>
             </div>
             <p>IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
+            <p>IGAAP PAT and IFRS PAT differ because of recognition basis. IFRS does not separately disclose the underwriting and investment split in the same way.</p>
             <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2.5">
               <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why earlier views could differ</p>
               <p className="mt-1 text-[11.5px] leading-relaxed">The ₹100 engine uses the statutory cost split (combined ≈ 101%, an underwriting loss); a company-reported combined ratio can read below 100%. This bridge settles it on the audited statutory basis: underwriting is a loss and PAT is investment-income-led.</p>
