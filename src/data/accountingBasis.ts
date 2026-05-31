@@ -20,6 +20,8 @@
 // Premium ≠ profit: PAT / PAT margin / combined ratio here are PROFIT measures.
 // ---------------------------------------------------------------------------
 
+import type { TimePeriod } from './types'
+
 export type AccountingBasis = 'igaap' | 'ifrs'
 
 /** Periods carried in the basis dataset (annual FY + standalone Q4). */
@@ -218,4 +220,158 @@ export function isAnnual(period: BasisPeriod): boolean {
 /** Pretty label for a basis period, e.g. "FY26", "Q4 FY26". */
 export function periodLabel(period: BasisPeriod): string {
   return period.startsWith('Q4') ? `Q4 ${period.slice(2)}` : period
+}
+
+// ── Premium (NEP) + statutory solvency — for underwriting profit & capital ────
+// NEP is a premium measure (basis-neutral here); solvency is statutory/IRDAI and
+// is shown on both bases but always labelled statutory.
+const NEP: Record<string, Partial<Record<BasisPeriod, number>>> = {
+  'niva-bupa': { FY23: 2663, FY24: 3811, FY25: 4894, FY26: 6068, Q4FY25: 1528, Q4FY26: 1972 },
+  'star-health': { FY23: 11262, FY24: 12938, FY25: 14822, FY26: 16597, Q4FY25: 4250, Q4FY26: 4327 },
+  'care-health': { FY23: 3932, FY24: 5329, FY25: 6347, FY26: 7256, Q4FY25: 1786, Q4FY26: 2133 },
+}
+const SOLVENCY: Record<string, Partial<Record<BasisPeriod, number>>> = {
+  'niva-bupa': { FY23: 1.67, FY24: 2.55, FY25: 3.03, FY26: 2.49 },
+  'star-health': { FY23: 2.21, FY24: 2.14, FY25: 2.21, FY26: 2.05, Q4FY25: 2.21, Q4FY26: 2.05 },
+  'care-health': { FY23: 1.82, FY24: 1.74, FY25: 1.68, FY26: 1.68, Q4FY25: 1.68, Q4FY26: 1.68 },
+}
+
+/** Statutory net worth (₹ Cr) for a period; Q4FYxx maps to the FYxx year-end. */
+function netWorthFor(companyId: string, p: BasisPeriod): number | null {
+  const c = PROFIT_BY_BASIS[companyId]
+  if (!c) return null
+  return c.netWorth[(p.startsWith('Q4') ? p.slice(2) : p) as BasisPeriod] ?? null
+}
+
+/** Annual snapshot fallback (non-SAHI companies) — IGAAP/statutory only. */
+export interface FallbackInput {
+  roe: number | null
+  solvency: number | null
+  annual: { fy: string; pat: number | null; nep: number | null; gwp: number | null; combinedRatio: number | null; expenseRatio: number | null }[]
+}
+
+/**
+ * The single resolved profitability state for the whole page. Every scalar is
+ * `null` when not available in the selected basis/period (the UI then OMITS that
+ * component rather than rendering a placeholder). Series carry one entry per
+ * in-range period (nulls allowed; charts skip them).
+ */
+export interface ProfitView {
+  basis: AccountingBasis
+  period: TimePeriod
+  /** Focal period label for point metrics, e.g. "FY25" / "Q4 FY26". */
+  pointLabel: string | null
+  pat: number | null
+  patMargin: number | null
+  patGrowth: number | null
+  combinedRatio: number | null
+  claimsRatio: number | null
+  expenseRatio: number | null
+  underwritingProfit: number | null
+  solvency: number | null
+  netWorth: number | null
+  roe: number | null
+  combinedSeries: { label: string; cr: number | null }[]
+  patSeries: { label: string; pat: number | null }[]
+  uwSeries: { label: string; uw: number | null }[]
+  sourceLabel: string
+  tracked: boolean
+  /** Whether the selected basis/period has any usable data at all. */
+  hasAny: boolean
+  /** True when a statutory solvency is shown under the IFRS lens. */
+  solvencyIsStatutory: boolean
+}
+
+function periodsFor(period: TimePeriod): BasisPeriod[] {
+  if (period === 'Annual') return ANNUAL_PERIODS
+  if (period === 'Quarterly') return Q4_PERIODS
+  return [] // Monthly — no accounting-basis monthly data exists
+}
+const periodFy = (p: BasisPeriod): string => (p.startsWith('Q4') ? p.slice(2) : p)
+const uwProfit = (nep: number | null, cr: number | null): number | null =>
+  nep != null && cr != null ? Math.round(nep * (1 - cr / 100)) : null
+
+/**
+ * Resolve the canonical profitability view for (company · basis · period · FY
+ * range). SAHI peers come from the dual-basis filing dataset; other insurers
+ * fall back to the statutory annual snapshot (IGAAP only, IFRS → none). This is
+ * the ONE source every section on the page reads from, so numbers can't diverge.
+ */
+export function resolveProfitView(
+  companyId: string,
+  basis: AccountingBasis,
+  period: TimePeriod,
+  inRange: (fy: string) => boolean,
+  fallback: FallbackInput,
+): ProfitView {
+  const sourceLabel = BASIS_SOURCE_LABEL[basis]
+  const tracked = hasBasisData(companyId)
+  const isIfrs = basis === 'ifrs'
+  const base: ProfitView = {
+    basis, period, pointLabel: null, pat: null, patMargin: null, patGrowth: null,
+    combinedRatio: null, claimsRatio: null, expenseRatio: null, underwritingProfit: null,
+    solvency: null, netWorth: null, roe: null, combinedSeries: [], patSeries: [], uwSeries: [],
+    sourceLabel, tracked, hasAny: false, solvencyIsStatutory: isIfrs,
+  }
+
+  if (tracked) {
+    const periods = periodsFor(period).filter((p) => inRange(periodFy(p)))
+    const withData = periods.filter((p) => {
+      const b = getBasisProfit(companyId, basis, p)
+      return b != null && (b.pat != null || b.combinedRatio != null || b.patMarginGwp != null)
+    })
+    if (withData.length === 0) return { ...base, solvency: SOLVENCY[companyId]?.[periods[periods.length - 1] as BasisPeriod] ?? null }
+    const point = withData[withData.length - 1]
+    const bp = getBasisProfit(companyId, basis, point)
+    const nep = NEP[companyId]?.[point] ?? null
+    const netWorth = netWorthFor(companyId, point)
+    const combined = bp?.combinedRatio ?? null
+    const pat = bp?.pat ?? null
+    return {
+      ...base,
+      pointLabel: periodLabel(point),
+      pat,
+      patMargin: bp?.patMarginGwp ?? null,
+      patGrowth: getBasisPatGrowth(companyId, basis, point),
+      combinedRatio: combined,
+      claimsRatio: bp?.claimsRatio ?? null,
+      expenseRatio: bp?.expenseRatio ?? null,
+      underwritingProfit: isIfrs ? null : uwProfit(nep, combined),
+      solvency: SOLVENCY[companyId]?.[point] ?? null,
+      netWorth,
+      roe: isIfrs ? null : pat != null && netWorth != null && netWorth !== 0 ? (pat / netWorth) * 100 : null,
+      combinedSeries: periods.map((p) => ({ label: periodLabel(p), cr: getBasisProfit(companyId, basis, p)?.combinedRatio ?? null })),
+      patSeries: periods.map((p) => ({ label: periodLabel(p), pat: getBasisProfit(companyId, basis, p)?.pat ?? null })),
+      uwSeries: periods.map((p) => ({ label: periodLabel(p), uw: isIfrs ? null : uwProfit(NEP[companyId]?.[p] ?? null, getBasisProfit(companyId, basis, p)?.combinedRatio ?? null) })),
+      hasAny: true,
+    }
+  }
+
+  // Non-SAHI fallback: IGAAP/Statutory from the annual snapshot; IFRS → none.
+  if (isIfrs || period !== 'Annual') return { ...base, solvency: fallback.solvency }
+  const annual = fallback.annual.filter((a) => inRange(a.fy))
+  const withPat = annual.filter((a) => a.pat != null)
+  const point = (withPat.length ? withPat : annual)[(withPat.length ? withPat : annual).length - 1]
+  if (!point) return { ...base, solvency: fallback.solvency }
+  const idx = annual.findIndex((a) => a.fy === point.fy)
+  const prev = idx > 0 ? annual[idx - 1] : null
+  const pat = point.pat
+  return {
+    ...base,
+    pointLabel: point.fy,
+    pat,
+    patMargin: pat != null && point.gwp != null && point.gwp > 0 ? (pat / point.gwp) * 100 : null,
+    patGrowth: pat != null && prev?.pat != null && prev.pat !== 0 ? ((pat - prev.pat) / Math.abs(prev.pat)) * 100 : null,
+    combinedRatio: point.combinedRatio,
+    claimsRatio: null,
+    expenseRatio: point.expenseRatio,
+    underwritingProfit: uwProfit(point.nep, point.combinedRatio),
+    solvency: fallback.solvency,
+    netWorth: null,
+    roe: fallback.roe,
+    combinedSeries: annual.map((a) => ({ label: a.fy, cr: a.combinedRatio })),
+    patSeries: annual.map((a) => ({ label: a.fy, pat: a.pat })),
+    uwSeries: annual.map((a) => ({ label: a.fy, uw: uwProfit(a.nep, a.combinedRatio) })),
+    hasAny: point.pat != null || point.combinedRatio != null,
+  }
 }

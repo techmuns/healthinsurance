@@ -1,2324 +1,457 @@
-import { Fragment, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Area,
-  AreaChart,
-  Bar,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Pie,
-  PieChart,
-  Line,
-  LineChart,
-  ReferenceArea,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+  Bar, CartesianGrid, Cell, ComposedChart, LineChart, Line, Pie, PieChart,
+  ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 import {
-  Sparkles,
-  ShieldCheck,
-  Shield,
-  Gauge,
-  IndianRupee,
-  BarChart3,
-  Cog,
-  ChevronRight,
-  MousePointerClick,
-  Database,
-  TrendingUp,
-  TrendingDown,
-  Minus,
+  ShieldCheck, Shield, Gauge, IndianRupee, BarChart3, Cog, Database, Info,
   type LucideIcon,
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SourceTag } from '@/components/SourceTag'
 import { DataStatusDrawer } from '@/components/DataStatusDrawer'
-import type { BasisInfo } from '@/data/mockData'
+import { AccountingBasisToggle, BasisPill } from '@/components/AccountingBasisControls'
+import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
+import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
-import { lookupProvenance } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
-import type { Metric, Insurer } from '@/data/types'
-import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
-import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
-import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import {
-  getBasisProfit,
-  getBasisPatGrowth,
-  latestAnnualWithPat,
-  hasBasisData,
-  periodLabel,
-  BASIS_LABEL,
-  BASIS_SOURCE_LABEL,
-  BASIS_TRACKED_COMPANIES,
-  type AccountingBasis,
-  type BasisPeriod,
+  resolveProfitView, hasBasisData, BASIS_LABEL,
+  type AccountingBasis, type ProfitView, type FallbackInput,
 } from '@/data/accountingBasis'
+import type { Metric } from '@/data/types'
+import type { BasisInfo } from '@/data/mockData'
 
 // ---------------------------------------------------------------------------
-// Source provenance — resolve a real, clickable filing URL for a metric so each
-// SourceTag links to the exact document the number came from. Annual combined
-// ratio / solvency / PAT / expense are real (snapshot + provenance); quarterly
-// splits and the cost breakdown are illustrative and carry no fake link.
-// ---------------------------------------------------------------------------
-
-interface ResolvedSource {
-  source: string
-  confidence: 'high' | 'medium' | 'low' | 'pending'
-  provenance?: { source_name?: string; source_url?: string; fetched_at?: string | null }
-  illustrative?: boolean
-}
-
-function realSource(metric: string, companyId: string): ResolvedSource | null {
-  const p = lookupProvenance(`company.${metric}`, companyId, 'Annual')
-  if (!p?.source_url) return null
-  return {
-    source: 'Company filing',
-    confidence: p.confidence,
-    provenance: { source_name: p.source_name, source_url: p.source_url, fetched_at: p.fetched_at },
-  }
-}
-
-// A quiet "illustrative" tag for mock-derived visuals — no fake source link.
-const ILLUSTRATIVE: ResolvedSource = { source: 'Illustrative', confidence: 'pending', illustrative: true }
-
-// ---------------------------------------------------------------------------
-// Mock data (FY25 basis · ₹ Cr where applicable)
-// ---------------------------------------------------------------------------
-
-// Real annual PAT (₹ Cr) for the company, drawn from the audited annual
-// snapshot — only reported years, never a fabricated quarterly series. Returns
-// the values in fiscal order; an empty array means PAT is unreported (the UI
-// then shows an honest "pending" state rather than a mock number).
-function realPatValues(series: AnnualPoint[]): number[] {
-  return series.map((p) => p.pat).filter((v): v is number => v != null)
-}
-
-// Quarterly combined ratio drift around the FY25 anchor — same shape as the
-// `compareShapes` ratio approximation used elsewhere.
-const COMBINED_RATIO_QUARTERS: Record<string, [number, number, number, number]> = {
-  'niva-bupa': [98.4, 97.2, 96.5, 96.1],
-  'star-health': [99.5, 100.2, 100.8, 101.1],
-  'care-health': [101.2, 102.0, 102.6, 103.0],
-  'aditya-birla': [108.5, 109.4, 110.2, 111.0],
-  manipalcigna: [102.1, 102.5, 102.9, 103.2],
-  'icici-lombard': [103.5, 103.2, 103.0, 102.8],
-  'bajaj-general': [103.0, 103.4, 103.7, 104.0],
-}
-
-// Real IRDAI public-disclosure (statutory) combined ratio for the focal company,
-// extracted and cross-validated from Niva Bupa's quarterly NL-form filings
-// (see scripts/ingest/disclosure-extract.ts). The statutory basis is stricter
-// than the company-reported headline (FY25: 101.2% vs 96.8%); standalone
-// quarters swing seasonally and run above the full-year figure. Peers stay on
-// the company-reported seed basis so the peer scorecard remains like-for-like.
-interface StatutoryCR {
-  statutory: number // full-year statutory combined ratio (latest complete FY)
-  statutoryFY: string
-  reported: number // company-reported combined ratio, same period
-  reportedFY: string
-  annual: { fy: string; cr: number }[]
-  quarters: { label: string; cr: number }[]
-  sourceUrl: string
-}
-
-const STATUTORY_CR: Record<string, StatutoryCR> = {
-  'niva-bupa': {
-    statutory: 101.2,
-    statutoryFY: 'FY25',
-    reported: 96.8,
-    reportedFY: 'FY25',
-    annual: [
-      { fy: 'FY22', cr: 107 },
-      { fy: 'FY23', cr: 97 },
-      { fy: 'FY24', cr: 99 },
-      { fy: 'FY25', cr: 101.2 },
-      { fy: 'FY26', cr: 103.4 },
-    ],
-    quarters: [
-      { label: 'Q1 FY25', cr: 106 },
-      { label: 'Q2 FY25', cr: 101.3 },
-      { label: 'Q3 FY25', cr: 108.29 },
-      { label: 'Q4 FY25', cr: 92.78 },
-      { label: 'Q1 FY26', cr: 116.97 },
-      { label: 'Q2 FY26', cr: 111.72 },
-      { label: 'Q3 FY26', cr: 108.19 },
-      { label: 'Q4 FY26', cr: 86.12 },
-    ],
-    sourceUrl: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
-  },
-}
-
-// Real FY25 cost split for the focal company, decomposed from Niva Bupa's IRDAI
-// public disclosure (Mar-2025, full-year/YTD column of the NL-form analytical
-// ratios):
-//   • loss (claims)  = Net Incurred Claims to Net Earned Premium = 61.22%
-//   • commission     = Net Commission Ratio                      = 19.83%
-//   • expense (opex) = Combined Ratio − claims − commission      = 20.17%
-// The three sum to the real statutory combined ratio (101.22%), so the ₹100
-// engine reconciles with the combined-ratio headline shown above it. Opex is the
-// exact arithmetic residual of the published combined ratio (no separate opex
-// ratio is published in this form). Peers are omitted — no verified cost split
-// has been sourced for them yet — so their cards render an honest "Data pending"
-// rather than a fabricated number.
-const COST_RATIOS: Record<string, { loss: number; commission: number; expense: number }> = {
-  'niva-bupa': { loss: 61.22, commission: 19.83, expense: 20.17 },
-}
-
-const QUARTER_LABELS = ['Q1 FY25', 'Q2 FY25', 'Q3 FY25', 'Q4 FY25']
-
-// Net margin from REAL audited data only: latest fiscal year that reports both
-// PAT and GWP → PAT / GWP. Returns null (honest "pending") when unreported —
-// never a fabricated quarterly sum. Same-year basis so it stays consistent with
-// the selected Data Range.
-function getMarginMetrics(series: AnnualPoint[]): { netMargin: number | null; latestPat: number | null; latestFy: string | null } {
-  const withBoth = series.filter((p) => p.pat != null && p.gwp != null && p.gwp > 0)
-  const latest = withBoth[withBoth.length - 1]
-  if (!latest) return { netMargin: null, latestPat: null, latestFy: null }
-  return {
-    netMargin: Math.round((latest.pat! / latest.gwp!) * 1000) / 10,
-    latestPat: latest.pat!,
-    latestFy: latest.fy,
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Palette + tone helpers
+// Profitability page — driven by ONE resolved state (company · basis · period ·
+// FY range) via `resolveProfitView`. Every section reads the same `view`, so
+// numbers can never diverge. Where a metric is not available for the selected
+// basis/period, the component is OMITTED entirely (no "NA" placeholders) — the
+// page shows only real, filing-sourced components and stays clutter-free.
 // ---------------------------------------------------------------------------
 
 const PALETTE = {
-  navy: '#27457E',
-  navyDeep: '#172B4D',
-  teal: '#168E8E',
-  emerald: '#2F855A',
-  emeraldSoft: '#CFE7D9',
-  amber: '#B7791F',
-  amberSoft: '#F4DFAE',
-  coral: '#B94A48',
-  coralSoft: '#EFC8C7',
-  champagne: '#B68B3A',
-  champagneSoft: '#F4ECDB',
-  ice: '#F4F7FC',
-  softBlue: '#EEF4FF',
-  border: '#E8EBF1',
+  navy: '#27457E', navyDeep: '#172B4D', teal: '#168E8E', emerald: '#2F855A',
+  amber: '#B7791F', coral: '#B94A48', champagne: '#B68B3A', champagneSoft: '#F4ECDB',
+  softBlue: '#EEF4FF', border: '#E8EBF1',
 } as const
+const ORANGE = '#C2691C'
+const GOLD = '#C99A2E'
+const DEEP_GREEN = '#1E6B4A'
 
-type Tone = 'positive' | 'warning' | 'negative' | 'neutral' | 'navy'
+const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
+const pct = (v: number) => `${v.toFixed(1)}%`
 
-const toneText: Record<Tone, string> = {
-  positive: 'text-signal-positive',
-  warning: 'text-signal-warning',
-  negative: 'text-signal-negative',
-  neutral: 'text-ink-secondary',
-  navy: 'text-navy-primary',
+// ── Statutory annual snapshot — fallback for non-SAHI insurers ───────────────
+interface AnnualPoint { fy: string; gwp: number | null; nep: number | null; pat: number | null; combinedRatio: number | null; expenseRatio: number | null }
+function inB(v: unknown, lo: number, hi: number): number | null {
+  return typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null
+}
+function getAnnualSeries(companyId: string): AnnualPoint[] {
+  return (annualSnapshot.data as Array<Record<string, unknown>>)
+    .filter((r) => r.company_id === companyId)
+    .map((r) => ({
+      fy: String(r.fiscal_year),
+      gwp: inB(r.gwp, 100, 100000),
+      nep: inB(r.nep, 100, 100000),
+      pat: typeof r.pat === 'number' && Number.isFinite(r.pat) && Math.abs(r.pat) <= 20000 ? r.pat : null,
+      combinedRatio: inB(r.combined_ratio, 40, 250),
+      expenseRatio: inB(r.expense_ratio, 2, 90),
+    }))
+    .sort((a, b) => a.fy.localeCompare(b.fy))
 }
 
-function combinedTone(v: number): { label: string; tone: Tone } {
-  if (v < 100) return { label: 'Strong', tone: 'positive' }
-  if (v <= 105) return { label: 'Watch', tone: 'warning' }
-  return { label: 'Weak', tone: 'negative' }
+// ── Tiny shared UI ───────────────────────────────────────────────────────────
+function InfoTip({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex">
+      <Info className="h-3 w-3 cursor-help text-champagne" />
+      <span className="pointer-events-none invisible absolute left-1/2 top-full z-30 mt-1.5 w-56 -translate-x-1/2 rounded-lg border border-soft-border bg-card px-3 py-2 text-[10.5px] leading-snug text-ink-secondary opacity-0 shadow-card transition-opacity group-hover:visible group-hover:opacity-100">
+        {text}
+      </span>
+    </span>
+  )
+}
+const BASIS_TIP = 'IGAAP and IFRS are separate accounting bases. Do not compare profitability without checking basis.'
+
+function ShortSource({ view }: { view: ProfitView }) {
+  return <SourceTag source={view.sourceLabel} period={view.pointLabel ?? undefined} confidence="high" />
 }
 
-// ---------------------------------------------------------------------------
-// Chart building blocks
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Trendline helpers — a least-squares fit over a time series plus a compact
-// direction pill, so every time-series chart can carry an elegant trendline and
-// a plain-English direction. With < 2 real points we return null, and callers
-// show "Trend pending" rather than faking a line.
-// ---------------------------------------------------------------------------
-
-interface TrendFit {
-  fitted: number[]
-  slope: number
+type ChipTone = 'navy' | 'positive' | 'warning' | 'negative' | 'teal'
+const toneColor: Record<ChipTone, string> = { navy: PALETTE.navyDeep, positive: PALETTE.emerald, warning: PALETTE.amber, negative: PALETTE.coral, teal: PALETTE.teal }
+function Chip({ label, value, tone = 'navy' }: { label: string; value: string; tone?: ChipTone }) {
+  return (
+    <div className="rounded-lg border border-soft-border bg-white/70 px-3 py-2">
+      <span className="block text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
+      <span className="mt-0.5 block font-display text-[17px] leading-none" style={{ color: toneColor[tone] }}>{value}</span>
+    </div>
+  )
 }
 
-function fitTrend(values: (number | null | undefined)[]): TrendFit | null {
-  const pts = values
-    .map((v, i) => [i, v] as const)
-    .filter(([, v]) => typeof v === 'number' && Number.isFinite(v)) as [number, number][]
+// ── Charts (period-generic; nulls are skipped, never zeroed) ──────────────────
+interface TrendFit { fitted: number[]; slope: number }
+function fitTrend(values: (number | null)[]): TrendFit | null {
+  const pts = values.map((v, i) => [i, v] as const).filter(([, v]) => typeof v === 'number' && Number.isFinite(v)) as [number, number][]
   if (pts.length < 2) return null
   const n = pts.length
   let sx = 0, sy = 0, sxy = 0, sxx = 0
-  for (const [x, y] of pts) {
-    sx += x
-    sy += y
-    sxy += x * y
-    sxx += x * x
-  }
+  for (const [x, y] of pts) { sx += x; sy += y; sxy += x * y; sxx += x * x }
   const denom = n * sxx - sx * sx
   const slope = denom === 0 ? 0 : (n * sxy - sx * sy) / denom
   const intercept = (sy - slope * sx) / n
   return { fitted: values.map((_, i) => intercept + slope * i), slope }
 }
 
-function TrendPill({ label, dir, color }: { label: string; dir: 'up' | 'down' | 'flat'; color: string }) {
-  const Icon = dir === 'up' ? TrendingUp : dir === 'down' ? TrendingDown : Minus
-  const muted = label === 'Trend pending'
-  const c = muted ? '#94A3B8' : color
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full border bg-white/85 px-2 py-0.5 text-[9px] font-semibold shadow-sm" style={{ borderColor: `${c}55`, color: c }}>
-      <Icon className="h-2.5 w-2.5" />
-      {label}
-    </span>
-  )
-}
-
-function Sparkline({ values, tone = 'navy', height = 22, width = 88 }: { values: number[]; tone?: 'positive' | 'navy' | 'negative'; height?: number; width?: number }) {
-  const stroke = tone === 'positive' ? PALETTE.emerald : tone === 'negative' ? PALETTE.coral : PALETTE.navy
-  const data = values.map((v, i) => ({ i, v }))
-  return (
-    <div style={{ height, width }} className="shrink-0">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
-          <Line type="monotone" dataKey="v" stroke={stroke} strokeWidth={1.3} dot={false} isAnimationActive={false} />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-// Combined-ratio trajectory with green strong / amber watch / red weak bands.
-// Period-generic: feed it `{ label, cr }` points (annual FY or quarterly). Null
-// combined ratios bridge via connectNulls and never read as 0; < 2 real points
-// shows "Trend pending" instead of a faked line.
-function CombinedRatioBandedTrend({ points }: { points: { label: string; cr: number | null }[] }) {
-  const crs = points.map((p) => p.cr)
-  const real = crs.filter((v): v is number => v != null)
-  const enough = real.length >= 2
-  const fit = enough ? fitTrend(crs) : null
+function CombinedTrend({ points }: { points: { label: string; cr: number | null }[] }) {
+  const real = points.map((p) => p.cr).filter((v): v is number => v != null)
+  if (real.length < 2) return null
+  const fit = fitTrend(points.map((p) => p.cr))
   const data = points.map((p, i) => ({ label: p.label, cr: p.cr, trend: fit ? fit.fitted[i] : null }))
-  const yMin = (real.length ? Math.min(94, ...real) : 94) - 2
-  const yMax = (real.length ? Math.max(108, ...real) : 112) + 2
-  // Lower combined ratio is better, so a falling fit = improving discipline.
-  const dir = !fit ? 'flat' : fit.slope < -0.15 ? 'down' : fit.slope > 0.15 ? 'up' : 'flat'
-  const label = !enough ? 'Trend pending' : dir === 'down' ? 'Improving' : dir === 'up' ? 'Rising' : 'Stable'
-  const trendColor = !enough ? '#94A3B8' : dir === 'down' ? PALETTE.emerald : dir === 'up' ? PALETTE.coral : PALETTE.navy
+  const yMin = Math.min(94, ...real) - 2
+  const yMax = Math.max(108, ...real) + 2
   return (
-    <div>
-      <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
-      <ResponsiveContainer width="100%" height={172}>
-        <LineChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-          <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-          <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={36} unit="%" />
-          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`${v.toFixed(1)}%`, n === 'trend' ? 'Trend' : 'Combined ratio']} />
-          <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
-          <ReferenceArea y1={100} y2={105} fill={PALETTE.amber} fillOpacity={0.08} />
-          <ReferenceArea y1={105} y2={yMax} fill={PALETTE.coral} fillOpacity={0.07} />
-          <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} label={{ value: '100% break-even', position: 'insideTopRight', fontSize: 8.5, fill: PALETTE.amber }} />
-          {fit && <Line type="linear" dataKey="trend" stroke={trendColor} strokeWidth={1.4} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} />}
-          <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} activeDot={{ r: 5 }} connectNulls />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={170}>
+      <LineChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} domain={[yMin, yMax]} width={34} unit="%" />
+        <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`${v.toFixed(1)}%`, n === 'trend' ? 'Trend' : 'Combined']} />
+        <ReferenceArea y1={yMin} y2={100} fill={PALETTE.emerald} fillOpacity={0.07} />
+        <ReferenceArea y1={100} y2={yMax} fill={PALETTE.coral} fillOpacity={0.06} />
+        <ReferenceLine y={100} stroke={PALETTE.amber} strokeDasharray="4 4" strokeWidth={0.8} />
+        {fit && <Line type="linear" dataKey="trend" stroke={PALETTE.champagne} strokeWidth={1.3} strokeDasharray="5 4" dot={false} isAnimationActive={false} />}
+        <Line type="monotone" dataKey="cr" stroke={PALETTE.navyDeep} strokeWidth={1.8} dot={{ r: 3, fill: PALETTE.navyDeep }} connectNulls />
+      </LineChart>
+    </ResponsiveContainer>
   )
 }
 
-// PAT bars with the latest period highlighted + a smooth trendline. Period-
-// generic: feed `{ label, pat }` points (annual FY or quarterly). Null PATs are
-// omitted (never 0); < 2 real points shows "Trend pending".
-function QuarterlyPatBars({ points, accent = PALETTE.amber, unitLabel = 'PAT' }: { points: { label: string; pat: number | null }[]; accent?: string; unitLabel?: string }) {
-  const pats = points.map((p) => p.pat)
-  const real = pats.filter((v): v is number => v != null)
-  const enough = real.length >= 2
-  const fit = enough ? fitTrend(pats) : null
-  const data = points.map((p, i) => ({ label: p.label, pat: p.pat, trend: fit ? fit.fitted[i] : null }))
-  const positive = real.length ? real[real.length - 1] >= 0 : true
-  const lastRealIdx = data.map((d) => d.pat != null).lastIndexOf(true)
-  const dir = !fit ? 'flat' : fit.slope > 0.5 ? 'up' : fit.slope < -0.5 ? 'down' : 'flat'
-  const label = !enough ? 'Trend pending' : dir === 'up' ? `${unitLabel} scaling` : dir === 'down' ? `${unitLabel} easing` : `${unitLabel} stable`
-  const trendColor = !enough ? '#94A3B8' : dir === 'down' ? PALETTE.coral : accent
+// Render-helper (not a component) so it composes with `?? null` cleanly.
+function bars({ points, accent, unit }: { points: { label: string; v: number | null }[]; accent: string; unit: 'cr' | 'pct' }): ReactNode | null {
+  const real = points.map((p) => p.v).filter((v): v is number => v != null)
+  if (real.length < 2) return null
+  const lastIdx = points.map((d) => d.v != null).lastIndexOf(true)
   return (
-    <div>
-      <div className="mb-1 flex justify-end"><TrendPill label={label} dir={dir} color={trendColor} /></div>
-      <ResponsiveContainer width="100%" height={172}>
-        <ComposedChart data={data} margin={{ top: 6, right: 10, left: -10, bottom: 0 }} barCategoryGap="34%">
-          <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-          <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-          <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} width={38} />
-          <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v: number, n) => [`₹${v.toLocaleString('en-IN')} Cr`, n === 'trend' ? 'Trend' : unitLabel]} cursor={{ fill: 'rgba(39,69,126,0.03)' }} />
-          <ReferenceLine y={0} stroke={PALETTE.border} />
-          <Bar dataKey="pat" radius={[4, 4, 0, 0]} maxBarSize={annualBarWidth(data.length)}>
-            {data.map((d, i) => {
-              const isLast = i === lastRealIdx
-              const v = d.pat ?? 0
-              const color = v < 0 ? PALETTE.coral : isLast ? (positive ? PALETTE.emerald : PALETTE.coral) : PALETTE.softBlue
-              const strokeC = v < 0 ? PALETTE.coral : isLast ? PALETTE.emerald : PALETTE.navy
-              return <Cell key={d.label} fill={color} stroke={strokeC} strokeWidth={isLast ? 1 : 0.4} />
-            })}
-          </Bar>
-          {fit && <Line type="monotone" dataKey="trend" stroke={trendColor} strokeWidth={1.6} strokeDasharray="5 4" dot={false} activeDot={false} isAnimationActive={false} connectNulls />}
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={170}>
+      <ComposedChart data={points} margin={{ top: 6, right: 10, left: -8, bottom: 0 }} barCategoryGap="34%">
+        <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
+        <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
+        <YAxis tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={40} />
+        <Tooltip contentStyle={{ fontSize: 11 }} cursor={{ fill: 'rgba(39,69,126,0.03)' }} formatter={(v: number) => [unit === 'cr' ? crc(v) : pct(v), unit === 'cr' ? 'Value' : 'Margin']} />
+        <ReferenceLine y={0} stroke={PALETTE.border} />
+        <Bar dataKey="v" radius={[4, 4, 0, 0]} maxBarSize={points.length <= 4 ? 42 : 30}>
+          {points.map((d, i) => {
+            const val = d.v ?? 0
+            const fill = val < 0 ? PALETTE.coral : i === lastIdx ? accent : PALETTE.softBlue
+            return <Cell key={d.label} fill={fill} stroke={val < 0 ? PALETTE.coral : i === lastIdx ? accent : PALETTE.navy} strokeWidth={i === lastIdx ? 1 : 0.4} />
+          })}
+        </Bar>
+      </ComposedChart>
+    </ResponsiveContainer>
   )
 }
 
-// Slim annual bars, slightly wider quarterly — keeps the Bloomberg-style feel.
-const annualBarWidth = (n: number) => (n <= 4 ? 42 : 30)
-
-// Compact two-option period toggle (Yearly ⇄ Quarterly) used on the trajectory
-// charts so the selected-year header range drives the Yearly view.
-type TrendView = 'Yearly' | 'Quarterly'
-function TrendViewToggle({ value, onChange, accent }: { value: TrendView; onChange: (v: TrendView) => void; accent: string }) {
+function SemiGauge({ value, max, unit, zones }: { value: number; max: number; unit: string; zones: { from: number; to: number; color: string }[] }) {
+  const clamped = Math.max(0, Math.min(max, value))
+  const angle = 180 * (clamped / max)
+  const color = zones.find((z) => clamped >= z.from && clamped <= z.to)?.color ?? PALETTE.navy
   return (
-    <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-white/70 p-0.5">
-      {(['Yearly', 'Quarterly'] as TrendView[]).map((v) => {
-        const on = v === value
-        return (
-          <button
-            key={v}
-            type="button"
-            onClick={() => onChange(v)}
-            className="rounded-full px-2 py-0.5 text-[9.5px] font-semibold transition-colors"
-            style={on ? { background: accent, color: '#fff' } : { color: '#6B7488' }}
-          >
-            {v}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-// 180° gauge — single colored arc whose width represents the current value's
-// position inside [min..max], over a faint full-arc track.
-function SemiGauge({ value, min, max, zones, unit = 'x', size = 180 }: {
-  value: number
-  min: number
-  max: number
-  zones: { from: number; to: number; color: string }[]
-  unit?: string
-  size?: number
-}) {
-  const clamped = Math.max(min, Math.min(max, value))
-  const pct = (clamped - min) / (max - min)
-  const angle = 180 * pct
-  const arcData = [
-    { name: 'fill', value: angle },
-    { name: 'rest', value: 180 - angle },
-  ]
-  return (
-    <div className="relative w-full" style={{ height: size * 0.58 }}>
+    <div className="relative w-full" style={{ height: 96 }}>
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
-          {/* zone backdrop — thin tinted arc */}
-          <Pie
-            data={zones.map((z) => ({ name: z.color, value: ((z.to - z.from) / (max - min)) * 180 }))}
-            dataKey="value"
-            cx="50%"
-            cy="100%"
-            startAngle={180}
-            endAngle={0}
-            innerRadius="84%"
-            outerRadius="93%"
-            stroke="#fff"
-            strokeWidth={0.5}
-            isAnimationActive={false}
-          >
-            {zones.map((z, i) => (
-              <Cell key={i} fill={z.color} fillOpacity={0.18} />
-            ))}
+          <Pie data={zones.map((z) => ({ v: ((z.to - z.from) / max) * 180 }))} dataKey="v" cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="84%" outerRadius="93%" stroke="#fff" strokeWidth={0.5} isAnimationActive={false}>
+            {zones.map((z, i) => <Cell key={i} fill={z.color} fillOpacity={0.18} />)}
           </Pie>
-          {/* value arc — even thinner solid marker on top */}
-          <Pie
-            data={arcData}
-            dataKey="value"
-            cx="50%"
-            cy="100%"
-            startAngle={180}
-            endAngle={0}
-            innerRadius="94%"
-            outerRadius="100%"
-            stroke="none"
-            isAnimationActive={false}
-          >
-            <Cell fill={zones.find((z) => clamped >= z.from && clamped <= z.to)?.color ?? PALETTE.navy} />
-            <Cell fill="transparent" />
+          <Pie data={[{ v: angle }, { v: 180 - angle }]} dataKey="v" cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="94%" outerRadius="100%" stroke="none" isAnimationActive={false}>
+            <Cell fill={color} /><Cell fill="transparent" />
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
-        <span className="font-display text-[22px] leading-none text-navy-deep">
-          {value.toFixed(unit === 'x' ? 2 : 1)}
-          {unit}
-        </span>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center">
+        <span className="font-display text-[22px] leading-none text-navy-deep">{value.toFixed(unit === 'x' ? 2 : 1)}{unit}</span>
       </div>
     </div>
   )
 }
 
-// Mini area chart for the right-rail Profit Velocity card.
-function MiniPatArea({ values }: { values: number[] }) {
-  const data = values.map((v, i) => ({ i, v }))
-  const positive = values[values.length - 1] >= values[0]
-  const color = positive ? PALETTE.emerald : PALETTE.coral
+// ── ₹100 cost engine: claims + expense → combined → surplus (or a PAT output) ──
+// Both bands come from `view`, so the engine always reconciles with the headline
+// combined ratio. A band is omitted when its ratio isn't available.
+function RupeeEngine({ claims, expense, combined, output }: { claims: number | null; expense: number | null; combined: number; output?: { label: string; value: string } }) {
+  const surplus = Math.round((100 - combined) * 10) / 10
+  const below = surplus >= 0
+  const crColor = combined < 100 ? PALETTE.emerald : combined <= 105 ? PALETTE.amber : PALETTE.coral
+  const blocks = [
+    claims != null ? { key: 'c', label: 'Claims', v: claims, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' } : null,
+    expense != null ? { key: 'e', label: 'Expense', v: expense, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' } : null,
+  ].filter(Boolean) as { key: string; label: string; v: number; color: string; bg: string; border: string }[]
   return (
-    <div className="h-[42px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 2, right: 2, bottom: 0, left: 2 }}>
-          <defs>
-            <linearGradient id="miniPatFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.32} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.4} fill="url(#miniPatFill)" isAnimationActive={false} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-// Mini radial gauge for the right-rail Capital Buffer card.
-function MiniSolvencyDial({ value }: { value: number }) {
-  const min = 1
-  const max = 3.5
-  const clamped = Math.max(min, Math.min(max, value))
-  const pct = (clamped - min) / (max - min)
-  const angle = 180 * pct
-  const color = value >= 1.8 ? PALETTE.emerald : value >= 1.5 ? PALETTE.amber : PALETTE.coral
-  return (
-    <div className="relative h-[44px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie data={[{ v: 1 }]} cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="86%" outerRadius="100%" dataKey="v" stroke="none" isAnimationActive={false}>
-            <Cell fill={PALETTE.border} fillOpacity={0.45} />
-          </Pie>
-          <Pie
-            data={[{ v: angle }, { v: 180 - angle }]}
-            cx="50%"
-            cy="100%"
-            startAngle={180}
-            endAngle={0}
-            innerRadius="86%"
-            outerRadius="100%"
-            dataKey="v"
-            stroke="none"
-            isAnimationActive={false}
-          >
-            <Cell fill={color} />
-            <Cell fill="transparent" />
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Real annual snapshot series (focal company) — drives the new story layers.
-// Only real reported values are used; missing inputs stay null (never 0) and
-// surface as compact "pending" states per the dashboard's data-integrity rules.
-// ---------------------------------------------------------------------------
-
-interface AnnualPoint {
-  fy: string
-  gwp: number | null
-  nep: number | null
-  pat: number | null
-  combinedRatio: number | null
-  expenseRatio: number | null
-  solvency: number | null
-}
-
-// Plausibility bounds — several non-focal rows in the snapshot still carry
-// placeholder/unit-error values (e.g. gwp 23, combined_ratio 1.15, nep 135982).
-// Anything outside a sane range is treated as missing (null) rather than shown,
-// so the story layers degrade to honest "pending" states instead of garbage.
-function inRange(v: unknown, lo: number, hi: number): number | null {
-  return typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null
-}
-
-function getAnnualSeries(companyId: string): AnnualPoint[] {
-  return (annualSnapshot.data as Array<Record<string, unknown>>)
-    .filter((r) => r.company_id === companyId)
-    .map((r) => ({
-      fy: String(r.fiscal_year),
-      gwp: inRange(r.gwp, 100, 100000),
-      nep: inRange(r.nep, 100, 100000),
-      pat: typeof r.pat === 'number' && Number.isFinite(r.pat) && Math.abs(r.pat) <= 20000 ? r.pat : null,
-      combinedRatio: inRange(r.combined_ratio, 40, 250),
-      expenseRatio: inRange(r.expense_ratio, 2, 90),
-      solvency: inRange(r.solvency_ratio, 0.3, 8),
-    }))
-    .sort((a, b) => a.fy.localeCompare(b.fy))
-}
-
-/**
- * Derived underwriting result (₹ Cr) = NEP × (1 − combined ratio). A transparent,
- * standard proxy for core insurance profit before investment/other income; used
- * because net claims / commission line items aren't separately reported per year.
- * Returns null when either input is missing (never coerced to 0).
- */
-function underwritingResult(p: AnnualPoint): number | null {
-  if (p.nep == null || p.combinedRatio == null) return null
-  return Math.round(p.nep * (1 - p.combinedRatio / 100))
-}
-
-const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
-
-// ---------------------------------------------------------------------------
-// Accounting-basis lens — two real bases: IGAAP / Statutory (the default) and
-// IFRS. IGAAP / Statutory IS the dashboard's existing statutory data path, so
-// every company keeps working and `isIfrs` is false. IFRS is an overlay sourced
-// from the insurers' IFRS accounts (annual report / investor presentation):
-// PAT, PAT margin, PAT growth and the combined / claims / expense ratios switch
-// to the IFRS dataset, with NA where a period is unreported. ROE on IFRS is NA —
-// there is no IFRS equity to compute it cleanly, and it is never derived from
-// statutory net worth. The granular cost-split and trajectory engines stay on
-// the statutory disclosure basis (the only basis with that granularity) — never
-// silently mixed; a banner makes that explicit when IFRS is selected.
-// ---------------------------------------------------------------------------
-interface BasisCtx {
-  basis: AccountingBasis
-  /** true only for IFRS — the overlay. IGAAP / Statutory uses the base path. */
-  isIfrs: boolean
-  tracked: boolean
-  period: BasisPeriod | null
-  pLabel: string
-  /** Source label for the selected basis (Company filing / Annual report). */
-  sourceLabel: string
-  pat: number | null
-  patMargin: number | null
-  patGrowth: number | null
-  combinedRatio: number | null
-  claimsRatio: number | null
-  expenseRatio: number | null
-  roe: number | null
-}
-
-function buildBasisCtx(company: Insurer, basis: AccountingBasis): BasisCtx {
-  const tracked = hasBasisData(company.id)
-  const sourceLabel = BASIS_SOURCE_LABEL[basis]
-  if (basis === 'igaap') {
-    // IGAAP / Statutory = the existing statutory data path; components use their
-    // own reported-statutory values. No overlay or period anchor needed.
-    return { basis, isIfrs: false, tracked, period: null, pLabel: 'FY25', sourceLabel, pat: null, patMargin: null, patGrowth: null, combinedRatio: null, claimsRatio: null, expenseRatio: null, roe: null }
-  }
-  const period = latestAnnualWithPat(company.id, 'ifrs') ?? 'FY26'
-  const bp = getBasisProfit(company.id, 'ifrs', period)
-  return {
-    basis,
-    isIfrs: true,
-    tracked,
-    period,
-    pLabel: periodLabel(period),
-    sourceLabel,
-    pat: bp?.pat ?? null,
-    patMargin: bp?.patMarginGwp ?? null,
-    patGrowth: getBasisPatGrowth(company.id, 'ifrs', period),
-    combinedRatio: bp?.combinedRatio ?? null,
-    claimsRatio: bp?.claimsRatio ?? null,
-    expenseRatio: bp?.expenseRatio ?? null,
-    roe: null, // IFRS ROE not available (no IFRS equity reported) — never derived
-  }
-}
-
-// Explicit basis context inside the detail panel, shown only when IFRS is
-// selected — so the investor knows the headline numbers are on the IFRS lens
-// and that the granular engines below remain on the statutory disclosure basis.
-function BasisBanner({ ctx, company }: { ctx: BasisCtx; company: Insurer }) {
-  if (!ctx.isIfrs) return null
-  return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-soft-border bg-ice/60 px-3.5 py-2">
-      <BasisPill basis={ctx.basis} />
-      {ctx.tracked ? (
-        <p className="text-[10.5px] leading-snug text-ink-secondary">
-          Headline figures shown on the <span className="font-semibold text-navy-deep">{BASIS_LABEL[ctx.basis]}</span> basis ({ctx.pLabel}). The cost-split and trajectory engines below stay on the statutory disclosure basis — the only basis with that granularity — so bases are never mixed in one calculation.
-        </p>
+    <div className="flex items-stretch gap-1.5 overflow-x-auto pb-1">
+      <div className="flex w-[78px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep}, ${PALETTE.navy})` }}>
+        <span className="text-[8px] font-bold uppercase tracking-[0.08em]" style={{ color: '#E9D49A' }}>Premium</span>
+        <span className="mt-1 font-display text-[22px] leading-none">₹100</span>
+      </div>
+      {blocks.map((b, i) => (
+        <div key={b.key} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-[12px] font-bold text-ink-secondary/40">+</span>}
+          <div className="flex min-w-[88px] flex-1 flex-col justify-between rounded-xl border px-2.5 py-2" style={{ background: b.bg, borderColor: b.border }}>
+            <span className="text-[8.5px] font-bold uppercase tracking-[0.04em] text-navy-deep">{b.label}</span>
+            <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: b.color }}>₹{b.v.toFixed(1)}</span>
+          </div>
+        </div>
+      ))}
+      <span className="flex items-center px-0.5 text-[12px] font-bold" style={{ color: crColor }}>=</span>
+      <div className="flex w-[92px] shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white px-2 py-2 text-center" style={{ borderColor: crColor }}>
+        <span className="text-[8px] font-bold uppercase text-ink-secondary">Combined</span>
+        <span className="mt-1 font-display text-[22px] leading-none" style={{ color: crColor }}>{combined.toFixed(1)}%</span>
+      </div>
+      <span className="flex items-center px-0.5 text-[14px] font-bold" style={{ color: output ? GOLD : below ? PALETTE.emerald : PALETTE.coral }}>→</span>
+      {output ? (
+        <div className="flex w-[96px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2 text-center" style={{ background: 'linear-gradient(160deg, #FBF1D8, #FFFAEC)', borderColor: '#E9D49A' }}>
+          <span className="text-[8px] font-bold uppercase" style={{ color: '#9A7B1E' }}>{output.label}</span>
+          <span className="mt-1 font-display text-[22px] leading-none" style={{ color: GOLD }}>{output.value}</span>
+        </div>
       ) : (
-        <p className="text-[10.5px] leading-snug text-ink-secondary">
-          {company.shortName} is not tracked on IFRS — IFRS figures show <span className="italic">NA</span>. IFRS profitability is tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
-        </p>
+        <div className="flex w-[92px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2 text-center" style={{ background: below ? 'linear-gradient(160deg,#E3F3EA,#F3FBF7)' : '#FBEFEF', borderColor: below ? '#BFE0CE' : '#EFD4D3' }}>
+          <span className="text-[8px] font-bold uppercase" style={{ color: below ? '#1C5C3F' : '#9A3B39' }}>{below ? 'Surplus' : 'Deficit'}</span>
+          <span className="mt-1 font-display text-[20px] leading-none" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{surplus.toFixed(1)}%</span>
+        </div>
       )}
     </div>
   )
 }
 
-
-// Compact pending state — never a large blank box. Says exactly what's missing.
-function PendingNote({ children }: { children: string }) {
-  return (
-    <div className="flex items-start gap-2 rounded-lg border border-dashed border-soft-border bg-ice/50 px-3 py-2.5 text-[11px] leading-snug text-ink-secondary">
-      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-blue/60" />
-      <span>{children}</span>
-    </div>
-  )
-}
-
-// Shared compact section header (champagne eyebrow + display title + subtitle).
-function StoryHeader({ eyebrow, title, subtitle, right }: { eyebrow: string; title: string; subtitle?: string; right?: ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex items-start gap-2">
-        <span className="mt-0.5 h-4 w-1 shrink-0 rounded-full" style={{ background: PALETTE.champagne }} />
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">{eyebrow}</p>
-          <h3 className="font-display text-[15px] leading-tight text-navy-deep">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{subtitle}</p>}
-        </div>
-      </div>
-      {right && <div className="shrink-0">{right}</div>}
-    </div>
-  )
-}
-
-// ─── (B) Profitability Story Map — the clickable navigation brain ────────────
-// The five-node infographic now *controls* the page: clicking a node reveals
-// only that node's charts, status and investor read below. Each metric appears
-// exactly once; values reuse the same honest derivations so the story stays
-// dynamic across companies. Missing inputs render as "n/a"/"Pending", never 0.
-
+// ── Story map — only available stages render (omit, don't NA) ─────────────────
 type NodeId = 'underwriting' | 'core' | 'conversion' | 'returns' | 'capital'
+interface Stage { id: NodeId; label: string; metricLabel: string; value: string; color: string; Icon: LucideIcon }
 
-interface EngineStage {
-  id: NodeId
-  n: number
-  label: string
-  metricLabel: string
-  value: string
-  missing: boolean
-  color: string
-  Icon: LucideIcon
-  explore: string
+function buildStages(view: ProfitView): Stage[] {
+  const s: Stage[] = []
+  if (view.combinedRatio != null) s.push({ id: 'underwriting', label: 'Underwriting Discipline', metricLabel: 'Combined Ratio', value: pct(view.combinedRatio), color: PALETTE.emerald, Icon: ShieldCheck })
+  if (view.underwritingProfit != null) s.push({ id: 'core', label: 'Core Profitability', metricLabel: 'Underwriting Profit', value: crc(view.underwritingProfit), color: PALETTE.teal, Icon: Gauge })
+  if (view.patMargin != null) s.push({ id: 'conversion', label: 'Profit Conversion', metricLabel: 'PAT Margin', value: pct(view.patMargin), color: GOLD, Icon: IndianRupee })
+  if (view.roe != null) s.push({ id: 'returns', label: 'Shareholder Return', metricLabel: 'ROE', value: pct(view.roe), color: ORANGE, Icon: BarChart3 })
+  if (view.solvency != null) s.push({ id: 'capital', label: 'Capital Support', metricLabel: 'Solvency', value: `${view.solvency.toFixed(2)}x`, color: DEEP_GREEN, Icon: Shield })
+  return s
 }
 
-const ORANGE = '#C2691C' // shareholder return — controlled amber-orange (monitor, not danger)
-const GOLD = '#C99A2E' // profit conversion — warm gold (value creation, not warning)
-const DEEP_GREEN = '#1E6B4A' // capital support — deepest green (safety, resilience)
-
-function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCtx): EngineStage[] {
-  const hasCR = company.combinedRatio > 0
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
-  const solvency = company.solvency
-  // Basis-aware headline scalars: IGAAP / Statutory uses the existing statutory
-  // values; IFRS switches to the IFRS dataset (NA where unreported). Underwriting
-  // profit is a statutory measure, so it shows NA on IFRS (never derived).
-  const crVal = ctx.isIfrs ? ctx.combinedRatio : hasCR ? company.combinedRatio : null
-  const pmVal = ctx.isIfrs ? ctx.patMargin : patMargin
-  const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-  const naWord = ctx.isIfrs ? 'NA' : 'n/a'
-
-  return [
-    {
-      id: 'underwriting',
-      n: 1,
-      label: 'Underwriting discipline',
-      metricLabel: 'Combined ratio',
-      value: crVal == null ? naWord : `${crVal.toFixed(1)}%`,
-      missing: crVal == null,
-      color: PALETTE.emerald,
-      Icon: ShieldCheck,
-      explore: 'See whether claims and costs stay within every ₹100 of premium.',
-    },
-    {
-      id: 'core',
-      n: 2,
-      label: 'Core profitability',
-      metricLabel: 'Underwriting profit',
-      value: ctx.isIfrs ? 'NA' : uw == null ? 'Pending' : crc(uw),
-      missing: ctx.isIfrs || uw == null,
-      color: PALETTE.teal,
-      Icon: Gauge,
-      explore: 'Trace how that discipline turns into real underwriting profit.',
-    },
-    {
-      id: 'conversion',
-      n: 3,
-      label: 'Profit conversion',
-      metricLabel: 'PAT margin',
-      value: pmVal == null ? (ctx.isIfrs ? naWord : 'Pending') : `${pmVal.toFixed(1)}%`,
-      missing: pmVal == null,
-      color: GOLD,
-      Icon: IndianRupee,
-      explore: 'Premium is now being tested for how much converts into PAT and margin.',
-    },
-    {
-      id: 'returns',
-      n: 4,
-      label: 'Shareholder return',
-      metricLabel: 'ROE',
-      value: roeVal == null ? naWord : `${roeVal.toFixed(1)}%`,
-      missing: roeVal == null,
-      color: ORANGE,
-      Icon: BarChart3,
-      explore: 'Follow profit through to the return shareholders actually earn.',
-    },
-    {
-      id: 'capital',
-      n: 5,
-      label: 'Capital support',
-      metricLabel: 'Solvency',
-      value: solvency > 0 ? `${solvency.toFixed(2)}x` : 'n/a',
-      missing: !(solvency > 0),
-      color: DEEP_GREEN,
-      Icon: Shield,
-      explore: 'See the capital buffer backing all of this growth.',
-    },
-  ]
-}
-
-function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void; ctx: BasisCtx }) {
-  const stages = buildEngineStages(company, series, ctx)
-  const active = stages.find((s) => s.id === selectedId) ?? stages[0]
-  const selectedIndex = stages.findIndex((s) => s.id === selectedId)
-
+function StoryMap({ stages, selected, onSelect, basis }: { stages: Stage[]; selected: NodeId; onSelect: (id: NodeId) => void; basis: AccountingBasis }) {
   return (
     <section className="card-surface p-5">
-      {/* Header — Story Map title, plain-English direction, interactive cue */}
-      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-        <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: PALETTE.champagneSoft }}>
-            <Cog className="h-4 w-4" style={{ color: PALETTE.champagne }} />
-          </span>
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Profitability Story Map</p>
-            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">Click a stage to explore how premium flows into profit, ROE and capital strength.</p>
-            <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice/70 px-2.5 py-0.5 text-[9.5px] font-medium text-ink-secondary">
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
-              Interactive analysis · 5 stages · Click to drill down
-            </span>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: PALETTE.champagneSoft }}><Cog className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} /></span>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability Story Map</p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <BasisPill basis={ctx.basis} />
-          <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold text-navy-primary" style={{ borderColor: '#D6E2FA', background: PALETTE.softBlue }}>
-            <MousePointerClick className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} />
-            Choose a stage below
-          </span>
-        </div>
+        <BasisPill basis={basis} />
       </div>
-
-      {/* Flow — five clickable nodes; connectors brighten up to the active stage */}
-      <div className="mt-7 flex flex-col gap-7 md:flex-row md:items-start md:gap-0">
-        {stages.map((s, i) => {
-          const selected = s.id === selectedId
-          const connectorActive = i <= selectedIndex
+      <div className="mt-6 flex flex-col gap-6 md:flex-row md:items-start md:gap-2">
+        {stages.map((st) => {
+          const on = st.id === selected
           return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onSelect(s.id)}
-              aria-pressed={selected}
-              aria-label={`View ${s.label} — ${s.metricLabel} ${s.value}`}
-              className="group relative flex min-w-0 cursor-pointer flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35 md:flex-1"
-            >
-              {/* gradient connector: previous → this; brighter/thicker up to the selected stage */}
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className="absolute left-[-50%] right-1/2 top-[39px] z-0 hidden -translate-y-1/2 md:block"
-                  style={{ height: connectorActive ? 3 : 2, background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: connectorActive ? 0.9 : 0.3 }}
-                />
-              )}
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-[39px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-sm md:flex"
-                  style={{ borderColor: connectorActive ? s.color : PALETTE.border }}
-                >
-                  <ChevronRight className="h-2.5 w-2.5" style={{ color: s.color, opacity: connectorActive ? 1 : 0.5 }} />
-                </span>
-              )}
-
-              {/* Node */}
-              <div className="relative z-10">
-                {/* soft halo — always-on for the selected node, fades in on hover otherwise */}
-                <span
-                  aria-hidden
-                  className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity duration-300 ${selected ? 'h-[118px] w-[118px] opacity-100' : 'h-[94px] w-[94px] opacity-0 group-hover:opacity-90'}`}
-                  style={{ background: selected ? `${s.color}4d` : `${s.color}2b` }}
-                />
-                <span
-                  aria-hidden
-                  className="absolute -inset-[6px] rounded-full border transition-all duration-300"
-                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.92 : 0.2, transform: selected ? 'scale(1.06)' : 'scale(1)' }}
-                />
-                <div
-                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[3px]"
-                  style={{
-                    borderColor: s.color,
-                    transform: selected ? 'translateY(-3px) scale(1.05)' : 'translateY(0)',
-                    boxShadow: selected ? `0 18px 34px ${s.color}73` : `0 6px 16px ${s.color}1f`,
-                    opacity: s.missing && !selected ? 0.6 : 1,
-                  }}
-                >
-                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={selected ? 2 : 1.6} />
+            <button key={st.id} type="button" onClick={() => onSelect(st.id)} aria-pressed={on} className="group flex min-w-0 flex-1 cursor-pointer flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35">
+              <div className="relative">
+                <span aria-hidden className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity ${on ? 'h-[110px] w-[110px] opacity-100' : 'h-[88px] w-[88px] opacity-0 group-hover:opacity-90'}`} style={{ background: on ? `${st.color}4d` : `${st.color}2b` }} />
+                <div className="relative flex h-[72px] w-[72px] items-center justify-center rounded-full border-2 bg-white transition-all group-hover:-translate-y-[3px]" style={{ borderColor: st.color, transform: on ? 'translateY(-3px) scale(1.05)' : 'none', boxShadow: on ? `0 16px 30px ${st.color}66` : `0 6px 16px ${st.color}1f` }}>
+                  <st.Icon className="h-7 w-7" style={{ color: st.color }} strokeWidth={on ? 2 : 1.6} />
                 </div>
-                <span
-                  className="absolute -top-2 left-1/2 z-20 flex h-[18px] w-[18px] -translate-x-1/2 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
-                  style={{ background: s.color }}
-                >
-                  {s.n}
-                </span>
               </div>
-
-              {/* Label + single metric */}
-              <p className="mt-3.5 font-display text-[13px] leading-tight transition-colors" style={{ color: selected ? PALETTE.navyDeep : '#41506B', fontWeight: selected ? 700 : 600 }}>
-                {s.label}
-              </p>
-              <span aria-hidden className="my-1.5 h-px w-6" style={{ background: selected ? s.color : PALETTE.border }} />
-              <p className="text-[9.5px] uppercase tracking-wide text-ink-secondary">{s.metricLabel}</p>
-              {s.missing ? (
-                <p className="font-display text-[14px] italic leading-none text-ink-secondary/80">{s.value}</p>
-              ) : (
-                <p className="font-display text-[19px] leading-none" style={{ color: s.color }}>
-                  {s.value}
-                </p>
-              )}
-
-              {/* Clickable affordance — "Viewing" when active, a quiet "Explore" cue otherwise */}
-              {selected ? (
-                <span className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white shadow-sm" style={{ background: s.color }}>
-                  <span className="h-1 w-1 rounded-full bg-white/90" />
-                  Viewing
-                </span>
-              ) : (
-                <span className="mt-2 inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary/80 transition-colors group-hover:border-muted-blue group-hover:text-navy-primary">
-                  Explore
-                  <ChevronRight className="h-2.5 w-2.5" />
-                </span>
-              )}
+              <p className="mt-3 font-display text-[12.5px] leading-tight" style={{ color: on ? PALETTE.navyDeep : '#41506B', fontWeight: on ? 700 : 600 }}>{st.label}</p>
+              <span aria-hidden className="my-1 h-px w-6" style={{ background: on ? st.color : PALETTE.border }} />
+              <p className="text-[9px] uppercase tracking-wide text-ink-secondary">{st.metricLabel}</p>
+              <p className="font-display text-[19px] leading-none" style={{ color: st.color }}>{st.value}</p>
             </button>
           )
         })}
       </div>
-
-      {/* Active-stage status bar — a control surface (navy + gold), updates on click only */}
-      <div className="mt-6 flex justify-center">
-        <div
-          className="flex w-full max-w-2xl flex-col items-center gap-0.5 rounded-xl border px-5 py-2.5 text-center"
-          style={{ borderColor: `${active.color}33`, background: `linear-gradient(135deg, ${active.color}12 0%, ${active.color}05 100%)` }}
-        >
-          <div className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: active.color }} />
-            <span className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Viewing</span>
-            <span aria-hidden className="text-ink-secondary/40">·</span>
-            <span className="font-display text-[13px] leading-none text-navy-deep">{active.label}</span>
-          </div>
-          <p className="text-[11px] leading-snug text-ink-secondary">{active.explore}</p>
-        </div>
-      </div>
-
-      {/* Source — links to the real filing for the headline combined ratio */}
-      <div className="mt-4 flex justify-end">
-        {(() => {
-          const s = realSource('combined_ratio', company.id) ?? realSource('solvency_ratio', company.id)
-          return s ? (
-            <SourceTag source={s.source} period={series[series.length - 1]?.fy ?? 'FY25'} confidence={s.confidence} provenance={s.provenance} />
-          ) : (
-            <SourceTag source="Company filing" period={series[series.length - 1]?.fy ?? 'FY25'} confidence="high" />
-          )
-        })()}
-      </div>
     </section>
   )
 }
 
-// ─── (D) Underwriting Profit Trend — derived core profit, CR overlay ─────────
-function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
-  const data = series.map((p) => ({ fy: p.fy, uw: underwritingResult(p), cr: p.combinedRatio }))
-  const usable = data.filter((d) => d.uw != null) as { fy: string; uw: number; cr: number | null }[]
-  const enough = usable.length >= 2
-  const latest = usable[usable.length - 1]
-  const turned = enough && usable.some((d) => d.uw < 0) && latest.uw > 0
-  // First year underwriting crosses from loss into profit — the turnaround point.
-  let crossIdx = -1
-  for (let i = 1; i < usable.length; i++) {
-    if (usable[i - 1].uw < 0 && usable[i].uw >= 0) {
-      crossIdx = i
-      break
-    }
+// ── One-line investor read per stage ──────────────────────────────────────────
+function lensLine(id: NodeId, view: ProfitView): string {
+  switch (id) {
+    case 'underwriting':
+      return view.combinedRatio! < 100 ? 'Costs stay inside ₹100 of premium — underwriting surplus before investment income.' : 'Costs exceed ₹100 of premium — reported profit leans on investment income.'
+    case 'core':
+      return view.underwritingProfit! >= 0 ? 'Core insurance book is profitable before any investment income.' : 'Core underwriting still runs a deficit; profit leans on investment income.'
+    case 'conversion':
+      return view.patMargin! > 0 ? 'Premium is converting into profit, though the margin is still thin.' : 'Premium is not yet converting into reported profit.'
+    case 'returns':
+      return view.roe! >= 12 ? 'Returns are healthy versus the cost of capital.' : 'Returns are still early as profit builds against the capital base.'
+    case 'capital':
+      return `Capital cushion sits above the 1.5x regulatory floor${view.solvencyIsStatutory ? ' (statutory)' : ''}.`
   }
-  // Strongest profit year gets the boldest green (usually the latest).
-  const maxUw = enough ? Math.max(...usable.map((d) => d.uw)) : 0
-  const subtitle = !enough
-    ? `Underwriting-profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years.`
-    : 'Core underwriting moved from loss to profit as combined ratio fell below 100%.'
+}
+
+function InvestorRead({ id, view }: { id: NodeId; view: ProfitView }) {
   return (
-    <section className="card-surface p-4" style={tintBg ? { background: tintBg } : undefined}>
-      <StoryHeader
-        eyebrow="Core Profitability"
-        title="Underwriting Profit Turnaround"
-        subtitle={subtitle}
-        right={
-          enough ? (
-            <SignalBadge label={latest.uw > 0 ? (turned ? 'Turned positive' : 'In profit') : 'In loss'} tone={latest.uw > 0 ? 'positive' : 'negative'} size="sm" />
-          ) : undefined
-        }
-      />
-      <div className="mt-3">
-        {enough ? (
-          <ResponsiveContainer width="100%" height={208}>
-            <ComposedChart data={usable} margin={{ top: 18, right: 6, left: -10, bottom: 0 }} barCategoryGap="34%">
-              <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
-              <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
-              <YAxis yAxisId="uw" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={46} tickFormatter={(v: number) => `₹${v}`} />
-              <YAxis yAxisId="cr" orientation="right" tick={{ fontSize: 9.5, fill: PALETTE.champagne }} tickLine={false} axisLine={false} width={30} unit="%" domain={['dataMin - 3', 'dataMax + 3']} />
-              <Tooltip
-                cursor={{ fill: 'rgba(39,69,126,0.03)' }}
-                content={({ active, payload, label }) => {
-                  if (!active || !payload || !payload.length) return null
-                  const row = payload[0]?.payload as { uw: number; cr: number | null }
-                  return (
-                    <div className="rounded-lg border border-soft-border bg-card px-3 py-2 text-[11px] shadow-card">
-                      <p className="mb-1 font-semibold text-navy-deep">{label}</p>
-                      <p className="flex items-center justify-between gap-4">
-                        <span className="text-ink-secondary">Underwriting {row.uw < 0 ? 'loss' : 'profit'}</span>
-                        <span className="font-semibold tabular-nums text-navy-deep">{crc(row.uw)}</span>
-                      </p>
-                      {row.cr != null && (
-                        <p className="flex items-center justify-between gap-4">
-                          <span className="text-ink-secondary">Combined ratio</span>
-                          <span className="font-semibold tabular-nums" style={{ color: PALETTE.champagne }}>{row.cr.toFixed(1)}%</span>
-                        </p>
-                      )}
-                    </div>
-                  )
-                }}
-              />
-              {/* Zero baseline — the key reference: above it is underwriting profit. */}
-              <ReferenceLine
-                yAxisId="uw"
-                y={0}
-                stroke={PALETTE.navy}
-                strokeOpacity={0.55}
-                strokeWidth={1.2}
-                label={{ value: 'Above ₹0 = underwriting profit', position: 'insideTopLeft', fontSize: 8.5, fill: PALETTE.navy, opacity: 0.75 }}
-              />
-              {/* Turnaround marker — points at the first year that crosses into profit. */}
-              {crossIdx >= 0 && (
-                <ReferenceLine
-                  yAxisId="uw"
-                  x={usable[crossIdx].fy}
-                  stroke="transparent"
-                  label={{ value: '↳ Turned positive', position: 'top', fontSize: 9, fill: PALETTE.emerald, fontWeight: 700 }}
-                />
-              )}
-              {/* Combined ratio — secondary, subtle overlay so it doesn't compete with the bars. */}
-              <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.2} strokeOpacity={0.6} dot={{ r: 2, fill: PALETTE.champagne }} activeDot={{ r: 3.5 }} connectNulls />
-              <Bar yAxisId="uw" dataKey="uw" name="Underwriting profit" radius={[3, 3, 0, 0]} maxBarSize={40}>
-                {usable.map((d) => {
-                  const strongest = d.uw > 0 && d.uw === maxUw
-                  const fill = d.uw < 0 ? PALETTE.coral : strongest ? PALETTE.emerald : PALETTE.teal
-                  return <Cell key={d.fy} fill={fill} stroke={strongest ? PALETTE.navyDeep : 'none'} strokeWidth={strongest ? 1.4 : 0} />
-                })}
-              </Bar>
-            </ComposedChart>
-          </ResponsiveContainer>
-        ) : (
-          <PendingNote>{`Underwriting profit trend pending for ${company.shortName} — needs reported NEP and combined ratio for at least two years. Combined ratio overlay shown where available.`}</PendingNote>
-        )}
-      </div>
-      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.emerald }} /> Underwriting profit</span>
-          <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.coral }} /> Underwriting loss</span>
-          <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>
-        </div>
-        {(() => {
-          const s = enough ? realSource('combined_ratio', company.id) : null
-          return s ? (
-            <SourceTag source="Company filing · derived" period={`${usable[0].fy}–${latest.fy}`} confidence={s.confidence} provenance={s.provenance} />
-          ) : (
-            <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
-          )
-        })()}
+    <section className="card-surface relative overflow-hidden p-3.5" style={{ background: `linear-gradient(135deg,#fff 0%, ${PALETTE.champagneSoft} 130%)` }}>
+      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: PALETTE.champagne }} />
+      <div className="flex flex-wrap items-center justify-between gap-2 pl-2.5">
+        <p className="max-w-2xl text-[12px] font-medium leading-relaxed text-navy-deep">{lensLine(id, view)}</p>
+        <ShortSource view={view} />
       </div>
     </section>
   )
 }
 
-// ─── (E) Operating Leverage — is premium growing faster than expenses? ───────
-function operatingLeverage(company: Insurer, series: AnnualPoint[]) {
-  const gwps = series.filter((p) => p.gwp != null)
-  const lg = gwps[gwps.length - 1]
-  const pg = gwps[gwps.length - 2]
-  const gwpGrowth = lg && pg && pg.gwp ? ((lg.gwp! - pg.gwp!) / pg.gwp!) * 100 : company.growth > 0 ? company.growth : null
-  const exp = series.filter((p) => p.expenseRatio != null)
-  const expFrom = exp.length ? exp[0].expenseRatio : null
-  const expTo = exp.length ? exp[exp.length - 1].expenseRatio : null
-  const expDelta = expFrom != null && expTo != null && exp.length >= 2 ? expTo - expFrom : null
-  const pats = series.filter((p) => p.pat != null)
-  const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
-  const hiGrowth = gwpGrowth != null && gwpGrowth >= 20
-  let verdict: string
-  let tone: Tone
-  if (gwpGrowth == null || expDelta == null) {
-    verdict = 'Pending'
-    tone = 'neutral'
-  } else if (hiGrowth && expDelta < -0.2) {
-    verdict = 'Scale benefit emerging'
-    tone = 'positive'
-  } else if (hiGrowth && expDelta > 0.2) {
-    verdict = 'Growth not yet converting into leverage'
-    tone = 'warning'
-  } else if (expDelta < -0.2) {
-    verdict = 'Costs easing, growth modest'
-    tone = 'positive'
-  } else {
-    verdict = 'No clear operating leverage'
-    tone = 'warning'
-  }
-  return { gwpGrowth, expFrom, expTo, expDelta, patYoY, verdict, tone, expSeries: exp }
-}
-
-// ─── Profit-conversion infographic — the ₹100 Premium-to-Profit Engine ───────
-// Input (₹100 GWP) → a splitting stream into proportional absorption bands
-// (claims biggest, then opex, commission) → a small retained underwriting-profit
-// band → the PAT-margin output badge. Magnitude is shown by band height + stream
-// thickness. Real values only; a life carrier / missing PAT shows "Data pending".
-function ConversionBridge({ company, series, ctx }: { company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
-  const cost = COST_RATIOS[company.id]
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const reportedMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
-  // The PAT-margin output switches with the selected accounting basis; the ₹100
-  // cost split below stays on the statutory disclosure basis (made explicit by
-  // the panel banner), so the two bases are never blended inside one number.
-  const patMargin = ctx.isIfrs ? ctx.patMargin : reportedMargin
-  const periodTag = ctx.isIfrs ? ctx.pLabel : 'FY25'
-  const outputCaption = ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} profit conversion` : 'Reported profit conversion'
-
-  const header = (
-    <>
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Conversion Engine</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium-to-Profit Conversion Engine</h3>
-        </div>
-        <span className="shrink-0 text-[9.5px] text-ink-secondary">{periodTag}</span>
-      </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of GWP, see what gets absorbed before profit is created.</p>
-    </>
-  )
-
-  if (!cost) {
-    return (
-      <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
-        {header}
-        <div className="mt-3">
-          <PendingNote>{`${company.shortName} reports on a life basis — the ₹100 premium-to-profit engine needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
+// ── Per-stage detail (compact, all view-driven) ────────────────────────────────
+function StageDetail({ id, view, company, onOpenDetail }: { id: NodeId; view: ProfitView; company: { id: string; shortName: string }; onOpenDetail: () => void }) {
+  let body: ReactNode = null
+  if (id === 'underwriting' && view.combinedRatio != null) {
+    body = (
+      <div className="space-y-3">
+        <RupeeEngine claims={view.claimsRatio} expense={view.expenseRatio} combined={view.combinedRatio} />
+        <CombinedTrend points={view.combinedSeries} />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {view.claimsRatio != null && <Chip label="Claims ratio" value={pct(view.claimsRatio)} tone={view.claimsRatio > 70 ? 'warning' : 'positive'} />}
+          {view.expenseRatio != null && <Chip label="Expense ratio" value={pct(view.expenseRatio)} />}
+          <Chip label="Combined ratio" value={pct(view.combinedRatio)} tone={view.combinedRatio < 100 ? 'positive' : view.combinedRatio <= 105 ? 'warning' : 'negative'} />
         </div>
       </div>
     )
-  }
-
-  const absorbed = cost.loss + cost.commission + cost.expense
-  const uwProfit = Math.round((100 - absorbed) * 10) / 10
-  const uwPos = uwProfit >= 0
-
-  const bands = [
-    { key: 'claims', label: 'Claims', sub: 'Largest absorption', amount: cost.loss, display: `₹${cost.loss.toFixed(1)}`, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' },
-    { key: 'opex', label: 'Opex', sub: 'Operating cost', amount: cost.expense, display: `₹${cost.expense.toFixed(1)}`, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' },
-    { key: 'comm', label: 'Commission', sub: 'Distribution cost', amount: cost.commission, display: `₹${cost.commission.toFixed(1)}`, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE' },
-    {
-      key: 'uw',
-      label: uwPos ? 'Underwriting profit' : 'Underwriting loss',
-      sub: uwPos ? 'Spread retained' : 'Spread negative',
-      amount: Math.max(Math.abs(uwProfit), 1.5),
-      display: `${uwPos ? '' : '−'}₹${Math.abs(uwProfit).toFixed(1)}`,
-      color: uwPos ? PALETTE.teal : PALETTE.coral,
-      bg: uwPos ? '#E7F4F3' : '#FBEFEF',
-      border: uwPos ? '#C9E5E3' : '#EFD4D3',
-    },
-  ]
-
-  const BASE = 22
-  const SPAN = 150
-  const GAP = 8
-  const heights = bands.map((b) => BASE + (b.amount / 100) * SPAN)
-  const totalH = Math.round(heights.reduce((s, h) => s + h, 0) + GAP * (bands.length - 1))
-  const centers: number[] = []
-  let acc = 0
-  heights.forEach((h) => {
-    centers.push(acc + h / 2)
-    acc += h + GAP
-  })
-
-  return (
-    <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
-      {header}
-      <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.16em] text-champagne">₹100 premium journey</p>
-
-      <div className="mt-1.5 flex items-stretch gap-0" style={{ height: totalH }}>
-        {/* Input — the premium that enters the engine */}
-        <div className="flex w-[86px] shrink-0 flex-col items-center justify-center rounded-xl px-2 text-center" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
-          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#E9D49A' }}>Premium in</span>
-          <span className="mt-1 font-display text-[24px] leading-none text-white">₹100</span>
-          <span className="mt-1 text-[8.5px] leading-snug text-white/70">GWP received</span>
-        </div>
-
-        {/* Splitting stream — thickness proportional to amount absorbed */}
-        <svg className="shrink-0" width={34} height={totalH} viewBox={`0 0 34 ${totalH}`} aria-hidden>
-          {bands.map((b, i) => (
-            <path
-              key={b.key}
-              d={`M0 ${totalH / 2} C 22 ${totalH / 2}, 12 ${centers[i]}, 34 ${centers[i]}`}
-              fill="none"
-              stroke={b.color}
-              strokeOpacity={0.42}
-              strokeWidth={Math.max(2.5, (b.amount / 100) * 40)}
-              strokeLinecap="round"
-            />
-          ))}
-        </svg>
-
-        {/* Absorption + retained-profit bands */}
-        <div className="flex min-w-0 flex-1 flex-col" style={{ gap: GAP }}>
-          {bands.map((b, i) => (
-            <div
-              key={b.key}
-              className="relative flex items-center justify-between overflow-hidden rounded-lg border pl-3.5 pr-3"
-              style={{ height: heights[i], background: b.bg, borderColor: b.border }}
-            >
-              <span className="absolute inset-y-0 left-0 w-1" style={{ background: b.color }} />
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: b.color }} />
-                  <span className="truncate text-[9px] font-bold uppercase tracking-[0.1em] text-navy-deep">{b.label}</span>
-                </div>
-                {heights[i] > 46 && <span className="mt-0.5 block pl-3 text-[9.5px] text-ink-secondary">{b.sub}</span>}
-              </div>
-              <span className="shrink-0 font-display leading-none" style={{ color: b.color, fontSize: heights[i] > 90 ? 21 : heights[i] > 42 ? 16 : 14 }}>
-                {b.display}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Flow to output */}
-        <div className="flex shrink-0 items-center px-1">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm" style={{ borderColor: '#E9D49A', color: GOLD }}>
-            →
-          </span>
-        </div>
-
-        {/* Output — the final reported-profit conversion */}
-        <div
-          className="flex w-[112px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 text-center"
-          style={{ background: 'linear-gradient(160deg, #FBF1D8 0%, #FFFAEC 100%)', borderColor: '#E9D49A', boxShadow: `0 14px 28px ${GOLD}40` }}
-        >
-          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#9A7B1E' }}>PAT margin</span>
-          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: GOLD }}>{patMargin == null ? (ctx.isIfrs ? 'NA' : 'n/a') : `${patMargin.toFixed(1)}%`}</span>
-          <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">{outputCaption}</span>
-          <span className="mt-1.5"><BasisPill basis={ctx.basis} /></span>
+  } else if (id === 'core' && view.underwritingProfit != null) {
+    body = (
+      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <div>{bars({ points: view.uwSeries.map((p) => ({ label: p.label, v: p.uw })), accent: PALETTE.teal, unit: 'cr' })}</div>
+        <div className="grid grid-cols-1 gap-2 content-start">
+          <Chip label="Underwriting profit" value={crc(view.underwritingProfit)} tone={view.underwritingProfit >= 0 ? 'teal' : 'negative'} />
+          {view.combinedRatio != null && <Chip label="Combined ratio" value={pct(view.combinedRatio)} tone={view.combinedRatio < 100 ? 'positive' : 'warning'} />}
         </div>
       </div>
-    </div>
-  )
-}
-
-// Compact proof rail beside the engine: net margin, expense-ratio trend and PAT
-// growth — the cleaner replacement for the old Profit-Velocity + Operating-
-// Leverage cards (reuses the operatingLeverage helper + sparklines).
-function ConversionQuality({ company, series, ctx }: { company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
-  const mm = getMarginMetrics(series)
-  const patSeries = realPatValues(series)
-  const ol = operatingLeverage(company, series)
-  // Basis-aware headline scalars (single period on IGAAP/IFRS). The reported PAT
-  // sparkline/trend is suppressed on a non-reported basis so a reported trend is
-  // never shown beside a basis number.
-  const netMargin = ctx.isIfrs ? ctx.patMargin : mm.netMargin
-  const netFy = ctx.isIfrs ? ctx.pLabel : mm.latestFy
-  const hasMargin = netMargin != null
-  const patYoY = ctx.isIfrs ? ctx.patGrowth : ol.patYoY
-  const expSingle = ctx.isIfrs ? ctx.expenseRatio : null
-  const hasPatTrend = !ctx.isIfrs && patSeries.length >= 2
-  const netTone: ChipTone = netMargin == null ? 'navy' : netMargin > 5 ? 'teal' : netMargin > 0 ? 'warning' : netMargin === 0 ? 'navy' : 'negative'
-  const hasExp = ol.expFrom != null && ol.expTo != null && ol.expSeries.length >= 2
-  const expImproving = ol.expDelta != null && ol.expDelta < 0
-  const patUp = patYoY != null && patYoY > 0
-  const patStrong = patYoY != null && patYoY >= 50
-  const marginFit = hasPatTrend ? fitTrend(patSeries) : null
-  const marginUp = marginFit == null ? false : marginFit.slope >= 0
-  const conclusion = patUp || (netMargin != null && netMargin > 0) ? 'Premium growth is starting to translate into profit.' : 'Conversion is still building — watch the spread and expense ratio.'
-
-  return (
-    <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
-      <div className="flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: GOLD }} />
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Conversion Quality</p>
-      </div>
-
-      <div className="mt-4 space-y-4">
-        <div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net margin{netFy ? ` · ${netFy}` : ''}</span>
-              <BasisPill basis={ctx.basis} />
-            </span>
-            <SignalBadge label={hasMargin ? (netMargin! > 5 ? 'Healthy' : netMargin! > 0 ? 'Thin' : 'Loss') : 'Pending'} tone={hasMargin ? netTone : 'navy'} size="sm" />
-          </div>
-          <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="font-display text-[22px] leading-none text-navy-deep">{hasMargin ? `${netMargin!.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending'}</span>
-            {hasPatTrend && (
-              <div className="flex flex-col items-end gap-0.5">
-                <TrendPill label={marginFit == null ? 'Trend pending' : marginUp ? 'Expanding' : 'Easing'} dir={marginFit == null ? 'flat' : marginUp ? 'up' : 'down'} color={marginUp ? GOLD : PALETTE.coral} />
-                <div className="h-[24px] w-[88px] shrink-0">
-                  <MiniPatArea values={patSeries} />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border-t border-[#ECE1C8] pt-3.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Expense ratio{ctx.isIfrs ? ` · ${ctx.pLabel}` : ''}</span>
-            {ctx.isIfrs ? (
-              <SignalBadge label={expSingle == null ? 'NA' : BASIS_LABEL[ctx.basis]} tone="navy" size="sm" />
-            ) : (
-              <SignalBadge label={hasExp ? (expImproving ? 'Improving' : 'Flat') : 'Pending'} tone={hasExp && expImproving ? 'teal' : 'navy'} size="sm" />
-            )}
-          </div>
-          <div className="mt-1 flex items-end justify-between gap-2">
-            <span className="font-display text-[16px] leading-none text-navy-deep">{ctx.isIfrs ? (expSingle == null ? 'NA' : `${expSingle.toFixed(1)}%`) : hasExp ? `${ol.expFrom!.toFixed(1)}% → ${ol.expTo!.toFixed(1)}%` : 'Data pending'}</span>
-            {!ctx.isIfrs && ol.expSeries.length >= 2 && <Sparkline values={ol.expSeries.map((p) => p.expenseRatio as number)} tone="positive" width={70} height={24} />}
-          </div>
-        </div>
-
-        <div className="border-t border-[#ECE1C8] pt-3.5">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT growth · YoY</span>
-            <SignalBadge label={patYoY == null ? 'Pending' : patStrong ? 'Strong' : patUp ? 'Rising' : 'Falling'} tone={patYoY == null ? 'navy' : patUp ? 'positive' : 'negative'} size="sm" />
-          </div>
-          <span className="mt-1 block font-display text-[22px] leading-none text-navy-deep">{patYoY == null ? (ctx.isIfrs ? 'NA' : 'Data pending') : `${patYoY >= 0 ? '+' : ''}${patYoY.toFixed(0)}%`}</span>
-        </div>
-      </div>
-
-      <p className="mt-auto pt-4 text-[10.5px] font-medium leading-snug text-navy-deep/80">{conclusion}</p>
-    </div>
-  )
-}
-
-// ─── (G) Status cards — small, node-scoped signals (only the relevant one) ───
-function CapitalBufferCard({ company }: { company: Insurer }) {
-  const tone: Tone = company.solvency >= 1.8 ? 'positive' : company.solvency >= 1.5 ? 'warning' : 'negative'
-  return (
-    <div className="relative overflow-hidden rounded-lg border border-[#CDE7D8] px-3 py-2.5" style={{ background: 'linear-gradient(135deg, #E9F5EE 0%, #F5FBF8 100%)' }}>
-      <div className="flex items-center justify-between">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/90">Capital Buffer</p>
-        <SignalBadge label={tone === 'positive' ? 'Comfortable' : tone === 'warning' ? 'Adequate' : 'Tight'} tone={tone} size="sm" />
-      </div>
-      <div className="mt-1 flex items-baseline gap-2">
-        <span className="font-display text-[19px] leading-none text-navy-deep">{company.solvency.toFixed(2)}x</span>
-        <span className="text-[9.5px] text-ink-secondary">vs 1.5x floor</span>
-      </div>
-      <div className="mt-1">
-        <MiniSolvencyDial value={company.solvency} />
-      </div>
-    </div>
-  )
-}
-
-function RoeGaugeCard({ company, ctx }: { company: Insurer; ctx: BasisCtx }) {
-  const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-  const roeTone: Tone = roeVal == null ? 'neutral' : roeVal >= 12 ? 'positive' : roeVal >= 5 ? 'warning' : 'negative'
-  return (
-    <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: 'linear-gradient(135deg, #FBF1E5 0%, #FFF9F2 100%)' }}>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · {ctx.isIfrs ? ctx.pLabel : 'FY25'}</p>
-        <BasisPill basis={ctx.basis} />
-      </div>
-      <p className="mt-0.5 font-display text-[26px] leading-none text-navy-deep">{roeVal == null ? 'NA' : `${roeVal.toFixed(1)}%`}</p>
-      <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
-        {roeVal == null ? (ctx.isIfrs ? 'Not available on this basis' : 'Return pending') : roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
-      </p>
-      {ctx.isIfrs && <p className="text-[8.5px] leading-snug text-ink-secondary">ROE not reported on IFRS (no IFRS equity) — shown as NA, not derived.</p>}
-      <SemiGauge
-        value={roeVal ?? 0}
-        min={0}
-        max={22}
-        unit="%"
-        zones={[
-          { from: 0, to: 5, color: PALETTE.coral },
-          { from: 5, to: 12, color: PALETTE.amber },
-          { from: 12, to: 22, color: PALETTE.emerald },
-        ]}
-        size={150}
-      />
-    </div>
-  )
-}
-
-// ─── Per-node Investor Read — So what? / Why / What it means / Watch next ─────
-interface NodeRead {
-  soWhat: string
-  why: string
-  meaning: string
-  watch: string
-}
-
-function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId, NodeRead> {
-  const hasCR = company.combinedRatio > 0
-  const cost = COST_RATIOS[company.id]
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const roe = company.roe
-  const solvency = company.solvency
-  const costAbsorb = cost ? cost.loss + cost.commission + cost.expense : null
-
-  return {
-    underwriting: {
-      soWhat: !hasCR
-        ? `${company.shortName} is a life carrier — combined ratio does not apply; returns and capital carry the read.`
-        : company.combinedRatio < 100
-          ? 'Underwriting discipline has improved because total insurance cost is below premium received.'
-          : 'Underwriting discipline is the watch-item — total insurance cost is above premium received.',
-      why: costAbsorb != null
-        ? 'Claims, commission and opex are staying inside the ₹100 premium base.'
-        : 'Claims and cost split is not reported on this basis.',
-      meaning: !hasCR
-        ? 'Profitability is read through returns and capital instead of combined ratio.'
-        : company.combinedRatio < 100
-          ? 'The company is no longer relying only on investment income to show profit.'
-          : 'Reported profit is leaning on investment income, not underwriting.',
-      watch: 'Claims ratio, expense ratio and whether combined ratio stays below 100%.',
-    },
-    core: {
-      soWhat: uw == null
-        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
-        : uw > 0
-          ? 'Core underwriting has turned profitable as combined ratio moved below 100%.'
-          : 'Core underwriting is still in loss; reported profit leans on investment income.',
-      why: uw == null ? 'Needs reported NEP and combined ratio to size core operating profit.' : `Underwriting result ≈ NEP × (1 − combined ratio) = ${crc(uw)}.`,
-      meaning: 'This is profit from insurance itself, before any investment income.',
-      watch: 'Whether underwriting profit compounds as premium scales.',
-    },
-    conversion: {
-      soWhat: uw != null && uw > 0
-        ? 'Premium growth is converting into reported profit, but the conversion is still thin.'
-        : 'Premium is not yet converting into underwriting profit; reported profit leans on investment income.',
-      why: 'Claims, commission and opex still absorb most of the premium base.',
-      meaning: 'Improving expense leverage can expand profit conversion if claims stay controlled.',
-      watch: 'PAT margin, claims ratio, expense ratio and underwriting profit.',
-    },
-    returns: {
-      soWhat: roe <= 0 ? 'Return on equity is pending for this carrier.' : 'ROE is improving, but it is not yet a mature high-return profile.',
-      why: 'PAT growth and margin improvement are helping, while the large capital base still dilutes returns.',
-      meaning: 'Future ROE expansion depends on profit compounding faster than equity growth.',
-      watch: 'PAT growth, ROE trend, solvency and capital deployment.',
-    },
-    capital: {
-      soWhat: solvency > 0
-        ? `${solvency.toFixed(2)}x solvency gives growth support and resilience versus the 1.5x regulatory floor.`
-        : 'Solvency is pending for this carrier.',
-      why: solvency > 0 ? `A cushion of ${(solvency - 1.5).toFixed(2)}x above the 1.5x regulatory floor.` : 'Awaiting reported solvency ratio.',
-      meaning: 'Strong capital funds growth without near-term capital-raise risk.',
-      watch: 'Quarterly solvency trajectory as growth consumes capital.',
-    },
-  }
-}
-
-function NodeInvestorRead({ read, accent, src, period, ctx }: { read: NodeRead; accent: string; src: ResolvedSource; period?: string; ctx: BasisCtx }) {
-  const lines = [
-    { label: 'Why', value: read.why },
-    { label: 'What it means', value: read.meaning },
-    { label: 'Watch next', value: read.watch },
-  ]
-  return (
-    <section className="card-surface relative overflow-hidden p-4" style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 125%)` }}>
-      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${accent} 100%)` }} />
-      <div className="pl-2.5">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
-        <h3 className="mt-0 font-display text-[15px] leading-tight text-navy-deep">So what?</h3>
-        <p className="mt-1.5 max-w-3xl text-[12px] font-medium leading-relaxed text-navy-deep">{read.soWhat}</p>
-        {ctx.isIfrs && (
-          <p className="mt-1.5 max-w-3xl text-[11px] leading-relaxed text-ink-secondary">
-            Figures shown on the <span className="font-semibold text-navy-deep">IFRS</span> basis ({ctx.pLabel}). PAT can read very differently on IGAAP / Statutory vs IFRS — see the “PAT by Accounting Basis” card in the Profit conversion stage.
-          </p>
+    )
+  } else if (id === 'conversion' && view.patMargin != null) {
+    body = (
+      <div className="space-y-4">
+        {view.combinedRatio != null && (
+          <RupeeEngine claims={view.claimsRatio} expense={view.expenseRatio} combined={view.combinedRatio} output={{ label: 'PAT margin', value: pct(view.patMargin) }} />
         )}
-        <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 sm:grid-cols-[120px_1fr]">
-          {lines.map((line) => (
-            <div key={line.label} className="contents">
-              <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
-              <dd className="text-[11.5px] leading-relaxed text-navy-deep/85">{line.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
-          <span className="inline-flex items-center gap-1.5">
-            <BasisPill basis={ctx.basis} />
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{ctx.isIfrs && ctx.pat == null ? 'Not available' : 'Official'}</span>
-          </span>
-          {ctx.isIfrs ? (
-            <SourceTag source={ctx.sourceLabel} period={ctx.pLabel} confidence="high" />
-          ) : (
-            <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
-          )}
+        <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+          <div>{bars({ points: view.patSeries.map((p) => ({ label: p.label, v: p.pat })), accent: GOLD, unit: 'cr' })}</div>
+          <div className="grid grid-cols-1 gap-2 content-start">
+            <Chip label="PAT margin" value={pct(view.patMargin)} tone={view.patMargin > 5 ? 'teal' : view.patMargin > 0 ? 'warning' : 'negative'} />
+            {view.patGrowth != null && <Chip label="PAT growth · YoY" value={`${view.patGrowth >= 0 ? '+' : ''}${view.patGrowth.toFixed(0)}%`} tone={view.patGrowth >= 0 ? 'positive' : 'negative'} />}
+            {view.pat != null && <Chip label="PAT" value={crc(view.pat)} />}
+          </div>
         </div>
+        {hasBasisData(company.id) && <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis={view.basis} onOpenDetail={onOpenDetail} />}
       </div>
-    </section>
-  )
-}
-
-// ─── Detail panel — one focused, stage-coloured drill-down per selected node ──
-// Every stage renders the same shell: an Active-lens header, a tight analysis
-// grid whose cards inherit the stage tint, then a single Investor Read with the
-// source/basis strip. No cross-stage cards; missing data shows "Data pending".
-
-type ChipTone = 'positive' | 'warning' | 'negative' | 'navy' | 'teal'
-
-interface LensMeta {
-  label: string
-  line: string
-  accent: string
-  cardBg: string
-  cardBorder: string
-  headFrom: string
-  headTo: string
-  headBorder: string
-  source: string
-  period?: string
-  confidence: 'high' | 'medium' | 'pending'
-}
-
-const LENS: Record<NodeId, LensMeta> = {
-  underwriting: {
-    label: 'Underwriting discipline',
-    line: 'Does the carrier keep claims and costs inside every ₹100 of premium?',
-    accent: PALETTE.emerald,
-    cardBg: '#F4FAF6',
-    cardBorder: '#DCEDE3',
-    headFrom: '#EAF5EE',
-    headTo: '#F6FBF8',
-    headBorder: '#D2E8DC',
-    source: 'IRDAI disclosures · derived',
-    period: 'Q1–Q4 FY25',
-    confidence: 'high',
-  },
-  core: {
-    label: 'Core profitability',
-    line: 'Is underwriting itself turning a profit, before investment income?',
-    accent: PALETTE.teal,
-    cardBg: '#F0F8F7',
-    cardBorder: '#D2E8E6',
-    headFrom: '#E5F4F3',
-    headTo: '#F4FBFA',
-    headBorder: '#C9E5E3',
-    source: 'Company filing · derived',
-    period: 'FY series',
-    confidence: 'high',
-  },
-  conversion: {
-    label: 'Profit conversion',
-    line: 'How much of premium growth reaches reported profit?',
-    accent: GOLD,
-    cardBg: '#FCF7EA',
-    cardBorder: '#ECE1C8',
-    headFrom: '#FAF2E1',
-    headTo: '#FFFDF8',
-    headBorder: '#EADFC2',
-    source: 'Company filing + IRDAI disclosures',
-    period: 'FY25',
-    confidence: 'high',
-  },
-  returns: {
-    label: 'Shareholder return',
-    line: 'What return does that profit earn for shareholders?',
-    accent: ORANGE,
-    cardBg: '#FCF4EC',
-    cardBorder: '#EFDDCB',
-    headFrom: '#FBEFE4',
-    headTo: '#FFF9F3',
-    headBorder: '#EFD9C4',
-    source: 'Company filing',
-    period: 'Q1–Q4 FY25',
-    confidence: 'high',
-  },
-  capital: {
-    label: 'Capital support',
-    line: 'Is there enough capital cushion to fund growth safely?',
-    accent: DEEP_GREEN,
-    cardBg: '#EFF7F2',
-    cardBorder: '#CFE7DA',
-    headFrom: '#E7F4ED',
-    headTo: '#F5FBF8',
-    headBorder: '#CCE5D8',
-    source: 'IRDAI disclosures',
-    period: 'FY25',
-    confidence: 'high',
-  },
-}
-
-function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: ChipTone } {
-  if (id === 'underwriting') {
-    const cr = ctx.isIfrs ? ctx.combinedRatio : company.combinedRatio > 0 ? company.combinedRatio : null
-    if (cr == null) return { label: ctx.isIfrs ? 'NA' : 'N/A', tone: 'navy' }
-    return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    )
+  } else if (id === 'returns' && view.roe != null) {
+    body = (
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-xl border p-4" style={{ background: '#FBF1E5', borderColor: '#EFD9C4' }}>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-navy-primary">ROE · {view.pointLabel}</p>
+          <p className="mt-0.5 font-display text-[24px] leading-none text-navy-deep">{pct(view.roe)}</p>
+          <SemiGauge value={view.roe} max={22} unit="%" zones={[{ from: 0, to: 5, color: PALETTE.coral }, { from: 5, to: 12, color: PALETTE.amber }, { from: 12, to: 22, color: PALETTE.emerald }]} />
+        </div>
+        <div className="content-center">{bars({ points: view.patSeries.map((p) => ({ label: p.label, v: p.pat })), accent: ORANGE, unit: 'cr' })}</div>
+      </div>
+    )
+  } else if (id === 'capital' && view.solvency != null) {
+    const cushion = Math.round((view.solvency - 1.5) * 100) / 100
+    body = (
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-xl border p-4" style={{ background: '#EFF7F2', borderColor: '#CFE7DA' }}>
+          <div className="flex items-center justify-between">
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-emerald-700/90">Solvency</p>
+            {view.solvencyIsStatutory && <span className="rounded-md border border-soft-border bg-ice/70 px-1.5 py-0.5 text-[9px] font-medium text-ink-secondary">statutory</span>}
+          </div>
+          <p className="mt-1 font-display text-[26px] leading-none text-navy-deep">{view.solvency.toFixed(2)}x</p>
+          <p className="mt-0.5 text-[10px] text-ink-secondary">+{cushion.toFixed(2)}x above the 1.5x floor</p>
+        </div>
+        <SemiGauge value={view.solvency} max={3.5} unit="x" zones={[{ from: 0, to: 1.5, color: PALETTE.coral }, { from: 1.5, to: 2, color: PALETTE.amber }, { from: 2, to: 3.5, color: PALETTE.emerald }]} />
+      </div>
+    )
   }
-  if (id === 'core') {
-    if (ctx.isIfrs) return { label: 'NA', tone: 'navy' }
-    const latest = series[series.length - 1] as AnnualPoint | undefined
-    const uw = latest ? underwritingResult(latest) : null
-    return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'In profit', tone: 'teal' } : { label: 'In loss', tone: 'negative' }
-  }
-  if (id === 'conversion') {
-    const pm = ctx.isIfrs ? ctx.patMargin : getMarginMetrics(series).netMargin
-    if (pm == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
-    return pm > 5 ? { label: 'Healthy', tone: 'teal' } : pm > 0 ? { label: 'Thin', tone: 'warning' } : { label: 'Loss', tone: 'negative' }
-  }
-  if (id === 'returns') {
-    const roe = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-    if (roe == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
-    return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'warning' } : { label: 'Sub-CoC', tone: 'negative' }
-  }
-  return company.solvency <= 0 ? { label: 'Pending', tone: 'navy' } : company.solvency >= 2 ? { label: 'Comfortable', tone: 'positive' } : company.solvency >= 1.5 ? { label: 'Adequate', tone: 'warning' } : { label: 'Tight', tone: 'negative' }
-}
-
-function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string; tone: ChipTone } }) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border px-4 py-3" style={{ borderColor: meta.headBorder, background: `linear-gradient(135deg, ${meta.headFrom} 0%, ${meta.headTo} 100%)` }}>
-      <span className="absolute inset-y-0 left-0 w-1" style={{ background: meta.accent }} />
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 pl-2.5">
-        <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-champagne">Active lens</p>
-          <h3 className="font-display text-[15px] leading-tight text-navy-deep">{meta.label}</h3>
-          <p className="mt-0.5 max-w-xl text-[11px] leading-snug text-ink-secondary">{meta.line}</p>
-        </div>
-        <SignalBadge label={status.label} tone={status.tone} size="sm" />
-      </div>
-    </div>
-  )
-}
-
-// Underwriting "Combined Ratio Discipline Engine" — a ₹100 premium container
-// fills with claims + commission + opex; if the cost stack stays under the 100%
-// break-even line, the gap is the underwriting surplus. The headline combined
-// ratio is the authoritative snapshot value (company.combinedRatio), never the
-// re-summed components, so the page reads one consistent number.
-function CombinedRatioWaterfall({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const cost = COST_RATIOS[company.id]
-  // Focal company: lead with the IRDAI statutory combined ratio (verified from
-  // quarterly filings), keeping the company-reported number alongside. Peers
-  // stay on the company-reported seed value.
-  const stat = STATUTORY_CR[company.id]
-  const hasCR = stat != null || company.combinedRatio > 0
-  const crSeries = COMBINED_RATIO_QUARTERS[company.id]
-  const [view, setView] = useState<TrendView>('Yearly')
-  // Yearly trajectory: statutory annual series for the focal company, else the
-  // header-range snapshot series. Quarterly: real statutory standalone quarters
-  // for the focal company, else the (mock) quarterly drift.
-  const yearPoints = stat
-    ? stat.annual.map((p) => ({ label: p.fy, cr: p.cr as number | null }))
-    : series.map((p) => ({ label: p.fy, cr: p.combinedRatio }))
-  const quarterPoints = stat
-    ? stat.quarters.map((q) => ({ label: q.label, cr: q.cr as number | null }))
-    : crSeries
-      ? QUARTER_LABELS.map((label, i) => ({ label, cr: crSeries[i] }))
-      : []
-  const trajPoints = view === 'Yearly' ? yearPoints : quarterPoints
-  const yearsWithCR = yearPoints.filter((p) => p.cr != null).length
-  // Authoritative combined ratio anchors the whole section (statutory for focal).
-  const cr = stat ? stat.statutory : hasCR ? company.combinedRatio : null
-  const surplus = cr != null ? Math.round((100 - cr) * 10) / 10 : null
-  const below = surplus != null && surplus > 0
-  const crColor = cr == null ? PALETTE.navy : cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
-
-  // Cost components (real ratios). The chamber widths are proportional to the
-  // real ratios; the combined-ratio output uses the authoritative snapshot value.
-  const chambers = cost
-    ? [
-        { key: 'claims', label: 'Claims', sub: 'Largest cost absorber', raw: cost.loss, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' },
-        { key: 'comm', label: 'Commission', sub: 'Distribution cost', raw: cost.commission, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE' },
-        { key: 'opex', label: 'Opex', sub: 'Operating cost', raw: cost.expense, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' },
-      ]
-    : []
-  const maxRaw = chambers.length ? Math.max(...chambers.map((c) => c.raw)) : 1
-
-  return (
-    <div className="rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Discipline Engine</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Combined Ratio Discipline Engine</h3>
-        </div>
-        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
-      </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">For every ₹100 of premium, costs are absorbed — what stays below 100% is underwriting surplus.</p>
-
-      {cost && cr != null ? (
-        <>
-          {/* Engine flow: ₹100 base → cost chambers → combined-ratio output → surplus.
-              Scrolls horizontally on narrow screens so labels never truncate. */}
-          <div className="mt-4 -mx-1 overflow-x-auto px-1 pb-1">
-            <div className="flex items-stretch gap-1.5">
-              {/* Premium base — the input */}
-              <div className="flex w-[84px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
-                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.08em]" style={{ color: '#E9D49A' }}>Premium base</span>
-                <span className="mt-1 font-display text-[22px] leading-none">₹100</span>
-                <span className="mt-1 text-[8px] leading-tight text-white/70">received</span>
-              </div>
-
-              {/* Cost chambers — width ∝ amount absorbed; the meter shows relative weight */}
-              <div className="flex min-w-0 flex-1 items-stretch gap-1.5">
-                {chambers.map((c, i) => (
-                  <Fragment key={c.key}>
-                    {i > 0 && <span className="flex w-2.5 shrink-0 items-center justify-center text-[12px] font-bold text-ink-secondary/40">−</span>}
-                    <div
-                      className="flex flex-col justify-between rounded-xl border px-2.5 py-2"
-                      style={{ background: c.bg, borderColor: c.border, flexGrow: c.raw, flexBasis: 0, minWidth: 92 }}
-                    >
-                      <div className="flex items-start gap-1">
-                        <span className="mt-[3px] h-1.5 w-1.5 shrink-0 rounded-sm" style={{ background: c.color }} />
-                        <span className="text-[8.5px] font-bold uppercase leading-tight tracking-[0.04em] text-navy-deep">{c.label}</span>
-                      </div>
-                      <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: c.color }}>₹{c.raw.toFixed(1)}</span>
-                      {/* absorption meter — visual weight of this cost */}
-                      <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-white/70">
-                        <div className="h-full rounded-full" style={{ width: `${(c.raw / maxRaw) * 100}%`, background: c.color }} />
-                      </div>
-                      <span className="mt-1 text-[8px] leading-tight text-ink-secondary">{c.sub}</span>
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-
-              {/* Combined ratio — the central output card, against the break-even */}
-              <span className="flex w-2.5 shrink-0 items-center justify-center text-[12px] font-bold" style={{ color: crColor }}>=</span>
-              <div className="relative flex w-[100px] shrink-0 flex-col items-center justify-center rounded-xl border-2 bg-white px-2 py-2.5 text-center" style={{ borderColor: crColor, boxShadow: `0 10px 22px ${crColor}33` }}>
-                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.06em] text-ink-secondary">Combined ratio</span>
-                <span className="mt-1 font-display text-[24px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
-                <span className="mt-1 inline-flex items-center gap-0.5 text-[8px] font-semibold" style={{ color: PALETTE.amber }}>
-                  <span className="inline-block h-0 w-3 border-t border-dashed" style={{ borderColor: PALETTE.amber }} /> vs 100%
-                </span>
-              </div>
-
-              {/* Surplus — the positive outcome */}
-              <span className="flex w-2.5 shrink-0 items-center justify-center text-[14px] font-bold" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>→</span>
-              <div className="flex w-[96px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: below ? `linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)` : '#FBEFEF', borderColor: below ? '#BFE0CE' : '#EFD4D3', boxShadow: below ? `0 12px 24px ${PALETTE.emerald}33` : undefined }}>
-                <span className="text-[8px] font-bold uppercase leading-tight tracking-[0.06em]" style={{ color: below ? '#1C5C3F' : '#9A3B39' }}>{below ? 'Surplus' : 'Deficit'}</span>
-                <span className="mt-1 font-display text-[22px] leading-none" style={{ color: below ? PALETTE.emerald : PALETTE.coral }}>{below ? '+' : ''}{(surplus as number).toFixed(1)}%</span>
-                <span className="mt-1 text-[8px] leading-tight text-ink-secondary">below 100%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* One-line read of the flow */}
-          <p className="mt-3 flex items-center gap-1.5 text-[10.5px] leading-snug text-navy-deep/85">
-            <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
-            {below ? `Claims, commission and opex absorb ₹${cr.toFixed(1)} of every ₹100 — the remaining ₹${(surplus as number).toFixed(1)} is underwriting surplus, before any investment income.` : `Costs absorb more than the ₹100 premium received — underwriting is loss-making before investment income.`}
-          </p>
-
-          {stat && (
-            <p className="mt-1.5 text-[9.5px] leading-snug text-ink-secondary">
-              Shown on the <span className="font-semibold text-navy-deep">IRDAI statutory (public-disclosure)</span> basis: the claims, commission and opex split above are the real FY25 ratios and sum to the {stat.statutory.toFixed(1)}% statutory combined ratio. The company-reported combined ratio for {stat.reportedFY} is {stat.reported.toFixed(1)}% (a slightly different basis).
-            </p>
-          )}
-
-          {hasCR && (
-            <div className="mt-4 border-t border-[#DCEDE3] pt-3">
-              <div className="mb-1.5 flex items-center justify-between gap-2">
-                <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">
-                  {view === 'Yearly' ? 'Combined ratio trajectory · by year' : stat ? 'Combined ratio · by quarter · statutory' : 'Combined ratio trajectory · Q1–Q4 FY25'}
-                </p>
-                <TrendViewToggle value={view} onChange={setView} accent={PALETTE.emerald} />
-              </div>
-              {view === 'Yearly' && yearsWithCR < 2 ? (
-                <PendingNote>Pick a wider year range in the header to see the combined-ratio trend — only one reported year is in range.</PendingNote>
-              ) : (
-                <CombinedRatioBandedTrend points={trajPoints} />
-              )}
-              {stat && (
-                <div className="mt-2 flex items-center justify-between gap-2">
-                  <p className="text-[9px] leading-snug text-ink-secondary">{view === 'Yearly' ? 'Full-year statutory combined ratio (YTD basis), per IRDAI filings.' : 'Standalone-quarter statutory combined ratio — seasonal swing (Q1 peak, Q4 trough).'}</p>
-                  <SourceTag source="IRDAI public disclosures" period={`${stat.statutoryFY}–FY26`} confidence="high" provenance={{ source_name: 'Niva Bupa quarterly public disclosures (IRDAI NL-form)', source_url: stat.sourceUrl }} />
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="mt-3">
-          <PendingNote>{`${company.shortName} reports on a life basis — the combined-ratio build-up needs a P&C claims / commission / opex split. Data pending.`}</PendingNote>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Underwriting proof rail — three compact proof blocks (claims ratio, expense
-// ratio, combined-ratio trend) with a self-funding conclusion. Balanced height,
-// no large empty gaps.
-function DisciplineQuality({ company, ctx }: { company: Insurer; ctx: BasisCtx }) {
-  const cost = COST_RATIOS[company.id]
-  // On IGAAP/IFRS, claims & expense come straight from the basis dataset (single
-  // period); on Reported they use the statutory cost split. The combined-ratio
-  // trend block below stays on the statutory quarterly basis (labelled).
-  const claimsVal = ctx.isIfrs ? ctx.claimsRatio : cost ? cost.loss : null
-  const expenseVal = ctx.isIfrs ? ctx.expenseRatio : cost ? cost.commission + cost.expense : null
-  // Real statutory standalone quarters for the focal company, else mock drift.
-  const stat = STATUTORY_CR[company.id]
-  const qvals = stat ? stat.quarters.map((q) => q.cr) : (COMBINED_RATIO_QUARTERS[company.id] ?? null)
-  const q1 = qvals ? qvals[0] : null
-  const q4 = qvals ? qvals[qvals.length - 1] : null
-  const improving = q1 != null && q4 != null && q4 < q1
-  const trendNote = stat ? `${stat.quarters[0].label} → ${stat.quarters[stat.quarters.length - 1].label} · statutory` : 'Q1 → Q4 FY25'
-  const blocks: { label: string; value: string; note: string; chip: { label: string; tone: ChipTone }; spark?: number[] }[] = [
-    {
-      label: 'Claims ratio',
-      value: claimsVal != null ? `${claimsVal.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending',
-      note: ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Largest cost absorber',
-      chip: claimsVal != null ? (claimsVal > 70 ? { label: 'Above ~70%', tone: 'warning' } : { label: 'Below ~70%', tone: 'positive' }) : { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' },
-    },
-    {
-      label: 'Expense ratio',
-      value: expenseVal != null ? `${expenseVal.toFixed(1)}%` : ctx.isIfrs ? 'NA' : 'Data pending',
-      note: ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} · ${ctx.pLabel}` : 'Commission + opex',
-      chip: { label: ctx.isIfrs ? BASIS_LABEL[ctx.basis] : 'Cost base', tone: 'navy' },
-    },
-    {
-      label: 'Combined ratio trend',
-      value: q1 != null && q4 != null ? `${q1.toFixed(1)}% → ${q4.toFixed(1)}%` : 'Data pending',
-      note: trendNote,
-      chip: q1 != null && q4 != null ? (improving ? { label: 'Improving', tone: 'teal' } : { label: 'Flat', tone: 'navy' }) : { label: 'Pending', tone: 'navy' },
-      spark: qvals ?? undefined,
-    },
-  ]
-  return (
-    <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F4FAF6', borderColor: '#DCEDE3' }}>
-      <div className="flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.emerald }} />
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Discipline Quality</p>
-      </div>
-      <div className="mt-3 flex flex-1 flex-col gap-2.5">
-        {blocks.map((b) => (
-          <div key={b.label} className="rounded-lg border border-[#DCEDE3] bg-white/70 px-3 py-2.5">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{b.label}</span>
-              <SignalBadge label={b.chip.label} tone={b.chip.tone} size="sm" />
-            </div>
-            <div className="mt-1 flex items-end justify-between gap-2">
-              <span className="font-display text-[18px] leading-none text-navy-deep">{b.value}</span>
-              {b.spark && b.spark.length >= 2 && <Sparkline values={b.spark} tone="positive" width={64} height={22} />}
-            </div>
-            <span className="mt-0.5 block text-[9px] text-ink-secondary">{b.note}</span>
-          </div>
-        ))}
-      </div>
-      <div className="mt-3 flex items-start gap-1.5 rounded-lg px-3 py-2" style={{ background: `${PALETTE.emerald}12` }}>
-        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: PALETTE.emerald }} />
-        <p className="text-[10.5px] font-medium leading-snug text-navy-deep/85">Costs stayed inside ₹100 of premium — the book is self-funding.</p>
-      </div>
-    </div>
-  )
-}
-
-// Shareholder-return "PAT-to-ROE Return Bridge" — the drivers that build ROE
-// flow left→right into the ROE output; the large capital base is the drag.
-// Shareholder-return "PAT-to-ROE Return Engine" — a rising PAT pool feeds three
-// lifting boosters (PAT growth, margin, operating leverage); the large capital
-// base is a visible drag/weight; the result lands in the ROE output. Lift/drag
-// is shown by block offset (boosters sit high, the drag sits low) so the story
-// reads instantly: profit is improving, ROE still early because capital is large.
-function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const mm = getMarginMetrics(series)
-  const ol = operatingLeverage(company, series)
-  const patSeries = realPatValues(series)
-  const hasPatTrend = patSeries.length >= 2
-  const hasPat = patSeries.length >= 1
-  const roe = company.roe
-  const roeModerate = roe > 0 && roe < 10
-
-  const boosters = [
-    { key: 'patg', kicker: 'Booster', label: 'PAT growth', value: ol.patYoY == null ? 'n/a' : `${ol.patYoY >= 0 ? '+' : ''}${ol.patYoY.toFixed(0)}%`, sub: 'Profit pool expanding', color: PALETTE.emerald, bg: '#EAF5EE', border: '#CFE7DA' },
-    { key: 'margin', kicker: 'Booster', label: 'Net margin', value: mm.netMargin != null ? `${mm.netMargin.toFixed(1)}%` : 'n/a', sub: 'Conversion improving', color: GOLD, bg: '#FBF1D8', border: '#E9D49A' },
-    { key: 'lev', kicker: 'Booster', label: 'Op. leverage', value: ol.expDelta == null ? 'n/a' : ol.expDelta < 0 ? `↓${Math.abs(ol.expDelta).toFixed(1)}pp` : `↑${ol.expDelta.toFixed(1)}pp`, sub: 'Expenses easing', color: PALETTE.teal, bg: '#E7F4F3', border: '#C9E5E3' },
-  ]
-
-  return (
-    <div className="rounded-xl border p-4" style={{ background: '#FCF4EC', borderColor: '#EFDDCB' }}>
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Return Engine</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">PAT-to-ROE Return Engine</h3>
-        </div>
-        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
-      </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Rising profit and its boosters lift the return; the large capital base drags it back before ROE.</p>
-
-      <div className="mt-4 flex items-stretch gap-2">
-        {/* Rising PAT pool — the source */}
-        <div className="flex w-[96px] shrink-0 flex-col justify-between rounded-xl px-3 py-3 text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.emerald} 0%, #1F6B49 100%)` }}>
-          <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-white/85">PAT pool</span>
-          <div className="mt-2">
-            {hasPatTrend ? <Sparkline values={patSeries} tone="positive" width={70} height={22} /> : null}
-            <span className="mt-1 block font-display text-[15px] leading-none text-white">{hasPat ? `₹${patSeries[patSeries.length - 1]} Cr` : 'n/a'}</span>
-            <span className="text-[8px] text-white/75">{mm.latestFy ? `${mm.latestFy} · reported` : 'pending'}</span>
-          </div>
-        </div>
-
-        {/* Boosters lift; capital base drags — central engine */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex flex-1 items-stretch gap-1.5">
-            {boosters.map((b, i) => (
-              <div key={b.key} className="flex flex-1 flex-col">
-                <div className="mb-0.5 flex items-center justify-center"><TrendingUp className="h-3 w-3" style={{ color: b.color }} /></div>
-                <div className="flex flex-1 flex-col justify-between rounded-xl border px-2.5 py-2" style={{ background: b.bg, borderColor: b.border, marginTop: i === 1 ? 0 : 6 }}>
-                  <span className="truncate text-[8px] font-bold uppercase tracking-[0.05em] text-ink-secondary">{b.label}</span>
-                  <span className="mt-1.5 font-display text-[16px] leading-none" style={{ color: b.color }}>{b.value}</span>
-                  <span className="mt-1 block text-[8px] leading-tight text-ink-secondary">{b.sub}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Capital base — the drag/weight, sitting low and full-width */}
-          <div className="mt-2 flex items-center justify-between rounded-xl border px-3 py-2" style={{ background: '#F1F3F7', borderColor: '#DBE0E8' }}>
-            <span className="inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.05em] text-ink-secondary">
-              <TrendingDown className="h-3 w-3" style={{ color: '#8A93A6' }} />
-              Capital base drag
-            </span>
-            <span className="font-display text-[13px] leading-none text-[#6B7488]">Large · post-IPO</span>
-          </div>
-        </div>
-
-        {/* Arrow + ROE output destination */}
-        <div className="flex shrink-0 items-center"><ChevronRight className="h-5 w-5" style={{ color: ORANGE }} /></div>
-        <div className="flex w-[110px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #FBEFE4 0%, #FFF7F0 100%)', borderColor: '#EFD9C4', boxShadow: `0 14px 28px ${ORANGE}3a` }}>
-          <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#9A5A1E' }}>ROE output</span>
-          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: ORANGE }}>{roe > 0 ? `${roe.toFixed(1)}%` : 'n/a'}</span>
-          <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">Early return signal</span>
-        </div>
-      </div>
-
-      <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">{roeModerate ? 'ROE is improving as PAT scales, but stays moderate because the post-IPO capital base is still large.' : roe > 0 ? 'ROE is scaling with profitability as PAT compounds against the equity base.' : 'ROE drivers are pending for this carrier.'}</p>
-    </div>
-  )
-}
-
-// Capital "Solvency Cushion Bridge" — floor + cushion = solvency, over a comfort
-// reservoir that fills toward the carrier's solvency.
-function SolvencyCushionBridge({ company }: { company: Insurer }) {
-  const s = company.solvency
-  const floor = 1.5
-  const cushion = s > 0 ? Math.round((s - floor) * 100) / 100 : null
-  const MINS = 1
-  const MAXS = 3.6
-  const pct = (v: number) => Math.max(0, Math.min(100, ((v - MINS) / (MAXS - MINS)) * 100))
-  return (
-    <div className="rounded-xl border p-4" style={{ background: '#EFF7F2', borderColor: '#CFE7DA' }}>
-      <div className="flex items-baseline justify-between">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cushion Bridge</p>
-          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Solvency Cushion Bridge</h3>
-        </div>
-        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
-      </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How far capital sits above the 1.5x regulatory floor.</p>
-
-      {s > 0 && cushion != null ? (
-        <>
-          <div className="mt-3.5 flex items-stretch gap-2">
-            <div className="flex flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: '#FBEFEF', borderColor: '#EFD4D3' }}>
-              <span className="text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">Regulatory floor</span>
-              <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: PALETTE.coral }}>1.50x</span>
-            </div>
-            <div className="flex shrink-0 items-center px-0.5"><span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold shadow-sm" style={{ borderColor: '#CFE7DA', color: DEEP_GREEN }}>+</span></div>
-            <div className="flex flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: '#E9F5EE', borderColor: '#CDE7D8' }}>
-              <span className="text-[8px] font-bold uppercase tracking-[0.06em] text-ink-secondary">Cushion above floor</span>
-              <span className="mt-1.5 font-display text-[18px] leading-none" style={{ color: DEEP_GREEN }}>+{cushion.toFixed(2)}x</span>
-            </div>
-            <div className="flex shrink-0 items-center px-0.5"><span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold shadow-sm" style={{ borderColor: '#CFE7DA', color: DEEP_GREEN }}>=</span></div>
-            <div className="flex w-[100px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #E3F3EA 0%, #F3FBF7 100%)', borderColor: '#BFE0CE', boxShadow: `0 12px 26px ${DEEP_GREEN}33` }}>
-              <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#1C5C3F' }}>Solvency</span>
-              <span className="mt-1 font-display text-[24px] leading-none" style={{ color: DEEP_GREEN }}>{s.toFixed(2)}x</span>
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <div className="relative h-3 w-full overflow-hidden rounded-full ring-1 ring-soft-border/60">
-              <div className="absolute inset-y-0 left-0" style={{ width: `${pct(1.5)}%`, background: PALETTE.coral, opacity: 0.26 }} />
-              <div className="absolute inset-y-0" style={{ left: `${pct(1.5)}%`, width: `${pct(2) - pct(1.5)}%`, background: PALETTE.amber, opacity: 0.26 }} />
-              <div className="absolute inset-y-0" style={{ left: `${pct(2)}%`, right: 0, background: PALETTE.emerald, opacity: 0.26 }} />
-              <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct(s)}%`, background: DEEP_GREEN, opacity: 0.5 }} />
-              <div className="absolute inset-y-[-2px] w-[3px] -translate-x-1/2 rounded-full" style={{ left: `${pct(1.5)}%`, background: PALETTE.coral, boxShadow: '0 0 0 2px #fff' }} />
-              <div className="absolute inset-y-[-2px] w-[3px] -translate-x-1/2 rounded-full" style={{ left: `${pct(s)}%`, background: DEEP_GREEN, boxShadow: '0 0 0 2px #fff' }} />
-            </div>
-            <div className="mt-1.5 flex flex-wrap gap-x-3.5 gap-y-1 text-[9px] text-ink-secondary">
-              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.coral }} />Floor 1.5x</span>
-              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: PALETTE.amber }} />Sector ~2.1x</span>
-              <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-sm" style={{ background: DEEP_GREEN }} />Comfort zone</span>
-            </div>
-          </div>
-        </>
-      ) : (
-        <div className="mt-3">
-          <PendingNote>{`Solvency is pending for ${company.shortName}.`}</PendingNote>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Reusable closing insight strip — one soft, stage-tinted takeaway line.
-function InsightStrip({ line, accent }: { line: string; accent: string }) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: `${accent}10`, borderColor: `${accent}3a` }}>
-      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: accent }} />
-      <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{line}</p>
-    </div>
-  )
-}
-
-// Core-profitability proof rail — the derived underwriting result headline.
-function CoreResultCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const hasCR = company.combinedRatio > 0
-  return (
-    <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F0F8F7', borderColor: '#D2E8E6' }}>
-      <div className="flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.teal }} />
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Core Result</p>
-      </div>
-      <div className="mt-3">
-        <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Underwriting result · FY</p>
-        <p className="mt-0.5 font-display text-[24px] leading-none" style={{ color: uw == null ? '#94A3B8' : uw >= 0 ? PALETTE.teal : PALETTE.coral }}>{uw == null ? 'Data pending' : crc(uw)}</p>
-        <p className="mt-1 text-[9.5px] text-ink-secondary">≈ NEP × (1 − combined ratio)</p>
-      </div>
-      <div className="mt-3 flex items-center justify-between border-t border-[#D2E8E6] pt-2.5">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio</span>
-        <span className="font-display text-[15px] text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'n/a'}</span>
-      </div>
-      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Profit from insurance itself, before any investment income.</p>
-    </div>
-  )
-}
-
-// One-line proof takeaway per lens (real values; honest pending states).
-function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): string {
-  const hasCR = company.combinedRatio > 0
-  const cost = COST_RATIOS[company.id]
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const uwSpread = cost ? Math.round((100 - (cost.loss + cost.commission + cost.expense)) * 10) / 10 : null
-  const ol = operatingLeverage(company, series)
-  switch (id) {
-    case 'underwriting':
-      return !hasCR
-        ? `${company.shortName} reports on a life basis — discipline is read through returns and capital, not combined ratio.`
-        : company.combinedRatio < 100
-          ? 'Combined ratio below 100% means the core insurance book is producing underwriting surplus before investment income.'
-          : 'Combined ratio sits above 100% — underwriting is loss-making, so reported profit leans on investment income.'
-    case 'core':
-      return uw == null
-        ? 'Core underwriting profit is pending reported NEP and combined ratio.'
-        : uw > 0
-          ? 'Core underwriting has turned positive — the key proof is profit bars moving above zero, not an artificial trendline.'
-          : `Core underwriting is still running a ${crc(uw)} deficit; reported profit leans on investment income.`
-    case 'conversion':
-      return uwSpread == null
-        ? `${company.shortName} reports on a life basis — the ₹100 conversion read is pending.`
-        : uwSpread > 0
-          ? ol.expDelta != null && ol.expDelta < 0
-            ? 'Most of the ₹100 premium is still absorbed by claims and expenses, but the spread has turned positive — early proof of operating leverage.'
-            : 'Most of the ₹100 premium is still absorbed by claims and expenses, but the remaining spread has turned positive.'
-          : 'Most of the ₹100 premium is absorbed by claims and expenses — the underwriting spread is not yet positive.'
-    case 'returns':
-      return company.roe <= 0
-        ? 'Return on equity is pending for this carrier.'
-        : company.roe < 10
-          ? 'ROE is improving as PAT scales, but the return profile is still early because the capital base remains large.'
-          : 'ROE sits at a healthy level as PAT scales against the equity base.'
-    case 'capital':
-      return company.solvency > 0
-        ? `${company.solvency.toFixed(2)}x solvency gives the company a strong capital cushion to support growth and absorb volatility.`
-        : 'Solvency is pending for this carrier.'
-  }
-  return ''
-}
-
-// Returns proof — PAT trajectory with a Yearly (header-range-driven, real
-// annual PAT) ⇄ Quarterly (FY25) toggle. Yearly follows the selected years.
-function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series: AnnualPoint[]; cardStyle: { background: string; borderColor: string } }) {
-  // Real annual PAT only (audited filings). No standalone-quarter PAT is sourced
-  // (earnings calls report it cumulatively / on a mixed IGAAP-IFRS basis), so we
-  // show the honest annual trajectory rather than a fabricated quarterly series.
-  const yearPoints = series.map((p) => ({ label: p.fy, pat: p.pat }))
-  const yearsWithPat = yearPoints.filter((p) => p.pat != null).length
-  const latestPatFy = series.find((p) => p.pat != null)?.fy ?? 'FY25'
-  return (
-    <div className="rounded-xl border p-4" style={cardStyle}>
-      <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Proof · PAT Pool</p>
-          <h3 className="mt-0 font-display text-[14px] text-navy-deep">PAT trajectory · by year</h3>
-        </div>
-        <span className="text-[9.5px] text-ink-secondary">ROE · {company.roe.toFixed(1)}%</span>
-      </div>
-      {yearsWithPat >= 2 ? (
-        <QuarterlyPatBars points={yearPoints} accent={ORANGE} />
-      ) : yearsWithPat === 1 ? (
-        <PendingNote>Widen the year range in the header to see the PAT trend — only one reported year is in range.</PendingNote>
-      ) : (
-        <div className="flex h-[160px] items-center justify-center rounded-md border border-dashed border-soft-border bg-white/60 text-[11.5px] text-ink-secondary">
-          Data pending — PAT not reported for {company.shortName}
-        </div>
-      )}
-      <p className="mt-3 flex items-center gap-1.5 text-[10px] leading-snug text-ink-secondary">
-        <Sparkles className="h-3 w-3 shrink-0" style={{ color: ORANGE }} />
-        Real annual PAT from company filings; the range follows the header.
-      </p>
-      <SourceTag source="Company filing" period={latestPatFy} confidence="high" provenance={undefined} />
-    </div>
-  )
-}
-
-// Resolve the real filing source for each lens's primary metric. Underwriting,
-// core, conversion and returns rest on real annual figures (combined ratio /
-// PAT); capital on solvency. If a real source can't be resolved we fall back to
-// a quiet, link-free label rather than inventing one.
-const LENS_METRIC: Record<NodeId, string> = {
-  underwriting: 'combined_ratio',
-  core: 'combined_ratio',
-  conversion: 'pat',
-  returns: 'pat',
-  capital: 'solvency_ratio',
-}
-
-function lensSource(id: NodeId, companyId: string): ResolvedSource {
-  // Real filing link where the lens rests on a real metric; otherwise a quiet,
-  // link-free "illustrative" tag rather than implying a source we don't have.
-  return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
-}
-
-function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; onOpenAcctDetail: () => void }) {
-  const reads = buildNodeReads(company, series)
-  const meta = LENS[id]
-  const status = lensStatus(id, company, series, ctx)
-  const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
-
-  let body: ReactNode = null
-
-  switch (id) {
-    case 'underwriting':
-      body = (
-        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <CombinedRatioWaterfall company={company} series={series} />
-          <DisciplineQuality company={company} ctx={ctx} />
-        </div>
-      )
-      break
-    case 'core':
-      body = (
-        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
-          <CoreResultCard company={company} series={series} />
-        </div>
-      )
-      break
-    case 'conversion':
-      body = (
-        <div className="space-y-4">
-          <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis={ctx.basis} onOpenDetail={onOpenAcctDetail} />
-          <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-            <ConversionBridge company={company} series={series} ctx={ctx} />
-            <ConversionQuality company={company} series={series} ctx={ctx} />
-          </div>
-        </div>
-      )
-      break
-    case 'returns':
-      body = (
-        <div className="space-y-4">
-          <ReturnBridge company={company} series={series} />
-          <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-            <PatPoolCard company={company} series={series} cardStyle={cardStyle} />
-            <RoeGaugeCard company={company} ctx={ctx} />
-          </div>
-        </div>
-      )
-      break
-    case 'capital':
-      body = (
-        <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
-          <SolvencyCushionBridge company={company} />
-          <CapitalBufferCard company={company} />
-        </div>
-      )
-      break
-    default:
-      body = null
-  }
-
-  return (
-    <div key={id} className="animate-fade-in space-y-4">
-      <LensHeader meta={meta} status={status} />
-      <BasisBanner ctx={ctx} company={company} />
-      {body}
-      <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
-      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
-    </div>
-  )
+  if (!body) return null
+  return <div className="card-surface animate-fade-in space-y-4 p-4">{body}</div>
 }
 
 // ---------------------------------------------------------------------------
-// Main section — Profitability Story Map (clickable engine drives the page)
+// Main section
 // ---------------------------------------------------------------------------
-
-const STORY_QUESTION = 'Is premium growth converting into profit, underwriting discipline and strong capital returns?'
-
 export function ProfitabilityCapital() {
-  const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
+  const company = useActiveCompany()
+  const { range, period } = useFilters()
+  const [basis, setBasis] = useState<AccountingBasis>('igaap')
   const [statusOpen, setStatusOpen] = useState(false)
   const [acctOpen, setAcctOpen] = useState(false)
-  const [basis, setBasis] = useState<AccountingBasis>('igaap')
-  const company = useActiveCompany()
-  const { range } = useFilters()
+  const [selected, setSelected] = useState<NodeId>('underwriting')
   const copy = getCompanyProfitabilityCopy(company)
-  // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
-  const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
 
-  const hasCR = company.combinedRatio > 0
-  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
-  const mm = getMarginMetrics(series)
-  // Combined ratio is now sourced from real, verified IRDAI statutory filings
-  // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
-  // data-status row reflects that instead of the blanket mock label below.
-  const statCR = STATUTORY_CR[company.id]
-  // Accounting-basis lens (IGAAP / Statutory · IFRS) — drives the headline scalars.
-  const basisCtx = buildBasisCtx(company, basis)
+  const view = useMemo<ProfitView>(() => {
+    const annual = getAnnualSeries(company.id)
+    const fallback: FallbackInput = {
+      roe: company.roe > 0 ? company.roe : null,
+      solvency: company.solvency > 0 ? company.solvency : null,
+      annual: annual.map((p) => ({ fy: p.fy, pat: p.pat, nep: p.nep, gwp: p.gwp, combinedRatio: p.combinedRatio, expenseRatio: p.expenseRatio })),
+    }
+    return resolveProfitView(company.id, basis, period, (fy) => labelInRange(fy, range), fallback)
+  }, [company.id, basis, period, range, company.roe, company.solvency])
 
-  // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
-  // Every row maps to a real, source-backed value drawn from the annual
-  // snapshot (audited FY25 Annual Report) or the IRDAI statutory disclosures —
-  // no mock fallbacks. A value of null renders an honest "Pending" row.
-  const annualUrl = 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf'
-  const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
-    value,
-    period: 'FY25',
-    source: 'Company annual report',
-    status: value === null ? 'Pending' : 'Reported',
-    lastUpdated: '2026-05-30',
-    sourceUrl: annualUrl,
-    ...opts,
-  })
-  const companyKpis: { label: string; metric: Metric }[] = [
-    { label: 'GWP growth', metric: m(company.growth > 0 ? company.growth : null, { unit: '%' }) },
-    {
-      label: 'Combined ratio',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.combinedRatio, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : statCR
-          ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', sourceUrl: statCR.sourceUrl })
-          : m(hasCR ? company.combinedRatio : null, { unit: '%' }),
-    },
-    {
-      label: 'Net margin',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.patMargin, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : m(mm.netMargin, { unit: '%', period: mm.latestFy ?? 'FY25' }),
-    },
-    {
-      label: 'ROE',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.roe, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : m(company.roe > 0 ? company.roe : null, { unit: '%' }),
-    },
-    { label: 'Solvency', metric: m(company.solvency > 0 ? company.solvency : null, { unit: 'x' }) },
-  ]
+  const stages = buildStages(view)
+  useEffect(() => {
+    if (stages.length && !stages.some((s) => s.id === selected)) setSelected(stages[0].id)
+  }, [stages, selected])
+  const activeId = stages.some((s) => s.id === selected) ? selected : stages[0]?.id
 
-  const reportedVerdict = !hasCR
-    ? `Life carrier — ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency anchor the read.`
-    : ct.tone === 'positive'
-      ? `Combined ratio ${company.combinedRatio.toFixed(1)}%, ROE ${company.roe.toFixed(1)}% and ${company.solvency.toFixed(2)}x solvency — discipline is translating into capital returns.`
-      : ct.tone === 'warning'
-        ? `Combined ratio ${company.combinedRatio.toFixed(1)}% sits in the watch band; ROE ${company.roe.toFixed(1)}% holds while solvency stays at ${company.solvency.toFixed(2)}x.`
-        : `Combined ratio ${company.combinedRatio.toFixed(1)}% is loss-making; profitability hinges on the ${company.solvency.toFixed(2)}x capital cushion.`
-  const basisVerdict = basisCtx.tracked
-    ? `On the ${BASIS_LABEL[basis]} basis (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`}, combined ratio ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`}, PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Always check the basis before comparing profitability.`
-    : `${company.shortName} is not tracked on IFRS — showing NA. IFRS profitability is tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
-  const verdictSummary = basisCtx.isIfrs ? basisVerdict : reportedVerdict
+  const heroTone = view.combinedRatio == null ? PALETTE.navy : view.combinedRatio < 100 ? PALETTE.emerald : view.combinedRatio <= 105 ? PALETTE.amber : PALETTE.coral
 
-  const basisHeroCR = basisCtx.isIfrs ? basisCtx.combinedRatio : hasCR ? company.combinedRatio : null
-  const heroTone = basisCtx.isIfrs
-    ? basisHeroCR == null
-      ? PALETTE.navy
-      : basisHeroCR < 100
-        ? PALETTE.emerald
-        : basisHeroCR <= 105
-          ? PALETTE.amber
-          : PALETTE.coral
-    : ct.tone === 'positive'
-      ? PALETTE.emerald
-      : ct.tone === 'warning'
-        ? PALETTE.amber
-        : ct.tone === 'negative'
-          ? PALETTE.coral
-          : PALETTE.navy
-
-  // Data-status footer reflects the selected accounting basis + its source.
-  const drawerBasis: BasisInfo = {
-    basis: 'PAT / ratios',
-    method: 'As reported',
-    accounting: BASIS_LABEL[basis],
-    source: basisCtx.sourceLabel,
-    status: 'Reported',
-  }
+  const mkMetric = (value: number | null, unit: string): Metric => ({ value, unit, period: view.pointLabel ?? '—', source: view.sourceLabel, status: value == null ? 'Pending' : 'Reported', lastUpdated: '2026-05-31' })
+  const statusEntries = [
+    view.combinedRatio != null && { label: 'Combined ratio', metric: mkMetric(view.combinedRatio, '%') },
+    view.claimsRatio != null && { label: 'Claims ratio', metric: mkMetric(view.claimsRatio, '%') },
+    view.patMargin != null && { label: 'PAT margin', metric: mkMetric(view.patMargin, '%') },
+    view.roe != null && { label: 'ROE', metric: mkMetric(view.roe, '%') },
+    view.solvency != null && { label: 'Solvency', metric: mkMetric(view.solvency, 'x') },
+  ].filter(Boolean) as { label: string; metric: Metric }[]
+  const drawerBasis: BasisInfo = { basis: 'PAT / ratios', method: 'As reported', accounting: BASIS_LABEL[basis], source: view.sourceLabel, status: 'Reported' }
 
   return (
     <div className="space-y-5">
-      {/* ─── PAGE HEADER — title · question · verdict · data status ─── */}
+      {/* HERO — title · basis/period line · controls */}
       <section className="card-surface relative overflow-hidden p-4">
         <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-60"
-          style={{ background: `radial-gradient(circle at 80% 30%, ${PALETTE.champagneSoft} 0%, transparent 60%), radial-gradient(circle at 60% 80%, ${PALETTE.softBlue} 0%, transparent 60%)` }}
-        />
         <div className="relative flex flex-wrap items-start justify-between gap-x-5 gap-y-3 pl-2">
-          <div className="min-w-[260px] flex-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="h-2.5 w-2.5 text-champagne" />
-              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · FY25</span>
-            </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          <div className="min-w-[240px] flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
               <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
-              <BasisPill basis={basis} />
             </div>
-            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
-            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{verdictSummary}</p>
-            <BasisExplainer className="mt-1.5 max-w-2xl" />
+            <p className="mt-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-secondary">
+              Basis: {BASIS_LABEL[basis]} · {view.pointLabel ?? period} · {period}
+              <InfoTip text={BASIS_TIP} />
+            </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <AccountingBasisToggle value={basis} onChange={setBasis} />
-            <button
-              type="button"
-              onClick={() => setStatusOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary"
-            >
-              <Database className="h-3.5 w-3.5" />
-              Data status
+            <button type="button" onClick={() => setStatusOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary">
+              <Database className="h-3.5 w-3.5" /> Data status
             </button>
           </div>
         </div>
       </section>
 
-      {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
-      <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} />
+      {stages.length === 0 || !activeId ? (
+        <section className="card-surface flex items-center gap-2.5 p-6 text-[12px] text-ink-secondary">
+          <Info className="h-4 w-4 shrink-0 text-champagne" />
+          No {BASIS_LABEL[basis]} figures available for {company.shortName} in the selected period — switch basis or period.
+        </section>
+      ) : (
+        <>
+          <StoryMap stages={stages} selected={activeId} onSelect={setSelected} basis={basis} />
+          <StageDetail id={activeId} view={view} company={company} onOpenDetail={() => setAcctOpen(true)} />
+          <InvestorRead id={activeId} view={view} />
+        </>
+      )}
 
-      {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
-
-      <DataStatusDrawer
-        open={statusOpen}
-        onClose={() => setStatusOpen(false)}
-        moduleName={`${company.shortName} · Profitability Story`}
-        entries={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
-        basis={drawerBasis}
-      />
-
+      <DataStatusDrawer open={statusOpen} onClose={() => setStatusOpen(false)} moduleName={`${company.shortName} · Profitability`} entries={statusEntries} basis={drawerBasis} />
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
   )
