@@ -134,15 +134,27 @@ export function getChannelDependencePeerData(
 export function getDistributionAIRead(
   company: Insurer,
   peerGroup: PeerGroup,
+  window?: ChannelMixRow[],
 ): string {
   const data = getCompanyDistributionData(company.id)
   if (!data) {
     return `Channel mix is not yet wired for ${company.shortName}.`
   }
-  const { latest, earliest } = data
-  if (!latest || !earliest || earliest.period === latest.period) {
-    const top = data.heroChips[0]
-    return `${company.shortName}'s sourcing skews toward ${top.channel.toLowerCase()} (${top.share.toFixed(1)}% of GWP).`
+  // Honour the caller's in-range window (the header Data Range) when given, so
+  // the read describes only the years actually on the chart.
+  const rows = window ?? data.mix
+  const earliest = rows[0]
+  const latest = rows[rows.length - 1]
+  if (!earliest || !latest) return ''
+  if (earliest.period === latest.period) {
+    const segs: [string, number][] = [
+      ['banca', latest.Banca], ['brokers', latest.Brokers], ['agents', latest.Agents],
+      ['corporate agents', latest['Corporate Agents']], ['direct', latest.Direct],
+    ]
+    const top = segs.sort((a, b) => b[1] - a[1])[0]
+    const bal = isBalanced(latest)
+    const tone = bal ? ` Channel mix is more balanced than the ${PEER_GROUP_LABEL[peerGroup].toLowerCase()} median.` : ''
+    return `In ${latest.period}, ${company.shortName}'s largest channel is ${top[0]} at ${top[1].toFixed(1)}% of GWP.${tone}`
   }
 
   const dBanca = latest.Banca - earliest.Banca

@@ -16,6 +16,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
+import { labelInRange } from '@/lib/dateRange'
 import {
   DIST_CHANNELS,
   type DistChannel,
@@ -181,9 +182,13 @@ function UnavailableChip() {
 // ─── 2. MAIN CHART BLOCK ───────────────────────────────────────────────────
 function MainChartBlock() {
   const company = useActiveCompany()
-  const { peerGroup } = useFilters()
+  const { peerGroup, range } = useFilters()
   const gate = usePeriodGate()
   const data = getCompanyDistributionData(company.id)
+  // Clip the channel-mix series to the header Data Range and to full-year rows
+  // only (drop interim periods like "9M FY26"), so the chart never shows years
+  // outside the selected window.
+  const mixRows = data ? data.mix.filter((r) => /^FY\d{2}$/.test(r.period) && labelInRange(r.period, range)) : []
 
   return (
     <section className="card-surface p-5 sm:p-6">
@@ -196,7 +201,7 @@ function MainChartBlock() {
             How has {company.shortName}'s sourcing engine changed?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Channel mix · share of GWP · {data?.mix.length ? `${data.mix[0].period} → ${data.mix[data.mix.length - 1].period}` : 'no data'}
+            Channel mix · share of GWP · {mixRows.length ? `${mixRows[0].period}${mixRows.length > 1 ? ` → ${mixRows[mixRows.length - 1].period}` : ''}` : 'selected range'}
           </p>
         </div>
       </header>
@@ -213,12 +218,18 @@ function MainChartBlock() {
           body="Add source-backed channel-mix data for this insurer to activate the chart."
           height={280}
         />
+      ) : mixRows.length === 0 ? (
+        <EmptyState
+          title="Data not available from source"
+          body={`No channel-mix years for ${company.shortName} fall inside the selected Data Range — widen it in the top bar (mix is reported at FY19 and FY25).`}
+          height={280}
+        />
       ) : (
         <>
           <div style={{ width: '100%', height: 280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={data.mix}
+                data={mixRows}
                 margin={{ top: 8, right: 18, left: -4, bottom: 4 }}
                 barCategoryGap="28%"
               >
@@ -261,11 +272,11 @@ function MainChartBlock() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <AiRead text={getDistributionAIRead(company, peerGroup)} />
+          <AiRead text={getDistributionAIRead(company, peerGroup, mixRows)} />
         </>
       )}
       <div className="mt-3 flex justify-end">
-        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={data?.latest?.period} />
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={mixRows[mixRows.length - 1]?.period ?? data?.latest?.period} />
       </div>
     </section>
   )
