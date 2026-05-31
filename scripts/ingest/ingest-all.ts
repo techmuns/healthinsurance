@@ -1,4 +1,5 @@
-// Re-trigger workflow — verify Phase 2 parser fixes against IRDAI + insurer IR.
+// Re-trigger workflow — live ingest run to test IRDAI reachability from CI
+// (GitHub runners sit outside the sandbox allowlist) and refresh quarterly data.
 // ---------------------------------------------------------------------------
 //  ingest-all — entry point for the GitHub Actions workflow.
 //
