@@ -2340,6 +2340,9 @@ function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { i
       <BasisBanner ctx={ctx} company={company} />
       {body}
       <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
+      {/* Profit Quality bridge sits directly above the Investor Read, so the read
+          closes the PAT-margin story. Only the conversion (PAT margin) stage shows it. */}
+      {id === 'conversion' && <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />}
       <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
     </div>
   )
@@ -2443,12 +2446,6 @@ export function ProfitabilityCapital() {
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
-
-      {/* ─── PROFIT QUALITY CHECK — shown only inside the PAT Margin (Profit
-              conversion) view; its Details button opens the full bridge drawer ─── */}
-      {selectedNode === 'conversion' && (
-        <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
-      )}
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
