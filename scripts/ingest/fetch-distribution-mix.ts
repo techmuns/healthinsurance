@@ -19,6 +19,8 @@ interface SourceRec {
   bytes?: number
   matchCount?: number
   matched?: string[]
+  plCount?: number
+  pl?: string[]
   error?: string
 }
 
@@ -34,6 +36,9 @@ const SOURCES: { id: string; url: string }[] = [
 // Lines that mention a distribution channel AND look quantitative.
 const CHANNEL = /(bancassurance|banca|broker|individual agent|corporate agent|direct business|distribution|channel mix|sourcing|GDPI|gross written premium)/i
 const QUANT = /%|per\s?cent|\b\d{1,2}\.\d\b/i
+// Revenue-Account / P&L lines (for the GWP→PAT earnings bridge) + a rupee amount.
+const PL_KW = /(written premium|earned premium|net premium|incurred claims|net claims|benefits paid|commission|operating expenses|expenses (related to|of management)|operating (profit|loss)|underwriting (profit|loss|result)|income from investments?|investment income|other income|profit before tax|provision for tax|profit after tax|profit for the (year|period)|total (income|outgo))/i
+const AMOUNT = /\d[\d,]{2,}|\(\d/
 
 async function main(): Promise<void> {
   const out: { fetched_at: string; sources: SourceRec[] } = { fetched_at: new Date().toISOString(), sources: [] }
@@ -45,13 +50,20 @@ async function main(): Promise<void> {
       const { text } = await parsePdf(buffer)
       const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
       const hits: string[] = []
+      const plHits: string[] = []
       lines.forEach((ln, i) => {
-        if (CHANNEL.test(ln) && QUANT.test(`${ln} ${lines[i + 1] ?? ''}`)) {
+        const ctx = `${ln} ${lines[i + 1] ?? ''}`
+        if (CHANNEL.test(ln) && QUANT.test(ctx)) {
           hits.push([lines[i - 1], ln, lines[i + 1]].filter(Boolean).join(' | ').slice(0, 400))
+        }
+        if (PL_KW.test(ln) && AMOUNT.test(ctx)) {
+          plHits.push([lines[i - 1], ln, lines[i + 1]].filter(Boolean).join(' | ').slice(0, 400))
         }
       })
       rec.matchCount = hits.length
       rec.matched = hits.slice(0, 80)
+      rec.plCount = plHits.length
+      rec.pl = plHits.slice(0, 220)
     } catch (e) {
       rec.error = e instanceof Error ? e.message : String(e)
     }
@@ -61,7 +73,7 @@ async function main(): Promise<void> {
   await mkdir(dir, { recursive: true })
   await writeFile(resolve(dir, 'niva-channel-mix-extract.json'), `${JSON.stringify(out, null, 2)}\n`)
   // eslint-disable-next-line no-console
-  console.log('extract:', out.sources.map((x) => `${x.id}: ${x.error ? 'ERR ' + x.error.slice(0, 40) : (x.matchCount ?? 0) + ' hits'}`).join(' | '))
+  console.log('extract:', out.sources.map((x) => `${x.id}: ${x.error ? 'ERR ' + x.error.slice(0, 40) : (x.matchCount ?? 0) + ' ch / ' + (x.plCount ?? 0) + ' pl'}`).join(' | '))
 }
 
 main().catch((e) => {
