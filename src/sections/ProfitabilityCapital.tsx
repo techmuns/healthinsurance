@@ -2286,11 +2286,6 @@ function lensSource(id: NodeId, companyId: string): ResolvedSource {
   return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
 }
 
-// Prior comparable quarter for the thin quarterly trend (only Q4 cells exist).
-function priorQuarter(q: BasisPeriod): BasisPeriod | null {
-  return q === 'Q4FY26' ? 'Q4FY25' : null
-}
-
 // Header status under a non-annual period: combined ratio + PAT margin have a real
 // Q4 value (same thresholds as the story-map badge); other nodes / Monthly → Pending.
 function quarterlyLensStatus(id: NodeId, company: Insurer, ctx: BasisCtx, quarter: BasisPeriod | null): { label: string; tone: ChipTone } {
@@ -2309,7 +2304,7 @@ function quarterlyLensStatus(id: NodeId, company: Insurer, ctx: BasisCtx, quarte
 // Quarterly detail body. Combined ratio and PAT margin have a real Q4 source, so
 // show the quarter value (+ the prior Q4 where available, as a thin two-point
 // trend). Other nodes (and Monthly) have no quarterly source yet → honest Pending.
-function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: TimePeriod, quarter: BasisPeriod | null): ReactNode {
+function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: TimePeriod, quarter: BasisPeriod | null, quarterPrev: BasisPeriod | null): ReactNode {
   const supported = id === 'underwriting' || id === 'conversion'
   const key: 'combinedRatio' | 'patMarginGwp' = id === 'underwriting' ? 'combinedRatio' : 'patMarginGwp'
   const cur = supported && quarter ? getBasisProfit(company.id, ctx.basis, quarter)?.[key] ?? null : null
@@ -2318,7 +2313,7 @@ function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: 
       <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} ${LENS[id].label.toLowerCase()} is pending — no quarterly source for this metric yet. Switch Period to Annual for the full trend, the audited bridge and the investor read.`}</PendingNote>
     )
   }
-  const pq = priorQuarter(quarter)
+  const pq = quarterPrev
   const prior = pq ? getBasisProfit(company.id, ctx.basis, pq)?.[key] ?? null : null
   const lowerBetter = id === 'underwriting'
   const metricLabel = id === 'underwriting' ? 'Combined ratio' : 'PAT margin'
@@ -2353,7 +2348,7 @@ function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: 
   )
 }
 
-function ProfitabilityDetail({ id, company, series, ctx, period, quarter, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null; onOpenAcctDetail: () => void }) {
+function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarterPrev, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null; quarterPrev: BasisPeriod | null; onOpenAcctDetail: () => void }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
   const status: { label: string; tone: ChipTone } = period === 'Annual' ? lensStatus(id, company, series, ctx) : quarterlyLensStatus(id, company, ctx, quarter)
@@ -2366,7 +2361,7 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, onOpen
     return (
       <div key={id} className="animate-fade-in space-y-4">
         <LensHeader meta={meta} status={status} />
-        {quarterlyNodeBody(id, company, ctx, period, quarter)}
+        {quarterlyNodeBody(id, company, ctx, period, quarter, quarterPrev)}
       </div>
     )
   }
@@ -2473,6 +2468,9 @@ export function ProfitabilityCapital() {
     period === 'Quarterly' && latestFy && Q4_PERIODS.includes(`Q4${latestFy}` as BasisPeriod)
       ? (`Q4${latestFy}` as BasisPeriod)
       : null
+  // Prior in-range quarter for the two-point comparison (only Q4 cells exist), kept
+  // inside the selected Data Range so the comparison never shows a filtered-out quarter.
+  const quarterPrev: BasisPeriod | null = quarter === 'Q4FY26' && labelInRange('FY25', range) ? 'Q4FY25' : null
   const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : period === 'Monthly' ? 'Monthly' : 'FY25'
 
   const hasCR = company.combinedRatio > 0
@@ -2575,7 +2573,7 @@ export function ProfitabilityCapital() {
       <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} quarter={quarter} onOpenAcctDetail={() => setAcctOpen(true)} />
+      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} quarter={quarter} quarterPrev={quarterPrev} onOpenAcctDetail={() => setAcctOpen(true)} />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
