@@ -1154,7 +1154,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
     tab === 'Flow' ? 'Premium conversion over time' : tab === 'Mix' ? 'Premium composition over time' : 'Renewal performance and customer stay path'
   // On the Flow lens the subtitle reflects the selected Data Range and the
   // conversion story; other tabs keep their period-derived context.
-  const subPeriod = tab === 'Flow' ? rangeLabel : periodLabel
+  const subPeriod = tab === 'Flow' || tab === 'Mix' ? rangeLabel : periodLabel
   const subTail = tab === 'Flow' ? 'How written premium converts into earned premium' : tabPhrase
 
   void useMemo<Chip[]>(() => {
@@ -1245,12 +1245,29 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             )
           }
           if (tab === 'Mix') {
-            const mixRows = distributionEngineMix[focalId]
-            if (!mixRows || mixRows.length === 0) {
+            // Channel mix is reported annually (annual-report MD&A). Honour the
+            // Period toggle: only Annual is supported here.
+            if (globalPeriod !== 'Annual') {
               return (
                 <EmptyState
-                  title={`Channel mix not yet ingested for ${name}`}
-                  body={`Channel-mix tables from ${name}'s annual report MD&A section will populate this view as ingest-distribution.ts extracts them.`}
+                  title={`${globalPeriod} channel mix not reported`}
+                  body={`${name}'s channel mix is reported annually in the annual-report MD&A. Switch Period to Annual.`}
+                  height={300}
+                />
+              )
+            }
+            const allMix = distributionEngineMix[focalId] ?? []
+            // Clip to the dashboard-wide Data Range and to full-year rows only
+            // (drop interim periods like "9M FY26") — same rule the Flow tab uses,
+            // so the bars always match the header years.
+            const mixRows = allMix.filter((r) => /^FY\d{2}$/.test(r.period) && labelInRange(r.period, range))
+            if (mixRows.length === 0) {
+              return (
+                <EmptyState
+                  title={allMix.length ? 'Data not available from source' : `Channel mix not yet ingested for ${name}`}
+                  body={allMix.length
+                    ? `No channel-mix years for ${name} fall inside ${rangeLabel}. Widen the Data Range in the top bar.`
+                    : `Channel-mix tables from ${name}'s annual report MD&A section will populate this view as ingest-distribution.ts extracts them.`}
                   height={300}
                 />
               )
