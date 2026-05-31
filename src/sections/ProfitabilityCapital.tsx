@@ -28,7 +28,6 @@ import {
   Cog,
   ChevronRight,
   MousePointerClick,
-  Database,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -36,14 +35,12 @@ import {
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SourceTag } from '@/components/SourceTag'
-import { DataStatusDrawer } from '@/components/DataStatusDrawer'
-import type { BasisInfo } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance, getInsurers } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
-import type { Metric, Insurer } from '@/data/types'
+import type { Insurer } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
@@ -2345,7 +2342,6 @@ const STORY_QUESTION = 'Is premium turning into profit and returns?'
 
 export function ProfitabilityCapital() {
   const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
-  const [statusOpen, setStatusOpen] = useState(false)
   const [acctOpen, setAcctOpen] = useState(false)
   const [basis, setBasis] = useState<AccountingBasis>('igaap')
   const company = useActiveCompany()
@@ -2360,52 +2356,8 @@ export function ProfitabilityCapital() {
   // rather than the lower company-reported one.
   const headlineCR = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
   const ct = headlineCR != null ? combinedTone(headlineCR) : { label: 'N/A', tone: 'neutral' as Tone }
-  const mm = getMarginMetrics(series)
-  // Combined ratio is now sourced from real, verified IRDAI statutory filings
-  // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
-  // data-status row reflects that instead of the blanket mock label below.
-  const statCR = STATUTORY_CR[company.id]
   // Accounting-basis lens (IGAAP / Statutory · IFRS) — drives the headline scalars.
   const basisCtx = buildBasisCtx(company, basis)
-
-  // Honest period stamps — snapshot is FY25 audited; PAT series is Q1–Q4 FY25.
-  // Every row maps to a real, source-backed value drawn from the annual
-  // snapshot (audited FY25 Annual Report) or the IRDAI statutory disclosures —
-  // no mock fallbacks. A value of null renders an honest "Pending" row.
-  const annualUrl = 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf'
-  const m = (value: number | null, opts: Partial<Metric> = {}): Metric => ({
-    value,
-    period: 'FY25',
-    source: 'Company annual report',
-    status: value === null ? 'Pending' : 'Reported',
-    lastUpdated: '2026-05-30',
-    sourceUrl: annualUrl,
-    ...opts,
-  })
-  const companyKpis: { label: string; metric: Metric }[] = [
-    { label: 'GWP growth', metric: m(company.growth > 0 ? company.growth : null, { unit: '%' }) },
-    {
-      label: 'Combined ratio',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.combinedRatio, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : statCR
-          ? m(statCR.statutory, { unit: '%', period: `${statCR.statutoryFY} · statutory`, source: 'IRDAI public disclosures', sourceUrl: statCR.sourceUrl })
-          : m(hasCR ? company.combinedRatio : null, { unit: '%' }),
-    },
-    {
-      label: 'Net margin',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.patMargin, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : m(mm.netMargin, { unit: '%', period: mm.latestFy ?? 'FY25' }),
-    },
-    {
-      label: 'ROE',
-      metric: basisCtx.isIfrs
-        ? m(basisCtx.roe, { unit: '%', period: `${basisCtx.pLabel} · ${BASIS_LABEL[basis]}`, source: basisCtx.sourceLabel, sourceUrl: undefined })
-        : m(company.roe > 0 ? company.roe : null, { unit: '%' }),
-    },
-    { label: 'Solvency', metric: m(company.solvency > 0 ? company.solvency : null, { unit: 'x' }) },
-  ]
 
   // Top verdict — for companies with an audited earnings bridge, lead with the
   // page's central question: is PAT underwriting-led or investment-income-led?
@@ -2445,18 +2397,9 @@ export function ProfitabilityCapital() {
           ? PALETTE.coral
           : PALETTE.navy
 
-  // Data-status footer reflects the selected accounting basis + its source.
-  const drawerBasis: BasisInfo = {
-    basis: 'PAT / ratios',
-    method: 'As reported',
-    accounting: BASIS_LABEL[basis],
-    source: basisCtx.sourceLabel,
-    status: 'Reported',
-  }
-
   return (
     <div className="space-y-5">
-      {/* ─── PAGE HEADER — title · question · verdict · data status ─── */}
+      {/* ─── PAGE HEADER — title · question · verdict ─── */}
       <section className="card-surface relative overflow-hidden p-4">
         <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
         <div
@@ -2480,14 +2423,6 @@ export function ProfitabilityCapital() {
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <AccountingBasisToggle value={basis} onChange={setBasis} />
-            <button
-              type="button"
-              onClick={() => setStatusOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary"
-            >
-              <Database className="h-3.5 w-3.5" />
-              Data status
-            </button>
           </div>
         </div>
       </section>
@@ -2501,14 +2436,6 @@ export function ProfitabilityCapital() {
       {/* ─── PROFIT QUALITY CHECK — compact investment-vs-underwriting signal;
               its Details button opens the full GWP → PAT accounting bridge drawer ─── */}
       <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
-
-      <DataStatusDrawer
-        open={statusOpen}
-        onClose={() => setStatusOpen(false)}
-        moduleName={`${company.shortName} · Profitability Story`}
-        entries={companyKpis.map((k) => ({ label: k.label, metric: k.metric }))}
-        basis={drawerBasis}
-      />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
