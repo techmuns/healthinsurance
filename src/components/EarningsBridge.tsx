@@ -3,7 +3,7 @@ import { GitMerge, Layers, TrendingUp } from 'lucide-react'
 import { Drawer } from './Drawer'
 import { SourceTag } from './SourceTag'
 import {
-  getEarningsBridge, earningsQuality, BRIDGE_SOURCE,
+  getEarningsBridge, earningsQuality, BRIDGE_SOURCE, BRIDGE_SOURCE_URL,
   type BridgeFigures,
 } from '@/data/earningsBridge'
 
@@ -17,22 +17,25 @@ const cr = (v: number) => `₹${Math.abs(Math.round(v)).toLocaleString('en-IN')}
 const signed = (v: number) => `${v < 0 ? '−' : '+'}${cr(v)}`
 
 type RowKind = 'start' | 'less' | 'total' | 'uw' | 'add' | 'pat'
-interface Row { label: string; v: number; kind: RowKind }
+type RowTag = 'leak' | 'support'
+// Plain retail label + the precise term as a quiet secondary (`tech`); `tag`
+// marks the rows that visibly leak premium away vs the one that supports profit.
+interface Row { label: string; tech?: string; v: number; kind: RowKind; tag?: RowTag }
 
 function bridgeRows(b: BridgeFigures): Row[] {
   return [
-    { label: 'Gross written premium', v: b.gwp, kind: 'start' },
-    { label: 'Reinsurance ceded', v: -b.reinsCeded, kind: 'less' },
-    { label: 'Net written premium', v: b.nwp, kind: 'total' },
-    { label: 'UPR movement', v: b.uprMovement, kind: 'less' },
-    { label: 'Net earned premium', v: b.nep, kind: 'total' },
-    { label: 'Net claims', v: -b.netClaims, kind: 'less' },
-    { label: 'Net commission', v: -b.netCommission, kind: 'less' },
-    { label: 'Operating expenses', v: -b.opex, kind: 'less' },
-    { label: 'Underwriting result', v: b.underwritingResult, kind: 'uw' },
-    { label: 'Investment income', v: b.investmentIncome, kind: 'add' },
+    { label: 'Premium collected', tech: 'GWP', v: b.gwp, kind: 'start' },
+    { label: 'Less: reinsurance share', tech: 'reinsurance ceded', v: -b.reinsCeded, kind: 'less' },
+    { label: 'Premium retained', tech: 'net written premium', v: b.nwp, kind: 'total' },
+    { label: 'Timing adjustment', tech: 'UPR movement', v: b.uprMovement, kind: 'less' },
+    { label: 'Premium earned', tech: 'net earned premium', v: b.nep, kind: 'total' },
+    { label: 'Claims paid', tech: 'net claims', v: -b.netClaims, kind: 'less', tag: 'leak' },
+    { label: 'Distribution cost', tech: 'commission', v: -b.netCommission, kind: 'less', tag: 'leak' },
+    { label: 'Operating cost', tech: 'opex', v: -b.opex, kind: 'less', tag: 'leak' },
+    { label: 'Core underwriting result', v: b.underwritingResult, kind: 'uw' },
+    { label: 'Investment support', tech: 'investment income', v: b.investmentIncome, kind: 'add', tag: 'support' },
     { label: 'Other (net)', v: b.otherNet, kind: 'less' },
-    { label: 'Profit after tax', v: b.pat, kind: 'pat' },
+    { label: 'Final profit', tech: 'PAT', v: b.pat, kind: 'pat' },
   ]
 }
 
@@ -56,7 +59,18 @@ function Waterfall({ b }: { b: BridgeFigures }) {
             className={`flex items-center justify-between py-[5px] text-[12px] ${isTotal ? 'border-t border-soft-border/70 mt-0.5 pt-[7px]' : ''}`}
             style={r.kind === 'uw' ? { background: `${CORAL}0c` } : r.kind === 'pat' ? { background: `${NAVY}0a` } : undefined}
           >
-            <span className={isTotal ? 'font-semibold text-navy-deep' : 'pl-3 text-ink-secondary'}>{r.label}</span>
+            <span className={`flex items-center gap-1.5 ${isTotal ? 'font-semibold text-navy-deep' : 'pl-3 text-ink-secondary'}`}>
+              <span>
+                {r.label}
+                {r.tech && <span className="ml-1 text-[9px] font-normal text-ink-secondary/55">({r.tech})</span>}
+              </span>
+              {r.tag === 'leak' && (
+                <span className="rounded px-1 py-px text-[7.5px] font-bold uppercase tracking-wide" style={{ background: `${CORAL}14`, color: CORAL }}>leak</span>
+              )}
+              {r.tag === 'support' && (
+                <span className="rounded px-1 py-px text-[7.5px] font-bold uppercase tracking-wide" style={{ background: `${EMERALD}16`, color: EMERALD }}>support</span>
+              )}
+            </span>
             <span className={`tabular-nums ${isTotal ? 'font-display text-[14px]' : ''}`} style={{ color }}>{display}{' Cr'}</span>
           </div>
         )
@@ -90,8 +104,8 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
             <GitMerge className="h-3.5 w-3.5 text-navy-primary" />
           </span>
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Earnings Bridge</p>
-            <h3 className="mt-0.5 font-display text-[15px] leading-tight text-navy-deep">Premium → PAT · where profit comes from</h3>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Premium-to-Profit Engine</p>
+            <h3 className="mt-0.5 font-display text-[15px] leading-tight text-navy-deep">From premium collected to final profit</h3>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -165,55 +179,104 @@ function Formula({ label, body }: { label: string; body: string }) {
   )
 }
 
+type MethodTab = 'basis' | 'formula' | 'numbers' | 'sources'
+const METHOD_TABS: { id: MethodTab; label: string }[] = [
+  { id: 'basis', label: 'Basis' },
+  { id: 'formula', label: 'Formula' },
+  { id: 'numbers', label: 'Reported numbers' },
+  { id: 'sources', label: 'Source links' },
+]
+
 function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { open: boolean; onClose: () => void; companyShort: string; b: BridgeFigures; fy: string; ifrsPat: number | null }) {
+  const [tab, setTab] = useState<MethodTab>('basis')
   return (
-    <Drawer open={open} onClose={onClose} title={`${companyShort} · Earnings bridge — accounting & method`} subtitle={`How every line of the ${fy} GWP → PAT reconciliation is derived.`}>
-      <div className="space-y-5 text-[12px] leading-relaxed text-navy-deep/90">
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Basis</p>
-          <p className="mt-1">IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
-        </div>
-        <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Formulas</p>
+    <Drawer open={open} onClose={onClose} title={`${companyShort} · Earnings bridge — accounting & method`} subtitle={`How every line of the ${fy} premium → profit reconciliation is derived.`}>
+      {/* Scannable tabs — Basis · Formula · Reported numbers · Source links */}
+      <div className="mb-4 flex flex-wrap gap-1 border-b border-soft-border">
+        {METHOD_TABS.map((t) => {
+          const on = tab === t.id
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className="relative -mb-px rounded-t-lg px-3 py-1.5 text-[11px] font-semibold transition-colors hover:text-navy-primary"
+              style={on ? { color: NAVY, borderBottom: `2px solid ${NAVY}` } : { color: '#6B7488', borderBottom: '2px solid transparent' }}
+            >
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="text-[12px] leading-relaxed text-navy-deep/90">
+        {tab === 'basis' && (
+          <div className="space-y-3">
+            <p>IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
+            <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2.5">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why earlier views could differ</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed">The ₹100 engine uses the statutory cost split (combined ≈ 101%, an underwriting loss); a company-reported combined ratio can read below 100%. This bridge settles it on the audited statutory basis: underwriting is a loss and PAT is investment-income-led.</p>
+            </div>
+          </div>
+        )}
+
+        {tab === 'formula' && (
           <div className="space-y-1.5">
             <Formula label="Net written premium" body="NWP = GWP − reinsurance ceded" />
             <Formula label="Net earned premium" body="NEP = NWP + opening UPR − closing UPR" />
             <Formula label="Underwriting result" body="NEP − net claims − net commission − operating expenses" />
             <Formula label="Profit after tax" body="underwriting result + investment income + other (net) − tax" />
           </div>
-        </div>
-        <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{fy} figures (₹ Cr) — reported vs derived</p>
-          <table className="w-full border-collapse">
-            <tbody>
-              {[
-                ['Gross written premium', b.gwp, 'Reported'],
-                ['Reinsurance ceded', -b.reinsCeded, 'Reported'],
-                ['Net written premium', b.nwp, 'Reported'],
-                ['Net earned premium', b.nep, 'Reported'],
-                ['Net claims', -b.netClaims, 'Reported'],
-                ['Net commission', -b.netCommission, 'Reported'],
-                ['Operating expenses', -b.opex, 'Reported'],
-                ['Underwriting result', b.underwritingResult, 'Reported (MD&A)'],
-                ['Investment income', b.investmentIncome, 'Reported'],
-                ['Other (net)', b.otherNet, 'Derived (PAT − UW − investment)'],
-                ['Profit after tax — IGAAP', b.pat, 'Reported'],
-                ['Profit after tax — IFRS', ifrsPat ?? 0, ifrsPat != null ? 'Reported' : 'Not disclosed'],
-              ].map(([label, val, prov]) => (
-                <tr key={label as string} className="border-b border-soft-border/50">
-                  <td className="py-1 pr-2 text-[11px] text-ink-secondary">{label as string}</td>
-                  <td className="py-1 pr-2 text-right text-[11px] tabular-nums text-navy-deep">{signed(val as number)}</td>
-                  <td className="py-1 text-right text-[10px] text-ink-secondary/80">{prov as string}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why the two earlier views differed</p>
-          <p className="mt-1 text-[11.5px] leading-relaxed">The ₹100 engine used the statutory cost split (combined ≈ 101%, an underwriting loss); the core card used the company-reported combined (&lt; 100%, a profit). This bridge settles it on the statutory basis: underwriting is a loss and PAT is investment-income-led.</p>
-        </div>
-        <p className="text-[10px] text-ink-secondary">Source · {BRIDGE_SOURCE} · {fy}. IGAAP lines reconcile exactly to reported PAT; tax was nil in {fy} (carried-forward losses).</p>
+        )}
+
+        {tab === 'numbers' && (
+          <div>
+            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{fy} figures (₹ Cr) — reported vs derived</p>
+            <table className="w-full border-collapse">
+              <tbody>
+                {[
+                  ['Gross written premium', b.gwp, 'Reported'],
+                  ['Reinsurance ceded', -b.reinsCeded, 'Reported'],
+                  ['Net written premium', b.nwp, 'Reported'],
+                  ['Net earned premium', b.nep, 'Reported'],
+                  ['Net claims', -b.netClaims, 'Reported'],
+                  ['Net commission', -b.netCommission, 'Reported'],
+                  ['Operating expenses', -b.opex, 'Reported'],
+                  ['Underwriting result', b.underwritingResult, 'Reported (MD&A)'],
+                  ['Investment income', b.investmentIncome, 'Reported'],
+                  ['Other (net)', b.otherNet, 'Derived (PAT − UW − investment)'],
+                  ['Profit after tax — IGAAP', b.pat, 'Reported'],
+                  ['Profit after tax — IFRS', ifrsPat ?? 0, ifrsPat != null ? 'Reported' : 'Not disclosed'],
+                ].map(([label, val, prov]) => (
+                  <tr key={label as string} className="border-b border-soft-border/50">
+                    <td className="py-1 pr-2 text-[11px] text-ink-secondary">{label as string}</td>
+                    <td className="py-1 pr-2 text-right text-[11px] tabular-nums text-navy-deep">{signed(val as number)}</td>
+                    <td className="py-1 text-right text-[10px] text-ink-secondary/80">{prov as string}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 text-[10px] text-ink-secondary">IGAAP lines reconcile exactly to reported PAT; tax was nil in {fy} (carried-forward losses).</p>
+          </div>
+        )}
+
+        {tab === 'sources' && (
+          <div className="space-y-2.5">
+            <a
+              href={BRIDGE_SOURCE_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between gap-3 rounded-lg border border-soft-border bg-ice/40 px-3 py-2.5 transition-colors hover:border-muted-blue hover:bg-white"
+            >
+              <span>
+                <span className="block text-[11.5px] font-semibold text-navy-deep">{companyShort} · {fy} Annual Report</span>
+                <span className="block text-[10px] text-ink-secondary">{BRIDGE_SOURCE} — Form B-RA + Form B-PL</span>
+              </span>
+              <Layers className="h-3.5 w-3.5 shrink-0 text-muted-blue" />
+            </a>
+            <p className="text-[10px] leading-snug text-ink-secondary">All bridge figures are extracted from this filing. IFRS PAT, where shown, is the separately-disclosed figure in the same report.</p>
+          </div>
+        )}
       </div>
     </Drawer>
   )

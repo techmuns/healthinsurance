@@ -45,12 +45,20 @@ export function BasisPill({ basis, className = '' }: { basis: AccountingBasis; c
   )
 }
 
-/** One-line investor caution about comparing across accounting bases. */
-export function BasisExplainer({ className = '' }: { className?: string }) {
+/**
+ * One-line investor caution about comparing across accounting bases. When a
+ * `basis` is passed it reads as a plain support note ("Reported on … · IFRS can
+ * differ due to accounting treatment"); otherwise it shows the short standing note.
+ */
+export function BasisExplainer({ basis, className = '' }: { basis?: AccountingBasis; className?: string }) {
   return (
     <p className={`flex items-start gap-1.5 text-[10.5px] leading-snug text-ink-secondary ${className}`}>
       <Info className="mt-0.5 h-3 w-3 shrink-0 text-champagne" />
-      <span>{BASIS_EXPLAINER}</span>
+      <span>
+        {basis
+          ? `Reported on ${BASIS_LABEL[basis]}. The IFRS view can differ due to accounting treatment — check basis before comparing.`
+          : BASIS_EXPLAINER}
+      </span>
     </p>
   )
 }

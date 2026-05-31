@@ -41,13 +41,15 @@ import type { BasisInfo } from '@/data/mockData'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
-import { lookupProvenance } from '@/lib/dataLayer'
+import { lookupProvenance, getInsurers } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Metric, Insurer } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import { EarningsBridge } from '@/components/EarningsBridge'
+import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
+import { getEarningsBridge } from '@/data/earningsBridge'
 import {
   getBasisProfit,
   getBasisPatGrowth,
@@ -567,6 +569,57 @@ function underwritingResult(p: AnnualPoint): number | null {
 
 const crc = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
 
+// Audited core underwriting result (₹ Cr) by fiscal year, from the earnings
+// bridge (real Revenue-Account figures). This is the authoritative core-profit
+// number — the SAME one the Profit Quality Check and the GWP→PAT waterfall use —
+// so the page never shows underwriting as a profit in one place and a loss in
+// another. Empty for companies without an audited bridge.
+function bridgeUwByFy(companyId: string): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const y of getEarningsBridge(companyId)) out[y.fy] = y.igaap.underwritingResult
+  return out
+}
+
+// Core underwriting result for a company-year: prefer the audited bridge figure
+// where it exists, else fall back to the transparent NEP × (1 − combined ratio)
+// proxy. null (honest "pending") when neither input is available.
+function underwritingFor(companyId: string, p: AnnualPoint, bridge?: Record<string, number>): number | null {
+  const b = bridge ?? bridgeUwByFy(companyId)
+  return p.fy in b ? b[p.fy] : underwritingResult(p)
+}
+
+// ─── Peer benchmark — selected company vs peer-group median ───────────────────
+// Uses the same snapshot-built insurer universe as the focal company, so the
+// comparison is like-for-like (company-reported basis). Median is taken across
+// the peer group EXCLUDING the focal company; null when fewer than 2 peers
+// report the metric — never a fabricated benchmark.
+function peerMedian(company: Insurer, pick: (i: Insurer) => number | null | undefined): number | null {
+  const vals = getInsurers()
+    .filter((i) => i.id !== company.id && i.peerGroup === company.peerGroup)
+    .map(pick)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v) && v > 0)
+    .sort((a, b) => a - b)
+  if (vals.length < 2) return null
+  const mid = Math.floor(vals.length / 2)
+  return vals.length % 2 ? vals[mid] : (vals[mid - 1] + vals[mid]) / 2
+}
+
+// Compact "vs peer median" chip — a thin reference tag, never a chart. Tinted
+// green when the focal company is better than the median, coral when worse.
+// `higherIsBetter` flips the logic (ROE / solvency: higher better; combined
+// ratio: lower better).
+function PeerMedianTag({ value, median, fmt, higherIsBetter, label = 'Peer median' }: { value: number | null; median: number | null; fmt: (v: number) => string; higherIsBetter: boolean; label?: string }) {
+  if (median == null || value == null) return null
+  const better = higherIsBetter ? value >= median : value <= median
+  const c = better ? PALETTE.emerald : PALETTE.coral
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[8.5px] font-semibold leading-none" style={{ borderColor: `${c}44`, background: `${c}12`, color: c }}>
+      <span className="h-1 w-1 rounded-full" style={{ background: c }} />
+      {label} {fmt(median)} · {better ? 'ahead' : 'behind'}
+    </span>
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Accounting-basis lens — two real bases: IGAAP / Statutory (the default) and
 // IFRS. IGAAP / Statutory IS the dashboard's existing statutory data path, so
@@ -605,7 +658,12 @@ function buildBasisCtx(company: Insurer, basis: AccountingBasis): BasisCtx {
     // own reported-statutory values. No overlay or period anchor needed.
     return { basis, isIfrs: false, tracked, period: null, pLabel: 'FY25', sourceLabel, pat: null, patMargin: null, patGrowth: null, combinedRatio: null, claimsRatio: null, expenseRatio: null, roe: null }
   }
-  const period = latestAnnualWithPat(company.id, 'ifrs') ?? 'FY26'
+  // Anchor IFRS to FY25 — the page's reported year — so switching basis never
+  // silently jumps the period to FY26. Fall back to the latest reported IFRS
+  // year only if FY25 IFRS PAT is unavailable (never a hardcoded FY26 default).
+  const period: BasisPeriod = getBasisProfit(company.id, 'ifrs', 'FY25')?.pat != null
+    ? 'FY25'
+    : latestAnnualWithPat(company.id, 'ifrs') ?? 'FY25'
   const bp = getBasisProfit(company.id, 'ifrs', period)
   return {
     basis,
@@ -681,6 +739,7 @@ function StoryHeader({ eyebrow, title, subtitle, right }: { eyebrow: string; tit
 
 type NodeId = 'underwriting' | 'core' | 'conversion' | 'returns' | 'capital'
 
+type StatusTone = 'positive' | 'teal' | 'warning' | 'negative' | 'navy'
 interface EngineStage {
   id: NodeId
   n: number
@@ -691,22 +750,70 @@ interface EngineStage {
   color: string
   Icon: LucideIcon
   explore: string
+  /** One small checkpoint status — Strong / Improving / Watch / Weak. */
+  badge: { label: string; tone: StatusTone }
 }
 
 const ORANGE = '#C2691C' // shareholder return — controlled amber-orange (monitor, not danger)
 const GOLD = '#C99A2E' // profit conversion — warm gold (value creation, not warning)
 const DEEP_GREEN = '#1E6B4A' // capital support — deepest green (safety, resilience)
 
+// Tone → ink colour for the compact checkpoint status pills on the Story Map.
+const STATUS_TINT: Record<StatusTone, string> = {
+  positive: PALETTE.emerald,
+  teal: PALETTE.teal,
+  warning: PALETTE.amber,
+  negative: PALETTE.coral,
+  navy: PALETTE.navy,
+}
+
+// Single source of truth for a checkpoint's status — Strong / Improving / Watch
+// / Weak (or n/a / NA / Pending). Shared by the Story Map node badges AND the
+// detail LensHeader, so the map and the drill-down can never disagree. Combined
+// ratio leads the focal company's statutory figure (same as the headline KPI).
+function nodeStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: StatusTone } {
+  const naBadge: { label: string; tone: StatusTone } = { label: ctx.isIfrs ? 'NA' : 'n/a', tone: 'navy' }
+  if (id === 'underwriting') {
+    const cr = ctx.isIfrs ? ctx.combinedRatio : STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+    if (cr == null) return naBadge
+    return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+  }
+  if (id === 'core') {
+    if (ctx.isIfrs) return { label: 'NA', tone: 'navy' }
+    const latest = series[series.length - 1] as AnnualPoint | undefined
+    const uw = latest ? underwritingFor(company.id, latest) : null
+    return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'Strong', tone: 'positive' } : { label: 'Weak', tone: 'negative' }
+  }
+  if (id === 'conversion') {
+    const pm = ctx.isIfrs ? ctx.patMargin : getMarginMetrics(series).netMargin
+    if (pm == null) return naBadge
+    const pats = series.filter((p) => p.pat != null)
+    const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+    return pm > 5 ? { label: 'Strong', tone: 'positive' } : pm > 0 ? (patYoY != null && patYoY > 0 ? { label: 'Improving', tone: 'teal' } : { label: 'Watch', tone: 'warning' }) : { label: 'Weak', tone: 'negative' }
+  }
+  if (id === 'returns') {
+    const roe = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
+    if (roe == null) return naBadge
+    return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'teal' } : roe > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+  }
+  const s = company.solvency
+  return s <= 0 ? { label: 'n/a', tone: 'navy' } : s >= 2 ? { label: 'Strong', tone: 'positive' } : s >= 1.5 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+}
+
 function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCtx): EngineStage[] {
   const hasCR = company.combinedRatio > 0
   const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
+  // Core underwriting uses the audited bridge figure where available (focal), so
+  // this node agrees with the Profit Quality Check + waterfall — never a profit
+  // in one place and a loss in another.
+  const uw = latest ? underwritingFor(company.id, latest) : null
   const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
   const solvency = company.solvency
-  // Basis-aware headline scalars: IGAAP / Statutory uses the existing statutory
-  // values; IFRS switches to the IFRS dataset (NA where unreported). Underwriting
-  // profit is a statutory measure, so it shows NA on IFRS (never derived).
-  const crVal = ctx.isIfrs ? ctx.combinedRatio : hasCR ? company.combinedRatio : null
+  // Combined ratio leads the focal company's real IRDAI statutory figure (the
+  // SAME number as the header KPI + Discipline Engine), so the map never shows a
+  // different combined ratio from the detail below. IFRS switches to its dataset.
+  const statCR = STATUTORY_CR[company.id]?.statutory ?? null
+  const crVal = ctx.isIfrs ? ctx.combinedRatio : statCR ?? (hasCR ? company.combinedRatio : null)
   const pmVal = ctx.isIfrs ? ctx.patMargin : patMargin
   const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
   const naWord = ctx.isIfrs ? 'NA' : 'n/a'
@@ -721,18 +828,20 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: crVal == null,
       color: PALETTE.emerald,
       Icon: ShieldCheck,
-      explore: 'Are costs below ₹100 premium?',
+      explore: 'Are costs below ₹100 of premium?',
+      badge: nodeStatus('underwriting', company, series, ctx),
     },
     {
       id: 'core',
       n: 2,
       label: 'Core profitability',
-      metricLabel: 'Underwriting profit',
+      metricLabel: 'Underwriting result',
       value: ctx.isIfrs ? 'NA' : uw == null ? 'Pending' : crc(uw),
       missing: ctx.isIfrs || uw == null,
       color: PALETTE.teal,
       Icon: Gauge,
-      explore: 'Discipline into underwriting profit.',
+      explore: 'Does insurance itself make money?',
+      badge: nodeStatus('core', company, series, ctx),
     },
     {
       id: 'conversion',
@@ -743,7 +852,8 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: pmVal == null,
       color: GOLD,
       Icon: IndianRupee,
-      explore: 'See how premium converts into PAT.',
+      explore: 'How much premium becomes profit?',
+      badge: nodeStatus('conversion', company, series, ctx),
     },
     {
       id: 'returns',
@@ -754,7 +864,8 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       missing: roeVal == null,
       color: ORANGE,
       Icon: BarChart3,
-      explore: 'Profit to shareholder return.',
+      explore: 'Profit into shareholder return.',
+      badge: nodeStatus('returns', company, series, ctx),
     },
     {
       id: 'capital',
@@ -766,6 +877,7 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       color: DEEP_GREEN,
       Icon: Shield,
       explore: 'Capital backing the growth.',
+      badge: nodeStatus('capital', company, series, ctx),
     },
   ]
 }
@@ -879,6 +991,15 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { c
                 </p>
               )}
 
+              {/* Checkpoint status — one small badge: Strong / Improving / Watch / Weak */}
+              <span
+                className="mt-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.06em]"
+                style={{ color: STATUS_TINT[s.badge.tone], background: `${STATUS_TINT[s.badge.tone]}14` }}
+              >
+                <span className="h-1 w-1 rounded-full bg-current opacity-80" />
+                {s.badge.label}
+              </span>
+
               {/* Clickable affordance — "Viewing" when active, a quiet "Explore" cue otherwise */}
               {selected ? (
                 <span className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white shadow-sm" style={{ background: s.color }}>
@@ -927,9 +1048,19 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { c
   )
 }
 
-// ─── (D) Underwriting Profit Trend — derived core profit, CR overlay ─────────
+// ─── (D) Underwriting Result Trend — audited core profit/loss over time ──────
+// Bridge companies (focal) show the AUDITED underwriting result (Revenue A/c) —
+// the same loss the Profit Quality Check + waterfall show — with no combined-
+// ratio overlay (the ratio lives in the Discipline lens). Other companies use
+// the transparent NEP × (1 − combined) proxy with a combined-ratio overlay.
 function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer; series: AnnualPoint[]; tintBg?: string }) {
-  const data = series.map((p) => ({ fy: p.fy, uw: underwritingResult(p), cr: p.combinedRatio }))
+  const inRangeFys = new Set(series.map((p) => p.fy))
+  const bridgeYears = getEarningsBridge(company.id).filter((y) => inRangeFys.has(y.fy))
+  const useBridge = bridgeYears.length >= 2
+  const hasCROverlay = !useBridge
+  const data = useBridge
+    ? [...bridgeYears].reverse().map((y) => ({ fy: y.fy, uw: y.igaap.underwritingResult, cr: null as number | null }))
+    : series.map((p) => ({ fy: p.fy, uw: underwritingResult(p), cr: p.combinedRatio }))
   const usable = data.filter((d) => d.uw != null) as { fy: string; uw: number; cr: number | null }[]
   const enough = usable.length >= 2
   const latest = usable[usable.length - 1]
@@ -944,14 +1075,23 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
   }
   // Strongest profit year gets the boldest green (usually the latest).
   const maxUw = enough ? Math.max(...usable.map((d) => d.uw)) : 0
+  const widening = enough && latest.uw < 0 && usable[usable.length - 2].uw != null && latest.uw < usable[usable.length - 2].uw
   const subtitle = !enough
-    ? `Trend pending for ${company.shortName} — needs 2+ years of NEP and combined ratio.`
-    : 'Underwriting moved from loss to profit.'
+    ? `Trend pending for ${company.shortName}.`
+    : latest.uw >= 0
+      ? turned ? 'Underwriting moved from loss to profit.' : 'Underwriting stays in profit.'
+      : 'Core underwriting is still a loss — investment income is covering it.'
+  // The required investor read: does the loss decide future PAT quality?
+  const readLine = !enough
+    ? ''
+    : latest.uw >= 0
+      ? 'Core underwriting now earns money before investment income — higher-quality profit.'
+      : `Underwriting loss is ${widening ? 'widening' : 'narrowing'} — turning it positive is the key driver of future PAT quality.`
   return (
     <section className="card-surface p-4" style={tintBg ? { background: tintBg } : undefined}>
       <StoryHeader
         eyebrow="Core Profitability"
-        title="Underwriting Profit Turnaround"
+        title="Underwriting Result Trend"
         subtitle={subtitle}
         right={
           enough ? (
@@ -966,7 +1106,7 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
               <CartesianGrid strokeDasharray="3 3" stroke={PALETTE.border} vertical={false} />
               <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280', fontWeight: 600 }} tickLine={false} axisLine={{ stroke: PALETTE.border }} />
               <YAxis yAxisId="uw" tick={{ fontSize: 10, fill: '#6B7280' }} tickLine={false} axisLine={false} width={46} tickFormatter={(v: number) => `₹${v}`} />
-              <YAxis yAxisId="cr" orientation="right" tick={{ fontSize: 9.5, fill: PALETTE.champagne }} tickLine={false} axisLine={false} width={30} unit="%" domain={['dataMin - 3', 'dataMax + 3']} />
+              {hasCROverlay && <YAxis yAxisId="cr" orientation="right" tick={{ fontSize: 9.5, fill: PALETTE.champagne }} tickLine={false} axisLine={false} width={30} unit="%" domain={['dataMin - 3', 'dataMax + 3']} />}
               <Tooltip
                 cursor={{ fill: 'rgba(39,69,126,0.03)' }}
                 content={({ active, payload, label }) => {
@@ -1007,9 +1147,10 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
                   label={{ value: '↳ Turned positive', position: 'top', fontSize: 9, fill: PALETTE.emerald, fontWeight: 700 }}
                 />
               )}
-              {/* Combined ratio — secondary, subtle overlay so it doesn't compete with the bars. */}
-              <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.2} strokeOpacity={0.6} dot={{ r: 2, fill: PALETTE.champagne }} activeDot={{ r: 3.5 }} connectNulls />
-              <Bar yAxisId="uw" dataKey="uw" name="Underwriting profit" radius={[3, 3, 0, 0]} maxBarSize={40}>
+              {/* Combined ratio — secondary, subtle overlay (proxy view only; the
+                  audited bridge view shows the result in ₹ Cr without the ratio). */}
+              {hasCROverlay && <Line yAxisId="cr" type="monotone" dataKey="cr" name="Combined ratio" stroke={PALETTE.champagne} strokeWidth={1.2} strokeOpacity={0.6} dot={{ r: 2, fill: PALETTE.champagne }} activeDot={{ r: 3.5 }} connectNulls />}
+              <Bar yAxisId="uw" dataKey="uw" name="Underwriting result" radius={[3, 3, 0, 0]} maxBarSize={40}>
                 {usable.map((d) => {
                   const strongest = d.uw > 0 && d.uw === maxUw
                   const fill = d.uw < 0 ? PALETTE.coral : strongest ? PALETTE.emerald : PALETTE.teal
@@ -1022,18 +1163,27 @@ function UnderwritingProfitTrend({ company, series, tintBg }: { company: Insurer
           <PendingNote>{`Trend pending for ${company.shortName} — needs 2+ years of NEP and combined ratio.`}</PendingNote>
         )}
       </div>
+      {readLine && (
+        <p className="mt-2.5 flex items-start gap-1.5 rounded-lg px-3 py-2 text-[10.5px] font-medium leading-snug text-navy-deep/85" style={{ background: `${latest.uw >= 0 ? PALETTE.emerald : PALETTE.coral}10` }}>
+          <Gauge className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: latest.uw >= 0 ? PALETTE.emerald : PALETTE.coral }} />
+          {readLine}
+        </p>
+      )}
       <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.emerald }} /> Underwriting profit</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm" style={{ background: PALETTE.coral }} /> Underwriting loss</span>
-          <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>
+          {hasCROverlay && <span className="inline-flex items-center gap-1.5"><span className="inline-block h-0.5 w-4 rounded-full" style={{ background: PALETTE.champagne }} /> Combined ratio</span>}
         </div>
         {(() => {
-          const s = enough ? realSource('combined_ratio', company.id) : null
+          if (!enough) return <SourceTag source="Pending" confidence="pending" />
+          const period = `${usable[0].fy}–${latest.fy}`
+          if (useBridge) return <SourceTag source="Annual report · Revenue A/c" period={period} confidence="high" />
+          const s = realSource('combined_ratio', company.id)
           return s ? (
-            <SourceTag source="Company filing · derived" period={`${usable[0].fy}–${latest.fy}`} confidence={s.confidence} provenance={s.provenance} />
+            <SourceTag source="Company filing · derived" period={period} confidence={s.confidence} provenance={s.provenance} />
           ) : (
-            <SourceTag source={enough ? 'Company filing · derived' : 'Pending'} period={enough ? `${usable[0].fy}–${latest.fy}` : undefined} confidence={enough ? 'high' : 'pending'} />
+            <SourceTag source="Company filing · derived" period={period} confidence="high" />
           )
         })()}
       </div>
@@ -1243,7 +1393,17 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
   const patStrong = patYoY != null && patYoY >= 50
   const marginFit = hasPatTrend ? fitTrend(patSeries) : null
   const marginUp = marginFit == null ? false : marginFit.slope >= 0
-  const conclusion = patUp || (netMargin != null && netMargin > 0) ? 'Premium is turning into profit.' : 'Conversion still building — watch costs.'
+  // Operating-leverage read: is premium outgrowing costs? (Reported basis only —
+  // the GWP-growth / expense-ratio trend needs the multi-year reported series.)
+  const conclusion = !ctx.isIfrs && ol.gwpGrowth != null && ol.expDelta != null
+    ? ol.expDelta < -0.2
+      ? `Premium up ${ol.gwpGrowth.toFixed(0)}% with costs easing — operating leverage is building.`
+      : ol.gwpGrowth >= 15
+        ? `Premium up ${ol.gwpGrowth.toFixed(0)}%, but costs aren't easing yet — margins capped until they do.`
+        : 'Conversion still building — watch costs.'
+    : patUp || (netMargin != null && netMargin > 0)
+      ? 'Premium is turning into profit.'
+      : 'Conversion still building — watch costs.'
 
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
@@ -1298,7 +1458,10 @@ function ConversionQuality({ company, series, ctx }: { company: Insurer; series:
         </div>
       </div>
 
-      <p className="mt-auto pt-4 text-[10.5px] font-medium leading-snug text-navy-deep/80">{conclusion}</p>
+      <div className="mt-auto pt-4">
+        <p className="text-[10.5px] font-medium leading-snug text-navy-deep/80">{conclusion}</p>
+        <p className="mt-1 text-[9px] leading-snug text-ink-secondary/80">Premium growth must stay ahead of expense growth for margins to expand.</p>
+      </div>
     </div>
   )
 }
@@ -1326,6 +1489,8 @@ function CapitalBufferCard({ company }: { company: Insurer }) {
 function RoeGaugeCard({ company, ctx }: { company: Insurer; ctx: BasisCtx }) {
   const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
   const roeTone: Tone = roeVal == null ? 'neutral' : roeVal >= 12 ? 'positive' : roeVal >= 5 ? 'warning' : 'negative'
+  // Peer benchmark only on the reported basis (the peer universe is reported).
+  const roeMedian = ctx.isIfrs ? null : peerMedian(company, (i) => i.roe)
   return (
     <div className="relative overflow-hidden rounded-lg p-3.5" style={{ background: 'linear-gradient(135deg, #FBF1E5 0%, #FFF9F2 100%)' }}>
       <div className="flex items-center justify-between gap-2">
@@ -1336,6 +1501,9 @@ function RoeGaugeCard({ company, ctx }: { company: Insurer; ctx: BasisCtx }) {
       <p className={`mt-0.5 text-[10.5px] ${toneText[roeTone]}`}>
         {roeVal == null ? (ctx.isIfrs ? 'Not available on this basis' : 'Return pending') : roeTone === 'positive' ? 'Above sector benchmark' : roeTone === 'warning' ? 'Early return signal' : 'Sub-cost-of-capital'}
       </p>
+      {!ctx.isIfrs && roeMedian != null && (
+        <span className="mt-1 inline-flex"><PeerMedianTag value={roeVal} median={roeMedian} fmt={(v) => `${v.toFixed(1)}%`} higherIsBetter /></span>
+      )}
       {ctx.isIfrs && <p className="text-[8.5px] leading-snug text-ink-secondary">ROE not reported on IFRS (no IFRS equity) — shown as NA, not derived.</p>}
       <SemiGauge
         value={roeVal ?? 0}
@@ -1365,37 +1533,40 @@ function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId,
   const hasCR = company.combinedRatio > 0
   const cost = COST_RATIOS[company.id]
   const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
+  const uw = latest ? underwritingFor(company.id, latest) : null
   const roe = company.roe
   const solvency = company.solvency
   const costAbsorb = cost ? cost.loss + cost.commission + cost.expense : null
+  // Lead the focal company's statutory combined ratio (same number shown on the
+  // map + Discipline Engine), so the read agrees with the headline.
+  const crLead = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
 
   return {
     underwriting: {
-      soWhat: !hasCR
+      soWhat: crLead == null
         ? `${company.shortName} is a life carrier — read returns and capital.`
-        : company.combinedRatio < 100
-          ? 'Discipline improving — total cost below premium.'
-          : 'Watch discipline — total cost above premium.',
-      why: costAbsorb != null
-        ? 'Claims, commission and opex stay inside ₹100.'
-        : 'Cost split not reported on this basis.',
-      meaning: !hasCR
+        : crLead < 100
+          ? 'Costs sit below ₹100 of premium — disciplined underwriting.'
+          : 'Costs sit just above ₹100 of premium — discipline is the key monitorable.',
+      why: costAbsorb == null
+        ? 'Cost split not reported on this basis.'
+        : `Claims, commission and opex take ₹${costAbsorb.toFixed(0)} of every ₹100${costAbsorb > 100 ? ' — just over break-even.' : '.'}`,
+      meaning: crLead == null
         ? 'Read via returns and capital.'
-        : company.combinedRatio < 100
-          ? 'No longer leaning on investment income.'
-          : 'Profit leans on investment income.',
-      watch: 'Claims, expense, combined ratio vs 100%.',
+        : crLead < 100
+          ? 'Underwriting can stand on its own, before investment income.'
+          : 'Profit still leans on investment income.',
+      watch: 'Claims ratio, expense ratio, combined ratio vs 100%.',
     },
     core: {
       soWhat: uw == null
-        ? 'Underwriting profit pending NEP and combined ratio.'
+        ? 'Underwriting result pending NEP and combined ratio.'
         : uw > 0
-          ? 'Underwriting profitable — combined below 100%.'
-          : 'Underwriting in loss; profit leans on investments.',
-      why: uw == null ? 'Needs NEP and combined ratio.' : `Underwriting ≈ NEP × (1 − combined) = ${crc(uw)}.`,
-      meaning: 'Insurance profit, before investments.',
-      watch: 'Does underwriting profit grow with premium?',
+          ? 'Insurance itself makes money — high-quality profit.'
+          : 'Core underwriting is still a loss; PAT leans on investment income.',
+      why: uw == null ? 'Needs NEP and combined ratio.' : `Premium earned − claims − commission − operating cost = ${crc(uw)}.`,
+      meaning: 'The profit from insurance alone, before investments.',
+      watch: 'Is the underwriting loss narrowing toward break-even?',
     },
     conversion: {
       soWhat: uw != null && uw > 0
@@ -1553,29 +1724,11 @@ const LENS: Record<NodeId, LensMeta> = {
   },
 }
 
+// The active-lens header badge reuses the SAME checkpoint status as the Story
+// Map (nodeStatus), so the map and the drill-down never show a different status
+// for the same stage.
 function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: ChipTone } {
-  if (id === 'underwriting') {
-    const cr = ctx.isIfrs ? ctx.combinedRatio : company.combinedRatio > 0 ? company.combinedRatio : null
-    if (cr == null) return { label: ctx.isIfrs ? 'NA' : 'N/A', tone: 'navy' }
-    return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-  }
-  if (id === 'core') {
-    if (ctx.isIfrs) return { label: 'NA', tone: 'navy' }
-    const latest = series[series.length - 1] as AnnualPoint | undefined
-    const uw = latest ? underwritingResult(latest) : null
-    return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'In profit', tone: 'teal' } : { label: 'In loss', tone: 'negative' }
-  }
-  if (id === 'conversion') {
-    const pm = ctx.isIfrs ? ctx.patMargin : getMarginMetrics(series).netMargin
-    if (pm == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
-    return pm > 5 ? { label: 'Healthy', tone: 'teal' } : pm > 0 ? { label: 'Thin', tone: 'warning' } : { label: 'Loss', tone: 'negative' }
-  }
-  if (id === 'returns') {
-    const roe = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-    if (roe == null) return { label: ctx.isIfrs ? 'NA' : 'Pending', tone: 'navy' }
-    return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'warning' } : { label: 'Sub-CoC', tone: 'negative' }
-  }
-  return company.solvency <= 0 ? { label: 'Pending', tone: 'navy' } : company.solvency >= 2 ? { label: 'Comfortable', tone: 'positive' } : company.solvency >= 1.5 ? { label: 'Adequate', tone: 'warning' } : { label: 'Tight', tone: 'negative' }
+  return nodeStatus(id, company, series, ctx)
 }
 
 function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string; tone: ChipTone } }) {
@@ -1713,9 +1866,12 @@ function CombinedRatioWaterfall({ company, series }: { company: Insurer; series:
           </p>
 
           {stat && (
-            <p className="mt-1.5 text-[9.5px] leading-snug text-ink-secondary">
-              <span className="font-semibold text-navy-deep">IRDAI statutory</span> basis: claims + commission + opex = {stat.statutory.toFixed(1)}% combined. Company-reported: {stat.reported.toFixed(1)}% ({stat.reportedFY}).
-            </p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <p className="text-[9.5px] leading-snug text-ink-secondary">
+                <span className="font-semibold text-navy-deep">IRDAI statutory</span> basis: claims + commission + opex = {stat.statutory.toFixed(1)}% combined. Company-reported: {stat.reported.toFixed(1)}% ({stat.reportedFY}).
+              </p>
+              <PeerMedianTag value={company.combinedRatio} median={peerMedian(company, (i) => i.combinedRatio)} fmt={(v) => `${v.toFixed(1)}%`} higherIsBetter={false} label="Peer median (reported)" />
+            </div>
           )}
 
           {hasCR && (
@@ -1893,7 +2049,14 @@ function ReturnBridge({ company, series }: { company: Insurer; series: AnnualPoi
         </div>
       </div>
 
-      <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">{roeModerate ? 'ROE is improving as PAT scales, but stays moderate because the post-IPO capital base is still large.' : roe > 0 ? 'ROE is scaling with profitability as PAT compounds against the equity base.' : 'ROE drivers are pending for this carrier.'}</p>
+      <p className="mt-3.5 text-[11px] leading-relaxed text-navy-deep/85">
+        {roeModerate
+          ? 'ROE improves when PAT margin rises without needing much extra capital. It stays moderate today because the post-IPO capital base is still large.'
+          : roe > 0
+            ? 'ROE improves when PAT margin rises without needing much extra capital — profit is now compounding against equity.'
+            : 'ROE drivers are pending for this carrier.'}
+        {company.solvency >= 2 ? ' Strong solvency supports growth without near-term capital pressure.' : ''}
+      </p>
     </div>
   )
 }
@@ -1907,6 +2070,7 @@ function SolvencyCushionBridge({ company }: { company: Insurer }) {
   const MINS = 1
   const MAXS = 3.6
   const pct = (v: number) => Math.max(0, Math.min(100, ((v - MINS) / (MAXS - MINS)) * 100))
+  const solvMedian = peerMedian(company, (i) => i.solvency)
   return (
     <div className="rounded-xl border p-4" style={{ background: '#EFF7F2', borderColor: '#CFE7DA' }}>
       <div className="flex items-baseline justify-between">
@@ -1916,7 +2080,10 @@ function SolvencyCushionBridge({ company }: { company: Insurer }) {
         </div>
         <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Capital above the 1.5x floor.</p>
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <p className="text-[11px] leading-snug text-ink-secondary">Capital above the 1.5x floor.</p>
+        {s > 0 && <PeerMedianTag value={s} median={solvMedian} fmt={(v) => `${v.toFixed(2)}x`} higherIsBetter />}
+      </div>
 
       {s > 0 && cushion != null ? (
         <>
@@ -1975,8 +2142,13 @@ function InsightStrip({ line, accent }: { line: string; accent: string }) {
 // Core-profitability proof rail — the derived underwriting result headline.
 function CoreResultCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
   const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
-  const hasCR = company.combinedRatio > 0
+  const uw = latest ? underwritingFor(company.id, latest) : null
+  const audited = latest != null && latest.fy in bridgeUwByFy(company.id)
+  // Lead the combined ratio with the focal company's statutory figure (>100% when
+  // underwriting loses money), so this card never shows a sub-100% ratio next to
+  // an underwriting loss.
+  const stat = STATUTORY_CR[company.id]
+  const crVal = stat ? stat.statutory : company.combinedRatio > 0 ? company.combinedRatio : null
   return (
     <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: '#F0F8F7', borderColor: '#D2E8E6' }}>
       <div className="flex items-center gap-1.5">
@@ -1984,15 +2156,15 @@ function CoreResultCard({ company, series }: { company: Insurer; series: AnnualP
         <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Core Result</p>
       </div>
       <div className="mt-3">
-        <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Underwriting result · FY</p>
+        <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Underwriting {uw != null && uw < 0 ? 'loss' : 'result'} · FY</p>
         <p className="mt-0.5 font-display text-[24px] leading-none" style={{ color: uw == null ? '#94A3B8' : uw >= 0 ? PALETTE.teal : PALETTE.coral }}>{uw == null ? 'Data pending' : crc(uw)}</p>
-        <p className="mt-1 text-[9.5px] text-ink-secondary">≈ NEP × (1 − combined ratio)</p>
+        <p className="mt-1 text-[9.5px] text-ink-secondary">{audited ? 'Premium earned − claims − costs (audited)' : 'Premium earned − claims − costs'}</p>
       </div>
       <div className="mt-3 flex items-center justify-between border-t border-[#D2E8E6] pt-2.5">
-        <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio</span>
-        <span className="font-display text-[15px] text-navy-deep">{hasCR ? `${company.combinedRatio.toFixed(1)}%` : 'n/a'}</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Combined ratio{stat ? ' · statutory' : ''}</span>
+        <span className="font-display text-[15px] text-navy-deep">{crVal != null ? `${crVal.toFixed(1)}%` : 'n/a'}</span>
       </div>
-      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">Insurance profit, before investment income.</p>
+      <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">{uw != null && uw < 0 ? 'Insurance result before investment income — still negative.' : 'Insurance result, before investment income.'}</p>
     </div>
   )
 }
@@ -2002,22 +2174,24 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
   const hasCR = company.combinedRatio > 0
   const cost = COST_RATIOS[company.id]
   const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingResult(latest) : null
+  const uw = latest ? underwritingFor(company.id, latest) : null
   const uwSpread = cost ? Math.round((100 - (cost.loss + cost.commission + cost.expense)) * 10) / 10 : null
   const ol = operatingLeverage(company, series)
   switch (id) {
-    case 'underwriting':
-      return !hasCR
+    case 'underwriting': {
+      const cr = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
+      return cr == null
         ? `${company.shortName} is a life carrier — read returns and capital.`
-        : company.combinedRatio < 100
-          ? 'Combined below 100% — underwriting surplus before investments.'
-          : 'Combined above 100% — underwriting loss; profit leans on investments.'
+        : cr < 100
+          ? 'Combined below 100% — underwriting earns a surplus before investments.'
+          : 'Combined above 100% — underwriting still loss-making; PAT leans on investment income.'
+    }
     case 'core':
       return uw == null
-        ? 'Underwriting profit pending NEP and combined ratio.'
+        ? 'Underwriting result pending NEP and combined ratio.'
         : uw > 0
-          ? 'Underwriting has turned positive — bars above zero.'
-          : `Underwriting still in a ${crc(uw)} deficit; profit leans on investments.`
+          ? 'Insurance itself is now profitable — bars above zero.'
+          : `Core underwriting is still a loss (${crc(Math.abs(uw))}); investment income is covering it.`
     case 'conversion':
       return uwSpread == null
         ? `${company.shortName} is a life carrier — ₹100 conversion read pending.`
@@ -2182,7 +2356,11 @@ export function ProfitabilityCapital() {
   const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
 
   const hasCR = company.combinedRatio > 0
-  const ct = hasCR ? combinedTone(company.combinedRatio) : { label: 'N/A', tone: 'neutral' as Tone }
+  // Lead the focal company's statutory combined ratio (same as the headline KPI),
+  // so the hero accent + the fallback verdict reflect the honest, cautious number
+  // rather than the lower company-reported one.
+  const headlineCR = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
+  const ct = headlineCR != null ? combinedTone(headlineCR) : { label: 'N/A', tone: 'neutral' as Tone }
   const mm = getMarginMetrics(series)
   // Combined ratio is now sourced from real, verified IRDAI statutory filings
   // for the focal company (see STATUTORY_CR / the Discipline Engine), so its
@@ -2230,13 +2408,22 @@ export function ProfitabilityCapital() {
     { label: 'Solvency', metric: m(company.solvency > 0 ? company.solvency : null, { unit: 'x' }) },
   ]
 
-  const reportedVerdict = !hasCR
-    ? `Life carrier — ROE ${company.roe.toFixed(1)}%, ${company.solvency.toFixed(2)}x solvency.`
-    : ct.tone === 'positive'
-      ? `Combined ${company.combinedRatio.toFixed(1)}% · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency — discipline becoming returns.`
-      : ct.tone === 'warning'
-        ? `Combined ${company.combinedRatio.toFixed(1)}% in watch band · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency.`
-        : `Combined ${company.combinedRatio.toFixed(1)}% loss-making · profit hinges on ${company.solvency.toFixed(2)}x cushion.`
+  // Top verdict — for companies with an audited earnings bridge, lead with the
+  // page's central question: is PAT underwriting-led or investment-income-led?
+  // (The supporting numbers live in the Profit Quality Check card below.)
+  const latestBridge = getEarningsBridge(company.id)[0] ?? null
+  const investmentLed = latestBridge != null && latestBridge.igaap.underwritingResult < 0 && latestBridge.igaap.pat > 0
+  const reportedVerdict = latestBridge != null
+    ? investmentLed
+      ? 'Profitable, but PAT is still investment-income-led — turning underwriting profitable is the next key trigger.'
+      : 'Core underwriting is profitable — PAT is high-quality, not just investment income.'
+    : !hasCR
+      ? `Life carrier — ROE ${company.roe.toFixed(1)}%, ${company.solvency.toFixed(2)}x solvency.`
+      : ct.tone === 'positive'
+        ? `Combined ${company.combinedRatio.toFixed(1)}% · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency — discipline becoming returns.`
+        : ct.tone === 'warning'
+          ? `Combined ${company.combinedRatio.toFixed(1)}% in watch band · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency.`
+          : `Combined ${company.combinedRatio.toFixed(1)}% loss-making · profit hinges on ${company.solvency.toFixed(2)}x cushion.`
   const basisVerdict = basisCtx.tracked
     ? `${BASIS_LABEL[basis]} (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`} · combined ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`} · PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Check basis before comparing.`
     : `${company.shortName}: no IFRS data. Tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
@@ -2290,7 +2477,7 @@ export function ProfitabilityCapital() {
             </div>
             <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
             <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{verdictSummary}</p>
-            <BasisExplainer className="mt-1.5 max-w-2xl" />
+            <BasisExplainer basis={basis} className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
             <AccountingBasisToggle value={basis} onChange={setBasis} />
@@ -2312,7 +2499,10 @@ export function ProfitabilityCapital() {
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
 
-      {/* ─── EARNINGS BRIDGE — GWP → PAT reconciliation (quality of earnings) ─── */}
+      {/* ─── PROFIT QUALITY CHECK — is PAT underwriting-led or investment-led? ─── */}
+      <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
+
+      {/* ─── EARNINGS BRIDGE — GWP → PAT reconciliation (the detailed proof) ─── */}
       <EarningsBridge companyId={company.id} companyShort={company.shortName} />
 
       <DataStatusDrawer

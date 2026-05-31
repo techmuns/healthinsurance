@@ -94,3 +94,7 @@ export function earningsQuality(b: BridgeFigures): { label: string; investmentLe
 }
 
 export const BRIDGE_SOURCE = 'Annual report · Revenue A/c + P&L'
+
+/** Direct link to the filing the bridge figures are extracted from. */
+export const BRIDGE_SOURCE_URL =
+  'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf'

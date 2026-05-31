@@ -133,7 +133,9 @@ export function PatBasisCompareCard({
   pageBasis: AccountingBasis
   onOpenDetail: () => void
 }) {
-  const [period, setPeriod] = useState<BasisPeriod>('FY26')
+  // Default to FY25 — the page's reported anchor year — so this card never opens
+  // on FY26 while the rest of the page reads FY25.
+  const [period, setPeriod] = useState<BasisPeriod>('FY25')
   const tracked = hasBasisData(companyId)
 
   if (!tracked) {
