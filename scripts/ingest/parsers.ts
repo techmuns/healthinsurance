@@ -18,6 +18,7 @@ import * as XLSX from 'xlsx'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { RAW_ROOT, ensureDir, fileExists, isOfflineMode, writeRaw } from './util'
+import { browserGet } from './browser'
 
 // Real desktop-Chrome User-Agent + a full browser fingerprint so IRDAI /
 // CDN-fronted insurer sites stop returning 403 to the default Node fetch UA.
@@ -53,6 +54,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
   const maxAttempts = 3
   let lastErr: unknown = null
+  let blocked = false // 401/403 — a WAF block a real browser may get past
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const res = await fetch(url, {
@@ -64,6 +66,11 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
         await sleep(1000 * Math.pow(2, i))
         continue
       }
+      if (res.status === 401 || res.status === 403) {
+        blocked = true
+        lastErr = new Error(`HTTP ${res.status} for ${url}`)
+        break
+      }
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} for ${url}`)
       }
@@ -74,6 +81,15 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
       // Non-HTTP failure (DNS, network): brief back-off then retry.
       if (i < maxAttempts - 1) await sleep(1000 * Math.pow(2, i))
     }
+  }
+  // Plain fetch was WAF-blocked (typically IRDAI's 403). A real headless browser
+  // carries JS + cookies + a browser TLS fingerprint and often gets through.
+  // No-ops (returns null) when no browser is available, so behaviour is unchanged
+  // wherever Playwright/Chromium isn't installed.
+  if (blocked && !isOfflineMode()) {
+    const binary = /\.(pdf|xlsx|xls|zip)(\?|$)/i.test(url)
+    const buf = await browserGet(url, { binary }).catch(() => null)
+    if (buf && buf.length) return { buffer: buf, finalUrl: url }
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr))
 }

@@ -55,6 +55,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Chromium (headless browser for WAF-blocked sources, e.g. IRDAI)
+        run: npx playwright install --with-deps chromium
 
       - name: Determine cadence
         id: cadence

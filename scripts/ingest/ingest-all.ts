@@ -19,6 +19,7 @@ import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
 import { buildSnapshots } from './build-snapshots'
 import { appendLog } from './util'
+import { closeBrowser } from './browser'
 
 const ALL: Fetcher[] = [
   ingestIrdaiMonthly,
@@ -73,7 +74,13 @@ async function main() {
   console.log(`ingest-all complete · ${results.length} fetchers · cadence=${CADENCE}`)
 }
 
-main().catch(async (err) => {
-  await appendLog('ingest-all.log', { event: 'fatal', error: err instanceof Error ? err.message : String(err) })
-  process.exitCode = 1
-})
+main()
+  .catch(async (err) => {
+    await appendLog('ingest-all.log', { event: 'fatal', error: err instanceof Error ? err.message : String(err) })
+    process.exitCode = 1
+  })
+  .finally(async () => {
+    // Release the headless browser (if the WAF fallback launched one) so the
+    // process can exit instead of hanging on an open Chromium.
+    await closeBrowser()
+  })
