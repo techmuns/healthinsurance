@@ -221,7 +221,7 @@ function MainChartBlock() {
       ) : mixRows.length === 0 ? (
         <EmptyState
           title="Data not available from source"
-          body={`No channel-mix years for ${company.shortName} fall inside the selected Data Range — widen it in the top bar (mix is reported at FY19 and FY25).`}
+          body={`No channel-mix years for ${company.shortName} fall inside the selected Data Range — widen it in the top bar (mix is reported FY22–FY25).`}
           height={280}
         />
       ) : (

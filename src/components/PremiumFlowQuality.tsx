@@ -525,8 +525,8 @@ function RealFlowChart({
 
 /**
  * RealMixChart — 100% stacked bar of channel mix per period sourced from
- * distributionEngineMix (Niva Bupa PPT-anchored real values FY19 / FY25 /
- * 9M FY26). Reads-only, no synthesis.
+ * distributionEngineMix (Niva Bupa real filing values FY22–FY25, range-clipped
+ * by the caller). Reads-only, no synthesis.
  */
 const CHANNEL_COLORS_MIX: Record<string, string> = {
   Banca: FOCAL,
