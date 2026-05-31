@@ -2433,9 +2433,11 @@ export function ProfitabilityCapital() {
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
 
-      {/* ─── PROFIT QUALITY CHECK — compact investment-vs-underwriting signal;
-              its Details button opens the full GWP → PAT accounting bridge drawer ─── */}
-      <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
+      {/* ─── PROFIT QUALITY CHECK — shown only inside the PAT Margin (Profit
+              conversion) view; its Details button opens the full bridge drawer ─── */}
+      {selectedNode === 'conversion' && (
+        <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
+      )}
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
