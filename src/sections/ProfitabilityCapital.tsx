@@ -47,6 +47,7 @@ import type { Metric, Insurer } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
+import { EarningsBridge } from '@/components/EarningsBridge'
 import {
   getBasisProfit,
   getBasisPatGrowth,
@@ -2310,6 +2311,9 @@ export function ProfitabilityCapital() {
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
+
+      {/* ─── EARNINGS BRIDGE — GWP → PAT reconciliation (quality of earnings) ─── */}
+      <EarningsBridge companyId={company.id} companyShort={company.shortName} />
 
       <DataStatusDrawer
         open={statusOpen}
