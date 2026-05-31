@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { GitMerge, Layers } from 'lucide-react'
 import { Drawer } from './Drawer'
-import { SourceTag } from './SourceTag'
 import {
   getEarningsBridge, BRIDGE_SOURCE, BRIDGE_SOURCE_URL,
   type BridgeFigures,
@@ -139,10 +138,6 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
             <p className="mt-2 text-[11px] text-ink-secondary">IFRS PAT not reported for {companyShort}.</p>
           )}
         </div>
-      </div>
-
-      <div className="mt-3 flex justify-end">
-        <SourceTag source={BRIDGE_SOURCE} period={yr.fy} confidence="high" />
       </div>
 
       <MethodologyDrawer open={methodOpen} onClose={() => setMethodOpen(false)} companyShort={companyShort} b={b} fy={yr.fy} ifrsPat={yr.ifrsPat} />
