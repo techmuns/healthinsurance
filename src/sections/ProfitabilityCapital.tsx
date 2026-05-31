@@ -2286,20 +2286,87 @@ function lensSource(id: NodeId, companyId: string): ResolvedSource {
   return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
 }
 
-function ProfitabilityDetail({ id, company, series, ctx, period, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; onOpenAcctDetail: () => void }) {
+// Prior comparable quarter for the thin quarterly trend (only Q4 cells exist).
+function priorQuarter(q: BasisPeriod): BasisPeriod | null {
+  return q === 'Q4FY26' ? 'Q4FY25' : null
+}
+
+// Header status under a non-annual period: combined ratio + PAT margin have a real
+// Q4 value (same thresholds as the story-map badge); other nodes / Monthly → Pending.
+function quarterlyLensStatus(id: NodeId, company: Insurer, ctx: BasisCtx, quarter: BasisPeriod | null): { label: string; tone: ChipTone } {
+  if ((id === 'underwriting' || id === 'conversion') && quarter) {
+    const key: 'combinedRatio' | 'patMarginGwp' = id === 'underwriting' ? 'combinedRatio' : 'patMarginGwp'
+    const v = getBasisProfit(company.id, ctx.basis, quarter)?.[key] ?? null
+    if (v != null) {
+      return id === 'underwriting'
+        ? v < 100 ? { label: 'Strong', tone: 'positive' } : v <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+        : v > 5 ? { label: 'Strong', tone: 'positive' } : v > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+  }
+  return { label: 'Pending', tone: 'navy' }
+}
+
+// Quarterly detail body. Combined ratio and PAT margin have a real Q4 source, so
+// show the quarter value (+ the prior Q4 where available, as a thin two-point
+// trend). Other nodes (and Monthly) have no quarterly source yet → honest Pending.
+function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: TimePeriod, quarter: BasisPeriod | null): ReactNode {
+  const supported = id === 'underwriting' || id === 'conversion'
+  const key: 'combinedRatio' | 'patMarginGwp' = id === 'underwriting' ? 'combinedRatio' : 'patMarginGwp'
+  const cur = supported && quarter ? getBasisProfit(company.id, ctx.basis, quarter)?.[key] ?? null : null
+  if (!supported || cur == null || !quarter) {
+    return (
+      <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} ${LENS[id].label.toLowerCase()} is pending — no quarterly source for this metric yet. Switch Period to Annual for the full trend, the audited bridge and the investor read.`}</PendingNote>
+    )
+  }
+  const pq = priorQuarter(quarter)
+  const prior = pq ? getBasisProfit(company.id, ctx.basis, pq)?.[key] ?? null : null
+  const lowerBetter = id === 'underwriting'
+  const metricLabel = id === 'underwriting' ? 'Combined ratio' : 'PAT margin'
+  const delta = prior != null ? cur - prior : null
+  const better = delta != null ? (lowerBetter ? delta < 0 : delta > 0) : null
+  const deltaColor = better == null ? PALETTE.navy : better ? PALETTE.emerald : PALETTE.coral
+  return (
+    <div className="rounded-xl border border-soft-border bg-ice/40 p-4">
+      <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{metricLabel} · quarterly</p>
+      <div className="mt-2 flex flex-wrap items-end gap-x-5 gap-y-2">
+        {prior != null && pq && (
+          <>
+            <div>
+              <p className="font-display text-[18px] leading-none text-ink-secondary">{prior.toFixed(1)}%</p>
+              <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary/80">{periodLabel(pq)}</p>
+            </div>
+            <span className="pb-1 text-[14px] font-bold text-ink-secondary/45">→</span>
+          </>
+        )}
+        <div>
+          <p className="font-display text-[26px] leading-none" style={{ color: deltaColor }}>{cur.toFixed(1)}%</p>
+          <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">{periodLabel(quarter)}</p>
+        </div>
+        {delta != null && (
+          <span className="mb-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: `${deltaColor}44`, background: `${deltaColor}12`, color: deltaColor }}>
+            {delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(1)} pts {better ? 'better' : 'worse'}
+          </span>
+        )}
+      </div>
+      <p className="mt-2.5 text-[10px] leading-snug text-ink-secondary">Standalone-quarter figure (not annualised). The full trend, the audited bridge and the investor read are on the Annual view.</p>
+    </div>
+  )
+}
+
+function ProfitabilityDetail({ id, company, series, ctx, period, quarter, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null; onOpenAcctDetail: () => void }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
-  const status: { label: string; tone: ChipTone } = period === 'Annual' ? lensStatus(id, company, series, ctx) : { label: 'Pending', tone: 'navy' }
+  const status: { label: string; tone: ChipTone } = period === 'Annual' ? lensStatus(id, company, series, ctx) : quarterlyLensStatus(id, company, ctx, quarter)
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
-  // Quarterly / monthly: trends, the audited bridge and the investor read are
-  // annual-only here. Show an honest Pending note rather than annual numbers under
-  // a non-annual period; the Q4 snapshot (where it exists) is in the map above.
+  // Quarterly / monthly: combined ratio and PAT margin render a compact quarter
+  // comparison (real Q4 data); the other nodes (and Monthly) have no quarterly
+  // source → honest Pending. Annual keeps the full trend / bridge / read view.
   if (period !== 'Annual') {
     return (
       <div key={id} className="animate-fade-in space-y-4">
         <LensHeader meta={meta} status={status} />
-        <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} detail for ${meta.label} is pending — the Q4 snapshot above is shown where reported; full trends, the audited bridge and the investor read are on the annual basis. Switch Period to Annual for the complete view.`}</PendingNote>
+        {quarterlyNodeBody(id, company, ctx, period, quarter)}
       </div>
     )
   }
@@ -2455,11 +2522,26 @@ export function ProfitabilityCapital() {
           ? PALETTE.coral
           : PALETTE.navy
 
+  // Header accent + signal badge follow the period: under Quarterly/Monthly they
+  // reflect the quarter's combined ratio (or Pending), not the annual figure.
+  const quarterCR = period === 'Quarterly' && quarter ? getBasisProfit(company.id, basis, quarter)?.combinedRatio ?? null : null
+  const headerCt: { label: string; tone: Tone } | null =
+    period === 'Annual' ? null : quarterCR != null ? combinedTone(quarterCR) : { label: 'Pending', tone: 'neutral' }
+  const headerTone = headerCt
+    ? headerCt.tone === 'positive'
+      ? PALETTE.emerald
+      : headerCt.tone === 'warning'
+        ? PALETTE.amber
+        : headerCt.tone === 'negative'
+          ? PALETTE.coral
+          : PALETTE.navy
+    : heroTone
+
   return (
     <div className="space-y-5">
       {/* ─── PAGE HEADER — title · question · verdict ─── */}
       <section className="card-surface relative overflow-hidden p-4">
-        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${heroTone} 0%, ${PALETTE.champagne} 100%)` }} />
+        <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${headerTone} 0%, ${PALETTE.champagne} 100%)` }} />
         <div
           className="pointer-events-none absolute inset-y-0 right-0 w-1/3 opacity-60"
           style={{ background: `radial-gradient(circle at 80% 30%, ${PALETTE.champagneSoft} 0%, transparent 60%), radial-gradient(circle at 60% 80%, ${PALETTE.softBlue} 0%, transparent 60%)` }}
@@ -2472,7 +2554,11 @@ export function ProfitabilityCapital() {
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2">
               <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
-              <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
+              {headerCt ? (
+                <SignalBadge label={headerCt.label} tone={headerCt.tone === 'positive' ? 'positive' : headerCt.tone === 'warning' ? 'warning' : headerCt.tone === 'negative' ? 'negative' : 'navy'} size="sm" />
+              ) : (
+                <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
+              )}
               <BasisPill basis={basis} />
             </div>
             <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
@@ -2489,7 +2575,7 @@ export function ProfitabilityCapital() {
       <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} onOpenAcctDetail={() => setAcctOpen(true)} />
+      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} quarter={quarter} onOpenAcctDetail={() => setAcctOpen(true)} />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
