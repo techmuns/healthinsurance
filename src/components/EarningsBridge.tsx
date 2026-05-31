@@ -1,16 +1,15 @@
 import { useState } from 'react'
-import { GitMerge, Layers, TrendingUp } from 'lucide-react'
+import { GitMerge, Layers } from 'lucide-react'
 import { Drawer } from './Drawer'
 import { SourceTag } from './SourceTag'
 import {
-  getEarningsBridge, earningsQuality, BRIDGE_SOURCE, BRIDGE_SOURCE_URL,
+  getEarningsBridge, BRIDGE_SOURCE, BRIDGE_SOURCE_URL,
   type BridgeFigures,
 } from '@/data/earningsBridge'
 
 const NAVY = '#172B4D'
 const CORAL = '#B94A48'
 const EMERALD = '#2F855A'
-const GOLD = '#C99A2E'
 const TEAL = '#168E8E'
 
 const cr = (v: number) => `₹${Math.abs(Math.round(v)).toLocaleString('en-IN')}`
@@ -25,17 +24,17 @@ interface Row { label: string; tech?: string; v: number; kind: RowKind; tag?: Ro
 function bridgeRows(b: BridgeFigures): Row[] {
   return [
     { label: 'Premium collected', tech: 'GWP', v: b.gwp, kind: 'start' },
-    { label: 'Less: reinsurance share', tech: 'reinsurance ceded', v: -b.reinsCeded, kind: 'less' },
+    { label: 'Reinsurance', tech: 'ceded', v: -b.reinsCeded, kind: 'less' },
     { label: 'Premium retained', tech: 'net written premium', v: b.nwp, kind: 'total' },
     { label: 'Timing adjustment', tech: 'UPR movement', v: b.uprMovement, kind: 'less' },
     { label: 'Premium earned', tech: 'net earned premium', v: b.nep, kind: 'total' },
-    { label: 'Claims paid', tech: 'net claims', v: -b.netClaims, kind: 'less', tag: 'leak' },
+    { label: 'Claims', tech: 'net claims', v: -b.netClaims, kind: 'less', tag: 'leak' },
     { label: 'Distribution cost', tech: 'commission', v: -b.netCommission, kind: 'less', tag: 'leak' },
     { label: 'Operating cost', tech: 'opex', v: -b.opex, kind: 'less', tag: 'leak' },
     { label: 'Core underwriting result', v: b.underwritingResult, kind: 'uw' },
     { label: 'Investment support', tech: 'investment income', v: b.investmentIncome, kind: 'add', tag: 'support' },
     { label: 'Other (net)', v: b.otherNet, kind: 'less' },
-    { label: 'Final profit', tech: 'PAT', v: b.pat, kind: 'pat' },
+    { label: 'Final PAT', tech: 'profit after tax', v: b.pat, kind: 'pat' },
   ]
 }
 
@@ -93,7 +92,6 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
   if (years.length === 0) return null
   const yr = years.find((y) => y.fy === fy) ?? years[0]
   const b = yr.igaap
-  const q = earningsQuality(b)
   const ifrsDelta = yr.ifrsPat != null ? yr.ifrsPat - b.pat : null
 
   return (
@@ -120,20 +118,9 @@ export function EarningsBridge({ companyId, companyShort }: { companyId: string;
             })}
           </div>
           <button type="button" onClick={() => setMethodOpen(true)} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary">
-            <Layers className="h-3.5 w-3.5" /> Accounting & methodology
+            <Layers className="h-3.5 w-3.5" /> Details
           </button>
         </div>
-      </div>
-
-      {/* Quality-of-earnings verdict */}
-      <div className="mt-3 flex items-start gap-2 rounded-xl border px-3.5 py-2.5" style={{ background: q.investmentLed ? `${GOLD}10` : `${EMERALD}10`, borderColor: q.investmentLed ? `${GOLD}3a` : `${EMERALD}3a` }}>
-        <TrendingUp className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: q.investmentLed ? GOLD : EMERALD }} />
-        <p className="text-[11.5px] leading-snug text-navy-deep/90">
-          <span className="font-semibold">{yr.fy} PAT {signed(b.pat)} Cr — {q.label}.</span>{' '}
-          {q.investmentLed
-            ? `Underwriting loses ${cr(b.underwritingResult)} Cr; ${cr(b.investmentIncome)} Cr of investment income turns it positive.`
-            : `Underwriting itself earns ${cr(b.underwritingResult)} Cr before investment income.`}
-        </p>
       </div>
 
       {/* IGAAP waterfall | IFRS column */}
@@ -212,6 +199,10 @@ function MethodologyDrawer({ open, onClose, companyShort, b, fy, ifrsPat }: { op
       <div className="text-[12px] leading-relaxed text-navy-deep/90">
         {tab === 'basis' && (
           <div className="space-y-3">
+            <div className="rounded-lg border px-3 py-2.5" style={{ borderColor: `${NAVY}22`, background: `${NAVY}06` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why this matters</p>
+              <p className="mt-1 text-[11.5px] leading-relaxed">PAT is positive mainly because investment income offsets the underwriting loss. The {fy} statutory view shows that loss; IFRS PAT may differ due to the accounting recognition basis.</p>
+            </div>
             <p>IGAAP / Statutory, from the IRDAI Form B-RA (Revenue Account) and Form B-PL (Profit &amp; Loss) in the {fy} annual report. IFRS shows only the separately-disclosed PAT.</p>
             <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2.5">
               <p className="text-[10px] font-bold uppercase tracking-wide text-champagne-deep">Why earlier views could differ</p>

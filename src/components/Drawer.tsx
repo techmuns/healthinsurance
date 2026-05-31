@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 
@@ -13,16 +14,32 @@ export interface DrawerProps {
 
 /** Right-side sliding drawer for module drill-downs and data-status panels. */
 export function Drawer({ open, onClose, title, subtitle, children, footer }: DrawerProps) {
+  const panelRef = useRef<HTMLElement>(null)
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    // Freeze the page behind the drawer so only the drawer's own content scrolls
+    // (never the whole page).
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    // Move focus into the drawer the moment it opens, so the user's attention and
+    // keyboard land on the panel that just appeared — not somewhere up the page.
+    panelRef.current?.focus({ preventScroll: true })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+    }
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
 
-  return (
+  // Portal to <body> so the fixed overlay escapes any transformed ancestor (the
+  // page-enter animation wrapper keeps a `transform`, which would otherwise trap
+  // `position: fixed` and anchor the drawer to the page top). Portaling keeps it
+  // viewport-anchored — the drawer always opens where the user is looking.
+  return createPortal(
     <div className="fixed inset-0 z-50">
       <div
         className="absolute inset-0 bg-navy-deep/25 backdrop-blur-[2px] animate-fade-in"
@@ -30,7 +47,9 @@ export function Drawer({ open, onClose, title, subtitle, children, footer }: Dra
         aria-hidden
       />
       <aside
-        className="absolute right-0 top-0 flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-bl-[28px] bg-ivory shadow-lift animate-drawer-in"
+        ref={panelRef}
+        tabIndex={-1}
+        className="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col overflow-hidden rounded-l-[28px] bg-ivory shadow-lift outline-none animate-drawer-in"
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -49,9 +68,10 @@ export function Drawer({ open, onClose, title, subtitle, children, footer }: Dra
             <X className="h-5 w-5" />
           </button>
         </header>
-        <div className="scroll-thin min-h-0 overflow-y-auto px-6 py-6">{children}</div>
+        <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-6 py-6">{children}</div>
         {footer && <footer className="shrink-0 border-t border-soft-border bg-card px-6 py-4">{footer}</footer>}
       </aside>
-    </div>
+    </div>,
+    document.body,
   )
 }
