@@ -41,7 +41,7 @@ import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance, getInsurers } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
-import type { Insurer } from '@/data/types'
+import type { Insurer, TimePeriod } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
@@ -52,6 +52,7 @@ import {
   latestAnnualWithPat,
   hasBasisData,
   periodLabel,
+  Q4_PERIODS,
   BASIS_LABEL,
   BASIS_SOURCE_LABEL,
   BASIS_TRACKED_COMPANIES,
@@ -878,8 +879,29 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
   ]
 }
 
-function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void; ctx: BasisCtx }) {
-  const stages = buildEngineStages(company, series, ctx)
+// Quarterly / monthly story-map stages. Only combined ratio and PAT margin have
+// a quarterly source (the standalone Q4 basis cell); underwriting result, ROE and
+// solvency have no quarterly data, and Monthly has none → honest "Pending".
+function buildQuarterlyStages(company: Insurer, ctx: BasisCtx, quarter: BasisPeriod | null): EngineStage[] {
+  const bp = quarter ? getBasisProfit(company.id, ctx.basis, quarter) : null
+  const cr = bp?.combinedRatio ?? null
+  const pm = bp?.patMarginGwp ?? null
+  const pending: { label: string; tone: StatusTone } = { label: 'Pending', tone: 'navy' }
+  const crBadge: { label: string; tone: StatusTone } =
+    cr == null ? pending : cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+  const pmBadge: { label: string; tone: StatusTone } =
+    pm == null ? pending : pm > 5 ? { label: 'Strong', tone: 'positive' } : pm > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+  return [
+    { id: 'underwriting', n: 1, label: 'Underwriting discipline', metricLabel: 'Combined ratio', value: cr == null ? 'Pending' : `${cr.toFixed(1)}%`, missing: cr == null, color: PALETTE.emerald, Icon: ShieldCheck, explore: 'Are costs below ₹100 of premium?', badge: crBadge },
+    { id: 'core', n: 2, label: 'Core profitability', metricLabel: 'Underwriting result', value: 'Pending', missing: true, color: PALETTE.teal, Icon: Gauge, explore: 'Does insurance itself make money?', badge: pending },
+    { id: 'conversion', n: 3, label: 'Profit conversion', metricLabel: 'PAT margin', value: pm == null ? 'Pending' : `${pm.toFixed(1)}%`, missing: pm == null, color: GOLD, Icon: IndianRupee, explore: 'How much premium becomes profit?', badge: pmBadge },
+    { id: 'returns', n: 4, label: 'Shareholder return', metricLabel: 'ROE', value: 'Pending', missing: true, color: ORANGE, Icon: BarChart3, explore: 'Profit into shareholder return.', badge: pending },
+    { id: 'capital', n: 5, label: 'Capital support', metricLabel: 'Solvency', value: 'Pending', missing: true, color: DEEP_GREEN, Icon: Shield, explore: 'Capital backing the growth.', badge: pending },
+  ]
+}
+
+function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx, period, quarter }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null }) {
+  const stages = period === 'Annual' ? buildEngineStages(company, series, ctx) : buildQuarterlyStages(company, ctx, quarter)
   const active = stages.find((s) => s.id === selectedId) ?? stages[0]
   const selectedIndex = stages.findIndex((s) => s.id === selectedId)
 
@@ -2264,11 +2286,23 @@ function lensSource(id: NodeId, companyId: string): ResolvedSource {
   return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
 }
 
-function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; onOpenAcctDetail: () => void }) {
+function ProfitabilityDetail({ id, company, series, ctx, period, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; onOpenAcctDetail: () => void }) {
   const reads = buildNodeReads(company, series)
   const meta = LENS[id]
-  const status = lensStatus(id, company, series, ctx)
+  const status: { label: string; tone: ChipTone } = period === 'Annual' ? lensStatus(id, company, series, ctx) : { label: 'Pending', tone: 'navy' }
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
+
+  // Quarterly / monthly: trends, the audited bridge and the investor read are
+  // annual-only here. Show an honest Pending note rather than annual numbers under
+  // a non-annual period; the Q4 snapshot (where it exists) is in the map above.
+  if (period !== 'Annual') {
+    return (
+      <div key={id} className="animate-fade-in space-y-4">
+        <LensHeader meta={meta} status={status} />
+        <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} detail for ${meta.label} is pending — the Q4 snapshot above is shown where reported; full trends, the audited bridge and the investor read are on the annual basis. Switch Period to Annual for the complete view.`}</PendingNote>
+      </div>
+    )
+  }
 
   let body: ReactNode = null
 
@@ -2359,10 +2393,20 @@ export function ProfitabilityCapital() {
   const [acctOpen, setAcctOpen] = useState(false)
   const [basis, setBasis] = useState<AccountingBasis>('igaap')
   const company = useActiveCompany()
-  const { range } = useFilters()
+  const { range, period } = useFilters()
   const copy = getCompanyProfitabilityCopy(company)
   // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
   const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
+
+  // Period lens for the story map. Quarterly profitability exists only as standalone
+  // Q4 cells (combined ratio + PAT margin); the latest in-range FY picks the quarter.
+  // Monthly has no profitability data, so the quarterly snapshot reads "Pending".
+  const latestFy = series[series.length - 1]?.fy ?? null
+  const quarter: BasisPeriod | null =
+    period === 'Quarterly' && latestFy && Q4_PERIODS.includes(`Q4${latestFy}` as BasisPeriod)
+      ? (`Q4${latestFy}` as BasisPeriod)
+      : null
+  const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : period === 'Monthly' ? 'Monthly' : 'FY25'
 
   const hasCR = company.combinedRatio > 0
   // Lead the focal company's statutory combined ratio (same as the headline KPI),
@@ -2424,7 +2468,7 @@ export function ProfitabilityCapital() {
           <div className="min-w-[260px] flex-1">
             <div className="flex items-center gap-1.5">
               <Sparkles className="h-2.5 w-2.5 text-champagne" />
-              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · FY25</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · {periodTag}</span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2">
               <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
@@ -2432,7 +2476,7 @@ export function ProfitabilityCapital() {
               <BasisPill basis={basis} />
             </div>
             <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
-            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{verdictSummary}</p>
+            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{period === 'Annual' ? verdictSummary : `${periodTag} view — the story map below shows what is reported for this period; the full-year read is on the Annual toggle.`}</p>
             <BasisExplainer basis={basis} className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
@@ -2442,10 +2486,10 @@ export function ProfitabilityCapital() {
       </section>
 
       {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
-      <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} />
+      <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} onOpenAcctDetail={() => setAcctOpen(true)} />
+      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} onOpenAcctDetail={() => setAcctOpen(true)} />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
