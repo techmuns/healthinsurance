@@ -31,6 +31,7 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Layers,
   type LucideIcon,
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -42,7 +43,6 @@ import { lookupProvenance, getInsurers } from '@/lib/dataLayer'
 import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Insurer } from '@/data/types'
 import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
-import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
 import { getEarningsBridge } from '@/data/earningsBridge'
@@ -2292,7 +2292,18 @@ function ProfitabilityDetail({ id, company, series, ctx, onOpenAcctDetail }: { i
     case 'conversion':
       body = (
         <div className="space-y-4">
-          <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis={ctx.basis} onOpenDetail={onOpenAcctDetail} />
+          {/* Compact basis chip — the full IGAAP vs IFRS comparison lives in the
+              Accounting & Methodology drawer, not on the main page. */}
+          <div className="flex">
+            <button
+              type="button"
+              onClick={onOpenAcctDetail}
+              className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              Basis: {BASIS_LABEL[ctx.basis]} · Accounting bridge in Details
+            </button>
+          </div>
           <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
             <ConversionBridge company={company} series={series} ctx={ctx} />
             <ConversionQuality company={company} series={series} ctx={ctx} />

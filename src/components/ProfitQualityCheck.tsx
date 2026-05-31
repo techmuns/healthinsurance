@@ -91,19 +91,8 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
         </div>
       </div>
 
-      {/* Verdict band — the single most telling quality number + the read */}
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-3.5 py-2.5" style={{ background: q.investmentLed ? `${GOLD}10` : `${EMERALD}10`, borderColor: q.investmentLed ? `${GOLD}3a` : `${EMERALD}3a` }}>
-        {invShareOfPat != null && (
-          <div className="shrink-0">
-            <p className="font-display text-[22px] leading-none" style={{ color: badgeTone }}>{invShareOfPat}%</p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Investment income ÷ PAT</p>
-          </div>
-        )}
-        <p className="min-w-[180px] flex-1 text-[11.5px] font-medium leading-snug text-navy-deep/90">{read}</p>
-      </div>
-
       {/* Equation — underwriting + investment → PAT (same audited basis as the bridge) */}
-      <div className="mt-3.5 flex items-stretch gap-2">
+      <div className="mt-3 flex items-stretch gap-2">
         {tiles.map((t, i) => (
           <div key={t.key} className="flex flex-1 items-stretch gap-2">
             {i > 0 && <span className="flex shrink-0 items-center text-[15px] font-bold text-ink-secondary/45">+</span>}
@@ -124,6 +113,17 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
           <span className="mt-1 font-display text-[24px] leading-none" style={{ color: b.pat >= 0 ? NAVY : CORAL }}>{cr(b.pat)}</span>
           <span className="mt-1 text-[8px] leading-tight text-ink-secondary">after other / tax</span>
         </div>
+      </div>
+
+      {/* Investor read — the closing conclusion: the telling quality number + the read */}
+      <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-3.5 py-2.5" style={{ background: q.investmentLed ? `${GOLD}10` : `${EMERALD}10`, borderColor: q.investmentLed ? `${GOLD}3a` : `${EMERALD}3a` }}>
+        {invShareOfPat != null && (
+          <div className="shrink-0">
+            <p className="font-display text-[22px] leading-none" style={{ color: badgeTone }}>{invShareOfPat}%</p>
+            <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Investment income ÷ PAT</p>
+          </div>
+        )}
+        <p className="min-w-[180px] flex-1 text-[11.5px] font-medium leading-snug text-navy-deep/90">{read}</p>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
