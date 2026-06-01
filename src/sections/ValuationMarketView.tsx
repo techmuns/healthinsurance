@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Check, Flame, Info, Search, ShieldAlert, Sparkles, TrendingDown, TrendingUp } from 'lucide-react'
+import { Check, ChevronDown, Flame, Info, Search, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react'
 import { insurers, valuationMultiples, valuationMultipleTrend } from '@/data/mockData'
 import {
   analystConsensus,
@@ -67,6 +67,7 @@ function Eyebrow({ label, title, note, right }: { label: string; title: string; 
 export function ValuationMarketView() {
   const company = useActiveCompany()
   const [peerView, setPeerView] = useState<'Listed' | 'Unlisted' | 'All'>('Listed')
+  const [showTable, setShowTable] = useState(false)
   const [allAnalysts, setAllAnalysts] = useState(false)
   const [openChip, setOpenChip] = useState<string | null>(null)
 
@@ -113,6 +114,17 @@ export function ValuationMarketView() {
     return { ...ov, growth: ins?.growth ?? null, marketShare: ins?.marketShare ?? null, profitability: ins?.margin ?? null, focal: id === company.id }
   }).filter((r): r is NonNullable<typeof r> => Boolean(r))
   const shownPeers = peerView === 'All' ? peerRows : peerRows.filter((r) => r.listingStatus === peerView)
+  const starGwp = peerValuationOverlay['star-health']?.pgwp ?? null
+  const peerVerdict =
+    premiumGwp == null ? 'Valuation pending' : premiumGwp > 5 ? 'Premium valuation' : premiumGwp < -5 ? 'Discount to peers' : 'In line with peers'
+  const peerVerdictLine =
+    premiumGwp == null
+      ? `${company.shortName} valuation vs peers is pending.`
+      : premiumGwp > 5
+        ? `${company.shortName} trades at a premium to peers. The premium is justified only if growth and market-share gains continue.`
+        : premiumGwp < -5
+          ? `${company.shortName} trades at a discount to peers — a re-rating needs sustained growth and margin proof.`
+          : `${company.shortName} trades broadly in line with peers on P/GWP.`
 
   const chips = [
     { key: 'Bull case', Icon: TrendingUp, items: analystThesis.bull },
@@ -275,51 +287,49 @@ export function ValuationMarketView() {
           right={
             <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
               {(['Listed', 'Unlisted', 'All'] as const).map((v) => (
-                <button key={v} type="button" onClick={() => setPeerView(v)} aria-pressed={peerView === v} className={['rounded-full px-3 py-1 text-[11px] font-semibold transition-all', peerView === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary'].join(' ')}>{v} Peers</button>
+                <button key={v} type="button" onClick={() => { setPeerView(v); setShowTable(true) }} aria-pressed={peerView === v} className={['rounded-full px-3 py-1 text-[11px] font-semibold transition-all', peerView === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary'].join(' ')}>{v} Peers</button>
               ))}
             </div>
           }
         />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
-          <div className="card-surface p-5">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-[11.5px]">
-                <thead>
-                  <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
-                    <th className="py-1.5 pr-2 font-semibold">Company</th>
-                    <th className="py-1.5 pr-2 font-semibold">Status</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">Mkt share</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">Growth</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">P/GWP</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">Equity value</th>
-                    <th className="py-1.5 font-semibold">Basis · conf.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {shownPeers.map((r) => {
-                    const unlisted = r.listingStatus === 'Unlisted'
-                    return (
-                      <tr key={r.companyId} className={`border-b border-[#F2F4F8] last:border-0 ${r.focal ? 'bg-soft-blue/40' : ''}`}>
-                        <td className="py-1.5 pr-2 font-semibold text-navy-deep">{r.companyName}{r.focal && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
-                        <td className="py-1.5 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.marketShare != null ? `${r.marketShare.toFixed(1)}%` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.growth != null ? `${r.growth.toFixed(0)}%` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.pgwp != null ? `${r.pgwp.toFixed(1)}x` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums"><span className={unlisted ? 'italic text-ink-secondary' : 'text-navy-deep'}>{fmtCr(r.marketCap)}</span>{unlisted && <span className="ml-1 text-[8.5px] font-semibold uppercase text-champagne-deep">est.</span>}</td>
-                        <td className="py-1.5 text-[10.5px] text-ink-secondary">{r.valuationBasis} · <ConfPill c={r.confidence} /></td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.05fr]">
+          {/* Compact verdict card */}
+          <div className="card-surface relative overflow-hidden p-5">
+            <span className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Peer Valuation Verdict</p>
+              <Mock />
             </div>
-            <p className="mt-2.5 text-[10px] text-ink-secondary">{peerView === 'Listed' ? 'Market Valuation (Listed) — multiples from market cap.' : peerView === 'Unlisted' ? 'Estimated Valuation (Unlisted) — not live market prices.' : 'Listed = market valuation · Unlisted = estimated.'}</p>
-            {peerView !== 'Listed' && <p className="mt-2 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]"><Info className="mt-px h-3 w-3 shrink-0" />{UNLISTED_METHODOLOGY}</p>}
-            <div className="mt-2.5 flex items-center gap-2 rounded-lg border border-[#E1F2F1] bg-[#F2FAF9] px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5 shrink-0 text-teal" />
-              <p className="text-[11.5px] leading-snug text-navy-deep">{company.shortName} carries the richest multiple in the set — justified only while its growth and share lead peers.</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <h3 className="font-display text-[22px] leading-none text-navy-deep">{peerVerdict}</h3>
+              {premiumGwp != null && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${premiumGwp >= 0 ? 'bg-teal-soft text-teal' : 'bg-[#F8ECEC] text-signal-negative'}`}>
+                  {premiumGwp >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {premiumGwp >= 0 ? 'Premium' : 'Discount'}
+                </span>
+              )}
             </div>
-            <div className="mt-2 flex justify-end"><SourceTag source="Mixed" confidence="low" period="FY25" provenance={{ source_name: 'Listed multiples + unlisted estimates (mock).', source_url: '' }} /></div>
+            <div className="mt-3 flex items-end gap-2">
+              <span className="font-display text-[40px] leading-none text-navy-deep">{pGwp != null ? `${pGwp.toFixed(1)}x` : 'n/a'}</span>
+              <span className="mb-1.5 text-[12px] text-ink-secondary">P/GWP · FY25</span>
+            </div>
+            <p className="mt-1 text-[12px] text-ink-secondary">
+              vs peer avg. <b className="text-navy-deep">{peerAvgGwp.toFixed(1)}x</b>
+              {premiumGwp != null && <> · <b className={premiumGwp >= 0 ? 'text-teal' : 'text-signal-negative'}>{premiumGwp >= 0 ? '+' : ''}{premiumGwp.toFixed(0)}% {premiumGwp >= 0 ? 'premium' : 'discount'}</b></>}
+            </p>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">{peerVerdictLine}</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              <PeerChip name={company.shortName} mult={pGwp} tag="Focal" tone="focal" />
+              <PeerChip name="Star Health" mult={starGwp} tag="Listed" tone="listed" />
+              <PeerChip name="Peer avg" mult={peerAvgGwp} tone="avg" />
+            </div>
+            <div className="mt-4 flex items-center justify-between border-t border-soft-border pt-3">
+              <button type="button" onClick={() => setShowTable((v) => !v)} aria-expanded={showTable} className="inline-flex items-center gap-1 text-[11px] font-semibold text-navy-primary transition-colors hover:text-navy-deep">
+                {showTable ? 'Hide peer details' : 'View peer details'}
+                <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showTable ? 'rotate-180' : ''}`} />
+              </button>
+              <SourceTag source="Mixed" confidence="low" period="FY25" provenance={{ source_name: 'Listed multiples + unlisted estimates (mock).', source_url: '' }} />
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -369,6 +379,46 @@ export function ValuationMarketView() {
             </div>
           </div>
         </div>
+
+        {/* Full peer table — hidden by default, revealed on demand */}
+        {showTable && (
+          <div className="card-surface mt-4 p-5">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[11.5px]">
+                <thead>
+                  <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
+                    <th className="py-1.5 pr-2 font-semibold">Company</th>
+                    <th className="py-1.5 pr-2 font-semibold">Status</th>
+                    <th className="py-1.5 pr-2 text-right font-semibold">Mkt share</th>
+                    <th className="py-1.5 pr-2 text-right font-semibold">Growth</th>
+                    <th className="py-1.5 pr-2 text-right font-semibold">P/GWP</th>
+                    <th className="py-1.5 pr-2 text-right font-semibold">Equity value</th>
+                    <th className="py-1.5 font-semibold">Basis · conf.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shownPeers.map((r) => {
+                    const unlisted = r.listingStatus === 'Unlisted'
+                    return (
+                      <tr key={r.companyId} className={`border-b border-[#F2F4F8] last:border-0 ${r.focal ? 'bg-soft-blue/40' : ''}`}>
+                        <td className="py-1.5 pr-2 font-semibold text-navy-deep">{r.companyName}{r.focal && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
+                        <td className="py-1.5 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.marketShare != null ? `${r.marketShare.toFixed(1)}%` : 'n/a'}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.growth != null ? `${r.growth.toFixed(0)}%` : 'n/a'}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.pgwp != null ? `${r.pgwp.toFixed(1)}x` : 'n/a'}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums"><span className={unlisted ? 'italic text-ink-secondary' : 'text-navy-deep'}>{fmtCr(r.marketCap)}</span>{unlisted && <span className="ml-1 text-[8.5px] font-semibold uppercase text-champagne-deep">est.</span>}</td>
+                        <td className="py-1.5 text-[10.5px] text-ink-secondary">{r.valuationBasis} · <ConfPill c={r.confidence} /></td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-2.5 text-[10px] text-ink-secondary">{peerView === 'Listed' ? 'Market Valuation (Listed) — multiples from market cap.' : peerView === 'Unlisted' ? 'Estimated Valuation (Unlisted) — not live market prices.' : 'Listed = market valuation · Unlisted = estimated.'}</p>
+            {peerView !== 'Listed' && <p className="mt-2 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]"><Info className="mt-px h-3 w-3 shrink-0" />{UNLISTED_METHODOLOGY}</p>}
+            <div className="mt-2 flex justify-end"><SourceTag source="Mixed" confidence="low" period="FY25" provenance={{ source_name: 'Listed multiples + unlisted estimates (mock).', source_url: '' }} /></div>
+          </div>
+        )}
       </section>
 
       {/* ── 5. Valuation compass (standalone, compact) ────────────────────────── */}
@@ -512,6 +562,22 @@ function Bar({ value, max, color, label }: { value: number; max: number; color: 
 function ConfPill({ c }: { c: 'High' | 'Medium' | 'Low' }) {
   const tone = c === 'High' ? 'text-teal' : c === 'Medium' ? 'text-champagne-deep' : 'text-ink-secondary'
   return <span className={`font-semibold ${tone}`}>{c} conf.</span>
+}
+
+function PeerChip({ name, mult, tag, tone }: { name: string; mult: number | null; tag?: string; tone: 'focal' | 'listed' | 'avg' }) {
+  const styles =
+    tone === 'focal'
+      ? 'border-[#EAD9B6] bg-champagne-soft text-champagne-deep'
+      : tone === 'listed'
+        ? 'border-[#D6E2FA] bg-soft-blue text-navy-primary'
+        : 'border-soft-border bg-ice text-ink-secondary'
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10.5px] ${styles}`}>
+      <b className="font-semibold">{name}</b>
+      <span className="tabular-nums">· {mult != null ? `${mult.toFixed(1)}x` : 'n/a'}</span>
+      {tag && <span className="opacity-70">· {tag}</span>}
+    </span>
+  )
 }
 
 function ReadBlock({ label, body, pill }: { label: string; body: string; pill?: string }) {
