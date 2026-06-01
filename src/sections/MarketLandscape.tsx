@@ -3,10 +3,11 @@ import type { ReactNode } from 'react'
 import {
   Area,
   AreaChart,
+  Bar,
+  BarChart,
   CartesianGrid,
   Label,
   LabelList,
-  Legend,
   Line,
   LineChart,
   ReferenceDot,
@@ -178,47 +179,75 @@ function KpiPill({
 }
 
 // ─── 2. MAIN CHART BLOCK ───────────────────────────────────────────────────
+// "Premium Pool Shift Ribbon" — how the GI premium pool splits between Health,
+// Motor and Others over time. Health is the highlighted (teal) band, Motor a
+// muted blue-grey, Others the lightest grey. A short reported series (≤4 years)
+// reads cleanest as 100% stacked columns; a longer one flows as a smooth mix
+// ribbon. Health is anchored to the baseline so its growing slice reads first.
+type Seg = 'Health' | 'Motor' | 'Others'
+
+function numOrNull(v: number | string | null | undefined): number | null {
+  return typeof v === 'number' ? v : null
+}
+
 function MainChartBlock() {
   const [mode, setMode] = useState<ChartMode>('Mix %')
   const gate = usePeriodGate()
-  const data = mode === 'Absolute Premium' ? giPremiumAbsolute : giPremiumMix
-  const { data: clipped } = useRangeClip(data)
   const isMix = mode === 'Mix %'
+  const data = isMix ? giPremiumMix : giPremiumAbsolute
+  const { data: clipped } = useRangeClip(data)
   const unit = isMix ? '%' : ' ₹k Cr'
   const lastIdx = clipped.length - 1
+  // 3 reported years (or fewer, after a Data-Range clip) read best as clean 100%
+  // stacked columns; a longer series flows as a smooth ribbon.
+  const asBars = clipped.length <= 4
 
-  // End-of-chart series labels at FY26. Only renders for the last datum;
-  // Recharts places (x, y) at the top edge of each stacked band, so we nudge
-  // the text down a few px to seat it inside the band. Health also gets a
-  // small "Largest growth pool" annotation pin attached above the label.
-  const endLabel = (name: 'Health' | 'Motor' | 'Others', color: string, bold: boolean) =>
+  const first = clipped[0]
+  const last = clipped[lastIdx]
+
+  // First→latest change per segment, in the active unit — percentage points in
+  // Mix %, ₹k Cr in Absolute. null-safe: a missing endpoint stays null, never a
+  // fabricated 0.
+  const delta = (seg: Seg): number | null => {
+    const a = numOrNull(first?.[seg])
+    const b = numOrNull(last?.[seg])
+    return a == null || b == null ? null : b - a
+  }
+  const fmtVal = (v: number | null) =>
+    v == null ? 'n/a' : isMix ? `${v.toFixed(1)}%` : `₹${v.toFixed(0)}k`
+  const fmtDelta = (v: number | null) => {
+    if (v == null) return 'n/a'
+    const sign = v >= 0 ? '+' : '−'
+    return isMix ? `${sign}${Math.abs(v).toFixed(1)} pp` : `${sign}₹${Math.abs(v).toFixed(0)}k`
+  }
+
+  // Right-edge labels at the final reported year: segment name, latest value and
+  // the first→latest delta — plus a "Largest growth pool" pin on Health. Recharts
+  // hands us (x, y) at the top edge of each band/column; bars also expose `width`
+  // (areas don't, so `width ?? 0` collapses to the area case).
+  const endLabel = (seg: Seg, color: string, bold: boolean) =>
     (props: any) => {
-      const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
+      const { x, y, width, index, value } = props as {
+        x?: number; y?: number; width?: number; index?: number; value?: number
+      }
       if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number') return null
-      const display =
-        typeof value === 'number'
-          ? isMix
-            ? `${value.toFixed(1)}%`
-            : `${value.toFixed(0)}k`
-          : ''
+      const lx = x + (typeof width === 'number' ? width : 0) + 9
+      const d = delta(seg)
+      const deltaColor = d == null ? '#9AA3B2' : d >= 0 ? '#0E6F6D' : '#B06A5E'
       return (
         <g>
-          <text
-            x={x + 8}
-            y={y + 11}
-            fill={color}
-            fontSize={11}
-            fontWeight={bold ? 700 : 600}
-            style={{ letterSpacing: 0.1 }}
-          >
-            {name}
+          <text x={lx} y={y + 11} fill={color} fontSize={11} fontWeight={bold ? 700 : 600} style={{ letterSpacing: 0.1 }}>
+            {seg}
           </text>
-          <text x={x + 8} y={y + 24} fill={color} fontSize={10} opacity={0.78}>
-            {display}
+          <text x={lx} y={y + 24} fill={color} fontSize={10.5} opacity={0.82} style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {typeof value === 'number' ? fmtVal(value) : 'n/a'}
           </text>
-          {name === 'Health' && (
-            <g transform={`translate(${x + 8}, ${y + 32})`}>
-              <rect width={114} height={14} rx={7} fill="#E1F2F1" stroke="#BFE3E1" />
+          <text x={lx + 44} y={y + 24} fill={deltaColor} fontSize={10} fontWeight={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {fmtDelta(d)}
+          </text>
+          {seg === 'Health' && (
+            <g transform={`translate(${lx}, ${y + 31})`}>
+              <rect width={130} height={14} rx={7} fill="#E1F2F1" stroke="#BFE3E1" />
               <circle cx={7} cy={7} r={2.5} fill={HEALTH} />
               <text x={14} y={10.5} fill="#0E6F6D" fontSize={9} fontWeight={700} style={{ letterSpacing: 0.2 }}>
                 LARGEST GROWTH POOL
@@ -228,6 +257,23 @@ function MainChartBlock() {
         </g>
       )
     }
+
+  // Investor read — crisp, specific to the active toggle, and honest to the real
+  // numbers (in this series Others is the segment that loses share, not Motor).
+  const read = (() => {
+    if (!first || !last) return ''
+    if (clipped.length < 2) {
+      const h = numOrNull(last.Health)
+      return isMix
+        ? `In ${last.label}, Health is already the single largest slice of the GI premium pool${h != null ? ` at ${h.toFixed(1)}%` : ''}.`
+        : `In ${last.label}, Health is the largest premium pool in general insurance${h != null ? `, at roughly ₹${h.toFixed(0)}k Cr` : ''}.`
+    }
+    const dH = delta('Health')
+    const dO = delta('Others')
+    return isMix
+      ? `Health is gaining structural share of the GI premium pool — up ${fmtDelta(dH)} since ${first.label} — almost entirely at the expense of Others (${fmtDelta(dO)}), while Motor holds roughly steady.`
+      : `Health is adding the most new premium of any GI pool — about ${fmtDelta(dH)} Cr since ${first.label} — while Others has stopped growing.`
+  })()
 
   return (
     <section className="card-surface p-5 sm:p-6">
@@ -264,59 +310,91 @@ function MainChartBlock() {
       ) : (
       <div style={{ width: '100%', height: 276 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={clipped} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
-            <defs>
-              <linearGradient id="healthFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={HEALTH} stopOpacity={0.55} />
-                <stop offset="100%" stopColor={HEALTH} stopOpacity={0.18} />
-              </linearGradient>
-              <linearGradient id="motorFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={MOTOR} stopOpacity={0.32} />
-                <stop offset="100%" stopColor={MOTOR} stopOpacity={0.12} />
-              </linearGradient>
-              <linearGradient id="othersFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={OTHERS} stopOpacity={0.45} />
-                <stop offset="100%" stopColor={OTHERS} stopOpacity={0.18} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fill: AXIS }}
-              tickLine={false}
-              axisLine={{ stroke: GRID }}
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: AXIS }}
-              tickLine={false}
-              axisLine={{ stroke: GRID }}
-              width={46}
-              domain={isMix ? [0, 100] : ['auto', 'auto']}
-              ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
-              unit={isMix ? '%' : ''}
-            />
-            <Tooltip
-              cursor={{ stroke: '#27457E', strokeOpacity: 0.18, strokeWidth: 1 }}
-              content={<EngineTooltip unit={unit} highlight="Health" />}
-            />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="circle" align="right" verticalAlign="top" />
-            <Area type="monotone" dataKey="Others" stackId="1" stroke={OTHERS} strokeWidth={1.2} fill="url(#othersFill)">
-              <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
-            </Area>
-            <Area type="monotone" dataKey="Motor" stackId="1" stroke={MOTOR} strokeWidth={1.2} fill="url(#motorFill)">
-              <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
-            </Area>
-            <Area type="monotone" dataKey="Health" stackId="1" stroke={HEALTH} strokeWidth={2.4} fill="url(#healthFill)">
-              <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
-            </Area>
-          </AreaChart>
+          {asBars ? (
+            <BarChart data={clipped} margin={{ top: 8, right: 132, left: -4, bottom: 4 }} barCategoryGap="26%">
+              <defs>
+                <linearGradient id="healthBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#18A0A0" />
+                  <stop offset="100%" stopColor="#147E7E" />
+                </linearGradient>
+                <linearGradient id="motorBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#A6B2C2" />
+                  <stop offset="100%" stopColor="#8E9BAD" />
+                </linearGradient>
+                <linearGradient id="othersBar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#D9DEE6" />
+                  <stop offset="100%" stopColor="#C7CED8" />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
+              <YAxis
+                tick={{ fontSize: 11, fill: AXIS }}
+                tickLine={false}
+                axisLine={{ stroke: GRID }}
+                width={46}
+                domain={isMix ? [0, 100] : [0, 'auto']}
+                ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
+                unit={isMix ? '%' : ''}
+              />
+              <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<EngineTooltip unit={unit} highlight="Health" />} />
+              {/* Health anchored to the baseline (rounded bottom); Others caps the
+                  column (rounded top); Motor squared in the middle. */}
+              <Bar dataKey="Health" stackId="1" fill="url(#healthBar)" maxBarSize={42} radius={[0, 0, 5, 5]}>
+                <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
+              </Bar>
+              <Bar dataKey="Motor" stackId="1" fill="url(#motorBar)" maxBarSize={42} radius={[0, 0, 0, 0]}>
+                <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
+              </Bar>
+              <Bar dataKey="Others" stackId="1" fill="url(#othersBar)" maxBarSize={42} radius={[5, 5, 0, 0]}>
+                <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
+              </Bar>
+            </BarChart>
+          ) : (
+            <AreaChart data={clipped} margin={{ top: 8, right: 132, left: -4, bottom: 4 }}>
+              <defs>
+                <linearGradient id="healthRibbon" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={HEALTH} stopOpacity={0.5} />
+                  <stop offset="100%" stopColor={HEALTH} stopOpacity={0.22} />
+                </linearGradient>
+                <linearGradient id="motorRibbon" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={MOTOR} stopOpacity={0.34} />
+                  <stop offset="100%" stopColor={MOTOR} stopOpacity={0.14} />
+                </linearGradient>
+                <linearGradient id="othersRibbon" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={OTHERS} stopOpacity={0.4} />
+                  <stop offset="100%" stopColor={OTHERS} stopOpacity={0.16} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
+              <YAxis
+                tick={{ fontSize: 11, fill: AXIS }}
+                tickLine={false}
+                axisLine={{ stroke: GRID }}
+                width={46}
+                domain={isMix ? [0, 100] : [0, 'auto']}
+                ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
+                unit={isMix ? '%' : ''}
+              />
+              <Tooltip cursor={{ stroke: '#27457E', strokeOpacity: 0.18, strokeWidth: 1 }} content={<EngineTooltip unit={unit} highlight="Health" />} />
+              {/* Health anchored to the baseline as the highlighted ribbon. */}
+              <Area type="natural" dataKey="Health" stackId="1" stroke={HEALTH} strokeWidth={2.2} fill="url(#healthRibbon)">
+                <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
+              </Area>
+              <Area type="natural" dataKey="Motor" stackId="1" stroke={MOTOR} strokeWidth={1.2} fill="url(#motorRibbon)">
+                <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
+              </Area>
+              <Area type="natural" dataKey="Others" stackId="1" stroke={OTHERS} strokeWidth={1.2} fill="url(#othersRibbon)">
+                <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
+              </Area>
+            </AreaChart>
+          )}
         </ResponsiveContainer>
       </div>
       )}
 
-      {gate.ok && (
-        <AiRead text="Health has moved from a support category to the main growth engine of general insurance." />
-      )}
+      {gate.ok && clipped.length > 0 && <AiRead text={read} />}
       <div className="mt-3 flex justify-end">
         <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY15 → FY26" />
       </div>
