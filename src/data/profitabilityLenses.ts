@@ -133,16 +133,13 @@ export const profitabilityLenses: Record<ProfitLens, LensConfig> = {
     question: 'Is the book disciplined, profitable and well-capitalised?',
     tone: 'navy',
     storyMapTitle: 'Statutory / IGAAP Profitability Story',
-    storyMapSubtitle: 'From premium to claims, costs, profit and capital.',
+    storyMapSubtitle: 'Premium kept → Cost absorbed → Core profit → PAT conversion → Capital backing',
     stages: [
       { semantic: 'premium', label: 'Premium retained', metricLabel: 'Net earned premium', line: 'How much premium is kept and earned?', icon: 'premium', accent: 'navy' },
-      { semantic: 'claims', label: 'Claims ratio', metricLabel: 'Claims ratio', line: 'How much premium goes to claims?', icon: 'claims', accent: 'coral' },
-      { semantic: 'expense', label: 'Cost & commission', metricLabel: 'Expense ratio', line: 'Are running and selling costs disciplined?', icon: 'expense', accent: 'gold' },
-      { semantic: 'combined', label: 'Combined ratio', metricLabel: 'Combined ratio', line: 'Do claims and costs stay inside ₹100?', icon: 'combined', accent: 'emerald' },
-      { semantic: 'underwriting-result', label: 'Underwriting result', metricLabel: 'Underwriting result', line: 'Does insurance itself make money?', icon: 'result', accent: 'teal' },
-      { semantic: 'conversion', label: 'Investment → PAT', metricLabel: 'PAT', line: 'What carries profit to the bottom line?', icon: 'conversion', accent: 'gold' },
-      { semantic: 'returns', label: 'Profit & return', metricLabel: 'PAT margin', line: 'How much premium becomes shareholder profit?', icon: 'returns', accent: 'orange' },
-      { semantic: 'capital', label: 'Solvency support', metricLabel: 'Solvency', line: 'Is there capital to fund the growth?', icon: 'capital', accent: 'deepGreen' },
+      { semantic: 'combined', label: 'Cost discipline', metricLabel: 'Combined ratio', line: 'Do claims and costs stay inside ₹100?', icon: 'combined', accent: 'emerald' },
+      { semantic: 'underwriting-result', label: 'Underwriting result', metricLabel: 'Underwriting result', line: 'Is the core insurance book profitable?', icon: 'result', accent: 'teal' },
+      { semantic: 'conversion', label: 'Profit conversion', metricLabel: 'PAT', line: 'Is underwriting plus investment turning into PAT?', icon: 'conversion', accent: 'gold' },
+      { semantic: 'capital', label: 'Capital support', metricLabel: 'Solvency', line: 'Is capital strong enough to support growth?', icon: 'capital', accent: 'deepGreen' },
     ],
     detailDrawer: {
       basisUsed:
