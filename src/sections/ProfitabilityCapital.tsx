@@ -396,7 +396,10 @@ interface EngineStage {
   missing: boolean
   color: string
   Icon: LucideIcon
+  /** Short question shown inside the process block. */
   explore: string
+  /** Longer question shown in the "Viewing" strip. */
+  line: string
   /** One small checkpoint status — Strong / Improving / Watch / Weak. */
   badge: { label: string; tone: StatusTone }
 }
@@ -668,7 +671,8 @@ function buildLensStages(
       missing: r.missing,
       color: ACCENT_HEX[stage.accent],
       Icon: STAGE_ICON[stage.icon],
-      explore: stage.line,
+      explore: stage.blockQuestion,
+      line: stage.line,
       badge: r.badge,
     }
   })
@@ -704,106 +708,71 @@ function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, ba
         </div>
       </div>
 
-      {/* Flow — five clickable nodes; connectors brighten up to the active stage */}
-      <div className="mt-7 flex flex-col gap-7 md:flex-row md:items-start md:gap-0">
+      {/* Flow — connected process blocks left→right; chevrons brighten up to the
+          active stage. Each block: number badge + icon capsule + title +
+          one-line question + main metric + status pill. */}
+      <div className="mt-5 flex flex-col gap-2 md:flex-row md:items-stretch md:gap-0">
         {stages.map((s, i) => {
           const selected = s.id === selectedId
-          const connectorActive = i <= selectedIndex
+          const reached = i <= selectedIndex
           return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => onSelect(s.id)}
-              aria-pressed={selected}
-              aria-label={`View ${s.label} — ${s.metricLabel} ${s.value}`}
-              className="group relative flex min-w-0 cursor-pointer flex-col items-center rounded-2xl px-1 py-1 text-center outline-none transition-transform focus-visible:ring-2 focus-visible:ring-navy-primary/35 md:flex-1"
-            >
-              {/* gradient connector: previous → this; brighter/thicker up to the selected stage */}
+            <Fragment key={s.id}>
               {i > 0 && (
-                <span
-                  aria-hidden
-                  className="absolute left-[-50%] right-1/2 top-[39px] z-0 hidden -translate-y-1/2 md:block"
-                  style={{ height: connectorActive ? 3 : 2, background: `linear-gradient(90deg, ${stages[i - 1].color} 0%, ${s.color} 100%)`, opacity: connectorActive ? 0.9 : 0.3 }}
-                />
-              )}
-              {i > 0 && (
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-[39px] z-10 hidden h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border bg-white shadow-sm md:flex"
-                  style={{ borderColor: connectorActive ? s.color : PALETTE.border }}
-                >
-                  <ChevronRight className="h-2.5 w-2.5" style={{ color: s.color, opacity: connectorActive ? 1 : 0.5 }} />
-                </span>
-              )}
-
-              {/* Node */}
-              <div className="relative z-10">
-                {/* soft halo — always-on for the selected node, fades in on hover otherwise */}
-                <span
-                  aria-hidden
-                  className={`pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl transition-opacity duration-300 ${selected ? 'h-[118px] w-[118px] opacity-100' : 'h-[94px] w-[94px] opacity-0 group-hover:opacity-90'}`}
-                  style={{ background: selected ? `${s.color}4d` : `${s.color}2b` }}
-                />
-                <span
-                  aria-hidden
-                  className="absolute -inset-[6px] rounded-full border transition-all duration-300"
-                  style={{ borderColor: s.color, borderStyle: selected ? 'solid' : 'dashed', opacity: selected ? 0.92 : 0.2, transform: selected ? 'scale(1.06)' : 'scale(1)' }}
-                />
-                <div
-                  className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full border-2 bg-white transition-all duration-300 group-hover:-translate-y-[3px]"
-                  style={{
-                    borderColor: s.color,
-                    transform: selected ? 'translateY(-3px) scale(1.05)' : 'translateY(0)',
-                    boxShadow: selected ? `0 18px 34px ${s.color}73` : `0 6px 16px ${s.color}1f`,
-                    opacity: s.missing && !selected ? 0.6 : 1,
-                  }}
-                >
-                  <s.Icon className="h-7 w-7" style={{ color: s.color }} strokeWidth={selected ? 2 : 1.6} />
+                <div aria-hidden className="hidden shrink-0 items-center justify-center px-1 md:flex">
+                  <ChevronRight className="h-5 w-5" strokeWidth={2.25} style={{ color: reached ? s.color : '#CBD5E1' }} />
                 </div>
-                <span
-                  className="absolute -top-2 left-1/2 z-20 flex h-[18px] w-[18px] -translate-x-1/2 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm"
-                  style={{ background: s.color }}
-                >
-                  {s.n}
-                </span>
-              </div>
-
-              {/* Label + single metric */}
-              <p className="mt-3.5 font-display text-[13px] leading-tight transition-colors" style={{ color: selected ? PALETTE.navyDeep : '#41506B', fontWeight: selected ? 700 : 600 }}>
-                {s.label}
-              </p>
-              <span aria-hidden className="my-1.5 h-px w-6" style={{ background: selected ? s.color : PALETTE.border }} />
-              <p className="text-[9.5px] uppercase tracking-wide text-ink-secondary">{s.metricLabel}</p>
-              {s.missing ? (
-                <p className="font-display text-[14px] italic leading-none text-ink-secondary/80">{s.value}</p>
-              ) : (
-                <p className="font-display text-[19px] leading-none" style={{ color: s.color }}>
-                  {s.value}
-                </p>
               )}
-
-              {/* Checkpoint status — one small badge: Strong / Improving / Watch / Weak */}
-              <span
-                className="mt-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.06em]"
-                style={{ color: STATUS_TINT[s.badge.tone], background: `${STATUS_TINT[s.badge.tone]}14` }}
+              <button
+                type="button"
+                onClick={() => onSelect(s.id)}
+                aria-pressed={selected}
+                aria-label={`View ${s.label} — ${s.metricLabel} ${s.value}`}
+                className="group relative flex min-w-0 flex-1 cursor-pointer flex-col rounded-2xl border px-3 py-3 text-left outline-none transition-all duration-200 hover:-translate-y-px focus-visible:ring-2 focus-visible:ring-navy-primary/35"
+                style={{
+                  borderColor: selected ? s.color : `${s.color}33`,
+                  borderWidth: selected ? 1.5 : 1,
+                  background: selected ? `${s.color}14` : `${s.color}07`,
+                  boxShadow: selected ? `0 10px 24px ${s.color}33` : undefined,
+                  transform: selected ? 'translateY(-2px)' : undefined,
+                  opacity: s.missing && !selected ? 0.72 : 1,
+                }}
               >
-                <span className="h-1 w-1 rounded-full bg-current opacity-80" />
-                {s.badge.label}
-              </span>
+                {/* Number badge + icon capsule */}
+                <div className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ background: s.color }}>
+                    {s.n}
+                  </span>
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: `${s.color}1f` }}>
+                    <s.Icon className="h-4 w-4" style={{ color: s.color }} strokeWidth={selected ? 2 : 1.7} />
+                  </span>
+                </div>
 
-              {/* Clickable affordance — "Viewing" when active, a quiet "Explore" cue otherwise */}
-              {selected ? (
-                <span className="mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.08em] text-white shadow-sm" style={{ background: s.color }}>
-                  <span className="h-1 w-1 rounded-full bg-white/90" />
-                  Viewing
+                {/* Title + one-line question */}
+                <p className="mt-2.5 font-display text-[13px] leading-tight text-navy-deep" style={{ fontWeight: selected ? 700 : 600 }}>
+                  {s.label}
+                </p>
+                <p className="mt-0.5 min-h-[26px] text-[10px] leading-snug text-ink-secondary">{s.explore}</p>
+
+                {/* Main metric */}
+                <p className="mt-2 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{s.metricLabel}</p>
+                {s.missing ? (
+                  <p className="font-display text-[15px] italic leading-none text-ink-secondary/80">{s.value}</p>
+                ) : (
+                  <p className="font-display text-[18px] leading-none" style={{ color: s.color }}>
+                    {s.value}
+                  </p>
+                )}
+
+                {/* Status pill */}
+                <span
+                  className="mt-2 inline-flex w-fit items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.06em]"
+                  style={{ color: STATUS_TINT[s.badge.tone], background: `${STATUS_TINT[s.badge.tone]}14` }}
+                >
+                  <span className="h-1 w-1 rounded-full bg-current opacity-80" />
+                  {s.badge.label}
                 </span>
-              ) : (
-                <span className="mt-2 inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary/80 transition-colors group-hover:border-muted-blue group-hover:text-navy-primary">
-                  Explore
-                  <ChevronRight className="h-2.5 w-2.5" />
-                </span>
-              )}
-            </button>
+              </button>
+            </Fragment>
           )
         })}
       </div>
@@ -820,7 +789,7 @@ function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, ba
             <span aria-hidden className="text-ink-secondary/40">·</span>
             <span className="font-display text-[13px] leading-none text-navy-deep">{active.label}</span>
           </div>
-          <p className="text-[11px] leading-snug text-ink-secondary">{active.explore}</p>
+          <p className="text-[11px] leading-snug text-ink-secondary">{active.line}</p>
         </div>
       </div>
 
