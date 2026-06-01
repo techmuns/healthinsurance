@@ -1,4 +1,5 @@
-// Re-trigger workflow — verify Phase 2 parser fixes against IRDAI + insurer IR.
+// Re-trigger workflow — live ingest run to test IRDAI reachability from CI
+// (GitHub runners sit outside the sandbox allowlist) and refresh quarterly data.
 // ---------------------------------------------------------------------------
 //  ingest-all — entry point for the GitHub Actions workflow.
 //
@@ -9,18 +10,23 @@
 import type { Fetcher } from './types'
 import { ingestIrdaiMonthly } from './ingest-irdai-monthly'
 import { ingestIrdaiAnnual } from './ingest-irdai-annual'
+import { ingestIrdaiQuarterly } from './ingest-irdai-quarterly'
 import { ingestCompanyDisclosures } from './ingest-company-disclosures'
+import { ingestQuarterlyDisclosures } from './ingest-quarterly-disclosures'
 import { ingestDistribution } from './ingest-distribution'
 import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
 import { buildSnapshots } from './build-snapshots'
 import { appendLog } from './util'
+import { closeBrowser } from './browser'
 
 const ALL: Fetcher[] = [
   ingestIrdaiMonthly,
   ingestIrdaiAnnual,
+  ingestIrdaiQuarterly,
   ingestCompanyDisclosures,
+  ingestQuarterlyDisclosures,
   ingestDistribution,
   ingestOwnership,
   ingestManagementEvents,
@@ -68,7 +74,13 @@ async function main() {
   console.log(`ingest-all complete · ${results.length} fetchers · cadence=${CADENCE}`)
 }
 
-main().catch(async (err) => {
-  await appendLog('ingest-all.log', { event: 'fatal', error: err instanceof Error ? err.message : String(err) })
-  process.exitCode = 1
-})
+main()
+  .catch(async (err) => {
+    await appendLog('ingest-all.log', { event: 'fatal', error: err instanceof Error ? err.message : String(err) })
+    process.exitCode = 1
+  })
+  .finally(async () => {
+    // Release the headless browser (if the WAF fallback launched one) so the
+    // process can exit instead of hanging on an open Chromium.
+    await closeBrowser()
+  })

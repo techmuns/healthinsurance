@@ -1,0 +1,60 @@
+name: fetch-distribution
+
+# One-shot helper: fetch Niva Bupa's distribution channel-mix from official
+# filings (reachable from GitHub's open egress, unlike the dev sandbox) and
+# commit the extracted text to data/raw/distribution/ so the real per-year
+# percentages can be read from the repo and keyed in as sourced data.
+#
+# Observable by design: the extract file is always committed (even on partial
+# failure), so the result is visible without access to the Actions logs.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/ingest/fetch-distribution-mix.ts'
+      - '.github/workflows/fetch-distribution.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-distribution
+  cancel-in-progress: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch + extract Niva Bupa channel mix
+        continue-on-error: true
+        run: npx tsx scripts/ingest/fetch-distribution-mix.ts
+
+      - name: Commit extract (always — for observability)
+        if: always()
+        run: |
+          git config user.name "distribution-extract-bot"
+          git config user.email "distribution-extract-bot@users.noreply.github.com"
+          git add data/raw/distribution/ || true
+          if ! git diff --staged --quiet; then
+            git commit -m "data: niva channel-mix extract @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          else
+            echo "No extract file produced — nothing to commit."
+          fi

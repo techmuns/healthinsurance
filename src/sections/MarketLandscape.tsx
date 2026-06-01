@@ -1,12 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Area,
-  AreaChart,
   CartesianGrid,
   Label,
   LabelList,
-  Legend,
   Line,
   LineChart,
   ReferenceDot,
@@ -15,12 +12,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { ArrowUpRight, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Sparkles } from 'lucide-react'
 import {
   giPremiumAbsolute,
   giPremiumMix,
   healthCarrierShare,
 } from '@/data/mockData'
+import type { SeriesPoint } from '@/data/types'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import {
   getCompanyMarketBridge,
@@ -60,6 +58,29 @@ const OTHERS = '#CCD3DC'
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 
+// --- Data-Range plumbing ----------------------------------------------------
+// Every series on this page is clipped to the dashboard-wide Data Range via
+// useRangeClip. These helpers let captions, KPI tiles and source tags read
+// straight off whatever survived the clip, so the labels track the top-bar
+// selector instead of a hardcoded span.
+
+/** Period span actually drawn after the clip, e.g. "FY23 → FY25". */
+function shownSpan(rows: { label: string }[]): string | undefined {
+  if (rows.length === 0) return undefined
+  const a = rows[0].label
+  const b = rows[rows.length - 1].label
+  return a === b ? a : `${a} → ${b}`
+}
+
+/** Latest in-range numeric value for `key` (skips nulls), with its period label. */
+function latestInRange(rows: SeriesPoint[], key: string): { value: number; label: string } | null {
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const v = rows[i][key]
+    if (typeof v === 'number') return { value: v, label: rows[i].label }
+  }
+  return null
+}
+
 export function MarketLandscape() {
   return (
     <div className="space-y-5">
@@ -75,6 +96,13 @@ export function MarketLandscape() {
 function HeroCard() {
   const company = useActiveCompany()
   const heroSub = getCompanyMarketEngineHeroSub(company)
+  // Headline share tiles read the real per-year series, clipped to the Data
+  // Range, so they track the selector. (CAGR is a fixed long-run statistic.)
+  const { data: mix } = useRangeClip(giPremiumMix)
+  const { data: carrier } = useRangeClip(healthCarrierShare)
+  const healthShare = latestInRange(mix, 'Health')
+  const sahiShare = latestInRange(carrier, 'SAHI')
+  const latestYear = healthShare?.label ?? sahiShare?.label ?? '—'
   return (
     <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7">
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
@@ -106,13 +134,13 @@ function HeroCard() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <KpiPill value="40.8%" label="Health share of GI premium" tone="teal" sub="FY26" />
+          <KpiPill value={healthShare ? `${healthShare.value.toFixed(1)}%` : 'n/a'} label="Health share of GI premium" tone="teal" sub={healthShare?.label ?? '—'} />
           <KpiPill value="18.8%" label="Health premium CAGR" tone="navy" sub="FY15 – FY26" />
-          <KpiPill value="32.7%" label="SAHI share of health" tone="gold" sub="FY26" />
+          <KpiPill value={sahiShare ? `${sahiShare.value.toFixed(1)}%` : 'n/a'} label="SAHI share of health" tone="gold" sub={sahiShare?.label ?? '—'} />
         </div>
       </div>
       <div className="relative mt-4 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={latestYear} />
       </div>
     </section>
   )
@@ -178,56 +206,193 @@ function KpiPill({
 }
 
 // ─── 2. MAIN CHART BLOCK ───────────────────────────────────────────────────
+// "Premium Pool Shift" — a flowing ribbon infographic (no axes / grid / frame)
+// of how the GI premium pool splits between Health, Motor and Others, FY21→FY25.
+// Each segment is its own ribbon whose thickness encodes its share (Mix %) or
+// premium (Absolute): Health widens, Others narrows, Motor holds. A compact
+// summary on the right states the FY-first→FY-last pp moves.
+type Seg = 'Health' | 'Motor' | 'Others'
+
+function numOrNull(v: number | string | null | undefined): number | null {
+  return typeof v === 'number' ? v : null
+}
+
+// Width of a flex child, tracked so the ribbon SVG can lay out in real pixels.
+function useElementWidth() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => setW(entries[0].contentRect.width))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, w] as const
+}
+
+// Catmull-Rom → cubic bézier commands through the points (no leading "M";
+// assumes the path cursor is already at pts[0]).
+function curveThrough(pts: { x: number; y: number }[]): string {
+  let d = ''
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[i + 2] ?? p2
+    const c1x = p1.x + (p2.x - p0.x) / 6
+    const c1y = p1.y + (p2.y - p0.y) / 6
+    const c2x = p2.x - (p3.x - p1.x) / 6
+    const c2y = p2.y - (p3.y - p1.y) / 6
+    d += `C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)} `
+  }
+  return d
+}
+
+const RIBBON_DEF: { key: Seg; grad: string; labelFill: string }[] = [
+  { key: 'Health', grad: 'url(#rfHealth)', labelFill: '#FFFFFF' },
+  { key: 'Motor', grad: 'url(#rfMotor)', labelFill: '#2C3A4F' },
+  { key: 'Others', grad: 'url(#rfOthers)', labelFill: '#3A4658' },
+]
+
+// The ribbon flow — three separated, smoothly-flowing bands whose thickness is
+// the segment's share (Mix) or premium (Absolute) at each year.
+function RibbonFlow({ rows, isMix }: { rows: SeriesPoint[]; isMix: boolean }) {
+  const [ref, w] = useElementWidth()
+  const H = 236
+  const n = rows.length
+  const xPad = 20
+  const yTop = 36
+  const yBot = H - 16
+  const gap = 14
+  const usable = yBot - yTop - 2 * gap
+
+  const tv = (row: SeriesPoint, seg: Seg) => Math.max(0, numOrNull(row[seg]) ?? 0)
+  const totals = rows.map((r) => tv(r, 'Health') + tv(r, 'Motor') + tv(r, 'Others'))
+  const maxTotal = Math.max(1, ...totals)
+  const scale = usable / maxTotal
+  const xOf = (i: number) => (n <= 1 ? w / 2 : xPad + ((w - 2 * xPad) * i) / (n - 1))
+
+  // Per-year stacked top/bottom for each segment, with white gaps between.
+  const top: Record<Seg, number[]> = { Health: [], Motor: [], Others: [] }
+  const bot: Record<Seg, number[]> = { Health: [], Motor: [], Others: [] }
+  rows.forEach((r, i) => {
+    let y = yTop
+    ;(['Health', 'Motor', 'Others'] as Seg[]).forEach((seg, si) => {
+      const th = tv(r, seg) * scale
+      top[seg][i] = y
+      bot[seg][i] = y + th
+      y += th + (si < 2 ? gap : 0)
+    })
+  })
+
+  const ribbon = (seg: Seg) => {
+    const tp = rows.map((_, i) => ({ x: xOf(i), y: top[seg][i] }))
+    const bp = rows.map((_, i) => ({ x: xOf(i), y: bot[seg][i] }))
+    return `M ${tp[0].x.toFixed(1)} ${tp[0].y.toFixed(1)} ${curveThrough(tp)}L ${bp[n - 1].x.toFixed(1)} ${bp[n - 1].y.toFixed(1)} ${curveThrough(bp.slice().reverse())}Z`
+  }
+  const fmt = (v: number) => (isMix ? `${Math.round(v)}%` : `₹${Math.round(v)}k`)
+
+  return (
+    <div ref={ref} className="relative min-w-0 flex-1" style={{ height: H }}>
+      {w > 0 && n >= 2 && (
+        <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
+          <defs>
+            <linearGradient id="rfHealth" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#34B7AE" />
+              <stop offset="100%" stopColor={HEALTH} />
+            </linearGradient>
+            <linearGradient id="rfMotor" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#B2BCCB" />
+              <stop offset="100%" stopColor={MOTOR} />
+            </linearGradient>
+            <linearGradient id="rfOthers" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={OTHERS} />
+              <stop offset="100%" stopColor="#E7EBF1" />
+            </linearGradient>
+          </defs>
+
+          {rows.map((r, i) => (
+            <text key={`yr-${r.label}`} x={xOf(i)} y={16} textAnchor="middle" fontSize={11} fontWeight={700} fill="#26303F" style={{ letterSpacing: 0.3 }}>
+              {r.label}
+            </text>
+          ))}
+
+          {RIBBON_DEF.map((rd, idx) => (
+            <g key={rd.key} className="rf-ribbon" style={{ animationDelay: `${idx * 0.1}s` }}>
+              <path d={ribbon(rd.key)} fill={rd.grad} style={{ filter: 'drop-shadow(0 2px 5px rgba(23,43,77,0.12))' }} />
+              {rows.map((r, i) => {
+                const thick = bot[rd.key][i] - top[rd.key][i]
+                if (thick < 14) return null
+                // First / last labels are anchored inward so they stay on the
+                // ribbon (a centred label at the edge would fall onto the card).
+                const anchor: 'start' | 'middle' | 'end' = i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'
+                const lx = i === 0 ? xOf(i) + 5 : i === n - 1 ? xOf(i) - 5 : xOf(i)
+                return (
+                  <text key={`lb-${rd.key}-${i}`} x={lx} y={(top[rd.key][i] + bot[rd.key][i]) / 2 + 3.5} textAnchor={anchor} fontSize={10.5} fontWeight={700} fill={rd.labelFill} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(tv(r, rd.key))}
+                  </text>
+                )
+              })}
+            </g>
+          ))}
+        </svg>
+      )}
+      <style>{`
+        .rf-ribbon { opacity: 0; animation: rfFade 0.6s ease forwards; }
+        @keyframes rfFade { to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .rf-ribbon { animation: none; opacity: 1; } }
+      `}</style>
+    </div>
+  )
+}
+
+// Compact FY-first→FY-last share-move summary beside the ribbon.
+function RibbonSummary({ ppH, ppM, ppO, span }: { ppH: number | null; ppM: number | null; ppO: number | null; span: string }) {
+  const fmtPp = (v: number | null) => (v == null ? 'n/a' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pp`)
+  const items = [
+    { label: 'Health gained', v: ppH, Icon: ArrowUp, tint: '#E2F4F1', fg: '#0E6F6D' },
+    { label: 'Motor change', v: ppM, Icon: ArrowRight, tint: '#ECF0F6', fg: '#6F7C90' },
+    { label: 'Others ceded', v: ppO, Icon: ArrowDown, tint: '#F6E9E6', fg: '#B06A5E' },
+  ]
+  return (
+    <div className="w-[172px] shrink-0 self-center rounded-2xl border border-[#EAEEF4] bg-white/80 p-3 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_24px_rgba(23,43,77,0.06)]">
+      <p className="mb-2.5 text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{span} shift</p>
+      <div className="space-y-2.5">
+        {items.map(({ label, v, Icon, tint, fg }) => (
+          <div key={label} className="flex items-center gap-2.5">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: tint, color: fg }}>
+              <Icon className="h-3.5 w-3.5" strokeWidth={2.6} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[10.5px] leading-tight text-navy-deep/70">{label}</p>
+              <p className="font-display text-[15px] leading-tight tabular-nums" style={{ color: fg }}>{fmtPp(v)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function MainChartBlock() {
   const [mode, setMode] = useState<ChartMode>('Mix %')
   const gate = usePeriodGate()
-  const data = mode === 'Absolute Premium' ? giPremiumAbsolute : giPremiumMix
-  const { data: clipped } = useRangeClip(data)
   const isMix = mode === 'Mix %'
-  const unit = isMix ? '%' : ' ₹k Cr'
-  const lastIdx = clipped.length - 1
+  const data = isMix ? giPremiumMix : giPremiumAbsolute
+  const { data: clipped } = useRangeClip(data)
+  const span = shownSpan(clipped)
 
-  // End-of-chart series labels at FY26. Only renders for the last datum;
-  // Recharts places (x, y) at the top edge of each stacked band, so we nudge
-  // the text down a few px to seat it inside the band. Health also gets a
-  // small "Largest growth pool" annotation pin attached above the label.
-  const endLabel = (name: 'Health' | 'Motor' | 'Others', color: string, bold: boolean) =>
-    (props: any) => {
-      const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
-      if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number') return null
-      const display =
-        typeof value === 'number'
-          ? isMix
-            ? `${value.toFixed(1)}%`
-            : `${value.toFixed(0)}k`
-          : ''
-      return (
-        <g>
-          <text
-            x={x + 8}
-            y={y + 11}
-            fill={color}
-            fontSize={11}
-            fontWeight={bold ? 700 : 600}
-            style={{ letterSpacing: 0.1 }}
-          >
-            {name}
-          </text>
-          <text x={x + 8} y={y + 24} fill={color} fontSize={10} opacity={0.78}>
-            {display}
-          </text>
-          {name === 'Health' && (
-            <g transform={`translate(${x + 8}, ${y + 32})`}>
-              <rect width={114} height={14} rx={7} fill="#E1F2F1" stroke="#BFE3E1" />
-              <circle cx={7} cy={7} r={2.5} fill={HEALTH} />
-              <text x={14} y={10.5} fill="#0E6F6D" fontSize={9} fontWeight={700} style={{ letterSpacing: 0.2 }}>
-                LARGEST GROWTH POOL
-              </text>
-            </g>
-          )}
-        </g>
-      )
-    }
+  // Summary reads share movement (pp) from the mix series so it's correct in
+  // either toggle — FY-first → FY-last within the active range.
+  const { data: mixClipped } = useRangeClip(giPremiumMix)
+  const mf = mixClipped[0]
+  const ml = mixClipped[mixClipped.length - 1]
+  const ppOf = (seg: Seg): number | null => {
+    const a = numOrNull(mf?.[seg])
+    const b = numOrNull(ml?.[seg])
+    return a == null || b == null ? null : b - a
+  }
 
   return (
     <section className="card-surface p-5 sm:p-6">
@@ -243,7 +408,7 @@ function MainChartBlock() {
             Where is the GI premium pool shifting?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Health vs Motor vs Others · FY15 → FY26 · mock
+            Health vs Motor vs Others · {span ?? '—'} · mock
           </p>
         </div>
         <ChartToggle value={mode} onChange={setMode} />
@@ -253,72 +418,26 @@ function MainChartBlock() {
         <EmptyState
           title="Data unavailable for this period"
           body={gate.reason ?? 'Switch the period toggle to Annual to see the GI pool shift.'}
-          height={276}
+          height={236}
         />
       ) : clipped.length === 0 ? (
         <EmptyState
           title="Data not available from source"
           body="No reported years fall inside the selected Data Range. Widen the range in the top bar."
-          height={276}
+          height={236}
         />
       ) : (
-      <div style={{ width: '100%', height: 276 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={clipped} margin={{ top: 8, right: 78, left: -4, bottom: 4 }}>
-            <defs>
-              <linearGradient id="healthFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={HEALTH} stopOpacity={0.55} />
-                <stop offset="100%" stopColor={HEALTH} stopOpacity={0.18} />
-              </linearGradient>
-              <linearGradient id="motorFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={MOTOR} stopOpacity={0.32} />
-                <stop offset="100%" stopColor={MOTOR} stopOpacity={0.12} />
-              </linearGradient>
-              <linearGradient id="othersFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={OTHERS} stopOpacity={0.45} />
-                <stop offset="100%" stopColor={OTHERS} stopOpacity={0.18} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fill: AXIS }}
-              tickLine={false}
-              axisLine={{ stroke: GRID }}
-            />
-            <YAxis
-              tick={{ fontSize: 11, fill: AXIS }}
-              tickLine={false}
-              axisLine={{ stroke: GRID }}
-              width={46}
-              domain={isMix ? [0, 100] : ['auto', 'auto']}
-              ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
-              unit={isMix ? '%' : ''}
-            />
-            <Tooltip
-              cursor={{ stroke: '#27457E', strokeOpacity: 0.18, strokeWidth: 1 }}
-              content={<EngineTooltip unit={unit} highlight="Health" />}
-            />
-            <Legend wrapperStyle={{ fontSize: 11, paddingTop: 6 }} iconType="circle" align="right" verticalAlign="top" />
-            <Area type="monotone" dataKey="Others" stackId="1" stroke={OTHERS} strokeWidth={1.2} fill="url(#othersFill)">
-              <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
-            </Area>
-            <Area type="monotone" dataKey="Motor" stackId="1" stroke={MOTOR} strokeWidth={1.2} fill="url(#motorFill)">
-              <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
-            </Area>
-            <Area type="monotone" dataKey="Health" stackId="1" stroke={HEALTH} strokeWidth={2.4} fill="url(#healthFill)">
-              <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
-            </Area>
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+        <div className="flex flex-wrap items-stretch gap-4">
+          <RibbonFlow rows={clipped} isMix={isMix} />
+          <RibbonSummary ppH={ppOf('Health')} ppM={ppOf('Motor')} ppO={ppOf('Others')} span={span ?? 'FY21 → FY25'} />
+        </div>
       )}
 
-      {gate.ok && (
-        <AiRead text="Health has moved from a support category to the main growth engine of general insurance." />
+      {gate.ok && clipped.length > 0 && (
+        <AiRead text="Health is gaining share in the GI premium pool, largely at the expense of Others, while Motor remains broadly stable." />
       )}
       <div className="mt-3 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY15 → FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
     </section>
   )
@@ -420,6 +539,7 @@ function BridgeBlock() {
 function SahiShiftCard() {
   const data = healthCarrierShare
   const { data: clipped } = useRangeClip(data)
+  const span = shownSpan(clipped)
   const lastIdx = clipped.length - 1
   const gate = usePeriodGate()
 
@@ -450,7 +570,7 @@ function SahiShiftCard() {
             Specialist insurers are gaining relevance
           </h3>
           <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-            Share of health premium by carrier type · FY18 → FY26
+            Share of health premium by carrier type · {span ?? '—'}
           </p>
         </div>
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D6E2FA] bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary">
@@ -535,7 +655,7 @@ function SahiShiftCard() {
         relevance as the market shifts away from PSU dominance.
       </p>
       <div className="mt-2 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY18 → FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
     </div>
   )
@@ -547,11 +667,15 @@ function CompanyBridgeCard() {
   const gate = usePeriodGate()
   const bridge = getCompanyMarketBridge(company, peerGroup)
 
-  const trajectory = bridge.trajectory
-  const firstShare = trajectory[0].share
-  const lastShare = trajectory[trajectory.length - 1].share
-  const firstLabel = trajectory[0].label
-  const lastLabel = trajectory[trajectory.length - 1].label
+  // Clip the (illustrative) retail-share trajectory to the Data Range so it
+  // never draws a year outside the selector — e.g. FY26 when the range ends FY25.
+  const { data: trajectory } = useRangeClip(bridge.trajectory)
+  const span = shownSpan(trajectory)
+  const lastIdx = trajectory.length - 1
+  const firstShare = trajectory.length ? trajectory[0].share : 0
+  const lastShare = trajectory.length ? trajectory[lastIdx].share : 0
+  const firstLabel = trajectory.length ? trajectory[0].label : ''
+  const lastLabel = trajectory.length ? trajectory[lastIdx].label : ''
 
   const badgeClass =
     bridge.badgeTone === 'teal'
@@ -603,10 +727,14 @@ function CompanyBridgeCard() {
             {Math.round(company.marketShareChange * 100)} bps
           </span>
         </div>
-        {!gate.ok ? (
+        {!gate.ok || trajectory.length === 0 ? (
           <EmptyState
-            title="Data unavailable for this period"
-            body={gate.reason ?? 'Switch to Annual to see the share trajectory.'}
+            title={trajectory.length === 0 ? 'Data not available for this range' : 'Data unavailable for this period'}
+            body={
+              trajectory.length === 0
+                ? 'No reported years fall inside the selected Data Range. Widen the range in the top bar.'
+                : gate.reason ?? 'Switch to Annual to see the share trajectory.'
+            }
             height={104}
           />
         ) : (
@@ -696,7 +824,7 @@ function CompanyBridgeCard() {
         {bridge.closingLine}
       </p>
       <div className="relative mt-2 flex justify-end">
-        <SourceTag source="Derived from IRDAI" confidence="medium" period="FY23 → FY26" provenance={{ source_name: 'Retail share trajectory derived from real FY25 GWP + marketShareChange in insurers[]', source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf' }} />
+        <SourceTag source="Derived from IRDAI" confidence="medium" period={span ?? '—'} provenance={{ source_name: 'Retail share trajectory derived from real FY25 GWP + marketShareChange in insurers[]', source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf' }} />
       </div>
     </div>
   )

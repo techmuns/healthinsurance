@@ -40,15 +40,21 @@ interface CompanyMaster {
 // to use either ₹ Crore / Crores / Cr — patterns normalise to bare numbers.
 // Combined ratio and solvency live on the page in standard formats too.
 const COMMON_PATTERNS = {
-  gwp: /(?:Gross\s+Written\s+Premium|GWP)[^0-9\-]{0,80}?([\d,]+\.?\d*)/i,
-  nwp: /(?:Net\s+Written\s+Premium|NWP)[^0-9\-]{0,80}?([\d,]+\.?\d*)/i,
-  nep: /(?:Net\s+Earned\s+Premium|NEP)[^0-9\-]{0,80}?([\d,]+\.?\d*)/i,
-  pat: /(?:Profit\s+After\s+Tax|PAT|Net\s+Profit)[^0-9\-]{0,80}?([\d,]+\.?\d*)/i,
-  combined_ratio: /Combined\s+Ratio[^0-9\-]{0,60}?([\d.]+)\s*%?/i,
-  claims_ratio: /(?:Claims?|Loss)\s+Ratio[^0-9\-]{0,60}?([\d.]+)\s*%?/i,
-  expense_ratio: /Expense\s+Ratio[^0-9\-]{0,60}?([\d.]+)\s*%?/i,
-  solvency_ratio: /Solvency\s+Ratio[^0-9\-]{0,60}?([\d.]+)\s*x?/i,
-  roe: /(?:Return\s+on\s+Equity|ROE)[^0-9\-]{0,60}?([\d.]+)\s*%?/i,
+  gwp: /(?:Gross\s+Written\s+Premium|GWP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
+  nwp: /(?:Net\s+Written\s+Premium|NWP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
+  nep: /(?:Net\s+Earned\s+Premium|NEP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
+  pat: /(?:Profit\s+After\s+Tax|PAT|Net\s+Profit)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
+  combined_ratio: /Combined\s+Ratio[^0-9-]{0,60}?([\d.]+)\s*%?/i,
+  // "Incurred Claims Ratio" / "Loss Ratio" — require the ratio token to sit
+  // right before the number so prose like "claims ratios threaten ..." (no
+  // adjacent figure) falls through to null instead of grabbing a stray number.
+  claims_ratio: /(?:Incurred\s+)?(?:Claims?|Loss)\s+Ratio\s*(?:\(net\))?[\s:]{0,4}([\d.]+)\s*%/i,
+  expense_ratio: /Expense\s+Ratio(?:\s*of\s*Management)?\s*(?:\(net\))?[\s:]{0,4}([\d.]+)\s*%/i,
+  // Commission ratio (net commission / NWP). Anchored to "ratio … <num>%" so a
+  // prose mention of "commission to Ms. …" can't be misread as the ratio.
+  commission_ratio: /Commission\s+Ratio\s*(?:\(net\))?[\s:]{0,4}([\d.]+)\s*%/i,
+  solvency_ratio: /Solvency\s+Ratio[^0-9-]{0,60}?([\d.]+)\s*x?/i,
+  roe: /(?:Return\s+on\s+Equity|ROE)[^0-9-]{0,60}?([\d.]+)\s*%?/i,
 }
 
 export const ingestCompanyDisclosures: Fetcher = {
@@ -191,10 +197,10 @@ export const ingestCompanyDisclosures: Fetcher = {
 // PDF filenames / anchor text that we definitely do NOT want (these are
 // statutory company-secretarial filings, brochures, policy wording etc. —
 // not financial disclosures).
-const DENY_PDF = /(mgt[\s\-_]*7|grievance|policy[\s\-_]*wording|prospectus|brochure|claim[\s\-_]*form|complain[\s\-_]*(form|t)|customer[\s\-_]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s\-_]*feature|citizen[\s\-_]*charter|whistle[\s\-_]*blower|nomination|cookie|privacy|terms|agent[\s\-_]*code|charter|appointment|sec[\s\-_]*201|composite[\s\-_]*scheme|cession)/i
+const DENY_PDF = /(mgt[\s_-]*7|grievance|policy[\s_-]*wording|prospectus|brochure|claim[\s_-]*form|complain[\s_-]*(form|t)|customer[\s_-]*service|kyc|advert|notice|rationale|stewardship|kfd|key[\s_-]*feature|citizen[\s_-]*charter|whistle[\s_-]*blower|nomination|cookie|privacy|terms|agent[\s_-]*code|charter|appointment|sec[\s_-]*201|composite[\s_-]*scheme|cession)/i
 
 // Strong-signal financial / disclosure terms — preferred over anything else.
-const ALLOW_PDF = /(annual[\s_\-]*report|public[\s_\-]*disclosure|financial[\s_\-]*disclosure|press[\s_\-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_\-]*\d|^l[\s_\-]*\d|financial[\s_\-]*information|investor[\s_\-]*presentation|earnings)/i
+const ALLOW_PDF = /(annual[\s_-]*report|public[\s_-]*disclosure|financial[\s_-]*disclosure|press[\s_-]*release|results|quarterly|q[1-4]\s*fy|fy\s*2?[0-9]{2,4}|nl[\s_-]*\d|^l[\s_-]*\d|financial[\s_-]*information|investor[\s_-]*presentation|earnings)/i
 
 const SUBPAGE_HINT = /(disclosure|financial|annual|quarterly|investor|results|reports?)/i
 
@@ -258,7 +264,7 @@ function inferFY(filename: string, text: string): string {
   }
   const fnmFy = filename.match(/\bFY\s*[-]?\s*(?:20)?(\d{2})\b/i)
   if (fnmFy) return `FY${fnmFy[1].padStart(2, '0').slice(-2)}`
-  const fnmMonth = filename.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,\-_]*?(\d{4})/i)
+  const fnmMonth = filename.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*[\s,_-]*?(\d{4})/i)
   if (fnmMonth) {
     const monthOffset = MONTH_TO_FY[fnmMonth[1].toLowerCase().slice(0, 3)] ?? 0
     return `FY${String(parseInt(fnmMonth[2], 10) + monthOffset).slice(-2)}`
@@ -268,7 +274,7 @@ function inferFY(filename: string, text: string): string {
   //    on a tie.
   const head = text.slice(0, 2000)
   const counts = new Map<number, number>()
-  for (const m of head.matchAll(/\b(?:FY[\s\-]?20?(\d{2})|20(\d{2})\s*[-–_/]\s*20?(\d{2}))\b/gi)) {
+  for (const m of head.matchAll(/\b(?:FY[\s-]?20?(\d{2})|20(\d{2})\s*[-–_/]\s*20?(\d{2}))\b/gi)) {
     const yy = parseInt(m[1] ?? m[3] ?? m[2] ?? '0', 10)
     if (yy >= 18 && yy <= 30) counts.set(yy, (counts.get(yy) ?? 0) + 1)
   }
@@ -295,7 +301,7 @@ function inferFY(filename: string, text: string): string {
 function isQuarterlyDisclosure(text: string, filename: string): boolean {
   const haystack = `${filename} ${text.slice(0, 3000)}`
   // Filename hints first — IRDAI L-forms / NL-forms ship with QtrN labels.
-  if (/\bQ[1-4][\s\-_]?FY|qtr[\s_\-]?[1-3]|quarter[\s_\-]?ended|9[\s_\-]?(month|m)|six[\s_\-]?month|half[\s_\-]?year|h1[\s_\-]?fy/i.test(haystack)) return true
+  if (/\bQ[1-4][\s_-]?FY|qtr[\s_-]?[1-3]|quarter[\s_-]?ended|9[\s_-]?(month|m)|six[\s_-]?month|half[\s_-]?year|h1[\s_-]?fy/i.test(haystack)) return true
   // Annual-report markers that explicitly contradict.
   if (/annual\s+report|board\s*['']\s*report\s*(?:to|on)\s+the\s+(?:members|shareholders)|management\s+discussion\s+and\s+analysis/i.test(text.slice(0, 5000))) {
     // Annual reports are themselves not quarterly disclosures, even if
@@ -308,10 +314,10 @@ function isQuarterlyDisclosure(text: string, filename: string): boolean {
 
 function inferQuarter(text: string, filename: string): string | null {
   const haystack = `${filename} ${text.slice(0, 2000)}`
-  const q = haystack.match(/\bQ([1-4])\s*FY\b/i) ?? haystack.match(/qtr[\s_\-]?([1-3])\b/i)
+  const q = haystack.match(/\bQ([1-4])\s*FY\b/i) ?? haystack.match(/qtr[\s_-]?([1-3])\b/i)
   if (q) return `Q${q[1]}`
-  if (/9[\s_\-]?month|9m/i.test(haystack)) return 'Q3'
-  if (/h1|half[\s_\-]?year|six[\s_\-]?month/i.test(haystack)) return 'Q2'
+  if (/9[\s_-]?month|9m/i.test(haystack)) return 'Q3'
+  if (/h1|half[\s_-]?year|six[\s_-]?month/i.test(haystack)) return 'Q2'
   return null
 }
 
@@ -338,8 +344,9 @@ function sanitiseExtracted(raw: Record<string, number | null>): Record<string, n
     if (out.combined_ratio > 0 && out.combined_ratio < 5) out.combined_ratio = out.combined_ratio * 100
     if (out.combined_ratio < 50 || out.combined_ratio > 200) out.combined_ratio = null
   }
-  // Claims / expense ratios: same decimal-vs-% normalisation, plausible 0-200%.
-  for (const k of ['claims_ratio', 'expense_ratio'] as const) {
+  // Claims / expense / commission ratios: same decimal-vs-% normalisation,
+  // plausible 0-200% (commission tighter, but the band keeps one rule).
+  for (const k of ['claims_ratio', 'expense_ratio', 'commission_ratio'] as const) {
     const v = out[k]
     if (v == null) continue
     if (v > 0 && v < 5) out[k] = v * 100

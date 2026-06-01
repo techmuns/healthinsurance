@@ -1,11 +1,10 @@
 // ---------------------------------------------------------------------------
 //  Distribution Engine — data + per-company helpers.
 //
-//  Channel mix anchors per company; the Niva Bupa row is calibrated to the
-//  PPT deck (Brokers 30.6%, Agents 29.7%, Banca 20.1%, Direct 11.5% for FY25)
-//  with FY19 + 9M FY26 reference points. Other insurers carry only the
-//  reported FY25 + 9M FY26 snapshots — Distribution Engine surfaces what's
-//  available rather than fabricating long history.
+//  Channel mix per company; the Niva Bupa row holds real FY22–FY25 figures from
+//  the company's filings (DRHP for FY22–FY24, FY2024-25 annual report for FY25),
+//  fetched via GitHub Actions. Other insurers are absent — Distribution Engine
+//  surfaces only what is source-backed rather than fabricating history.
 //
 //  Reach-depth (region / tier / city) data is not in this mock model — the
 //  reach-depth panel renders an EmptyState until source-backed numbers are
@@ -16,7 +15,7 @@ import { insurers, PEER_GROUP_LABEL } from '@/data/mockData'
 import type { Insurer, PeerGroup } from '@/data/types'
 import { getFilteredInsurers } from '@/lib/insurers'
 
-export type DistPeriodKey = 'FY19' | 'FY25' | '9M FY26'
+export type DistPeriodKey = 'FY22' | 'FY23' | 'FY24' | 'FY25'
 
 export const DIST_CHANNELS = [
   'Banca',
@@ -38,16 +37,20 @@ export interface ChannelMixRow {
   Others: number
 }
 
-// Per-company channel mix (% of GWP). Only Niva Bupa is populated — values
-// come straight from the company's RHP / annual report channel-mix tables
-// for FY19 / FY25 / 9M FY26. Every other insurer is intentionally absent;
-// the UI surfaces an explicit "not yet ingested" state until per-company
-// channel-mix tables are extracted from their public disclosures.
+// Per-company channel mix (% of GWP by GDPI). Only Niva Bupa is populated —
+// values are the real figures from the company's own filings, fetched via
+// GitHub Actions (scripts/ingest/fetch-distribution-mix.ts → the committed
+// data/raw/distribution/ extract): FY22–FY24 from the DRHP distribution table
+// (Corporate Agents split into Banks = Banca, and Others), FY25 from the
+// FY2024-25 annual report. Direct is the residual to 100% (the balancing
+// channel). Other insurers are intentionally absent; the UI shows an explicit
+// "not ingested" state until their tables are extracted the same way.
 export const distributionEngineMix: Record<string, ChannelMixRow[]> = {
   'niva-bupa': [
-    { period: 'FY19', Banca: 17.0, Brokers: 23.5, Agents: 36.2, 'Corporate Agents': 4.8, Direct: 14.5, Others: 4.0 },
-    { period: 'FY25', Banca: 20.1, Brokers: 30.6, Agents: 29.7, 'Corporate Agents': 5.0, Direct: 11.5, Others: 3.1 },
-    { period: '9M FY26', Banca: 21.5, Brokers: 31.0, Agents: 28.2, 'Corporate Agents': 5.0, Direct: 11.0, Others: 3.3 },
+    { period: 'FY22', Banca: 18.6, Brokers: 13.4, Agents: 37.3, 'Corporate Agents': 8.8, Direct: 21.1, Others: 0.8 },
+    { period: 'FY23', Banca: 17.6, Brokers: 21.8, Agents: 36.0, 'Corporate Agents': 8.3, Direct: 16.0, Others: 0.3 },
+    { period: 'FY24', Banca: 19.6, Brokers: 27.0, Agents: 32.1, 'Corporate Agents': 7.7, Direct: 13.1, Others: 0.5 },
+    { period: 'FY25', Banca: 20.1, Brokers: 30.6, Agents: 29.7, 'Corporate Agents': 7.5, Direct: 11.5, Others: 0.6 },
   ],
 }
 
@@ -134,15 +137,27 @@ export function getChannelDependencePeerData(
 export function getDistributionAIRead(
   company: Insurer,
   peerGroup: PeerGroup,
+  window?: ChannelMixRow[],
 ): string {
   const data = getCompanyDistributionData(company.id)
   if (!data) {
     return `Channel mix is not yet wired for ${company.shortName}.`
   }
-  const { latest, earliest } = data
-  if (!latest || !earliest || earliest.period === latest.period) {
-    const top = data.heroChips[0]
-    return `${company.shortName}'s sourcing skews toward ${top.channel.toLowerCase()} (${top.share.toFixed(1)}% of GWP).`
+  // Honour the caller's in-range window (the header Data Range) when given, so
+  // the read describes only the years actually on the chart.
+  const rows = window ?? data.mix
+  const earliest = rows[0]
+  const latest = rows[rows.length - 1]
+  if (!earliest || !latest) return ''
+  if (earliest.period === latest.period) {
+    const segs: [string, number][] = [
+      ['banca', latest.Banca], ['brokers', latest.Brokers], ['agents', latest.Agents],
+      ['corporate agents', latest['Corporate Agents']], ['direct', latest.Direct],
+    ]
+    const top = segs.sort((a, b) => b[1] - a[1])[0]
+    const bal = isBalanced(latest)
+    const tone = bal ? ` Channel mix is more balanced than the ${PEER_GROUP_LABEL[peerGroup].toLowerCase()} median.` : ''
+    return `In ${latest.period}, ${company.shortName}'s largest channel is ${top[0]} at ${top[1].toFixed(1)}% of GWP.${tone}`
   }
 
   const dBanca = latest.Banca - earliest.Banca

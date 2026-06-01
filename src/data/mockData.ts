@@ -830,13 +830,20 @@ export const marketKpis: { label: string; metric: Metric }[] = [
 //   FY24 Total GI ₹2.90 lakh Cr  · +12.8% YoY
 //   FY23 Total GI ₹2.57 lakh Cr (derived)
 export const giPremiumAbsolute: SeriesPoint[] = [
+  // FY21–FY22 are illustrative back-extensions (mock) so the ribbon-flow spans
+  // FY21→FY25; FY23–FY25 are the seeded IRDAI/CareRatings-referenced figures.
+  { label: 'FY21', Health: 62.6, Motor: 62.5, Others: 72.9 },
+  { label: 'FY22', Health: 73.5, Motor: 68.2, Others: 78.3 },
   { label: 'FY23', Health: 90.7, Motor: 78.0, Others: 88.3 },
   { label: 'FY24', Health: 107.7, Motor: 89.7, Others: 92.6 },
   { label: 'FY25', Health: 122.8, Motor: 99.1, Others: 85.1 },
 ]
 
-// Mix share (%) of total GI premium pool. Sums to ~100 each year.
+// Mix share (%) of total GI premium pool. Sums to ~100 each year. FY21–FY22
+// are the illustrative back-extension matching giPremiumAbsolute above.
 export const giPremiumMix: SeriesPoint[] = [
+  { label: 'FY21', Health: 31.6, Motor: 31.6, Others: 36.8 },
+  { label: 'FY22', Health: 33.4, Motor: 31.0, Others: 35.6 },
   { label: 'FY23', Health: 35.3, Motor: 30.4, Others: 34.3 },
   { label: 'FY24', Health: 37.1, Motor: 30.9, Others: 31.9 },
   { label: 'FY25', Health: 40.0, Motor: 32.3, Others: 27.7 },
@@ -1091,6 +1098,25 @@ export const streetView = {
   currentPrice: 540,
   recentChange: 'Upgraded to Buy by 2 brokers after Q4 print',
 }
+
+// --- Valuation multiples (illustrative mock — listed insurers only) ----------
+// Live market cap / P/B / P/E ingestion is still pending, so these are
+// clearly-marked mock benchmarks (peer avg = listed comparables, never the
+// unlisted peers coerced to 0). P/GWP for the focal company is the same figure
+// carried in insurers[].valuation.
+export const valuationMultiples = {
+  pGwp: { niva: 3.4, peerAvg: 3.0 },
+  pB: { niva: 2.7, peerAvg: 2.2 },
+  pE: { niva: 31.6, peerAvg: 26.0 },
+}
+
+export const valuationMultipleTrend: SeriesPoint[] = [
+  { label: 'FY21', 'P/GWP': 1.9, 'P/B': 1.3, 'P/E': 18.6 },
+  { label: 'FY22', 'P/GWP': 2.2, 'P/B': 1.5, 'P/E': 21.4 },
+  { label: 'FY23', 'P/GWP': 2.6, 'P/B': 1.9, 'P/E': 24.7 },
+  { label: 'FY24', 'P/GWP': 3.0, 'P/B': 2.3, 'P/E': 28.4 },
+  { label: 'FY25', 'P/GWP': 3.4, 'P/B': 2.7, 'P/E': 31.6 },
+]
 
 // =========================================================================
 //  SECTION 7 — OWNERSHIP
