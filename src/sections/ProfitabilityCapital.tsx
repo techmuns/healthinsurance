@@ -776,7 +776,10 @@ function nodeStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: Ba
     return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
   }
   if (id === 'core') {
-    if (ctx.isIfrs) return { label: 'NA', tone: 'navy' }
+    // Underwriting result has no IFRS-specific figure (the IFRS overlay carries
+    // no NEP). Show the reported/audited value on any basis — like Solvency —
+    // so the node agrees with the engine card instead of reading "NA" beside a
+    // real −₹ loss.
     const latest = series[series.length - 1] as AnnualPoint | undefined
     const uw = latest ? underwritingFor(company.id, latest) : null
     return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'Strong', tone: 'positive' } : { label: 'Weak', tone: 'negative' }
@@ -833,8 +836,11 @@ function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCt
       n: 2,
       label: 'Core profitability',
       metricLabel: 'Underwriting result',
-      value: ctx.isIfrs ? 'NA' : uw == null ? 'Pending' : crc(uw),
-      missing: ctx.isIfrs || uw == null,
+      // Reported/audited figure on any basis (no IFRS NEP to derive an IFRS
+      // variant) — matches the engine card so the map never shows "NA" next to
+      // a real underwriting loss.
+      value: uw == null ? 'Pending' : crc(uw),
+      missing: uw == null,
       color: PALETTE.teal,
       Icon: Gauge,
       explore: 'Does insurance itself make money?',
