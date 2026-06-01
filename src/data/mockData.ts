@@ -1099,6 +1099,25 @@ export const streetView = {
   recentChange: 'Upgraded to Buy by 2 brokers after Q4 print',
 }
 
+// --- Valuation multiples (illustrative mock — listed insurers only) ----------
+// Live market cap / P/B / P/E ingestion is still pending, so these are
+// clearly-marked mock benchmarks (peer avg = listed comparables, never the
+// unlisted peers coerced to 0). P/GWP for the focal company is the same figure
+// carried in insurers[].valuation.
+export const valuationMultiples = {
+  pGwp: { niva: 3.4, peerAvg: 3.0 },
+  pB: { niva: 2.7, peerAvg: 2.2 },
+  pE: { niva: 31.6, peerAvg: 26.0 },
+}
+
+export const valuationMultipleTrend: SeriesPoint[] = [
+  { label: 'FY21', 'P/GWP': 1.9, 'P/B': 1.3, 'P/E': 18.6 },
+  { label: 'FY22', 'P/GWP': 2.2, 'P/B': 1.5, 'P/E': 21.4 },
+  { label: 'FY23', 'P/GWP': 2.6, 'P/B': 1.9, 'P/E': 24.7 },
+  { label: 'FY24', 'P/GWP': 3.0, 'P/B': 2.3, 'P/E': 28.4 },
+  { label: 'FY25', 'P/GWP': 3.4, 'P/B': 2.7, 'P/E': 31.6 },
+]
+
 // =========================================================================
 //  SECTION 7 — OWNERSHIP
 // =========================================================================
