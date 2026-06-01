@@ -5,6 +5,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Customized,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -17,6 +18,7 @@ import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { labelInRange } from '@/lib/dateRange'
+import { makeYoYConnectors } from '@/lib/yoyConnectors'
 import {
   DIST_CHANNELS,
   type DistChannel,
@@ -269,6 +271,28 @@ function MainChartBlock() {
                     maxBarSize={84}
                   />
                 ))}
+                {/* YoY growth annotation — dotted step tracing the top of the Brokers
+                    band (the channel reshaping the mix), labelled with its pp change. */}
+                <Customized
+                  component={makeYoYConnectors({
+                    rows: mixRows,
+                    xKey: 'period',
+                    valueAt: (r) => {
+                      const ba = typeof r.Banca === 'number' ? r.Banca : null
+                      const bk = typeof r.Brokers === 'number' ? r.Brokers : null
+                      return ba == null || bk == null ? null : ba + bk
+                    },
+                    label: (a, b) => {
+                      const av = typeof a.Brokers === 'number' ? a.Brokers : null
+                      const bv = typeof b.Brokers === 'number' ? b.Brokers : null
+                      if (av == null || bv == null) return null
+                      const d = bv - av
+                      return `Brokers ${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} pp`
+                    },
+                    color: CHANNEL_COLORS.Brokers,
+                    maxBarSize: 84,
+                  })}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
