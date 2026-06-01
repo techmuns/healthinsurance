@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react'
+import { Fragment, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Area,
@@ -27,6 +27,9 @@ import {
   BarChart3,
   Cog,
   ChevronRight,
+  ChevronLeft,
+  ArrowUp,
+  Check,
   MousePointerClick,
   TrendingUp,
   TrendingDown,
@@ -2456,6 +2459,88 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
 
 const STORY_QUESTION = 'Is premium turning into profit and returns?'
 
+// Canonical order of the five story stages — drives the bottom-of-section pager
+// so the reader can move stage-to-stage without scrolling back to the map.
+const SECTION_ORDER: NodeId[] = ['underwriting', 'core', 'conversion', 'returns', 'capital']
+
+// Bottom-of-section pager. Compact, non-sticky strip that confirms the finished
+// stage and offers the next (and previous) one. Switching is handled by the
+// parent, which also smooth-scrolls back up to the story map.
+function SectionPager({
+  current,
+  prev,
+  next,
+  onGo,
+  onRestart,
+}: {
+  current: NodeId
+  prev: NodeId | null
+  next: NodeId | null
+  onGo: (id: NodeId) => void
+  onRestart: () => void
+}) {
+  const idx = SECTION_ORDER.indexOf(current)
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 rounded-2xl border border-soft-border bg-white px-4 py-2.5 shadow-soft">
+      {/* Left — finished marker */}
+      <div className="flex items-center gap-2">
+        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-teal/12 text-teal">
+          <Check className="h-3 w-3" />
+        </span>
+        <span className="text-[11px] text-ink-secondary">Finished</span>
+        <span className="text-[12px] font-semibold text-navy-deep">{LENS[current].label}</span>
+      </div>
+
+      {/* Center — quiet progress through the five stages */}
+      <div className="order-last flex w-full items-center justify-center gap-1.5 sm:order-none sm:w-auto">
+        {SECTION_ORDER.map((id, i) => (
+          <span
+            key={id}
+            className="h-1.5 rounded-full transition-all"
+            style={{ width: i === idx ? 16 : 6, background: i === idx ? GOLD : i < idx ? PALETTE.teal : '#D9DEE7' }}
+          />
+        ))}
+        <span className="ml-1.5 text-[10px] font-semibold tabular-nums text-ink-secondary">
+          {idx + 1}/{SECTION_ORDER.length}
+        </span>
+      </div>
+
+      {/* Right — previous (subtle) + next (primary) */}
+      <div className="flex items-center gap-2">
+        {prev && (
+          <button
+            type="button"
+            onClick={() => onGo(prev)}
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-ink-secondary transition-colors hover:text-navy-primary"
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            {LENS[prev].label}
+          </button>
+        )}
+        {next ? (
+          <button
+            type="button"
+            onClick={() => onGo(next)}
+            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-soft transition-transform duration-200 hover:-translate-y-px"
+          >
+            Next: {LENS[next].label}
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onRestart}
+            className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3.5 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:bg-soft-blue"
+          >
+            <ArrowUp className="h-3.5 w-3.5" />
+            Back to first section
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function ProfitabilityCapital() {
   const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
   const [acctOpen, setAcctOpen] = useState(false)
@@ -2465,6 +2550,17 @@ export function ProfitabilityCapital() {
   const copy = getCompanyProfitabilityCopy(company)
   // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
   const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
+
+  // Bottom-of-section navigation. The story map is the anchor we scroll back to
+  // (it sits just above the active detail), offset for the sticky filter bar.
+  const mapRef = useRef<HTMLDivElement>(null)
+  const sectionIdx = SECTION_ORDER.indexOf(selectedNode)
+  const prevNode = sectionIdx > 0 ? SECTION_ORDER[sectionIdx - 1] : null
+  const nextNode = sectionIdx < SECTION_ORDER.length - 1 ? SECTION_ORDER[sectionIdx + 1] : null
+  const goToSection = (id: NodeId) => {
+    setSelectedNode(id)
+    requestAnimationFrame(() => mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
 
   // Period lens for the story map. Quarterly profitability exists only as standalone
   // Q4 cells (combined ratio + PAT margin); the latest in-range FY picks the quarter.
@@ -2576,10 +2672,15 @@ export function ProfitabilityCapital() {
       </section>
 
       {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
-      <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
+      <div ref={mapRef} className="scroll-mt-24">
+        <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
+      </div>
 
       {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
       <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} quarter={quarter} quarterPrev={quarterPrev} onOpenAcctDetail={() => setAcctOpen(true)} />
+
+      {/* ─── SECTION PAGER — move to the next stage without scrolling up ─── */}
+      <SectionPager current={selectedNode} prev={prevNode} next={nextNode} onGo={goToSection} onRestart={() => goToSection('underwriting')} />
 
       <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
     </div>
