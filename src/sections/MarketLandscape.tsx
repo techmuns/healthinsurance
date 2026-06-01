@@ -6,6 +6,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Customized,
   Label,
   LabelList,
   Line,
@@ -83,6 +84,74 @@ function latestInRange(rows: SeriesPoint[], key: string): { value: number; label
     if (typeof v === 'number') return { value: v, label: rows[i].label }
   }
   return null
+}
+
+// YoY growth annotation for the bar view: a subtle dotted right-angle (H–V–H)
+// step tracing the top of the Health band from one column to the next, with a
+// small label showing the change — percentage points in Mix %, % growth in
+// Absolute. Geometry is read from Recharts' axis scales (via <Customized>), so
+// it stays aligned at any width and adapts to however many years are in range.
+function renderYoYConnectors(p: any, rows: SeriesPoint[], isMix: boolean) {
+  if (rows.length < 2) return null
+  const xAxis: any = p?.xAxisMap ? Object.values(p.xAxisMap)[0] : null
+  const yAxis: any = p?.yAxisMap ? Object.values(p.yAxisMap)[0] : null
+  const scaleX = xAxis?.scale
+  const scaleY = yAxis?.scale
+  if (typeof scaleX !== 'function' || typeof scaleY !== 'function') return null
+  const bw =
+    typeof scaleX.bandwidth === 'function'
+      ? scaleX.bandwidth()
+      : typeof xAxis.bandSize === 'number'
+        ? xAxis.bandSize
+        : 0
+  const barHalf = Math.min(42, bw) / 2
+  const cx = (label: string) => {
+    const s = scaleX(label)
+    return typeof s === 'number' ? s + bw / 2 : null
+  }
+
+  const out: ReactNode[] = []
+  for (let i = 0; i < rows.length - 1; i++) {
+    const ha = typeof rows[i].Health === 'number' ? (rows[i].Health as number) : null
+    const hb = typeof rows[i + 1].Health === 'number' ? (rows[i + 1].Health as number) : null
+    const cxa = cx(rows[i].label as string)
+    const cxb = cx(rows[i + 1].label as string)
+    if (ha == null || hb == null || cxa == null || cxb == null) continue
+    const ya = scaleY(ha)
+    const yb = scaleY(hb)
+    if (typeof ya !== 'number' || typeof yb !== 'number') continue
+
+    const xMid = (cxa + cxb) / 2
+    const x1 = cxa + barHalf + 3
+    const x2 = cxb - barHalf - 3
+    const d = isMix ? hb - ha : ha !== 0 ? (hb / ha - 1) * 100 : 0
+    const txt = isMix
+      ? `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} pp`
+      : `${d >= 0 ? '+' : '−'}${Math.abs(d).toFixed(0)}%`
+    const tone = d >= 0 ? '#0E6F6D' : '#B06A5E'
+    const halfW = isMix ? 21 : 16
+
+    out.push(
+      <g key={rows[i].label as string}>
+        <path
+          d={`M ${x1} ${ya} L ${xMid} ${ya} L ${xMid} ${yb} L ${x2} ${yb}`}
+          fill="none"
+          stroke="#A7BFBE"
+          strokeWidth={1}
+          strokeDasharray="2 2.5"
+          strokeLinecap="round"
+        />
+        <circle cx={x2} cy={yb} r={1.7} fill={HEALTH} />
+        <g transform={`translate(${xMid}, ${(ya + yb) / 2})`}>
+          <rect x={-halfW} y={-8} width={halfW * 2} height={15} rx={7.5} fill="#FFFFFF" stroke="#DCEAE9" />
+          <text x={0} y={2.6} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={tone} style={{ letterSpacing: 0.1 }}>
+            {txt}
+          </text>
+        </g>
+      </g>,
+    )
+  }
+  return out.length ? <g>{out}</g> : null
 }
 
 export function MarketLandscape() {
@@ -381,6 +450,9 @@ function MainChartBlock() {
               <Bar dataKey="Others" stackId="1" fill="url(#othersBar)" maxBarSize={42} radius={[5, 5, 0, 0]}>
                 <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
               </Bar>
+              {/* YoY growth annotation — dotted right-angle step tracing the top of the
+                  Health band between columns, labelled +x.x pp (Mix) / +x% (Absolute). */}
+              <Customized component={(cp: any) => renderYoYConnectors(cp, clipped, isMix)} />
             </BarChart>
           ) : (
             <AreaChart data={clipped} margin={{ top: 8, right: 132, left: -4, bottom: 4 }}>
