@@ -73,8 +73,11 @@ export interface LensStage {
   label: string
   /** Single headline metric label under the node, e.g. "Combined ratio". */
   metricLabel: string
-  /** Plain-English question this stage answers. */
+  /** Plain-English question this stage answers (longer — used in the "Viewing"
+   *  strip and the selected-stage header). */
   line: string
+  /** Short question shown inside the compact process block. */
+  blockQuestion: string
   /** One line: what this stage examines. */
   examines: string
   /** One line: why it matters to the investor. */
@@ -142,30 +145,35 @@ export const profitabilityLenses: Record<ProfitLens, LensConfig> = {
       {
         semantic: 'premium', label: 'Premium retained', metricLabel: 'Net earned premium', icon: 'premium', accent: 'navy',
         line: 'How much premium is actually kept and earned?',
+        blockQuestion: 'How much premium is kept and earned?',
         examines: 'How much of reported premium is retained after reinsurance and recognised as earned premium.',
         whyItMatters: 'If premium is not retained or earned efficiently, the rest of the profitability chain becomes weak.',
       },
       {
         semantic: 'combined', label: 'Cost discipline', metricLabel: 'Combined ratio', icon: 'combined', accent: 'emerald',
         line: 'How much of premium is absorbed by claims and operating costs?',
+        blockQuestion: 'Do claims and costs stay inside ₹100?',
         examines: 'The claims ratio, commission ratio, expense ratio and the combined ratio together.',
         whyItMatters: 'It shows whether the insurer is writing disciplined business or giving away too much of each ₹100 of premium.',
       },
       {
         semantic: 'underwriting-result', label: 'Underwriting result', metricLabel: 'Underwriting result', icon: 'result', accent: 'teal',
         line: 'Is the insurance book profitable before investment income?',
+        blockQuestion: 'Is the insurance book profitable?',
         examines: 'The core underwriting result — earned premium after claims, commission and operating costs.',
         whyItMatters: 'It is the cleanest test of whether the insurer’s core business is profitable on its own.',
       },
       {
         semantic: 'conversion', label: 'Profit conversion', metricLabel: 'PAT', icon: 'conversion', accent: 'gold',
         line: 'How much of the insurance activity turns into final reported profit?',
+        blockQuestion: 'How much turns into reported profit?',
         examines: 'How the underwriting result, investment income and other support convert into PAT and returns.',
         whyItMatters: 'It shows whether PAT is core-business-led or still dependent on investment support.',
       },
       {
         semantic: 'capital', label: 'Capital support', metricLabel: 'Solvency', icon: 'capital', accent: 'deepGreen',
         line: 'Is capital strength sufficient to support growth and absorb volatility?',
+        blockQuestion: 'Is capital strong enough to support growth?',
         examines: 'Solvency and the balance-sheet support behind the book.',
         whyItMatters: 'Even if growth is strong, weak capital can limit how sustainably it can be funded.',
       },
@@ -207,30 +215,35 @@ export const profitabilityLenses: Record<ProfitLens, LensConfig> = {
       {
         semantic: 'ifrs-revenue', label: 'Insurance revenue', metricLabel: 'Net earned premium', icon: 'revenue', accent: 'navy',
         line: 'How big is the insurance revenue base?',
+        blockQuestion: 'How big is the revenue base?',
         examines: 'The net earned premium that stands in for IFRS-style insurance revenue.',
         whyItMatters: 'It is the base every later IFRS measure — service result, profit, margin — is read against.',
       },
       {
         semantic: 'ifrs-service', label: 'Service result', metricLabel: 'Combined ratio · IFRS', icon: 'service', accent: 'teal',
         line: 'Does the insurance service earn a margin?',
+        blockQuestion: 'Does the service earn a margin?',
         examines: 'The IFRS combined ratio — claims and expenses against premium.',
         whyItMatters: 'A combined ratio below 100% means the insurance service itself earns a margin before investment income.',
       },
       {
         semantic: 'ifrs-finance', label: 'Finance / investment', metricLabel: 'Investment income', icon: 'finance', accent: 'deepGreen',
         line: 'What does the investment book contribute?',
+        blockQuestion: 'What does investing add?',
         examines: 'Investment income — the finance result on the policyholder and shareholder funds.',
         whyItMatters: 'With a thin service result, the investment result is what carries the IFRS bottom line.',
       },
       {
         semantic: 'ifrs-profit', label: 'Profit / PAT', metricLabel: 'PAT · IFRS', icon: 'profit', accent: 'emerald',
         line: 'What does the business earn on IFRS?',
+        blockQuestion: 'What does it earn on IFRS?',
         examines: 'Profit after tax on the Ind-AS / IFRS-style basis.',
         whyItMatters: 'It can read materially differently from IGAAP PAT — the gap is accounting, not cash.',
       },
       {
         semantic: 'ifrs-margin', label: 'IFRS margin', metricLabel: 'PAT margin · IFRS', icon: 'margin', accent: 'orange',
         line: 'What return reaches the shareholder?',
+        blockQuestion: 'What reaches the shareholder?',
         examines: 'IFRS profit as a share of gross written premium.',
         whyItMatters: 'It is the shareholder-return read on the IFRS basis; ROE and solvency are not reported here.',
       },
