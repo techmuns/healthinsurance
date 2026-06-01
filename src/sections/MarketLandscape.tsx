@@ -22,6 +22,7 @@ import {
   giPremiumMix,
   healthCarrierShare,
 } from '@/data/mockData'
+import type { SeriesPoint } from '@/data/types'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import {
   getCompanyMarketBridge,
@@ -61,6 +62,29 @@ const OTHERS = '#CCD3DC'
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 
+// --- Data-Range plumbing ----------------------------------------------------
+// Every series on this page is clipped to the dashboard-wide Data Range via
+// useRangeClip. These helpers let captions, KPI tiles and source tags read
+// straight off whatever survived the clip, so the labels track the top-bar
+// selector instead of a hardcoded span.
+
+/** Period span actually drawn after the clip, e.g. "FY23 → FY25". */
+function shownSpan(rows: { label: string }[]): string | undefined {
+  if (rows.length === 0) return undefined
+  const a = rows[0].label
+  const b = rows[rows.length - 1].label
+  return a === b ? a : `${a} → ${b}`
+}
+
+/** Latest in-range numeric value for `key` (skips nulls), with its period label. */
+function latestInRange(rows: SeriesPoint[], key: string): { value: number; label: string } | null {
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const v = rows[i][key]
+    if (typeof v === 'number') return { value: v, label: rows[i].label }
+  }
+  return null
+}
+
 export function MarketLandscape() {
   return (
     <div className="space-y-5">
@@ -76,6 +100,13 @@ export function MarketLandscape() {
 function HeroCard() {
   const company = useActiveCompany()
   const heroSub = getCompanyMarketEngineHeroSub(company)
+  // Headline share tiles read the real per-year series, clipped to the Data
+  // Range, so they track the selector. (CAGR is a fixed long-run statistic.)
+  const { data: mix } = useRangeClip(giPremiumMix)
+  const { data: carrier } = useRangeClip(healthCarrierShare)
+  const healthShare = latestInRange(mix, 'Health')
+  const sahiShare = latestInRange(carrier, 'SAHI')
+  const latestYear = healthShare?.label ?? sahiShare?.label ?? '—'
   return (
     <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)] sm:p-7">
       <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
@@ -107,13 +138,13 @@ function HeroCard() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <KpiPill value="40.8%" label="Health share of GI premium" tone="teal" sub="FY26" />
+          <KpiPill value={healthShare ? `${healthShare.value.toFixed(1)}%` : 'n/a'} label="Health share of GI premium" tone="teal" sub={healthShare?.label ?? '—'} />
           <KpiPill value="18.8%" label="Health premium CAGR" tone="navy" sub="FY15 – FY26" />
-          <KpiPill value="32.7%" label="SAHI share of health" tone="gold" sub="FY26" />
+          <KpiPill value={sahiShare ? `${sahiShare.value.toFixed(1)}%` : 'n/a'} label="SAHI share of health" tone="gold" sub={sahiShare?.label ?? '—'} />
         </div>
       </div>
       <div className="relative mt-4 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={latestYear} />
       </div>
     </section>
   )
@@ -196,6 +227,7 @@ function MainChartBlock() {
   const isMix = mode === 'Mix %'
   const data = isMix ? giPremiumMix : giPremiumAbsolute
   const { data: clipped } = useRangeClip(data)
+  const span = shownSpan(clipped)
   const unit = isMix ? '%' : ' ₹k Cr'
   const lastIdx = clipped.length - 1
   // 3 reported years (or fewer, after a Data-Range clip) read best as clean 100%
@@ -289,7 +321,7 @@ function MainChartBlock() {
             Where is the GI premium pool shifting?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Health vs Motor vs Others · FY15 → FY26 · mock
+            Health vs Motor vs Others · {span ?? '—'} · mock
           </p>
         </div>
         <ChartToggle value={mode} onChange={setMode} />
@@ -396,7 +428,7 @@ function MainChartBlock() {
 
       {gate.ok && clipped.length > 0 && <AiRead text={read} />}
       <div className="mt-3 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY15 → FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
     </section>
   )
@@ -498,6 +530,7 @@ function BridgeBlock() {
 function SahiShiftCard() {
   const data = healthCarrierShare
   const { data: clipped } = useRangeClip(data)
+  const span = shownSpan(clipped)
   const lastIdx = clipped.length - 1
   const gate = usePeriodGate()
 
@@ -528,7 +561,7 @@ function SahiShiftCard() {
             Specialist insurers are gaining relevance
           </h3>
           <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-            Share of health premium by carrier type · FY18 → FY26
+            Share of health premium by carrier type · {span ?? '—'}
           </p>
         </div>
         <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#D6E2FA] bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary">
@@ -613,7 +646,7 @@ function SahiShiftCard() {
         relevance as the market shifts away from PSU dominance.
       </p>
       <div className="mt-2 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period="FY18 → FY26" />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
     </div>
   )
@@ -625,11 +658,15 @@ function CompanyBridgeCard() {
   const gate = usePeriodGate()
   const bridge = getCompanyMarketBridge(company, peerGroup)
 
-  const trajectory = bridge.trajectory
-  const firstShare = trajectory[0].share
-  const lastShare = trajectory[trajectory.length - 1].share
-  const firstLabel = trajectory[0].label
-  const lastLabel = trajectory[trajectory.length - 1].label
+  // Clip the (illustrative) retail-share trajectory to the Data Range so it
+  // never draws a year outside the selector — e.g. FY26 when the range ends FY25.
+  const { data: trajectory } = useRangeClip(bridge.trajectory)
+  const span = shownSpan(trajectory)
+  const lastIdx = trajectory.length - 1
+  const firstShare = trajectory.length ? trajectory[0].share : 0
+  const lastShare = trajectory.length ? trajectory[lastIdx].share : 0
+  const firstLabel = trajectory.length ? trajectory[0].label : ''
+  const lastLabel = trajectory.length ? trajectory[lastIdx].label : ''
 
   const badgeClass =
     bridge.badgeTone === 'teal'
@@ -681,10 +718,14 @@ function CompanyBridgeCard() {
             {Math.round(company.marketShareChange * 100)} bps
           </span>
         </div>
-        {!gate.ok ? (
+        {!gate.ok || trajectory.length === 0 ? (
           <EmptyState
-            title="Data unavailable for this period"
-            body={gate.reason ?? 'Switch to Annual to see the share trajectory.'}
+            title={trajectory.length === 0 ? 'Data not available for this range' : 'Data unavailable for this period'}
+            body={
+              trajectory.length === 0
+                ? 'No reported years fall inside the selected Data Range. Widen the range in the top bar.'
+                : gate.reason ?? 'Switch to Annual to see the share trajectory.'
+            }
             height={104}
           />
         ) : (
@@ -774,7 +815,7 @@ function CompanyBridgeCard() {
         {bridge.closingLine}
       </p>
       <div className="relative mt-2 flex justify-end">
-        <SourceTag source="Derived from IRDAI" confidence="medium" period="FY23 → FY26" provenance={{ source_name: 'Retail share trajectory derived from real FY25 GWP + marketShareChange in insurers[]', source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf' }} />
+        <SourceTag source="Derived from IRDAI" confidence="medium" period={span ?? '—'} provenance={{ source_name: 'Retail share trajectory derived from real FY25 GWP + marketShareChange in insurers[]', source_url: 'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf' }} />
       </div>
     </div>
   )
