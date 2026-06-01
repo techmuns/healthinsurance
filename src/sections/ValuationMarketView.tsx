@@ -1,29 +1,22 @@
 import { useState } from 'react'
-import {
-  CartesianGrid,
-  LabelList,
-  Line,
-  LineChart,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
-  RadarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import { Check, ChevronDown, Flame, Info, Search, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react'
-import { insurers, valuationMultiples, valuationMultipleTrend } from '@/data/mockData'
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts'
+import { Check, ChevronDown, ExternalLink, Flame, Info, Search, ShieldAlert, TrendingDown, TrendingUp } from 'lucide-react'
+import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
   analystReports,
   analystThesis,
-  marketStreetIntrinsic as msi,
-  peerValuationOverlay,
+  coveragePendingCount,
+  focalFinancials,
+  focalMultiples,
+  FOCAL_VALUATION_ID,
+  marketSnapshot,
+  peerValuation,
   UNLISTED_METHODOLOGY,
   type Rating,
+  type ValConfidence,
 } from '@/data/valuationData'
-import { getCompanyMetric } from '@/lib/dataLayer'
+import { srcTag, valSrc } from '@/data/valuationSources'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 
@@ -31,21 +24,55 @@ const NAVY = '#27457E'
 const TEAL = '#168E8E'
 const GOLD = '#B68B3A'
 const PEER = '#A6B2C6'
-const GRID = '#EEF1F7'
-const AXIS = '#6B7280'
 const CORAL = '#C2766B'
 
 const clamp = (v: number, lo = 16, hi = 96) => Math.max(lo, Math.min(hi, v))
 const fmtCr = (v: number | null) => (v == null ? 'n/a' : v >= 1000 ? `₹${(v / 1000).toFixed(1)}k Cr` : `₹${v.toFixed(0)} Cr`)
-const fmtPrice = (v: number | null) => (v == null ? 'Pending' : `₹${v.toFixed(0)}`)
+const px = (v: number | null) => (v == null ? 'Pending' : `₹${Number.isInteger(v) ? v : v.toFixed(1)}`)
+const xMult = (v: number | null, d = 2) => (v == null ? 'n/a' : `${v.toFixed(d)}x`)
+const upPct = (v: number | null) => (v == null ? 'Pending' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`)
+
 const ratingTone: Record<Rating, { fg: string; bg: string }> = {
   Buy: { fg: '#0E6F6D', bg: '#E2F4F1' },
   Hold: { fg: '#9A6B12', bg: '#FBF3E2' },
   Sell: { fg: '#B0564A', bg: '#F8ECEC' },
 }
 
-function Mock() {
-  return <span className="rounded-full bg-[#F1ECE0] px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide text-champagne-deep">Mock</span>
+const VAL_TONE: Record<ValConfidence, { label: string; fg: string; bg: string; dot: string }> = {
+  verified: { label: 'Verified', fg: '#0E6F6D', bg: '#E2F4F1', dot: TEAL },
+  secondary: { label: 'Secondary', fg: '#9A6B12', bg: '#FBF3E2', dot: GOLD },
+  pending: { label: 'Source pending', fg: '#64748B', bg: '#EEF1F6', dot: '#94A3B8' },
+}
+
+/** Verified / Secondary / Source-pending validation status pill. */
+function ValPill({ c, className = '' }: { c: ValConfidence; className?: string }) {
+  const t = VAL_TONE[c]
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${className}`} style={{ color: t.fg, background: t.bg }}>
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.dot }} />
+      {t.label}
+    </span>
+  )
+}
+
+/** Small "Open source" button — one click opens the exact report / filing. */
+function OpenSource({ id }: { id: string }) {
+  const s = valSrc(id)
+  if (!s || !s.source_url) {
+    return <span className="inline-flex items-center gap-1 text-[10px] font-medium italic text-ink-secondary/70">Source pending</span>
+  }
+  return (
+    <a
+      href={s.source_url}
+      target="_blank"
+      rel="noreferrer"
+      title={`${s.report_title} — opens in a new tab`}
+      className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-navy-primary transition-all hover:border-muted-blue hover:bg-white hover:text-navy-deep hover:shadow-soft"
+    >
+      Open source
+      <ExternalLink className="h-2.5 w-2.5" />
+    </a>
+  )
 }
 
 function Eyebrow({ label, title, note, right }: { label: string; title: string; note?: string; right?: React.ReactNode }) {
@@ -66,65 +93,60 @@ function Eyebrow({ label, title, note, right }: { label: string; title: string; 
 
 export function ValuationMarketView() {
   const company = useActiveCompany()
+  const isFocal = company.id === FOCAL_VALUATION_ID
   const [peerView, setPeerView] = useState<'Listed' | 'Unlisted' | 'All'>('Listed')
   const [showTable, setShowTable] = useState(false)
-  const [allAnalysts, setAllAnalysts] = useState(false)
   const [openChip, setOpenChip] = useState<string | null>(null)
 
-  const patEnv = getCompanyMetric(company.id, 'company.pat', 'Annual')
-  const pat = typeof patEnv.value === 'number' ? patEnv.value : null
-  const gwp = company.premiumCollection || null
-  const netMargin = pat != null && gwp ? (pat / gwp) * 100 : null
+  // ── Real, sourced figures (focal = Niva Bupa) ───────────────────────────────
+  const price = marketSnapshot.currentPrice
+  const ac = analystConsensus
+  const target = ac.consensusTargetPrice
+  const upsideConsensus = target != null ? (target / price - 1) * 100 : null
+  const mosl = analystReports.find((r) => r.brokerage === 'Motilal Oswal')
+  const upsideMosl = mosl?.targetPrice != null ? (mosl.targetPrice / price - 1) * 100 : null
 
-  const pGwp = company.valuation > 0 ? company.valuation : null
-  const peerAvgGwp = valuationMultiples.pGwp.peerAvg
-  const premiumGwp = pGwp != null ? ((pGwp - peerAvgGwp) / peerAvgGwp) * 100 : null
+  const pGwp = focalMultiples.pGwp
+  const starRow = peerValuation.find((r) => r.companyId === 'star-health')
+  const starPGwp = starRow?.pGwp ?? null
+  const premiumVsStar = pGwp != null && starPGwp ? ((pGwp - starPGwp) / starPGwp) * 100 : null
+  const sinceIpo = (price / marketSnapshot.ipoPrice - 1) * 100
 
+  const verdictTitle = upsideConsensus == null ? 'Awaiting Street targets' : upsideConsensus >= 12 ? 'Upside to Street targets' : upsideConsensus >= 0 ? 'Near Street fair value' : 'Above Street targets'
+
+  // Drivers behind the multiple — all from the FY26 filing.
   const justified = [
-    { label: 'Growth (GWP YoY)', value: `${company.growth.toFixed(0)}%`, strong: company.growth >= 15, supports: company.growth >= 15 },
-    { label: 'Net margin (PAT/GWP)', value: netMargin != null ? `${netMargin.toFixed(1)}%` : 'n/a', strong: (netMargin ?? -1) >= 4, supports: (netMargin ?? -1) > 0 },
-    { label: 'Market share', value: `${company.marketShare.toFixed(1)}%`, strong: company.marketShareChange > 0, supports: company.marketShareChange >= 0 },
-    { label: 'Return on equity', value: company.roe > 0 ? `${company.roe.toFixed(1)}%` : 'n/a', strong: company.roe >= 10, supports: company.roe > 0 },
+    { label: 'Growth (GWP YoY)', value: `+${focalFinancials.gwpGrowthFY26.toFixed(0)}%`, strong: focalFinancials.gwpGrowthFY26 >= 15, supports: true },
+    { label: 'Profit growth (PAT YoY)', value: `+${focalFinancials.patGrowthFY26.toFixed(0)}%`, strong: focalFinancials.patGrowthFY26 >= 15, supports: true },
+    { label: 'Net margin (PAT/GWP)', value: `${focalFinancials.netMarginFY26.toFixed(1)}%`, strong: focalFinancials.netMarginFY26 >= 4, supports: focalFinancials.netMarginFY26 > 0 },
+    { label: 'Retail-health share', value: `${focalFinancials.retailShareFY26.toFixed(1)}%`, strong: focalFinancials.retailShareDeltaBps > 0, supports: true },
   ]
 
+  // ── Operating-quality compass (relative, from insurers[] headline metrics) ──
   const peerGroup = insurers.filter((i) => i.peerGroup === company.peerGroup && i.id !== company.id)
   const avg = (f: (p: (typeof insurers)[number]) => number) => (peerGroup.length ? peerGroup.reduce((s, p) => s + f(p), 0) / peerGroup.length : 0)
-  const scores = (g: number, mgn: number, ms: number, solv: number, val: number) => ({ Growth: clamp(g * 2.4), Profitability: clamp(48 + mgn * 3 + 12), 'Market Share': clamp(ms * 3.8), 'Balance Sheet': clamp(solv * 22), Valuation: clamp(val * 17) })
-  const nivaScores = scores(company.growth, company.margin, company.marketShare, company.solvency, company.valuation || 3)
-  const peerScores = scores(avg((p) => p.growth), avg((p) => p.margin), avg((p) => p.marketShare), avg((p) => p.solvency), avg((p) => p.valuation || 3))
-  const compassData = (['Growth', 'Profitability', 'Market Share', 'Balance Sheet', 'Valuation'] as const).map((axis) => ({ axis, niva: Math.round(nivaScores[axis]), peer: Math.round(peerScores[axis]) }))
-  const position = compassData.reduce((s, d) => s + d.niva, 0) / 5 >= compassData.reduce((s, d) => s + d.peer, 0) / 5 + 8 ? 'Above Average' : 'In Line'
+  const sc = (g: number, mgn: number, ms: number, solv: number) => ({ Growth: clamp(g * 2.4), Profitability: clamp(48 + mgn * 3 + 12), 'Market Share': clamp(ms * 3.8), 'Balance Sheet': clamp(solv * 22) })
+  const nivaScores = sc(company.growth, company.margin, company.marketShare, company.solvency)
+  const peerScores = sc(avg((p) => p.growth), avg((p) => p.margin), avg((p) => p.marketShare), avg((p) => p.solvency))
+  const compassData = (['Growth', 'Profitability', 'Market Share', 'Balance Sheet'] as const).map((axis) => ({ axis, niva: Math.round(nivaScores[axis]), peer: Math.round(peerScores[axis]) }))
+  const position = compassData.reduce((s, d) => s + d.niva, 0) / 4 >= compassData.reduce((s, d) => s + d.peer, 0) / 4 + 8 ? 'Above Average' : 'In Line'
 
+  // ── Relative multiples vs the one listed SAHI peer (Star Health) ────────────
   const relMetrics = [
-    { label: 'P / GWP', niva: valuationMultiples.pGwp.niva, peer: valuationMultiples.pGwp.peerAvg },
-    { label: 'P / B', niva: valuationMultiples.pB.niva, peer: valuationMultiples.pB.peerAvg },
-    { label: 'P / E', niva: valuationMultiples.pE.niva, peer: valuationMultiples.pE.peerAvg },
+    { label: 'P / GWP', niva: pGwp, peer: starPGwp },
+    { label: 'P / E', niva: focalMultiples.pe, peer: starRow?.pe ?? null },
   ]
 
-  const ac = analystConsensus
-  const upside = ac.currentPrice && ac.consensusTargetPrice ? (ac.consensusTargetPrice / ac.currentPrice - 1) * 100 : null
-  const ratingTotal = ac.buyCount + ac.holdCount + ac.sellCount
-  const shownReports = allAnalysts ? analystReports : analystReports.slice(0, 4)
-
-  const PEER_IDS = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
-  const peerRows = PEER_IDS.map((id) => {
-    const ins = insurers.find((i) => i.id === id)
-    const ov = peerValuationOverlay[id]
-    if (!ov) return null
-    return { ...ov, growth: ins?.growth ?? null, marketShare: ins?.marketShare ?? null, profitability: ins?.margin ?? null, focal: id === company.id }
-  }).filter((r): r is NonNullable<typeof r> => Boolean(r))
+  const peerRows = peerValuation
   const shownPeers = peerView === 'All' ? peerRows : peerRows.filter((r) => r.listingStatus === peerView)
-  const starGwp = peerValuationOverlay['star-health']?.pgwp ?? null
-  const peerVerdict =
-    premiumGwp == null ? 'Valuation pending' : premiumGwp > 5 ? 'Premium valuation' : premiumGwp < -5 ? 'Discount to peers' : 'In line with peers'
+
+  const peerVerdict = premiumVsStar == null ? 'Valuation pending' : premiumVsStar > 5 ? 'Premium to listed peer' : premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with listed peer'
   const peerVerdictLine =
-    premiumGwp == null
-      ? `${company.shortName} valuation vs peers is pending.`
-      : premiumGwp > 5
-        ? `${company.shortName} trades at a premium to peers. The premium is justified only if growth and market-share gains continue.`
-        : premiumGwp < -5
-          ? `${company.shortName} trades at a discount to peers — a re-rating needs sustained growth and margin proof.`
-          : `${company.shortName} trades broadly in line with peers on P/GWP.`
+    premiumVsStar == null
+      ? 'Peer comparison is pending.'
+      : premiumVsStar > 5
+        ? `Niva Bupa trades at a ~${premiumVsStar.toFixed(0)}% premium to Star Health on P/GWP. The premium is backed by faster growth (GWP +${focalFinancials.gwpGrowthFY26.toFixed(0)}% vs +${starRow?.growth?.toFixed(0)}%) and PAT +${focalFinancials.patGrowthFY26.toFixed(0)}%.`
+        : `Niva Bupa trades broadly in line with Star Health on P/GWP.`
 
   const chips = [
     { key: 'Bull case', Icon: TrendingUp, items: analystThesis.bull },
@@ -132,77 +154,92 @@ export function ValuationMarketView() {
     { key: 'Risks', Icon: ShieldAlert, items: analystThesis.risks },
     { key: 'Catalysts', Icon: Flame, items: analystThesis.catalysts },
   ]
-  const openItems = chips.find((c) => c.key === openChip)?.items.slice(0, 3) ?? []
+  const openItems = chips.find((c) => c.key === openChip)?.items.slice(0, 4) ?? []
 
   return (
     <div className="space-y-5">
-      {/* ── 1. Verdict + compact Valuation Lens ───────────────────────────────── */}
+      {!isFocal && (
+        <div className="flex items-start gap-2 rounded-xl border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/70 px-3.5 py-2.5 text-[11.5px] leading-snug text-[#8C6B1A]">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>Sourced valuation currently covers <b>Niva Bupa (NSE: NIVABUPA)</b>. Figures below are Niva Bupa's, regardless of the selected company — other names are <b>source pending</b>.</span>
+        </div>
+      )}
+
+      {/* ── 1. Verdict + Valuation Lens ───────────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)]">
         <div className="grid items-center gap-5 lg:grid-cols-[1fr_1.15fr]">
-          {/* Left — verdict */}
           <div>
             <div className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E2FA] bg-soft-blue px-2.5 py-1">
               <Search className="h-3 w-3 text-navy-primary" />
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-primary">Valuation Verdict</span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <h1 className="font-display text-[25px] leading-tight tracking-tight text-navy-deep">Awaiting market-cap snapshot</h1>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#EAD9B6] bg-champagne-soft px-2.5 py-1 text-[11px] font-semibold text-champagne-deep">
-                <span className="h-1.5 w-1.5 rounded-full bg-champagne-deep" />
-                Pending
+              <h1 className="font-display text-[25px] leading-tight tracking-tight text-navy-deep">{verdictTitle}</h1>
+              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ color: ratingTone.Buy.fg, background: ratingTone.Buy.bg }}>
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: ratingTone.Buy.fg }} />
+                {ac.ratingLabel}-skewed · {ac.analystCount} analysts
               </span>
             </div>
-            <p className="mt-2 max-w-sm text-[12px] leading-relaxed text-ink-secondary">
-              Market, Street and intrinsic lenses update as the latest valuation data is ingested.
+            <p className="mt-2 max-w-md text-[12px] leading-relaxed text-ink-secondary">
+              {marketSnapshot.company} ({marketSnapshot.ticker}) trades at <b className="text-navy-deep">{px(price)}</b> vs consensus <b className="text-navy-deep">{px(target)}</b> ({upPct(upsideConsensus)}). Motilal Oswal sees {px(mosl?.targetPrice ?? null)} ({upPct(upsideMosl)}). The {xMult(pGwp)} P/GWP is a ~{premiumVsStar?.toFixed(0)}% premium to Star Health — backed by faster growth.
             </p>
           </div>
 
-          {/* Right — Valuation Lens snapshot */}
           <div className="rounded-2xl border border-soft-border bg-white/75 p-3.5 shadow-soft backdrop-blur">
             <div className="flex items-center justify-between">
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Valuation Lens</p>
-              <Mock />
+              <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Valuation Lens · {marketSnapshot.company}</p>
+              <ValPill c="secondary" />
             </div>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <Tile k="Current price" v={fmtPrice(msi.currentMarketPrice)} />
-              <Tile k="Cons. target" v={fmtPrice(msi.consensusTargetPrice)} />
-              <Tile k="Intrinsic base" v={fmtPrice(msi.intrinsicBaseValue)} />
-              <Tile k="Upside" v={upside != null ? `+${upside.toFixed(1)}%` : 'Pending'} tone={upside == null ? 'navy' : upside >= 0 ? 'teal' : 'red'} />
+              <Tile k="Current price" v={px(price)} sub={marketSnapshot.priceAsOf} />
+              <Tile k="Cons. target" v={px(target)} sub={`${ac.analystCount} analysts`} />
+              <Tile k="P / GWP" v={xMult(pGwp)} sub="FY26" />
+              <Tile k="Upside" v={upPct(upsideConsensus)} tone={upsideConsensus == null ? 'navy' : upsideConsensus >= 0 ? 'teal' : 'red'} sub="to consensus" />
             </div>
-            <LensRange />
+            <LensRange price={price} target={target} lo={ac.lowestTargetPrice} hi={ac.highestTargetPrice} />
           </div>
         </div>
-        <div className="relative mt-3 flex justify-end">
-          <SourceTag source="Market data" confidence="low" period="Pending" provenance={{ source_name: 'Live NSE/BSE market-cap + analyst feeds pending; lens values are illustrative mock.', source_url: 'https://www.nseindia.com/get-quotes/equity' }} />
+        <div className="relative mt-3 flex justify-end gap-2">
+          <SourceTag {...srcTag('niva-price')} />
+          <SourceTag {...srcTag('niva-consensus')} />
         </div>
       </section>
 
-      {/* ── 2. Valuation at a glance (Multiple · Premium justified?) ──────────── */}
+      {/* ── 2. Valuation at a glance ──────────────────────────────────────────── */}
       <section>
-        <Eyebrow label="Valuation at a Glance" title="Valuation at a glance" note="FY25 · is the multiple justified?" />
+        <Eyebrow label="Valuation at a Glance" title="Is the multiple justified?" note="FY26 · multiple vs the drivers behind it" />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div className="card-surface relative overflow-hidden p-5">
             <span className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(22,142,142,0.10),transparent_65%)]" />
             <div className="flex items-start justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Valuation Multiple</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Valuation Multiples</p>
               <GrowthGlyph />
             </div>
             <div className="mt-3 flex items-end gap-2">
-              <span className="font-display text-[38px] leading-none text-navy-deep">{pGwp != null ? `${pGwp.toFixed(1)}x` : 'n/a'}</span>
-              <span className="mb-1 text-[12px] text-ink-secondary">P/GWP · FY25 · vs peer avg. <b className="text-navy-deep">{peerAvgGwp.toFixed(1)}x</b></span>
+              <span className="font-display text-[38px] leading-none text-navy-deep">{xMult(pGwp)}</span>
+              <span className="mb-1 text-[12px] text-ink-secondary">P/GWP · FY26 · vs Star <b className="text-navy-deep">{xMult(starPGwp)}</b></span>
             </div>
-            {premiumGwp != null && (
+            {premiumVsStar != null && (
               <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-teal-soft px-2.5 py-1 text-[12px] font-semibold text-teal">
                 <TrendingUp className="h-3.5 w-3.5" />
-                {premiumGwp >= 0 ? '+' : ''}{premiumGwp.toFixed(0)}% {premiumGwp >= 0 ? 'premium' : 'discount'} to peers
+                {premiumVsStar >= 0 ? '+' : ''}{premiumVsStar.toFixed(0)}% {premiumVsStar >= 0 ? 'premium' : 'discount'} to Star Health
               </div>
             )}
-            <div className="mt-3 flex items-center gap-2 text-[11px] text-ink-secondary"><Mock /> P/B &amp; P/E are mock</div>
+            <div className="mt-4 grid grid-cols-3 gap-2 border-t border-soft-border pt-3">
+              <MiniMult k="P / GWP" v={xMult(pGwp)} id="niva-pgwp" />
+              <MiniMult k="P / E" v={xMult(focalMultiples.pe, 1)} id="niva-pe" />
+              <MiniMult k="P / B" v={xMult(focalMultiples.pb, 1)} id="niva-pb" />
+            </div>
           </div>
 
           <div className="card-surface p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Is the Premium Justified?</p>
-            <p className="mt-1 text-[11px] text-ink-secondary">Does each driver back a premium multiple?</p>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Is the Premium Justified?</p>
+                <p className="mt-1 text-[11px] text-ink-secondary">Does each driver back a premium multiple?</p>
+              </div>
+              <ValPill c="verified" />
+            </div>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {justified.map((d) => (
                 <div key={d.label} className="flex items-center gap-2 rounded-lg bg-ice/60 px-2.5 py-2">
@@ -213,21 +250,22 @@ export function ValuationMarketView() {
                 </div>
               ))}
             </div>
+            <div className="mt-3 flex justify-end"><SourceTag {...srcTag('niva-fy26-gwp')} /></div>
           </div>
         </div>
       </section>
 
       {/* ── 3. Street view ────────────────────────────────────────────────────── */}
       <section>
-        <Eyebrow label="Street View" title="What do analysts think the stock is worth?" right={<Mock />} />
+        <Eyebrow label="Street View" title="What do analysts think it's worth?" note={`${ac.analystCount} analysts cover the stock · ${ac.buyCount} Buy · ${ac.sellCount} Sell`} right={<ValPill c="secondary" />} />
         <div className="card-surface p-5">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { k: 'Consensus target', v: fmtPrice(ac.consensusTargetPrice), tone: 'navy' },
-              { k: 'Current price', v: fmtPrice(ac.currentPrice), tone: 'navy' },
-              { k: 'Implied upside', v: upside != null ? `+${upside.toFixed(1)}%` : 'Pending', tone: 'teal' },
-              { k: 'Highest target', v: fmtPrice(ac.highestTargetPrice), tone: 'navy' },
-              { k: 'Lowest target', v: fmtPrice(ac.lowestTargetPrice), tone: 'navy' },
+              { k: 'Consensus target', v: px(target), tone: 'navy' },
+              { k: 'Current price', v: px(price), tone: 'navy' },
+              { k: 'Implied upside', v: upPct(upsideConsensus), tone: 'teal' },
+              { k: 'Highest target', v: px(ac.highestTargetPrice), tone: 'navy' },
+              { k: 'Lowest target', v: px(ac.lowestTargetPrice), tone: 'navy' },
               { k: 'Analysts', v: `${ac.analystCount}`, tone: 'navy' },
             ].map((kpi) => (
               <div key={kpi.k} className="rounded-xl border border-soft-border bg-ice/50 px-3 py-2.5">
@@ -239,41 +277,61 @@ export function ValuationMarketView() {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <span className="text-[11px] font-semibold text-navy-deep">Rating split</span>
             <div className="flex h-2.5 w-40 overflow-hidden rounded-full bg-soft-border">
-              <span style={{ width: `${(ac.buyCount / ratingTotal) * 100}%`, background: ratingTone.Buy.fg }} />
-              <span style={{ width: `${(ac.holdCount / ratingTotal) * 100}%`, background: ratingTone.Hold.fg }} />
-              <span style={{ width: `${(ac.sellCount / ratingTotal) * 100}%`, background: ratingTone.Sell.fg }} />
+              <span style={{ width: `${(ac.buyCount / ac.analystCount) * 100}%`, background: ratingTone.Buy.fg }} />
+              <span style={{ width: `${(ac.holdCount / ac.analystCount) * 100}%`, background: ratingTone.Hold.fg }} />
+              <span style={{ width: `${(ac.sellCount / ac.analystCount) * 100}%`, background: ratingTone.Sell.fg }} />
             </div>
             <span className="text-[11px] text-ink-secondary"><b className="text-teal">{ac.buyCount} Buy</b> · <b className="text-champagne-deep">{ac.holdCount} Hold</b> · <b className="text-signal-negative">{ac.sellCount} Sell</b></span>
           </div>
+
+          {/* Analyst table — every row carries a clickable source + confidence */}
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-[11.5px]">
               <thead>
                 <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
-                  <th className="py-1.5 pr-3 font-semibold">Brokerage</th>
-                  <th className="py-1.5 pr-3 font-semibold">Rating</th>
-                  <th className="py-1.5 pr-3 text-right font-semibold">Target</th>
-                  <th className="py-1.5 pr-3 text-right font-semibold">Upside</th>
+                  <th className="py-1.5 pr-3 font-semibold">Analyst / Source</th>
+                  <th className="py-1.5 pr-3 font-semibold">Valuation view</th>
+                  <th className="py-1.5 pr-3 text-right font-semibold">Key number</th>
                   <th className="py-1.5 pr-3 font-semibold">Date</th>
-                  <th className="py-1.5 font-semibold">View · source</th>
+                  <th className="py-1.5 pr-3 font-semibold">Source</th>
+                  <th className="py-1.5 font-semibold">Confidence</th>
                 </tr>
               </thead>
               <tbody>
-                {shownReports.map((r) => (
-                  <tr key={r.brokerage} className="border-b border-[#F2F4F8] last:border-0">
-                    <td className="py-1.5 pr-3 font-semibold text-navy-deep">{r.brokerage}</td>
-                    <td className="py-1.5 pr-3"><span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ color: ratingTone[r.rating].fg, background: ratingTone[r.rating].bg }}>{r.rating}</span></td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums text-navy-deep">{r.targetPrice != null ? `₹${r.targetPrice}` : 'Not disclosed'}</td>
-                    <td className="py-1.5 pr-3 text-right tabular-nums">{r.impliedUpsideDownside != null ? <span className={r.impliedUpsideDownside >= 0 ? 'text-teal' : 'text-signal-negative'}>{r.impliedUpsideDownside >= 0 ? '+' : ''}{r.impliedUpsideDownside.toFixed(1)}%</span> : <span className="text-ink-secondary">Pending</span>}</td>
-                    <td className="py-1.5 pr-3 text-ink-secondary">{r.reportDate}</td>
-                    <td className="py-1.5 text-ink-secondary"><span className="text-navy-deep/80">{r.notes}</span> · {r.source}</td>
-                  </tr>
-                ))}
+                {analystReports.map((r) => {
+                  const up = r.targetPrice != null ? (r.targetPrice / price - 1) * 100 : null
+                  return (
+                    <tr key={r.brokerage} className="border-b border-[#F2F4F8] last:border-0 align-top">
+                      <td className="py-2 pr-3">
+                        <span className="font-semibold text-navy-deep">{r.brokerage}</span>
+                        {r.rating && <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold" style={{ color: ratingTone[r.rating].fg, background: ratingTone[r.rating].bg }}>{r.rating}</span>}
+                      </td>
+                      <td className="py-2 pr-3 text-ink-secondary">{r.thesis}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums">
+                        <span className="font-semibold text-navy-deep">{px(r.targetPrice)}</span>
+                        {up != null && <span className={`ml-1 text-[10px] ${up >= 0 ? 'text-teal' : 'text-signal-negative'}`}>{upPct(up)}</span>}
+                      </td>
+                      <td className="py-2 pr-3 text-ink-secondary whitespace-nowrap">{r.reportDate}</td>
+                      <td className="py-2 pr-3"><OpenSource id={r.sourceId} /></td>
+                      <td className="py-2"><ValPill c={r.confidence} /></td>
+                    </tr>
+                  )
+                })}
+                {/* Honest coverage gap — never invent the other brokers' targets */}
+                <tr className="align-top">
+                  <td className="py-2 pr-3 font-semibold text-ink-secondary">Other brokers ({coveragePendingCount}+)</td>
+                  <td className="py-2 pr-3 text-ink-secondary italic">Cover the name, but no citable note on record here</td>
+                  <td className="py-2 pr-3 text-right text-ink-secondary">—</td>
+                  <td className="py-2 pr-3 text-ink-secondary">—</td>
+                  <td className="py-2 pr-3"><span className="text-[10px] font-medium italic text-ink-secondary/70">Source pending</span></td>
+                  <td className="py-2"><ValPill c="pending" /></td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            {analystReports.length > 4 ? <button type="button" onClick={() => setAllAnalysts((v) => !v)} className="text-[11px] font-semibold text-navy-primary hover:underline">{allAnalysts ? 'Show less' : `View all analysts (${analystReports.length})`}</button> : <span />}
-            <SourceTag source="Sell-side consensus" confidence="low" period={ac.lastUpdated} provenance={{ source_name: 'Illustrative mock — concise analyst-view summaries only.', source_url: '' }} />
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-[10.5px] text-ink-secondary">Targets shown only where a note is citable; the rest are marked <b>Source pending</b>, never invented.</p>
+            <SourceTag {...srcTag('niva-consensus')} />
           </div>
         </div>
       </section>
@@ -283,7 +341,7 @@ export function ValuationMarketView() {
         <Eyebrow
           label="Peer Valuation"
           title="How does it compare with peers?"
-          note="Listed = market valuation · Unlisted = estimated valuation."
+          note="Listed = market valuation · Unlisted = no public price (source pending)."
           right={
             <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
               {(['Listed', 'Unlisted', 'All'] as const).map((v) => (
@@ -293,94 +351,108 @@ export function ValuationMarketView() {
           }
         />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.05fr]">
-          {/* Compact verdict card */}
+          {/* Verdict card */}
           <div className="card-surface relative overflow-hidden p-5">
             <span className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(182,139,58,0.10),transparent_65%)]" />
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Peer Valuation Verdict</p>
-              <Mock />
+              <ValPill c="secondary" />
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <h3 className="font-display text-[22px] leading-none text-navy-deep">{peerVerdict}</h3>
-              {premiumGwp != null && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${premiumGwp >= 0 ? 'bg-teal-soft text-teal' : 'bg-[#F8ECEC] text-signal-negative'}`}>
-                  {premiumGwp >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  {premiumGwp >= 0 ? 'Premium' : 'Discount'}
+              {premiumVsStar != null && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${premiumVsStar >= 0 ? 'bg-teal-soft text-teal' : 'bg-[#F8ECEC] text-signal-negative'}`}>
+                  {premiumVsStar >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {premiumVsStar >= 0 ? 'Premium' : 'Discount'}
                 </span>
               )}
             </div>
             <div className="mt-3 flex items-end gap-2">
-              <span className="font-display text-[40px] leading-none text-navy-deep">{pGwp != null ? `${pGwp.toFixed(1)}x` : 'n/a'}</span>
-              <span className="mb-1.5 text-[12px] text-ink-secondary">P/GWP · FY25</span>
+              <span className="font-display text-[40px] leading-none text-navy-deep">{xMult(pGwp)}</span>
+              <span className="mb-1.5 text-[12px] text-ink-secondary">P/GWP · FY26</span>
             </div>
             <p className="mt-1 text-[12px] text-ink-secondary">
-              vs peer avg. <b className="text-navy-deep">{peerAvgGwp.toFixed(1)}x</b>
-              {premiumGwp != null && <> · <b className={premiumGwp >= 0 ? 'text-teal' : 'text-signal-negative'}>{premiumGwp >= 0 ? '+' : ''}{premiumGwp.toFixed(0)}% {premiumGwp >= 0 ? 'premium' : 'discount'}</b></>}
+              vs Star Health <b className="text-navy-deep">{xMult(starPGwp)}</b>
+              {premiumVsStar != null && <> · <b className={premiumVsStar >= 0 ? 'text-teal' : 'text-signal-negative'}>{premiumVsStar >= 0 ? '+' : ''}{premiumVsStar.toFixed(0)}% {premiumVsStar >= 0 ? 'premium' : 'discount'}</b></>}
             </p>
             <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">{peerVerdictLine}</p>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              <PeerChip name={company.shortName} mult={pGwp} tag="Focal" tone="focal" />
-              <PeerChip name="Star Health" mult={starGwp} tag="Listed" tone="listed" />
-              <PeerChip name="Peer avg" mult={peerAvgGwp} tone="avg" />
+              <PeerChip name="Niva Bupa" mult={pGwp} tag="Focal" tone="focal" />
+              <PeerChip name="Star Health" mult={starPGwp} tag="Listed" tone="listed" />
             </div>
             <div className="mt-4 flex items-center justify-between border-t border-soft-border pt-3">
               <button type="button" onClick={() => setShowTable((v) => !v)} aria-expanded={showTable} className="inline-flex items-center gap-1 text-[11px] font-semibold text-navy-primary transition-colors hover:text-navy-deep">
                 {showTable ? 'Hide peer details' : 'View peer details'}
                 <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showTable ? 'rotate-180' : ''}`} />
               </button>
-              <SourceTag source="Mixed" confidence="low" period="FY25" provenance={{ source_name: 'Listed multiples + unlisted estimates (mock).', source_url: '' }} />
+              <SourceTag {...srcTag('star-pgwp')} />
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="card-surface p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Relative Multiples <Mock /></p>
-              <div className="mt-3 grid grid-cols-3 gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Niva Bupa vs Star Health</p>
+                <ValPill c="secondary" />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {relMetrics.map((m) => {
-                  const max = Math.max(m.niva, m.peer, 0.1)
-                  const prem = ((m.niva - m.peer) / m.peer) * 100
+                  const max = Math.max(m.niva ?? 0, m.peer ?? 0, 0.1)
+                  const prem = m.niva != null && m.peer ? ((m.niva - m.peer) / m.peer) * 100 : null
                   return (
                     <div key={m.label} className="text-center">
                       <p className="text-[10.5px] font-semibold text-navy-deep/75">{m.label}</p>
                       <div className="mt-1.5 flex h-[58px] items-end justify-center gap-1.5">
-                        <Bar value={m.niva} max={max} color={NAVY} label={`${m.niva}x`} />
-                        <Bar value={m.peer} max={max} color={PEER} label={`${m.peer}x`} />
+                        <Bar value={m.niva} max={max} color={NAVY} label={xMult(m.niva, m.label === 'P / E' ? 1 : 2)} />
+                        <Bar value={m.peer} max={max} color={PEER} label={xMult(m.peer, m.label === 'P / E' ? 1 : 2)} />
                       </div>
-                      <p className="mt-1 text-[10.5px] font-semibold text-teal">+{prem.toFixed(0)}%</p>
+                      {prem != null && <p className={`mt-1 text-[10.5px] font-semibold ${prem >= 0 ? 'text-teal' : 'text-signal-negative'}`}>{prem >= 0 ? '+' : ''}{prem.toFixed(0)}%</p>}
                     </div>
                   )
                 })}
               </div>
               <div className="mt-2 flex items-center gap-3 border-t border-soft-border pt-1.5 text-[9.5px] text-ink-secondary">
-                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-[2px]" style={{ background: NAVY }} />{company.shortName}</span>
-                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-[2px]" style={{ background: PEER }} />Peer avg</span>
+                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-[2px]" style={{ background: NAVY }} />Niva Bupa</span>
+                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-[2px]" style={{ background: PEER }} />Star Health</span>
               </div>
             </div>
+
+            {/* Real "since listing" levels (replaces the impossible 5-yr mock trend) */}
             <div className="card-surface p-4">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Multiple Trend <span className="text-ink-secondary/60">FY21→FY25</span> <Mock /></p>
-              <div className="mt-2" style={{ width: '100%', height: 152 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={valuationMultipleTrend} margin={{ top: 16, right: 42, left: 16, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 9.5, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
-                    <YAxis yAxisId="lhs" hide domain={[0, 8]} />
-                    <YAxis yAxisId="rhs" orientation="right" hide domain={[0, 36]} />
-                    <Line yAxisId="rhs" type="monotone" dataKey="P/E" stroke={GOLD} strokeWidth={2} dot={{ r: 2.4, fill: GOLD }}><LabelList dataKey="P/E" content={endTrendLabel(GOLD)} /></Line>
-                    <Line yAxisId="lhs" type="monotone" dataKey="P/GWP" stroke={TEAL} strokeWidth={2} dot={{ r: 2.4, fill: TEAL }}><LabelList dataKey="P/GWP" content={endTrendLabel(TEAL)} /></Line>
-                    <Line yAxisId="lhs" type="monotone" dataKey="P/B" stroke={NAVY} strokeWidth={2} dot={{ r: 2.4, fill: NAVY }}><LabelList dataKey="P/B" content={endTrendLabel(NAVY)} /></Line>
-                  </LineChart>
-                </ResponsiveContainer>
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Since Listing <span className="text-ink-secondary/60">Nov 2024 → now</span></p>
+                <ValPill c="verified" />
               </div>
-              <div className="flex items-center gap-3 text-[9.5px] text-ink-secondary">
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-3 rounded-full" style={{ background: TEAL }} />P/GWP</span>
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-3 rounded-full" style={{ background: NAVY }} />P/B</span>
-                <span className="inline-flex items-center gap-1"><span className="h-1.5 w-3 rounded-full" style={{ background: GOLD }} />P/E</span>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Tile k="IPO issue" v={px(marketSnapshot.ipoPrice)} sub={marketSnapshot.listDate} />
+                <Tile k="Now" v={px(price)} sub={marketSnapshot.priceAsOf} tone="teal" />
+                <Tile k="vs IPO" v={`${sinceIpo >= 0 ? '+' : ''}${sinceIpo.toFixed(1)}%`} tone={sinceIpo >= 0 ? 'teal' : 'red'} sub="price" />
               </div>
+              <div className="mt-3">
+                <div className="relative h-2 rounded-full bg-soft-border">
+                  {(() => {
+                    const lo = marketSnapshot.weekLow52
+                    const hi = marketSnapshot.weekHigh52
+                    const at = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100))
+                    return (
+                      <>
+                        <span className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-navy-primary/40" style={{ left: `${at(marketSnapshot.ipoPrice)}%` }} title={`IPO ${px(marketSnapshot.ipoPrice)}`} />
+                        <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal ring-2 ring-white" style={{ left: `${at(price)}%` }} title={`Now ${px(price)}`} />
+                      </>
+                    )
+                  })()}
+                </div>
+                <div className="mt-1 flex justify-between text-[8.5px] text-ink-secondary">
+                  <span>52-wk low {px(marketSnapshot.weekLow52)}</span>
+                  <span>52-wk high {px(marketSnapshot.weekHigh52)}</span>
+                </div>
+              </div>
+              <div className="mt-2 flex justify-end"><SourceTag {...srcTag('niva-ipo')} /></div>
             </div>
           </div>
         </div>
 
-        {/* Full peer table — hidden by default, revealed on demand */}
+        {/* Full peer table */}
         {showTable && (
           <div className="card-surface mt-4 p-5">
             <div className="overflow-x-auto">
@@ -389,41 +461,39 @@ export function ValuationMarketView() {
                   <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
                     <th className="py-1.5 pr-2 font-semibold">Company</th>
                     <th className="py-1.5 pr-2 font-semibold">Status</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">Mkt share</th>
-                    <th className="py-1.5 pr-2 text-right font-semibold">Growth</th>
+                    <th className="py-1.5 pr-2 text-right font-semibold">GWP (FY26)</th>
                     <th className="py-1.5 pr-2 text-right font-semibold">P/GWP</th>
                     <th className="py-1.5 pr-2 text-right font-semibold">Equity value</th>
-                    <th className="py-1.5 font-semibold">Basis · conf.</th>
+                    <th className="py-1.5 pr-2 font-semibold">Source</th>
+                    <th className="py-1.5 font-semibold">Confidence</th>
                   </tr>
                 </thead>
                 <tbody>
                   {shownPeers.map((r) => {
                     const unlisted = r.listingStatus === 'Unlisted'
                     return (
-                      <tr key={r.companyId} className={`border-b border-[#F2F4F8] last:border-0 ${r.focal ? 'bg-soft-blue/40' : ''}`}>
-                        <td className="py-1.5 pr-2 font-semibold text-navy-deep">{r.companyName}{r.focal && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
+                      <tr key={r.companyId} className={`border-b border-[#F2F4F8] last:border-0 ${r.companyId === FOCAL_VALUATION_ID ? 'bg-soft-blue/40' : ''}`}>
+                        <td className="py-1.5 pr-2 font-semibold text-navy-deep">{r.companyName}{r.companyId === FOCAL_VALUATION_ID && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
                         <td className="py-1.5 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.marketShare != null ? `${r.marketShare.toFixed(1)}%` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.growth != null ? `${r.growth.toFixed(0)}%` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.pgwp != null ? `${r.pgwp.toFixed(1)}x` : 'n/a'}</td>
-                        <td className="py-1.5 pr-2 text-right tabular-nums"><span className={unlisted ? 'italic text-ink-secondary' : 'text-navy-deep'}>{fmtCr(r.marketCap)}</span>{unlisted && <span className="ml-1 text-[8.5px] font-semibold uppercase text-champagne-deep">est.</span>}</td>
-                        <td className="py-1.5 text-[10.5px] text-ink-secondary">{r.valuationBasis} · <ConfPill c={r.confidence} /></td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.gwp != null ? fmtCr(r.gwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums text-navy-deep">{r.pGwp != null ? xMult(r.pGwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
+                        <td className="py-1.5 pr-2 text-right tabular-nums">{r.marketCap != null ? <span className="text-navy-deep">{fmtCr(r.marketCap)}</span> : <span className="italic text-ink-secondary">Source pending</span>}</td>
+                        <td className="py-1.5 pr-2"><OpenSource id={r.sourceId} /></td>
+                        <td className="py-1.5"><ValPill c={r.confidence} /></td>
                       </tr>
                     )
                   })}
                 </tbody>
               </table>
             </div>
-            <p className="mt-2.5 text-[10px] text-ink-secondary">{peerView === 'Listed' ? 'Market Valuation (Listed) — multiples from market cap.' : peerView === 'Unlisted' ? 'Estimated Valuation (Unlisted) — not live market prices.' : 'Listed = market valuation · Unlisted = estimated.'}</p>
-            {peerView !== 'Listed' && <p className="mt-2 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]"><Info className="mt-px h-3 w-3 shrink-0" />{UNLISTED_METHODOLOGY}</p>}
-            <div className="mt-2 flex justify-end"><SourceTag source="Mixed" confidence="low" period="FY25" provenance={{ source_name: 'Listed multiples + unlisted estimates (mock).', source_url: '' }} /></div>
+            {peerView !== 'Listed' && <p className="mt-2.5 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]"><Info className="mt-px h-3 w-3 shrink-0" />{UNLISTED_METHODOLOGY}</p>}
           </div>
         )}
       </section>
 
-      {/* ── 5. Valuation compass (standalone, compact) ────────────────────────── */}
+      {/* ── 5. Operating-quality compass ──────────────────────────────────────── */}
       <section>
-        <Eyebrow label="Quality Lens" title="Valuation Compass" note="Where does the premium come from?" />
+        <Eyebrow label="Quality Lens" title="Operating quality vs peers" note="Relative scores on the operating metrics behind the multiple." right={<ValPill c="secondary" />} />
         <div className="card-surface p-5">
           <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1.1fr_1fr]">
             <div style={{ width: '100%', height: 210 }}>
@@ -455,27 +525,29 @@ export function ValuationMarketView() {
               <p className="mt-2 flex items-center gap-2 text-[9.5px] text-ink-secondary">
                 <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: NAVY }} />{company.shortName}</span>
                 <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: PEER }} />Peer avg</span>
-                <span className="ml-1">· score vs peer</span>
+                <span className="ml-1">· operating quality, not valuation</span>
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 6. Investor read (context lives here) ─────────────────────────────── */}
+      {/* ── 6. Investor read ──────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-[#16294B] via-[#1B335C] to-[#13243F] p-6 shadow-[0_18px_44px_rgba(11,22,44,0.30)]">
         <InvestorReadArt />
-        <div className="relative flex items-center gap-2">
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-champagne/20 text-champagne"><Search className="h-3 w-3" /></span>
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Investor Read</p>
+        <div className="relative flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-champagne/20 text-champagne"><Search className="h-3 w-3" /></span>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Investor Read</p>
+          </div>
+          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-semibold text-champagne ring-1 ring-white/15">Grounded in FY26 filing + cited notes</span>
         </div>
         <div className="relative mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <ReadBlock label="Market read" body="Live share price and market-cap are pending; the listed read updates once ingested." pill="Pending" />
-          <ReadBlock label="Street read" body="Street consensus points to upside vs the current price, skewed Buy." pill="Mock" />
-          <ReadBlock label="Peer read" body="A premium to peers that needs stronger growth, margin and share to hold." pill="Mock" />
-          <ReadBlock label="Decision read" body="Premium looks justified only if growth and profitability keep compounding." />
+          <ReadBlock label="Market read" body={`Trades at ${px(price)} (${marketSnapshot.priceAsOf}), ${sinceIpo >= 0 ? 'up' : 'down'} ${Math.abs(sinceIpo).toFixed(0)}% vs the ${px(marketSnapshot.ipoPrice)} IPO; inside its ${px(marketSnapshot.weekLow52)}–${px(marketSnapshot.weekHigh52)} band.`} pill="Verified" />
+          <ReadBlock label="Street read" body={`Consensus ${px(target)} (${upPct(upsideConsensus)}); ${ac.buyCount}/${ac.analystCount} Buy, 0 Sell. Motilal Oswal sees ${px(mosl?.targetPrice ?? null)}.`} pill="Secondary" />
+          <ReadBlock label="Peer read" body={`${xMult(pGwp)} P/GWP — a ~${premiumVsStar?.toFixed(0)}% premium to Star (${xMult(starPGwp)}), backed by faster growth.`} pill="Secondary" />
+          <ReadBlock label="Decision read" body="Premium looks earned while GWP compounds >20% and profit scales — watch margin and combined ratio." />
         </div>
-        {/* expandable Bull / Bear / Risks / Catalysts */}
         <div className="relative mt-4 flex flex-wrap items-center gap-2">
           {chips.map(({ key, Icon }) => {
             const active = openChip === key
@@ -485,7 +557,7 @@ export function ValuationMarketView() {
               </button>
             )
           })}
-          <span className="ml-1 inline-flex items-center gap-1 text-[9px] font-semibold text-white/40"><Mock /></span>
+          <span className="ml-1 text-[9px] font-medium text-white/45">Bull / bear cite reported FY26 figures</span>
         </div>
         {openChip && (
           <ul className="relative mt-2.5 flex flex-wrap gap-x-5 gap-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
@@ -501,55 +573,61 @@ export function ValuationMarketView() {
 
 // ── Building blocks ──────────────────────────────────────────────────────────
 
-function Tile({ k, v, tone = 'navy' }: { k: string; v: string; tone?: 'navy' | 'teal' | 'amber' | 'red' }) {
+function Tile({ k, v, sub, tone = 'navy' }: { k: string; v: string; sub?: string; tone?: 'navy' | 'teal' | 'amber' | 'red' }) {
   const c = tone === 'teal' ? 'text-teal' : tone === 'red' ? 'text-signal-negative' : tone === 'amber' ? 'text-champagne-deep' : 'text-navy-deep'
   return (
     <div className="rounded-lg border border-soft-border bg-white px-2.5 py-1.5">
       <p className="whitespace-nowrap text-[8.5px] font-semibold uppercase text-ink-secondary">{k}</p>
       <p className={`mt-0.5 font-display text-[16px] leading-none ${c}`}>{v}</p>
+      {sub && <p className="mt-0.5 text-[8.5px] text-ink-secondary/80">{sub}</p>}
     </div>
   )
 }
 
-function LensRange() {
-  const lo = msi.intrinsicBearValue
-  const hi = msi.intrinsicBullValue
-  const base = msi.intrinsicBaseValue
-  const price = msi.currentMarketPrice
-  const target = msi.consensusTargetPrice
-  if (lo == null || hi == null || base == null) return <p className="mt-3 text-[10px] text-ink-secondary">Range pending.</p>
+function MiniMult({ k, v, id }: { k: string; v: string; id: string }) {
+  return (
+    <div className="rounded-lg bg-ice/60 px-2.5 py-1.5 text-center">
+      <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{k}</p>
+      <p className="mt-0.5 font-display text-[15px] leading-none text-navy-deep">{v}</p>
+      <div className="mt-1 flex justify-center"><OpenSource id={id} /></div>
+    </div>
+  )
+}
+
+function LensRange({ price, target, lo, hi }: { price: number; target: number | null; lo: number | null; hi: number | null }) {
+  if (lo == null || hi == null || hi <= lo) return <p className="mt-3 text-[10px] text-ink-secondary">Target range pending.</p>
   const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100))
-  const near = price != null && Math.abs(price - base) / base < 0.04
-  const priceTone = price == null ? PEER : near ? GOLD : price < base ? TEAL : CORAL
+  const near = Math.abs(price - (target ?? price)) / (target ?? price) < 0.04
+  const priceTone = near ? GOLD : target != null && price < target ? TEAL : CORAL
   return (
     <div className="mt-3">
-      <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg,#E6F4F1,#FBF3E2,#F8ECEC)' }}>
-        <span className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-navy-primary/45" style={{ left: `${pct(base)}%` }} />
-        {price != null && <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${pct(price)}%`, background: priceTone }} />}
-        {target != null && <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${pct(target)}%`, background: TEAL }} />}
+      <p className="mb-1 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">Analyst target range · 8 analysts</p>
+      <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg,#F8ECEC,#FBF3E2,#E6F4F1)' }}>
+        {target != null && <span className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-navy-primary/45" style={{ left: `${pct(target)}%` }} />}
+        <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${pct(price)}%`, background: priceTone }} />
       </div>
       <div className="mt-1 flex justify-between text-[8.5px] text-ink-secondary">
-        <span>Bear ₹{lo}</span>
-        <span className="font-semibold text-navy-deep/70">Base ₹{base}</span>
-        <span>Bull ₹{hi}</span>
+        <span>Low {px(lo)}</span>
+        <span className="font-semibold text-navy-deep/70">Cons. {px(target)}</span>
+        <span>High {px(hi)}</span>
       </div>
       <div className="mt-1 flex items-center gap-3 text-[8.5px] text-ink-secondary">
         <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: priceTone }} />Price</span>
-        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: TEAL }} />Target</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-navy-primary/45" />Consensus</span>
       </div>
     </div>
   )
 }
 
-function endTrendLabel(color: string) {
-  return (props: any) => {
-    const { x, y, value, index } = props as { x?: number; y?: number; value?: number; index?: number }
-    if (index !== valuationMultipleTrend.length - 1 || typeof x !== 'number' || typeof y !== 'number') return null
-    return <text x={x + 6} y={y + 3.5} fill={color} fontSize={9.5} fontWeight={700} style={{ fontVariantNumeric: 'tabular-nums' }}>{typeof value === 'number' ? `${value}x` : ''}</text>
+function Bar({ value, max, color, label }: { value: number | null; max: number; color: string; label: string }) {
+  if (value == null) {
+    return (
+      <div className="flex flex-col items-center justify-end">
+        <span className="mb-1 text-[9px] italic text-ink-secondary">n/a</span>
+        <div className="w-4 rounded-t-md border border-dashed border-[#C9CFD9]" style={{ height: 10 }} />
+      </div>
+    )
   }
-}
-
-function Bar({ value, max, color, label }: { value: number; max: number; color: string; label: string }) {
   const h = Math.max(5, (value / max) * 48)
   return (
     <div className="flex flex-col items-center justify-end">
@@ -557,11 +635,6 @@ function Bar({ value, max, color, label }: { value: number; max: number; color: 
       <div className="w-4 rounded-t-md" style={{ height: h, background: color }} />
     </div>
   )
-}
-
-function ConfPill({ c }: { c: 'High' | 'Medium' | 'Low' }) {
-  const tone = c === 'High' ? 'text-teal' : c === 'Medium' ? 'text-champagne-deep' : 'text-ink-secondary'
-  return <span className={`font-semibold ${tone}`}>{c} conf.</span>
 }
 
 function PeerChip({ name, mult, tag, tone }: { name: string; mult: number | null; tag?: string; tone: 'focal' | 'listed' | 'avg' }) {
@@ -574,7 +647,7 @@ function PeerChip({ name, mult, tag, tone }: { name: string; mult: number | null
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10.5px] ${styles}`}>
       <b className="font-semibold">{name}</b>
-      <span className="tabular-nums">· {mult != null ? `${mult.toFixed(1)}x` : 'n/a'}</span>
+      <span className="tabular-nums">· {mult != null ? `${mult.toFixed(2)}x` : 'n/a'}</span>
       {tag && <span className="opacity-70">· {tag}</span>}
     </span>
   )

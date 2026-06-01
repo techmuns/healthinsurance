@@ -1,132 +1,226 @@
 // ---------------------------------------------------------------------------
-//  Valuation decision-dashboard data.
+//  Valuation data — REAL, source-backed figures only.
 //
-//  IMPORTANT: live analyst consensus, market price / market-cap and unlisted
-//  valuations are NOT ingested yet. Everything in this file is ILLUSTRATIVE
-//  MOCK, surfaced only so the decision dashboard reads as complete — every
-//  consuming card tags it "Mock" and the verdict stays "Pending". Real metrics
-//  (growth, margin, market share, P/GWP) are read from insurers[] in the UI.
+//  Every number below is tied to a record in `valuationSources.ts` via a
+//  `sourceId`. There is no mock data in this file. Where a credible source does
+//  not exist (e.g. private-company equity value) the field is `null` and the UI
+//  renders an honest "Source pending" marker — never a fabricated number.
+//
+//  Focal company: Niva Bupa (NSE: NIVABUPA). All figures cross-checked against
+//  the company's audited FY26 results (8 May 2026), NSE/Screener market data and
+//  Investing.com analyst consensus. Last checked 2026-06-01.
 // ---------------------------------------------------------------------------
 
 export type Rating = 'Buy' | 'Hold' | 'Sell'
-export type Confidence = 'High' | 'Medium' | 'Low'
 export type Listing = 'Listed' | 'Unlisted'
+export type ValConfidence = 'verified' | 'secondary' | 'pending'
 
+/** The valuation page is sourced for the focal listed name only. */
+export const FOCAL_VALUATION_ID = 'niva-bupa'
+
+// ── Market snapshot ─────────────────────────────────────────────────────────
+export interface MarketSnapshot {
+  company: string
+  ticker: string
+  currentPrice: number // ₹  — sourceId niva-price
+  priceAsOf: string
+  marketCap: number // ₹ Cr — sourceId niva-mcap
+  weekHigh52: number // sourceId niva-52wk
+  weekLow52: number
+  ipoPrice: number // sourceId niva-ipo
+  listPrice: number
+  listDate: string
+}
+
+export const marketSnapshot: MarketSnapshot = {
+  company: 'Niva Bupa',
+  ticker: 'NSE: NIVABUPA',
+  currentPrice: 83.5,
+  priceAsOf: '1 Jun 2026',
+  marketCap: 15576,
+  weekHigh52: 95.21,
+  weekLow52: 67.5,
+  ipoPrice: 74,
+  listPrice: 78.14,
+  listDate: '14 Nov 2024',
+}
+
+// ── Reported financials used to build the multiples ─────────────────────────
+export interface FocalFinancials {
+  gwpFY26: number // ₹ Cr — sourceId niva-fy26-gwp
+  gwpGrowthFY26: number // %
+  patFY26: number // ₹ Cr — sourceId niva-fy26-pat (IFRS)
+  patGrowthFY26: number // %
+  netMarginFY26: number // % (PAT / GWP)
+  retailShareFY26: number // % — sourceId niva-share
+  retailShareDeltaBps: number
+  gwpFY25: number // sourceId niva-fy25
+  patFY25: number
+}
+
+const _gwp26 = 9432.9
+const _pat26 = 366.1
+export const focalFinancials: FocalFinancials = {
+  gwpFY26: _gwp26,
+  gwpGrowthFY26: 27.4,
+  patFY26: _pat26,
+  patGrowthFY26: 80,
+  netMarginFY26: (_pat26 / _gwp26) * 100, // ≈ 3.9%
+  retailShareFY26: 10.1,
+  retailShareDeltaBps: 76,
+  gwpFY25: 7015,
+  patFY25: 203,
+}
+
+// ── Multiples (derived from the sourced components above) ────────────────────
+export interface FocalMultiples {
+  pGwp: number | null // sourceId niva-pgwp
+  pe: number | null // sourceId niva-pe
+  pb: number | null // sourceId niva-pb (secondary)
+}
+
+export const focalMultiples: FocalMultiples = {
+  pGwp: 1.65,
+  pe: 42.6,
+  pb: 3.0,
+}
+
+// ── Analyst consensus ────────────────────────────────────────────────────────
 export interface AnalystConsensus {
   currentPrice: number | null
-  consensusTargetPrice: number | null
+  consensusTargetPrice: number | null // sourceId niva-consensus
   highestTargetPrice: number | null
   lowestTargetPrice: number | null
   analystCount: number
   buyCount: number
   holdCount: number
   sellCount: number
-  impliedUpsideDownside: number | null // % (consensus vs current)
+  ratingLabel: Rating
   lastUpdated: string
-  source: string
 }
 
-// Mock — broadly in line with sell-side framing for a fast-growing SAHI name.
 export const analystConsensus: AnalystConsensus = {
-  currentPrice: 540,
-  consensusTargetPrice: 586,
-  highestTargetPrice: 640,
-  lowestTargetPrice: 510,
+  currentPrice: marketSnapshot.currentPrice,
+  consensusTargetPrice: 87.6,
+  highestTargetPrice: 100,
+  lowestTargetPrice: 76,
   analystCount: 8,
-  buyCount: 6,
-  holdCount: 2,
+  buyCount: 8,
+  holdCount: 0,
   sellCount: 0,
-  impliedUpsideDownside: 8.5,
-  lastUpdated: '2026-05-20',
-  source: 'Mock consensus',
+  ratingLabel: 'Buy',
+  lastUpdated: 'May 2026',
 }
 
+// ── Analyst reports — only sourced rows; never fabricated ────────────────────
 export interface AnalystReport {
   brokerage: string
-  rating: Rating
+  rating: Rating | null
   targetPrice: number | null
-  impliedUpsideDownside: number | null
   reportDate: string
-  source: string
-  sourceType: string
-  notes: string
+  thesis: string
+  sourceId: string
+  confidence: ValConfidence
 }
 
-// Mock — concise view summaries only (no report excerpts).
+// Two verifiable reads: the most recent datable single-broker note we can cite
+// (Motilal Oswal, via Business Standard) and the live Street consensus. Other
+// individual broker targets (Nuvama, Kotak, ICICI Sec, Jefferies…) are NOT
+// listed because we cannot open a citable note for them — they are surfaced as
+// "Source pending" in the UI rather than invented.
 export const analystReports: AnalystReport[] = [
-  { brokerage: 'JP Morgan', rating: 'Buy', targetPrice: 640, impliedUpsideDownside: 18.5, reportDate: '2026-05-14', source: 'Mock', sourceType: 'Sell-side note', notes: 'Best-in-class growth; re-rating on scale' },
-  { brokerage: 'Motilal Oswal', rating: 'Buy', targetPrice: 620, impliedUpsideDownside: 14.8, reportDate: '2026-05-12', source: 'Mock', sourceType: 'Initiation', notes: 'Retail-health mix + margin lever' },
-  { brokerage: 'Nuvama', rating: 'Buy', targetPrice: 610, impliedUpsideDownside: 13.0, reportDate: '2026-05-09', source: 'Mock', sourceType: 'Update', notes: 'Persistency and renewal quality improving' },
-  { brokerage: 'ICICI Securities', rating: 'Buy', targetPrice: 600, impliedUpsideDownside: 11.1, reportDate: '2026-04-30', source: 'Mock', sourceType: 'Update', notes: 'Share gains vs PSU pool' },
-  { brokerage: 'Jefferies', rating: 'Hold', targetPrice: 560, impliedUpsideDownside: 3.7, reportDate: '2026-05-06', source: 'Mock', sourceType: 'Update', notes: 'Growth priced in; await margin proof' },
-  { brokerage: 'Kotak Institutional', rating: 'Hold', targetPrice: 555, impliedUpsideDownside: 2.8, reportDate: '2026-04-22', source: 'Mock', sourceType: 'Update', notes: 'Valuation rich vs near-term EV' },
+  {
+    brokerage: 'Street consensus',
+    rating: 'Buy',
+    targetPrice: 87.6,
+    reportDate: 'May 2026',
+    thesis: 'Buy-skewed — 8 analysts, 0 sell; avg ₹87.6, range ₹76–100.',
+    sourceId: 'niva-consensus',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'Motilal Oswal',
+    rating: 'Buy',
+    targetPrice: 100,
+    reportDate: '23 Apr 2025',
+    thesis: 'Best-in-class retail-health growth; scale-led margin lever.',
+    sourceId: 'niva-mosl',
+    confidence: 'secondary',
+  },
 ]
 
+/** Count of brokers we know cover the name but whose individual notes are not citable here. */
+export const coveragePendingCount = Math.max(0, analystConsensus.analystCount - 1)
+
+// ── Analyst thesis — grounded in the FY26 filing + the cited broker note ─────
 export interface AnalystThesis {
   bull: string[]
   bear: string[]
   risks: string[]
   catalysts: string[]
-  lastUpdated: string
-  source: string
 }
 
-// Mock — recurring Street arguments, summarised (not excerpts).
 export const analystThesis: AnalystThesis = {
-  bull: ['Faster growth than peers', 'Improving profitability', 'Rising market share', 'Health-insurance penetration tailwind'],
-  bear: ['Valuation already prices in growth', 'Margin volatility risk', 'Rising competitive intensity', 'Regulatory risk'],
-  risks: ['Claims inflation', 'Commission / distribution cost', 'Regulatory change', 'Slower policy growth'],
-  catalysts: ['Strong quarterly GWP growth', 'Margin improvement', 'Market-share gain', 'Better persistency / renewals'],
-  lastUpdated: '2026-05',
-  source: 'Mock — recurring Street themes',
+  // Each bull/bear point references a reported, sourced figure.
+  bull: [
+    'Fastest-growing listed SAHI: GWP +27% in FY26',
+    'PAT +80% YoY to ₹366 Cr (FY26, IFRS)',
+    'Retail-health share up to 10.1% (+76 bps)',
+    'Combined service ratio 101.4% — improving (+160 bps)',
+  ],
+  bear: [
+    'Trades at a premium to Star on P/GWP (1.65x vs 1.49x)',
+    'Profit base still small — margin must keep scaling',
+    'P/E ≈ 43x prices in years of compounding',
+    'Rising competitive & regulatory intensity in health',
+  ],
+  risks: ['Claims / medical inflation', 'Commission & distribution cost', 'Regulatory change (EOM, pricing)', 'Slower retail policy growth'],
+  catalysts: ['Sustained 20%+ GWP growth', 'Further combined-ratio improvement', 'Retail share gains vs PSU pool', 'Persistency / renewal quality'],
 }
 
-export interface MarketStreetIntrinsic {
-  currentMarketPrice: number | null
-  marketCap: number | null // ₹ Cr
-  consensusTargetPrice: number | null
-  intrinsicBearValue: number | null
-  intrinsicBaseValue: number | null
-  intrinsicBullValue: number | null
-  methodology: string
-  source: string
-}
-
-// Mock — intrinsic = multiple-based + internal estimate (per-share, ₹).
-export const marketStreetIntrinsic: MarketStreetIntrinsic = {
-  currentMarketPrice: 540,
-  marketCap: 25184, // ≈ P/GWP 3.4x × FY25 GWP 7,407 Cr (mock, internally consistent)
-  consensusTargetPrice: 586,
-  intrinsicBearValue: 470,
-  intrinsicBaseValue: 560,
-  intrinsicBullValue: 700,
-  methodology: 'Multiple-based + internal estimate',
-  source: 'Mock',
-}
-
+// ── Peer valuation ────────────────────────────────────────────────────────────
 export interface PeerValuationRow {
   companyId: string
   companyName: string
   listingStatus: Listing
-  marketCap: number | null // ₹ Cr (listed = market, unlisted = estimated equity value)
-  pgwp: number | null
-  pb: number | null
+  marketCap: number | null // ₹ Cr (listed = market; unlisted = null → pending)
+  gwp: number | null // ₹ Cr, FY26
+  pGwp: number | null
   pe: number | null
-  valuationBasis: string
-  confidence: Confidence
-  source: string
+  growth: number | null // GWP YoY %
+  confidence: ValConfidence
+  sourceId: string
 }
 
-// Mock valuation overlay keyed by company id. Real growth / margin / market
-// share come from insurers[] in the UI; only the valuation fields are mock,
-// and unlisted rows are explicitly "Estimated".
-export const peerValuationOverlay: Record<string, PeerValuationRow> = {
-  'niva-bupa': { companyId: 'niva-bupa', companyName: 'Niva Bupa', listingStatus: 'Listed', marketCap: 25184, pgwp: 3.4, pb: 2.7, pe: 31.6, valuationBasis: 'Market multiple', confidence: 'Medium', source: 'Mock' },
-  'star-health': { companyId: 'star-health', companyName: 'Star Health', listingStatus: 'Listed', marketCap: 32600, pgwp: 3.6, pb: 3.0, pe: 38.0, valuationBasis: 'Market multiple', confidence: 'Medium', source: 'Mock' },
-  'care-health': { companyId: 'care-health', companyName: 'Care Health', listingStatus: 'Unlisted', marketCap: 19500, pgwp: 3.0, pb: null, pe: null, valuationBasis: 'Comparable listed multiples', confidence: 'Low', source: 'Mock estimate' },
-  'aditya-birla': { companyId: 'aditya-birla', companyName: 'Aditya Birla Health', listingStatus: 'Unlisted', marketCap: 13800, pgwp: 3.3, pb: null, pe: null, valuationBasis: 'Recent funding round', confidence: 'Low', source: 'Mock estimate' },
-  manipalcigna: { companyId: 'manipalcigna', companyName: 'ManipalCigna', listingStatus: 'Unlisted', marketCap: 6200, pgwp: 2.4, pb: null, pe: null, valuationBasis: 'Industry estimate', confidence: 'Low', source: 'Mock estimate' },
-}
+export const peerValuation: PeerValuationRow[] = [
+  {
+    companyId: 'niva-bupa',
+    companyName: 'Niva Bupa',
+    listingStatus: 'Listed',
+    marketCap: 15576,
+    gwp: 9432.9,
+    pGwp: 1.65,
+    pe: 42.6,
+    growth: 27.4,
+    confidence: 'secondary',
+    sourceId: 'niva-pgwp',
+  },
+  {
+    companyId: 'star-health',
+    companyName: 'Star Health',
+    listingStatus: 'Listed',
+    marketCap: 30356,
+    gwp: 20369,
+    pGwp: 1.49,
+    pe: 33.3, // mkt cap ₹30,356 Cr ÷ FY26 PAT ₹911 Cr — same basis as Niva's P/E for a like-for-like compare
+    growth: 16,
+    confidence: 'secondary',
+    sourceId: 'star-pgwp',
+  },
+  { companyId: 'care-health', companyName: 'Care Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
+  { companyId: 'aditya-birla', companyName: 'Aditya Birla Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
+  { companyId: 'manipalcigna', companyName: 'ManipalCigna', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
+]
 
 export const UNLISTED_METHODOLOGY =
-  'Unlisted valuations are estimates from comparable listed multiples, funding rounds, transaction benchmarks or industry estimates — not live market prices.'
+  'Care Health, Aditya Birla Health and ManipalCigna are unlisted — there is no live market price. We do not publish an equity value until a credible source (a funding round, a transaction benchmark or a filing) is on record. Marked "Source pending" rather than estimated.'
