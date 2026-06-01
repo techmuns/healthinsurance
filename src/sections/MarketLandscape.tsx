@@ -1,12 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
-  Customized,
   Label,
   LabelList,
   Line,
@@ -17,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { ArrowUpRight, Sparkles } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUpRight, Sparkles } from 'lucide-react'
 import {
   giPremiumAbsolute,
   giPremiumMix,
@@ -33,7 +28,6 @@ import {
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
-import { makeYoYConnectors } from '@/lib/yoyConnectors'
 
 // Default source-tag preset for Market Engine cards — UI currently reads
 // from mockData.ts; will switch to IRDAI + GI Council snapshots when
@@ -212,15 +206,173 @@ function KpiPill({
 }
 
 // ─── 2. MAIN CHART BLOCK ───────────────────────────────────────────────────
-// "Premium Pool Shift Ribbon" — how the GI premium pool splits between Health,
-// Motor and Others over time. Health is the highlighted (teal) band, Motor a
-// muted blue-grey, Others the lightest grey. A short reported series (≤4 years)
-// reads cleanest as 100% stacked columns; a longer one flows as a smooth mix
-// ribbon. Health is anchored to the baseline so its growing slice reads first.
+// "Premium Pool Shift" — a flowing ribbon infographic (no axes / grid / frame)
+// of how the GI premium pool splits between Health, Motor and Others, FY21→FY25.
+// Each segment is its own ribbon whose thickness encodes its share (Mix %) or
+// premium (Absolute): Health widens, Others narrows, Motor holds. A compact
+// summary on the right states the FY-first→FY-last pp moves.
 type Seg = 'Health' | 'Motor' | 'Others'
 
 function numOrNull(v: number | string | null | undefined): number | null {
   return typeof v === 'number' ? v : null
+}
+
+// Width of a flex child, tracked so the ribbon SVG can lay out in real pixels.
+function useElementWidth() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(0)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => setW(entries[0].contentRect.width))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return [ref, w] as const
+}
+
+// Catmull-Rom → cubic bézier commands through the points (no leading "M";
+// assumes the path cursor is already at pts[0]).
+function curveThrough(pts: { x: number; y: number }[]): string {
+  let d = ''
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i]
+    const p1 = pts[i]
+    const p2 = pts[i + 1]
+    const p3 = pts[i + 2] ?? p2
+    const c1x = p1.x + (p2.x - p0.x) / 6
+    const c1y = p1.y + (p2.y - p0.y) / 6
+    const c2x = p2.x - (p3.x - p1.x) / 6
+    const c2y = p2.y - (p3.y - p1.y) / 6
+    d += `C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)} `
+  }
+  return d
+}
+
+const RIBBON_DEF: { key: Seg; grad: string; labelFill: string }[] = [
+  { key: 'Health', grad: 'url(#rfHealth)', labelFill: '#FFFFFF' },
+  { key: 'Motor', grad: 'url(#rfMotor)', labelFill: '#2C3A4F' },
+  { key: 'Others', grad: 'url(#rfOthers)', labelFill: '#3A4658' },
+]
+
+// The ribbon flow — three separated, smoothly-flowing bands whose thickness is
+// the segment's share (Mix) or premium (Absolute) at each year.
+function RibbonFlow({ rows, isMix }: { rows: SeriesPoint[]; isMix: boolean }) {
+  const [ref, w] = useElementWidth()
+  const H = 236
+  const n = rows.length
+  const xPad = 20
+  const yTop = 36
+  const yBot = H - 16
+  const gap = 14
+  const usable = yBot - yTop - 2 * gap
+
+  const tv = (row: SeriesPoint, seg: Seg) => Math.max(0, numOrNull(row[seg]) ?? 0)
+  const totals = rows.map((r) => tv(r, 'Health') + tv(r, 'Motor') + tv(r, 'Others'))
+  const maxTotal = Math.max(1, ...totals)
+  const scale = usable / maxTotal
+  const xOf = (i: number) => (n <= 1 ? w / 2 : xPad + ((w - 2 * xPad) * i) / (n - 1))
+
+  // Per-year stacked top/bottom for each segment, with white gaps between.
+  const top: Record<Seg, number[]> = { Health: [], Motor: [], Others: [] }
+  const bot: Record<Seg, number[]> = { Health: [], Motor: [], Others: [] }
+  rows.forEach((r, i) => {
+    let y = yTop
+    ;(['Health', 'Motor', 'Others'] as Seg[]).forEach((seg, si) => {
+      const th = tv(r, seg) * scale
+      top[seg][i] = y
+      bot[seg][i] = y + th
+      y += th + (si < 2 ? gap : 0)
+    })
+  })
+
+  const ribbon = (seg: Seg) => {
+    const tp = rows.map((_, i) => ({ x: xOf(i), y: top[seg][i] }))
+    const bp = rows.map((_, i) => ({ x: xOf(i), y: bot[seg][i] }))
+    return `M ${tp[0].x.toFixed(1)} ${tp[0].y.toFixed(1)} ${curveThrough(tp)}L ${bp[n - 1].x.toFixed(1)} ${bp[n - 1].y.toFixed(1)} ${curveThrough(bp.slice().reverse())}Z`
+  }
+  const fmt = (v: number) => (isMix ? `${Math.round(v)}%` : `₹${Math.round(v)}k`)
+
+  return (
+    <div ref={ref} className="relative min-w-0 flex-1" style={{ height: H }}>
+      {w > 0 && n >= 2 && (
+        <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
+          <defs>
+            <linearGradient id="rfHealth" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#34B7AE" />
+              <stop offset="100%" stopColor={HEALTH} />
+            </linearGradient>
+            <linearGradient id="rfMotor" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#B2BCCB" />
+              <stop offset="100%" stopColor={MOTOR} />
+            </linearGradient>
+            <linearGradient id="rfOthers" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={OTHERS} />
+              <stop offset="100%" stopColor="#E7EBF1" />
+            </linearGradient>
+          </defs>
+
+          {rows.map((r, i) => (
+            <text key={`yr-${r.label}`} x={xOf(i)} y={16} textAnchor="middle" fontSize={11} fontWeight={700} fill="#26303F" style={{ letterSpacing: 0.3 }}>
+              {r.label}
+            </text>
+          ))}
+
+          {RIBBON_DEF.map((rd, idx) => (
+            <g key={rd.key} className="rf-ribbon" style={{ animationDelay: `${idx * 0.1}s` }}>
+              <path d={ribbon(rd.key)} fill={rd.grad} style={{ filter: 'drop-shadow(0 2px 5px rgba(23,43,77,0.12))' }} />
+              {rows.map((r, i) => {
+                const thick = bot[rd.key][i] - top[rd.key][i]
+                if (thick < 14) return null
+                // First / last labels are anchored inward so they stay on the
+                // ribbon (a centred label at the edge would fall onto the card).
+                const anchor: 'start' | 'middle' | 'end' = i === 0 ? 'start' : i === n - 1 ? 'end' : 'middle'
+                const lx = i === 0 ? xOf(i) + 5 : i === n - 1 ? xOf(i) - 5 : xOf(i)
+                return (
+                  <text key={`lb-${rd.key}-${i}`} x={lx} y={(top[rd.key][i] + bot[rd.key][i]) / 2 + 3.5} textAnchor={anchor} fontSize={10.5} fontWeight={700} fill={rd.labelFill} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(tv(r, rd.key))}
+                  </text>
+                )
+              })}
+            </g>
+          ))}
+        </svg>
+      )}
+      <style>{`
+        .rf-ribbon { opacity: 0; animation: rfFade 0.6s ease forwards; }
+        @keyframes rfFade { to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .rf-ribbon { animation: none; opacity: 1; } }
+      `}</style>
+    </div>
+  )
+}
+
+// Compact FY-first→FY-last share-move summary beside the ribbon.
+function RibbonSummary({ ppH, ppM, ppO, span }: { ppH: number | null; ppM: number | null; ppO: number | null; span: string }) {
+  const fmtPp = (v: number | null) => (v == null ? 'n/a' : `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)} pp`)
+  const items = [
+    { label: 'Health gained', v: ppH, Icon: ArrowUp, tint: '#E2F4F1', fg: '#0E6F6D' },
+    { label: 'Motor change', v: ppM, Icon: ArrowRight, tint: '#ECF0F6', fg: '#6F7C90' },
+    { label: 'Others ceded', v: ppO, Icon: ArrowDown, tint: '#F6E9E6', fg: '#B06A5E' },
+  ]
+  return (
+    <div className="w-[172px] shrink-0 self-center rounded-2xl border border-[#EAEEF4] bg-white/80 p-3 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_24px_rgba(23,43,77,0.06)]">
+      <p className="mb-2.5 text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{span} shift</p>
+      <div className="space-y-2.5">
+        {items.map(({ label, v, Icon, tint, fg }) => (
+          <div key={label} className="flex items-center gap-2.5">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: tint, color: fg }}>
+              <Icon className="h-3.5 w-3.5" strokeWidth={2.6} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[10.5px] leading-tight text-navy-deep/70">{label}</p>
+              <p className="font-display text-[15px] leading-tight tabular-nums" style={{ color: fg }}>{fmtPp(v)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function MainChartBlock() {
@@ -230,84 +382,17 @@ function MainChartBlock() {
   const data = isMix ? giPremiumMix : giPremiumAbsolute
   const { data: clipped } = useRangeClip(data)
   const span = shownSpan(clipped)
-  const unit = isMix ? '%' : ' ₹k Cr'
-  const lastIdx = clipped.length - 1
-  // 3 reported years (or fewer, after a Data-Range clip) read best as clean 100%
-  // stacked columns; a longer series flows as a smooth ribbon.
-  const asBars = clipped.length <= 4
 
-  const first = clipped[0]
-  const last = clipped[lastIdx]
-
-  // First→latest change per segment, in the active unit — percentage points in
-  // Mix %, ₹k Cr in Absolute. null-safe: a missing endpoint stays null, never a
-  // fabricated 0.
-  const delta = (seg: Seg): number | null => {
-    const a = numOrNull(first?.[seg])
-    const b = numOrNull(last?.[seg])
+  // Summary reads share movement (pp) from the mix series so it's correct in
+  // either toggle — FY-first → FY-last within the active range.
+  const { data: mixClipped } = useRangeClip(giPremiumMix)
+  const mf = mixClipped[0]
+  const ml = mixClipped[mixClipped.length - 1]
+  const ppOf = (seg: Seg): number | null => {
+    const a = numOrNull(mf?.[seg])
+    const b = numOrNull(ml?.[seg])
     return a == null || b == null ? null : b - a
   }
-  const fmtVal = (v: number | null) =>
-    v == null ? 'n/a' : isMix ? `${v.toFixed(1)}%` : `₹${v.toFixed(0)}k`
-  const fmtDelta = (v: number | null) => {
-    if (v == null) return 'n/a'
-    const sign = v >= 0 ? '+' : '−'
-    return isMix ? `${sign}${Math.abs(v).toFixed(1)} pp` : `${sign}₹${Math.abs(v).toFixed(0)}k`
-  }
-
-  // Right-edge labels at the final reported year: segment name, latest value and
-  // the first→latest delta — plus a "Largest growth pool" pin on Health. Recharts
-  // hands us (x, y) at the top edge of each band/column; bars also expose `width`
-  // (areas don't, so `width ?? 0` collapses to the area case).
-  const endLabel = (seg: Seg, color: string, bold: boolean) =>
-    (props: any) => {
-      const { x, y, width, index, value } = props as {
-        x?: number; y?: number; width?: number; index?: number; value?: number
-      }
-      if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number') return null
-      const lx = x + (typeof width === 'number' ? width : 0) + 9
-      const d = delta(seg)
-      const deltaColor = d == null ? '#9AA3B2' : d >= 0 ? '#0E6F6D' : '#B06A5E'
-      return (
-        <g>
-          <text x={lx} y={y + 11} fill={color} fontSize={11} fontWeight={bold ? 700 : 600} style={{ letterSpacing: 0.1 }}>
-            {seg}
-          </text>
-          <text x={lx} y={y + 24} fill={color} fontSize={10.5} opacity={0.82} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {typeof value === 'number' ? fmtVal(value) : 'n/a'}
-          </text>
-          <text x={lx + 44} y={y + 24} fill={deltaColor} fontSize={10} fontWeight={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {fmtDelta(d)}
-          </text>
-          {seg === 'Health' && (
-            <g transform={`translate(${lx}, ${y + 31})`}>
-              <rect width={130} height={14} rx={7} fill="#E1F2F1" stroke="#BFE3E1" />
-              <circle cx={7} cy={7} r={2.5} fill={HEALTH} />
-              <text x={14} y={10.5} fill="#0E6F6D" fontSize={9} fontWeight={700} style={{ letterSpacing: 0.2 }}>
-                LARGEST GROWTH POOL
-              </text>
-            </g>
-          )}
-        </g>
-      )
-    }
-
-  // Investor read — crisp, specific to the active toggle, and honest to the real
-  // numbers (in this series Others is the segment that loses share, not Motor).
-  const read = (() => {
-    if (!first || !last) return ''
-    if (clipped.length < 2) {
-      const h = numOrNull(last.Health)
-      return isMix
-        ? `In ${last.label}, Health is already the single largest slice of the GI premium pool${h != null ? ` at ${h.toFixed(1)}%` : ''}.`
-        : `In ${last.label}, Health is the largest premium pool in general insurance${h != null ? `, at roughly ₹${h.toFixed(0)}k Cr` : ''}.`
-    }
-    const dH = delta('Health')
-    const dO = delta('Others')
-    return isMix
-      ? `Health is gaining structural share of the GI premium pool — up ${fmtDelta(dH)} since ${first.label} — almost entirely at the expense of Others (${fmtDelta(dO)}), while Motor holds roughly steady.`
-      : `Health is adding the most new premium of any GI pool — about ${fmtDelta(dH)} Cr since ${first.label} — while Others has stopped growing.`
-  })()
 
   return (
     <section className="card-surface p-5 sm:p-6">
@@ -333,121 +418,24 @@ function MainChartBlock() {
         <EmptyState
           title="Data unavailable for this period"
           body={gate.reason ?? 'Switch the period toggle to Annual to see the GI pool shift.'}
-          height={276}
+          height={236}
         />
       ) : clipped.length === 0 ? (
         <EmptyState
           title="Data not available from source"
           body="No reported years fall inside the selected Data Range. Widen the range in the top bar."
-          height={276}
+          height={236}
         />
       ) : (
-      <div style={{ width: '100%', height: 276 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          {asBars ? (
-            <BarChart data={clipped} margin={{ top: 8, right: 132, left: -4, bottom: 4 }} barCategoryGap="26%">
-              <defs>
-                <linearGradient id="healthBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#18A0A0" />
-                  <stop offset="100%" stopColor="#147E7E" />
-                </linearGradient>
-                <linearGradient id="motorBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#A6B2C2" />
-                  <stop offset="100%" stopColor="#8E9BAD" />
-                </linearGradient>
-                <linearGradient id="othersBar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D9DEE6" />
-                  <stop offset="100%" stopColor="#C7CED8" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
-              <YAxis
-                tick={{ fontSize: 11, fill: AXIS }}
-                tickLine={false}
-                axisLine={{ stroke: GRID }}
-                width={46}
-                domain={isMix ? [0, 100] : [0, 'auto']}
-                ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
-                unit={isMix ? '%' : ''}
-              />
-              <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<EngineTooltip unit={unit} highlight="Health" />} />
-              {/* Health anchored to the baseline (rounded bottom); Others caps the
-                  column (rounded top); Motor squared in the middle. */}
-              <Bar dataKey="Health" stackId="1" fill="url(#healthBar)" maxBarSize={42} radius={[0, 0, 5, 5]}>
-                <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
-              </Bar>
-              <Bar dataKey="Motor" stackId="1" fill="url(#motorBar)" maxBarSize={42} radius={[0, 0, 0, 0]}>
-                <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
-              </Bar>
-              <Bar dataKey="Others" stackId="1" fill="url(#othersBar)" maxBarSize={42} radius={[5, 5, 0, 0]}>
-                <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
-              </Bar>
-              {/* YoY growth annotation — dotted right-angle step tracing the top of the
-                  Health band between columns, labelled +x.x pp (Mix) / +x% (Absolute). */}
-              <Customized
-                component={makeYoYConnectors({
-                  rows: clipped,
-                  valueAt: (r) => (typeof r.Health === 'number' ? r.Health : null),
-                  label: (a, b) => {
-                    const av = typeof a.Health === 'number' ? a.Health : null
-                    const bv = typeof b.Health === 'number' ? b.Health : null
-                    if (av == null || bv == null) return null
-                    if (isMix) return `${bv - av >= 0 ? '+' : '−'}${Math.abs(bv - av).toFixed(1)} pp`
-                    if (av === 0) return null
-                    const g = (bv / av - 1) * 100
-                    return `${g >= 0 ? '+' : '−'}${Math.abs(g).toFixed(0)}%`
-                  },
-                  color: HEALTH,
-                  maxBarSize: 42,
-                })}
-              />
-            </BarChart>
-          ) : (
-            <AreaChart data={clipped} margin={{ top: 8, right: 132, left: -4, bottom: 4 }}>
-              <defs>
-                <linearGradient id="healthRibbon" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={HEALTH} stopOpacity={0.5} />
-                  <stop offset="100%" stopColor={HEALTH} stopOpacity={0.22} />
-                </linearGradient>
-                <linearGradient id="motorRibbon" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={MOTOR} stopOpacity={0.34} />
-                  <stop offset="100%" stopColor={MOTOR} stopOpacity={0.14} />
-                </linearGradient>
-                <linearGradient id="othersRibbon" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={OTHERS} stopOpacity={0.4} />
-                  <stop offset="100%" stopColor={OTHERS} stopOpacity={0.16} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
-              <YAxis
-                tick={{ fontSize: 11, fill: AXIS }}
-                tickLine={false}
-                axisLine={{ stroke: GRID }}
-                width={46}
-                domain={isMix ? [0, 100] : [0, 'auto']}
-                ticks={isMix ? [0, 25, 50, 75, 100] : undefined}
-                unit={isMix ? '%' : ''}
-              />
-              <Tooltip cursor={{ stroke: '#27457E', strokeOpacity: 0.18, strokeWidth: 1 }} content={<EngineTooltip unit={unit} highlight="Health" />} />
-              {/* Health anchored to the baseline as the highlighted ribbon. */}
-              <Area type="natural" dataKey="Health" stackId="1" stroke={HEALTH} strokeWidth={2.2} fill="url(#healthRibbon)">
-                <LabelList dataKey="Health" content={endLabel('Health', HEALTH, true)} />
-              </Area>
-              <Area type="natural" dataKey="Motor" stackId="1" stroke={MOTOR} strokeWidth={1.2} fill="url(#motorRibbon)">
-                <LabelList dataKey="Motor" content={endLabel('Motor', '#6F7C90', false)} />
-              </Area>
-              <Area type="natural" dataKey="Others" stackId="1" stroke={OTHERS} strokeWidth={1.2} fill="url(#othersRibbon)">
-                <LabelList dataKey="Others" content={endLabel('Others', '#7A8597', false)} />
-              </Area>
-            </AreaChart>
-          )}
-        </ResponsiveContainer>
-      </div>
+        <div className="flex flex-wrap items-stretch gap-4">
+          <RibbonFlow rows={clipped} isMix={isMix} />
+          <RibbonSummary ppH={ppOf('Health')} ppM={ppOf('Motor')} ppO={ppOf('Others')} span={span ?? 'FY21 → FY25'} />
+        </div>
       )}
 
-      {gate.ok && clipped.length > 0 && <AiRead text={read} />}
+      {gate.ok && clipped.length > 0 && (
+        <AiRead text="Health is gaining share in the GI premium pool, largely at the expense of Others, while Motor remains broadly stable." />
+      )}
       <div className="mt-3 flex justify-end">
         <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
