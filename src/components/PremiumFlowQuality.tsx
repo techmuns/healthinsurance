@@ -271,8 +271,8 @@ function RealFlowChart({
 
   const stageMeta: Record<Stage, { word: string; abbrev: Stage; meaning: string }> = {
     GWP: { word: 'Gross', abbrev: 'GWP', meaning: 'Total premium written during the year.' },
-    NWP: { word: 'Retained', abbrev: 'NWP', meaning: 'Premium kept after reinsurance cession.' },
-    NEP: { word: 'Earned', abbrev: 'NEP', meaning: 'Premium earned after unearned-premium movement.' },
+    NWP: { word: 'Retained', abbrev: 'NWP', meaning: 'What remains after reinsurance.' },
+    NEP: { word: 'Earned', abbrev: 'NEP', meaning: 'The part recognized during the period.' },
   }
   const active = stageMeta[stage]
   const stageKey: 'gwp' | 'nwp' | 'nep' = stage === 'GWP' ? 'gwp' : stage === 'NWP' ? 'nwp' : 'nep'
@@ -440,7 +440,7 @@ function RealFlowChart({
         {stage === 'GWP' && (
           <>
             <CalloutPill color={FOCAL} label="Gross written" value={focus.gwp != null ? fmtCr(focus.gwp) : 'Data not available from source'} />
-            <span className="text-[11px] italic text-ink-secondary">Full premium base — leakage is removed under Retained &amp; Earned.</span>
+            <span className="text-[11px] italic text-ink-secondary">Gross premium is the starting premium base.</span>
           </>
         )}
         {stage === 'NWP' && (
@@ -502,9 +502,7 @@ function RealFlowChart({
         <span>·</span>
         <span>Premium metrics, not profit</span>
         <span>·</span>
-        <span>Leakage = GWP − NWP and NWP − NEP where available</span>
-        <span>·</span>
-        <span>Missing values are source unavailable, not zero</span>
+        <span>Missing = not disclosed</span>
         <span>·</span>
         <span>
           Source ·{' '}
@@ -1235,7 +1233,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
   // On the Flow lens the subtitle reflects the selected Data Range and the
   // conversion story; other tabs keep their period-derived context.
   const subPeriod = tab === 'Flow' || tab === 'Mix' ? rangeLabel : periodLabel
-  const subTail = tab === 'Flow' ? 'How written premium converts into earned premium' : tabPhrase
+  const subTail = tab === 'Flow' ? 'How written premium turns into earned premium' : tabPhrase
 
   void useMemo<Chip[]>(() => {
     if (!company) return []
@@ -1417,9 +1415,9 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
           )
           const basisNote =
             oneByN.length === 1
-              ? `${oneByN[0].fiscal_year} gross premium shown on the IRDAI 1/n basis (${fmtCr(oneByN[0].gross_direct_premium as number)}); headline GWP ${fmtCr(oneByN[0].gwp as number)}.`
+              ? `${oneByN[0].fiscal_year} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.`
               : oneByN.length > 1
-                ? `${oneByN.map((r) => r.fiscal_year).join(', ')} gross premium shown on the IRDAI 1/n (Revenue-Account) basis; headline GWP differs.`
+                ? `${oneByN.map((r) => r.fiscal_year).join(', ')} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.`
                 : undefined
           const rows = annualRows.map((r) => ({
             ...r,
