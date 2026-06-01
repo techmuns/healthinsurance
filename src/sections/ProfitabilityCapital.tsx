@@ -1,4 +1,4 @@
-import { Fragment, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Area,
@@ -35,23 +35,28 @@ import {
   TrendingDown,
   Minus,
   Layers,
+  Wallet,
+  Scale,
+  ArrowLeftRight,
+  ExternalLink,
   type LucideIcon,
 } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SourceTag } from '@/components/SourceTag'
+import { Drawer } from '@/components/Drawer'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance, getInsurers } from '@/lib/dataLayer'
-import { getCompanyProfitabilityCopy } from '@/lib/companyCopy'
 import type { Insurer, TimePeriod } from '@/data/types'
-import { AccountingBasisToggle, BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
-import { AccountingDetailDrawer } from '@/components/AccountingDetailDrawer'
+import { BasisPill, BasisExplainer } from '@/components/AccountingBasisControls'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
+import { PatBasisCompareCard } from '@/components/PatBasisCompareCard'
 import { getEarningsBridge } from '@/data/earningsBridge'
 import {
   getBasisProfit,
   getBasisPatGrowth,
+  getBasisPatSeries,
   latestAnnualWithPat,
   hasBasisData,
   periodLabel,
@@ -61,7 +66,19 @@ import {
   BASIS_TRACKED_COMPANIES,
   type AccountingBasis,
   type BasisPeriod,
+  type BasisProfit,
 } from '@/data/accountingBasis'
+import {
+  profitabilityLenses,
+  lensFromRoute,
+  LENS_ORDER,
+  type ProfitLens,
+  type LensConfig,
+  type LensStage,
+  type StageSemantic,
+  type StageAccent,
+  type StageIcon,
+} from '@/data/profitabilityLenses'
 
 // ---------------------------------------------------------------------------
 // Source provenance — resolve a real, clickable filing URL for a metric so each
@@ -86,9 +103,6 @@ function realSource(metric: string, companyId: string): ResolvedSource | null {
     provenance: { source_name: p.source_name, source_url: p.source_url, fetched_at: p.fetched_at },
   }
 }
-
-// A quiet "illustrative" tag for mock-derived visuals — no fake source link.
-const ILLUSTRATIVE: ResolvedSource = { source: 'Illustrative', confidence: 'pending', illustrative: true }
 
 // ---------------------------------------------------------------------------
 // Mock data (FY25 basis · ₹ Cr where applicable)
@@ -682,27 +696,6 @@ function buildBasisCtx(company: Insurer, basis: AccountingBasis): BasisCtx {
   }
 }
 
-// Explicit basis context inside the detail panel, shown only when IFRS is
-// selected — so the investor knows the headline numbers are on the IFRS lens
-// and that the granular engines below remain on the statutory disclosure basis.
-function BasisBanner({ ctx, company }: { ctx: BasisCtx; company: Insurer }) {
-  if (!ctx.isIfrs) return null
-  return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-soft-border bg-ice/60 px-3.5 py-2">
-      <BasisPill basis={ctx.basis} />
-      {ctx.tracked ? (
-        <p className="text-[10.5px] leading-snug text-ink-secondary">
-          On <span className="font-semibold text-navy-deep">{BASIS_LABEL[ctx.basis]}</span> basis ({ctx.pLabel}). Engines below stay statutory — never mixed.
-        </p>
-      ) : (
-        <p className="text-[10.5px] leading-snug text-ink-secondary">
-          {company.shortName}: no IFRS data (<span className="italic">NA</span>). Tracked for <span className="font-semibold text-navy-deep">{BASIS_TRACKED_COMPANIES.join(', ')}</span>.
-        </p>
-      )}
-    </div>
-  )
-}
-
 
 // Compact pending state — never a large blank box. Says exactly what's missing.
 function PendingNote({ children }: { children: string }) {
@@ -737,7 +730,10 @@ function StoryHeader({ eyebrow, title, subtitle, right }: { eyebrow: string; tit
 // exactly once; values reuse the same honest derivations so the story stays
 // dynamic across companies. Missing inputs render as "n/a"/"Pending", never 0.
 
-type NodeId = 'underwriting' | 'core' | 'conversion' | 'returns' | 'capital'
+// A story-stage id is the lens config's semantic — the same key drives the node
+// value, status, detail body and investor read, so the map and drill-down can
+// never disagree.
+type NodeId = StageSemantic
 
 type StatusTone = 'positive' | 'teal' | 'warning' | 'negative' | 'navy'
 interface EngineStage {
@@ -767,150 +763,245 @@ const STATUS_TINT: Record<StatusTone, string> = {
   navy: PALETTE.navy,
 }
 
+// Lens stage accent → hex (palette-aligned) and icon → lucide component. Keyed
+// off the config so a stage's colour/icon live in one place.
+const ACCENT_HEX: Record<StageAccent, string> = {
+  emerald: PALETTE.emerald,
+  teal: PALETTE.teal,
+  gold: GOLD,
+  orange: ORANGE,
+  deepGreen: DEEP_GREEN,
+  navy: PALETTE.navy,
+}
+const STAGE_ICON: Record<StageIcon, LucideIcon> = {
+  premium: Wallet,
+  discipline: ShieldCheck,
+  result: Gauge,
+  conversion: IndianRupee,
+  returns: BarChart3,
+  capital: Shield,
+  service: Scale,
+  profit: IndianRupee,
+  recon: ArrowLeftRight,
+}
+
+// Latest gross / net earned premium (₹ Cr) for the premium stage — prefers the
+// audited earnings bridge (focal company) so it matches the premium flow card,
+// else the annual snapshot. null when unreported (never 0).
+function premiumFigures(companyId: string, series: AnnualPoint[]): { gwp: number | null; nep: number | null } {
+  const bridge = getEarningsBridge(companyId)
+  const inRange = new Set(series.map((p) => p.fy))
+  const yr = bridge.find((y) => inRange.has(y.fy)) ?? bridge[0]
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  return {
+    gwp: yr?.igaap.gwp ?? latest?.gwp ?? null,
+    nep: yr?.igaap.nep ?? latest?.nep ?? null,
+  }
+}
+
+// The period where BOTH IGAAP and IFRS PAT are reported, with the gap
+// (IFRS − IGAAP) — drives the IFRS reconciliation node. Prefers FY25 to match the
+// IFRS lens anchor (see buildBasisCtx) so the whole lens reads on one period;
+// the comparison card lets the reader toggle to other years. null when untracked.
+function reconLatest(companyId: string): { period: BasisPeriod; igaap: number; ifrs: number; gap: number } | null {
+  for (const p of ['FY25', 'FY26', 'FY24', 'FY23'] as BasisPeriod[]) {
+    const ig = getBasisProfit(companyId, 'igaap', p)?.pat
+    const if_ = getBasisProfit(companyId, 'ifrs', p)?.pat
+    if (ig != null && if_ != null) return { period: p, igaap: ig, ifrs: if_, gap: if_ - ig }
+  }
+  return null
+}
+
 // Single source of truth for a checkpoint's status — Strong / Improving / Watch
 // / Weak (or n/a / NA / Pending). Shared by the Story Map node badges AND the
 // detail LensHeader, so the map and the drill-down can never disagree. Combined
 // ratio leads the focal company's statutory figure (same as the headline KPI).
+// GWP growth (YoY, %) for the premium stage badge; null with < 2 reported years.
+function premiumGrowth(series: AnnualPoint[]): number | null {
+  const g = series.filter((p) => p.gwp != null)
+  if (g.length < 2) return null
+  const a = g[g.length - 2].gwp!
+  const b = g[g.length - 1].gwp!
+  return a ? ((b - a) / a) * 100 : null
+}
+
+// Single source of truth for a stage's checkpoint status — Strong / Improving /
+// Watch / Weak (or a quiet reported/pending marker). Shared by the Story Map
+// node badge AND the detail LensHeader, so they can never disagree. Each stage's
+// status reads from the metric that belongs to its lens (no cross-basis mixing).
 function nodeStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: StatusTone } {
-  const naBadge: { label: string; tone: StatusTone } = { label: ctx.isIfrs ? 'NA' : 'n/a', tone: 'navy' }
-  if (id === 'underwriting') {
-    const cr = ctx.isIfrs ? ctx.combinedRatio : STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
-    if (cr == null) return naBadge
-    return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-  }
-  if (id === 'core') {
-    // Underwriting result has no IFRS-specific figure (the IFRS overlay carries
-    // no NEP). Show the reported/audited value on any basis — like Solvency —
-    // so the node agrees with the engine card instead of reading "NA" beside a
-    // real −₹ loss.
-    const latest = series[series.length - 1] as AnnualPoint | undefined
-    const uw = latest ? underwritingFor(company.id, latest) : null
-    return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'Strong', tone: 'positive' } : { label: 'Weak', tone: 'negative' }
-  }
-  if (id === 'conversion') {
-    const pm = ctx.isIfrs ? ctx.patMargin : getMarginMetrics(series).netMargin
-    if (pm == null) return naBadge
-    const pats = series.filter((p) => p.pat != null)
-    const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
-    return pm > 5 ? { label: 'Strong', tone: 'positive' } : pm > 0 ? (patYoY != null && patYoY > 0 ? { label: 'Improving', tone: 'teal' } : { label: 'Watch', tone: 'warning' }) : { label: 'Weak', tone: 'negative' }
-  }
-  if (id === 'returns') {
-    const roe = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-    if (roe == null) return naBadge
-    return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'teal' } : roe > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-  }
-  const s = company.solvency
-  return s <= 0 ? { label: 'n/a', tone: 'navy' } : s >= 2 ? { label: 'Strong', tone: 'positive' } : s >= 1.5 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-}
-
-function buildEngineStages(company: Insurer, series: AnnualPoint[], ctx: BasisCtx): EngineStage[] {
-  const hasCR = company.combinedRatio > 0
   const latest = series[series.length - 1] as AnnualPoint | undefined
-  // Core underwriting uses the audited bridge figure where available (focal), so
-  // this node agrees with the Profit Quality Check + waterfall — never a profit
-  // in one place and a loss in another.
-  const uw = latest ? underwritingFor(company.id, latest) : null
-  const patMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
-  const solvency = company.solvency
-  // Combined ratio leads the focal company's real IRDAI statutory figure (the
-  // SAME number as the header KPI + Discipline Engine), so the map never shows a
-  // different combined ratio from the detail below. IFRS switches to its dataset.
-  const statCR = STATUTORY_CR[company.id]?.statutory ?? null
-  const crVal = ctx.isIfrs ? ctx.combinedRatio : statCR ?? (hasCR ? company.combinedRatio : null)
-  const pmVal = ctx.isIfrs ? ctx.patMargin : patMargin
-  const roeVal = ctx.isIfrs ? ctx.roe : company.roe > 0 ? company.roe : null
-  const naWord = ctx.isIfrs ? 'NA' : 'n/a'
-
-  return [
-    {
-      id: 'underwriting',
-      n: 1,
-      label: 'Underwriting discipline',
-      metricLabel: 'Combined ratio',
-      value: crVal == null ? naWord : `${crVal.toFixed(1)}%`,
-      missing: crVal == null,
-      color: PALETTE.emerald,
-      Icon: ShieldCheck,
-      explore: 'Are costs below ₹100 of premium?',
-      badge: nodeStatus('underwriting', company, series, ctx),
-    },
-    {
-      id: 'core',
-      n: 2,
-      label: 'Core profitability',
-      metricLabel: 'Underwriting result',
-      // Reported/audited figure on any basis (no IFRS NEP to derive an IFRS
-      // variant) — matches the engine card so the map never shows "NA" next to
-      // a real underwriting loss.
-      value: uw == null ? 'Pending' : crc(uw),
-      missing: uw == null,
-      color: PALETTE.teal,
-      Icon: Gauge,
-      explore: 'Does insurance itself make money?',
-      badge: nodeStatus('core', company, series, ctx),
-    },
-    {
-      id: 'conversion',
-      n: 3,
-      label: 'Profit conversion',
-      metricLabel: 'PAT margin',
-      value: pmVal == null ? (ctx.isIfrs ? naWord : 'Pending') : `${pmVal.toFixed(1)}%`,
-      missing: pmVal == null,
-      color: GOLD,
-      Icon: IndianRupee,
-      explore: 'How much premium becomes profit?',
-      badge: nodeStatus('conversion', company, series, ctx),
-    },
-    {
-      id: 'returns',
-      n: 4,
-      label: 'Shareholder return',
-      metricLabel: 'ROE',
-      value: roeVal == null ? naWord : `${roeVal.toFixed(1)}%`,
-      missing: roeVal == null,
-      color: ORANGE,
-      Icon: BarChart3,
-      explore: 'Profit into shareholder return.',
-      badge: nodeStatus('returns', company, series, ctx),
-    },
-    {
-      id: 'capital',
-      n: 5,
-      label: 'Capital support',
-      metricLabel: 'Solvency',
-      value: solvency > 0 ? `${solvency.toFixed(2)}x` : 'n/a',
-      missing: !(solvency > 0),
-      color: DEEP_GREEN,
-      Icon: Shield,
-      explore: 'Capital backing the growth.',
-      badge: nodeStatus('capital', company, series, ctx),
-    },
-  ]
+  switch (id) {
+    case 'premium': {
+      const g = premiumGrowth(series)
+      return g == null ? { label: 'Reported', tone: 'navy' } : g >= 15 ? { label: 'Scaling', tone: 'positive' } : g > 0 ? { label: 'Growing', tone: 'teal' } : { label: 'Flat', tone: 'warning' }
+    }
+    case 'discipline': {
+      const cr = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+      if (cr == null) return { label: 'n/a', tone: 'navy' }
+      return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'underwriting-result': {
+      const uw = latest ? underwritingFor(company.id, latest) : null
+      return uw == null ? { label: 'Pending', tone: 'navy' } : uw > 0 ? { label: 'Strong', tone: 'positive' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'conversion': {
+      const pm = getMarginMetrics(series).netMargin
+      if (pm == null) return { label: 'Pending', tone: 'navy' }
+      const pats = series.filter((p) => p.pat != null)
+      const patYoY = pats.length >= 2 && pats[pats.length - 2].pat ? ((pats[pats.length - 1].pat! - pats[pats.length - 2].pat!) / Math.abs(pats[pats.length - 2].pat!)) * 100 : null
+      return pm > 5 ? { label: 'Strong', tone: 'positive' } : pm > 0 ? (patYoY != null && patYoY > 0 ? { label: 'Improving', tone: 'teal' } : { label: 'Watch', tone: 'warning' }) : { label: 'Weak', tone: 'negative' }
+    }
+    case 'returns': {
+      const roe = company.roe > 0 ? company.roe : null
+      if (roe == null) return { label: 'Pending', tone: 'navy' }
+      return roe >= 12 ? { label: 'Strong', tone: 'positive' } : roe >= 5 ? { label: 'Improving', tone: 'teal' } : roe > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'capital': {
+      const s = company.solvency
+      return s <= 0 ? { label: 'n/a', tone: 'navy' } : s >= 2 ? { label: 'Strong', tone: 'positive' } : s >= 1.5 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'ifrs-service': {
+      const cr = ctx.combinedRatio
+      if (cr == null) return { label: 'Reported', tone: 'navy' }
+      return cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'ifrs-profit': {
+      const pat = ctx.pat
+      const g = ctx.patGrowth
+      if (pat == null) return { label: 'Reported', tone: 'navy' }
+      if (g == null) return pat > 0 ? { label: 'In profit', tone: 'positive' } : { label: 'Loss', tone: 'negative' }
+      return g >= 15 ? { label: 'Scaling', tone: 'positive' } : g > 0 ? { label: 'Rising', tone: 'teal' } : pat > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
+    }
+    case 'ifrs-recon': {
+      const r = reconLatest(company.id)
+      if (!r) return { label: 'Reported', tone: 'navy' }
+      return { label: r.gap >= 0 ? 'IFRS higher' : 'IGAAP higher', tone: 'navy' }
+    }
+  }
 }
 
-// Quarterly / monthly story-map stages. Only combined ratio and PAT margin have
-// a quarterly source (the standalone Q4 basis cell); underwriting result, ROE and
-// solvency have no quarterly data, and Monthly has none → honest "Pending".
-function buildQuarterlyStages(company: Insurer, ctx: BasisCtx, quarter: BasisPeriod | null): EngineStage[] {
-  const bp = quarter ? getBasisProfit(company.id, ctx.basis, quarter) : null
-  const cr = bp?.combinedRatio ?? null
-  const pm = bp?.patMarginGwp ?? null
-  const pending: { label: string; tone: StatusTone } = { label: 'Pending', tone: 'navy' }
-  const crBadge: { label: string; tone: StatusTone } =
-    cr == null ? pending : cr < 100 ? { label: 'Strong', tone: 'positive' } : cr <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-  const pmBadge: { label: string; tone: StatusTone } =
-    pm == null ? pending : pm > 5 ? { label: 'Strong', tone: 'positive' } : pm > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-  return [
-    { id: 'underwriting', n: 1, label: 'Underwriting discipline', metricLabel: 'Combined ratio', value: cr == null ? 'Pending' : `${cr.toFixed(1)}%`, missing: cr == null, color: PALETTE.emerald, Icon: ShieldCheck, explore: 'Are costs below ₹100 of premium?', badge: crBadge },
-    { id: 'core', n: 2, label: 'Core profitability', metricLabel: 'Underwriting result', value: 'Pending', missing: true, color: PALETTE.teal, Icon: Gauge, explore: 'Does insurance itself make money?', badge: pending },
-    { id: 'conversion', n: 3, label: 'Profit conversion', metricLabel: 'PAT margin', value: pm == null ? 'Pending' : `${pm.toFixed(1)}%`, missing: pm == null, color: GOLD, Icon: IndianRupee, explore: 'How much premium becomes profit?', badge: pmBadge },
-    { id: 'returns', n: 4, label: 'Shareholder return', metricLabel: 'ROE', value: 'Pending', missing: true, color: ORANGE, Icon: BarChart3, explore: 'Profit into shareholder return.', badge: pending },
-    { id: 'capital', n: 5, label: 'Capital support', metricLabel: 'Solvency', value: 'Pending', missing: true, color: DEEP_GREEN, Icon: Shield, explore: 'Capital backing the growth.', badge: pending },
-  ]
+// Resolve a single lens stage to its node value + missing flag + checkpoint
+// badge. Each stage reads ONLY the metric that belongs to its lens — no
+// cross-basis mixing, missing values omitted (never 0). Quarterly/Monthly show a
+// value only for metrics with a standalone-quarter source; the rest are pending.
+function resolveStage(
+  stage: LensStage,
+  lens: LensConfig,
+  company: Insurer,
+  series: AnnualPoint[],
+  ctx: BasisCtx,
+  period: TimePeriod,
+  quarter: BasisPeriod | null,
+): { value: string; missing: boolean; badge: { label: string; tone: StatusTone } } {
+  const id = stage.semantic
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const pending = { label: 'Pending', tone: 'navy' as StatusTone }
+  const crBadge = (v: number) => (v < 100 ? { label: 'Strong', tone: 'positive' as StatusTone } : v <= 105 ? { label: 'Watch', tone: 'warning' as StatusTone } : { label: 'Weak', tone: 'negative' as StatusTone })
+  const mBadge = (v: number) => (v > 5 ? { label: 'Strong', tone: 'positive' as StatusTone } : v > 0 ? { label: 'Watch', tone: 'warning' as StatusTone } : { label: 'Weak', tone: 'negative' as StatusTone })
+  const patBadge = (v: number) => (v > 0 ? { label: 'In profit', tone: 'positive' as StatusTone } : { label: 'Loss', tone: 'negative' as StatusTone })
+
+  // Quarterly / Monthly — only combined ratio + PAT have a standalone-quarter cell.
+  if (period !== 'Annual') {
+    if (period === 'Monthly' || !quarter) return { value: 'Pending', missing: true, badge: pending }
+    if (id === 'discipline') {
+      const v = getBasisProfit(company.id, 'igaap', quarter)?.combinedRatio ?? null
+      return v == null ? { value: 'Pending', missing: true, badge: pending } : { value: `${v.toFixed(1)}%`, missing: false, badge: crBadge(v) }
+    }
+    if (id === 'ifrs-service') {
+      const v = getBasisProfit(company.id, 'ifrs', quarter)?.combinedRatio ?? null
+      return v == null ? { value: 'Pending', missing: true, badge: pending } : { value: `${v.toFixed(1)}%`, missing: false, badge: crBadge(v) }
+    }
+    if (id === 'conversion') {
+      if (lens.key === 'statutory') {
+        const v = getBasisProfit(company.id, 'igaap', quarter)?.pat ?? null
+        return v == null ? { value: 'Pending', missing: true, badge: pending } : { value: crc(v), missing: false, badge: patBadge(v) }
+      }
+      const v = getBasisProfit(company.id, 'igaap', quarter)?.patMarginGwp ?? null
+      return v == null ? { value: 'Pending', missing: true, badge: pending } : { value: `${v.toFixed(1)}%`, missing: false, badge: mBadge(v) }
+    }
+    if (id === 'ifrs-profit') {
+      const v = getBasisProfit(company.id, 'ifrs', quarter)?.pat ?? null
+      return v == null ? { value: 'Pending', missing: true, badge: pending } : { value: crc(v), missing: false, badge: patBadge(v) }
+    }
+    return { value: 'Pending', missing: true, badge: pending }
+  }
+
+  // Annual — the full read. Badge comes from the shared nodeStatus.
+  const badge = nodeStatus(id, company, series, ctx)
+  switch (id) {
+    case 'premium': {
+      const pf = premiumFigures(company.id, series)
+      const v = lens.key === 'igaap' ? pf.gwp : pf.nep
+      return { value: v == null ? 'Pending' : crc(v), missing: v == null, badge }
+    }
+    case 'discipline': {
+      const cr = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+      return { value: cr == null ? 'n/a' : `${cr.toFixed(1)}%`, missing: cr == null, badge }
+    }
+    case 'underwriting-result': {
+      const uw = latest ? underwritingFor(company.id, latest) : null
+      return { value: uw == null ? 'Pending' : crc(uw), missing: uw == null, badge }
+    }
+    case 'conversion': {
+      if (lens.key === 'statutory') {
+        const pat = getMarginMetrics(series).latestPat
+        return { value: pat == null ? 'Pending' : crc(pat), missing: pat == null, badge }
+      }
+      const m = getMarginMetrics(series).netMargin
+      return { value: m == null ? 'Pending' : `${m.toFixed(1)}%`, missing: m == null, badge }
+    }
+    case 'returns': {
+      const roe = company.roe > 0 ? company.roe : null
+      return { value: roe == null ? 'Pending' : `${roe.toFixed(1)}%`, missing: roe == null, badge }
+    }
+    case 'capital': {
+      const s = company.solvency
+      return { value: s > 0 ? `${s.toFixed(2)}x` : 'n/a', missing: !(s > 0), badge }
+    }
+    case 'ifrs-service': {
+      const cr = ctx.combinedRatio
+      return { value: cr == null ? 'Pending' : `${cr.toFixed(1)}%`, missing: cr == null, badge }
+    }
+    case 'ifrs-profit': {
+      const pat = ctx.pat
+      return { value: pat == null ? 'Pending' : crc(pat), missing: pat == null, badge }
+    }
+    case 'ifrs-recon': {
+      const r = reconLatest(company.id)
+      return { value: r == null ? 'Pending' : `${r.gap >= 0 ? '+' : '−'}₹${Math.abs(r.gap).toLocaleString('en-IN')} Cr`, missing: r == null, badge }
+    }
+  }
 }
 
-function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx, period, quarter }: { company: Insurer; series: AnnualPoint[]; selectedId: NodeId; onSelect: (id: NodeId) => void; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null }) {
-  const stages = period === 'Annual' ? buildEngineStages(company, series, ctx) : buildQuarterlyStages(company, ctx, quarter)
+// Build the ordered story-map stages for the active lens from its config — the
+// stages (and which metric leads each) change per accounting basis.
+function buildLensStages(
+  lens: LensConfig,
+  company: Insurer,
+  series: AnnualPoint[],
+  ctx: BasisCtx,
+  period: TimePeriod,
+  quarter: BasisPeriod | null,
+): EngineStage[] {
+  return lens.stages.map((stage, i) => {
+    const r = resolveStage(stage, lens, company, series, ctx, period, quarter)
+    return {
+      id: stage.semantic,
+      n: i + 1,
+      label: stage.label,
+      metricLabel: stage.metricLabel,
+      value: r.value,
+      missing: r.missing,
+      color: ACCENT_HEX[stage.accent],
+      Icon: STAGE_ICON[stage.icon],
+      explore: stage.line,
+      badge: r.badge,
+    }
+  })
+}
+
+function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, basis, title, subtitle }: { company: Insurer; series: AnnualPoint[]; stages: EngineStage[]; selectedId: NodeId; onSelect: (id: NodeId) => void; basis: AccountingBasis; title: string; subtitle: string }) {
   const active = stages.find((s) => s.id === selectedId) ?? stages[0]
   const selectedIndex = stages.findIndex((s) => s.id === selectedId)
 
@@ -923,16 +1014,16 @@ function ProfitabilityEngine({ company, series, selectedId, onSelect, ctx, perio
             <Cog className="h-4 w-4" style={{ color: PALETTE.champagne }} />
           </span>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Profitability Story Map</p>
-            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">Track how premium becomes profit.</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">{title}</p>
+            <p className="mt-0.5 max-w-md text-[11.5px] leading-snug text-ink-secondary">{subtitle}</p>
             <span className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice/70 px-2.5 py-0.5 text-[9.5px] font-medium text-ink-secondary">
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
-              5 stages · click to explore
+              {stages.length} stages · click to explore
             </span>
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <BasisPill basis={ctx.basis} />
+          <BasisPill basis={basis} />
           <span className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[10px] font-semibold text-navy-primary" style={{ borderColor: '#D6E2FA', background: PALETTE.softBlue }}>
             <MousePointerClick className="h-3.5 w-3.5" style={{ color: PALETTE.champagne }} />
             Pick a stage
@@ -1556,67 +1647,121 @@ interface NodeRead {
   watch: string
 }
 
-function buildNodeReads(company: Insurer, series: AnnualPoint[]): Record<NodeId, NodeRead> {
-  const hasCR = company.combinedRatio > 0
+// Per-stage Investor Read — So what? / Why / What it means / Watch next. Each
+// read uses ONLY the metric that belongs to its lens (statutory cost split &
+// solvency on the igaap path; IFRS PAT/combined on the IFRS path), so the read
+// never mixes bases. Returns one NodeRead for the requested stage semantic.
+function nodeRead(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): NodeRead {
   const cost = COST_RATIOS[company.id]
   const latest = series[series.length - 1] as AnnualPoint | undefined
   const uw = latest ? underwritingFor(company.id, latest) : null
   const roe = company.roe
   const solvency = company.solvency
   const costAbsorb = cost ? cost.loss + cost.commission + cost.expense : null
-  // Lead the focal company's statutory combined ratio (same number shown on the
-  // map + Discipline Engine), so the read agrees with the headline.
-  const crLead = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
+  const crLead = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+  const pf = premiumFigures(company.id, series)
+  const g = premiumGrowth(series)
 
-  return {
-    underwriting: {
-      soWhat: crLead == null
-        ? `${company.shortName} is a life carrier — read returns and capital.`
-        : crLead < 100
-          ? 'Costs sit below ₹100 of premium — disciplined underwriting.'
-          : 'Costs sit just above ₹100 of premium — discipline is the key monitorable.',
-      why: costAbsorb == null
-        ? 'Cost split not reported on this basis.'
-        : `Claims, commission and opex take ₹${costAbsorb.toFixed(0)} of every ₹100${costAbsorb > 100 ? ' — just over break-even.' : '.'}`,
-      meaning: crLead == null
-        ? 'Read via returns and capital.'
-        : crLead < 100
-          ? 'Underwriting can stand on its own, before investment income.'
-          : 'Profit still leans on investment income.',
-      watch: 'Claims ratio, expense ratio, combined ratio vs 100%.',
-    },
-    core: {
-      soWhat: uw == null
-        ? 'Underwriting result pending NEP and combined ratio.'
-        : uw > 0
-          ? 'Insurance itself makes money — high-quality profit.'
-          : 'Core underwriting is still a loss; PAT leans on investment income.',
-      why: uw == null ? 'Needs NEP and combined ratio.' : `Premium earned − claims − commission − operating cost = ${crc(uw)}.`,
-      meaning: 'The profit from insurance alone, before investments.',
-      watch: 'Is the underwriting loss narrowing toward break-even?',
-    },
-    conversion: {
-      soWhat: uw != null && uw > 0
-        ? 'Premium converting to profit, but thin.'
-        : 'Premium not yet converting; profit leans on investments.',
-      why: 'Claims, commission and opex absorb most premium.',
-      meaning: 'Better expense leverage can lift conversion.',
-      watch: 'PAT margin, claims, expense, underwriting profit.',
-    },
-    returns: {
-      soWhat: roe <= 0 ? 'ROE pending.' : 'ROE improving, not yet mature.',
-      why: 'PAT and margin help; large capital dilutes ROE.',
-      meaning: 'ROE rises if profit outgrows equity.',
-      watch: 'PAT growth, ROE, solvency, capital use.',
-    },
-    capital: {
-      soWhat: solvency > 0
-        ? `${solvency.toFixed(2)}x solvency — strong cushion vs the 1.5x floor.`
-        : 'Solvency pending.',
-      why: solvency > 0 ? `${(solvency - 1.5).toFixed(2)}x above the 1.5x floor.` : 'Awaiting solvency ratio.',
-      meaning: 'Strong capital funds growth, low raise risk.',
-      watch: 'Solvency trend as growth uses capital.',
-    },
+  switch (id) {
+    case 'premium':
+      return {
+        soWhat: pf.nep == null
+          ? 'Premium figures pending.'
+          : g != null && g > 0
+            ? `The top line is scaling — premium up ${g.toFixed(0)}%, and most of it is retained.`
+            : 'Premium is the engine input — most is retained and earned through the year.',
+        why: pf.gwp != null && pf.nep != null
+          ? `Of ₹${pf.gwp.toLocaleString('en-IN')} Cr written, ₹${pf.nep.toLocaleString('en-IN')} Cr is net earned after reinsurance and the unearned-premium reserve.`
+          : 'Gross premium − reinsurance ceded − change in unearned reserve = net earned premium.',
+        meaning: 'Net earned premium is the base every later stage works from.',
+        watch: 'Growth rate, retention and the reinsurance share.',
+      }
+    case 'discipline':
+      return {
+        soWhat: crLead == null
+          ? `${company.shortName} is a life carrier — read returns and capital.`
+          : crLead < 100
+            ? 'Costs sit below ₹100 of premium — disciplined underwriting.'
+            : 'Costs sit just above ₹100 of premium — discipline is the key monitorable.',
+        why: costAbsorb == null
+          ? 'Cost split not reported on this basis.'
+          : `Claims, commission and opex take ₹${costAbsorb.toFixed(0)} of every ₹100${costAbsorb > 100 ? ' — just over break-even.' : '.'}`,
+        meaning: crLead == null
+          ? 'Read via returns and capital.'
+          : crLead < 100
+            ? 'Underwriting can stand on its own, before investment income.'
+            : 'Profit still leans on investment income.',
+        watch: 'Claims ratio, expense ratio, combined ratio vs 100%.',
+      }
+    case 'underwriting-result':
+      return {
+        soWhat: uw == null
+          ? 'Underwriting result pending NEP and combined ratio.'
+          : uw > 0
+            ? 'Insurance itself makes money — high-quality profit.'
+            : 'Core underwriting is still a loss; PAT leans on investment income.',
+        why: uw == null ? 'Needs NEP and combined ratio.' : `Premium earned − claims − commission − operating cost = ${crc(uw)}.`,
+        meaning: 'The profit from insurance alone, before investments.',
+        watch: 'Is the underwriting loss narrowing toward break-even?',
+      }
+    case 'conversion':
+      return {
+        soWhat: uw != null && uw > 0
+          ? 'Premium is converting to profit, but the spread is thin.'
+          : 'Premium converts to profit only with investment income — underwriting alone is a loss.',
+        why: 'Claims, commission and opex absorb most of the premium; investment income carries the rest to PAT.',
+        meaning: 'Better expense leverage and a smaller underwriting loss lift conversion.',
+        watch: 'PAT margin, claims, expense, underwriting profit.',
+      }
+    case 'returns':
+      return {
+        soWhat: roe <= 0 ? 'ROE pending.' : 'ROE is improving but not yet mature — the post-IPO capital base is large.',
+        why: 'PAT and margin lift ROE; a large equity base dilutes it.',
+        meaning: 'ROE rises as profit outgrows equity without fresh capital.',
+        watch: 'PAT growth, ROE, solvency, capital use.',
+      }
+    case 'capital':
+      return {
+        soWhat: solvency > 0
+          ? `${solvency.toFixed(2)}× solvency — a strong cushion versus the 1.5× regulatory floor.`
+          : 'Solvency pending.',
+        why: solvency > 0 ? `${(solvency - 1.5).toFixed(2)}× above the 1.5× floor.` : 'Awaiting the solvency ratio.',
+        meaning: 'Strong capital funds growth with low risk of a raise.',
+        watch: 'Solvency trend as growth consumes capital.',
+      }
+    case 'ifrs-service':
+      return {
+        soWhat: ctx.combinedRatio == null
+          ? 'IFRS service result pending.'
+          : ctx.combinedRatio < 100
+            ? 'On IFRS, claims and costs leave a positive insurance-service margin.'
+            : 'On IFRS, claims and costs run just above premium — the service result is thin.',
+        why: ctx.claimsRatio != null && ctx.expenseRatio != null && ctx.combinedRatio != null
+          ? `IFRS claims ${ctx.claimsRatio.toFixed(1)}% + expenses ${ctx.expenseRatio.toFixed(1)}% = ${ctx.combinedRatio.toFixed(1)}% combined.`
+          : 'Claims and expense ratios on the IFRS basis.',
+        meaning: 'The insurance-service result, before finance and investment income.',
+        watch: 'The IFRS combined ratio moving toward 100%.',
+      }
+    case 'ifrs-profit':
+      return {
+        soWhat: ctx.pat == null
+          ? 'IFRS profit pending.'
+          : `IFRS profit is ${crc(ctx.pat)}${ctx.patGrowth != null ? ` (${ctx.patGrowth >= 0 ? '+' : ''}${ctx.patGrowth.toFixed(0)}% YoY)` : ''}.`,
+        why: ctx.patMargin != null ? `That is a ${ctx.patMargin.toFixed(1)}% margin on gross written premium, on the IFRS basis.` : 'IFRS profit after tax for the period.',
+        meaning: 'The bottom line an international investor would compare.',
+        watch: 'IFRS PAT growth and the IFRS margin trend.',
+      }
+    case 'ifrs-recon': {
+      const r = reconLatest(company.id)
+      return {
+        soWhat: r == null
+          ? 'Basis comparison pending.'
+          : `${r.gap >= 0 ? 'IFRS' : 'IGAAP'} reads ${crc(Math.abs(r.gap))} higher in ${periodLabel(r.period)} — same business, different basis.`,
+        why: r == null ? 'Needs PAT reported on both bases.' : `${periodLabel(r.period)}: IGAAP ${crc(r.igaap)} vs IFRS ${crc(r.ifrs)}.`,
+        meaning: 'The gap is accounting (revenue recognition and reserving), not cash.',
+        watch: 'Always confirm the basis before comparing to peers or valuation.',
+      }
+    }
   }
 }
 
@@ -1683,79 +1828,35 @@ interface LensMeta {
   confidence: 'high' | 'medium' | 'pending'
 }
 
-const LENS: Record<NodeId, LensMeta> = {
-  underwriting: {
-    label: 'Underwriting discipline',
-    line: 'Are costs below premium?',
-    accent: PALETTE.emerald,
-    cardBg: '#F4FAF6',
-    cardBorder: '#DCEDE3',
-    headFrom: '#EAF5EE',
-    headTo: '#F6FBF8',
-    headBorder: '#D2E8DC',
-    source: 'IRDAI disclosures · derived',
-    period: 'Q1–Q4 FY25',
-    confidence: 'high',
-  },
-  core: {
-    label: 'Core profitability',
-    line: 'Underwriting profit before investments?',
-    accent: PALETTE.teal,
-    cardBg: '#F0F8F7',
-    cardBorder: '#D2E8E6',
-    headFrom: '#E5F4F3',
-    headTo: '#F4FBFA',
-    headBorder: '#C9E5E3',
-    source: 'Company filing · derived',
-    period: 'FY series',
-    confidence: 'high',
-  },
-  conversion: {
-    label: 'Profit conversion',
-    line: 'How much premium becomes profit?',
-    accent: GOLD,
-    cardBg: '#FCF7EA',
-    cardBorder: '#ECE1C8',
-    headFrom: '#FAF2E1',
-    headTo: '#FFFDF8',
-    headBorder: '#EADFC2',
-    source: 'Company filing + IRDAI disclosures',
-    period: 'FY25',
-    confidence: 'high',
-  },
-  returns: {
-    label: 'Shareholder return',
-    line: 'Return earned for shareholders.',
-    accent: ORANGE,
-    cardBg: '#FCF4EC',
-    cardBorder: '#EFDDCB',
-    headFrom: '#FBEFE4',
-    headTo: '#FFF9F3',
-    headBorder: '#EFD9C4',
-    source: 'Company filing',
-    period: 'Q1–Q4 FY25',
-    confidence: 'high',
-  },
-  capital: {
-    label: 'Capital support',
-    line: 'Enough capital to fund growth?',
-    accent: DEEP_GREEN,
-    cardBg: '#EFF7F2',
-    cardBorder: '#CFE7DA',
-    headFrom: '#E7F4ED',
-    headTo: '#F5FBF8',
-    headBorder: '#CCE5D8',
-    source: 'IRDAI disclosures',
-    period: 'FY25',
-    confidence: 'high',
-  },
+// Accent → soft card + header tints, so a stage's lens shell colour is derived
+// from its config accent (one place) rather than hand-set per stage.
+const ACCENT_TINT: Record<StageAccent, { cardBg: string; cardBorder: string; headFrom: string; headTo: string; headBorder: string }> = {
+  emerald: { cardBg: '#F4FAF6', cardBorder: '#DCEDE3', headFrom: '#EAF5EE', headTo: '#F6FBF8', headBorder: '#D2E8DC' },
+  teal: { cardBg: '#F0F8F7', cardBorder: '#D2E8E6', headFrom: '#E5F4F3', headTo: '#F4FBFA', headBorder: '#C9E5E3' },
+  gold: { cardBg: '#FCF7EA', cardBorder: '#ECE1C8', headFrom: '#FAF2E1', headTo: '#FFFDF8', headBorder: '#EADFC2' },
+  orange: { cardBg: '#FCF4EC', cardBorder: '#EFDDCB', headFrom: '#FBEFE4', headTo: '#FFF9F3', headBorder: '#EFD9C4' },
+  deepGreen: { cardBg: '#EFF7F2', cardBorder: '#CFE7DA', headFrom: '#E7F4ED', headTo: '#F5FBF8', headBorder: '#CCE5D8' },
+  navy: { cardBg: '#F2F6FC', cardBorder: '#D8E3F3', headFrom: '#EAF1FB', headTo: '#F7FAFE', headBorder: '#D6E2FA' },
 }
 
-// The active-lens header badge reuses the SAME checkpoint status as the Story
-// Map (nodeStatus), so the map and the drill-down never show a different status
-// for the same stage.
-function lensStatus(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): { label: string; tone: ChipTone } {
-  return nodeStatus(id, company, series, ctx)
+// Build the active-lens shell metadata for a stage from its config accent +
+// copy, with the lens's source/period. Replaces the old fixed per-node record so
+// the same shell adapts to any lens's stages.
+function stageMeta(stage: LensStage, source: string, period: string): LensMeta {
+  const tint = ACCENT_TINT[stage.accent]
+  return {
+    label: stage.label,
+    line: stage.line,
+    accent: ACCENT_HEX[stage.accent],
+    cardBg: tint.cardBg,
+    cardBorder: tint.cardBorder,
+    headFrom: tint.headFrom,
+    headTo: tint.headTo,
+    headBorder: tint.headBorder,
+    source,
+    period,
+    confidence: 'high',
+  }
 }
 
 function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string; tone: ChipTone } }) {
@@ -2197,7 +2298,7 @@ function CoreResultCard({ company, series }: { company: Insurer; series: AnnualP
 }
 
 // One-line proof takeaway per lens (real values; honest pending states).
-function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): string {
+function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): string {
   const hasCR = company.combinedRatio > 0
   const cost = COST_RATIOS[company.id]
   const latest = series[series.length - 1] as AnnualPoint | undefined
@@ -2205,7 +2306,15 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
   const uwSpread = cost ? Math.round((100 - (cost.loss + cost.commission + cost.expense)) * 10) / 10 : null
   const ol = operatingLeverage(company, series)
   switch (id) {
-    case 'underwriting': {
+    case 'premium': {
+      const pf = premiumFigures(company.id, series)
+      const g = premiumGrowth(series)
+      if (pf.nep == null) return 'Premium figures pending.'
+      return g != null
+        ? `Premium is scaling (${g >= 0 ? '+' : ''}${g.toFixed(0)}%); ₹${pf.nep.toLocaleString('en-IN')} Cr is net earned and flows into the cost stack next.`
+        : `₹${pf.nep.toLocaleString('en-IN')} Cr net earned premium feeds the cost stack next.`
+    }
+    case 'discipline': {
       const cr = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
       return cr == null
         ? `${company.shortName} is a life carrier — read returns and capital.`
@@ -2213,7 +2322,7 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
           ? 'Combined below 100% — underwriting earns a surplus before investments.'
           : 'Combined above 100% — underwriting still loss-making; PAT leans on investment income.'
     }
-    case 'core':
+    case 'underwriting-result':
       return uw == null
         ? 'Underwriting result pending NEP and combined ratio.'
         : uw > 0
@@ -2226,7 +2335,7 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
           ? ol.expDelta != null && ol.expDelta < 0
             ? 'Claims and costs absorb most of the ₹100, but the spread is positive — early operating leverage.'
             : 'Claims and costs absorb most of the ₹100, but the spread is positive.'
-          : 'Claims and costs absorb the ₹100 — spread not yet positive.'
+          : 'Claims and costs absorb the ₹100, so PAT leans on investment income.'
     case 'returns':
       return company.roe <= 0
         ? 'ROE pending.'
@@ -2235,10 +2344,25 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[]): strin
           : 'Healthy ROE as PAT scales against equity.'
     case 'capital':
       return company.solvency > 0
-        ? `${company.solvency.toFixed(2)}x solvency — strong cushion for growth and volatility.`
+        ? `${company.solvency.toFixed(2)}× solvency — strong cushion for growth and volatility.`
         : 'Solvency pending.'
+    case 'ifrs-service':
+      return ctx.combinedRatio == null
+        ? 'IFRS service result pending.'
+        : ctx.combinedRatio < 100
+          ? `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — claims and costs leave a positive service margin.`
+          : `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — the service result is thin, just above premium.`
+    case 'ifrs-profit':
+      return ctx.pat == null
+        ? 'IFRS profit pending.'
+        : `IFRS PAT ${crc(ctx.pat)}${ctx.patMargin != null ? ` at a ${ctx.patMargin.toFixed(1)}% margin` : ''} — the international-basis bottom line.`
+    case 'ifrs-recon': {
+      const r = reconLatest(company.id)
+      return r == null
+        ? 'Basis comparison pending.'
+        : `In ${periodLabel(r.period)}, ${r.gap >= 0 ? 'IFRS' : 'IGAAP'} reads ${crc(Math.abs(r.gap))} higher — the difference is accounting, not cash.`
+    }
   }
-  return ''
 }
 
 // Returns proof — PAT trajectory with a Yearly (header-range-driven, real
@@ -2277,100 +2401,414 @@ function PatPoolCard({ company, series, cardStyle }: { company: Insurer; series:
   )
 }
 
-// Resolve the real filing source for each lens's primary metric. Underwriting,
-// core, conversion and returns rest on real annual figures (combined ratio /
-// PAT); capital on solvency. If a real source can't be resolved we fall back to
-// a quiet, link-free label rather than inventing one.
-const LENS_METRIC: Record<NodeId, string> = {
-  underwriting: 'combined_ratio',
-  core: 'combined_ratio',
+// Resolve the real filing source for a stage's primary metric. The figures are
+// real (combined ratio / PAT / solvency / premium from filings); where a
+// provenance link can't be resolved we fall back to a quiet, link-free "Company
+// filing" tag rather than implying a research source.
+const LENS_METRIC: Partial<Record<NodeId, string>> = {
+  premium: 'gwp',
+  discipline: 'combined_ratio',
+  'underwriting-result': 'combined_ratio',
   conversion: 'pat',
   returns: 'pat',
   capital: 'solvency_ratio',
+  'ifrs-service': 'combined_ratio',
+  'ifrs-profit': 'pat',
+  'ifrs-recon': 'pat',
 }
 
 function lensSource(id: NodeId, companyId: string): ResolvedSource {
-  // Real filing link where the lens rests on a real metric; otherwise a quiet,
-  // link-free "illustrative" tag rather than implying a source we don't have.
-  return realSource(LENS_METRIC[id], companyId) ?? ILLUSTRATIVE
+  return realSource(LENS_METRIC[id] ?? 'pat', companyId) ?? { source: 'Company filing', confidence: 'high' }
 }
 
-// Header status under a non-annual period: combined ratio + PAT margin have a real
-// Q4 value (same thresholds as the story-map badge); other nodes / Monthly → Pending.
-function quarterlyLensStatus(id: NodeId, company: Insurer, ctx: BasisCtx, quarter: BasisPeriod | null): { label: string; tone: ChipTone } {
-  if ((id === 'underwriting' || id === 'conversion') && quarter) {
-    const key: 'combinedRatio' | 'patMarginGwp' = id === 'underwriting' ? 'combinedRatio' : 'patMarginGwp'
-    const v = getBasisProfit(company.id, ctx.basis, quarter)?.[key] ?? null
-    if (v != null) {
-      return id === 'underwriting'
-        ? v < 100 ? { label: 'Strong', tone: 'positive' } : v <= 105 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-        : v > 5 ? { label: 'Strong', tone: 'positive' } : v > 0 ? { label: 'Watch', tone: 'warning' } : { label: 'Weak', tone: 'negative' }
-    }
-  }
-  return { label: 'Pending', tone: 'navy' }
-}
+// Quarterly detail body. Combined ratio and PAT (or PAT margin) have a real Q4
+// source; other stages (and Monthly) have no quarterly source yet → honest
+// Pending. Shows the quarter value + the prior Q4 as a thin two-point trend.
+function quarterlyNodeBody(stage: LensStage, lens: LensConfig, company: Insurer, period: TimePeriod, quarter: BasisPeriod | null, quarterPrev: BasisPeriod | null): ReactNode {
+  const id = stage.semantic
+  type QM = { key: 'combinedRatio' | 'patMarginGwp' | 'pat'; basis: AccountingBasis; pct: boolean; lowerBetter: boolean; label: string }
+  let qm: QM | null = null
+  if (id === 'discipline') qm = { key: 'combinedRatio', basis: 'igaap', pct: true, lowerBetter: true, label: 'Combined ratio' }
+  else if (id === 'ifrs-service') qm = { key: 'combinedRatio', basis: 'ifrs', pct: true, lowerBetter: true, label: 'Combined ratio · IFRS' }
+  else if (id === 'conversion') qm = lens.key === 'statutory'
+    ? { key: 'pat', basis: 'igaap', pct: false, lowerBetter: false, label: 'PAT' }
+    : { key: 'patMarginGwp', basis: 'igaap', pct: true, lowerBetter: false, label: 'PAT margin' }
+  else if (id === 'ifrs-profit') qm = { key: 'pat', basis: 'ifrs', pct: false, lowerBetter: false, label: 'PAT · IFRS' }
 
-// Quarterly detail body. Combined ratio and PAT margin have a real Q4 source, so
-// show the quarter value (+ the prior Q4 where available, as a thin two-point
-// trend). Other nodes (and Monthly) have no quarterly source yet → honest Pending.
-function quarterlyNodeBody(id: NodeId, company: Insurer, ctx: BasisCtx, period: TimePeriod, quarter: BasisPeriod | null, quarterPrev: BasisPeriod | null): ReactNode {
-  const supported = id === 'underwriting' || id === 'conversion'
-  const key: 'combinedRatio' | 'patMarginGwp' = id === 'underwriting' ? 'combinedRatio' : 'patMarginGwp'
-  const cur = supported && quarter ? getBasisProfit(company.id, ctx.basis, quarter)?.[key] ?? null : null
-  if (!supported || cur == null || !quarter) {
+  const cur = qm && quarter ? getBasisProfit(company.id, qm.basis, quarter)?.[qm.key] ?? null : null
+  if (!qm || cur == null || !quarter) {
     return (
-      <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} ${LENS[id].label.toLowerCase()} is pending — no quarterly source for this metric yet. Switch Period to Annual for the full trend, the audited bridge and the investor read.`}</PendingNote>
+      <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} ${stage.label.toLowerCase()} has no standalone-quarter source yet. Switch Period to Annual for the full story, the bridge and the investor read.`}</PendingNote>
     )
   }
-  const pq = quarterPrev
-  const prior = pq ? getBasisProfit(company.id, ctx.basis, pq)?.[key] ?? null : null
-  const lowerBetter = id === 'underwriting'
-  const metricLabel = id === 'underwriting' ? 'Combined ratio' : 'PAT margin'
+  const prior = quarterPrev ? getBasisProfit(company.id, qm.basis, quarterPrev)?.[qm.key] ?? null : null
+  const fmt = (v: number) => (qm!.pct ? `${v.toFixed(1)}%` : crc(v))
   const delta = prior != null ? cur - prior : null
-  const better = delta != null ? (lowerBetter ? delta < 0 : delta > 0) : null
+  const better = delta != null ? (qm.lowerBetter ? delta < 0 : delta > 0) : null
   const deltaColor = better == null ? PALETTE.navy : better ? PALETTE.emerald : PALETTE.coral
+  const deltaText = delta == null ? '' : qm.pct ? `${delta >= 0 ? '+' : '−'}${Math.abs(delta).toFixed(1)} pts` : `${delta >= 0 ? '+' : '−'}₹${Math.abs(delta).toLocaleString('en-IN')} Cr`
   return (
     <div className="rounded-xl border border-soft-border bg-ice/40 p-4">
-      <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{metricLabel} · quarterly</p>
+      <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{qm.label} · quarterly · {lens.basisTag}</p>
       <div className="mt-2 flex flex-wrap items-end gap-x-5 gap-y-2">
-        {prior != null && pq && (
+        {prior != null && quarterPrev && (
           <>
             <div>
-              <p className="font-display text-[18px] leading-none text-ink-secondary">{prior.toFixed(1)}%</p>
-              <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary/80">{periodLabel(pq)}</p>
+              <p className="font-display text-[18px] leading-none text-ink-secondary">{fmt(prior)}</p>
+              <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary/80">{periodLabel(quarterPrev)}</p>
             </div>
             <span className="pb-1 text-[14px] font-bold text-ink-secondary/45">→</span>
           </>
         )}
         <div>
-          <p className="font-display text-[26px] leading-none" style={{ color: deltaColor }}>{cur.toFixed(1)}%</p>
+          <p className="font-display text-[26px] leading-none" style={{ color: deltaColor }}>{fmt(cur)}</p>
           <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">{periodLabel(quarter)}</p>
         </div>
         {delta != null && (
           <span className="mb-0.5 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold" style={{ borderColor: `${deltaColor}44`, background: `${deltaColor}12`, color: deltaColor }}>
-            {delta >= 0 ? '+' : '−'}{Math.abs(delta).toFixed(1)} pts {better ? 'better' : 'worse'}
+            {deltaText} {better ? 'better' : 'worse'}
           </span>
         )}
       </div>
-      <p className="mt-2.5 text-[10px] leading-snug text-ink-secondary">Standalone-quarter figure (not annualised). The full trend, the audited bridge and the investor read are on the Annual view.</p>
+      <p className="mt-2.5 text-[10px] leading-snug text-ink-secondary">Standalone-quarter figure (not annualised). The full story, the bridge and the investor read are on the Annual view.</p>
     </div>
   )
 }
 
-function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarterPrev, onOpenAcctDetail }: { id: NodeId; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null; quarterPrev: BasisPeriod | null; onOpenAcctDetail: () => void }) {
-  const reads = buildNodeReads(company, series)
-  const meta = LENS[id]
-  const status: { label: string; tone: ChipTone } = period === 'Annual' ? lensStatus(id, company, series, ctx) : quarterlyLensStatus(id, company, ctx, quarter)
+// ─── Premium retention flow (Statutory / IGAAP stage 1) ──────────────────────
+// GWP → reinsurance → net written → unearned-reserve movement → net earned, from
+// the audited earnings bridge (focal) or the annual snapshot. Real figures only.
+function PremiumFlowCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const bridge = getEarningsBridge(company.id)
+  const inRange = new Set(series.map((p) => p.fy))
+  const yr = bridge.find((y) => inRange.has(y.fy)) ?? (bridge.length ? bridge[0] : null)
+  const navy = PALETTE.navy
+  const tealc = PALETTE.teal
+  if (yr) {
+    const b = yr.igaap
+    const retention = Math.round((b.nwp / b.gwp) * 100)
+    const steps = [
+      { label: 'Reinsurance ceded', tech: '− ceded', v: -b.reinsCeded, color: PALETTE.amber, total: false },
+      { label: 'Net written', tech: 'NWP', v: b.nwp, color: navy, total: true },
+      { label: 'Unearned reserve', tech: b.uprMovement < 0 ? '− UPR build' : '+ UPR release', v: b.uprMovement, color: PALETTE.coral, total: false },
+    ]
+    return (
+      <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.navy.cardBg, borderColor: ACCENT_TINT.navy.cardBorder }}>
+        <div className="flex items-baseline justify-between">
+          <div>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium Engine · Input</p>
+            <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium retained &amp; earned</h3>
+          </div>
+          <span className="shrink-0 text-[9.5px] text-ink-secondary">{yr.fy}</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-snug text-ink-secondary">From gross premium written to what is actually earned.</p>
+
+        <div className="mt-4 flex flex-wrap items-stretch gap-1.5">
+          <div className="flex w-[104px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${navy} 100%)` }}>
+            <span className="text-[8px] font-bold uppercase tracking-[0.08em]" style={{ color: '#E9D49A' }}>Gross premium</span>
+            <span className="mt-1 font-display text-[20px] leading-none">₹{b.gwp.toLocaleString('en-IN')}</span>
+            <span className="mt-1 text-[8px] leading-tight text-white/70">GWP · Cr</span>
+          </div>
+          {steps.map((s) => (
+            <Fragment key={s.label}>
+              <span className="flex shrink-0 items-center px-0.5 text-[13px] font-bold text-ink-secondary/40">{s.total ? '=' : ''}</span>
+              <div className="flex min-w-[92px] flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: s.total ? '#fff' : 'rgba(255,255,255,0.7)', borderColor: s.total ? navy : ACCENT_TINT.navy.cardBorder }}>
+                <span className="text-[8.5px] font-bold uppercase leading-tight tracking-[0.04em] text-navy-deep">{s.label}</span>
+                <span className="mt-1 font-display text-[17px] leading-none" style={{ color: s.color }}>{crc(s.v)}</span>
+                <span className="mt-0.5 text-[8px] text-ink-secondary">{s.tech}</span>
+              </div>
+            </Fragment>
+          ))}
+          <span className="flex shrink-0 items-center px-0.5 text-[14px] font-bold" style={{ color: tealc }}>→</span>
+          <div className="flex w-[110px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #E7F4F3 0%, #F4FBFA 100%)', borderColor: '#C9E5E3', boxShadow: `0 12px 26px ${tealc}33` }}>
+            <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#0E5B5B' }}>Net earned</span>
+            <span className="mt-1 font-display text-[22px] leading-none" style={{ color: tealc }}>₹{b.nep.toLocaleString('en-IN')}</span>
+            <span className="mt-1 text-[8px] leading-tight text-ink-secondary">NEP · Cr</span>
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold" style={{ borderColor: `${navy}33`, background: `${navy}0c`, color: navy }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: navy }} />
+            {retention}% retained after reinsurance
+          </span>
+          <SourceTag source="Annual report · Revenue A/c" period={yr.fy} confidence="high" />
+        </div>
+      </div>
+    )
+  }
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  return (
+    <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.navy.cardBg, borderColor: ACCENT_TINT.navy.cardBorder }}>
+      <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium Engine · Input</p>
+      <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium retained &amp; earned</h3>
+      {latest && latest.gwp != null && latest.nep != null ? (
+        <div className="mt-3 flex items-center gap-3">
+          <div className="rounded-xl px-3 py-2.5 text-white" style={{ background: navy }}>
+            <span className="block text-[8px] font-bold uppercase tracking-wide" style={{ color: '#E9D49A' }}>GWP</span>
+            <span className="font-display text-[18px]">₹{latest.gwp.toLocaleString('en-IN')} Cr</span>
+          </div>
+          <span className="text-[14px] font-bold" style={{ color: tealc }}>→</span>
+          <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: '#C9E5E3', background: '#F4FBFA' }}>
+            <span className="block text-[8px] font-bold uppercase tracking-wide text-ink-secondary">Net earned</span>
+            <span className="font-display text-[18px]" style={{ color: tealc }}>₹{latest.nep.toLocaleString('en-IN')} Cr</span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3"><PendingNote>{`Premium breakdown pending for ${company.shortName}.`}</PendingNote></div>
+      )}
+      <div className="mt-3 flex justify-end"><SourceTag source="Company filing" period={latest?.fy ?? 'FY25'} confidence="high" /></div>
+    </div>
+  )
+}
+
+// ─── IFRS service result — claims/expense → combined ratio + IFRS trend ───────
+function IfrsServiceBody({ company, series, ctx }: { company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
+  const points = series.map((p) => ({ label: p.fy, cr: getBasisProfit(company.id, 'ifrs', p.fy as BasisPeriod)?.combinedRatio ?? null }))
+  const enough = points.filter((p) => p.cr != null).length >= 2
+  const rows = [
+    { label: 'Claims ratio', v: ctx.claimsRatio, tone: PALETTE.coral },
+    { label: 'Expense ratio', v: ctx.expenseRatio, tone: PALETTE.amber },
+    { label: 'Combined ratio', v: ctx.combinedRatio, tone: ctx.combinedRatio != null && ctx.combinedRatio < 100 ? PALETTE.emerald : PALETTE.coral },
+  ]
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+      <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.teal.cardBg, borderColor: ACCENT_TINT.teal.cardBorder }}>
+        <div className="flex items-baseline justify-between">
+          <div>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Service Result · IFRS</p>
+            <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">IFRS combined ratio trajectory</h3>
+          </div>
+          <span className="shrink-0 text-[9.5px] text-ink-secondary">{ctx.pLabel}</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Below 100% means the insurance service earns a margin.</p>
+        <div className="mt-3">
+          {enough ? <CombinedRatioBandedTrend points={points} /> : <PendingNote>Widen the year range to see the IFRS combined-ratio trend.</PendingNote>}
+        </div>
+        <div className="mt-2 flex justify-end"><SourceTag source="Annual report · IFRS" period={ctx.pLabel} confidence="high" /></div>
+      </div>
+      <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: ACCENT_TINT.teal.cardBg, borderColor: ACCENT_TINT.teal.cardBorder }}>
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.teal }} />
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">IFRS Cost Stack</p>
+        </div>
+        <div className="mt-3 flex flex-1 flex-col gap-2.5">
+          {rows.map((r) => (
+            <div key={r.label} className="rounded-lg border border-[#D2E8E6] bg-white/70 px-3 py-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{r.label}</span>
+                <span className="font-display text-[18px] leading-none" style={{ color: r.v == null ? '#94A3B8' : r.tone }}>{r.v == null ? 'Pending' : `${r.v.toFixed(1)}%`}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[10px] leading-snug text-ink-secondary">IFRS basis · {ctx.pLabel}. Claims + expenses ÷ premium = combined ratio.</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── IFRS profit — PAT trajectory + headline margin/growth ────────────────────
+function IfrsProfitBody({ company, series, ctx }: { company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
+  const inRange = new Set(series.map((p) => p.fy))
+  const points = getBasisPatSeries(company.id, 'ifrs').filter((p) => inRange.has(p.label))
+  const enough = points.filter((p) => p.pat != null).length >= 2
+  const pat = ctx.pat
+  const margin = ctx.patMargin
+  const growth = ctx.patGrowth
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+      <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.emerald.cardBg, borderColor: ACCENT_TINT.emerald.cardBorder }}>
+        <div className="flex items-baseline justify-between">
+          <div>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">IFRS Profit</p>
+            <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">IFRS profit after tax · trajectory</h3>
+          </div>
+          <span className="shrink-0 text-[9.5px] text-ink-secondary">{ctx.pLabel}</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-snug text-ink-secondary">The bottom line on the international basis.</p>
+        <div className="mt-3">
+          {enough ? <QuarterlyPatBars points={points} accent={PALETTE.emerald} unitLabel="IFRS PAT" /> : <PendingNote>Widen the year range to see the IFRS PAT trend.</PendingNote>}
+        </div>
+        <div className="mt-2 flex justify-end"><SourceTag source="Annual report · IFRS" period={ctx.pLabel} confidence="high" /></div>
+      </div>
+      <div className="flex h-full flex-col rounded-xl border p-4" style={{ background: ACCENT_TINT.emerald.cardBg, borderColor: ACCENT_TINT.emerald.cardBorder }}>
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.emerald }} />
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">IFRS Headline</p>
+        </div>
+        <div className="mt-3 space-y-3">
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT · {ctx.pLabel}</p>
+            <p className="mt-0.5 font-display text-[24px] leading-none" style={{ color: pat == null ? '#94A3B8' : pat >= 0 ? PALETTE.emerald : PALETTE.coral }}>{pat == null ? 'Pending' : crc(pat)}</p>
+          </div>
+          <div className="border-t border-[#DCEDE3] pt-2.5">
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT margin · on GWP</p>
+            <p className="mt-0.5 font-display text-[18px] leading-none text-navy-deep">{margin == null ? 'Pending' : `${margin.toFixed(1)}%`}</p>
+          </div>
+          <div className="border-t border-[#DCEDE3] pt-2.5">
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">PAT growth · YoY</p>
+            <p className="mt-0.5 font-display text-[18px] leading-none" style={{ color: growth == null ? '#94A3B8' : growth >= 0 ? PALETTE.emerald : PALETTE.coral }}>{growth == null ? 'Pending' : `${growth >= 0 ? '+' : ''}${growth.toFixed(0)}%`}</p>
+          </div>
+        </div>
+        <p className="mt-auto pt-3 text-[10px] leading-snug text-ink-secondary">IFRS basis · profit after tax and margin on gross written premium.</p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Lens "Accounting details" drawer — basis, bridge, numbers, why, sources ──
+function DrawerBlock({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{title}</p>
+      {children}
+    </div>
+  )
+}
+
+function LensDrawerNumbers({ company, lens }: { company: Insurer; lens: LensConfig }) {
+  const periods: BasisPeriod[] = ['FY25', 'FY26']
+  const rows: { label: string; fmt: (b: BasisProfit) => string | null }[] = [
+    { label: 'PAT (₹ Cr)', fmt: (b) => (b.pat == null ? null : crc(b.pat)) },
+    { label: 'PAT margin', fmt: (b) => (b.patMarginGwp == null ? null : `${b.patMarginGwp.toFixed(1)}%`) },
+    { label: 'Combined ratio', fmt: (b) => (b.combinedRatio == null ? null : `${b.combinedRatio.toFixed(1)}%`) },
+    { label: 'Claims ratio', fmt: (b) => (b.claimsRatio == null ? null : `${b.claimsRatio.toFixed(1)}%`) },
+    { label: 'Expense ratio', fmt: (b) => (b.expenseRatio == null ? null : `${b.expenseRatio.toFixed(1)}%`) },
+  ]
+  if (lens.dataBasis === 'igaap') rows.push({ label: 'Expense of mgmt', fmt: (b) => (b.eom == null ? null : `${b.eom.toFixed(1)}%`) })
+  const cells = periods.map((p) => getBasisProfit(company.id, lens.dataBasis, p))
+  const usableRows = rows.filter((r) => cells.some((c) => c != null && r.fmt(c) != null))
+  if (!hasBasisData(company.id) || usableRows.length === 0) {
+    return <p className="text-[12px] leading-snug text-ink-secondary">Reported {lens.basisTag} figures are not tracked for {company.shortName}.</p>
+  }
+  return (
+    <div className="overflow-hidden rounded-xl border border-soft-border">
+      <table className="w-full border-collapse text-[11.5px]">
+        <thead>
+          <tr className="bg-ice/70 text-ink-secondary">
+            <th className="px-3 py-1.5 text-left font-semibold">Metric</th>
+            {periods.map((p) => (
+              <th key={p} className="px-3 py-1.5 text-right font-semibold">{periodLabel(p)}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {usableRows.map((r) => (
+            <tr key={r.label} className="border-t border-soft-border">
+              <td className="px-3 py-1.5 text-navy-deep">{r.label}</td>
+              {cells.map((c, i) => (
+                <td key={i} className="px-3 py-1.5 text-right font-semibold tabular-nums text-navy-deep">{(c ? r.fmt(c) : null) ?? '—'}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function LensDetailDrawer({ open, onClose, lens, company }: { open: boolean; onClose: () => void; lens: LensConfig; company: Insurer }) {
+  const d = lens.detailDrawer
+  const tone = ACCENT_HEX[lens.tone]
+  return (
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title={`${company.shortName} · ${lens.basisTag}`}
+      subtitle="Accounting details — basis, bridge, reported numbers and sources."
+      footer={<p className="text-[11px] text-ink-secondary">Check the basis before comparing profit across companies or to valuation.</p>}
+    >
+      <div className="space-y-5">
+        <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em]" style={{ borderColor: `${tone}55`, background: `${tone}12`, color: tone }}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: tone }} />
+          {lens.basisTag} basis
+        </span>
+        <DrawerBlock title="Basis used">
+          <p className="text-[12.5px] leading-relaxed text-navy-deep/85">{d.basisUsed}</p>
+        </DrawerBlock>
+        <DrawerBlock title="Formula / bridge">
+          <ul className="space-y-1.5">
+            {d.formula.map((f, i) => (
+              <li key={i} className="flex gap-2 text-[12px] leading-relaxed text-navy-deep/85">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ background: tone }} />
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </DrawerBlock>
+        <DrawerBlock title="Reported numbers">
+          <LensDrawerNumbers company={company} lens={lens} />
+        </DrawerBlock>
+        <DrawerBlock title="Why this matters">
+          <p className="text-[12.5px] leading-relaxed text-navy-deep/85">{d.why}</p>
+        </DrawerBlock>
+        <DrawerBlock title="Sources">
+          <div className="flex flex-wrap gap-2">
+            {d.sources.map((s, i) =>
+              s.url ? (
+                <a key={i} href={s.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[11px] font-medium text-navy-primary transition-colors hover:border-muted-blue">
+                  <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+                  {s.label}{s.period ? ` · ${s.period}` : ''}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              ) : (
+                <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[11px] font-medium text-ink-secondary">
+                  {s.label}{s.period ? ` · ${s.period}` : ''}
+                </span>
+              ),
+            )}
+          </div>
+        </DrawerBlock>
+      </div>
+    </Drawer>
+  )
+}
+
+// In-page lens switcher — the three accounting lenses, tone-coded. Keeps the
+// sidebar nesting and the page in sync (navigates to the lens route) and gives
+// mobile a switcher where the nested sidebar is hidden.
+function LensSwitcher({ activeKey, onNavigate }: { activeKey: ProfitLens; onNavigate: (id: string) => void }) {
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+      {LENS_ORDER.map((key) => {
+        const l = profitabilityLenses[key]
+        const on = key === activeKey
+        const tone = ACCENT_HEX[l.tone]
+        return (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onNavigate(l.routeId)}
+            aria-pressed={on}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-semibold transition-all duration-200"
+            style={on ? { background: '#fff', color: PALETTE.navyDeep, boxShadow: '0 2px 8px rgba(23,43,77,0.10)' } : { color: '#6B7488' }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: on ? tone : `${tone}66` }} />
+            {l.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarter, quarterPrev, onOpenDrawer }: { stage: LensStage; lens: LensConfig; company: Insurer; series: AnnualPoint[]; ctx: BasisCtx; period: TimePeriod; quarter: BasisPeriod | null; quarterPrev: BasisPeriod | null; onOpenDrawer: () => void }) {
+  const id = stage.semantic
+  const metaPeriod = ctx.isIfrs ? ctx.pLabel : 'FY25'
+  const metaSource = ctx.isIfrs ? ctx.sourceLabel : BASIS_SOURCE_LABEL[lens.dataBasis]
+  const meta = stageMeta(stage, metaSource, metaPeriod)
+  const status: { label: string; tone: ChipTone } = resolveStage(stage, lens, company, series, ctx, period, quarter).badge
   const cardStyle = { background: meta.cardBg, borderColor: meta.cardBorder }
 
-  // Quarterly / monthly: combined ratio and PAT margin render a compact quarter
-  // comparison (real Q4 data); the other nodes (and Monthly) have no quarterly
-  // source → honest Pending. Annual keeps the full trend / bridge / read view.
+  // Quarterly / monthly: ratio + PAT metrics render a compact quarter comparison
+  // (real Q4 data); other stages (and Monthly) have no quarterly source → honest
+  // Pending. Annual keeps the full lens story / bridge / read view.
   if (period !== 'Annual') {
     return (
-      <div key={id} className="animate-fade-in space-y-4">
+      <div key={`${lens.key}-${id}`} className="animate-fade-in space-y-4">
         <LensHeader meta={meta} status={status} />
-        {quarterlyNodeBody(id, company, ctx, period, quarter, quarterPrev)}
+        {quarterlyNodeBody(stage, lens, company, period, quarter, quarterPrev)}
       </div>
     )
   }
@@ -2378,7 +2816,10 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
   let body: ReactNode = null
 
   switch (id) {
-    case 'underwriting':
+    case 'premium':
+      body = <PremiumFlowCard company={company} series={series} />
+      break
+    case 'discipline':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
           <CombinedRatioWaterfall company={company} series={series} />
@@ -2386,7 +2827,7 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
         </div>
       )
       break
-    case 'core':
+    case 'underwriting-result':
       body = (
         <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
           <UnderwritingProfitTrend company={company} series={series} tintBg={meta.cardBg} />
@@ -2397,16 +2838,16 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
     case 'conversion':
       body = (
         <div className="space-y-4">
-          {/* Compact basis chip — the full IGAAP vs IFRS comparison lives in the
-              Accounting & Methodology drawer, not on the main page. */}
+          {/* Compact basis chip — the full accounting bridge lives in the lens's
+              own Accounting details drawer, not on the main page. */}
           <div className="flex">
             <button
               type="button"
-              onClick={onOpenAcctDetail}
+              onClick={onOpenDrawer}
               className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-muted-blue hover:text-navy-primary"
             >
               <Layers className="h-3.5 w-3.5" />
-              Basis: {BASIS_LABEL[ctx.basis]} · Accounting bridge in Details
+              {lens.basisTag} basis · accounting bridge in details
             </button>
           </div>
           <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
@@ -2435,20 +2876,26 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
         </div>
       )
       break
-    default:
-      body = null
+    case 'ifrs-service':
+      body = <IfrsServiceBody company={company} series={series} ctx={ctx} />
+      break
+    case 'ifrs-profit':
+      body = <IfrsProfitBody company={company} series={series} ctx={ctx} />
+      break
+    case 'ifrs-recon':
+      body = <PatBasisCompareCard companyId={company.id} companyShort={company.shortName} pageBasis="ifrs" onOpenDetail={onOpenDrawer} />
+      break
   }
 
   return (
-    <div key={id} className="animate-fade-in space-y-4">
+    <div key={`${lens.key}-${id}`} className="animate-fade-in space-y-4">
       <LensHeader meta={meta} status={status} />
-      <BasisBanner ctx={ctx} company={company} />
       {body}
-      <InsightStrip line={lensInsight(id, company, series)} accent={meta.accent} />
-      {/* Profit Quality bridge sits directly above the Investor Read, so the read
-          closes the PAT-margin story. Only the conversion (PAT margin) stage shows it. */}
+      <InsightStrip line={lensInsight(id, company, series, ctx)} accent={meta.accent} />
+      {/* Profit Quality bridge sits directly above the Investor Read on the
+          conversion stage, so the read closes the premium-to-PAT story. */}
       {id === 'conversion' && <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />}
-      <NodeInvestorRead read={reads[id]} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
+      <NodeInvestorRead read={nodeRead(id, company, series, ctx)} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
     </div>
   )
 }
@@ -2457,43 +2904,29 @@ function ProfitabilityDetail({ id, company, series, ctx, period, quarter, quarte
 // Main section — Profitability Story Map (clickable engine drives the page)
 // ---------------------------------------------------------------------------
 
-const STORY_QUESTION = 'Is premium turning into profit and returns?'
-
-// Canonical order of the five story stages — drives the bottom-of-section pager
-// so the reader can move stage-to-stage without scrolling back to the map.
-const SECTION_ORDER: NodeId[] = ['underwriting', 'core', 'conversion', 'returns', 'capital']
-
-// Bottom-of-section pager. Compact, non-sticky strip that confirms the finished
-// stage and offers the next (and previous) one. Switching is handled by the
-// parent, which also smooth-scrolls back up to the story map.
-function SectionPager({
-  current,
-  prev,
-  next,
-  onGo,
-  onRestart,
-}: {
-  current: NodeId
-  prev: NodeId | null
-  next: NodeId | null
-  onGo: (id: NodeId) => void
-  onRestart: () => void
-}) {
-  const idx = SECTION_ORDER.indexOf(current)
+// Bottom-of-section pager — confirms the active stage and offers the next (and
+// previous) one. Driven by the active lens's stage order; switching is handled by
+// the parent, which also smooth-scrolls back to the story map.
+function SectionPager({ stages, current, onGo, onRestart }: { stages: LensStage[]; current: NodeId; onGo: (id: NodeId) => void; onRestart: () => void }) {
+  const order = stages.map((s) => s.semantic)
+  const idx = order.indexOf(current)
+  const labelOf = (id: NodeId) => stages.find((s) => s.semantic === id)?.label ?? ''
+  const prev = idx > 0 ? order[idx - 1] : null
+  const next = idx < order.length - 1 ? order[idx + 1] : null
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 rounded-2xl border border-soft-border bg-white px-4 py-2.5 shadow-soft">
-      {/* Left — finished marker */}
+      {/* Left — current-stage marker */}
       <div className="flex items-center gap-2">
         <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-teal/12 text-teal">
           <Check className="h-3 w-3" />
         </span>
-        <span className="text-[11px] text-ink-secondary">Finished</span>
-        <span className="text-[12px] font-semibold text-navy-deep">{LENS[current].label}</span>
+        <span className="text-[11px] text-ink-secondary">Viewing</span>
+        <span className="text-[12px] font-semibold text-navy-deep">{labelOf(current)}</span>
       </div>
 
-      {/* Center — quiet progress through the five stages */}
+      {/* Center — quiet progress through the lens's stages */}
       <div className="order-last flex w-full items-center justify-center gap-1.5 sm:order-none sm:w-auto">
-        {SECTION_ORDER.map((id, i) => (
+        {order.map((id, i) => (
           <span
             key={id}
             className="h-1.5 rounded-full transition-all"
@@ -2501,7 +2934,7 @@ function SectionPager({
           />
         ))}
         <span className="ml-1.5 text-[10px] font-semibold tabular-nums text-ink-secondary">
-          {idx + 1}/{SECTION_ORDER.length}
+          {idx + 1}/{order.length}
         </span>
       </div>
 
@@ -2514,7 +2947,7 @@ function SectionPager({
             className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-ink-secondary transition-colors hover:text-navy-primary"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            {LENS[prev].label}
+            {labelOf(prev)}
           </button>
         )}
         {next ? (
@@ -2523,7 +2956,7 @@ function SectionPager({
             onClick={() => onGo(next)}
             className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3.5 py-1.5 text-[11px] font-semibold text-white shadow-soft transition-transform duration-200 hover:-translate-y-px"
           >
-            Next: {LENS[next].label}
+            Next: {labelOf(next)}
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
         ) : (
@@ -2533,7 +2966,7 @@ function SectionPager({
             className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3.5 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:bg-soft-blue"
           >
             <ArrowUp className="h-3.5 w-3.5" />
-            Back to first section
+            Back to first stage
           </button>
         )}
       </div>
@@ -2541,105 +2974,83 @@ function SectionPager({
   )
 }
 
-export function ProfitabilityCapital() {
-  const [selectedNode, setSelectedNode] = useState<NodeId>('underwriting')
-  const [acctOpen, setAcctOpen] = useState(false)
-  const [basis, setBasis] = useState<AccountingBasis>('igaap')
+export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate?: (id: string) => void; lens?: string }) {
+  const lens = lensFromRoute(lensKey)
+  const basis = lens.dataBasis
   const company = useActiveCompany()
   const { range, period } = useFilters()
-  const copy = getCompanyProfitabilityCopy(company)
+  const navigate = onNavigate ?? (() => {})
   // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
   const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
+  const basisCtx = buildBasisCtx(company, basis)
 
-  // Bottom-of-section navigation. The story map is the anchor we scroll back to
-  // (it sits just above the active detail), offset for the sticky filter bar.
-  const mapRef = useRef<HTMLDivElement>(null)
-  const sectionIdx = SECTION_ORDER.indexOf(selectedNode)
-  const prevNode = sectionIdx > 0 ? SECTION_ORDER[sectionIdx - 1] : null
-  const nextNode = sectionIdx < SECTION_ORDER.length - 1 ? SECTION_ORDER[sectionIdx + 1] : null
-  const goToSection = (id: NodeId) => {
-    setSelectedNode(id)
-    requestAnimationFrame(() => mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
-  }
+  // Selected stage — reset to the lens's first stage whenever the lens changes,
+  // and close the details drawer. The page stays mounted across lens switches so
+  // the transition stays calm (no full re-animation), so we reset explicitly.
+  const [selected, setSelected] = useState<NodeId>(lens.stages[0].semantic)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  useEffect(() => {
+    setSelected(lens.stages[0].semantic)
+    setDrawerOpen(false)
+  }, [lens.key])
+  // Guard against a stale selection mid-switch (the effect runs after render).
+  const activeStage = lens.stages.find((s) => s.semantic === selected) ?? lens.stages[0]
 
-  // Period lens for the story map. Quarterly profitability exists only as standalone
-  // Q4 cells (combined ratio + PAT margin); the latest in-range FY picks the quarter.
-  // Monthly has no profitability data, so the quarterly snapshot reads "Pending".
+  // Period lens. Quarterly profitability exists only as standalone Q4 cells; the
+  // latest in-range FY picks the quarter. Monthly has none → Pending.
   const latestFy = series[series.length - 1]?.fy ?? null
   const quarter: BasisPeriod | null =
     period === 'Quarterly' && latestFy && Q4_PERIODS.includes(`Q4${latestFy}` as BasisPeriod)
       ? (`Q4${latestFy}` as BasisPeriod)
       : null
-  // Prior in-range quarter for the two-point comparison (only Q4 cells exist), kept
-  // inside the selected Data Range so the comparison never shows a filtered-out quarter.
   const quarterPrev: BasisPeriod | null = quarter === 'Q4FY26' && labelInRange('FY25', range) ? 'Q4FY25' : null
   const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : period === 'Monthly' ? 'Monthly' : 'FY25'
 
-  const hasCR = company.combinedRatio > 0
-  // Lead the focal company's statutory combined ratio (same as the headline KPI),
-  // so the hero accent + the fallback verdict reflect the honest, cautious number
-  // rather than the lower company-reported one.
-  const headlineCR = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
-  const ct = headlineCR != null ? combinedTone(headlineCR) : { label: 'N/A', tone: 'neutral' as Tone }
-  // Accounting-basis lens (IGAAP / Statutory · IFRS) — drives the headline scalars.
-  const basisCtx = buildBasisCtx(company, basis)
+  const stages = buildLensStages(lens, company, series, basisCtx, period, quarter)
 
-  // Top verdict — for companies with an audited earnings bridge, lead with the
-  // page's central question: is PAT underwriting-led or investment-income-led?
-  // (The supporting numbers live in the Profit Quality Check card below.)
+  // Bottom-of-section navigation anchors back to the story map.
+  const mapRef = useRef<HTMLDivElement>(null)
+  const goToSection = (id: NodeId) => {
+    setSelected(id)
+    requestAnimationFrame(() => mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+  }
+
+  // ── Hero verdict + signal (lens-aware) ──
+  const hasCR = company.combinedRatio > 0
+  const headlineCR = STATUTORY_CR[company.id]?.statutory ?? (hasCR ? company.combinedRatio : null)
+  const ct = headlineCR != null ? combinedTone(headlineCR) : { label: 'Reported', tone: 'neutral' as Tone }
+  const mm = getMarginMetrics(series)
+
   const latestBridge = getEarningsBridge(company.id)[0] ?? null
   const investmentLed = latestBridge != null && latestBridge.igaap.underwritingResult < 0 && latestBridge.igaap.pat > 0
-  const reportedVerdict = latestBridge != null
+  const statutoryVerdict = latestBridge != null
     ? investmentLed
-      ? 'Profitable, but PAT is still investment-income-led — turning underwriting profitable is the next key trigger.'
-      : 'Core underwriting is profitable — PAT is high-quality, not just investment income.'
+      ? 'Profitable, but PAT is still investment-income-led — turning underwriting profitable is the next trigger. Solvency stays a strong cushion.'
+      : 'Core underwriting is profitable — PAT is high-quality, and solvency stays a strong cushion.'
     : !hasCR
-      ? `Life carrier — ROE ${company.roe.toFixed(1)}%, ${company.solvency.toFixed(2)}x solvency.`
-      : ct.tone === 'positive'
-        ? `Combined ${company.combinedRatio.toFixed(1)}% · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency — discipline becoming returns.`
-        : ct.tone === 'warning'
-          ? `Combined ${company.combinedRatio.toFixed(1)}% in watch band · ROE ${company.roe.toFixed(1)}% · ${company.solvency.toFixed(2)}x solvency.`
-          : `Combined ${company.combinedRatio.toFixed(1)}% loss-making · profit hinges on ${company.solvency.toFixed(2)}x cushion.`
-  const basisVerdict = basisCtx.tracked
-    ? `${BASIS_LABEL[basis]} (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'NA' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`} · combined ${basisCtx.combinedRatio == null ? 'NA' : `${basisCtx.combinedRatio.toFixed(1)}%`} · PAT margin ${basisCtx.patMargin == null ? 'NA' : `${basisCtx.patMargin.toFixed(1)}%`}. Check basis before comparing.`
-    : `${company.shortName}: no IFRS data. Tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
-  const verdictSummary = basisCtx.isIfrs ? basisVerdict : reportedVerdict
+      ? `Life carrier — ${company.solvency.toFixed(2)}× solvency.`
+      : `Combined ${headlineCR != null ? headlineCR.toFixed(1) : '—'}% · ${company.solvency.toFixed(2)}× solvency.`
+  const igaapVerdict = mm.latestPat != null
+    ? `PAT ${crc(mm.latestPat)}${mm.netMargin != null ? ` (${mm.netMargin.toFixed(1)}% of GWP)` : ''} · ROE ${company.roe > 0 ? `${company.roe.toFixed(1)}%` : 'pending'} — ${company.roe > 0 && company.roe < 10 ? 'returns still early on a large post-IPO equity base.' : 'returns compounding against equity.'}`
+    : 'Reported profit pending.'
+  const ifrsVerdict = basisCtx.tracked
+    ? `IFRS (${basisCtx.pLabel}): PAT ${basisCtx.pat == null ? 'pending' : crc(basisCtx.pat)}${basisCtx.patGrowth == null ? '' : ` (${basisCtx.patGrowth >= 0 ? '+' : ''}${basisCtx.patGrowth.toFixed(0)}% YoY)`} · combined ${basisCtx.combinedRatio == null ? 'pending' : `${basisCtx.combinedRatio.toFixed(1)}%`}. The IGAAP↔IFRS gap is accounting, not cash.`
+    : `IFRS profitability is not tracked for ${company.shortName}. Tracked for ${BASIS_TRACKED_COMPANIES.join(', ')}.`
+  const verdictSummary = lens.key === 'ifrs' ? ifrsVerdict : lens.key === 'igaap' ? igaapVerdict : statutoryVerdict
 
-  const basisHeroCR = basisCtx.isIfrs ? basisCtx.combinedRatio : hasCR ? company.combinedRatio : null
-  const heroTone = basisCtx.isIfrs
-    ? basisHeroCR == null
-      ? PALETTE.navy
-      : basisHeroCR < 100
-        ? PALETTE.emerald
-        : basisHeroCR <= 105
-          ? PALETTE.amber
-          : PALETTE.coral
-    : ct.tone === 'positive'
-      ? PALETTE.emerald
-      : ct.tone === 'warning'
-        ? PALETTE.amber
-        : ct.tone === 'negative'
-          ? PALETTE.coral
-          : PALETTE.navy
-
-  // Header accent + signal badge follow the period: under Quarterly/Monthly they
-  // reflect the quarter's combined ratio (or Pending), not the annual figure.
+  // Hero signal badge + accent. Annual: the lens's combined ratio; quarterly: the
+  // quarter's combined ratio (or Pending).
+  const ifrsCt = basisCtx.combinedRatio != null ? combinedTone(basisCtx.combinedRatio) : { label: 'Reported', tone: 'neutral' as Tone }
+  const annualSignal = lens.key === 'ifrs' ? ifrsCt : ct
   const quarterCR = period === 'Quarterly' && quarter ? getBasisProfit(company.id, basis, quarter)?.combinedRatio ?? null : null
-  const headerCt: { label: string; tone: Tone } | null =
-    period === 'Annual' ? null : quarterCR != null ? combinedTone(quarterCR) : { label: 'Pending', tone: 'neutral' }
-  const headerTone = headerCt
-    ? headerCt.tone === 'positive'
-      ? PALETTE.emerald
-      : headerCt.tone === 'warning'
-        ? PALETTE.amber
-        : headerCt.tone === 'negative'
-          ? PALETTE.coral
-          : PALETTE.navy
-    : heroTone
+  const signal = period === 'Annual' ? annualSignal : quarterCR != null ? combinedTone(quarterCR) : { label: 'Pending', tone: 'neutral' as Tone }
+  const toneHex = (t: Tone) => (t === 'positive' ? PALETTE.emerald : t === 'warning' ? PALETTE.amber : t === 'negative' ? PALETTE.coral : PALETTE.navy)
+  const headerTone = toneHex(signal.tone)
+  const lensTone = ACCENT_HEX[lens.tone]
 
   return (
     <div className="space-y-5">
-      {/* ─── PAGE HEADER — title · question · verdict ─── */}
+      {/* ─── PAGE HEADER — title · lens · verdict + lens switcher ─── */}
       <section className="card-surface relative overflow-hidden p-4">
         <span className="absolute inset-y-0 left-0 w-1" style={{ background: `linear-gradient(180deg, ${headerTone} 0%, ${PALETTE.champagne} 100%)` }} />
         <div
@@ -2650,39 +3061,66 @@ export function ProfitabilityCapital() {
           <div className="min-w-[260px] flex-1">
             <div className="flex items-center gap-1.5">
               <Sparkles className="h-2.5 w-2.5 text-champagne" />
-              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · {periodTag}</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Profitability · {lens.basisTag} · {periodTag}</span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-2">
-              <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability Story</h2>
-              {headerCt ? (
-                <SignalBadge label={headerCt.label} tone={headerCt.tone === 'positive' ? 'positive' : headerCt.tone === 'warning' ? 'warning' : headerCt.tone === 'negative' ? 'negative' : 'navy'} size="sm" />
-              ) : (
-                <SignalBadge label={copy.badge} tone={copy.tone === 'positive' ? 'positive' : copy.tone === 'warning' ? 'warning' : copy.tone === 'negative' ? 'negative' : copy.tone === 'teal' ? 'teal' : 'navy'} size="sm" />
-              )}
-              <BasisPill basis={basis} />
+              <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} · Profitability</h2>
+              <span className="inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em]" style={{ borderColor: `${lensTone}55`, background: `${lensTone}12`, color: lensTone }}>
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: lensTone }} />
+                {lens.basisTag}
+              </span>
+              <SignalBadge label={signal.label} tone={signal.tone === 'positive' ? 'positive' : signal.tone === 'warning' ? 'warning' : signal.tone === 'negative' ? 'negative' : 'navy'} size="sm" />
             </div>
-            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{STORY_QUESTION}</p>
-            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{period === 'Annual' ? verdictSummary : `${periodTag} view — the story map below shows what is reported for this period; the full-year read is on the Annual toggle.`}</p>
+            <p className="mt-1 max-w-2xl text-[11.5px] leading-relaxed text-ink-secondary">{lens.question}</p>
+            <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-ink-secondary/85">{period === 'Annual' ? verdictSummary : `${periodTag} view — the story map shows what is reported for this period; the full-year read is on the Annual toggle.`}</p>
             <BasisExplainer basis={basis} className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            <AccountingBasisToggle value={basis} onChange={setBasis} />
+            <LensSwitcher activeKey={lens.key} onNavigate={navigate} />
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:border-muted-blue"
+            >
+              <Layers className="h-3.5 w-3.5" />
+              Accounting details
+            </button>
           </div>
         </div>
       </section>
 
-      {/* ─── PROFITABILITY STORY MAP — clickable engine controls the page ─── */}
+      {/* ─── STORY MAP — clickable engine controls the lens ─── */}
       <div ref={mapRef} className="scroll-mt-24">
-        <ProfitabilityEngine company={company} series={series} selectedId={selectedNode} onSelect={setSelectedNode} ctx={basisCtx} period={period} quarter={quarter} />
+        <ProfitabilityEngine
+          company={company}
+          series={series}
+          stages={stages}
+          selectedId={activeStage.semantic}
+          onSelect={setSelected}
+          basis={basis}
+          title={lens.storyMapTitle}
+          subtitle={lens.storyMapSubtitle}
+        />
       </div>
 
-      {/* ─── ACTIVE DETAIL — one node's charts + status + investor read ─── */}
-      <ProfitabilityDetail id={selectedNode} company={company} series={series} ctx={basisCtx} period={period} quarter={quarter} quarterPrev={quarterPrev} onOpenAcctDetail={() => setAcctOpen(true)} />
+      {/* ─── ACTIVE LENS DETAIL — one stage's visuals + investor read ─── */}
+      <ProfitabilityDetail
+        stage={activeStage}
+        lens={lens}
+        company={company}
+        series={series}
+        ctx={basisCtx}
+        period={period}
+        quarter={quarter}
+        quarterPrev={quarterPrev}
+        onOpenDrawer={() => setDrawerOpen(true)}
+      />
 
-      {/* ─── SECTION PAGER — move to the next stage without scrolling up ─── */}
-      <SectionPager current={selectedNode} prev={prevNode} next={nextNode} onGo={goToSection} onRestart={() => goToSection('underwriting')} />
+      {/* ─── SECTION PAGER — move stage-to-stage without scrolling up ─── */}
+      <SectionPager stages={lens.stages} current={activeStage.semantic} onGo={goToSection} onRestart={() => goToSection(lens.stages[0].semantic)} />
 
-      <AccountingDetailDrawer open={acctOpen} onClose={() => setAcctOpen(false)} companyId={company.id} companyShort={company.shortName} />
+      {/* ─── LENS ACCOUNTING DETAILS DRAWER — basis · bridge · numbers · why ─── */}
+      <LensDetailDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} lens={lens} company={company} />
     </div>
   )
 }
