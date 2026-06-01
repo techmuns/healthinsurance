@@ -17,9 +17,8 @@ export interface DashboardShellProps {
 const LENS_DOT: Record<string, string> = {
   statutory: '#27457E',
   ifrs: '#168E8E',
-  igaap: '#B68B3A',
 }
-const lensDot = (childId: string) => LENS_DOT[childId.split('/')[1] ?? ''] ?? '#9C7430'
+const lensDot = (childId: string) => LENS_DOT[childId.split('/')[1] ?? ''] ?? '#168E8E'
 
 export function DashboardShell({ active, onNavigate, children }: DashboardShellProps) {
   // `active` may be a nested lens route ("profitability/ifrs"); the base id
