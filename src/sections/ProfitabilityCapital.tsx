@@ -2,9 +2,12 @@ import { Fragment, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   CartesianGrid,
+  Cell,
   LabelList,
   Line,
   LineChart,
+  Pie,
+  PieChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -47,6 +50,7 @@ import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance } from '@/lib/dataLayer'
 import type { Insurer, TimePeriod } from '@/data/types'
 import { BasisExplainer, BASIS_TONE } from '@/components/AccountingBasisControls'
+import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
 import { getEarningsBridge } from '@/data/earningsBridge'
 import {
   getBasisProfit,
@@ -1078,22 +1082,6 @@ function stageMeta(stage: LensStage, source: string, period: string): LensMeta {
   }
 }
 
-function LensHeader({ meta, status }: { meta: LensMeta; status: { label: string; tone: ChipTone } }) {
-  return (
-    <div className="relative overflow-hidden rounded-xl border px-4 py-3" style={{ borderColor: meta.headBorder, background: `linear-gradient(135deg, ${meta.headFrom} 0%, ${meta.headTo} 100%)` }}>
-      <span className="absolute inset-y-0 left-0 w-1" style={{ background: meta.accent }} />
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 pl-2.5">
-        <div className="min-w-0">
-          <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-champagne">Active lens</p>
-          <h3 className="font-display text-[15px] leading-tight text-navy-deep">{meta.label}</h3>
-          <p className="mt-0.5 max-w-xl text-[11px] leading-snug text-ink-secondary">{meta.line}</p>
-        </div>
-        <SignalBadge label={status.label} tone={status.tone} size="sm" />
-      </div>
-    </div>
-  )
-}
-
 // Resolve the real filing source for a stage's primary metric. The figures are
 // real (combined ratio / PAT / solvency / premium from filings); where a
 // provenance link can't be resolved we fall back to a quiet, link-free "Company
@@ -1459,21 +1447,48 @@ function stageDetail(semantic: StageSemantic, company: Insurer, series: AnnualPo
   }
 }
 
-function StageDetailCard({ meta, label, line, status, detail, onOpenDrawer }: { meta: LensMeta; label: string; line: string; status: { label: string; tone: ChipTone }; detail: StageDetail; onOpenDrawer: () => void }) {
+// Storyline header for the selected stage — title + plain-English question +
+// "what this examines" + "why it matters" + status, plus a Details button.
+function StageStoryHeader({ meta, stage, status, onOpenDrawer }: { meta: LensMeta; stage: LensStage; status: { label: string; tone: ChipTone }; onOpenDrawer: () => void }) {
   return (
-    <section className="rounded-xl border px-4 py-4" style={{ borderColor: meta.headBorder, background: `linear-gradient(135deg, ${meta.headFrom} 0%, ${meta.headTo} 100%)` }}>
-      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+    <section className="rounded-xl border px-4 py-3.5" style={{ borderColor: meta.headBorder, background: `linear-gradient(135deg, ${meta.headFrom} 0%, ${meta.headTo} 100%)` }}>
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="min-w-0">
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-champagne">Selected stage</p>
-          <h3 className="font-display text-[16px] leading-tight text-navy-deep">{label}</h3>
-          <p className="mt-0.5 max-w-xl text-[11px] leading-snug text-ink-secondary">{line}</p>
+          <h3 className="font-display text-[16px] leading-tight text-navy-deep">{stage.label}</h3>
+          <p className="mt-0.5 max-w-xl text-[12px] font-medium leading-snug text-navy-deep/85">{stage.line}</p>
         </div>
-        <SignalBadge label={status.label} tone={status.tone} size="sm" />
+        <div className="flex shrink-0 items-center gap-2">
+          <SignalBadge label={status.label} tone={status.tone} size="sm" />
+          <button type="button" onClick={onOpenDrawer} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[10.5px] font-semibold text-navy-primary transition-colors hover:border-muted-blue">
+            <Layers className="h-3 w-3" />
+            Details
+          </button>
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3">
+      <dl className="mt-2.5 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+        <div>
+          <dt className="text-[8.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">What this examines</dt>
+          <dd className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{stage.examines}</dd>
+        </div>
+        <div>
+          <dt className="text-[8.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Why it matters</dt>
+          <dd className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{stage.whyItMatters}</dd>
+        </div>
+      </dl>
+    </section>
+  )
+}
+
+// Compact main-metric + sub-metric-chips card — the infographic for stages
+// without a dedicated visual (the IFRS-style lens).
+function MetricChipsCard({ detail }: { detail: StageDetail }) {
+  return (
+    <section className="card-surface p-4">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
         <div className="shrink-0">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{detail.mainLabel}</p>
-          <p className="font-display text-[40px] leading-none" style={{ color: detail.mainTone }}>{detail.mainValue}</p>
+          <p className="font-display text-[38px] leading-none" style={{ color: detail.mainTone }}>{detail.mainValue}</p>
         </div>
         {detail.chips.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -1486,59 +1501,436 @@ function StageDetailCard({ meta, label, line, status, detail, onOpenDrawer }: { 
           </div>
         )}
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/60 pt-2.5">
-        <p className="max-w-2xl text-[11.5px] leading-snug text-navy-deep/85">{detail.explanation}</p>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onOpenDrawer}
-            className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[11px] font-semibold text-navy-primary transition-colors hover:border-muted-blue"
-          >
-            <Layers className="h-3.5 w-3.5" />
-            View accounting details
-          </button>
-          <SourceTag source={detail.source} period={detail.sourcePeriod} confidence="high" />
-        </div>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
+        <p className="max-w-2xl text-[11px] leading-snug text-ink-secondary">{detail.explanation}</p>
+        <SourceTag source={detail.source} period={detail.sourcePeriod} confidence="high" />
       </div>
     </section>
   )
 }
 
-// Compact ₹100 premium-journey strip — a small explanatory ribbon (not a chart)
-// showing how ₹100 of premium turns into profit. Statutory / IGAAP only.
-function PremiumJourneyStrip({ company }: { company: Insurer }) {
+// ─── (A) Premium retained — GWP → reinsurance → net written → net earned ──────
+function PremiumFlowCard({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const bridge = getEarningsBridge(company.id)
+  const inRange = new Set(series.map((p) => p.fy))
+  const yr = bridge.find((y) => inRange.has(y.fy)) ?? (bridge.length ? bridge[0] : null)
+  const navy = PALETTE.navy
+  const tealc = PALETTE.teal
+  if (yr) {
+    const b = yr.igaap
+    const retention = Math.round((b.nwp / b.gwp) * 100)
+    const steps = [
+      { label: 'Reinsurance ceded', tech: '− ceded', v: -b.reinsCeded, color: PALETTE.amber, total: false },
+      { label: 'Net written', tech: 'NWP', v: b.nwp, color: navy, total: true },
+      { label: 'Unearned reserve', tech: b.uprMovement < 0 ? '− UPR build' : '+ UPR release', v: b.uprMovement, color: PALETTE.coral, total: false },
+    ]
+    return (
+      <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.navy.cardBg, borderColor: ACCENT_TINT.navy.cardBorder }}>
+        <div className="flex items-baseline justify-between">
+          <div>
+            <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium formation</p>
+            <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium retained &amp; earned</h3>
+          </div>
+          <span className="shrink-0 text-[9.5px] text-ink-secondary">{yr.fy}</span>
+        </div>
+        <p className="mt-1 text-[11px] leading-snug text-ink-secondary">From gross premium written to what is actually earned.</p>
+        <div className="mt-4 flex flex-wrap items-stretch gap-1.5">
+          <div className="flex w-[104px] shrink-0 flex-col items-center justify-center rounded-xl px-2 py-3 text-center text-white" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${navy} 100%)` }}>
+            <span className="text-[8px] font-bold uppercase tracking-[0.08em]" style={{ color: '#E9D49A' }}>Gross premium</span>
+            <span className="mt-1 font-display text-[20px] leading-none">₹{b.gwp.toLocaleString('en-IN')}</span>
+            <span className="mt-1 text-[8px] leading-tight text-white/70">GWP · Cr</span>
+          </div>
+          {steps.map((s) => (
+            <Fragment key={s.label}>
+              <span className="flex shrink-0 items-center px-0.5 text-[13px] font-bold text-ink-secondary/40">{s.total ? '=' : ''}</span>
+              <div className="flex min-w-[92px] flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: s.total ? '#fff' : 'rgba(255,255,255,0.7)', borderColor: s.total ? navy : ACCENT_TINT.navy.cardBorder }}>
+                <span className="text-[8.5px] font-bold uppercase leading-tight tracking-[0.04em] text-navy-deep">{s.label}</span>
+                <span className="mt-1 font-display text-[17px] leading-none" style={{ color: s.color }}>{crc(s.v)}</span>
+                <span className="mt-0.5 text-[8px] text-ink-secondary">{s.tech}</span>
+              </div>
+            </Fragment>
+          ))}
+          <span className="flex shrink-0 items-center px-0.5 text-[14px] font-bold" style={{ color: tealc }}>→</span>
+          <div className="flex w-[110px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ background: 'linear-gradient(160deg, #E7F4F3 0%, #F4FBFA 100%)', borderColor: '#C9E5E3', boxShadow: `0 12px 26px ${tealc}33` }}>
+            <span className="text-[8px] font-bold uppercase tracking-[0.1em]" style={{ color: '#0E5B5B' }}>Net earned</span>
+            <span className="mt-1 font-display text-[22px] leading-none" style={{ color: tealc }}>₹{b.nep.toLocaleString('en-IN')}</span>
+            <span className="mt-1 text-[8px] leading-tight text-ink-secondary">NEP · Cr</span>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold" style={{ borderColor: `${navy}33`, background: `${navy}0c`, color: navy }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: navy }} />
+            {retention}% retained after reinsurance
+          </span>
+          <SourceTag source="Annual report · Revenue A/c" period={yr.fy} confidence="high" />
+        </div>
+      </div>
+    )
+  }
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  return (
+    <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.navy.cardBg, borderColor: ACCENT_TINT.navy.cardBorder }}>
+      <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Premium formation</p>
+      <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium retained &amp; earned</h3>
+      {latest && latest.gwp != null && latest.nep != null ? (
+        <div className="mt-3 flex items-center gap-3">
+          <div className="rounded-xl px-3 py-2.5 text-white" style={{ background: navy }}>
+            <span className="block text-[8px] font-bold uppercase tracking-wide" style={{ color: '#E9D49A' }}>GWP</span>
+            <span className="font-display text-[18px]">₹{latest.gwp.toLocaleString('en-IN')} Cr</span>
+          </div>
+          <span className="text-[14px] font-bold" style={{ color: tealc }}>→</span>
+          <div className="rounded-xl border px-3 py-2.5" style={{ borderColor: '#C9E5E3', background: '#F4FBFA' }}>
+            <span className="block text-[8px] font-bold uppercase tracking-wide text-ink-secondary">Net earned</span>
+            <span className="font-display text-[18px]" style={{ color: tealc }}>₹{latest.nep.toLocaleString('en-IN')} Cr</span>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3"><PendingNote>{`Premium breakdown pending for ${company.shortName}.`}</PendingNote></div>
+      )}
+      <div className="mt-3 flex justify-end"><SourceTag source="Company filing" period={latest?.fy ?? 'FY25'} confidence="high" /></div>
+    </div>
+  )
+}
+
+// ─── (B) Cost discipline — "where every ₹100 of premium goes" donut ───────────
+function CostDonut({ company }: { company: Insurer }) {
   const cost = COST_RATIOS[company.id]
-  if (!cost) return null
-  const claims = cost.loss
-  const costs = cost.commission + cost.expense
-  const uwPer100 = Math.round((100 - claims - costs) * 10) / 10
-  const steps: { label: string; value: string; tone: string; note: string }[] = [
-    { label: 'Premium', value: '₹100', tone: PALETTE.navy, note: 'of premium' },
-    { label: 'Claims', value: `−₹${claims.toFixed(0)}`, tone: PALETTE.coral, note: 'incurred' },
-    { label: 'Expenses + comm.', value: `−₹${costs.toFixed(0)}`, tone: PALETTE.amber, note: 'opex + commission' },
-    { label: uwPer100 >= 0 ? 'Underwriting' : 'Underwriting loss', value: `${uwPer100 >= 0 ? '+' : '−'}₹${Math.abs(uwPer100).toFixed(0)}`, tone: uwPer100 >= 0 ? PALETTE.teal : PALETTE.coral, note: 'core result' },
-    { label: 'Investment', value: '+ income', tone: DEEP_GREEN, note: 'support' },
-    { label: 'PAT', value: 'positive', tone: GOLD, note: 'after tax' },
+  const cr = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+  if (!cost || cr == null) {
+    return <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.emerald.cardBg, borderColor: ACCENT_TINT.emerald.cardBorder }}><PendingNote>{`Cost split pending for ${company.shortName}.`}</PendingNote></div>
+  }
+  const segs = [
+    { name: 'Claims', value: cost.loss, color: PALETTE.coral },
+    { name: 'Commission', value: cost.commission, color: PALETTE.amber },
+    { name: 'Opex', value: cost.expense, color: PALETTE.navy },
+  ]
+  const crColor = cr < 100 ? PALETTE.emerald : cr <= 105 ? PALETTE.amber : PALETTE.coral
+  const surplus = Math.round((100 - cr) * 10) / 10
+  return (
+    <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.emerald.cardBg, borderColor: ACCENT_TINT.emerald.cardBorder }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Cost anatomy</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Where every ₹100 of premium goes</h3>
+        </div>
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">FY25</span>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <div className="relative h-[148px] w-[148px] shrink-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={segs} dataKey="value" cx="50%" cy="50%" innerRadius="66%" outerRadius="92%" startAngle={90} endAngle={-270} stroke="#fff" strokeWidth={1.2} isAnimationActive={false}>
+                {segs.map((s) => (
+                  <Cell key={s.name} fill={s.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-display text-[22px] leading-none" style={{ color: crColor }}>{cr.toFixed(1)}%</span>
+            <span className="text-[8px] uppercase tracking-wide text-ink-secondary">combined</span>
+          </div>
+        </div>
+        <div className="min-w-[150px] flex-1 space-y-1.5">
+          {segs.map((s) => (
+            <div key={s.name} className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-navy-deep"><span className="h-2 w-2 rounded-sm" style={{ background: s.color }} />{s.name}</span>
+              <span className="font-display text-[13px] text-navy-deep">₹{s.value.toFixed(1)}</span>
+            </div>
+          ))}
+          <div className="flex items-center justify-between border-t border-[#DCEDE3] pt-1.5">
+            <span className="text-[11px] font-semibold text-navy-deep">{surplus >= 0 ? 'Surplus kept' : 'Over ₹100'}</span>
+            <span className="font-display text-[13px]" style={{ color: surplus >= 0 ? PALETTE.emerald : PALETTE.coral }}>{surplus >= 0 ? '+' : '−'}₹{Math.abs(surplus).toFixed(1)}</span>
+          </div>
+        </div>
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <p className="text-[10px] leading-snug text-ink-secondary">{surplus >= 0 ? 'Claims and costs stay inside ₹100 — a surplus is kept.' : `Claims and costs run ₹${Math.abs(surplus).toFixed(1)} over ₹100.`}</p>
+        <SourceTag source="IRDAI public disclosures" period="FY25" confidence="high" />
+      </div>
+    </div>
+  )
+}
+
+// ─── (C) Underwriting result — earned premium − claims − commission − opex ────
+function UnderwritingWaterfall({ company, series }: { company: Insurer; series: AnnualPoint[] }) {
+  const yr = getEarningsBridge(company.id).find((y) => series.some((p) => p.fy === y.fy)) ?? getEarningsBridge(company.id)[0]
+  if (!yr) {
+    const latest = series[series.length - 1] as AnnualPoint | undefined
+    const uw = latest ? underwritingFor(company.id, latest) : null
+    return (
+      <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.teal.cardBg, borderColor: ACCENT_TINT.teal.cardBorder }}>
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Underwriting result</p>
+        {uw == null ? <div className="mt-2"><PendingNote>{`Underwriting result pending for ${company.shortName}.`}</PendingNote></div> : <p className="mt-2 font-display text-[28px] leading-none" style={{ color: uw >= 0 ? PALETTE.teal : PALETTE.coral }}>{crc(uw)}</p>}
+        <div className="mt-2 flex justify-end"><SourceTag source="Company filing · derived" period={latest?.fy ?? 'FY25'} confidence="high" /></div>
+      </div>
+    )
+  }
+  const b = yr.igaap
+  const steps = [
+    { label: 'Earned premium', tech: 'NEP', v: b.nep, op: '', color: PALETTE.navy, strong: true },
+    { label: 'Claims', tech: 'incurred', v: -b.netClaims, op: '−', color: PALETTE.coral, strong: false },
+    { label: 'Commission', tech: 'distribution', v: -b.netCommission, op: '−', color: PALETTE.amber, strong: false },
+    { label: 'Operating cost', tech: 'opex', v: -b.opex, op: '−', color: PALETTE.navy, strong: false },
+    { label: b.underwritingResult >= 0 ? 'Underwriting profit' : 'Underwriting loss', tech: 'core result', v: b.underwritingResult, op: '=', color: b.underwritingResult >= 0 ? PALETTE.teal : PALETTE.coral, strong: true },
   ]
   return (
-    <section className="card-surface p-4">
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">How ₹100 of premium turns into profit</p>
+    <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.teal.cardBg, borderColor: ACCENT_TINT.teal.cardBorder }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Core result</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Earned premium minus claims and costs</h3>
+        </div>
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">{yr.fy}</span>
       </div>
-      <div className="mt-3 flex flex-wrap items-stretch gap-1.5">
-        {steps.map((s, i) => (
+      <div className="mt-4 flex flex-wrap items-stretch gap-1.5">
+        {steps.map((s) => (
           <Fragment key={s.label}>
-            {i > 0 && <span className="flex shrink-0 items-center text-[14px] font-bold text-ink-secondary/35">›</span>}
-            <div className="flex min-w-[84px] flex-1 flex-col rounded-xl border px-3 py-2" style={{ borderColor: `${s.tone}33`, background: `${s.tone}0c` }}>
+            {s.op && <span className="flex shrink-0 items-center px-0.5 text-[14px] font-bold text-ink-secondary/45">{s.op}</span>}
+            <div className="flex min-w-[92px] flex-1 flex-col justify-center rounded-xl border px-3 py-2.5" style={{ background: s.strong ? '#fff' : 'rgba(255,255,255,0.7)', borderColor: s.strong ? s.color : ACCENT_TINT.teal.cardBorder }}>
               <span className="text-[8.5px] font-bold uppercase leading-tight tracking-[0.04em] text-navy-deep">{s.label}</span>
-              <span className="mt-0.5 font-display text-[16px] leading-none" style={{ color: s.tone }}>{s.value}</span>
-              <span className="mt-0.5 text-[8px] leading-tight text-ink-secondary">{s.note}</span>
+              <span className="mt-1 font-display text-[17px] leading-none" style={{ color: s.color }}>{crc(s.v)}</span>
+              <span className="mt-0.5 text-[8px] text-ink-secondary">{s.tech}</span>
             </div>
           </Fragment>
         ))}
       </div>
-      <p className="mt-2.5 text-[10px] leading-snug text-ink-secondary">Claims and costs absorb the ₹100 of premium; investment income then lifts the result to a positive PAT. Per ₹100 of premium · {STATUTORY_CR[company.id]?.statutoryFY ?? 'FY25'}.</p>
+      <p className="mt-3 flex items-center gap-1.5 rounded-lg px-3 py-2 text-[10.5px] font-medium leading-snug text-navy-deep/85" style={{ background: `${b.underwritingResult >= 0 ? PALETTE.teal : PALETTE.coral}10` }}>
+        <Gauge className="h-3.5 w-3.5 shrink-0" style={{ color: b.underwritingResult >= 0 ? PALETTE.teal : PALETTE.coral }} />
+        {b.underwritingResult >= 0 ? 'Underwriting is profitable before investment support.' : 'Underwriting is loss-making before investment support.'}
+      </p>
+      <div className="mt-2 flex justify-end"><SourceTag source="Annual report · Revenue A/c" period={yr.fy} confidence="high" /></div>
+    </div>
+  )
+}
+
+// ─── (D) Profit conversion — the ₹100 Premium-to-Profit Conversion Engine ─────
+function ConversionBridge({ company, series, ctx }: { company: Insurer; series: AnnualPoint[]; ctx: BasisCtx }) {
+  const cost = COST_RATIOS[company.id]
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const reportedMargin = latest && latest.pat != null && latest.gwp ? (latest.pat / latest.gwp) * 100 : null
+  const patMargin = ctx.isIfrs ? ctx.patMargin : reportedMargin
+  const periodTag = ctx.isIfrs ? ctx.pLabel : 'FY25'
+  const outputCaption = ctx.isIfrs ? `${BASIS_LABEL[ctx.basis]} profit conversion` : 'Reported profit conversion'
+  const header = (
+    <>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Conversion Engine</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Premium-to-Profit Conversion Engine</h3>
+        </div>
+        <span className="shrink-0 text-[9.5px] text-ink-secondary">{periodTag}</span>
+      </div>
+      <p className="mt-1 text-[11px] leading-snug text-ink-secondary">How ₹100 of premium becomes profit.</p>
+    </>
+  )
+  if (!cost) {
+    return (
+      <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
+        {header}
+        <div className="mt-3"><PendingNote>{`${company.shortName} is a life carrier — needs a claims / commission / opex split. Pending.`}</PendingNote></div>
+      </div>
+    )
+  }
+  const absorbed = cost.loss + cost.commission + cost.expense
+  const uwProfit = Math.round((100 - absorbed) * 10) / 10
+  const uwPos = uwProfit >= 0
+  const bands = [
+    { key: 'claims', label: 'Claims', sub: 'Largest absorption', amount: cost.loss, display: `₹${cost.loss.toFixed(1)}`, color: PALETTE.coral, bg: '#FBEFEF', border: '#EFD4D3' },
+    { key: 'opex', label: 'Opex', sub: 'Operating cost', amount: cost.expense, display: `₹${cost.expense.toFixed(1)}`, color: PALETTE.navy, bg: '#EEF3FB', border: '#D6E2FA' },
+    { key: 'comm', label: 'Commission', sub: 'Distribution cost', amount: cost.commission, display: `₹${cost.commission.toFixed(1)}`, color: PALETTE.amber, bg: '#FBF3E2', border: '#EFE1BE' },
+    { key: 'uw', label: uwPos ? 'Underwriting profit' : 'Underwriting loss', sub: uwPos ? 'Spread retained' : 'Spread negative', amount: Math.max(Math.abs(uwProfit), 1.5), display: `${uwPos ? '' : '−'}₹${Math.abs(uwProfit).toFixed(1)}`, color: uwPos ? PALETTE.teal : PALETTE.coral, bg: uwPos ? '#E7F4F3' : '#FBEFEF', border: uwPos ? '#C9E5E3' : '#EFD4D3' },
+  ]
+  const BASE = 22
+  const SPAN = 150
+  const GAP = 8
+  const heights = bands.map((b) => BASE + (b.amount / 100) * SPAN)
+  const totalH = Math.round(heights.reduce((s, h) => s + h, 0) + GAP * (bands.length - 1))
+  const centers: number[] = []
+  let acc = 0
+  heights.forEach((h) => {
+    centers.push(acc + h / 2)
+    acc += h + GAP
+  })
+  return (
+    <div className="rounded-xl border p-4" style={{ background: '#FCF7EA', borderColor: '#ECE1C8' }}>
+      {header}
+      <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.16em] text-champagne">₹100 premium journey</p>
+      <div className="mt-1.5 flex items-stretch gap-0" style={{ height: totalH }}>
+        <div className="flex w-[86px] shrink-0 flex-col items-center justify-center rounded-xl px-2 text-center" style={{ background: `linear-gradient(160deg, ${PALETTE.navyDeep} 0%, ${PALETTE.navy} 100%)` }}>
+          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#E9D49A' }}>Premium in</span>
+          <span className="mt-1 font-display text-[24px] leading-none text-white">₹100</span>
+          <span className="mt-1 text-[8.5px] leading-snug text-white/70">GWP received</span>
+        </div>
+        <svg className="shrink-0" width={34} height={totalH} viewBox={`0 0 34 ${totalH}`} aria-hidden>
+          {bands.map((b, i) => (
+            <path key={b.key} d={`M0 ${totalH / 2} C 22 ${totalH / 2}, 12 ${centers[i]}, 34 ${centers[i]}`} fill="none" stroke={b.color} strokeOpacity={0.42} strokeWidth={Math.max(2.5, (b.amount / 100) * 40)} strokeLinecap="round" />
+          ))}
+        </svg>
+        <div className="flex min-w-0 flex-1 flex-col" style={{ gap: GAP }}>
+          {bands.map((b, i) => (
+            <div key={b.key} className="relative flex items-center justify-between overflow-hidden rounded-lg border pl-3.5 pr-3" style={{ height: heights[i], background: b.bg, borderColor: b.border }}>
+              <span className="absolute inset-y-0 left-0 w-1" style={{ background: b.color }} />
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: b.color }} />
+                  <span className="truncate text-[9px] font-bold uppercase tracking-[0.1em] text-navy-deep">{b.label}</span>
+                </div>
+                {heights[i] > 46 && <span className="mt-0.5 block pl-3 text-[9.5px] text-ink-secondary">{b.sub}</span>}
+              </div>
+              <span className="shrink-0 font-display leading-none" style={{ color: b.color, fontSize: heights[i] > 90 ? 21 : heights[i] > 42 ? 16 : 14 }}>{b.display}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex shrink-0 items-center px-1">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold leading-none shadow-sm" style={{ borderColor: '#E9D49A', color: GOLD }}>→</span>
+        </div>
+        <div className="flex w-[112px] shrink-0 flex-col items-center justify-center rounded-xl border px-2 text-center" style={{ background: 'linear-gradient(160deg, #FBF1D8 0%, #FFFAEC 100%)', borderColor: '#E9D49A', boxShadow: `0 14px 28px ${GOLD}40` }}>
+          <span className="text-[8px] font-bold uppercase tracking-[0.12em]" style={{ color: '#9A7B1E' }}>PAT margin</span>
+          <span className="mt-1 font-display text-[26px] leading-none" style={{ color: GOLD }}>{patMargin == null ? '—' : `${patMargin.toFixed(1)}%`}</span>
+          <span className="mt-1 text-[8.5px] leading-snug text-ink-secondary">{outputCaption}</span>
+          <span className="mt-1.5"><LensBasisPill basis={ctx.basis} label={ctx.basisLabel} /></span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// 180° gauge — single arc over a faint zoned track (capital-support meter).
+function SemiGauge({ value, min, max, zones, unit = 'x', size = 160 }: { value: number; min: number; max: number; zones: { from: number; to: number; color: string }[]; unit?: string; size?: number }) {
+  const clamped = Math.max(min, Math.min(max, value))
+  const angle = 180 * ((clamped - min) / (max - min))
+  const arcData = [{ name: 'fill', value: angle }, { name: 'rest', value: 180 - angle }]
+  return (
+    <div className="relative w-full" style={{ height: size * 0.58 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie data={zones.map((z) => ({ name: z.color, value: ((z.to - z.from) / (max - min)) * 180 }))} dataKey="value" cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="84%" outerRadius="93%" stroke="#fff" strokeWidth={0.5} isAnimationActive={false}>
+            {zones.map((z, i) => (
+              <Cell key={i} fill={z.color} fillOpacity={0.18} />
+            ))}
+          </Pie>
+          <Pie data={arcData} dataKey="value" cx="50%" cy="100%" startAngle={180} endAngle={0} innerRadius="94%" outerRadius="100%" stroke="none" isAnimationActive={false}>
+            <Cell fill={zones.find((z) => clamped >= z.from && clamped <= z.to)?.color ?? PALETTE.navy} />
+            <Cell fill="transparent" />
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center">
+        <span className="font-display text-[22px] leading-none text-navy-deep">{value.toFixed(unit === 'x' ? 2 : 1)}{unit}</span>
+      </div>
+    </div>
+  )
+}
+
+// ─── (F) Capital support — solvency gauge + buffer + growth support ───────────
+function CapitalCard({ company }: { company: Insurer }) {
+  const s = company.solvency
+  const status = s >= 2 ? { label: 'Comfortable', tone: 'positive' as ChipTone } : s >= 1.5 ? { label: 'Adequate', tone: 'warning' as ChipTone } : { label: 'Tight', tone: 'negative' as ChipTone }
+  const growth = s <= 0 ? '—' : s >= 2.5 ? 'Ample headroom to fund growth' : s >= 2 ? 'Comfortable headroom for growth' : 'Adequate, watch as growth uses capital'
+  return (
+    <div className="rounded-xl border p-4" style={{ background: ACCENT_TINT.deepGreen.cardBg, borderColor: ACCENT_TINT.deepGreen.cardBorder }}>
+      <div className="flex items-baseline justify-between">
+        <div>
+          <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Capital support</p>
+          <h3 className="mt-0 font-display text-[14.5px] leading-tight text-navy-deep">Solvency vs the 1.5× floor</h3>
+        </div>
+        <SignalBadge label={status.label} tone={status.tone} size="sm" />
+      </div>
+      {s > 0 ? (
+        <div className="mt-2 grid items-center gap-3 sm:grid-cols-[1.1fr_1fr]">
+          <SemiGauge value={s} min={1} max={3.5} unit="x" zones={[{ from: 1, to: 1.5, color: PALETTE.coral }, { from: 1.5, to: 2, color: PALETTE.amber }, { from: 2, to: 3.5, color: DEEP_GREEN }]} />
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between rounded-lg border border-[#CFE7DA] bg-white/70 px-3 py-1.5">
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Capital buffer</span>
+              <span className="font-display text-[14px]" style={{ color: DEEP_GREEN }}>+{(s - 1.5).toFixed(2)}x</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border border-[#CFE7DA] bg-white/70 px-3 py-1.5">
+              <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Regulatory floor</span>
+              <span className="font-display text-[14px] text-navy-deep">1.50x</span>
+            </div>
+            <p className="text-[10px] leading-snug text-ink-secondary">{growth}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-2"><PendingNote>{`Solvency pending for ${company.shortName}.`}</PendingNote></div>
+      )}
+      <div className="mt-2 flex justify-end"><SourceTag source="IRDAI public disclosures" period="FY25" confidence="high" /></div>
+    </div>
+  )
+}
+
+// Short interpretation strip — a single plain-English takeaway after an
+// infographic, so non-expert users grasp the meaning instantly.
+function InsightStrip({ line, accent }: { line: string; accent: string }) {
+  return (
+    <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: `${accent}10`, borderColor: `${accent}3a` }}>
+      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: accent }} />
+      <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{line}</p>
+    </div>
+  )
+}
+
+// One plain-English takeaway per stage (real values; honest pending states).
+function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): string {
+  const latest = series[series.length - 1] as AnnualPoint | undefined
+  const uw = latest ? underwritingFor(company.id, latest) : null
+  const mm = getMarginMetrics(series)
+  const cr = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
+  const inv = getEarningsBridge(company.id)[0]?.igaap.investmentIncome ?? null
+  switch (id) {
+    case 'premium': {
+      const g = premiumGrowth(series)
+      return g != null ? `Premium is scaling (+${g.toFixed(0)}%) and most of it is retained and earned.` : 'Most premium is retained after reinsurance and earned through the year.'
+    }
+    case 'combined':
+      return cr == null ? 'Combined ratio pending.' : cr >= 100 ? `Most of premium is still absorbed by claims and costs — combined ${cr.toFixed(1)}% is above ₹100.` : `Claims and costs stay inside ₹100 — combined ${cr.toFixed(1)}%.`
+    case 'underwriting-result':
+      return uw == null ? 'Underwriting result pending.' : uw < 0 ? `Combined ratio above 100, so core underwriting is not yet profitable (${crc(uw)}).` : 'Core underwriting is profitable before investment income.'
+    case 'conversion':
+      return mm.latestPat == null ? 'PAT pending.' : (uw != null && uw < 0 ? `Investment income is still doing the heavy lifting for PAT (${crc(mm.latestPat)}).` : `Underwriting and investment income together drive PAT (${crc(mm.latestPat)}).`)
+    case 'capital':
+      return company.solvency > 0 ? `Capital support remains strong enough to back growth — ${company.solvency.toFixed(2)}× solvency.` : 'Solvency pending.'
+    case 'ifrs-revenue':
+      return premiumFigures(company.id, series).nep == null ? 'Insurance revenue pending.' : `Net earned premium is the IFRS-style revenue base — ${crc(premiumFigures(company.id, series).nep!)}.`
+    case 'ifrs-service':
+      return ctx.combinedRatio == null ? 'IFRS service result pending.' : ctx.combinedRatio < 100 ? `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — the service earns a margin.` : `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — the service result is thin.`
+    case 'ifrs-finance':
+      return inv == null ? 'Investment result pending.' : `Investment income (${crc(inv)}) carries the IFRS bottom line while the service result is thin.`
+    case 'ifrs-profit':
+      return ctx.pat == null ? 'IFRS profit pending.' : `IFRS PAT ${crc(ctx.pat)}${ctx.patMargin != null ? ` at a ${ctx.patMargin.toFixed(1)}% margin` : ''}.`
+    case 'ifrs-margin':
+      return ctx.patMargin == null ? 'IFRS margin pending.' : `${ctx.patMargin.toFixed(1)}% of premium reaches IFRS profit — the shareholder-return read.`
+    default:
+      return ''
+  }
+}
+
+// "How profitability is examined" band — a compact roadmap of the lens's stages
+// so a first-time reader sees the analytical sequence before scrolling.
+function HowExaminedBand({ lens }: { lens: LensConfig }) {
+  return (
+    <section className="card-surface p-4">
+      <div className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
+        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">How profitability is examined</p>
+        <span className="text-[10px] text-ink-secondary">— read left to right</span>
+      </div>
+      <div className="mt-3 flex flex-wrap items-stretch gap-1.5">
+        {lens.stages.map((s, i) => {
+          const tone = ACCENT_HEX[s.accent]
+          return (
+            <Fragment key={s.semantic}>
+              {i > 0 && <span className="flex shrink-0 items-center text-[13px] font-bold text-ink-secondary/35">›</span>}
+              <div className="flex min-w-[110px] flex-1 flex-col rounded-xl border px-3 py-2" style={{ borderColor: `${tone}33`, background: `${tone}0a` }}>
+                <span className="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white" style={{ background: tone }}>{i + 1}</span>
+                <span className="mt-1.5 text-[11px] font-semibold leading-tight text-navy-deep">{s.label}</span>
+                <span className="mt-0.5 text-[9px] leading-tight text-ink-secondary">{s.metricLabel}</span>
+              </div>
+            </Fragment>
+          )
+        })}
+      </div>
     </section>
   )
 }
@@ -1689,16 +2081,17 @@ function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarte
   // match the stage node. The chart area stays put; only its content changes as
   // the reader clicks a different story-map stage.
   const trend = stageTrend(id, company, series, meta.accent)
+  const header = <StageStoryHeader meta={meta} stage={stage} status={status} onOpenDrawer={onOpenDrawer} />
   const read = (
     <NodeInvestorRead read={nodeRead(id, company, series, ctx)} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
   )
 
-  // Quarterly / monthly: a compact standalone-quarter comparison under a light
-  // stage header; the yearly trend still shows below.
+  // Quarterly / monthly: a compact standalone-quarter comparison under the
+  // storyline header; the yearly trend still shows below.
   if (period !== 'Annual') {
     return (
       <div key={`${lens.key}-${id}`} className="animate-fade-in space-y-4">
-        <LensHeader meta={meta} status={status} />
+        {header}
         {quarterlyNodeBody(stage, lens, company, period, quarter, quarterPrev)}
         {trend && <StageTrendCard data={trend} accent={meta.accent} />}
         {read}
@@ -1706,14 +2099,44 @@ function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarte
     )
   }
 
-  // Annual — the clean layout: selected-stage card (main metric + sub-metric
-  // chips) → fixed dynamic trend chart → ₹100 premium-journey strip (statutory)
-  // → investor read. Big circles tell the story; chips show the components.
+  // Annual — storyline header → stage infographic → fixed trend → interpretation
+  // strip → structured investor read. The infographic explains how that stage of
+  // profit is built; the trend shows its history; the strip gives the takeaway.
+  let infographic: ReactNode
+  switch (id) {
+    case 'premium':
+    case 'ifrs-revenue':
+      infographic = <PremiumFlowCard company={company} series={series} />
+      break
+    case 'combined':
+      infographic = <CostDonut company={company} />
+      break
+    case 'underwriting-result':
+      infographic = <UnderwritingWaterfall company={company} series={series} />
+      break
+    case 'conversion':
+      // The premium-to-profit conversion bridge + the profit-quality equation
+      // (core underwriting + investment support = PAT, with the investment-led read).
+      infographic = (
+        <div className="space-y-4">
+          <ConversionBridge company={company} series={series} ctx={ctx} />
+          <ProfitQualityCheck companyId={company.id} companyShort={company.shortName} />
+        </div>
+      )
+      break
+    case 'capital':
+      infographic = <CapitalCard company={company} />
+      break
+    default:
+      infographic = <MetricChipsCard detail={stageDetail(id, company, series, ctx)} />
+  }
+
   return (
     <div key={`${lens.key}-${id}`} className="animate-fade-in space-y-4">
-      <StageDetailCard meta={meta} label={stage.label} line={stage.line} status={status} detail={stageDetail(id, company, series, ctx)} onOpenDrawer={onOpenDrawer} />
+      {header}
+      {infographic}
       {trend && <StageTrendCard data={trend} accent={meta.accent} />}
-      {lens.key === 'statutory' && <PremiumJourneyStrip company={company} />}
+      <InsightStrip line={lensInsight(id, company, series, ctx)} accent={meta.accent} />
       {read}
     </div>
   )
@@ -1912,6 +2335,9 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
           subtitle={lens.storyMapSubtitle}
         />
       </div>
+
+      {/* ─── "HOW PROFITABILITY IS EXAMINED" — roadmap of the analytical sequence ─── */}
+      {period === 'Annual' && <HowExaminedBand lens={lens} />}
 
       {/* ─── ACTIVE LENS DETAIL — one stage's visuals + investor read ─── */}
       <ProfitabilityDetail
