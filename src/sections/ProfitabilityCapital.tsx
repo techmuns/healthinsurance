@@ -1906,35 +1906,6 @@ function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: B
   }
 }
 
-// "How profitability is examined" band — a compact roadmap of the lens's stages
-// so a first-time reader sees the analytical sequence before scrolling.
-function HowExaminedBand({ lens }: { lens: LensConfig }) {
-  return (
-    <section className="card-surface p-4">
-      <div className="flex items-center gap-2">
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: PALETTE.champagne }} />
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">How profitability is examined</p>
-        <span className="text-[10px] text-ink-secondary">— read left to right</span>
-      </div>
-      <div className="mt-3 flex flex-wrap items-stretch gap-1.5">
-        {lens.stages.map((s, i) => {
-          const tone = ACCENT_HEX[s.accent]
-          return (
-            <Fragment key={s.semantic}>
-              {i > 0 && <span className="flex shrink-0 items-center text-[13px] font-bold text-ink-secondary/35">›</span>}
-              <div className="flex min-w-[110px] flex-1 flex-col rounded-xl border px-3 py-2" style={{ borderColor: `${tone}33`, background: `${tone}0a` }}>
-                <span className="flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white" style={{ background: tone }}>{i + 1}</span>
-                <span className="mt-1.5 text-[11px] font-semibold leading-tight text-navy-deep">{s.label}</span>
-                <span className="mt-0.5 text-[9px] leading-tight text-ink-secondary">{s.metricLabel}</span>
-              </div>
-            </Fragment>
-          )
-        })}
-      </div>
-    </section>
-  )
-}
-
 // ─── Lens "Accounting details" drawer — basis, bridge, numbers, why, sources ──
 function DrawerBlock({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -2335,9 +2306,6 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
           subtitle={lens.storyMapSubtitle}
         />
       </div>
-
-      {/* ─── "HOW PROFITABILITY IS EXAMINED" — roadmap of the analytical sequence ─── */}
-      {period === 'Annual' && <HowExaminedBand lens={lens} />}
 
       {/* ─── ACTIVE LENS DETAIL — one stage's visuals + investor read ─── */}
       <ProfitabilityDetail
