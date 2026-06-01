@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Customized, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SegmentedControl } from './SegmentedControl'
 import {
@@ -869,7 +869,11 @@ export function MixView({ companyId, period }: { companyId: string; period: Peri
 
 // --- Retention tab: Customer Renewal & Stickiness ----------------------------
 
-// Small flat renewal-rate progression (FY21 → FY25), latest highlighted teal.
+// Customer Renewal & Stickiness — a soft upward curve with a translucent teal
+// area fill (no axis / grid / border). Each year is a clean point with its
+// renewal % above it; the latest year is highlighted with a larger glowing teal
+// point. On mount the line draws in and the points fade gently. Data-driven, so
+// it follows the focal company's actual renewal series.
 function RenewalProgression({ companyId, period }: { companyId: string; period: Period }) {
   const series = getCompareSeries(companyId, 'renewalRate', period)
   const periods = period === 'Quarterly' ? compareQuarters : compareYears
@@ -878,22 +882,98 @@ function RenewalProgression({ companyId, period }: { companyId: string; period: 
     const v = series[i]
     if (v != null) pts.push({ period: p, v })
   })
+
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const [w, setW] = useState(0)
+  useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return
+    const ro = new ResizeObserver((entries) => setW(entries[0].contentRect.width))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   if (!pts.length) return null
-  const last = pts.length - 1
+
+  const H = 96
+  const padX = 26
+  const topY = 26
+  const botY = 66
+  const fillBottom = 84
+  const n = pts.length
+  const last = n - 1
+  const vals = pts.map((d) => d.v)
+  const vMin = Math.min(...vals)
+  const vMax = Math.max(...vals)
+  const span = vMax - vMin || 1
+  const xOf = (i: number) => (n === 1 ? w / 2 : padX + ((w - 2 * padX) * i) / (n - 1))
+  const yOf = (v: number) => topY + (botY - topY) * ((vMax - v) / span)
+  const P = pts.map((d, i) => ({ x: xOf(i), y: yOf(d.v), v: d.v, period: d.period }))
+
+  // Catmull-Rom → cubic bézier for a smooth curve through every point.
+  let line = P.length ? `M ${P[0].x.toFixed(1)} ${P[0].y.toFixed(1)}` : ''
+  for (let i = 0; i < P.length - 1; i++) {
+    const p0 = P[i - 1] ?? P[i]
+    const p1 = P[i]
+    const p2 = P[i + 1]
+    const p3 = P[i + 2] ?? p2
+    const c1x = p1.x + (p2.x - p0.x) / 6
+    const c1y = p1.y + (p2.y - p0.y) / 6
+    const c2x = p2.x - (p3.x - p1.x) / 6
+    const c2y = p2.y - (p3.y - p1.y) / 6
+    line += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`
+  }
+  const area = P.length >= 2 ? `${line} L ${P[last].x.toFixed(1)} ${fillBottom} L ${P[0].x.toFixed(1)} ${fillBottom} Z` : ''
+
   return (
-    <div className="relative pt-1">
-      <div className="absolute left-[10%] right-[10%] top-[7px] h-0.5 rounded-full bg-soft-border" />
-      <div className="relative flex justify-between">
-        {pts.map((d, i) => (
-          <div key={d.period} className="flex flex-1 flex-col items-center">
-            <span className="h-3.5 w-3.5 rounded-full ring-2 ring-card" style={{ background: i === last ? TEAL : FOCAL, opacity: i === last ? 1 : 0.4 }} />
-            <span className="mt-2 text-[10px] text-ink-secondary">{d.period}</span>
-            <span className="text-[11.5px] font-semibold" style={{ color: i === last ? TEAL : '#26303F' }}>
-              {Math.round(d.v)}%
-            </span>
-          </div>
-        ))}
-      </div>
+    <div ref={wrapRef} className="relative" style={{ height: H }}>
+      {w > 0 && P.length >= 2 && (
+        <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
+          <defs>
+            <linearGradient id="rrArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={TEAL} stopOpacity={0.36} />
+              <stop offset="55%" stopColor={TEAL} stopOpacity={0.13} />
+              <stop offset="100%" stopColor={TEAL} stopOpacity={0} />
+            </linearGradient>
+            <filter id="rrGlow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="3.2" />
+            </filter>
+          </defs>
+
+          {/* soft translucent teal area under the curve */}
+          <path d={area} fill="url(#rrArea)" className="rr-area" />
+          {/* soft teal glow tracing the line */}
+          <path d={line} fill="none" stroke={TEAL} strokeWidth={4.5} strokeOpacity={0.22} strokeLinecap="round" filter="url(#rrGlow)" className="rr-area" />
+          {/* the upward trend line — draws in on mount */}
+          <path d={line} fill="none" stroke={TEAL} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="rr-line" />
+
+          {P.map((p, i) => {
+            const isLast = i === last
+            return (
+              <g key={p.period} className="rr-pt" style={{ animationDelay: `${0.5 + i * 0.12}s` }}>
+                {isLast && <circle cx={p.x} cy={p.y} r={9} fill={TEAL} fillOpacity={0.22} filter="url(#rrGlow)" />}
+                <circle cx={p.x} cy={p.y} r={isLast ? 5 : 3.4} fill={isLast ? TEAL : '#FFFFFF'} stroke={TEAL} strokeWidth={isLast ? 0 : 1.6} />
+                <text x={p.x} y={p.y - 11} textAnchor="middle" fontSize={isLast ? 12.5 : 11} fontWeight={isLast ? 800 : 600} fill={isLast ? TEAL : '#26303F'}>
+                  {Math.round(p.v)}%
+                </text>
+                <text x={p.x} y={H - 4} textAnchor="middle" fontSize={9.5} fill={AXIS_TEXT} opacity={0.85}>
+                  {p.period}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+      )}
+      <style>{`
+        .rr-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: rrDraw 1.05s cubic-bezier(0.4,0,0.2,1) forwards; }
+        .rr-area { opacity: 0; animation: rrFade 0.9s ease 0.45s forwards; }
+        .rr-pt { opacity: 0; animation: rrFade 0.5s ease forwards; }
+        @keyframes rrDraw { to { stroke-dashoffset: 0; } }
+        @keyframes rrFade { to { opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) {
+          .rr-line, .rr-area, .rr-pt { animation: none; opacity: 1; stroke-dashoffset: 0; }
+        }
+      `}</style>
     </div>
   )
 }
