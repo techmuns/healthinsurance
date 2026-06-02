@@ -7,6 +7,7 @@ import {
   Cell,
   Customized,
   Legend,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,7 +18,7 @@ import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
-import { labelInRange } from '@/lib/dateRange'
+import { fyLabelsInRange } from '@/lib/dateRange'
 import { makeYoYConnectors } from '@/lib/yoyConnectors'
 import {
   DIST_CHANNELS,
@@ -187,10 +188,31 @@ function MainChartBlock() {
   const { peerGroup, range } = useFilters()
   const gate = usePeriodGate()
   const data = getCompanyDistributionData(company.id)
-  // Clip the channel-mix series to the header Data Range and to full-year rows
-  // only (drop interim periods like "9M FY26"), so the chart never shows years
-  // outside the selected window.
-  const mixRows = data ? data.mix.filter((r) => /^FY\d{2}$/.test(r.period) && labelInRange(r.period, range)) : []
+  // Build the FULL selected-range year axis, then merge the reported channel-mix
+  // rows onto it. Missing years stay as an empty (period-only) row so the chart
+  // shows them as a clean "source pending" slot instead of dropping them — e.g.
+  // FY21 when channel mix starts at FY22. Honours the header Data Range exactly.
+  const yearsInRange = fyLabelsInRange(range)
+  const realByPeriod = new Map(
+    (data?.mix ?? []).filter((r) => /^FY\d{2}$/.test(r.period)).map((r) => [r.period as string, r] as const),
+  )
+  const mixRows: Array<{ period: string } & Partial<Record<DistChannel, number>>> = data
+    ? yearsInRange.map((fy) => realByPeriod.get(fy) ?? { period: fy })
+    : []
+  const realMixRows = (data?.mix ?? []).filter((r) => /^FY\d{2}$/.test(r.period) && yearsInRange.includes(r.period))
+  let firstRealMixIdx = -1
+  for (let i = 0; i < mixRows.length; i++) if (typeof mixRows[i].Brokers === 'number') { firstRealMixIdx = i; break }
+  const leadingPendingMix = firstRealMixIdx > 0 ? mixRows.slice(0, firstRealMixIdx) : []
+  const mixRangeSpan = yearsInRange.length
+    ? yearsInRange.length === 1
+      ? yearsInRange[0]
+      : `${yearsInRange[0]} → ${yearsInRange[yearsInRange.length - 1]}`
+    : 'selected range'
+  const mixPendingSpan = leadingPendingMix.length
+    ? leadingPendingMix.length === 1
+      ? leadingPendingMix[0].period
+      : `${leadingPendingMix[0].period}–${leadingPendingMix[leadingPendingMix.length - 1].period}`
+    : null
 
   return (
     <section className="card-surface p-5 sm:p-6">
@@ -203,7 +225,7 @@ function MainChartBlock() {
             How has {company.shortName}'s sourcing engine changed?
           </h2>
           <p className="mt-1 text-[12px] text-ink-secondary">
-            Channel mix · share of GWP · {mixRows.length ? `${mixRows[0].period}${mixRows.length > 1 ? ` → ${mixRows[mixRows.length - 1].period}` : ''}` : 'selected range'}
+            Channel mix · share of GWP · {mixRangeSpan}{mixPendingSpan ? ` · ${mixPendingSpan} source pending` : ''}
           </p>
         </div>
       </header>
@@ -220,7 +242,7 @@ function MainChartBlock() {
           body="Add source-backed channel-mix data for this insurer to activate the chart."
           height={280}
         />
-      ) : mixRows.length === 0 ? (
+      ) : realMixRows.length === 0 ? (
         <EmptyState
           title="Data not available from source"
           body={`No channel-mix years for ${company.shortName} fall inside the selected Data Range — widen it in the top bar (mix is reported FY22–FY25).`}
@@ -236,6 +258,15 @@ function MainChartBlock() {
                 barCategoryGap="28%"
               >
                 <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+                {leadingPendingMix.length > 0 && (
+                  <ReferenceArea
+                    x1={leadingPendingMix[0].period}
+                    x2={leadingPendingMix[leadingPendingMix.length - 1].period}
+                    fill="#9DB6E0"
+                    fillOpacity={0.08}
+                    ifOverflow="extendDomain"
+                  />
+                )}
                 <XAxis
                   dataKey="period"
                   tick={{ fontSize: 11, fill: AXIS }}
@@ -296,11 +327,11 @@ function MainChartBlock() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <AiRead text={getDistributionAIRead(company, peerGroup, mixRows)} />
+          <AiRead text={getDistributionAIRead(company, peerGroup, realMixRows)} />
         </>
       )}
       <div className="mt-3 flex justify-end">
-        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={mixRows[mixRows.length - 1]?.period ?? data?.latest?.period} />
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={realMixRows[realMixRows.length - 1]?.period ?? data?.latest?.period} />
       </div>
     </section>
   )

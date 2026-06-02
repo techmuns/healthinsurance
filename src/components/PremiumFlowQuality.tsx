@@ -18,7 +18,7 @@ import { EmptyState } from './EmptyState'
 import { SourceTag } from './SourceTag'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { distributionEngineMix, DIST_CHANNELS } from '@/lib/distributionEngine'
-import { formatRange, labelInRange } from '@/lib/dateRange'
+import { formatRange, fyLabelsInRange, labelInRange } from '@/lib/dateRange'
 
 type Period = 'Quarterly' | 'Yearly'
 type Tab = 'Flow' | 'Mix' | 'Retention'
@@ -1388,11 +1388,25 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
               />
             )
           }
-          // Clip to the dashboard-wide Data Range. Years outside the window are
-          // never shown; if the window excludes every reported year, surface an
-          // honest "not available from source" state rather than an empty axis.
-          const annualRows = allCompanyRows.filter((r) => labelInRange(r.fiscal_year, range))
-          if (annualRows.length === 0) {
+          // Span the FULL selected-range year axis, then merge the reported rows
+          // onto it. Years with no sourced row stay null-valued so the chart shows
+          // them as a pending bar (its built-in n/a treatment) instead of dropping
+          // them — e.g. FY21 when premium history starts at FY22. Honours the
+          // header Data Range exactly; never fabricates a missing year.
+          const yearsInRange = fyLabelsInRange(range)
+          const reportedByFy = new Map(allCompanyRows.map((r) => [r.fiscal_year, r]))
+          const annualRows = yearsInRange.map(
+            (fy) =>
+              reportedByFy.get(fy) ?? {
+                company_id: focalId,
+                fiscal_year: fy,
+                gwp: null,
+                gross_direct_premium: null,
+                nwp: null,
+                nep: null,
+              },
+          )
+          if (annualRows.every((r) => r.gwp == null)) {
             return (
               <EmptyState
                 title="Data not available from source"
