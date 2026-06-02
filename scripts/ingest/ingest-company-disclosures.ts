@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-//  Fetcher — per-company public disclosures (Phase 1 SAHI peers).
+//  Fetcher — per-company public disclosures (all insurers, official sites).
 //
 //  For each company:
 //    1. Fetch its financial-disclosure landing page (HTML).
@@ -19,7 +19,6 @@ import { appendLog, isOfflineMode, nowIso, readSnapshot } from './util'
 import { extractByPatterns, fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
 
 const SOURCE_ID = 'company_disclosures_batch'
-const PHASE_1_PEERS = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
 
 interface CompanyMaster {
   data: Array<{
@@ -40,7 +39,7 @@ interface CompanyMaster {
 // to use either ₹ Crore / Crores / Cr — patterns normalise to bare numbers.
 // Combined ratio and solvency live on the page in standard formats too.
 const COMMON_PATTERNS = {
-  gwp: /(?:Gross\s+Written\s+Premium|GWP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
+  gwp: /(?:Gross\s+(?:Written|Direct)\s+Premium(?:\s+Income)?|GWP|GDPI)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
   nwp: /(?:Net\s+Written\s+Premium|NWP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
   nep: /(?:Net\s+Earned\s+Premium|NEP)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
   pat: /(?:Profit\s+After\s+Tax|PAT|Net\s+Profit)[^0-9-]{0,80}?([\d,]+\.?\d*)/i,
@@ -59,12 +58,16 @@ const COMMON_PATTERNS = {
 
 export const ingestCompanyDisclosures: Fetcher = {
   source_id: SOURCE_ID,
-  name: 'Company public disclosures (Phase 1: SAHI peers)',
+  name: 'Company public disclosures (official company websites — all insurers)',
   frequency: 'quarterly',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
     const master = await readSnapshot<CompanyMaster>('company-master.json')
-    const targets = master.data.filter((c) => PHASE_1_PEERS.includes(c.company_id))
+    // Every company in the master with an official disclosure / IR page —
+    // SAHI peers + cross-segment listed/large peers (ICICI Lombard, Bajaj,
+    // HDFC Life, SBI Life). Any company whose page resolves no parseable PDF
+    // stays an honest "pending"; it is never fabricated.
+    const targets = master.data.filter((c) => c.financial_disclosure_url ?? c.investor_relations_url)
 
     const records: SnapshotRecord[] = []
     const warnings: string[] = []
