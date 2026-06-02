@@ -1,5 +1,7 @@
-// Re-trigger workflow — live ingest run to test IRDAI reachability from CI
-// (GitHub runners sit outside the sandbox allowlist) and refresh quarterly data.
+// Live ingest re-trigger (2026-06-02): pull real IRDAI + company-IR data and
+// refresh the snapshots from CI, which has the network egress this workspace
+// lacks. Fills quarterly/monthly wherever the official source allows; any rows
+// the source genuinely blocks stay an honest "pending" — never fabricated.
 // ---------------------------------------------------------------------------
 //  ingest-all — entry point for the GitHub Actions workflow.
 //
