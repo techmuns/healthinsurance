@@ -153,6 +153,27 @@ export async function fetchOrLoadRaw(
   return { buffer, raw_file, mode: 'offline' }
 }
 
+/**
+ * Load the most-recent manually-staged raw file from data/raw/<subdir>/, or
+ * null when none is present.
+ *
+ * This is the fallback for sources that block automated/datacenter access at
+ * the IP level (e.g. IRDAI's standing 403). Drop the official file into the raw
+ * tree and the next normal run picks it up — no offline-mode toggle needed.
+ */
+export async function loadStagedRaw(
+  subdir: string,
+  extPattern: RegExp,
+): Promise<{ buffer: Buffer; raw_file: string } | null> {
+  const dir = resolve(RAW_ROOT, subdir)
+  const entries = await readdir(dir).catch(() => [] as string[])
+  const matches = entries.filter((e) => extPattern.test(e)).sort().reverse()
+  if (matches.length === 0) return null
+  const raw_file = resolve(dir, matches[0])
+  const buffer = await readFile(raw_file)
+  return { buffer, raw_file }
+}
+
 // ─── PDF extraction ────────────────────────────────────────────────────────
 
 export interface PdfText {

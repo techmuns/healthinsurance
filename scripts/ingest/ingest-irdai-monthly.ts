@@ -13,8 +13,8 @@
 // ---------------------------------------------------------------------------
 
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
-import { appendLog, isOfflineMode, nowIso, readSnapshot } from './util'
-import { fetchHtml, fetchOrLoadRaw, findLinks, findRowByAlias, parseXlsx, toNumber } from './parsers'
+import { appendLog, isOfflineMode, nowIso, readSnapshot, writeRaw } from './util'
+import { fetchBuffer, fetchHtml, findLinks, findRowByAlias, loadStagedRaw, parseXlsx, toNumber } from './parsers'
 
 const SOURCE_ID = 'irdai_monthly_business'
 const SOURCE_URL = 'https://irdai.gov.in/monthly-business-figures-non-life-insurers'
@@ -46,42 +46,71 @@ export const ingestIrdaiMonthly: Fetcher = {
     const ids = master.data.map((c) => c.company_id).filter((id) => INSURER_ALIASES[id])
 
     try {
-      // Step 1: resolve the latest XLSX link.
+      // Step 1: resolve the raw XLSX. Prefer the live IRDAI source; if it is
+      // blocked (the standing IP-level 403) or unavailable, fall back to a
+      // manually-staged file in data/raw/irdai/monthly/ — so a one-time drop
+      // flows through the next normal run with no offline-mode toggle.
       let xlsxUrl: string | null = null
       let filename = `${new Date().toISOString().slice(0, 7)}.xlsx`
+      let buffer: Buffer | null = null
+      let raw_file: string | null = null
+      let mode: 'live' | 'staged' = 'live'
+      let liveError: string | null = null
+
       if (!isOfflineMode()) {
-        const $ = await fetchHtml(SOURCE_URL)
-        const links = findLinks($, SOURCE_URL, (href, text) => {
-          if (!/\.(xlsx|xls)(\?|$)/i.test(href)) return false
-          const t = `${href} ${text}`.toLowerCase()
-          return /non[\-\s]?life|monthly|business/.test(t)
-        })
-        if (links.length === 0) {
-          await appendLog('ingest-irdai-monthly.log', { source: SOURCE_ID, status: 'no_links', page: SOURCE_URL })
-          return {
-            source_id: SOURCE_ID,
-            status: 'failed',
-            raw_file: null,
-            records: [],
-            records_fetched: 0,
-            fetched_at,
-            error: `No XLSX link discovered on ${SOURCE_URL}`,
+        try {
+          const $ = await fetchHtml(SOURCE_URL)
+          const links = findLinks($, SOURCE_URL, (href, text) => {
+            if (!/\.(xlsx|xls)(\?|$)/i.test(href)) return false
+            const t = `${href} ${text}`.toLowerCase()
+            return /non[\s-]?life|monthly|business/.test(t)
+          })
+          if (links.length > 0) {
+            xlsxUrl = links.sort().reverse()[0]
+            filename = (xlsxUrl.split('/').pop() ?? filename).split('?')[0]
+            const fetched = await fetchBuffer(xlsxUrl)
+            buffer = fetched.buffer
+            raw_file = await writeRaw('irdai/monthly', filename, buffer)
+          } else {
+            liveError = `No XLSX link discovered on ${SOURCE_URL}`
           }
+        } catch (err) {
+          liveError = err instanceof Error ? err.message : String(err)
+          await appendLog('ingest-irdai-monthly.log', { source: SOURCE_ID, status: 'live_blocked', error: liveError })
         }
-        xlsxUrl = links.sort().reverse()[0]
-        const last = xlsxUrl.split('/').pop() ?? filename
-        filename = last.split('?')[0]
       }
 
-      // Step 2: fetch (live) or load (offline) the raw XLSX.
-      const { buffer, raw_file, mode } = await fetchOrLoadRaw(
-        xlsxUrl ?? SOURCE_URL,
-        'irdai/monthly',
-        filename,
-        /\.(xlsx|xls)$/i,
-      )
+      // Fall back to a manually-staged file when the live source yielded nothing.
+      if (!buffer) {
+        const staged = await loadStagedRaw('irdai/monthly', /\.(xlsx|xls)$/i)
+        if (staged) {
+          buffer = staged.buffer
+          raw_file = staged.raw_file
+          filename = staged.raw_file.split('/').pop() ?? filename
+          mode = 'staged'
+          await appendLog('ingest-irdai-monthly.log', { source: SOURCE_ID, status: 'using_staged_file', raw_file, live_error: liveError })
+        }
+      }
 
-      // Step 3: parse + extract per-insurer GDPI.
+      // No live data and no staged file → honest failure (never fabricate).
+      if (!buffer) {
+        const error = liveError ?? 'IRDAI monthly source unavailable and no staged file present.'
+        await appendLog('ingest-irdai-monthly.log', { source: SOURCE_ID, status: 'no_data', error })
+        return {
+          source_id: SOURCE_ID,
+          status: 'failed',
+          raw_file: null,
+          records: [],
+          records_fetched: 0,
+          fetched_at,
+          error,
+          warnings: [
+            'To populate Monthly: download the IRDAI "Monthly Business Figures – Non-Life Insurers" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.',
+          ],
+        }
+      }
+
+      // Step 2: parse + extract per-insurer GDPI.
       const { sheets } = parseXlsx(buffer)
       const sheetName = Object.keys(sheets)[0]
       const rows = sheets[sheetName] ?? []
