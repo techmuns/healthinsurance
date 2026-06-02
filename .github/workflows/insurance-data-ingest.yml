@@ -125,4 +125,4 @@ jobs:
             echo "No snapshot changes — nothing to commit."
           fi
 
-# ingest re-trigger marker (bump to re-run a cadence via push): run-2026-06-02b
+# ingest re-trigger marker (bump to re-run a cadence via push): run-2026-06-02c
