@@ -9,7 +9,6 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy",
     "ingest": "tsx scripts/ingest/ingest-all.ts",
     "ingest:monthly": "CADENCE=monthly tsx scripts/ingest/ingest-all.ts",
     "ingest:quarterly": "CADENCE=quarterly tsx scripts/ingest/ingest-all.ts",
