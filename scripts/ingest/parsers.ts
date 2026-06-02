@@ -91,6 +91,30 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
     const buf = await browserGet(url, { binary }).catch(() => null)
     if (buf && buf.length) return { buffer: buf, finalUrl: url }
   }
+  // Third tier: an optional fetch proxy for hosts that block datacenter IPs at
+  // the network level. IRDAI and NSE return a standing 403 to GitHub Actions
+  // even through headless Chrome (same datacenter IP), so the request has to
+  // leave from a non-blocked / in-region IP. Set INGEST_FETCH_PROXY to a URL
+  // template containing the literal `{url}` placeholder (the target is
+  // URL-encoded into it) — vendor-neutral, so any proxy / scraping API that
+  // returns the raw bytes works, e.g.:
+  //   https://api.scraperapi.com/?api_key=KEY&country_code=in&url={url}
+  // No-ops (unchanged behaviour) when the env var is unset.
+  if (blocked && !isOfflineMode()) {
+    const tmpl = process.env.INGEST_FETCH_PROXY
+    if (tmpl && tmpl.includes('{url}')) {
+      try {
+        const res = await fetch(tmpl.replace('{url}', encodeURIComponent(url)), { redirect: 'follow' })
+        if (res.ok) {
+          const ab = await res.arrayBuffer()
+          if (ab.byteLength) return { buffer: Buffer.from(ab), finalUrl: url }
+        }
+        lastErr = new Error(`Proxy HTTP ${res.status} for ${url}`)
+      } catch (err) {
+        lastErr = err
+      }
+    }
+  }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr))
 }
 

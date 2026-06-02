@@ -108,6 +108,12 @@ jobs:
         env:
           CADENCE: ${{ steps.cadence.outputs.value }}
           INGEST_OFFLINE: ${{ steps.net.outputs.offline }}
+          # Optional: a fetch-proxy URL template (with a {url} placeholder) for
+          # sources that block datacenter IPs (IRDAI / NSE return 403 to the
+          # runner). Set this repo secret once and every future cron fetches
+          # them automatically; unset = unchanged behaviour (those sources stay
+          # pending, never fabricated).
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
         run: npx tsx scripts/ingest/ingest-all.ts
 
       - name: Show data-health
