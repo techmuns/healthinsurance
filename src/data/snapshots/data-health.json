@@ -1,8 +1,8 @@
 {
   "last_successful_run": "2026-06-02T12:33:07.024Z",
-  "last_failed_run": "2026-06-02T12:33:07.024Z",
+  "last_failed_run": "2026-06-02T14:27:36.029Z",
   "sources_checked": 2,
-  "sources_success": 1,
+  "sources_success": 0,
   "sources_failed": 1,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
@@ -200,7 +200,12 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[distribution_extract] star-health: no NL-36 / channel-mix table found in 1 PDF(s)."
+    "[irdai_monthly_business] To populate Monthly: download the IRDAI \"Monthly Business Figures – Non-Life Insurers\" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.",
+    "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
+    "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
+    "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
+    "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
+    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE"
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -215,7 +220,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-02T09:50:24.724Z",
+      "last_attempt_at": "2026-06-02T14:27:29.988Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -363,7 +368,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-02T09:50:28.907Z",
+      "last_attempt_at": "2026-06-02T14:27:34.901Z",
       "last_success_at": null,
       "records_fetched": 0
     }
