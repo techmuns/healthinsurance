@@ -1,0 +1,29 @@
+name: probe-keyless
+
+# Temporary, fast probe: can a free keyless middleman (public reader / CORS
+# proxy / Wayback archive) reach IRDAI from the runner? ~1-2 min, no ingestion,
+# commits nothing. Deleted once answered.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/probe-keyless.ts'
+      - '.github/workflows/probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Probe free keyless middlemen
+        run: npx tsx scripts/probe-keyless.ts
