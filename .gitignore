@@ -24,3 +24,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# Health-insurance scraper — alternate raw cache (keep the dir, ignore contents)
+/raw/*
+!/raw/.gitkeep

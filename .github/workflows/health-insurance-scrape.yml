@@ -1,0 +1,94 @@
+name: health-insurance-scrape
+
+# Discovers, catalogs and extracts public disclosures for the Indian health
+# insurers, then commits the refreshed dashboard JSON. Blocked sources (IRDAI /
+# NSE / WAF-fronted company pages return 403 to cloud IPs) are recorded and
+# skipped — never bypassed. The run fails only on code / schema / corruption
+# errors; partial source outages still produce valid output and exit 0.
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'Company name to scrape (blank = all)'
+        required: false
+        default: ''
+      slug:
+        description: 'Company slug to scrape, e.g. niva-bupa (blank = all)'
+        required: false
+        default: ''
+      live:
+        description: 'Attempt live discovery (sources may be blocked)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+  schedule:
+    # 01:00 and 14:00 UTC daily.
+    - cron: '0 1,14 * * *'
+
+permissions:
+  contents: write
+
+# Cancel an in-flight run when a newer one starts, so scrapes don't pile up.
+concurrency:
+  group: health-insurance-scrape-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Lint scraper (non-fatal)
+        continue-on-error: true
+        run: npx eslint scripts/health-insurance scripts/scrape-health-insurance.ts scripts/validate-health-insurance-data.ts
+
+      - name: Run scraper
+        env:
+          # Scheduled runs go live; a manual dispatch can force a dry run.
+          HI_LIVE: ${{ (github.event_name == 'workflow_dispatch' && inputs.live == 'false') && '0' || '1' }}
+          HI_COMPANY: ${{ inputs.company }}
+          HI_SLUG: ${{ inputs.slug }}
+          # Optional: set HI_DOWNLOAD=1 (+ object-store secrets) to persist raw
+          # files where access is permitted. Off by default to keep the repo lean.
+          HI_DOWNLOAD: '0'
+        run: npx tsx scripts/scrape-health-insurance.ts
+
+      - name: Validate JSON schemas (hard gate)
+        run: npx tsx scripts/validate-health-insurance-data.ts
+
+      - name: Show run report
+        run: |
+          echo "::group::run-report.json"
+          cat data/run-report.json
+          echo "::endgroup::"
+
+      - name: Commit changed data
+        run: |
+          git config user.name "health-insurance-bot"
+          git config user.email "health-insurance-bot@users.noreply.github.com"
+          # Commit only the dashboard JSON artifacts — never raw PDFs.
+          git add data/star-health.json data/niva-bupa.json data/care-health.json \
+                  data/manipal-cigna.json data/aditya-birla-health.json \
+                  data/run-report.json data/source-status.json data/extraction-review-queue.json
+          if ! git diff --staged --quiet; then
+            git commit -m "data(health-insurance): scrape run @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          else
+            echo "No data changes — nothing to commit."
+          fi

@@ -1,0 +1,1084 @@
+{
+  "company": "Star Health & Allied Insurance",
+  "slug": "star-health",
+  "lastUpdated": "2026-06-02T19:14:17.073Z",
+  "documents": {
+    "quarterlyResults": [],
+    "annualReports": [
+      {
+        "title": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "publishedDate": null,
+        "period": "FY2025",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "finalUrl": null,
+        "localPath": "/home/user/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "documentType": "annual_report",
+        "sourceType": "company_ir",
+        "fileType": "pdf",
+        "downloadedAt": null,
+        "hash": "ec64a2507d86b62402321916f2132197a1593e5019fff8d2511483e013b4961b",
+        "status": "downloaded"
+      }
+    ],
+    "transcripts": [],
+    "stockExchangeFilings": [],
+    "irdaiDisclosures": [],
+    "otherDisclosures": []
+  },
+  "metrics": {
+    "gwp": [
+      {
+        "metric": "gwp",
+        "label": "Gross Written Premium",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 17553,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 18,
+        "extractedText": "Gross Written Premium (GWP) grew by 15%, reaching Rs. 17,553 crores. Re",
+        "confidence": 0.75,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "grossDirectPremium": [
+      {
+        "metric": "grossDirectPremium",
+        "label": "Gross Direct Premium",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 16716.2,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 95,
+        "extractedText": "Gross Direct Premium16,716.2015,254.45",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "retailHealthPremium": [],
+    "groupHealthPremium": [],
+    "individualPremium": [],
+    "corporatePremium": [],
+    "netWrittenPremium": [
+      {
+        "metric": "netWrittenPremium",
+        "label": "Net Written Premium",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 16479,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 234,
+        "extractedText": "Net Written Premium - - - - - - - - 16,479 1,390,090 167",
+        "confidence": 0.75,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "netEarnedPremium": [
+      {
+        "metric": "netEarnedPremium",
+        "label": "Net Earned Premium",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 14822.2,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 95,
+        "extractedText": "Net Earned Premium14,822.2012,938.27",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "grossEarnedPremium": [],
+    "pat": [
+      {
+        "metric": "pat",
+        "label": "Profit After Tax",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 787,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "Company’s profit before tax stood at Rs. 1,054 crores and profit after tax at Rs. 787 crores, compared to Rs. 1,480 crores and Rs. 1,103 crores",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "pbt": [
+      {
+        "metric": "pbt",
+        "label": "Profit Before Tax",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 1054,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "Company’s profit before tax stood at Rs. 1,054 crores and profit after tax at Rs. 787 crores, compared to Rs. 1,480 crores and Rs. 1,103 crores",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "underwritingProfit": [],
+    "underwritingLoss": [],
+    "operatingProfit": [],
+    "roe": [
+      {
+        "metric": "roe",
+        "label": "Return on Equity",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 9.5,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 18,
+        "extractedText": "on Equity (ROE) for the year was 9.5%. As of 31 March, 2025, our",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "roa": [],
+    "incurredClaimsRatio": [],
+    "grossClaimsRatio": [],
+    "netClaimsRatio": [],
+    "claimSettlementRatio": [
+      {
+        "metric": "claimSettlementRatio",
+        "label": "Claim Settlement Ratio",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 70.3,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 18,
+        "extractedText": "claim settlement ratio of 70.3%, reflecting our on",
+        "confidence": 0.9,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "claimsPaid": [
+      {
+        "metric": "claimsPaid",
+        "label": "Claims Paid",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 10353.27,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 95,
+        "extractedText": "Claims Paid10,353.278,913.60",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "claimsIncurred": [
+      {
+        "metric": "claimsIncurred",
+        "label": "Claims Incurred",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 10419.37,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 95,
+        "extractedText": "Net Incurred Claims10,419.378,593.96",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "claimsReported": [],
+    "claimsProcessed": [],
+    "claimsOutstanding": [
+      {
+        "metric": "claimsOutstanding",
+        "label": "Claims Outstanding",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 147306,
+        "unit": "count",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 205,
+        "extractedText": "Claims Outstanding 147,306 90,741 9Due to",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "combinedRatio": [
+      {
+        "metric": "combinedRatio",
+        "label": "Combined Ratio",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 101.1,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "Star Health, under IND AS, has a combined ratio of 101.1%, compared to 97.3% in FY 2024. The Company saw an increase in its claims ratio to",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "expenseRatio": [
+      {
+        "metric": "expenseRatio",
+        "label": "Expense Ratio",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 30.4,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "expense ratio to 30.4%. Star Health repor",
+        "confidence": 0.9,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "commissionRatio": [],
+    "operatingExpenseRatio": [],
+    "managementExpenseRatio": [],
+    "solvencyRatio": [
+      {
+        "metric": "solvencyRatio",
+        "label": "Solvency Ratio",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 2.21,
+        "unit": "x",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 18,
+        "extractedText": "solvency ratio stood at 2.21 times, well above the regulatory",
+        "confidence": 0.99,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "netWorth": [
+      {
+        "metric": "netWorth",
+        "label": "Net Worth",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 7022.02,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 139,
+        "extractedText": "Net worth (in `)` 7,022.02 Cr",
+        "confidence": 0.99,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "shareholdersFunds": [
+      {
+        "metric": "shareholdersFunds",
+        "label": "Shareholders' Funds",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 3553,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 191,
+        "extractedText": "- SHAREHOLDERS' FUNDS 3,553 4,236",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "investmentAssets": [
+      {
+        "metric": "investmentAssets",
+        "label": "Investment Assets",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 17889,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "from Rs. 1,171 crores in the previous year, delivering a yield of 7.7%. The Company’s investment assets rose by 15.5% to Rs. 17,889 crores. The",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "investmentIncome": [
+      {
+        "metric": "investmentIncome",
+        "label": "Investment Income",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 1279.03,
+        "unit": "INR Cr",
+        "currency": "INR",
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 95,
+        "extractedText": "Investment Income1,279.031,083.11",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "aum": [],
+    "agencyChannel": [],
+    "bancassurance": [
+      {
+        "metric": "bancassurance",
+        "label": "Bancassurance",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 7,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "Banca Assurance Channel: The Banca channel contributed 7% to the Company’s business in FY 2025, with a 13% YoY increase in fresh",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "brokerChannel": [],
+    "corporateAgents": [],
+    "digitalChannel": [],
+    "directSales": [],
+    "onlineSales": [
+      {
+        "metric": "onlineSales",
+        "label": "Online Sales",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 72,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 77,
+        "extractedText": "direct-to-consumer platforms and digital partners. Star Health’s own online channel contributed 72% of the digital business, while the remaining",
+        "confidence": 0.99,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "webAggregator": [
+      {
+        "metric": "webAggregator",
+        "label": "Web Aggregator Channel",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 32.59,
+        "unit": "%",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 14,
+        "extractedText": "Web aggregators Number of Sales Manager Stations 32.59% 57.63% 7 lakhs+",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "networkHospitals": [
+      {
+        "metric": "networkHospitals",
+        "label": "Network Hospitals",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 2122,
+        "unit": "count",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 32,
+        "extractedText": "spanning 14,500+ network hospitals across 2,122 cities pan-India.",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ],
+    "cashlessHospitals": [],
+    "livesCovered": [
+      {
+        "metric": "livesCovered",
+        "label": "Lives Covered",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 1900000,
+        "unit": "count",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 7,
+        "extractedText": "lives covered since inception 19 lakhs+ Claims settled",
+        "confidence": 0.75,
+        "tag": "confirmed",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "text_pattern"
+      }
+    ],
+    "activePolicies": [],
+    "renewalRatio": [],
+    "branches": [],
+    "agents": [
+      {
+        "metric": "agents",
+        "label": "Number of Agents / Advisors",
+        "period": "FY2025",
+        "periodType": "annual",
+        "fiscalYear": "FY2025",
+        "quarter": null,
+        "value": 700000,
+        "unit": "count",
+        "currency": null,
+        "company": "Star Health & Allied Insurance",
+        "slug": "star-health",
+        "source": "Company IR / Disclosure",
+        "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+        "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+        "documentType": "annual_report",
+        "pageNumber": 76,
+        "extractedText": "Company’s total number of individual agents grew from 7 lakhs in FY 2024 to 7.8 lakhs in FY 2025.",
+        "confidence": 0.5,
+        "tag": "review_required",
+        "extractedAt": "2026-06-02T19:14:16.896Z",
+        "method": "table"
+      }
+    ]
+  },
+  "sourceStatus": [
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "company_ir",
+      "id": "star-health:company_ir:0",
+      "url": "https://www.starhealth.in/investor-relations",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "company_ir",
+      "id": "star-health:company_ir:1",
+      "url": "https://www.starhealth.in/investors/financial-information/",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "exchange",
+      "id": "star-health:nse",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "exchange",
+      "id": "star-health:bse",
+      "url": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    }
+  ],
+  "reviewQueue": [
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "company_ir blocked (HTTP 403) at https://www.starhealth.in/investor-relations",
+      "sourceUrl": "https://www.starhealth.in/investor-relations",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "company_ir blocked (HTTP 403) at https://www.starhealth.in/investors/financial-information/",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "exchange blocked (HTTP 403) at https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "sourceUrl": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "exchange blocked (HTTP 403) at https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "sourceUrl": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/public-disclosures",
+      "sourceUrl": "https://irdai.gov.in/public-disclosures",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/annual-reports",
+      "sourceUrl": "https://irdai.gov.in/annual-reports",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "sourceUrl": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Gross Direct Premium = 16716.2 INR Cr (FY2025) confidence 0.5",
+      "metric": "grossDirectPremium",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 16716.2,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Earned Premium = 14822.2 INR Cr (FY2025) confidence 0.5",
+      "metric": "netEarnedPremium",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 14822.2,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit After Tax = 787 INR Cr (FY2025) confidence 0.5",
+      "metric": "pat",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 787,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit Before Tax = 1054 INR Cr (FY2025) confidence 0.5",
+      "metric": "pbt",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 1054,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Equity = 9.5 % (FY2025) confidence 0.5",
+      "metric": "roe",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 9.5,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Paid = 10353.27 INR Cr (FY2025) confidence 0.5",
+      "metric": "claimsPaid",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 10353.27,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Incurred = 10419.37 INR Cr (FY2025) confidence 0.5",
+      "metric": "claimsIncurred",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 10419.37,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Outstanding = 147306 count (FY2025) confidence 0.5",
+      "metric": "claimsOutstanding",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 147306,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Combined Ratio = 101.1 % (FY2025) confidence 0.5",
+      "metric": "combinedRatio",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 101.1,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Shareholders' Funds = 3553 INR Cr (FY2025) confidence 0.5",
+      "metric": "shareholdersFunds",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 3553,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Investment Assets = 17889 INR Cr (FY2025) confidence 0.5",
+      "metric": "investmentAssets",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 17889,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Investment Income = 1279.03 INR Cr (FY2025) confidence 0.5",
+      "metric": "investmentIncome",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 1279.03,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Bancassurance = 7 % (FY2025) confidence 0.5",
+      "metric": "bancassurance",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 7,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Web Aggregator Channel = 32.59 % (FY2025) confidence 0.5",
+      "metric": "webAggregator",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 32.59,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Network Hospitals = 2122 count (FY2025) confidence 0.5",
+      "metric": "networkHospitals",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 2122,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Number of Agents / Advisors = 700000 count (FY2025) confidence 0.5",
+      "metric": "agents",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 700000,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    }
+  ]
+}

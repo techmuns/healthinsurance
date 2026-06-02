@@ -1,0 +1,2383 @@
+{
+  "runStartedAt": "2026-06-02T19:14:10.637Z",
+  "runFinishedAt": "2026-06-02T19:15:22.066Z",
+  "ok": true,
+  "companiesProcessed": 5,
+  "documentsDiscovered": 1599,
+  "documentsDownloaded": 0,
+  "metricsExtracted": 27,
+  "sources": [
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "company_ir",
+      "url": "https://www.starhealth.in/investor-relations",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "company_ir",
+      "url": "https://www.starhealth.in/investors/financial-information/",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "exchange",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "exchange",
+      "url": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "company_ir",
+      "url": "(local raw cache)",
+      "status": "ok",
+      "count": 24,
+      "error": null
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "company_ir",
+      "url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "exchange",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "company_ir",
+      "url": "(local raw cache)",
+      "status": "ok",
+      "count": 358,
+      "error": null
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.careinsurance.com/about-us/financial-information.html",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "company_ir",
+      "url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "company_ir",
+      "url": "(local raw cache)",
+      "status": "ok",
+      "count": 107,
+      "error": null
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.manipalcigna.com/disclosures/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "company_ir",
+      "url": "(local raw cache)",
+      "status": "skipped",
+      "count": 0,
+      "error": null
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "company_ir",
+      "url": "(local raw cache)",
+      "status": "ok",
+      "count": 0,
+      "error": null
+    }
+  ],
+  "blockedSources": [
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "company_ir",
+      "url": "https://www.starhealth.in/investor-relations",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "company_ir",
+      "url": "https://www.starhealth.in/investors/financial-information/",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "exchange",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "exchange",
+      "url": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "company_ir",
+      "url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "exchange",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.careinsurance.com/about-us/financial-information.html",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "company_ir",
+      "url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Care Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.manipalcigna.com/disclosures/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "company_ir",
+      "url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "source": "irdai",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "count": 0,
+      "error": "HTTP 403"
+    }
+  ],
+  "failedSources": [],
+  "reviewRequiredCount": 532,
+  "reviewRequired": [
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "company_ir blocked (HTTP 403) at https://www.starhealth.in/investor-relations",
+      "sourceUrl": "https://www.starhealth.in/investor-relations",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "company_ir blocked (HTTP 403) at https://www.starhealth.in/investors/financial-information/",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "exchange blocked (HTTP 403) at https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "sourceUrl": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "exchange blocked (HTTP 403) at https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "sourceUrl": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/public-disclosures",
+      "sourceUrl": "https://irdai.gov.in/public-disclosures",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/annual-reports",
+      "sourceUrl": "https://irdai.gov.in/annual-reports",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "sourceUrl": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "createdAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Gross Direct Premium = 16716.2 INR Cr (FY2025) confidence 0.5",
+      "metric": "grossDirectPremium",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 16716.2,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Earned Premium = 14822.2 INR Cr (FY2025) confidence 0.5",
+      "metric": "netEarnedPremium",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 14822.2,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit After Tax = 787 INR Cr (FY2025) confidence 0.5",
+      "metric": "pat",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 787,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit Before Tax = 1054 INR Cr (FY2025) confidence 0.5",
+      "metric": "pbt",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 1054,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Equity = 9.5 % (FY2025) confidence 0.5",
+      "metric": "roe",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 9.5,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Paid = 10353.27 INR Cr (FY2025) confidence 0.5",
+      "metric": "claimsPaid",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 10353.27,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Incurred = 10419.37 INR Cr (FY2025) confidence 0.5",
+      "metric": "claimsIncurred",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 10419.37,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Claims Outstanding = 147306 count (FY2025) confidence 0.5",
+      "metric": "claimsOutstanding",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 147306,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Combined Ratio = 101.1 % (FY2025) confidence 0.5",
+      "metric": "combinedRatio",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 101.1,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Shareholders' Funds = 3553 INR Cr (FY2025) confidence 0.5",
+      "metric": "shareholdersFunds",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 3553,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Investment Assets = 17889 INR Cr (FY2025) confidence 0.5",
+      "metric": "investmentAssets",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 17889,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Investment Income = 1279.03 INR Cr (FY2025) confidence 0.5",
+      "metric": "investmentIncome",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 1279.03,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Bancassurance = 7 % (FY2025) confidence 0.5",
+      "metric": "bancassurance",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 7,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Web Aggregator Channel = 32.59 % (FY2025) confidence 0.5",
+      "metric": "webAggregator",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 32.59,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Network Hospitals = 2122 count (FY2025) confidence 0.5",
+      "metric": "networkHospitals",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 2122,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "star-health",
+      "company": "Star Health & Allied Insurance",
+      "reason": "low_confidence",
+      "detail": "Number of Agents / Advisors = 700000 count (FY2025) confidence 0.5",
+      "metric": "agents",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 700000,
+          "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547",
+      "sourceUrl": "https://www.starhealth.in/investors/financial-information/",
+      "createdAt": "2026-06-02T19:14:17.073Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "blocked_source",
+      "detail": "company_ir blocked (HTTP 403) at https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "blocked_source",
+      "detail": "exchange blocked (HTTP 403) at https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "sourceUrl": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "createdAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/public-disclosures",
+      "sourceUrl": "https://irdai.gov.in/public-disclosures",
+      "createdAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/annual-reports",
+      "sourceUrl": "https://irdai.gov.in/annual-reports",
+      "createdAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "blocked_source",
+      "detail": "irdai blocked (HTTP 403) at https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "sourceUrl": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "createdAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting gwp values for Q4FY2026: 5607.6 vs 9433",
+      "metric": "gwp",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 5607.6,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 9433,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting gwp values for Q4FY2025: 7407 vs 7406",
+      "metric": "gwp",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 7407,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 7406,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting pat values for Q3FY2026: 208 vs 120",
+      "metric": "pat",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 208,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 120,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting pat values for Q4FY2026: 202.93 vs 366",
+      "metric": "pat",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 202.93,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 366,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting pat values for Q4FY2025: 214 vs 203.3",
+      "metric": "pat",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 214,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 203.3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting pat values for FY2010: 8764 vs 9144 vs 3527 vs 1882",
+      "metric": "pat",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 8764,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 9144,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 3527,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 1882,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting roe values for Q4FY2026: 6.8 vs 11",
+      "metric": "roe",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 6.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 11,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting claimSettlementRatio values for Q3FY2026: 94.1 vs 95",
+      "metric": "claimSettlementRatio",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 94.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 95,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting claimsPaid values for FY2010: 20682 vs 19674 vs 20238 vs 75912 vs 81869",
+      "metric": "claimsPaid",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 20682,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 19674,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 20238,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 75912,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 81869,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting combinedRatio values for Q1FY2026: 98.8 vs 103.9",
+      "metric": "combinedRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 98.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 103.9,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting combinedRatio values for Q4FY2026: 98.8 vs 97 vs 86.12",
+      "metric": "combinedRatio",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 98.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 97,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 86.12,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting combinedRatio values for Q4FY2025: 96 vs 101.2 vs 92.78",
+      "metric": "combinedRatio",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 96,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 101.2,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 92.78,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting combinedRatio values for Q3FY2025: 100.9 vs 108.29",
+      "metric": "combinedRatio",
+      "period": "Q3FY2025",
+      "values": [
+        {
+          "value": 100.9,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 108.29,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting combinedRatio values for FY2010: 108.19 vs 116.97 vs 111.72 vs 106 vs 101.3",
+      "metric": "combinedRatio",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 108.19,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 116.97,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 111.72,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 106,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 101.3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting commissionRatio values for 9MFY2010: 3 vs 4",
+      "metric": "commissionRatio",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 4,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting commissionRatio values for FY2010: 17.98 vs 20.17 vs 19.3 vs 20 vs 20.12",
+      "metric": "commissionRatio",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 17.98,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 20.17,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 19.3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 20,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 20.12,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting solvencyRatio values for 9MFY2010: 1.76 vs 1.92",
+      "metric": "solvencyRatio",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 1.76,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 1.92,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting solvencyRatio values for FY2010: 2.49 vs 3 vs 2.85 vs 2.25",
+      "metric": "solvencyRatio",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 2.49,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 2.85,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 2.25,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting aum values for Q1FY2026: 5458.28 vs 8100",
+      "metric": "aum",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 5458.28,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 8100,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting aum values for Q3FY2026: 5458.28 vs 9000",
+      "metric": "aum",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 5458.28,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 9000,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting aum values for Q4FY2026: 5458.28 vs 9670",
+      "metric": "aum",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 5458.28,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 9670,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting aum values for Q4FY2025: 3366.15 vs 8175",
+      "metric": "aum",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 3366.15,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 8175,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting agents values for 9MFY2010: 46028 vs 37319",
+      "metric": "agents",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 46028,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 37319,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting agents values for FY2010: 173579 vs 214649",
+      "metric": "agents",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 173579,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 214649,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.895Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting netEarnedPremium values for Q4FY2025: 2662.83 vs 4894",
+      "metric": "netEarnedPremium",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 2662.83,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 4894,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting netEarnedPremium values for Q3FY2025: 327 vs 93011",
+      "metric": "netEarnedPremium",
+      "period": "Q3FY2025",
+      "values": [
+        {
+          "value": 327,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 93011,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting netEarnedPremium values for 9MFY2010: 43689 vs 10892",
+      "metric": "netEarnedPremium",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 43689,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 10892,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting netEarnedPremium values for FY2010: 99724 vs 88026",
+      "metric": "netEarnedPremium",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 99724,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 88026,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting expenseRatio values for Q1FY2026: 39.8 vs 3.6",
+      "metric": "expenseRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 39.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 3.6,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting expenseRatio values for Q3FY2026: 40.1 vs 1.6",
+      "metric": "expenseRatio",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 40.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 1.6,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting expenseRatio values for Q4FY2026: 40.1 vs 2.7",
+      "metric": "expenseRatio",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 40.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 2.7,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting expenseRatio values for Q4FY2025: 43.2 vs 35.5",
+      "metric": "expenseRatio",
+      "period": "Q4FY2025",
+      "values": [
+        {
+          "value": 43.2,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 35.5,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting claimsIncurred values for Q4FY2026: 3726.4 vs 5000 vs 86156",
+      "metric": "claimsIncurred",
+      "period": "Q4FY2026",
+      "values": [
+        {
+          "value": 3726.4,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 5000,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 86156,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting claimsIncurred values for 9MFY2010: 17312 vs 11291",
+      "metric": "claimsIncurred",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 17312,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 11291,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting claimsIncurred values for FY2010: 73126 vs 94198 vs 73424 vs 63881 vs 73385",
+      "metric": "claimsIncurred",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 73126,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 94198,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 73424,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 63881,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 73385,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting operatingProfit values for FY2010: 13553 vs 14522 vs 6200 vs 5847",
+      "metric": "operatingProfit",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 13553,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 14522,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 6200,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 5847,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting investmentAssets values for 9MFY2010: 75038.95 vs 64490.74",
+      "metric": "investmentAssets",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 75038.95,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 64490.74,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting investmentAssets values for FY2010: 475201 vs 308478 vs 340047",
+      "metric": "investmentAssets",
+      "period": "FY2010",
+      "values": [
+        {
+          "value": 475201,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 308478,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 340047,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting shareholdersFunds values for 9MFY2010: 21267 vs 19181",
+      "metric": "shareholdersFunds",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 21267,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 19181,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "metric_conflict",
+      "detail": "Conflicting grossEarnedPremium values for 9MFY2010: 54936 vs 28953",
+      "metric": "grossEarnedPremium",
+      "period": "9MFY2010",
+      "values": [
+        {
+          "value": 54936,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        },
+        {
+          "value": 28953,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Gross Written Premium = 4073 INR Cr (FY2025) confidence 0.5",
+      "metric": "gwp",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 4073,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Written Premium = 3183.1 INR Cr (FY2025) confidence 0.5",
+      "metric": "netWrittenPremium",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 3183.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit After Tax = 214 INR Cr (FY2025) confidence 0.5",
+      "metric": "pat",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 214,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Equity = 1.9 % (FY2025) confidence 0.5",
+      "metric": "roe",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 1.9,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Assets = 6.35 % (FY2025) confidence 0.5",
+      "metric": "roa",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 6.35,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Combined Ratio = 96 % (FY2025) confidence 0.5",
+      "metric": "combinedRatio",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 96,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Commission Ratio = 16.92 % (FY2025) confidence 0.5",
+      "metric": "commissionRatio",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 16.92,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Solvency Ratio = 3 x (FY2025) confidence 0.5",
+      "metric": "solvencyRatio",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Assets Under Management = 8175.1 INR Cr (FY2025) confidence 0.5",
+      "metric": "aum",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 8175.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Agency Channel = 40 % (FY2025) confidence 0.5",
+      "metric": "agencyChannel",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 40,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Bancassurance = 24 % (FY2025) confidence 0.5",
+      "metric": "bancassurance",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 24,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Broker Channel = 37 % (FY2025) confidence 0.5",
+      "metric": "brokerChannel",
+      "period": "FY2025",
+      "values": [
+        {
+          "value": 37,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Annual-Report-FY-2024-25",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Gross Written Premium = 5607.66 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "gwp",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 5607.66,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Retail Health Premium = 3839.74 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "retailHealthPremium",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 3839.74,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Written Premium = 4421.05 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "netWrittenPremium",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 4421.05,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Earned Premium = 3811.24 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "netEarnedPremium",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 3811.24,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit After Tax = 70 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "pat",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 70,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Equity = 3 % (Q1FY2026) confidence 0.5",
+      "metric": "roe",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 3,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Claim Settlement Ratio = 73.9 % (Q1FY2026) confidence 0.5",
+      "metric": "claimSettlementRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 73.9,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Combined Ratio = 98.8 % (Q1FY2026) confidence 0.5",
+      "metric": "combinedRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 98.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Expense Ratio = 39.8 % (Q1FY2026) confidence 0.5",
+      "metric": "expenseRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 39.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Worth = 2049.63 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "netWorth",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 2049.63,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Assets Under Management = 5458.28 INR Cr (Q1FY2026) confidence 0.5",
+      "metric": "aum",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 5458.28,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Renewal Ratio = 4 % (Q1FY2026) confidence 0.5",
+      "metric": "renewalRatio",
+      "period": "Q1FY2026",
+      "values": [
+        {
+          "value": 4,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q1-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Gross Written Premium = 6309 INR Cr (Q3FY2026) confidence 0.5",
+      "metric": "gwp",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 6309,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Written Premium = 4421.05 INR Cr (Q3FY2026) confidence 0.5",
+      "metric": "netWrittenPremium",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 4421.05,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Net Earned Premium = 3811.24 INR Cr (Q3FY2026) confidence 0.5",
+      "metric": "netEarnedPremium",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 3811.24,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Profit After Tax = 208 INR Cr (Q3FY2026) confidence 0.5",
+      "metric": "pat",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 208,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Return on Equity = 5 % (Q3FY2026) confidence 0.5",
+      "metric": "roe",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 5,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Claim Settlement Ratio = 94.1 % (Q3FY2026) confidence 0.5",
+      "metric": "claimSettlementRatio",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 94.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Combined Ratio = 98.8 % (Q3FY2026) confidence 0.5",
+      "metric": "combinedRatio",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 98.8,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    },
+    {
+      "slug": "niva-bupa",
+      "company": "Niva Bupa Health Insurance",
+      "reason": "low_confidence",
+      "detail": "Expense Ratio = 40.1 % (Q3FY2026) confidence 0.5",
+      "metric": "expenseRatio",
+      "period": "Q3FY2026",
+      "values": [
+        {
+          "value": 40.1,
+          "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+          "source": "Company IR / Disclosure"
+        }
+      ],
+      "documentTitle": "niva-bupa-Earnings-Presentation-Q3-FY26",
+      "sourceUrl": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "createdAt": "2026-06-02T19:14:34.896Z"
+    }
+  ]
+}

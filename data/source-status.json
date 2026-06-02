@@ -1,0 +1,291 @@
+{
+  "generatedAt": "2026-06-02T19:15:22.066Z",
+  "sources": [
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "company_ir",
+      "id": "star-health:company_ir:0",
+      "url": "https://www.starhealth.in/investor-relations",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "company_ir",
+      "id": "star-health:company_ir:1",
+      "url": "https://www.starhealth.in/investors/financial-information/",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "exchange",
+      "id": "star-health:nse",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "exchange",
+      "id": "star-health:bse",
+      "url": "https://www.bseindia.com/stock-share-price/x/x/543412/",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Star Health & Allied Insurance",
+      "slug": "star-health",
+      "source": "irdai",
+      "id": "star-health:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:15.202Z"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "slug": "niva-bupa",
+      "source": "company_ir",
+      "id": "niva-bupa:company_ir:0",
+      "url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "slug": "niva-bupa",
+      "source": "exchange",
+      "id": "niva-bupa:nse",
+      "url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "slug": "niva-bupa",
+      "source": "irdai",
+      "id": "niva-bupa:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "slug": "niva-bupa",
+      "source": "irdai",
+      "id": "niva-bupa:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "company": "Niva Bupa Health Insurance",
+      "slug": "niva-bupa",
+      "source": "irdai",
+      "id": "niva-bupa:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:20.443Z"
+    },
+    {
+      "company": "Care Health Insurance",
+      "slug": "care-health",
+      "source": "company_ir",
+      "id": "care-health:company_ir:0",
+      "url": "https://www.careinsurance.com/about-us/financial-information.html",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:38.541Z"
+    },
+    {
+      "company": "Care Health Insurance",
+      "slug": "care-health",
+      "source": "company_ir",
+      "id": "care-health:company_ir:1",
+      "url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:38.541Z"
+    },
+    {
+      "company": "Care Health Insurance",
+      "slug": "care-health",
+      "source": "irdai",
+      "id": "care-health:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:38.541Z"
+    },
+    {
+      "company": "Care Health Insurance",
+      "slug": "care-health",
+      "source": "irdai",
+      "id": "care-health:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:38.541Z"
+    },
+    {
+      "company": "Care Health Insurance",
+      "slug": "care-health",
+      "source": "irdai",
+      "id": "care-health:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:38.541Z"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "slug": "manipal-cigna",
+      "source": "company_ir",
+      "id": "manipal-cigna:company_ir:0",
+      "url": "https://www.manipalcigna.com/disclosures/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:48.300Z"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "slug": "manipal-cigna",
+      "source": "company_ir",
+      "id": "manipal-cigna:company_ir:1",
+      "url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:48.301Z"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "slug": "manipal-cigna",
+      "source": "irdai",
+      "id": "manipal-cigna:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:48.301Z"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "slug": "manipal-cigna",
+      "source": "irdai",
+      "id": "manipal-cigna:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:48.301Z"
+    },
+    {
+      "company": "ManipalCigna Health Insurance",
+      "slug": "manipal-cigna",
+      "source": "irdai",
+      "id": "manipal-cigna:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:48.301Z"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "slug": "aditya-birla-health",
+      "source": "company_ir",
+      "id": "aditya-birla-health:company_ir:0",
+      "url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:53.420Z"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "slug": "aditya-birla-health",
+      "source": "irdai",
+      "id": "aditya-birla-health:irdai_public_disclosures",
+      "url": "https://irdai.gov.in/public-disclosures",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:53.420Z"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "slug": "aditya-birla-health",
+      "source": "irdai",
+      "id": "aditya-birla-health:irdai_annual_reports",
+      "url": "https://irdai.gov.in/annual-reports",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:53.420Z"
+    },
+    {
+      "company": "Aditya Birla Health Insurance",
+      "slug": "aditya-birla-health",
+      "source": "irdai",
+      "id": "aditya-birla-health:irdai_handbook",
+      "url": "https://irdai.gov.in/handbook-of-indian-insurance-statistics",
+      "status": "blocked",
+      "httpStatus": 403,
+      "error": "HTTP 403",
+      "checkedAt": "2026-06-02T19:14:53.420Z"
+    }
+  ]
+}
