@@ -71,11 +71,21 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ inputs.cadence }}" >> "$GITHUB_OUTPUT"
           else
-            # cron triggers — map by month-day window:
-            case "$(date -u +%m-%d)" in
-              12-*) echo "value=annual" >> "$GITHUB_OUTPUT" ;;
-              02-*|05-*|08-*|11-*) echo "value=quarterly" >> "$GITHUB_OUTPUT" ;;
-              *) echo "value=monthly" >> "$GITHUB_OUTPUT" ;;
+            # A push can request a specific cadence via a commit-message tag,
+            # e.g. "[ingest:quarterly]" / "[ingest:monthly]" / "[ingest:all]";
+            # otherwise fall back to the date-window mapping for cron triggers.
+            MSG="$(git log -1 --pretty=%B 2>/dev/null || true)"
+            case "$MSG" in
+              *"[ingest:all]"*)       echo "value=all"       >> "$GITHUB_OUTPUT" ;;
+              *"[ingest:annual]"*)    echo "value=annual"    >> "$GITHUB_OUTPUT" ;;
+              *"[ingest:quarterly]"*) echo "value=quarterly" >> "$GITHUB_OUTPUT" ;;
+              *"[ingest:monthly]"*)   echo "value=monthly"   >> "$GITHUB_OUTPUT" ;;
+              *)
+                case "$(date -u +%m-%d)" in
+                  12-*) echo "value=annual" >> "$GITHUB_OUTPUT" ;;
+                  02-*|05-*|08-*|11-*) echo "value=quarterly" >> "$GITHUB_OUTPUT" ;;
+                  *) echo "value=monthly" >> "$GITHUB_OUTPUT" ;;
+                esac ;;
             esac
           fi
 
@@ -114,3 +124,5 @@ jobs:
           else
             echo "No snapshot changes — nothing to commit."
           fi
+
+# ingest re-trigger marker (bump to re-run a cadence via push): run-2026-06-02a
