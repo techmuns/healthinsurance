@@ -4,8 +4,8 @@
     "description": "Quarterly company financials — GWP, NWP, NEP, PAT, combined ratio, solvency, ROE — drawn from quarterly disclosures.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-05-30",
-    "last_successful_run": "2026-05-30T17:10:38.696Z",
+    "last_updated": "2026-06-02",
+    "last_successful_run": "2026-06-02T17:46:12.494Z",
     "upstream_sources": [
       "irdai_public_disclosures",
       "company_ir"
@@ -941,6 +941,27 @@
         "source_period": "Q4 FY22",
         "fetched_at": "2026-05-30T17:00:01.796Z",
         "parsed_at": "2026-05-30T17:01:52.974Z",
+        "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "icici-lombard",
+      "quarter": "Q3",
+      "fiscal_year": "FY26",
+      "combined_ratio": 104.4,
+      "claims_ratio": 70,
+      "commission_ratio": null,
+      "expense_ratio": null,
+      "solvency_ratio": null,
+      "period_type": "quarterly",
+      "provenance": {
+        "source_name": "icici-lombard Q3 FY26 public disclosure",
+        "source_url": "https://www.icicilombard.com/docs/default-source/public-disclosures/2022-2023/q2/nl-20---q3-fy23_final.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/icici-lombard/icici-lombard-nl-20---q3-fy23_final.pdf",
+        "source_period": "Q3 FY26",
+        "fetched_at": "2026-06-02T17:35:00.498Z",
+        "parsed_at": "2026-06-02T17:45:30.840Z",
         "parser_name": "ingest-quarterly-disclosures",
         "confidence": "high"
       }
