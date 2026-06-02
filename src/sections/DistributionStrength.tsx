@@ -12,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Info, MapPin, Sparkles } from 'lucide-react'
+import { Building2, Info, Lock, MapPin, Sparkles, Wallet } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
@@ -415,45 +415,76 @@ function DependenceCard() {
   const { peerGroup } = useFilters()
   const gate = usePeriodGate()
   const rows = getChannelDependencePeerData(company.id, peerGroup)
+  const data = getCompanyDistributionData(company.id)
 
   const self = rows.find((r) => r.focal)
   const others = rows.filter((r) => !r.focal)
-  const otherAvg = others.length
-    ? others.reduce((s, r) => s + r.value, 0) / others.length
-    : 0
-  // Signal chip — frames the chart's verdict before the eye reads the bar:
-  // Balanced (focal below peer avg), Moderate (within ±4pp), Concentration
-  // risk (focal materially above peer avg).
+  const hasPeers = others.length >= 1
   const peerLabel = peerGroup === 'All' ? 'peer' : peerGroup.toLowerCase()
-  const signal: { label: string; tone: 'positive' | 'navy' | 'warning' } = self
-    ? self.value < otherAvg - 4
-      ? { label: 'Balanced', tone: 'positive' }
-      : self.value > otherAvg + 4
-        ? { label: 'Concentration risk', tone: 'warning' }
-        : { label: 'Moderate dependence', tone: 'navy' }
-    : { label: 'Pending', tone: 'navy' }
-  const signalClass =
-    signal.tone === 'positive'
+
+  // Real latest-period concentration for the focal company (no fabricated peers).
+  const latest = data?.latest ?? null
+  const prior = data && data.mix.length >= 2 ? data.mix[data.mix.length - 2] : null
+  const ranked = latest
+    ? (DIST_CHANNELS as readonly DistChannel[]).map((ch) => ({ ch, val: latest[ch] })).sort((a, b) => b.val - a.val)
+    : []
+  const top = ranked[0] ?? null
+  const second = ranked[1] ?? null
+  const top2 = top && second ? top.val + second.val : null
+  const agencyYoY = latest && prior ? latest.Agents - prior.Agents : null
+
+  // Honest single-channel verdict from the actual mix — "single-channel risk"
+  // only when one channel truly dominates, never just because peers are absent.
+  const conc: { label: string; tone: 'positive' | 'navy' | 'warning' } = top == null
+    ? { label: 'Pending', tone: 'navy' }
+    : top.val >= 45
+      ? { label: 'Single-channel risk', tone: 'warning' }
+      : top.val >= 38 || (top2 != null && top2 >= 66)
+        ? { label: 'Moderate concentration', tone: 'navy' }
+        : { label: 'Diversified', tone: 'positive' }
+
+  // Peer-relative verdict when ≥2 insurers have data; else the concentration read.
+  const otherAvg = others.length ? others.reduce((s, r) => s + r.value, 0) / others.length : 0
+  const peerSignal: { label: string; tone: 'positive' | 'navy' | 'warning' } | null =
+    hasPeers && self
+      ? self.value < otherAvg - 4
+        ? { label: 'Balanced vs peers', tone: 'positive' }
+        : self.value > otherAvg + 4
+          ? { label: 'Concentration risk', tone: 'warning' }
+          : { label: 'Moderate dependence', tone: 'navy' }
+      : null
+  const badge = peerSignal ?? conc
+
+  const badgeClass =
+    badge.tone === 'positive'
       ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
-      : signal.tone === 'warning'
+      : badge.tone === 'warning'
         ? 'bg-champagne-soft text-champagne-deep ring-[#EAD9B6]'
         : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
   const insightTint =
-    signal.tone === 'positive'
+    badge.tone === 'positive'
       ? 'border-[#BFE3E1] bg-[#F1F8F6]'
-      : signal.tone === 'warning'
+      : badge.tone === 'warning'
         ? 'border-[#EAD9B6] bg-[#FBF6EA]'
         : 'border-[#D6E2FA] bg-[#F2F5FC]'
-  const dependenceLine = self
-    ? self.value < otherAvg - 4
-      ? `${company.shortName} is materially less agency-heavy than its ${peerLabel} peers — reducing single-channel dependence.`
-      : self.value > otherAvg + 4
-        ? `${company.shortName} is more agency-reliant than its ${peerLabel} peers — single-channel risk to watch.`
-        : `${company.shortName}'s agency dependence sits close to the ${peerLabel} median.`
-    : `Agency share not wired for ${company.shortName}.`
+
+  // Short, sharp insight line.
+  const insight = !self || !top
+    ? `Channel mix not wired for ${company.shortName}.`
+    : hasPeers
+      ? self.value < otherAvg - 4
+        ? `${company.shortName} runs less agency-heavy than its ${peerLabel} peers — lower single-channel risk.`
+        : self.value > otherAvg + 4
+          ? `${company.shortName} leans more on agency than ${peerLabel} peers — watch single-channel risk.`
+          : `${company.shortName}'s agency reliance sits near the ${peerLabel} median.`
+      : conc.tone === 'positive'
+        ? `No single channel tops ${top.val.toFixed(0)}% — ${company.shortName} stays diversified.`
+        : conc.tone === 'warning'
+          ? `${top.ch} dominates at ${top.val.toFixed(0)}% — single-channel risk.`
+          : `${top.ch} leads at ${top.val.toFixed(0)}%; the top two channels carry ${top2?.toFixed(0)}%.`
 
   return (
-    <div className="card-surface p-5">
+    <div className="card-surface card-interactive p-5">
       <header className="mb-3 flex flex-wrap items-start justify-between gap-2 border-b border-[#EEF1F7] pb-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
@@ -463,16 +494,16 @@ function DependenceCard() {
             Is growth dependent on one channel?
           </h3>
           <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-            Agent share by peer · latest period
+            {hasPeers ? 'Agent share by peer · latest period' : `Channel concentration · ${latest?.period ?? 'latest'}`}
           </p>
         </div>
         <span
-          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold shadow-soft ring-1 ${signalClass}`}
+          className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold shadow-soft ring-1 ${badgeClass}`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${signal.tone === 'positive' ? 'bg-teal' : signal.tone === 'warning' ? 'bg-champagne' : 'bg-navy-primary'}`}
+            className={`h-1.5 w-1.5 rounded-full ${badge.tone === 'positive' ? 'bg-teal' : badge.tone === 'warning' ? 'bg-champagne' : 'bg-navy-primary'}`}
           />
-          {signal.label}
+          {badge.label}
         </span>
       </header>
 
@@ -482,74 +513,113 @@ function DependenceCard() {
           body={gate.reason ?? 'Switch the period toggle to Annual.'}
           height={196}
         />
-      ) : rows.length === 0 ? (
+      ) : !self || !top || !latest ? (
         <EmptyState
-          title="Peer data unavailable"
-          body="No insurers in this peer group have channel-mix data wired."
+          title={`Channel mix not wired for ${company.shortName}`}
+          body="Add source-backed channel-mix data for this insurer to activate the view."
           height={196}
         />
-      ) : (
+      ) : hasPeers ? (
         <div style={{ width: '100%', height: Math.max(196, rows.length * 32 + 40) }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={rows}
-              layout="vertical"
-              margin={{ top: 4, right: 30, left: 8, bottom: 0 }}
-            >
+            <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 30, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={GRID} horizontal={false} />
-              <XAxis
-                type="number"
-                tick={{ fontSize: 10.5, fill: AXIS }}
-                tickLine={false}
-                axisLine={{ stroke: GRID }}
-                unit="%"
-                domain={[0, 'dataMax + 5']}
-              />
-              <YAxis
-                type="category"
-                dataKey="label"
-                tick={{ fontSize: 10.5, fill: AXIS }}
-                tickLine={false}
-                axisLine={{ stroke: GRID }}
-                width={120}
-              />
+              <XAxis type="number" tick={{ fontSize: 10.5, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} unit="%" domain={[0, 'dataMax + 5']} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10.5, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} width={120} />
               <Tooltip
                 cursor={{ fill: 'rgba(39,69,126,0.04)' }}
                 content={({ active, payload, label }) =>
                   active && payload && payload[0] ? (
                     <div className="rounded-lg border border-[#E5E8EF] bg-white px-2.5 py-1.5 shadow-md">
                       <p className="text-[10px] font-semibold text-navy-deep">{label}</p>
-                      <p className="text-[11px] tabular-nums text-navy-primary">
-                        Agents · {Number(payload[0].value).toFixed(1)}%
-                      </p>
+                      <p className="text-[11px] tabular-nums text-navy-primary">Agents · {Number(payload[0].value).toFixed(1)}%</p>
                     </div>
                   ) : null
                 }
               />
               <Bar dataKey="value" radius={[3, 5, 5, 3]} maxBarSize={22}>
                 {rows.map((r, i) => (
-                  <Cell
-                    key={i}
-                    fill={r.focal ? '#27457E' : '#A9BFE0'}
-                    stroke={r.focal ? '#1B3260' : undefined}
-                    strokeWidth={r.focal ? 1 : 0}
-                  />
+                  <Cell key={i} fill={r.focal ? '#27457E' : '#A9BFE0'} stroke={r.focal ? '#1B3260' : undefined} strokeWidth={r.focal ? 1 : 0} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
+      ) : (
+        // Single-company rich layout — large largest-channel bar + supporting stats.
+        <div className="space-y-2.5">
+          <div className="relative overflow-hidden rounded-xl border border-soft-border bg-gradient-to-br from-white to-ice/60 p-3.5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">Largest single channel</span>
+              <span className="text-[9.5px] uppercase tracking-wide text-ink-secondary">{latest.period} · % of GWP</span>
+            </div>
+            <div className="mt-1.5 flex items-end gap-2.5">
+              <span className="font-display text-[27px] leading-none text-navy-deep">{top.val.toFixed(1)}%</span>
+              <span
+                className="mb-0.5 inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                style={{ color: CHANNEL_COLORS[top.ch], background: CHANNEL_TINT[top.ch].bg, boxShadow: `inset 0 0 0 1px ${CHANNEL_TINT[top.ch].border}` }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: CHANNEL_COLORS[top.ch] }} />
+                {top.ch}
+              </span>
+            </div>
+            <div className="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-soft-border/70">
+              <div className="h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(100, top.val)}%`, background: `linear-gradient(90deg, ${CHANNEL_COLORS[top.ch]}, ${CHANNEL_COLORS[top.ch]}CC)` }} />
+              <span className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-champagne/60" style={{ left: '50%' }} />
+            </div>
+            <div className="mt-1 flex justify-between text-[9px] text-ink-secondary">
+              <span>0%</span>
+              <span className="text-champagne-deep">50% risk line</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <MiniStat label="Largest" value={top.ch} sub={`${top.val.toFixed(1)}%`} tone="navy" />
+            <MiniStat
+              label="Top-2 share"
+              value={top2 != null ? `${top2.toFixed(0)}%` : 'n/a'}
+              sub={conc.tone === 'positive' ? 'well spread' : conc.tone === 'warning' ? 'concentrated' : 'mid-pack'}
+              tone={conc.tone === 'warning' ? 'gold' : conc.tone === 'positive' ? 'teal' : 'navy'}
+            />
+            <MiniStat
+              label="Agency YoY"
+              value={agencyYoY != null ? `${agencyYoY >= 0 ? '+' : '−'}${Math.abs(agencyYoY).toFixed(1)}pp` : 'n/a'}
+              sub={agencyYoY != null ? (agencyYoY <= 0 ? 'easing' : 'rising') : undefined}
+              tone={agencyYoY != null && agencyYoY <= 0 ? 'teal' : 'gold'}
+            />
+          </div>
+        </div>
       )}
 
-      {rows.length > 0 && (
+      {self && top && (
         <div className={`mt-3 flex items-start gap-2 rounded-md border px-2.5 py-2 text-[11.5px] leading-snug text-navy-deep ${insightTint}`}>
-          <Info className={`mt-px h-3.5 w-3.5 shrink-0 ${signal.tone === 'positive' ? 'text-teal' : signal.tone === 'warning' ? 'text-champagne-deep' : 'text-navy-primary'}`} />
-          <span>{dependenceLine}</span>
+          <Info className={`mt-px h-3.5 w-3.5 shrink-0 ${badge.tone === 'positive' ? 'text-teal' : badge.tone === 'warning' ? 'text-champagne-deep' : 'text-navy-primary'}`} />
+          <span>{insight}</span>
         </div>
       )}
       <div className="mt-3 flex justify-end">
-        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
+        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={latest?.period} />
       </div>
+    </div>
+  )
+}
+
+function MiniStat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone: 'navy' | 'teal' | 'gold' }) {
+  const c =
+    tone === 'teal'
+      ? { dot: 'bg-teal', text: 'text-teal', ring: 'ring-[#BFE3E1]', bg: 'bg-[#F1F8F6]' }
+      : tone === 'gold'
+        ? { dot: 'bg-champagne', text: 'text-champagne-deep', ring: 'ring-[#EAD9B6]', bg: 'bg-[#FBF6EA]' }
+        : { dot: 'bg-navy-primary', text: 'text-navy-primary', ring: 'ring-[#D6E2FA]', bg: 'bg-[#F2F5FC]' }
+  return (
+    <div className={`rounded-lg px-2.5 py-2 ring-1 ${c.ring} ${c.bg}`}>
+      <div className="flex items-center gap-1">
+        <span className={`h-1 w-1 rounded-full ${c.dot}`} />
+        <span className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
+      </div>
+      <p className={`mt-1 truncate font-display text-[14px] leading-none ${tone === 'navy' ? 'text-navy-deep' : c.text}`}>{value}</p>
+      {sub && <p className="mt-0.5 text-[9px] text-ink-secondary">{sub}</p>}
     </div>
   )
 }
@@ -562,7 +632,7 @@ function ReachDepthCard() {
   const reach = getReachDepthData(company.id)
 
   return (
-    <div className="card-surface p-5">
+    <div className="card-surface card-interactive p-5">
       <header className="relative mb-3 flex items-start justify-between gap-2 border-b border-[#EEF1F7] pb-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
@@ -572,7 +642,7 @@ function ReachDepthCard() {
             Where is distribution reaching?
           </h3>
           <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-            Region · tier · average premium · mock
+            Region · tier · average premium
           </p>
         </div>
         <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
@@ -585,7 +655,7 @@ function ReachDepthCard() {
                 onClick={() => setTab(t)}
                 aria-pressed={active}
                 className={[
-                  'rounded-full px-2.5 py-1 text-[10.5px] font-medium transition-all duration-200',
+                  'rounded-full px-2.5 py-1 text-[10.5px] font-medium transition-all duration-300',
                   active
                     ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]'
                     : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
@@ -598,9 +668,9 @@ function ReachDepthCard() {
         </div>
       </header>
 
-      {!reach ? (
-        <ReachUnavailableState companyName={company.shortName} tab={tab} />
-      ) : null /* Wire chart bodies here once region/tier/avg data is sourced. */}
+      {reach ? null /* Wire chart bodies here once region/tier/avg data is sourced. */ : (
+        <ReachReservedPreview companyName={company.shortName} tab={tab} />
+      )}
       <div className="mt-3 flex justify-end">
         <span
           className="inline-flex items-center gap-1.5 rounded-full bg-ice/70 px-2 py-0.5 text-[10px] text-ink-secondary ring-1 ring-soft-border"
@@ -614,36 +684,93 @@ function ReachDepthCard() {
   )
 }
 
-function ReachUnavailableState({ companyName, tab }: { companyName: string; tab: ReachTab }) {
-  const tabHint =
-    tab === 'Region'
-      ? 'region-wise premium splits'
-      : tab === 'Tier'
-        ? 'Tier 1 / Tier 2 / Tier 3 premium mix'
-        : 'average premium by region or tier'
+// Polished "reserved module" preview — three locked mini-cards over a soft
+// map-pin / network backdrop, so the panel reads as intentional, not empty.
+function ReachReservedPreview({ companyName, tab }: { companyName: string; tab: ReachTab }) {
+  const dims: { key: ReachTab; icon: typeof MapPin; label: string }[] = [
+    { key: 'Region', icon: MapPin, label: 'Region mix' },
+    { key: 'Tier', icon: Building2, label: 'Tier split' },
+    { key: 'Avg Premium', icon: Wallet, label: 'Avg premium' },
+  ]
   return (
     <div
-      className="relative flex flex-col items-center justify-center overflow-hidden rounded-xl border border-[#D6E2FA] px-6 text-center"
-      style={{ height: 196, background: 'linear-gradient(135deg, #F7FAFD 0%, #EEF4FF 100%)' }}
+      className="relative overflow-hidden rounded-xl border border-[#D6E2FA] px-3.5 py-3.5"
+      style={{ background: 'linear-gradient(135deg, #F7FAFD 0%, #EEF4FF 58%, #F1F8F6 100%)' }}
     >
-      <span
-        className="pointer-events-none absolute -right-12 -top-10 h-28 w-28 rounded-full opacity-60 blur-2xl"
-        style={{ background: 'rgba(49,90,169,0.14)' }}
-      />
-      <span className="relative blob-c mb-2.5 inline-flex h-11 w-11 items-center justify-center bg-white text-navy-primary shadow-soft ring-1 ring-[#D6E2FA]">
-        <MapPin className="h-5 w-5" />
-      </span>
-      <p className="relative text-[12.5px] font-semibold text-navy-deep">
-        Region / tier data not yet ingested
-      </p>
-      <p className="relative mt-1 max-w-sm text-[11px] leading-relaxed text-ink-secondary">
-        This view will activate once source-backed {tabHint} for {companyName} land in the dataset.
-      </p>
-      <p className="relative mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-2 py-0.5 text-[10px] text-ink-secondary ring-1 ring-[#D6E2FA]">
-        <Info className="h-2.5 w-2.5 text-navy-primary" />
-        Why it matters · reach depth shows whether growth is broad-based or concentrated.
+      <ReachBackdrop />
+      <div className="relative flex items-center gap-2.5">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-navy-primary shadow-soft ring-1 ring-[#D6E2FA]">
+          <MapPin className="h-4 w-4" />
+        </span>
+        <div>
+          <p className="text-[12px] font-semibold text-navy-deep">Reach depth data pending to download</p>
+          <p className="text-[10.5px] leading-snug text-ink-secondary">
+            Source-backed region / tier splits for {companyName} activate here on the next ingest.
+          </p>
+        </div>
+      </div>
+
+      <div className="relative mt-3 grid grid-cols-3 gap-2">
+        {dims.map((d) => {
+          const active = d.key === tab
+          const Icon = d.icon
+          return (
+            <div
+              key={d.key}
+              className={`relative overflow-hidden rounded-lg border bg-white/75 px-2.5 py-2.5 backdrop-blur transition-all duration-300 ${active ? 'border-[#B9CCEC] shadow-soft ring-1 ring-[#D6E2FA]' : 'border-soft-border'}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className={`inline-flex h-6 w-6 items-center justify-center rounded-md ${active ? 'bg-soft-blue text-navy-primary' : 'bg-ice text-ink-secondary'}`}>
+                  <Icon className="h-3 w-3" />
+                </span>
+                <Lock className="h-3 w-3 text-ink-secondary/45" />
+              </div>
+              <p className="mt-1.5 text-[11px] font-semibold text-navy-deep">{d.label}</p>
+              <div className="mt-1.5 space-y-1" aria-hidden>
+                <span className="block h-1.5 w-full rounded-full bg-[#E3E9F3]" />
+                <span className="block h-1.5 w-3/4 rounded-full bg-[#E6ECF5]" />
+                <span className="block h-1.5 w-1/2 rounded-full bg-[#EAEFF6]" />
+              </div>
+              <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-ice px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary ring-1 ring-soft-border">
+                Pending
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="relative mt-2.5 inline-flex items-center gap-1.5 text-[10px] leading-snug text-ink-secondary">
+        <Info className="h-2.5 w-2.5 shrink-0 text-navy-primary" />
+        Reach depth shows whether growth is broad-based or concentrated.
       </p>
     </div>
+  )
+}
+
+// Faint map-pin + connecting-network texture for the reserved Reach Depth panel.
+function ReachBackdrop() {
+  const nodes: [number, number][] = [
+    [40, 40], [120, 70], [210, 45], [280, 92], [60, 132], [190, 122],
+  ]
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.6]"
+      viewBox="0 0 320 180"
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden
+    >
+      <g stroke="#9DB6E0" strokeWidth="0.8" opacity="0.5" fill="none">
+        <path d="M40 40 L120 70 L210 45 L280 92" />
+        <path d="M60 132 L120 70 L190 122 L210 45" />
+        <path d="M190 122 L280 92" />
+      </g>
+      {nodes.map(([cx, cy], i) => (
+        <g key={i}>
+          <circle cx={cx} cy={cy} r="8" fill="#7FB7B3" opacity="0.1" />
+          <circle cx={cx} cy={cy} r="2.4" fill={i % 2 ? '#168E8E' : '#3D5F9F'} opacity="0.32" />
+        </g>
+      ))}
+    </svg>
   )
 }
 
@@ -651,54 +778,84 @@ function ReachUnavailableState({ companyName, tab }: { companyName: string; tab:
 function TakeawayStrip() {
   const company = useActiveCompany()
   const { peerGroup } = useFilters()
+  const data = getCompanyDistributionData(company.id)
   const takeaway = getDistributionTakeaway(company, peerGroup)
-  const accent =
-    takeaway.tone === 'teal'
-      ? 'border-[#D6E5DF] from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8] from-teal to-champagne text-teal ring-[#CFE3DA]'
-      : takeaway.tone === 'warning'
-        ? 'border-[#E7DCC4] from-[#FBF3E2] via-[#FBF7EA] to-[#FBF3E2] from-champagne to-signal-warning text-champagne-deep ring-[#E7DCC4]'
-        : 'border-[#D6DEEC] from-[#EEF2F9] via-[#F5F8FC] to-[#EEF2F9] from-navy-primary to-teal text-navy-primary ring-[#D6DEEC]'
+  const peerDisplay = peerGroup === 'All' ? 'peer' : peerGroup
 
-  // Split the className into background / gradient / pill bits since we
-  // use the same string for the strip + chip + pill ring.
-  const stripClass =
-    takeaway.tone === 'teal'
-      ? 'border-[#D6E5DF] bg-gradient-to-r from-[#EFF7F4] via-[#F5FBF8] to-[#F9F4E8]'
-      : takeaway.tone === 'warning'
-        ? 'border-[#E7DCC4] bg-gradient-to-r from-[#FBF3E2] via-[#FBF7EA] to-[#FBF3E2]'
-        : 'border-[#D6DEEC] bg-gradient-to-r from-[#EEF2F9] via-[#F5F8FC] to-[#EEF2F9]'
-  const barClass =
-    takeaway.tone === 'teal'
-      ? 'bg-gradient-to-b from-teal to-champagne'
-      : takeaway.tone === 'warning'
-        ? 'bg-gradient-to-b from-champagne to-signal-warning'
-        : 'bg-gradient-to-b from-navy-primary to-teal'
-  const pillClass =
-    takeaway.tone === 'teal'
-      ? 'ring-[#CFE3DA] text-teal'
-      : takeaway.tone === 'warning'
-        ? 'ring-[#E7DCC4] text-champagne-deep'
-        : 'ring-[#D6DEEC] text-navy-primary'
+  // No data → keep the honest single-line pending read (navy, calm).
+  if (!data) {
+    return (
+      <section className="relative overflow-hidden rounded-xl border border-[#D6DEEC] bg-gradient-to-r from-[#EEF2F9] via-[#F5F8FC] to-[#EEF2F9] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)]">
+        <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-navy-primary to-teal" />
+        <div className="flex flex-wrap items-center gap-3 pl-2">
+          <DistReadPill />
+          <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{highlightDistRead(takeaway.text)}</p>
+          <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
+        </div>
+      </section>
+    )
+  }
 
-  // unused string is silenced to keep TS happy.
-  void accent
+  // Compact 3-part read, all derived from the same real channel-mix data.
+  const latest = data.latest!
+  const topChip = data.heroChips[0]
+  const ranked = (DIST_CHANNELS as readonly DistChannel[]).map((ch) => ({ ch, val: latest[ch] })).sort((a, b) => b.val - a.val)
+  const agencyInTop2 = ranked.slice(0, 2).some((r) => r.ch === 'Agents')
+
+  const engine = `${topChip.channel} lead${topChip.channel.endsWith('s') ? '' : 's'} at ${topChip.share.toFixed(1)}%`
+  const quality =
+    takeaway.tone === 'teal'
+      ? 'diversified across channels'
+      : takeaway.tone === 'warning'
+        ? 'concentrated — single-channel risk'
+        : `balanced vs ${peerDisplay} peers`
+  const watchout = agencyInTop2
+    ? `agency reliance (${latest.Agents.toFixed(0)}%) if its share climbs`
+    : `${topChip.channel.toLowerCase()} concentration if it rises`
+  const qualityTone: 'navy' | 'teal' | 'gold' =
+    takeaway.tone === 'teal' ? 'teal' : takeaway.tone === 'warning' ? 'gold' : 'navy'
 
   return (
-    <section className={`relative overflow-hidden rounded-xl border px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)] ${stripClass}`}>
-      <span className={`absolute inset-y-0 left-0 w-1 ${barClass}`} />
-      <div className="flex flex-wrap items-center gap-3 pl-2">
-        <span className={`inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-0.5 ring-1 ${pillClass}`}>
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${takeaway.tone === 'teal' ? 'bg-teal' : takeaway.tone === 'warning' ? 'bg-champagne' : 'bg-navy-primary'}`}
-          />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em]">
-            Distribution Read
-          </span>
-        </span>
-        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{highlightDistRead(takeaway.text)}</p>
-        <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} />
+    <section className="relative overflow-hidden rounded-xl border border-[#D6DEEC] bg-gradient-to-r from-[#EEF2F9] via-[#F5F8FC] to-[#F9F4E8] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_6px_16px_rgba(23,43,77,0.04)]">
+      <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-navy-primary via-teal to-champagne" />
+      <span className="pointer-events-none absolute -right-10 -bottom-8 h-24 w-24 rounded-full opacity-50 blur-2xl" style={{ background: 'rgba(182,139,58,0.12)' }} />
+      <div className="relative flex flex-wrap items-center gap-x-4 gap-y-2 pl-2">
+        <DistReadPill />
+        <ReadPart tone="navy" label="Channel engine" value={engine} />
+        <span className="hidden h-7 w-px self-center bg-soft-border sm:block" />
+        <ReadPart tone={qualityTone} label="Mix quality" value={quality} />
+        <span className="hidden h-7 w-px self-center bg-soft-border sm:block" />
+        <ReadPart tone="gold" label="Watch-out" value={watchout} />
+        <div className="ml-auto">
+          <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={latest.period} />
+        </div>
       </div>
     </section>
+  )
+}
+
+function DistReadPill() {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-0.5 text-navy-primary ring-1 ring-[#D6DEEC]">
+      <span className="h-1.5 w-1.5 rounded-full bg-navy-primary" />
+      <span className="text-[10px] font-bold uppercase tracking-[0.18em]">Distribution Read</span>
+    </span>
+  )
+}
+
+function ReadPart({ tone, label, value }: { tone: 'navy' | 'teal' | 'gold'; label: string; value: string }) {
+  const c =
+    tone === 'teal'
+      ? { dot: 'bg-teal', text: 'text-teal' }
+      : tone === 'gold'
+        ? { dot: 'bg-champagne', text: 'text-champagne-deep' }
+        : { dot: 'bg-navy-primary', text: 'text-navy-primary' }
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${c.dot}`} />
+      <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{label}:</span>
+      <span className={`text-[12px] font-medium ${c.text}`}>{value}</span>
+    </span>
   )
 }
 
