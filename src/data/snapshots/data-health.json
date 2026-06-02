@@ -1,6 +1,6 @@
 {
   "last_successful_run": "2026-05-30T17:10:38.702Z",
-  "last_failed_run": "2026-06-01T09:40:01.660Z",
+  "last_failed_run": "2026-06-02T08:51:56.629Z",
   "sources_checked": 2,
   "sources_success": 0,
   "sources_failed": 1,
@@ -202,7 +202,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-01T09:39:56.617Z",
+      "last_attempt_at": "2026-06-02T08:51:52.375Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -350,7 +350,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-01T09:40:01.129Z",
+      "last_attempt_at": "2026-06-02T08:51:55.783Z",
       "last_success_at": null,
       "records_fetched": 0
     }
