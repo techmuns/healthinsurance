@@ -4,8 +4,8 @@
 // All qualitative copy lives in `quarterlyReviews` (mock, clearly marked).
 // ---------------------------------------------------------------------------
 
-import { insurers, quarterlyReviews, QUARTER } from '@/data/mockData'
-import type { QuarterlyReview, YtdBridgeInput } from '@/data/mockData'
+import { insurers } from '@/data/mockData'
+import type { YtdBridgeInput } from '@/data/mockData'
 import type { Insurer } from '@/data/types'
 import type { MetricKey } from './insurers'
 
@@ -217,17 +217,12 @@ export interface BridgeRow extends YtdBridgeInput {
 }
 
 export function getBridgeRows(companyId: string): BridgeRow[] {
-  const review = quarterlyReviews[companyId]
-  if (!review) return []
-  return review.bridge.map((b) => ({
-    ...b,
-    quarter: b.currentYtd != null && b.previousYtd != null ? Math.round((b.currentYtd - b.previousYtd) * 10) / 10 : null,
-    formula: `${QUARTER.currentYtd} − ${QUARTER.previousYtd}`,
-  }))
-}
-
-export function getQuarterlyReview(companyId: string): QuarterlyReview | undefined {
-  return quarterlyReviews[companyId]
+  // The standalone-quarter bridge (current YTD − previous YTD) needs the real
+  // monthly / quarterly premium feed. Until that snapshot is populated we emit
+  // no rows rather than fabricated figures — consumers render an honest
+  // "pending" state, and this lights up automatically once the feed lands.
+  void companyId
+  return []
 }
 
 // --- Data-driven "What Changed" read ---------------------------------------

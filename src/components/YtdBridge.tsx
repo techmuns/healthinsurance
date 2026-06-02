@@ -41,7 +41,8 @@ export function YtdBridge({ companyId, compact = false }: { companyId: string; c
   if (!rows.length) {
     return (
       <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-3 text-[12px] text-ink-secondary">
-        Quarterly bridge data pending for this company (mock dataset).
+        Standalone-quarter bridge pending — this needs the monthly / quarterly premium feed, which
+        isn&rsquo;t downloaded yet. It will appear automatically once that source is ingested.
       </div>
     )
   }

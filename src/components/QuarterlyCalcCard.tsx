@@ -5,7 +5,6 @@ import { SignalBadge } from './SignalBadge'
 import { YtdBridge } from './YtdBridge'
 import { statusTone } from '@/lib/format'
 import { getBridgeRows } from '@/lib/review'
-import { QUARTER } from '@/data/mockData'
 import type { Insurer } from '@/data/types'
 
 function fmt(v: number | null, unit: string): string {
@@ -116,6 +115,7 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
   const triggerRef = useRef<HTMLButtonElement>(null)
   const rows = getBridgeRows(company.id)
   const primary = rows.find((r) => r.quarter !== null) ?? rows[0]
+  const hasData = !!primary
 
   return (
     <div
@@ -131,20 +131,21 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
           <Calculator className="h-3.5 w-3.5" />
         </span>
         <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Calculation Basis</span>
-        <SignalBadge label="Derived" tone={statusTone.Derived} size="sm" />
+        <SignalBadge label={hasData ? 'Derived' : 'Pending'} tone={hasData ? statusTone.Derived : statusTone.Pending} size="sm" />
       </div>
 
-      {primary && (
+      {primary ? (
         <p className="relative inline-flex items-baseline gap-1.5 rounded-md bg-white/70 px-2.5 py-1 text-[12px] text-ink-secondary ring-1 ring-[#EAD9B6]">
           <span className="font-bold uppercase tracking-wide text-[9.5px] text-champagne-deep">{primary.label}</span>
           <span className="font-semibold text-navy-deep">{fmt(primary.currentYtd, primary.unit)}</span>
           <span className="text-champagne-deep">−</span>
           <span className="font-semibold text-navy-deep">{fmt(primary.previousYtd, primary.unit)}</span>
           <span className="text-champagne-deep">=</span>
-          <span className="font-semibold text-navy-primary">
-            {QUARTER.current}
-          </span>
           <span className="font-semibold text-navy-primary">{fmt(primary.quarter, primary.unit)}</span>
+        </p>
+      ) : (
+        <p className="relative rounded-md bg-white/70 px-2.5 py-1 text-[12px] leading-snug text-ink-secondary ring-1 ring-[#EAD9B6]">
+          Standalone-quarter breakdown pending — needs the monthly premium feed (not yet downloaded). Figures shown here are full-year.
         </p>
       )}
 
