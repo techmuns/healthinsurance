@@ -15,8 +15,8 @@
 // ---------------------------------------------------------------------------
 
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
-import { appendLog, isOfflineMode, nowIso } from './util'
-import { extractByPatterns, fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
+import { appendLog, isOfflineMode, nowIso, writeRaw } from './util'
+import { extractByPatterns, fetchBuffer, fetchHtml, findLinks, loadStagedRaw, parsePdf } from './parsers'
 
 const SOURCE_ID = 'irdai_handbook'
 const HANDBOOK_URL = 'https://irdai.gov.in/handbook-of-indian-insurance-statistics'
@@ -28,41 +28,70 @@ export const ingestIrdaiAnnual: Fetcher = {
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
     try {
-      // Step 1: discover latest handbook PDF.
+      // Step 1: resolve the handbook PDF. Prefer the live IRDAI source; if it
+      // is blocked (the standing IP-level 403) or unavailable, fall back to a
+      // manually-staged PDF in data/raw/irdai/annual/ — so a one-time drop
+      // flows through the next normal run with no offline-mode toggle.
       let pdfUrl: string | null = null
       let filename = `handbook-${new Date().getFullYear()}.pdf`
+      let buffer: Buffer | null = null
+      let raw_file: string | null = null
+      let mode: 'live' | 'staged' = 'live'
+      let liveError: string | null = null
+
       if (!isOfflineMode()) {
-        const $ = await fetchHtml(HANDBOOK_URL)
-        const links = findLinks($, HANDBOOK_URL, (href, text) => {
-          if (!/\.pdf(\?|$)/i.test(href)) return false
-          const t = `${href} ${text}`.toLowerCase()
-          return /handbook|statistic/.test(t)
-        })
-        if (links.length === 0) {
-          console.log(`[irdai-annual] reached handbook page but found NO matching PDF links at ${HANDBOOK_URL}`)
-          await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'no_links' })
-          return {
-            source_id: SOURCE_ID,
-            status: 'failed',
-            raw_file: null,
-            records: [],
-            records_fetched: 0,
-            fetched_at,
-            error: `No handbook PDF discovered on ${HANDBOOK_URL}`,
+        try {
+          const $ = await fetchHtml(HANDBOOK_URL)
+          const links = findLinks($, HANDBOOK_URL, (href, text) => {
+            if (!/\.pdf(\?|$)/i.test(href)) return false
+            const t = `${href} ${text}`.toLowerCase()
+            return /handbook|statistic/.test(t)
+          })
+          if (links.length > 0) {
+            pdfUrl = links.sort().reverse()[0]
+            filename = (pdfUrl.split('/').pop() ?? filename).split('?')[0]
+            const fetched = await fetchBuffer(pdfUrl)
+            buffer = fetched.buffer
+            raw_file = await writeRaw('irdai/annual', filename, buffer)
+          } else {
+            liveError = `No handbook PDF discovered on ${HANDBOOK_URL}`
+            console.log(`[irdai-annual] reached handbook page but found NO matching PDF links at ${HANDBOOK_URL}`)
           }
+        } catch (err) {
+          liveError = err instanceof Error ? err.message : String(err)
+          await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'live_blocked', error: liveError })
         }
-        pdfUrl = links.sort().reverse()[0]
-        const last = pdfUrl.split('/').pop() ?? filename
-        filename = last.split('?')[0]
       }
 
-      // Step 2: fetch (live) or load (offline) the raw PDF.
-      const { buffer, raw_file, mode } = await fetchOrLoadRaw(
-        pdfUrl ?? HANDBOOK_URL,
-        'irdai/annual',
-        filename,
-        /\.pdf$/i,
-      )
+      // Fall back to a manually-staged handbook PDF when live yielded nothing.
+      if (!buffer) {
+        const staged = await loadStagedRaw('irdai/annual', /\.pdf$/i)
+        if (staged) {
+          buffer = staged.buffer
+          raw_file = staged.raw_file
+          filename = staged.raw_file.split('/').pop() ?? filename
+          mode = 'staged'
+          await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'using_staged_file', raw_file, live_error: liveError })
+        }
+      }
+
+      // No live data and no staged file → honest failure (never fabricate).
+      if (!buffer) {
+        const error = liveError ?? 'IRDAI handbook unavailable and no staged file present.'
+        await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'no_data', error })
+        return {
+          source_id: SOURCE_ID,
+          status: 'failed',
+          raw_file: null,
+          records: [],
+          records_fetched: 0,
+          fetched_at,
+          error,
+          warnings: [
+            'To populate industry/annual data: download the IRDAI "Handbook of Indian Insurance Statistics" PDF and drop it into data/raw/irdai/annual/. The next run uses it automatically.',
+          ],
+        }
+      }
 
       // Step 3: parse and extract industry segment totals.
       const { text } = await parsePdf(buffer)
