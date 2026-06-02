@@ -27,7 +27,10 @@ import { fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
 import { extractDisclosure } from './disclosure-extract'
 
 const SOURCE_ID = 'company_quarterly_disclosures'
-const PEERS = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
+// SAHI + general insurers that file IRDAI NL-form quarterly public disclosures.
+// Life insurers (HDFC Life / SBI Life) use a different L-form layout and need a
+// dedicated parser, so they are intentionally excluded here for now.
+const PEERS = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna', 'icici-lombard', 'bajaj-general']
 
 interface CompanyMaster {
   data: Array<{
@@ -47,7 +50,7 @@ const DENY = /(mgt[\s_-]*7|grievance|policy[\s_-]*wording|prospectus|brochure|cl
 
 export const ingestQuarterlyDisclosures: Fetcher = {
   source_id: SOURCE_ID,
-  name: 'Company quarterly disclosures (SAHI peers)',
+  name: 'Company quarterly disclosures (SAHI + general peers)',
   frequency: 'quarterly',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
@@ -63,6 +66,7 @@ export const ingestQuarterlyDisclosures: Fetcher = {
       try {
         // Resolve the candidate quarterly PDF URLs.
         const pdfUrls = await resolveQuarterlyPdfs(t, landing, warnings)
+        console.log(`[quarterly] ${t.company_id}: ${pdfUrls.length} candidate PDF(s) · landing=${landing ?? 'none'}`)
         if (pdfUrls.length === 0) {
           warnings.push(`${t.company_id}: no quarterly disclosure PDFs found.`)
           continue
@@ -100,8 +104,11 @@ export const ingestQuarterlyDisclosures: Fetcher = {
             const values = extractDisclosure(text)
             if (!values) {
               warnings.push(`${t.company_id} ${quarter} ${fy}: not in the validated NL-form layout — skipped (no guess).`)
+              console.log(`[quarterly] ${t.company_id} ${quarter} ${fy}: PDF parsed but NL-form layout not recognised — skipped (${filename})`)
               continue
             }
+            const populated = Object.values(values).filter((v) => v != null).length
+            console.log(`[quarterly] ${t.company_id} ${quarter} ${fy}: extracted ${populated} field(s) ✓ (${filename})`)
             records.push({
               target: 'insurer-quarterly-financials',
               keys: { company_id: t.company_id, quarter, fiscal_year: fy },
@@ -132,6 +139,14 @@ export const ingestQuarterlyDisclosures: Fetcher = {
         await appendLog('ingest-quarterly-disclosures.log', { source: SOURCE_ID, company_id: t.company_id, status: 'error', error })
       }
     }
+
+    // Surface the full per-company diagnosis in the CI run log so each push →
+    // run → read-log cycle shows exactly what every site served and why a
+    // quarter parsed or was skipped.
+    console.log(
+      `[quarterly] done · ${records.length} record(s) from ${targets.length} companies` +
+        (warnings.length ? `\n[quarterly] notes:\n - ${warnings.join('\n - ')}` : ''),
+    )
 
     return {
       source_id: SOURCE_ID,
