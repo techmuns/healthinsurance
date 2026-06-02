@@ -12,7 +12,6 @@ import { PeriodPending } from '@/components/PeriodPending'
 import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
-import { getQuarterlyReview } from '@/lib/review'
 import { navItems } from '@/nav'
 import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
 
@@ -158,7 +157,6 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   const annualOnly = period !== 'Annual'
 
   const filtered = getFilteredInsurers(filters)
-  const review = getQuarterlyReview(company.id)
   // Rank the selected company against its active peer group; if it sits outside
   // the filtered group, fall back to its own peer group so ranks stay meaningful.
   const inFiltered = filtered.some((i) => i.id === company.id)
@@ -411,7 +409,7 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           />
         </section>
       ) : (
-        <WhatChangedStrip company={company} list={peerList} review={review} />
+        <WhatChangedStrip company={company} list={peerList} />
       )}
 
       {/* Final Buy-side Read — Decision Panel (dark navy base with tinted lanes) */}

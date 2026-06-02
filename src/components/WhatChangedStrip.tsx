@@ -1,13 +1,8 @@
-import { useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, Eye, Minus, TrendingUp } from 'lucide-react'
-import { SegmentedControl } from './SegmentedControl'
-import { rankWithin, scorecardMetrics } from '@/lib/review'
-import { QUARTER } from '@/data/mockData'
-import type { QuarterlyReview } from '@/data/mockData'
+import { deriveWhatChanged, rankWithin, scorecardMetrics } from '@/lib/review'
+import { DATA_FRESHNESS } from '@/data/mockData'
 import type { Insurer } from '@/data/types'
 import type { ReactNode } from 'react'
-
-type Period = 'Quarterly' | 'Monthly'
 
 type Tone = 'pos' | 'neg' | 'watch' | 'navy'
 const toneClass: Record<Tone, { card: string; icon: string }> = {
@@ -51,19 +46,25 @@ function ChangeCard({
   )
 }
 
-/** C. Compact, visual "What Changed" strip — minimal text, delta-driven. */
+/**
+ * Compact, visual "What Changed" strip — minimal text, delta-driven.
+ *
+ * Every figure here is derived from the real `insurers` model (peer ranks +
+ * reported metrics), never hand-written. The strip shows, for the latest
+ * reported fiscal year, the company's strongest and weakest metrics versus its
+ * peer set, plus its live share move and the metric to watch next.
+ */
 export function WhatChangedStrip({
   company,
   list,
-  review,
 }: {
   company: Insurer
   list: Insurer[]
-  review?: QuarterlyReview
 }) {
-  const [period, setPeriod] = useState<Period>('Quarterly')
-
-  const periodLabel = period === 'Quarterly' ? `${QUARTER.current} vs ${QUARTER.previous}` : 'Mar FY25 vs Feb FY25'
+  const wc = deriveWhatChanged(company, list)
+  // Honest basis label: latest fiscal year actually covered by the snapshot.
+  const fyTokens = DATA_FRESHNESS.coverage.match(/FY\d{2,4}/g)
+  const latestFy = fyTokens ? fyTokens[fyTokens.length - 1] : DATA_FRESHNESS.coverage
 
   const growthCfg = scorecardMetrics.find((m) => m.key === 'growth')!
   const gr = rankWithin(growthCfg, company, list)
@@ -87,57 +88,44 @@ export function WhatChangedStrip({
         <div className="flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">What Changed</span>
-          <span className="text-[11px] text-ink-secondary">{periodLabel}</span>
+          <span className="text-[11px] text-ink-secondary">{latestFy} · strongest & weakest vs peer set</span>
         </div>
-        <SegmentedControl<Period> options={['Quarterly', 'Monthly'] as Period[]} value={period} onChange={setPeriod} size="sm" />
       </div>
 
-      {period === 'Monthly' && (
-        <p className="mb-2 inline-flex items-center rounded-full bg-gold-soft px-2 py-0.5 text-[10.5px] font-semibold text-gold ring-1 ring-[#F0E1BE]">
-          Monthly data pending — showing latest quarterly read (mock)
-        </p>
-      )}
-
-      {review ? (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <ChangeCard
-            icon={<ArrowUpRight className="h-3.5 w-3.5" />}
-            tone="pos"
-            label="Biggest Positive"
-            metric={review.biggestPositive.label}
-            value={review.biggestPositive.value}
-            note={review.biggestPositive.note}
-          />
-          <ChangeCard
-            icon={<ArrowDownRight className="h-3.5 w-3.5" />}
-            tone="neg"
-            label="Biggest Negative"
-            metric={review.biggestNegative.label}
-            value={review.biggestNegative.value}
-            note={review.biggestNegative.note}
-          />
-          <ChangeCard
-            icon={<TrendingUp className="h-3.5 w-3.5" />}
-            tone="navy"
-            label="Rank Move"
-            metric="GWP Growth"
-            value={gr ? `#${gr.rank}/${gr.of}` : 'n/a'}
-            chip={shareChip}
-            note={shareNote}
-          />
-          <ChangeCard
-            icon={<Eye className="h-3.5 w-3.5" />}
-            tone="watch"
-            label="Next Trigger"
-            metric={review.nextWatch.label}
-            note={review.nextWatch.note}
-          />
-        </div>
-      ) : (
-        <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-6 text-center text-[12px] text-ink-secondary">
-          Quarterly change data pending for {company.shortName} (mock dataset).
-        </div>
-      )}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <ChangeCard
+          icon={<ArrowUpRight className="h-3.5 w-3.5" />}
+          tone="pos"
+          label="Biggest Positive"
+          metric={wc.biggestPositive.label}
+          value={wc.biggestPositive.value}
+          note={wc.biggestPositive.note}
+        />
+        <ChangeCard
+          icon={<ArrowDownRight className="h-3.5 w-3.5" />}
+          tone="neg"
+          label="Biggest Negative"
+          metric={wc.biggestNegative.label}
+          value={wc.biggestNegative.value}
+          note={wc.biggestNegative.note}
+        />
+        <ChangeCard
+          icon={<TrendingUp className="h-3.5 w-3.5" />}
+          tone="navy"
+          label="Rank Move"
+          metric="GWP Growth"
+          value={gr ? `#${gr.rank}/${gr.of}` : 'n/a'}
+          chip={shareChip}
+          note={shareNote}
+        />
+        <ChangeCard
+          icon={<Eye className="h-3.5 w-3.5" />}
+          tone="watch"
+          label="Next Trigger"
+          metric={wc.nextWatch.label}
+          note={wc.nextWatch.note}
+        />
+      </div>
     </section>
   )
 }

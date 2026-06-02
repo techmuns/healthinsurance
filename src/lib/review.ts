@@ -230,4 +230,64 @@ export function getQuarterlyReview(companyId: string): QuarterlyReview | undefin
   return quarterlyReviews[companyId]
 }
 
+// --- Data-driven "What Changed" read ---------------------------------------
+// Derives the biggest strength / biggest gap / next watch entirely from the
+// real `insurers` model + peer ranks — no hand-written (mock) numbers. Each
+// value is the company's actual reported metric; the note states its real peer
+// rank. Auto-updates (and covers every company) as new annual rows are ingested.
+
+export interface DerivedChange {
+  label: string
+  value: string
+  note: string
+}
+
+export interface WhatChanged {
+  biggestPositive: DerivedChange
+  biggestNegative: DerivedChange
+  nextWatch: { label: string; note: string }
+}
+
+export function deriveWhatChanged(c: Insurer, list: Insurer[]): WhatChanged {
+  // Rank the company on each real scorecard metric; skip not-reported (n/a) ones.
+  const ranked = scorecardMetrics
+    .map((cfg) => {
+      const r = rankWithin(cfg, c, list)
+      return r ? { cfg, rank: r.rank, of: r.of, pct: r.rank / r.of } : null
+    })
+    .filter((x): x is { cfg: MetricConfig; rank: number; of: number; pct: number } => x !== null)
+
+  const byBest = [...ranked].sort((a, b) => a.pct - b.pct)
+  const byWorst = [...ranked].sort((a, b) => b.pct - a.pct)
+  const best = byBest[0] ?? null
+  const worst = byWorst[0] ?? null
+
+  const rankNote = (rank: number, of: number) =>
+    rank === 1 ? `Best of ${of} in peer set` : `#${rank} of ${of} in peer set`
+
+  const biggestPositive: DerivedChange = best
+    ? { label: best.cfg.label, value: best.cfg.format(c[best.cfg.key]), note: rankNote(best.rank, best.of) }
+    : { label: '—', value: '', note: 'Not enough peer data' }
+
+  const biggestNegative: DerivedChange =
+    worst && worst.cfg.key !== best?.cfg.key
+      ? { label: worst.cfg.label, value: worst.cfg.format(c[worst.cfg.key]), note: rankNote(worst.rank, worst.of) }
+      : { label: '—', value: '', note: 'No clear laggard vs peers' }
+
+  // Next watch: a loss-making combined ratio is the clearest forward risk;
+  // otherwise surface the second-weakest ranked metric to monitor.
+  let nextWatch: { label: string; note: string }
+  const crCfg = scorecardMetrics.find((m) => m.key === 'combinedRatio')!
+  if (c.combinedRatio > 100) {
+    nextWatch = { label: 'Combined Ratio', note: `${crCfg.format(c.combinedRatio)} — above breakeven` }
+  } else {
+    const second = byWorst.find((x) => x.cfg.key !== worst?.cfg.key)
+    nextWatch = second
+      ? { label: second.cfg.label, note: `#${second.rank} of ${second.of} — monitor` }
+      : { label: 'Combined Ratio', note: 'Watch underwriting trend' }
+  }
+
+  return { biggestPositive, biggestNegative, nextWatch }
+}
+
 export { insurers }
