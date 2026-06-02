@@ -42,7 +42,7 @@ export function ManagementEvents() {
           <PromiseTracker items={promises} companyName={company.shortName} />
         ) : (
           <div
-            className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-8 text-center"
+            className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-gradient-to-br from-white via-ice/80 to-soft-blue/50 px-8 text-center"
             style={{ height: 260 }}
           >
             <span className="blob-c mb-3 inline-flex h-12 w-12 items-center justify-center bg-soft-blue text-navy-primary">
@@ -81,7 +81,7 @@ function EventFeedUnavailable({ companyName }: { companyName: string }) {
       icon="events"
     >
       <div
-        className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-8 text-center"
+        className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-gradient-to-br from-white via-ice/80 to-soft-blue/50 px-8 text-center"
         style={{ height: 260 }}
       >
         <span className="blob-c mb-3 inline-flex h-12 w-12 items-center justify-center bg-soft-blue text-navy-primary">

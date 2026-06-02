@@ -25,7 +25,7 @@ import { useRangeClip } from '@/state/filters'
 
 // Primary deep blue leads (the focus colour); supporting series move to muted
 // teal / slate / gold so blue stays meaningful rather than monotonous.
-export const SERIES_COLORS = ['#27457E', '#2E8B86', '#8C97A8', '#A9BFE0', '#C29A4B', '#6E7787']
+export const SERIES_COLORS = ['#27457E', '#168E8E', '#8C97A8', '#A9BFE0', '#B68B3A', '#6E7787']
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 
@@ -262,7 +262,7 @@ export function HorizontalBarChart({
         <Bar dataKey="value" radius={[0, 5, 5, 0]} maxBarSize={26}>
           {data.map((d, i) => {
             let fill = SERIES_COLORS[1]
-            if (diverging) fill = d.value >= 0 ? '#2F855A' : '#B94A48'
+            if (diverging) fill = d.value >= 0 ? '#2F855A' : '#C0584F'
             if (d.focal) fill = '#27457E'
             return <Cell key={i} fill={fill} />
           })}

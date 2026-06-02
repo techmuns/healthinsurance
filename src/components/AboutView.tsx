@@ -47,7 +47,7 @@ export function AboutView({ text, label = 'About this view' }: { text: string; l
       <div
         role="tooltip"
         className={[
-          'absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] origin-top-right rounded-xl border border-soft-border bg-card p-3 text-[11.5px] leading-relaxed text-ink-secondary shadow-card transition-all duration-150 ease-out',
+          'absolute right-0 top-[calc(100%+8px)] z-40 w-[280px] origin-top-right rounded-xl border border-soft-border bg-card p-3 text-[11.5px] leading-relaxed text-ink-secondary shadow-card transition-all duration-200 ease-out',
           open ? 'pointer-events-auto scale-100 opacity-100' : 'pointer-events-none scale-95 opacity-0',
         ].join(' ')}
       >

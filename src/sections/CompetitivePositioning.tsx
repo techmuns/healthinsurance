@@ -150,8 +150,15 @@ export function CompetitivePositioning() {
       {/* Peer Scorecard heatmap — full width, self-explanatory (moved from Executive Overview) */}
       <section>
         <SectionHeading eyebrow="At a Glance" title="Peer Scorecard" note="Best-in-column highlighted · mock data" />
-        <div className="card-surface card-interactive p-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div
+          className="card-surface card-interactive relative overflow-hidden p-4"
+          style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F7FAFD 55%, #FBF6EA 100%)' }}
+        >
+          <span
+            className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full opacity-50 blur-3xl"
+            style={{ background: 'radial-gradient(circle, rgba(182,139,58,0.12) 0%, transparent 70%)' }}
+          />
+          <div className="relative flex flex-wrap items-baseline justify-between gap-2">
             <p className="font-display text-[15px] text-navy-deep">Multi-metric snapshot</p>
             <BestInColumnLegend />
           </div>

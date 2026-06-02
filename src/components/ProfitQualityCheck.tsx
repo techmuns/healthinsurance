@@ -5,9 +5,9 @@ import { EarningsBridgeDrawer } from './EarningsBridge'
 import { getEarningsBridge, earningsQuality, BRIDGE_SOURCE } from '@/data/earningsBridge'
 
 const NAVY = '#172B4D'
-const CORAL = '#B94A48'
+const CORAL = '#C0584F'
 const EMERALD = '#2F855A'
-const GOLD = '#C99A2E'
+const GOLD = '#B68B3A'
 
 const cr = (v: number) => `${v < 0 ? '−' : ''}₹${Math.abs(Math.round(v)).toLocaleString('en-IN')} Cr`
 

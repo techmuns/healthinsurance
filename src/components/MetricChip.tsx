@@ -4,7 +4,7 @@ import type { IndustryMetric } from '@/data/mockData'
 const dot: Record<string, string> = {
   Strong: 'bg-[#86CBA3]',
   Improving: 'bg-[#7FD0D0]',
-  Watch: 'bg-[#E7BE74]',
+  Watch: 'bg-[#E2C488]',
   Weak: 'bg-[#E59B98]',
 }
 

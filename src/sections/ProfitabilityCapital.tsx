@@ -404,9 +404,9 @@ interface EngineStage {
   badge: { label: string; tone: StatusTone }
 }
 
-const ORANGE = '#C2691C' // shareholder return — controlled amber-orange (monitor, not danger)
-const GOLD = '#C99A2E' // profit conversion — warm gold (value creation, not warning)
-const DEEP_GREEN = '#1E6B4A' // capital support — deepest green (safety, resilience)
+const ORANGE = '#BE823F' // shareholder return — muted amber (monitor, not danger)
+const GOLD = '#B68B3A' // profit conversion — champagne gold (value creation, not warning)
+const DEEP_GREEN = '#2F855A' // capital support — emerald (safety, resilience)
 
 // Tone → ink colour for the compact checkpoint status pills on the Story Map.
 const STATUS_TINT: Record<StatusTone, string> = {

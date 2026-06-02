@@ -56,9 +56,9 @@ body {
       0 1px 2px rgba(23, 43, 77, 0.04),
       0 10px 26px rgba(23, 43, 77, 0.09);
     transition:
-      box-shadow 0.25s ease,
-      transform 0.25s ease,
-      border-color 0.25s ease;
+      box-shadow 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   /* Secondary, tinted surface for supporting tiles. */
@@ -67,9 +67,9 @@ body {
     background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(244, 247, 252, 0.6));
     border: 1px solid rgba(23, 43, 77, 0.06);
     transition:
-      box-shadow 0.25s ease,
-      border-color 0.25s ease,
-      background-color 0.25s ease;
+      box-shadow 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
+      background-color 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
   /* Premium hover: a very slight lift + softer-but-deeper shadow. Opt-in so
@@ -109,8 +109,11 @@ body {
 }
 .recharts-default-tooltip {
   border-radius: 12px !important;
-  border: 1px solid #e5e8ef !important;
-  box-shadow: 0 8px 24px rgba(23, 43, 77, 0.1) !important;
+  border: 1px solid rgba(229, 232, 239, 0.9) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  box-shadow: 0 10px 30px rgba(23, 43, 77, 0.12) !important;
   padding: 10px 12px !important;
 }
 .recharts-tooltip-label {
