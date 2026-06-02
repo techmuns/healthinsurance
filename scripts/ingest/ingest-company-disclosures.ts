@@ -63,11 +63,14 @@ export const ingestCompanyDisclosures: Fetcher = {
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
     const master = await readSnapshot<CompanyMaster>('company-master.json')
-    // Every company in the master with an official disclosure / IR page —
-    // SAHI peers + cross-segment listed/large peers (ICICI Lombard, Bajaj,
-    // HDFC Life, SBI Life). Any company whose page resolves no parseable PDF
-    // stays an honest "pending"; it is never fabricated.
-    const targets = master.data.filter((c) => c.financial_disclosure_url ?? c.investor_relations_url)
+    // Verified-by-hand peers whose full annual reports misparse under the
+    // prose-oriented regex (ICICI GWP, Bajaj PAT, SBI). Skip their auto-fetch
+    // so the verified source-backed values persist until a clean results-PR
+    // hint is wired. SAHI peers + HDFC Life (press release) parse cleanly.
+    const SKIP_AUTO = new Set(['icici-lombard', 'bajaj-general', 'sbi-life'])
+    const targets = master.data.filter(
+      (c) => (c.financial_disclosure_url ?? c.investor_relations_url) && !SKIP_AUTO.has(c.company_id),
+    )
 
     const records: SnapshotRecord[] = []
     const warnings: string[] = []
