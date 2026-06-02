@@ -104,6 +104,40 @@ export function labelInRange(label: string, range: DateRange): boolean {
 
 // --- formatting --------------------------------------------------------------
 
+/**
+ * Ordered list of period labels that fall inside the selected range, in the
+ * active period's vocabulary. This is the canonical way for a trend chart to
+ * build its x-axis straight from the header Data Range (so it can show real
+ * data where it exists and a pending marker where it doesn't) instead of
+ * hardcoding years. Annual → ['FY21','FY22',…]; Quarterly → ['Q1 FY21',…];
+ * Monthly → ['Apr 2020',…].
+ */
+export function periodLabelsInRange(range: DateRange, period: TimePeriod): string[] {
+  const out: string[] = []
+  if (period === 'Annual') {
+    for (let fy = fyOfIdx(range.from); fy <= fyOfIdx(range.to); fy++) out.push(fyLabel(fy))
+    return out
+  }
+  if (period === 'Quarterly') {
+    for (let idx = quarterStartOf(range.from); idx <= range.to; idx += 3) out.push(quarterLabelOf(idx))
+    return out
+  }
+  for (let idx = range.from; idx <= range.to; idx++) out.push(monthLabelOf(idx))
+  return out
+}
+
+/** Convenience: the fiscal-year labels in a range (Annual vocabulary). */
+export function fyLabelsInRange(range: DateRange): string[] {
+  const out: string[] = []
+  for (let fy = fyOfIdx(range.from); fy <= fyOfIdx(range.to); fy++) out.push(fyLabel(fy))
+  return out
+}
+
+/** Snap a month index down to the start of its quarter. */
+function quarterStartOf(idx: number): number {
+  return idx - (monthOffsetOfIdx(idx) % 3)
+}
+
 /** Compact "Showing …" label honouring the active period's vocabulary. */
 export function formatRange(range: DateRange, period: TimePeriod, sep = '–'): string {
   if (period === 'Quarterly') return `${quarterLabelOf(range.from)}${sep}${quarterLabelOf(range.to)}`
