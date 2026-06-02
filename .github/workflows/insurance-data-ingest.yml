@@ -130,4 +130,4 @@ jobs:
             echo "No snapshot changes — nothing to commit."
           fi
 
-# ingest re-trigger marker (bump to re-run a cadence via push): keeptrying-20260602T110144Z
+# ingest re-trigger marker (bump to re-run a cadence via push): diag-20260602T1530Z
