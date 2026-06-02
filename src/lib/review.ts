@@ -1,7 +1,6 @@
 // ---------------------------------------------------------------------------
 // Quarterly-review / PE logic. Derives signals, peer ranks, the YTD→quarter
 // bridge and the multi-metric scorecard from the canonical `insurers` model.
-// All qualitative copy lives in `quarterlyReviews` (mock, clearly marked).
 // ---------------------------------------------------------------------------
 
 import { insurers } from '@/data/mockData'
