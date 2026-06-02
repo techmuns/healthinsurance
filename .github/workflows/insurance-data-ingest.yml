@@ -21,6 +21,11 @@ on:
     paths:
       - 'scripts/ingest/**'
       - '.github/workflows/insurance-data-ingest.yml'
+      # A manually-dropped official source file (e.g. the IRDAI monthly XLSX or
+      # the handbook PDF) auto-triggers ingestion, so one drop flows straight
+      # through to refreshed snapshots + a redeploy. Bot commits use GITHUB_TOKEN,
+      # which does not re-trigger push workflows, so this never self-loops.
+      - 'data/raw/**'
   workflow_dispatch:
     inputs:
       cadence:
