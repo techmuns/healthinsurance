@@ -6,7 +6,10 @@
     "dataset": "official",
     "last_updated": "2026-05-28",
     "last_successful_run": "2026-05-28",
-    "upstream_sources": ["irdai_handbook", "company_websites"],
+    "upstream_sources": [
+      "irdai_handbook",
+      "company_websites"
+    ],
     "parser_status": "manual_fallback",
     "notes": "Populated by hand from public company websites + IRDAI registration list. Verify quarterly for new registrations / mergers."
   },
@@ -121,9 +124,6 @@
       "company_website": "https://www.icicilombard.com",
       "investor_relations_url": "https://www.icicilombard.com/investor-relations",
       "financial_disclosure_url": "https://www.icicilombard.com/about-us/public-disclosure",
-      "pdf_hints": [
-        "https://www.icicilombard.com/docs/default-source/financial-information/annual-report-fy2025.pdf"
-      ],
       "irdai_registration_number": "115",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -141,9 +141,6 @@
       "company_website": "https://www.bajajallianz.com",
       "investor_relations_url": "https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
       "financial_disclosure_url": "https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
-      "pdf_hints": [
-        "https://www.bajajgeneralinsurance.com/download-documents/annual-report/Annual-Report-2024-2025.pdf"
-      ],
       "irdai_registration_number": "113",
       "active_status": "active",
       "last_checked_at": "2026-05-28"
@@ -181,9 +178,6 @@
       "company_website": "https://www.sbilife.co.in",
       "investor_relations_url": "https://www.sbilife.co.in/en/about-us/investor-relations",
       "financial_disclosure_url": "https://www.sbilife.co.in/en/about-us/investor-relations/financial-results",
-      "pdf_hints": [
-        "https://www.sbilife.co.in/sites/SBILife/Annual-Report/FY25/pdf/Statutory-reports.pdf"
-      ],
       "irdai_registration_number": "111",
       "active_status": "active",
       "last_checked_at": "2026-05-28"

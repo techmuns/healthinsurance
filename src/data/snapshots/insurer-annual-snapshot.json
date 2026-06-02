@@ -354,7 +354,7 @@
     {
       "company_id": "icici-lombard",
       "fiscal_year": "FY25",
-      "gwp": 2008,
+      "gwp": 26833,
       "gross_direct_premium": null,
       "nwp": 181.66207,
       "nep": 168.66198,
@@ -380,13 +380,13 @@
       "employee_count": null,
       "distribution_summary": null,
       "provenance": {
-        "source_name": "icici-lombard FY25 annual disclosure",
-        "source_url": "https://www.icicilombard.com/docs/default-source/financial-information/annual-report-fy2025.pdf",
+        "source_name": "ICICI Lombard FY25 results — GDPI Rs 268.33bn (verified); ratios auto-parsed",
+        "source_url": "https://www.icicilombard.com/about-us/public-disclosure",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/icici-lombard/icici-lombard-annual-report-fy2025.pdf",
         "source_period": "FY25",
         "fetched_at": "2026-06-02T17:34:20.891Z",
         "parsed_at": "2026-06-02T17:34:50.755Z",
-        "parser_name": "ingest-company-disclosures",
+        "parser_name": "ingest-company-disclosures+verified-correction",
         "confidence": "high"
       }
     },
@@ -397,7 +397,7 @@
       "gross_direct_premium": null,
       "nwp": 2021,
       "nep": null,
-      "pat": 5,
+      "pat": null,
       "revenue": null,
       "combined_ratio": 102.3,
       "cisor": null,
@@ -419,14 +419,14 @@
       "employee_count": null,
       "distribution_summary": null,
       "provenance": {
-        "source_name": "bajaj-general FY25 annual disclosure",
+        "source_name": "Bajaj Allianz General FY25 — auto-parsed (PAT withheld: parse error)",
         "source_url": "https://www.bajajgeneralinsurance.com/download-documents/annual-report/Annual-Report-2024-2025.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/bajaj-general/bajaj-general-Annual-Report-2024-2025.pdf",
         "source_period": "FY25",
         "fetched_at": "2026-06-02T17:34:20.891Z",
         "parsed_at": "2026-06-02T17:34:54.683Z",
         "parser_name": "ingest-company-disclosures",
-        "confidence": "high"
+        "confidence": "medium"
       }
     },
     {
