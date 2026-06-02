@@ -1,8 +1,8 @@
 {
-  "last_successful_run": "2026-05-30T17:10:38.702Z",
-  "last_failed_run": "2026-06-02T09:50:29.905Z",
+  "last_successful_run": "2026-06-02T12:33:07.024Z",
+  "last_failed_run": "2026-06-02T12:33:07.024Z",
   "sources_checked": 2,
-  "sources_success": 0,
+  "sources_success": 1,
   "sources_failed": 1,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
@@ -158,7 +158,24 @@
     "combined_ratio::niva-bupa::Q4::FY22",
     "claims_ratio::niva-bupa::Q4::FY22",
     "commission_ratio::niva-bupa::Q4::FY22",
-    "period_type::niva-bupa::Q4::FY22"
+    "period_type::niva-bupa::Q4::FY22",
+    "period_type::niva-bupa::FY26::FY26",
+    "banca_share::niva-bupa::FY26::FY26",
+    "broker_share::niva-bupa::FY26::FY26",
+    "agent_share::niva-bupa::FY26::FY26",
+    "corporate_agent_share::niva-bupa::FY26::FY26",
+    "direct_share::niva-bupa::FY26::FY26",
+    "others_share::niva-bupa::FY26::FY26",
+    "largest_channel::niva-bupa::FY26::FY26",
+    "period_type::care-health::FY24::FY24",
+    "banca_share::care-health::FY24::FY24",
+    "broker_share::care-health::FY24::FY24",
+    "agent_share::care-health::FY24::FY24",
+    "corporate_agent_share::care-health::FY24::FY24",
+    "direct_share::care-health::FY24::FY24",
+    "online_share::care-health::FY24::FY24",
+    "others_share::care-health::FY24::FY24",
+    "largest_channel::care-health::FY24::FY24"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -183,21 +200,17 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
-    "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
-    "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
-    "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
-    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE"
+    "[distribution_extract] star-health: no NL-36 / channel-mix table found in 1 PDF(s)."
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
     {
       "source_id": "irdai_handbook",
       "status": "failed",
-      "last_attempt_at": "2026-05-28T10:21:20.021Z",
+      "last_attempt_at": "2026-06-02T12:32:59.854Z",
       "last_success_at": null,
       "records_fetched": 0,
-      "error": "Offline mode and no pre-staged file matching /\\.pdf$/i in /home/user/HealthInsurance/data/raw/irdai/annual"
+      "error": "HTTP 403 for https://irdai.gov.in/handbook-of-indian-insurance-statistics"
     },
     {
       "source_id": "irdai_monthly_business",
@@ -314,10 +327,10 @@
     },
     {
       "source_id": "distribution_extract",
-      "status": "pending",
-      "last_attempt_at": "2026-05-28T10:21:20.027Z",
-      "last_success_at": null,
-      "records_fetched": 0
+      "status": "success",
+      "last_attempt_at": "2026-06-02T12:33:04.050Z",
+      "last_success_at": "2026-06-02T12:33:04.050Z",
+      "records_fetched": 2
     },
     {
       "source_id": "ownership_quarterly",

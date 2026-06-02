@@ -374,12 +374,12 @@
       "confidence": "high"
     },
     "period_type::niva-bupa::FY26": {
-      "source_name": "niva-bupa Q1 FY26 public disclosure",
-      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-June-25.pdf?v=1.0",
-      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-June-25.pdf",
-      "source_period": "Q1 FY26",
-      "fetched_at": "2026-05-31T10:33:33.218Z",
-      "confidence": "high"
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
     },
     "claims_ratio::niva-bupa::FY26": {
       "source_name": "niva-bupa Q1 FY26 public disclosure",
@@ -724,6 +724,134 @@
       "source_period": "Q4 FY22",
       "fetched_at": "2026-05-31T10:33:33.218Z",
       "confidence": "high"
+    },
+    "banca_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "broker_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "agent_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "corporate_agent_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "direct_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "others_share::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "largest_channel::niva-bupa::FY26": {
+      "source_name": "niva-bupa IRDAI NL-36 channel mix (FY26)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-WebsitePublicDisclosuresSep2021.pdf",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "period_type::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "banca_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "broker_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "agent_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "corporate_agent_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "direct_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "online_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "others_share::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
+    },
+    "largest_channel::care-health::FY24": {
+      "source_name": "care-health IRDAI NL-36 channel mix (FY24)",
+      "source_url": "file:///home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-02T12:33:04.050Z",
+      "confidence": "medium"
     }
   }
 }
