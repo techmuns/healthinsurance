@@ -8,6 +8,7 @@ import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { AboutView } from '@/components/AboutView'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
+import { PeriodPending } from '@/components/PeriodPending'
 import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
@@ -277,13 +278,13 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           </div>
           {annualOnly ? (
             <div className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF6EA] px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-champagne-deep" />
-              <span className="font-semibold text-champagne-deep">Annual mock data only</span>
+              <Clock className="h-3.5 w-3.5 text-champagne-deep" />
+              <span className="font-semibold text-champagne-deep">{period} data pending</span>
             </div>
           ) : (
             <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
               <BadgeCheck className="h-3.5 w-3.5 text-teal" />
-              <span className="font-semibold text-teal">Freshness · current</span>
+              <span className="font-semibold text-teal">Annual basis · current</span>
             </div>
           )}
           <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
@@ -351,6 +352,15 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           title={isCompanyView ? `${company.shortName} vs Peers` : 'Who Leads'}
           note={`${groupLabel} · ${company.shortName} highlighted`}
         />
+        {annualOnly ? (
+          <PeriodPending
+            period={period}
+            title={`${period} market view pending`}
+            body={`Market share and the leader board are tracked on an annual basis. ${period} figures aren't downloaded yet — switch the Period back to Annual to see who leads.`}
+            height={300}
+          />
+        ) : (
+        <>
         <div className="grid gap-4 lg:grid-cols-2">
           <div
             className="card-surface card-interactive relative overflow-hidden p-4"
@@ -385,10 +395,24 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
           {company.shortName} is currently {positionPhrase}; the key question is whether growth quality and profitability
           continue to improve.
         </p>
+        </>
+        )}
       </section>
 
-      {/* C. What Changed — compact visual strip */}
-      <WhatChangedStrip company={company} list={peerList} review={review} />
+      {/* C. What Changed — compact visual strip (annual basis) */}
+      {annualOnly ? (
+        <section>
+          <SectionHeading eyebrow="What Changed" title={`${company.shortName} · recent movement`} note="Annual basis" />
+          <PeriodPending
+            period={period}
+            title={`${period} movement pending`}
+            body={`"What changed" compares full-year figures. ${period} data for ${company.shortName} isn't downloaded yet — it will appear here automatically once ingested.`}
+            height={200}
+          />
+        </section>
+      ) : (
+        <WhatChangedStrip company={company} list={peerList} review={review} />
+      )}
 
       {/* Final Buy-side Read — Decision Panel (dark navy base with tinted lanes) */}
       <section>

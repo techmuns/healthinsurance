@@ -15,10 +15,12 @@ import {
   UNLISTED_METHODOLOGY,
   type Rating,
   type ValConfidence,
+  type PeerValuationRow,
 } from '@/data/valuationData'
 import { srcTag, valSrc } from '@/data/valuationSources'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
+import type { Insurer } from '@/data/types'
 
 const NAVY = '#27457E'
 const TEAL = '#168E8E'
@@ -158,13 +160,8 @@ export function ValuationMarketView() {
 
   return (
     <div className="space-y-5">
-      {!isFocal && (
-        <div className="flex items-start gap-2 rounded-xl border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/70 px-3.5 py-2.5 text-[11.5px] leading-snug text-[#8C6B1A]">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span>Sourced valuation currently covers <b>Niva Bupa (NSE: NIVABUPA)</b>. Figures below are Niva Bupa's, regardless of the selected company — other names are <b>source pending</b>.</span>
-        </div>
-      )}
-
+      {isFocal ? (
+      <>
       {/* ── 1. Verdict + Valuation Lens ───────────────────────────────────────── */}
       <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)]">
         <div className="grid items-center gap-5 lg:grid-cols-[1fr_1.15fr]">
@@ -490,8 +487,12 @@ export function ValuationMarketView() {
           </div>
         )}
       </section>
+      </>
+      ) : (
+        <ValuationPending company={company} peerRow={peerValuation.find((r) => r.companyId === company.id) ?? null} />
+      )}
 
-      {/* ── 5. Operating-quality compass ──────────────────────────────────────── */}
+      {/* ── 5. Operating-quality compass · adapts to the selected company ─────── */}
       <section>
         <Eyebrow label="Quality Lens" title="Operating quality vs peers" note="Relative scores on the operating metrics behind the multiple." right={<ValPill c="secondary" />} />
         <div className="card-surface p-5">
@@ -532,7 +533,8 @@ export function ValuationMarketView() {
         </div>
       </section>
 
-      {/* ── 6. Investor read ──────────────────────────────────────────────────── */}
+      {/* ── 6. Investor read · focal listed name only ─────────────────────────── */}
+      {isFocal && (
       <section className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-[#16294B] via-[#1B335C] to-[#13243F] p-6 shadow-[0_18px_44px_rgba(11,22,44,0.30)]">
         <InvestorReadArt />
         <div className="relative flex items-center justify-between gap-2">
@@ -567,7 +569,70 @@ export function ValuationMarketView() {
           </ul>
         )}
       </section>
+      )}
     </div>
+  )
+}
+
+// ── Per-company pending state ─────────────────────────────────────────────────
+// Shown when the selected company is NOT the focal listed name. We never render
+// the focal company's price / targets / multiples under another company's label.
+// Instead we show that company's OWN sourced figures where they exist, and an
+// honest "source pending" where they don't.
+function ValuationPending({ company, peerRow }: { company: Insurer; peerRow: PeerValuationRow | null }) {
+  const listed = peerRow?.listingStatus === 'Listed'
+  const hasMultiples = peerRow != null && peerRow.pGwp != null
+  return (
+    <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)]">
+      <Eyebrow
+        label="Valuation"
+        title={`Sourced valuation pending for ${company.shortName}`}
+        note="Live, source-backed valuation is wired for the focal listed name today — never shown under another company's label."
+        right={<ValPill c="pending" />}
+      />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.05fr_1fr]">
+        {/* What we genuinely have for THIS company */}
+        <div className="card-surface p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">What we have for {company.shortName}</p>
+            <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${listed ? 'bg-soft-blue text-navy-primary' : 'border border-dashed border-[#C9CFD9] text-ink-secondary'}`}>{listed ? 'Listed' : 'Unlisted'}</span>
+          </div>
+          {hasMultiples ? (
+            <>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                <Tile k="P / GWP" v={xMult(peerRow!.pGwp)} sub="FY26" />
+                <Tile k="P / E" v={xMult(peerRow!.pe, 1)} sub="FY26" />
+                <Tile k="GWP" v={fmtCr(peerRow!.gwp)} sub="FY26" />
+              </div>
+              <p className="mt-3 text-[11.5px] leading-relaxed text-ink-secondary">
+                {company.shortName}'s own market multiples are sourced. The full valuation story — analyst targets, price history and the verdict — is wired for the focal name and will extend to {company.shortName} as its coverage is sourced.
+              </p>
+              <div className="mt-3 flex justify-end"><OpenSource id={peerRow!.sourceId} /></div>
+            </>
+          ) : (
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
+              {listed
+                ? `${company.shortName} is listed — market multiples will populate here once its price and FY26 GWP are sourced.`
+                : `${company.shortName} is unlisted: there is no public market price, so we don't publish an equity value. Marked source pending — never estimated.`}
+            </p>
+          )}
+        </div>
+
+        {/* Honest coverage explainer */}
+        <div className="rounded-2xl border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 p-5 text-[#8C6B1A]">
+          <div className="flex items-center gap-1.5">
+            <Info className="h-3.5 w-3.5" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em]">Coverage</p>
+          </div>
+          <p className="mt-2 text-[11.5px] leading-relaxed">
+            Full live valuation — current price, analyst consensus, multiples and the peer verdict — is sourced for <b>Niva Bupa (NSE: NIVABUPA)</b>. Every other company shows its own real figures where available and an honest <b>source pending</b> otherwise. We never display one company's numbers under another's name.
+          </p>
+          <p className="mt-2 text-[10.5px] leading-relaxed opacity-90">
+            The operating-quality view below is computed from {company.shortName}'s own reported metrics, so it stays meaningful for every company.
+          </p>
+        </div>
+      </div>
+    </section>
   )
 }
 

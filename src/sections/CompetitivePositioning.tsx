@@ -9,16 +9,15 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { Heatmap } from '@/components/Heatmap'
 import { SectionHeading } from '@/components/SectionHeading'
+import { PeriodPending } from '@/components/PeriodPending'
 import { PEER_GROUP_LABEL, insurers, peerRows } from '@/data/mockData'
 import { getPeerScorecardData } from '@/lib/insurers'
 import { getScorecardSummary } from '@/lib/review'
+import { usePeriodGate } from '@/lib/usePeriodGate'
 import { useActiveCompany, useFilters } from '@/state/filters'
-import type { PeerGroup } from '@/data/types'
 
 type View = 'Scorecard' | 'Ranking' | 'Table'
 type RankMetric = 'GWP Growth' | 'Market Share' | 'Solvency' | 'ROE' | 'Combined Ratio' | 'Valuation'
-
-const groups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
 
 const metricAccessor: Record<RankMetric, { key: keyof (typeof peerRows)[number]; invert?: boolean; unit?: string }> = {
   'GWP Growth': { key: 'gwpGrowth', unit: '%' },
@@ -31,10 +30,15 @@ const metricAccessor: Record<RankMetric, { key: keyof (typeof peerRows)[number];
 
 export function CompetitivePositioning() {
   const [view, setView] = useState<View>('Scorecard')
-  const [group, setGroup] = useState<PeerGroup>('SAHI')
   const [metric, setMetric] = useState<RankMetric>('GWP Growth')
   const filters = useFilters()
   const active = useActiveCompany()
+  // Peer group is owned by the top header — no local toggle, so the whole page
+  // (top card + bottom heatmap) always reflects one peer-group choice.
+  const group = filters.peerGroup
+  // Peer comparison is published annually; quarterly/monthly peer panels are
+  // pending, so the data blocks gate to a clean pending state off-Annual.
+  const gate = usePeriodGate()
 
   // Filter-aware peer scorecard heatmap (moved from Executive Overview).
   const heatmapData = getPeerScorecardData(filters)
@@ -69,13 +73,21 @@ export function CompetitivePositioning() {
         sourceProvenance={{ source_name: 'Niva Bupa / Star Health / Aditya Birla: direct from company press releases. Care Health / ManipalCigna: derived from IRDAI public disclosures via Cafemutual / disclosure aggregators. SAHI segment shares derived from FY25 GWP totals.', source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/other-fin-disclosures/Press-Release-Results-March-2025.pdf', fetched_at: '2026-05-28' }}
       />
 
+    {!gate.ok ? (
+      <PeriodPending
+        period={filters.period}
+        title={`${filters.period} peer comparison pending`}
+        body={`Peer scorecards and rankings are published on an annual basis. ${filters.period} peer data isn't downloaded yet — switch the Period back to Annual to compare the peer set.`}
+        height={320}
+      />
+    ) : (
+      <>
     <ModuleCard
       question="Who is winning versus peers?"
       title="Peer Positioning"
       icon="peers"
       controls={
         <>
-          <SegmentedControl<PeerGroup> label="Peers" options={groups} value={group} onChange={setGroup} size="sm" />
           <SegmentedControl<View> label="View" options={['Scorecard', 'Ranking', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
           {view === 'Ranking' && (
             <SegmentedControl<RankMetric>
@@ -215,6 +227,8 @@ export function CompetitivePositioning() {
           </div>
         </div>
       </section>
+      </>
+    )}
 
       <InvestorRead
         title="Competitive Investor Read"

@@ -5,6 +5,7 @@ import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { useActiveCompany } from '@/state/filters'
+import { getCompanyMaster } from '@/lib/dataLayer'
 
 type View = 'Trend' | 'Change' | 'Table'
 
@@ -18,6 +19,9 @@ type View = 'Trend' | 'Change' | 'Table'
 export function Ownership() {
   const [view, setView] = useState<View>('Trend')
   const company = useActiveCompany()
+  // Listed status is data-driven from company-master — no hardcoded id list, so
+  // newly added insurers carry the correct listed/unlisted copy automatically.
+  const listed = getCompanyMaster().find((c) => c.company_id === company.id)?.listed_status === 'listed'
 
   return (
     <div className="space-y-6">
@@ -42,10 +46,7 @@ export function Ownership() {
           <SegmentedControl<View> label="View" options={['Trend', 'Change', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
         }
       >
-        <UnavailableSection
-          companyName={company.shortName}
-          listed={company.id === 'niva-bupa' || company.id === 'star-health' || company.id === 'icici-lombard' || company.id === 'hdfc-life' || company.id === 'sbi-life'}
-        />
+        <UnavailableSection companyName={company.shortName} listed={listed} />
       </ModuleCard>
 
       <InvestorRead

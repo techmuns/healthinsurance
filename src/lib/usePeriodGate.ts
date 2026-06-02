@@ -1,27 +1,37 @@
 // ---------------------------------------------------------------------------
-// Period gate — small hook that tells a chart whether the currently selected
-// period (Monthly / Quarterly / Annual) is supported by its data. Mock data is
-// annual-only, so non-Annual selections produce an `ok = false` result with a
-// reason — sections render an EmptyState instead of silently falling back to
-// annual numbers.
+// Period gate — small hooks that tell a section whether the currently selected
+// period (Monthly / Quarterly / Annual) can be rendered.
+//
+// Two flavours, both reading the global header state:
+//
+//   • usePeriodGate(supported)   — STATIC capability gate. Use when a chart is
+//     built on a series that only exists at one frequency (e.g. the GI pool
+//     shift and channel-mix charts are annual-only by construction). Defaults
+//     to ['Annual'].
+//
+//   • useCompanyPeriodData()     — DATA-DRIVEN gate. Use when a section can in
+//     principle render any frequency and the only question is whether the
+//     snapshot actually carries rows for the active company + period. Lights up
+//     automatically as new quarterly/monthly data is ingested.
 // ---------------------------------------------------------------------------
 
-import { useFilters } from '@/state/filters'
+import { useFilters, useActiveCompany } from '@/state/filters'
 import type { TimePeriod } from '@/data/types'
+import { resolvePeriodAvailability, type PeriodAvailability } from '@/lib/periodData'
 
 export interface PeriodGateResult {
   ok: boolean
   period: TimePeriod
-  /** Human-readable reason when ok=false, e.g. "Mock dataset is annual-only". */
+  /** Human-readable reason when ok=false, e.g. "Quarterly data pending". */
   reason?: string
 }
 
 /**
- * Gates a chart on the currently selected period.
+ * Static capability gate for charts that only exist at certain frequencies.
  *
  * @param supported Periods the calling chart can render. Defaults to
- *                  `['Annual']` because every mock dataset in this
- *                  dashboard is annual-only.
+ *                  `['Annual']` because the industry-structure series in this
+ *                  dashboard (pool shift, channel mix) are annual-only.
  */
 export function usePeriodGate(supported: TimePeriod[] = ['Annual']): PeriodGateResult {
   const { period } = useFilters()
@@ -31,9 +41,20 @@ export function usePeriodGate(supported: TimePeriod[] = ['Annual']): PeriodGateR
     period,
     reason:
       period === 'Monthly'
-        ? 'Mock dataset is annual-only — monthly series are not wired yet.'
+        ? 'Monthly data pending — this chart is reported annually.'
         : period === 'Quarterly'
-          ? 'Mock dataset is annual-only — quarterly series are not wired for this chart.'
+          ? 'Quarterly data pending — this chart is reported annually.'
           : 'Data unavailable for this period.',
   }
+}
+
+/**
+ * Data-driven gate: resolves whether the active company has real data at the
+ * selected period, reading the snapshots through `resolvePeriodAvailability`.
+ * Returns the full availability verdict so callers can render <PeriodPending />.
+ */
+export function useCompanyPeriodData(): PeriodAvailability {
+  const { period } = useFilters()
+  const company = useActiveCompany()
+  return resolvePeriodAvailability(company.id, company.shortName, period)
 }

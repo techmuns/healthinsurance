@@ -1,8 +1,9 @@
 import { ChevronDown } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import { DataRangeControl } from './DataRangeControl'
-import { useFilters } from '@/state/filters'
-import { insurers, DATA_FRESHNESS } from '@/data/mockData'
+import { useFilters, useActiveCompany } from '@/state/filters'
+import { insurers } from '@/data/mockData'
+import { resolvePeriodAvailability } from '@/lib/periodData'
 import type { PeerGroup, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
@@ -28,12 +29,19 @@ export function TopFilterBar({ section }: { section?: string }) {
     period,
     setPeriod,
   } = useFilters()
+  const company = useActiveCompany()
   const isOverview = section === 'overview'
 
   // Company dropdown options are scoped to the current peer group — picking
   // a peer group first narrows the universe, then the user selects a
   // company inside it. "All" shows every insurer.
   const companyOptions = peerGroup === 'All' ? insurers : insurers.filter((c) => c.peerGroup === peerGroup)
+
+  // The header honestly reflects the current selection's data state: whether the
+  // selected company has real data at the selected period, and that period's
+  // last-updated date. So changing Period/Company is visible in the control bar
+  // itself, not only down in the page.
+  const availability = resolvePeriodAvailability(company.id, company.shortName, period)
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
@@ -90,21 +98,30 @@ export function TopFilterBar({ section }: { section?: string }) {
         </div>
 
         <div className="ml-auto flex items-end gap-4">
-          {/* Dataset — every rendered value is either real (FY25 from official
-              filings) or an explicit "not yet ingested" empty state. */}
+          {/* Data status — reflects the SELECTED company + period: "Official"
+              when real data exists, or an honest "<Period> pending" otherwise. */}
           <div>
-            <FieldLabel hint="Hover any source tag for the underlying URL">Dataset</FieldLabel>
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-soft px-2.5 py-1.5 text-[12px] font-semibold text-teal ring-1 ring-[#CFE3DA]">
-              <span className="h-1.5 w-1.5 rounded-full bg-current" />
-              Official
-            </span>
+            <FieldLabel hint={availability.available ? 'Every value is real, from official filings — hover any source tag for the URL' : availability.body}>
+              Data status
+            </FieldLabel>
+            {availability.available ? (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-soft px-2.5 py-1.5 text-[12px] font-semibold text-teal ring-1 ring-[#CFE3DA]">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                Official
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBF6EA] px-2.5 py-1.5 text-[12px] font-semibold text-[#8C6B1A] ring-1 ring-[#EAD9B6]">
+                <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                {period} pending
+              </span>
+            )}
           </div>
 
-          {/* Updated */}
+          {/* Updated — the selected period's last-ingestion date (honest per period). */}
           <div className="hidden md:block">
             <FieldLabel>Updated</FieldLabel>
             <span className="inline-flex items-center rounded-lg border border-soft-border bg-card px-2.5 py-1.5 text-[12px] font-semibold text-navy-deep">
-              {DATA_FRESHNESS.lastUpdated}
+              {availability.lastUpdated ?? '—'}
             </span>
           </div>
         </div>
