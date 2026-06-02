@@ -39,6 +39,7 @@ export const ingestIrdaiAnnual: Fetcher = {
           return /handbook|statistic/.test(t)
         })
         if (links.length === 0) {
+          console.log(`[irdai-annual] reached handbook page but found NO matching PDF links at ${HANDBOOK_URL}`)
           await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'no_links' })
           return {
             source_id: SOURCE_ID,
@@ -74,6 +75,43 @@ export const ingestIrdaiAnnual: Fetcher = {
         marine_premium: /Marine\s+(?:Insurance)?[^0-9\-]*([\d,.]+)/i,
       })
 
+      // Carrier-type split of HEALTH premium (Public / Private / Standalone).
+      // The same row labels recur across handbook tables, so we VALIDATE the
+      // parse (shares must sum ~100 and each be individually plausible) and only
+      // emit when coherent — never a guess. Diagnostics below print what the
+      // page/PDF actually yielded so we can refine patterns from the CI log.
+      const carrier = extractByPatterns(text, {
+        health_sahi_premium: /stand[\s-]?alone\s+health\s+insurers?[^0-9\-]*([\d,.]+)/i,
+        health_public_premium: /public\s+sector[^0-9\-]*([\d,.]+)/i,
+        health_private_premium: /private\s+sector[^0-9\-]*([\d,.]+)/i,
+      })
+      let health_sahi_share: number | null = null
+      let health_private_share: number | null = null
+      let health_psu_share: number | null = null
+      {
+        const cs = carrier.health_sahi_premium
+        const cpu = carrier.health_public_premium
+        const cpr = carrier.health_private_premium
+        if (cs != null && cpu != null && cpr != null && cs + cpu + cpr > 0) {
+          const sum = cs + cpu + cpr
+          const sahiSh = (cs / sum) * 100
+          const prSh = (cpr / sum) * 100
+          const puSh = (cpu / sum) * 100
+          if (sahiSh >= 10 && sahiSh <= 50 && prSh >= 25 && prSh <= 65 && puSh >= 8 && puSh <= 50) {
+            health_sahi_share = Math.round(sahiSh * 10) / 10
+            health_private_share = Math.round(prSh * 10) / 10
+            health_psu_share = Math.round(puSh * 10) / 10
+          }
+        }
+      }
+      console.log(`[irdai-annual] mode=${mode} file=${filename} parsedChars=${text.length}`)
+      console.log(`[irdai-annual] segments=${JSON.stringify(segments)}`)
+      console.log(`[irdai-annual] carrier=${JSON.stringify(carrier)} -> shares SAHI=${health_sahi_share} Private=${health_private_share} PSU=${health_psu_share}`)
+      {
+        const si = text.search(/stand[\s-]?alone\s+health/i)
+        console.log(`[irdai-annual] standalone-health snippet: ${si >= 0 ? JSON.stringify(text.slice(Math.max(0, si - 60), si + 180)) : 'NOT FOUND in parsed text'}`)
+      }
+
       // Infer fiscal year from filename or text header.
       const fy = inferFY(filename, text)
 
@@ -96,6 +134,9 @@ export const ingestIrdaiAnnual: Fetcher = {
           total_gi_premium: total,
           health_share: healthShare,
           motor_share: motorShare,
+          health_sahi_share,
+          health_private_share,
+          health_psu_share,
         },
         provenance: {
           source_name: `IRDAI Handbook on Indian Insurance Statistics (${fy})`,
@@ -126,6 +167,7 @@ export const ingestIrdaiAnnual: Fetcher = {
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
+      console.log(`[irdai-annual] FETCH/PARSE FAILED (likely IRDAI WAF block): ${error}`)
       await appendLog('ingest-irdai-annual.log', { source: SOURCE_ID, status: 'error', error })
       return {
         source_id: SOURCE_ID,
