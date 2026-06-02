@@ -9,7 +9,6 @@ import {
   getCustomerMix,
   getPremiumFlow,
   getQualityMix,
-  getRetentionCohort,
   insurers,
 } from '@/data/mockData'
 import type { FlowPoint, MixSeries, RetentionNode } from '@/data/mockData'
@@ -608,9 +607,11 @@ function RealMixChart({
   )
 }
 
-// FlowView / MixView / RetentionView are intentionally retained — they will
-// be re-mounted once per-period IRDAI / company-filing data is ingested.
-// Exported to silence noUnusedLocals while the chart bodies are dark.
+// FlowView / MixView (and the renewal-progression + cohort helpers further
+// below) are parked, not mounted — they render fabricated series and will be
+// re-mounted only once per-period / multi-year / cohort data is ingested.
+// Exported to silence noUnusedLocals while those bodies stay dark. The live
+// Retention tab (RetentionView) reads real renewal/retention from the snapshot.
 export function FlowView({ companyId, period }: { companyId: string; period: Period }) {
   const [stage, setStage] = useState<Stage>('GWP')
   const flow = getPremiumFlow(companyId, period)
@@ -977,7 +978,7 @@ function RenewalProgression({ companyId, period }: { companyId: string; period: 
 }
 
 // Hero: renewal rate as the primary metric, with the progression strip beside it.
-function HeroRenewal({ companyId, period, rrFirst, rrLast, firstLabel, improving }: { companyId: string; period: Period; rrFirst: number; rrLast: number; firstLabel: string; improving: boolean }) {
+export function HeroRenewal({ companyId, period, rrFirst, rrLast, firstLabel, improving }: { companyId: string; period: Period; rrFirst: number; rrLast: number; firstLabel: string; improving: boolean }) {
   return (
     <div
       className="relative overflow-hidden rounded-xl2 border border-soft-border p-4 shadow-soft sm:p-5"
@@ -1009,7 +1010,7 @@ function HeroRenewal({ companyId, period, rrFirst, rrLast, firstLabel, improving
 }
 
 // Secondary supporting visual: how many of 100 customers stay each year.
-function StayPath({ cohort, benchmarkYear4 }: { cohort: RetentionNode[]; benchmarkYear4: number | null }) {
+export function StayPath({ cohort, benchmarkYear4 }: { cohort: RetentionNode[]; benchmarkYear4: number | null }) {
   const cust = (i: number) => Math.round(cohort[i].customers)
   return (
     <div className="flex items-start">
@@ -1059,7 +1060,7 @@ function StayPath({ cohort, benchmarkYear4 }: { cohort: RetentionNode[]; benchma
 // Walks the same cohort math as getRetentionCohort to project a Year-4+
 // retained-customer count from a renewal-rate anchor. Lets us derive a peer
 // benchmark from the median renewalRate of the focal company's peer group.
-function projectYear4FromRenewal(r: number): number {
+export function projectYear4FromRenewal(r: number): number {
   const r2 = r / 100
   const r3 = Math.min(0.99, (r + (100 - r) * 0.2) / 100)
   const r4 = Math.min(0.99, (r + (100 - r) * 0.35) / 100)
@@ -1083,115 +1084,100 @@ const peerGroupLabel: Record<string, string> = {
 }
 
 export function RetentionView({ companyId, period }: { companyId: string; period: Period }) {
-  const cohort = getRetentionCohort(companyId)
-  const rrSeries = getCompareSeries(companyId, 'renewalRate', period)
-  const rrVals = rrSeries.filter((v): v is number => v != null)
-  if (!cohort || !rrVals.length) {
-    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">Retention is not reported for this company — data pending.</div>
-  }
-  const periods = period === 'Quarterly' ? compareQuarters : compareYears
-  const rrFirst = Math.round(rrVals[0])
-  const rrLast = Math.round(rrVals[rrVals.length - 1])
-  const improving = rrLast > rrFirst
-  const year4 = Math.round(cohort[cohort.length - 1].customers)
-  const dropTotal = 100 - year4
-
-  // Peer-median benchmark — exclude focal, require at least 2 peers in the
-  // same group so the median is meaningful; otherwise mark as pending.
+  void period // renewal is reported annually; the period toggle doesn't apply here.
   const focal = insurers.find((i) => i.id === companyId)
+
+  // Real, source-backed renewal history for this company (annual snapshot).
+  // Today only the latest fiscal year carries renewal_rate for most insurers;
+  // earlier years stay absent until ingested — we never fabricate a trend.
+  const renewalRows = (annualSnapshot.data as Array<{
+    company_id: string
+    fiscal_year: string
+    renewal_rate: number | null
+    customer_retention: number | null
+  }>)
+    .filter((r) => r.company_id === companyId && typeof r.renewal_rate === 'number')
+    .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
+  const latest = renewalRows[renewalRows.length - 1] ?? null
+  const rr = latest?.renewal_rate ?? (focal && focal.renewalRate > 0 ? focal.renewalRate : null)
+  const ret = latest?.customer_retention ?? (focal && focal.customerRetention > 0 ? focal.customerRetention : null)
+  const fyLabel = latest?.fiscal_year ?? 'latest FY'
+
+  if (rr == null) {
+    return (
+      <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-[12px] text-ink-secondary">
+        Renewal rate is not reported for {focal?.shortName ?? 'this company'} yet — it will appear here once the
+        company filing is ingested.
+      </div>
+    )
+  }
+
+  // Real peer-median renewal (same peer group, reported values only).
   const peerGroup = focal?.peerGroup
   const peerRates = insurers
-    .filter((i) => i.id !== companyId && i.peerGroup === peerGroup)
+    .filter((i) => i.id !== companyId && i.peerGroup === peerGroup && i.renewalRate > 0)
     .map((i) => i.renewalRate)
-    .filter((v): v is number => typeof v === 'number' && v > 0)
-  const peerMedianRR = peerRates.length >= 2 ? median(peerRates) : null
-  const benchmarkYear4 = peerMedianRR != null ? projectYear4FromRenewal(peerMedianRR) : null
+  const peerMedian = peerRates.length >= 2 ? median(peerRates) : null
   const benchmarkLabel = peerGroup ? peerGroupLabel[peerGroup] ?? 'Peer' : 'Peer'
+  const delta = peerMedian != null ? Math.round((rr - peerMedian) * 10) / 10 : null
 
-  // Classification per spec: ±5 = In line, +5+ = Sticky, −5+ = Weak retention.
-  const delta = benchmarkYear4 != null ? year4 - benchmarkYear4 : null
-  const status: { label: string; tone: 'positive' | 'navy' | 'negative' } =
+  const status: { label: string; color: string } =
     delta == null
-      ? { label: year4 >= 75 ? 'Sticky book' : 'Watch', tone: year4 >= 75 ? 'positive' : 'navy' }
-      : delta >= 5
-        ? { label: 'Sticky book', tone: 'positive' }
-        : delta <= -5
-          ? { label: 'Weak retention', tone: 'negative' }
-          : { label: 'In line with peers', tone: 'navy' }
-  const explainer =
-    delta == null
-      ? null
-      : delta >= 5
-        ? 'Retention is above peer benchmark, suggesting better customer stickiness.'
-        : delta <= -5
-          ? 'Retention is below peer benchmark — customer stickiness lags peers.'
-          : 'Retention sits in line with the peer benchmark.'
+      ? { label: rr >= 85 ? 'Sticky book' : 'Watch', color: rr >= 85 ? TEAL : FOCAL }
+      : delta >= 3
+        ? { label: 'Above peers', color: TEAL }
+        : delta <= -3
+          ? { label: 'Below peers', color: RED }
+          : { label: 'In line with peers', color: FOCAL }
 
   const pills: Chip[] = [
-    { label: 'Year-4 Retained', value: `${year4} of 100`, color: TEAL },
-    { label: 'Drop-off', value: `−${dropTotal}`, note: 'customers', color: RED },
+    { label: 'Renewal Rate', value: `${Math.round(rr)}%`, note: fyLabel, color: TEAL },
+    ...(ret != null ? [{ label: 'Customer Retention', value: `${Math.round(ret)}%`, note: fyLabel, color: FOCAL } as Chip] : []),
     {
-      label: 'Status',
+      label: 'Vs Peers',
       value: status.label,
-      note:
-        delta != null
-          ? `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} vs ${benchmarkLabel} benchmark`
-          : 'benchmark pending',
-      color: status.tone === 'positive' ? TEAL : status.tone === 'negative' ? RED : FOCAL,
+      note: peerMedian != null ? `${benchmarkLabel} median ${Math.round(peerMedian)}%` : 'benchmark pending',
+      color: status.color,
     },
   ]
 
   return (
     <div className="space-y-4">
-      {/* Primary: renewal rate hero + progression */}
-      <HeroRenewal companyId={companyId} period={period} rrFirst={rrFirst} rrLast={rrLast} firstLabel={periods[0]} improving={improving} />
-
-      {/* Secondary: customer stay path */}
-      <div className="rounded-xl2 border border-soft-border bg-ice/40 p-4">
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-          <div>
-            <p className="text-[12px] font-semibold text-navy-deep">Customer Stay Path</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-              Out of 100 customers, <span className="font-semibold" style={{ color: TEAL }}>{year4}</span> remain by Year 4+.
+      {/* Primary: real renewal rate hero + honest peer comparison */}
+      <div
+        className="relative overflow-hidden rounded-xl2 border border-soft-border p-4 shadow-soft sm:p-5"
+        style={{ background: `linear-gradient(135deg, ${hexA(TEAL, 0.1)}, ${hexA(FOCAL, 0.05)} 55%, transparent)` }}
+      >
+        <span className="absolute left-0 top-0 h-full w-1.5" style={{ background: TEAL }} />
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pl-2">
+          <div className="shrink-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">Renewal Rate</p>
+            <div className="mt-1 flex items-end gap-2">
+              <span className="font-display text-[40px] leading-none text-navy-deep">{Math.round(rr)}%</span>
+              {delta != null && (
+                <span
+                  className="mb-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                  style={{ color: status.color, background: hexA(status.color, 0.12) }}
+                >
+                  {delta >= 0 ? '+' : '−'}{Math.abs(delta)} pp vs {benchmarkLabel}
+                </span>
+              )}
+            </div>
+            <p className="mt-1.5 text-[12px] text-ink-secondary">
+              {fyLabel} reported{ret != null ? ` · ${Math.round(ret)}% customer retention` : ''}
             </p>
           </div>
-          {/* Benchmark chip — only when peer median is computable. */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {benchmarkYear4 != null ? (
-              <>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10.5px] text-ink-secondary">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#94A3B8', boxShadow: 'inset 0 0 0 1px #FFFFFF' }} />
-                  {benchmarkLabel} median: <span className="font-semibold text-navy-deep">{benchmarkYear4} of 100</span>
-                </span>
-                {delta != null && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold"
-                    style={
-                      delta >= 5
-                        ? { background: hexA(TEAL, 0.12), color: '#0E6F6D', boxShadow: 'inset 0 0 0 1px rgba(22,142,142,0.30)' }
-                        : delta <= -5
-                          ? { background: hexA(RED, 0.12), color: '#9C463D', boxShadow: 'inset 0 0 0 1px rgba(201,122,107,0.30)' }
-                          : { background: '#EEF1F7', color: '#475569', boxShadow: 'inset 0 0 0 1px #D2DAE6' }
-                    }
-                  >
-                    {delta >= 0 ? '+' : '−'}{Math.abs(delta)} vs benchmark
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10.5px] italic text-ink-secondary">
-                Peer benchmark pending
-              </span>
-            )}
+          <div className="min-w-[220px] flex-1">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">Year-on-year trend</p>
+            <div className="rounded-lg border border-dashed border-soft-border bg-white/50 px-3 py-3 text-[11.5px] leading-snug text-ink-secondary">
+              Multi-year renewal history and the customer stay-path cohort are pending — only {fyLabel} is reported
+              in the source today. They populate here automatically as earlier years are ingested.
+            </div>
           </div>
         </div>
-        <StayPath cohort={cohort} benchmarkYear4={benchmarkYear4} />
-        {explainer && (
-          <p className="mt-3 text-[11.5px] leading-snug text-navy-deep/80">{explainer}</p>
-        )}
       </div>
 
-      {/* Supporting summary pills */}
+      {/* Supporting summary pills — all values real */}
       <SlimStrip chips={pills} />
     </div>
   )
