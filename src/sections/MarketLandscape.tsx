@@ -6,7 +6,6 @@ import {
   LabelList,
   Line,
   LineChart,
-  ReferenceArea,
   ReferenceDot,
   ResponsiveContainer,
   Tooltip,
@@ -558,49 +557,23 @@ function BridgeBlock() {
 // Three-line trend — SAHI highlighted (thicker navy), Private muted slate,
 // PSU lightest grey. Right-side end labels make the up/down story instant.
 function SahiShiftCard() {
-  const { range } = useFilters()
+  // Show the real, sourced carrier-split years clipped to the header Data Range.
+  // The Private/SAHI/PSU split is sourced annually (FY24–FY25 today); we render
+  // the years we actually have rather than padding the axis with empty years.
+  const { data: clipped } = useRangeClip(healthCarrierShare)
+  const span = shownSpan(clipped)
+  const lastIdx = clipped.length - 1
   const gate = usePeriodGate()
 
-  // Build the x-axis straight from the header Data Range, then merge the real
-  // carrier-share rows onto it. Years with no sourced value stay null (a clean
-  // gap) — never fabricated — and are flagged with a "source pending" band.
-  const years = fyLabelsInRange(range)
-  const byLabel = new Map((healthCarrierShare as SeriesPoint[]).map((r) => [r.label, r]))
-  const chartData = years.map((label) => {
-    const r = byLabel.get(label)
-    return {
-      label,
-      SAHI: typeof r?.SAHI === 'number' ? r.SAHI : null,
-      Private: typeof r?.Private === 'number' ? r.Private : null,
-      PSU: typeof r?.PSU === 'number' ? r.PSU : null,
-    }
-  })
-  const realRows = chartData.filter((d) => d.SAHI != null)
-  const hasReal = realRows.length > 0
-  let lastRealIdx = -1
-  for (let i = chartData.length - 1; i >= 0; i--) if (chartData[i].SAHI != null) { lastRealIdx = i; break }
-  let firstRealIdx = -1
-  for (let i = 0; i < chartData.length; i++) if (chartData[i].SAHI != null) { firstRealIdx = i; break }
-  // Only the LEADING run of missing years (before the first sourced year) gets a
-  // "source pending" band; trailing missing years simply render as a clean gap.
-  const leadingPending = firstRealIdx > 0 ? chartData.slice(0, firstRealIdx) : []
-
-  const rangeSpan = years.length ? (years.length === 1 ? years[0] : `${years[0]} → ${years[years.length - 1]}`) : '—'
-  const availSpan = realRows.length ? (realRows.length === 1 ? realRows[0].label : `${realRows[0].label} → ${realRows[realRows.length - 1].label}`) : null
-  const pendingSpan =
-    leadingPending.length
-      ? leadingPending.length === 1
-        ? leadingPending[0].label
-        : `${leadingPending[0].label}–${leadingPending[leadingPending.length - 1].label}`
-      : null
-  const sahiFirst = realRows[0]?.SAHI ?? null
-  const sahiLast = realRows[realRows.length - 1]?.SAHI ?? null
+  // SAHI share change across the shown years — drives the small "+x pp" badge.
+  const sahiFirst = typeof clipped[0]?.SAHI === 'number' ? (clipped[0].SAHI as number) : null
+  const sahiLast = typeof clipped[lastIdx]?.SAHI === 'number' ? (clipped[lastIdx].SAHI as number) : null
   const sahiDelta = sahiFirst != null && sahiLast != null ? Math.round((sahiLast - sahiFirst) * 10) / 10 : null
 
   const seriesLabel = (name: 'SAHI' | 'Private' | 'PSU', color: string, bold: boolean) =>
     (props: any) => {
       const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
-      if (index !== lastRealIdx || typeof x !== 'number' || typeof y !== 'number' || typeof value !== 'number') return null
+      if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number' || typeof value !== 'number') return null
       return (
         <g>
           <text x={x + 8} y={y + 4} fill={color} fontSize={11} fontWeight={bold ? 700 : 600}>
@@ -624,14 +597,13 @@ function SahiShiftCard() {
             Specialist insurers are gaining relevance
           </h3>
           <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-            Share of health premium by carrier type · {rangeSpan}
-            {pendingSpan ? ` · ${pendingSpan} source pending` : ''}
+            Share of health premium by carrier type · {span ?? '—'}
           </p>
         </div>
         {sahiDelta != null ? (
           <span
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${sahiDelta >= 0 ? 'bg-teal-soft text-teal ring-[#BFE3E1]' : 'bg-champagne-soft text-champagne-deep ring-[#EAD9B6]'}`}
-            title={availSpan ? `SAHI share change over ${availSpan}` : undefined}
+            title={span ? `SAHI share change over ${span}` : undefined}
           >
             <ArrowUpRight className="h-3 w-3" />
             SAHI {sahiDelta >= 0 ? '+' : ''}{sahiDelta.toFixed(1)} pp
@@ -650,28 +622,17 @@ function SahiShiftCard() {
           body={gate.reason ?? 'Carrier-share series is annual-only.'}
           height={196}
         />
-      ) : !hasReal ? (
+      ) : clipped.length === 0 ? (
         <EmptyState
-          title="Carrier-share data pending for this range"
-          body="No sourced carrier-split years fall inside the selected Data Range yet. Widen the range or wait for the next IRDAI ingest."
+          title="Data not available from source"
+          body="No reported carrier-split years fall inside the selected Data Range. Widen the range in the top bar."
           height={196}
         />
       ) : (
       <div style={{ width: '100%', height: 196 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
+          <LineChart data={clipped} margin={{ top: 6, right: 64, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-            {pendingSpan && (
-              <ReferenceArea
-                x1={leadingPending[0].label}
-                x2={leadingPending[leadingPending.length - 1].label}
-                fill="#9DB6E0"
-                fillOpacity={0.08}
-                ifOverflow="extendDomain"
-              >
-                <Label value="source pending" position="center" fill="#94A3B8" fontSize={9.5} fontStyle="italic" />
-              </ReferenceArea>
-            )}
             <XAxis
               dataKey="label"
               tick={{ fontSize: 10.5, fill: AXIS }}
@@ -735,10 +696,10 @@ function SahiShiftCard() {
       <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
         Within health, standalone health insurers are steadily gaining
         relevance as the market shifts away from PSU dominance
-        {sahiDelta != null && availSpan ? ` — SAHI ${sahiDelta >= 0 ? '+' : ''}${sahiDelta.toFixed(1)} pp over ${availSpan}.` : '.'}
+        {sahiDelta != null && span ? ` — SAHI ${sahiDelta >= 0 ? '+' : ''}${sahiDelta.toFixed(1)} pp over ${span}.` : '.'}
       </p>
       <div className="mt-2 flex justify-end">
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={availSpan ?? rangeSpan} />
+        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
     </div>
   )
