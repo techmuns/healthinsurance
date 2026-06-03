@@ -106,6 +106,11 @@ export function MarketLandscape() {
   )
 }
 
+// Composed-page exports — the unified Market & Distribution page mounts these
+// two blocks directly: the Market Engine hero (full-width, top) and the GI
+// premium pool-shift chart (bottom-left, primary analytical chart).
+export { HeroCard as MarketEngineHero, MainChartBlock as GiPoolShiftBlock }
+
 // ─── 1. HERO CARD ──────────────────────────────────────────────────────────
 function HeroCard() {
   const company = useActiveCompany()

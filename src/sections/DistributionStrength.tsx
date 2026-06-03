@@ -718,3 +718,7 @@ function ReachBackdrop() {
 
 // ─── Re-export so other dashboards/tests can check data availability ──────
 export { hasCompanyDistributionData }
+
+// Composed-page export — the unified Market & Distribution page mounts the
+// channel-mix trend as the bottom-right (supporting) Channel Momentum chart.
+export { MainChartBlock as ChannelMomentumBlock }

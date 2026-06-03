@@ -1,29 +1,26 @@
-import { SectionTabs, type SectionTab } from '@/components/SectionTabs'
-import { MarketLandscape } from '@/sections/MarketLandscape'
-import { CompanyGrowthEngine } from '@/sections/CompanyGrowthEngine'
-import { DistributionStrength } from '@/sections/DistributionStrength'
-
-const TABS: SectionTab[] = [
-  { id: 'market-snapshot', label: 'Market Snapshot' },
-  { id: 'premium-engine', label: 'Premium Engine' },
-  { id: 'distribution', label: 'Distribution Mix' },
-]
+import { MarketEngineHero, GiPoolShiftBlock } from '@/sections/MarketLandscape'
+import { ChannelMomentumBlock } from '@/sections/DistributionStrength'
 
 /**
- * Market & Distribution — consolidates the former Market Engine, Premium Engine
- * and Distribution sidebar items into one section with internal tabs. Each tab
- * renders its existing chart component unchanged.
+ * Market & Distribution — one integrated dashboard page (no internal tabs).
+ *
+ *   Row 1 · full-width   → Market Engine / Structural Opportunity hero
+ *   Row 2 · two columns  → GI premium pool-shift chart (left, 1.35fr, primary)
+ *                          + Channel Momentum chart (right, 0.85fr, supporting)
+ *
+ * The three blocks read as a single composed surface rather than disconnected
+ * tab views; each retains its own chart logic, toggles and source strips.
  */
-export function MarketDistribution({ onNavigate, sub }: { onNavigate?: (id: string) => void; sub?: string }) {
-  const tab = TABS.find((t) => t.id === sub?.split('/')[0])?.id ?? TABS[0].id
-  const go = (id: string) => onNavigate?.(`market-distribution/${id}`)
+export function MarketDistribution() {
   return (
-    <div className="space-y-5">
-      <SectionTabs tabs={TABS} active={tab} onSelect={go} />
-      <div key={tab} className="animate-fade-in">
-        {tab === 'market-snapshot' && <MarketLandscape />}
-        {tab === 'premium-engine' && <CompanyGrowthEngine />}
-        {tab === 'distribution' && <DistributionStrength />}
+    <div className="space-y-6">
+      {/* Row 1 — full-width hero */}
+      <MarketEngineHero />
+
+      {/* Row 2 — primary distribution chart (left) + supporting momentum (right) */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)] lg:items-stretch">
+        <GiPoolShiftBlock />
+        <ChannelMomentumBlock />
       </div>
     </div>
   )
