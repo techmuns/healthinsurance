@@ -1,7 +1,7 @@
 {
   "last_successful_run": "2026-06-02T17:46:12.502Z",
-  "last_failed_run": "2026-06-02T18:24:26.404Z",
-  "sources_checked": 3,
+  "last_failed_run": "2026-06-03T08:07:31.471Z",
+  "sources_checked": 4,
   "sources_success": 0,
   "sources_failed": 1,
   "metrics_updated": [
@@ -246,7 +246,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-02T18:24:10.269Z",
+      "last_attempt_at": "2026-06-03T08:07:10.514Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -394,14 +394,21 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-02T18:24:25.700Z",
+      "last_attempt_at": "2026-06-03T08:07:30.829Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-02T18:24:16.256Z",
+      "last_attempt_at": "2026-06-03T08:07:15.295Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "gicouncil_segmentwise",
+      "status": "pending",
+      "last_attempt_at": "2026-06-03T08:07:24.678Z",
       "last_success_at": null,
       "records_fetched": 0
     }
