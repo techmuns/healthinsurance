@@ -2,7 +2,6 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { PromiseTracker } from '@/components/PromiseTracker'
 import { VerdictStrip } from '@/components/VerdictStrip'
-import { InvestorRead } from '@/components/InvestorRead'
 import { promiseTracker } from '@/data/mockData'
 import { useActiveCompany } from '@/state/filters'
 
@@ -53,18 +52,6 @@ export function ManagementEvents() {
       </ModuleCard>
 
       <EventFeedUnavailable companyName={company.shortName} />
-
-      <InvestorRead
-        title={`${company.shortName} · Management Investor Read`}
-        signal="Pending"
-        lines={[
-          { label: 'Why', value: `Event feed for ${company.shortName} not yet ingested from NSE / BSE / company-IR press releases.` },
-          { label: 'Implication', value: 'Cannot rank events by investor impact without primary feed.' },
-          { label: 'Watch', value: 'ingest-management-events.ts scheduled run.' },
-          { label: 'Read', value: 'Section will populate automatically once snapshot is wired.' },
-        ]}
-        source="Unavailable"
-      />
     </div>
   )
 }

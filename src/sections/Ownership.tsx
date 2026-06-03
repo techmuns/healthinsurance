@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
-import { InvestorRead } from '@/components/InvestorRead'
 import { SegmentedControl } from '@/components/SegmentedControl'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyMaster } from '@/lib/dataLayer'
@@ -63,18 +62,6 @@ export function Ownership() {
           />
         )}
       </ModuleCard>
-
-      <InvestorRead
-        title={`${company.shortName} · Ownership Investor Read`}
-        signal="Pending"
-        lines={[
-          { label: 'Why', value: `No ingested shareholding data for ${company.shortName} yet.` },
-          { label: 'Implication', value: 'Cannot read promoter / FII / DII / MF trends without primary filings.' },
-          { label: 'Watch', value: 'ingest-ownership.ts scheduled run (post-quarter shareholding-pattern release).' },
-          { label: 'Read', value: 'Section will populate automatically once snapshot is wired.' },
-        ]}
-        source="Unavailable"
-      />
     </div>
   )
 }

@@ -1,10 +1,9 @@
-import { BookOpen, Lightbulb, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 import { QuarterlyCalcCard } from '@/components/QuarterlyCalcCard'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyGrowthCopy } from '@/lib/companyCopy'
-import type { ReadLine } from '@/lib/companyCopy'
 
 // Per-company provenance — Niva Bupa / Star Health / Aditya Birla numbers
 // come directly from each company's press release / annual report. Care
@@ -61,9 +60,9 @@ export function CompanyGrowthEngine() {
         source={PREMIUM_SOURCE}
       />
 
-      {/* Premium Engine — keeps the existing Flow / Mix / Retention chart untouched.
-          Card surface gets a subtle navy + teal tinted backdrop so it reads as
-          the "premium machine" panel rather than a plain white container. */}
+      {/* Premium Engine — a clean grouped bar chart (Gross / Net / Earned per
+          year). Card surface gets a subtle navy + teal tinted backdrop so it
+          reads as the "premium machine" panel rather than a plain white container. */}
       <section
         className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_36px_rgba(23,43,77,0.07)] sm:p-6"
         style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F7FAFD 60%, #F1F8F6 100%)' }}
@@ -100,14 +99,6 @@ export function CompanyGrowthEngine() {
 
       {/* Calculation basis strip for the derived-quarter logic. */}
       <QuarterlyCalcCard company={company} />
-
-      {/* Light, premium investor read — replaces the heavy navy InsightBox panel. */}
-      <GrowthInvestorRead
-        signal={copy.badge}
-        lines={copy.readLines}
-        companyName={company.shortName}
-        source={PREMIUM_SOURCE}
-      />
     </div>
   )
 }
@@ -193,136 +184,6 @@ function HeroCard({
         <p className="text-[13.5px] leading-relaxed text-navy-deep/85">{summary}</p>
       </div>
       <div className="relative mt-4 flex justify-end">
-        <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />
-      </div>
-    </section>
-  )
-}
-
-// ─── INVESTOR READ ─────────────────────────────────────────────────────────
-// 4 lanes tinted per tone: Why = navy logic, Implication = teal positive,
-// Watch = amber/champagne caution, Read = champagne investor conclusion.
-// Matches by lane order (Why / Implication / Watch / Read) — falls back to
-// label-keyword detection so the lanes don't lose their meaning if copy
-// changes the order.
-const laneTone: Record<string, { icon: typeof Lightbulb; bg: string; border: string; bar: string; label: string; iconColor: string; ring: string }> = {
-  Why: {
-    icon: Lightbulb,
-    bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)',
-    border: '#D2DEF1',
-    bar: '#27457E',
-    label: 'text-navy-primary',
-    iconColor: '#27457E',
-    ring: 'rgba(49,90,169,0.30)',
-  },
-  Implication: {
-    icon: TrendingUp,
-    bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)',
-    border: '#BFE3E1',
-    bar: '#168E8E',
-    label: 'text-teal',
-    iconColor: '#168E8E',
-    ring: 'rgba(22,142,142,0.30)',
-  },
-  Watch: {
-    icon: ShieldAlert,
-    bg: 'linear-gradient(135deg, #FDF6E5 0%, #F4E5C0 100%)',
-    border: '#EAD9B6',
-    bar: '#B7791F',
-    label: 'text-[#8C6B1A]',
-    iconColor: '#B7791F',
-    ring: 'rgba(183,121,31,0.30)',
-  },
-  Read: {
-    icon: BookOpen,
-    bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)',
-    border: '#EAD9B6',
-    bar: '#B68B3A',
-    label: 'text-champagne-deep',
-    iconColor: '#B68B3A',
-    ring: 'rgba(182,139,58,0.30)',
-  },
-}
-
-function GrowthInvestorRead({
-  signal,
-  lines,
-  companyName,
-  source,
-}: {
-  signal: string
-  lines: ReadLine[]
-  companyName: string
-  source: PremiumSourcePack
-}) {
-  return (
-    <section
-      className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_10px_28px_rgba(23,43,77,0.06)]"
-      style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #FBFCFE 60%, #F7FAFD 100%)' }}
-    >
-      <span
-        className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full opacity-60 blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(182,139,58,0.16) 0%, transparent 70%)' }}
-      />
-      <span
-        className="pointer-events-none absolute -bottom-16 -left-16 h-40 w-40 rounded-full opacity-50 blur-3xl"
-        style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.14) 0%, transparent 70%)' }}
-      />
-
-      <header className="relative mb-3 flex items-center justify-between border-b border-[#EEF1F7] pb-3">
-        <div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.6)]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-              So What?
-            </p>
-          </div>
-          <h3 className="mt-1 font-display text-[16px] leading-tight text-navy-deep">
-            {companyName} · Growth Investor Read
-          </h3>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-soft px-2.5 py-1 text-[10.5px] font-semibold text-teal shadow-soft ring-1 ring-[#BFE3E1]">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.55)]" />
-          {signal}
-        </span>
-      </header>
-      <div className="relative grid gap-2.5 sm:grid-cols-2">
-        {lines.map((l) => {
-          // Lookup by exact label first; fall back to keyword match so we still
-          // tint correctly if the copy uses "Investor read" instead of "Read".
-          const key = laneTone[l.label]
-            ? l.label
-            : /watch/i.test(l.label)
-              ? 'Watch'
-              : /read/i.test(l.label)
-                ? 'Read'
-                : /implic/i.test(l.label)
-                  ? 'Implication'
-                  : 'Why'
-          const tone = laneTone[key]
-          const Icon = tone.icon
-          return (
-            <div
-              key={l.label}
-              className="group relative overflow-hidden rounded-xl border p-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(23,43,77,0.08)]"
-              style={{ background: tone.bg, borderColor: tone.border }}
-            >
-              <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: tone.bar }} />
-              <div className="flex items-center gap-2 pl-1.5">
-                <span
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white shadow-soft"
-                  style={{ boxShadow: `inset 0 0 0 1px ${tone.ring}`, color: tone.iconColor }}
-                >
-                  <Icon className="h-3 w-3" />
-                </span>
-                <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${tone.label}`}>{l.label}</p>
-              </div>
-              <p className="mt-1.5 pl-1.5 text-[12.5px] leading-snug text-navy-deep/90">{l.value}</p>
-            </div>
-          )
-        })}
-      </div>
-      <div className="relative mt-3 flex justify-end">
         <SourceTag source={source.source} confidence={source.confidence} provenance={source.provenance} />
       </div>
     </section>

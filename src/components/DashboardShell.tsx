@@ -135,14 +135,6 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
               </div>
             ))}
           </nav>
-
-          <div className="mt-3 rounded-2xl border border-[rgba(182,139,58,0.2)] bg-white/55 px-3 py-2.5">
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-teal" />
-              <p className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Demo</p>
-            </div>
-            <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Mock data preview.</p>
-          </div>
         </div>
       </aside>
 

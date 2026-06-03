@@ -296,44 +296,6 @@ function PeerSignalPanel({ cell, focalName, onPick, pills }: { cell: Cell; focal
   )
 }
 
-// ── Overall Investor Read (short + sharp) ───────────────────────────────────
-function OverallInvestorRead({ rows, focalName }: { rows: ScoreRow[]; focalName: string }) {
-  const c = (rows.find((r) => r.focal) ?? rows[0]).cells
-  const chips = [
-    { label: 'Growth', signal: c.growth.signal },
-    { label: 'Profitability', signal: c.roe.signal },
-    { label: 'Capital', signal: c.solvency.signal },
-    { label: 'Valuation', signal: c.valuation.signal },
-  ] as const
-  const strengths = [c.growth, c.retailMix, c.marketShareChange, c.combinedRatio, c.roe, c.solvency].filter((x) => x.value != null)
-  const best = [...strengths].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))[0]
-  const worst = [...strengths].sort((a, b) => (b.rank ?? 0) - (a.rank ?? 0))[0]
-  const growthLed = c.growth.tone === 'leader' || c.growth.tone === 'strong'
-  const valPremium = c.valuation.signal === 'Premium'
-
-  const read =
-    `${focalName} is ${growthLed ? 'growth-led' : 'steady'}${best ? ` with strong ${best.metric.label.toLowerCase()}` : ''}` +
-    `${worst ? `, but ${worst.metric.label.toLowerCase()} is the key gap` : ''}. ` +
-    `${valPremium ? 'Premium valuation rests on growth converting into better profitability.' : 'Valuation leaves room to re-rate as quality improves.'}`
-
-  return (
-    <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-soft">
-      <div className="p-4">
-        <p className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-secondary">Overall Investor Read</p>
-        <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-primary">{read}</p>
-        <div className="mt-3 grid grid-cols-2 gap-1.5">
-          {chips.map((ch) => (
-            <div key={ch.label} className="flex items-center justify-between rounded-lg bg-ice/50 px-2.5 py-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{ch.label}</span>
-              <SignalBadge signal={ch.signal} size="xs" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ── Ranking / Table / Trends (secondary views) ──────────────────────────────
 function RankingView({ rows, cellKey }: { rows: ScoreRow[]; cellKey: string }) {
   const ranked = [...rows].filter((r) => r.cells[cellKey].value != null).sort((a, b) => (a.cells[cellKey].rank ?? 99) - (b.cells[cellKey].rank ?? 99))
@@ -551,7 +513,6 @@ export function CompetitivePositioning() {
           </div>
           <div className="space-y-3">
             <PeerSignalPanel cell={activeCell} focalName={focal.shortName} onPick={setActiveKey} pills={PILLS} />
-            <OverallInvestorRead rows={card.rows} focalName={focal.shortName} />
           </div>
         </div>
       )}

@@ -1,11 +1,8 @@
-import { ArrowUpRight, Award, BadgeCheck, BookOpen, ChevronRight, Clock, Eye, Lightbulb, ShieldAlert, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { BadgeCheck, ChevronRight, Clock, ShieldCheck } from 'lucide-react'
 import { SignalBadge } from '@/components/SignalBadge'
 import { SectionHeading } from '@/components/SectionHeading'
 import { MarketShareDonut } from '@/components/MarketShareDonut'
 import { IndustryLeaders } from '@/components/IndustryLeaders'
-import { WhatChangedStrip } from '@/components/WhatChangedStrip'
 import { AboutView } from '@/components/AboutView'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { PeriodPending } from '@/components/PeriodPending'
@@ -13,41 +10,7 @@ import { Icon } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
 import { navItems } from '@/nav'
-import { DATA_FRESHNESS, PEER_GROUP_LABEL, insurers } from '@/data/mockData'
-
-// Retail-investor translation layer — plain-English read before the data.
-// Each card carries its own tinted gradient background so meaning is felt
-// before it is read: green/teal = positive operating support, navy/blue =
-// structural positioning, amber/champagne = watch / caution.
-const tintClass: Record<
-  'green' | 'teal' | 'amber',
-  { accent: string; medallion: string; icon: string; glow: string; bg: string; border: string }
-> = {
-  green: {
-    accent: 'border-l-teal',
-    medallion: 'bg-white text-teal ring-1 ring-[#BFE3E1]',
-    icon: 'text-teal',
-    glow: 'rgba(22,142,142,0.22)',
-    bg: 'linear-gradient(135deg, #F1F8F6 0%, #E1F2F1 100%)',
-    border: '#C8E2DD',
-  },
-  teal: {
-    accent: 'border-l-navy-primary',
-    medallion: 'bg-white text-navy-primary ring-1 ring-[#D6E2FA]',
-    icon: 'text-navy-primary',
-    glow: 'rgba(49,90,169,0.20)',
-    bg: 'linear-gradient(135deg, #F2F5FC 0%, #E6EEFA 100%)',
-    border: '#D2DEF1',
-  },
-  amber: {
-    accent: 'border-l-champagne',
-    medallion: 'bg-white text-champagne-deep ring-1 ring-[#EFE2C2]',
-    icon: 'text-champagne-deep',
-    glow: 'rgba(182,139,58,0.22)',
-    bg: 'linear-gradient(135deg, #FBF6EA 0%, #F4ECDB 100%)',
-    border: '#EAD9B6',
-  },
-}
+import { DATA_FRESHNESS, PEER_GROUP_LABEL } from '@/data/mockData'
 
 // Curated "next click" destinations — each tile carries a per-section accent
 // tone (color psychology: teal = growth, blue = premium flow, emerald =
@@ -157,10 +120,6 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   const annualOnly = period !== 'Annual'
 
   const filtered = getFilteredInsurers(filters)
-  // Rank the selected company against its active peer group; if it sits outside
-  // the filtered group, fall back to its own peer group so ranks stay meaningful.
-  const inFiltered = filtered.some((i) => i.id === company.id)
-  const peerList = inFiltered ? filtered : insurers.filter((i) => i.peerGroup === company.peerGroup)
   const slices = getMarketShareSlices(filters)
   const groupLabel = PEER_GROUP_LABEL[peerGroup]
   const shareContext = peerGroup === 'All' ? 'Premium-weighted, full universe' : `${groupLabel} pool`
@@ -175,59 +134,6 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
       accent: d.accent,
     }
   })
-
-  // Position rank by market share within the company's own segment pool
-  // (marketShare is a within-segment figure, so we rank inside the segment).
-  const segmentPeers = insurers.filter((i) => i.peerGroup === company.peerGroup)
-  const sharePosition = [...segmentPeers]
-    .sort((a, b) => b.marketShare - a.marketShare)
-    .findIndex((i) => i.id === company.id)
-  const positionRank = sharePosition >= 0 ? sharePosition + 1 : null
-  const positionPhrase = positionRank
-    ? positionRank === 1
-      ? `the #1 ${company.peerGroup} player`
-      : `a top-${positionRank} ${company.peerGroup} player`
-    : `a tracked ${company.peerGroup} player`
-
-  const investorRead: {
-    icon: LucideIcon
-    title: string
-    text: ReactNode
-    status: string
-    tone?: 'positive' | 'warning' | 'teal'
-    tint: keyof typeof tintClass
-  }[] = [
-    {
-      icon: TrendingUp,
-      title: 'Market Tailwind',
-      text: `Sector growth outpaces the broader market — a tailwind for ${company.shortName}.`,
-      status: 'Positive',
-      tone: 'teal',
-      tint: 'green',
-    },
-    {
-      icon: Award,
-      title: 'Company Position',
-      text: positionRank ? (
-        <>
-          <span className="font-bold text-navy-primary">#{positionRank}</span> in the {company.peerGroup} peer pool.
-        </>
-      ) : (
-        'Tracked vs the selected peer pool.'
-      ),
-      // Live company signal drives the pill; SignalBadge resolves its tone.
-      status: company.signal ?? 'Improving',
-      tint: 'teal',
-    },
-    {
-      icon: Eye,
-      title: 'Main Watch',
-      text: 'Banca mix, claims discipline, and valuation.',
-      status: 'Watch',
-      tone: 'warning',
-      tint: 'amber',
-    },
-  ]
 
   return (
     <div className="space-y-6">
@@ -292,57 +198,6 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
         </div>
       </header>
 
-      {/* A2. Today's Investor Read — plain-English translation layer */}
-      <section>
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-          <div>
-            <div className="mb-1 flex items-center gap-2">
-              <span className="h-3 w-[3px] rounded-full bg-champagne" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</span>
-            </div>
-            <h2 className="font-display text-[23px] leading-tight text-navy-deep">
-              Today’s Investor Read for {company.shortName}
-            </h2>
-            <p className="mt-0.5 text-[12px] text-ink-secondary">A quick read on {company.shortName}.</p>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-br from-navy-primary to-navy-deep px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(23,43,77,0.18)] ring-1 ring-[#1B3260]">
-            <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.7)]" />
-            Highlighted · {company.shortName}
-          </span>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {investorRead.map((r) => {
-            const tint = tintClass[r.tint]
-            return (
-              <div
-                key={r.title}
-                className={`group relative overflow-hidden rounded-xl border border-l-[4px] ${tint.accent} p-3.5 shadow-[0_4px_14px_rgba(23,43,77,0.06)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(23,43,77,0.10)]`}
-                style={{ background: tint.bg, borderColor: tint.border }}
-              >
-                <span
-                  className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full blur-2xl transition-opacity duration-200 group-hover:opacity-90"
-                  style={{ background: tint.glow }}
-                />
-                <span
-                  className="pointer-events-none absolute -bottom-10 -left-6 h-20 w-20 rounded-full opacity-60 blur-3xl"
-                  style={{ background: tint.glow }}
-                />
-                <div className="relative flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`inline-flex h-7 w-7 items-center justify-center rounded-lg shadow-soft ${tint.medallion}`}>
-                      <r.icon className={`h-3.5 w-3.5 ${tint.icon}`} />
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-navy-deep">{r.title}</span>
-                  </div>
-                  <SignalBadge label={r.status} tone={r.tone} size="sm" />
-                </div>
-                <p className="relative mt-2.5 text-[12.5px] font-medium leading-snug text-navy-deep/90">{r.text}</p>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
       {/* B. Who Leads — the visual hero: donut + leaders */}
       <section>
         <SectionHeading
@@ -389,167 +244,8 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
             </div>
           </div>
         </div>
-        <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
-          {company.shortName} is currently {positionPhrase}; the key question is whether growth quality and profitability
-          continue to improve.
-        </p>
         </>
         )}
-      </section>
-
-      {/* C. What Changed — compact visual strip (annual basis) */}
-      {annualOnly ? (
-        <section>
-          <SectionHeading eyebrow="What Changed" title={`${company.shortName} · recent movement`} note="Annual basis" />
-          <PeriodPending
-            period={period}
-            title={`${period} movement pending`}
-            body={`"What changed" compares full-year figures. ${period} data for ${company.shortName} isn't downloaded yet — it will appear here automatically once ingested.`}
-            height={200}
-          />
-        </section>
-      ) : (
-        <WhatChangedStrip company={company} list={peerList} />
-      )}
-
-      {/* Final Buy-side Read — Decision Panel (dark navy base with tinted lanes) */}
-      <section>
-        <SectionHeading eyebrow="So What?" title="Final Buy-side Read" />
-        <div
-          className="relative overflow-hidden rounded-2xl border border-[#1B3260] p-4 shadow-[0_12px_30px_rgba(23,43,77,0.18)] sm:p-5"
-          style={{ background: 'linear-gradient(135deg, #172B4D 0%, #1F3F7F 60%, #243F78 100%)' }}
-        >
-          <span
-            className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-40 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(182,139,58,0.45) 0%, transparent 70%)' }}
-          />
-          <span
-            className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full opacity-30 blur-3xl"
-            style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.55) 0%, transparent 70%)' }}
-          />
-
-          <div className="relative grid grid-cols-1 gap-4 lg:grid-cols-[200px_1fr]">
-            {/* Left — verdict / signal meter */}
-            <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-sm">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-champagne" />
-                <span className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-champagne">Investor Read</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-display text-[26px] leading-none text-white">Improving</span>
-                <ArrowUpRight className="h-4 w-4 text-[#86CBA3]" />
-              </div>
-              {/* Signal pulse — 4 bars rising left to right */}
-              <div className="mt-1 flex items-end gap-1" aria-hidden>
-                {[7, 11, 15, 22].map((h, i) => (
-                  <span
-                    key={i}
-                    className="w-1.5 rounded-sm"
-                    style={{
-                      height: `${h}px`,
-                      background:
-                        i === 3
-                          ? 'linear-gradient(180deg, #B68B3A 0%, #86CBA3 100%)'
-                          : 'rgba(134,203,163,0.55)',
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <span className="inline-flex items-center gap-1 rounded-full border border-[#1E8E8B66] bg-[#168E8E26] px-2 py-0.5 text-[10px] font-semibold text-[#7FD0D0]">
-                  Sector tailwind
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-[#B68B3A55] bg-[#B68B3A1F] px-2 py-0.5 text-[10px] font-semibold text-champagne">
-                  Quality compounder
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full border border-[#E59B9866] bg-[#C75D5424] px-2 py-0.5 text-[10px] font-semibold text-[#E59B98]">
-                  Valuation watch
-                </span>
-              </div>
-            </div>
-
-            {/* Right — 4 lanes (Why / Implication / Watch / Read) */}
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-              {[
-                {
-                  label: 'Why',
-                  icon: Lightbulb,
-                  text: (
-                    <>
-                      A <span className="font-semibold text-white">#2 SAHI player</span> riding a sector tailwind with improving growth quality.
-                    </>
-                  ),
-                  dot: '#A9BFE0',
-                  accent: 'rgba(63,127,224,0.85)',
-                  bg: 'rgba(63,127,224,0.10)',
-                  ringColor: 'rgba(169,191,224,0.30)',
-                  iconColor: '#A9BFE0',
-                },
-                {
-                  label: 'Implication',
-                  icon: TrendingUp,
-                  text: (
-                    <>
-                      A <span className="font-semibold text-[#86CBA3]">quality compounder</span> in a structurally growing segment.
-                    </>
-                  ),
-                  dot: '#7FD0D0',
-                  accent: 'rgba(22,142,142,0.85)',
-                  bg: 'rgba(22,142,142,0.12)',
-                  ringColor: 'rgba(127,208,208,0.30)',
-                  iconColor: '#7FD0D0',
-                },
-                {
-                  label: 'Watch',
-                  icon: ShieldAlert,
-                  text: (
-                    <>
-                      <span className="font-semibold text-[#E7BE74]">Banca concentration</span>, combined-ratio drift and valuation.
-                    </>
-                  ),
-                  dot: '#E7BE74',
-                  accent: 'rgba(231,190,116,0.85)',
-                  bg: 'rgba(231,190,116,0.10)',
-                  ringColor: 'rgba(231,190,116,0.30)',
-                  iconColor: '#E7BE74',
-                },
-                {
-                  label: 'Read',
-                  icon: BookOpen,
-                  text: (
-                    <>
-                      Own the <span className="font-semibold text-champagne">quality</span>; let valuation discipline guide entry.
-                    </>
-                  ),
-                  dot: '#B68B3A',
-                  accent: 'rgba(182,139,58,0.85)',
-                  bg: 'rgba(182,139,58,0.12)',
-                  ringColor: 'rgba(182,139,58,0.35)',
-                  iconColor: '#D6B26D',
-                },
-              ].map((lane) => (
-                <div
-                  key={lane.label}
-                  className="relative overflow-hidden rounded-lg border p-3"
-                  style={{ background: lane.bg, borderColor: lane.ringColor }}
-                >
-                  <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: lane.accent }} />
-                  <div className="flex items-center gap-2 pl-1.5">
-                    <span
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-md"
-                      style={{ background: 'rgba(255,255,255,0.08)', boxShadow: `inset 0 0 0 1px ${lane.ringColor}` }}
-                    >
-                      <lane.icon className="h-3 w-3" style={{ color: lane.iconColor }} />
-                    </span>
-                    <span className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/70">{lane.label}</span>
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full" style={{ background: lane.dot }} />
-                  </div>
-                  <p className="mt-1.5 pl-1.5 text-[12px] leading-snug text-white/85">{lane.text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* D. Understand the story deeper — story-continuation tiles, one accent

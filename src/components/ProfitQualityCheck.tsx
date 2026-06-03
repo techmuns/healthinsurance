@@ -26,7 +26,6 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
   const b = yr.igaap
   const q = earningsQuality(b)
   const uwLoss = b.underwritingResult < 0
-  const invShareOfPat = b.pat > 0 ? Math.round((b.investmentIncome / b.pat) * 100) : null
 
   // Quality badge — plain investor wording.
   const badge = q.investmentLed
@@ -35,13 +34,6 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
       ? 'Underwriting-led profit'
       : 'Weak quality'
   const badgeTone = q.investmentLed ? GOLD : b.underwritingResult > 0 ? EMERALD : CORAL
-
-  // One-line read, retail-investor language.
-  const read = q.investmentLed
-    ? 'Core underwriting is still weak; investment income is supporting PAT.'
-    : b.underwritingResult > 0
-      ? 'Core underwriting itself earns a profit — high-quality, not investment-dependent.'
-      : 'Profit is thin and not yet underwriting-backed — watch the quality.'
 
   const tiles = [
     {
@@ -115,18 +107,7 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
         </div>
       </div>
 
-      {/* Investor read — the closing conclusion: the telling quality number + the read */}
-      <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-3.5 py-2.5" style={{ background: q.investmentLed ? `${GOLD}10` : `${EMERALD}10`, borderColor: q.investmentLed ? `${GOLD}3a` : `${EMERALD}3a` }}>
-        {invShareOfPat != null && (
-          <div className="shrink-0">
-            <p className="font-display text-[22px] leading-none" style={{ color: badgeTone }}>{invShareOfPat}%</p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-wide text-ink-secondary">Investment income ÷ PAT</p>
-          </div>
-        )}
-        <p className="min-w-[180px] flex-1 text-[11.5px] font-medium leading-snug text-navy-deep/90">{read}</p>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2">
         <p className="text-[10px] leading-snug text-ink-secondary">{companyShort} · {yr.fy} · audited basis (full bridge in Details)</p>
         <SourceTag source={BRIDGE_SOURCE} period={yr.fy} confidence="high" />
       </div>

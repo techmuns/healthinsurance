@@ -5,11 +5,9 @@ import {
   ArrowUpRight,
   Check,
   ExternalLink,
-  Flame,
   Info,
   Minus,
   Search,
-  ShieldAlert,
   TrendingDown,
   TrendingUp,
 } from 'lucide-react'
@@ -17,7 +15,6 @@ import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
   analystReports,
-  analystThesis,
   coveragePendingCount,
   focalFinancials,
   focalMultiples,
@@ -117,21 +114,17 @@ export function ValuationMarketView() {
   const company = useActiveCompany()
   const isFocal = company.id === FOCAL_VALUATION_ID
   const [peerView, setPeerView] = useState<'Listed' | 'Unlisted' | 'All'>('Listed')
-  const [openChip, setOpenChip] = useState<string | null>(null)
 
   // ── Real, sourced figures (focal = Niva Bupa) ───────────────────────────────
   const price = marketSnapshot.currentPrice
   const ac = analystConsensus
   const target = ac.consensusTargetPrice
   const upsideConsensus = target != null ? (target / price - 1) * 100 : null
-  const mosl = analystReports.find((r) => r.brokerage === 'Motilal Oswal')
-  const upsideMosl = mosl?.targetPrice != null ? (mosl.targetPrice / price - 1) * 100 : null
 
   const pGwp = focalMultiples.pGwp
   const starRow = peerValuation.find((r) => r.companyId === 'star-health')
   const starPGwp = starRow?.pGwp ?? null
   const premiumVsStar = pGwp != null && starPGwp ? ((pGwp - starPGwp) / starPGwp) * 100 : null
-  const sinceIpo = (price / marketSnapshot.ipoPrice - 1) * 100
 
   // Verdict headline + stance (the one-line investment takeaway).
   const verdictTitle =
@@ -165,14 +158,6 @@ export function ValuationMarketView() {
   const peerRows = peerValuation
   const shownPeers = peerView === 'All' ? peerRows : peerRows.filter((r) => r.listingStatus === peerView)
   const peerVerdict = premiumVsStar == null ? 'Valuation pending' : premiumVsStar > 5 ? 'Premium to listed peer' : premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with listed peer'
-
-  const chips = [
-    { key: 'Bull case', Icon: TrendingUp, items: analystThesis.bull },
-    { key: 'Bear case', Icon: TrendingDown, items: analystThesis.bear },
-    { key: 'Risks', Icon: ShieldAlert, items: analystThesis.risks },
-    { key: 'Catalysts', Icon: Flame, items: analystThesis.catalysts },
-  ]
-  const openItems = chips.find((c) => c.key === openChip)?.items.slice(0, 4) ?? []
 
   return (
     <div className="space-y-5">
@@ -493,52 +478,9 @@ export function ValuationMarketView() {
               </p>
             </div>
           </div>
-          {isFocal && (
-            <p className="mt-4 flex items-start gap-2 rounded-xl border border-[#C8E2DD] bg-[#F1F8F6] px-3.5 py-2.5 text-[11.5px] leading-relaxed text-navy-deep">
-              <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal/15 text-teal"><Check className="h-2.5 w-2.5" /></span>
-              <span><b>Reads across to valuation:</b> {position === 'Above Average' ? `${company.shortName}'s operating profile sits above the peer average — the premium multiple has fundamental support. Margin delivery stays the watch point.` : position === 'Weak vs peers' ? `${company.shortName} screens below peers on these drivers, so a premium would be harder to defend.` : `${company.shortName} screens broadly in line with peers — the premium leans on growth, with margin the swing factor.`}</span>
-            </p>
-          )}
         </div>
       </section>
 
-      {/* ═══ 6. INVESTOR READ — final buy-side conclusion ════════════════════════ */}
-      {isFocal && (
-        <section className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-[#16294B] via-[#1B335C] to-[#13243F] p-6 shadow-[0_18px_44px_rgba(11,22,44,0.30)]">
-          <InvestorReadArt />
-          <div className="relative flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-champagne/20 text-champagne"><Search className="h-3 w-3" /></span>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-champagne">Investor Read</p>
-            </div>
-            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-semibold text-champagne ring-1 ring-white/15">Grounded in FY26 filing + cited notes</span>
-          </div>
-          <div className="relative mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <ReadBlock label="Market read" body={`${px(price)} (${marketSnapshot.priceAsOf}), ${sinceIpo >= 0 ? '+' : ''}${sinceIpo.toFixed(0)}% vs the ${px(marketSnapshot.ipoPrice)} IPO; inside its ${px(marketSnapshot.weekLow52)}–${px(marketSnapshot.weekHigh52)} band.`} pill="Verified" />
-            <ReadBlock label="Street read" body={`Consensus ${px(target)} (${upPct(upsideConsensus)}); ${ac.buyCount}/${ac.analystCount} Buy, 0 Sell. Motilal Oswal ${px(mosl?.targetPrice ?? null)} (${upPct(upsideMosl)}).`} pill="Secondary" />
-            <ReadBlock label="Peer read" body={`${xMult(pGwp)} P/GWP — ${premiumVsStar != null ? `~${Math.abs(premiumVsStar).toFixed(0)}% ${premiumVsStar >= 0 ? 'premium' : 'discount'}` : 'comparison pending'} to Star (${xMult(starPGwp)}), on faster growth.`} pill="Secondary" />
-            <ReadBlock label="Decision read" body={`${justifiedVerdict}: growth and profit scale support the multiple — margin delivery and combined ratio stay the watch points.`} />
-          </div>
-          <div className="relative mt-4 flex flex-wrap items-center gap-2">
-            {chips.map(({ key, Icon }) => {
-              const active = openChip === key
-              return (
-                <button key={key} type="button" onClick={() => setOpenChip(active ? null : key)} className={['inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-colors', active ? 'bg-champagne text-[#16294B]' : 'bg-white/[0.06] text-white/85 ring-1 ring-white/15 hover:bg-white/[0.12]'].join(' ')}>
-                  <Icon className="h-3 w-3" />{key}
-                </button>
-              )
-            })}
-            <span className="ml-1 text-[9px] font-medium text-white/45">Bull / bear cite reported FY26 figures</span>
-          </div>
-          {openChip && (
-            <ul className="relative mt-2.5 flex flex-wrap gap-x-5 gap-y-1.5 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5">
-              {openItems.map((it) => (
-                <li key={it} className="flex items-start gap-1.5 text-[11.5px] text-white/85"><span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-champagne" />{it}</li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
     </div>
   )
 }
@@ -729,29 +671,5 @@ function LensRange({ price, target, lo, hi, analysts }: { price: number; target:
         <span className="inline-flex items-center gap-1"><Minus className="h-2.5 w-2.5" /> {near ? 'near fair value' : target != null && price < target ? 'below target' : 'above target'}</span>
       </div>
     </div>
-  )
-}
-
-function ReadBlock({ label, body, pill }: { label: string; body: string; pill?: string }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3.5">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne/90">{label}</p>
-        {pill && <span className="inline-flex items-center gap-1 rounded-full bg-champagne/15 px-1.5 py-0.5 text-[9px] font-semibold text-champagne">{pill}</span>}
-      </div>
-      <p className="mt-1.5 text-[11.5px] leading-relaxed text-white/85">{body}</p>
-    </div>
-  )
-}
-
-function InvestorReadArt() {
-  return (
-    <svg className="pointer-events-none absolute -right-2 bottom-0 h-[150px] w-[260px] opacity-40" viewBox="0 0 260 150" fill="none" aria-hidden>
-      <defs>
-        <linearGradient id="irGlowV" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stopColor="#3FA9A2" stopOpacity={0} /><stop offset="100%" stopColor="#5FD0C8" stopOpacity={0.9} /></linearGradient>
-      </defs>
-      {[160, 178, 196, 214, 232].map((x, i) => (<rect key={i} x={x} y={120 - i * 18} width={12} height={30 + i * 18} rx={3} fill="url(#irGlowV)" />))}
-      <path d="M150 110 L172 96 L194 86 L216 64 L240 44" stroke="#7FE6DD" strokeWidth={2.4} fill="none" strokeLinecap="round" opacity={0.9} />
-    </svg>
   )
 }

@@ -808,192 +808,20 @@ function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, ba
   )
 }
 
-// ─── Per-node Investor Read — So what? / Why / What it means / Watch next ─────
-interface NodeRead {
-  soWhat: string
-  why: string
-  meaning: string
-  watch: string
-}
-
-// Per-stage Investor Read — So what? / Why / What it means / Watch next. Each
-// read uses ONLY the metric that belongs to its lens (statutory cost split &
-// solvency on the igaap path; IFRS PAT/combined on the IFRS path), so the read
-// never mixes bases. Returns one NodeRead for the requested stage semantic.
-function nodeRead(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): NodeRead {
-  const cost = COST_RATIOS[company.id]
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const igaapFY = getBasisProfit(company.id, 'igaap', 'FY25')
-  const uw = latest ? underwritingFor(company.id, latest) : null
-  const solvency = company.solvency
-  const crLead = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
-  const aboveBE = crLead != null && crLead >= 100
-  const pf = premiumFigures(company.id, series)
-  const g = premiumGrowth(series)
-  const mm = getMarginMetrics(series)
-  const claims = igaapFY?.claimsRatio ?? cost?.loss ?? null
-  const expense = igaapFY?.expenseRatio ?? (cost ? cost.commission + cost.expense : null)
-  const inv = getEarningsBridge(company.id)[0]?.igaap.investmentIncome ?? null
-
-  switch (id) {
-    case 'premium':
-      return {
-        soWhat: pf.nep == null
-          ? 'Premium figures pending.'
-          : `Net earned premium has scaled to ${crc(pf.nep)}${g != null ? ` (+${g.toFixed(0)}% YoY)` : ''} — but conversion stays ${aboveBE ? 'weak while the combined ratio is above 100%' : 'the question downstream'}.`,
-        why: pf.gwp != null && pf.nep != null
-          ? `Of ${crc(pf.gwp)} written, ${crc(pf.nep)} is net earned after reinsurance and the unearned-premium reserve.`
-          : 'Gross premium − reinsurance ceded − change in unearned reserve = net earned premium.',
-        meaning: 'Net earned premium is the base every later stage works from.',
-        watch: 'The trend above — growth rate, retention and the reinsurance share.',
-      }
-    case 'claims':
-      return {
-        soWhat: claims == null ? 'Claims ratio pending.' : `Claims take ₹${claims.toFixed(0)} of every ₹100 of premium — the largest single cost.`,
-        why: claims == null ? 'Net incurred claims ÷ net earned premium.' : `Net incurred claims are ${claims.toFixed(1)}% of net earned premium.`,
-        meaning: 'A rising claims trend pushes the combined ratio up and squeezes underwriting.',
-        watch: 'The claims-ratio trend above versus a ~65% comfort band.',
-      }
-    case 'expense':
-      return {
-        soWhat: expense == null ? 'Expense ratio pending.' : `Running and selling costs take ₹${expense.toFixed(0)} of every ₹100 — ${expense < 40 ? 'easing as the book scales' : 'still heavy'}.`,
-        why: cost ? `Commission ${cost.commission.toFixed(1)}% + operating cost ${cost.expense.toFixed(1)}% of premium.` : 'Commission + operating expense ÷ net premium.',
-        meaning: 'Expense discipline is the clearest lever to push the combined ratio below 100%.',
-        watch: 'The expense-ratio trend above — falling as premium scales is the goal.',
-      }
-    case 'combined':
-      return {
-        soWhat: crLead == null
-          ? `${company.shortName} is a life carrier — read returns and capital.`
-          : crLead < 100
-            ? `Combined ratio ${crLead.toFixed(1)}% — claims and costs stay inside ₹100, so underwriting earns a surplus.`
-            : `Combined ratio ${crLead.toFixed(1)}% — above ₹100, so underwriting alone loses money.`,
-        why: claims != null && expense != null ? `Claims ${claims.toFixed(0)}% + costs ${expense.toFixed(0)}% = the combined ratio.` : 'Claims + commission + opex ÷ net premium.',
-        meaning: aboveBE ? 'Profit still leans on investment income, not core underwriting.' : 'Underwriting can stand on its own, before investment income.',
-        watch: 'The combined-ratio trend above versus the 100% break-even.',
-      }
-    case 'underwriting-result':
-      return {
-        soWhat: uw == null
-          ? 'Underwriting result pending NEP and combined ratio.'
-          : uw > 0
-            ? 'Insurance itself makes money — high-quality profit.'
-            : `Core underwriting is a loss (${crc(uw)}); PAT leans on investment income.`,
-        why: uw == null ? 'Needs NEP and combined ratio.' : `Premium earned − claims − commission − operating cost = ${crc(uw)}.`,
-        meaning: 'The profit from insurance alone, before investments — the trend above shows the path.',
-        watch: 'Is the underwriting loss narrowing toward break-even?',
-      }
-    case 'conversion':
-      return {
-        soWhat: mm.latestPat == null
-          ? 'PAT pending.'
-          : `PAT is ${crc(mm.latestPat)} — the trend above shows the climb, but it is investment-income-led while underwriting is a loss.`,
-        why: 'Claims, commission and opex absorb most of the premium; investment income carries the rest to PAT.',
-        meaning: 'Better expense leverage and a smaller underwriting loss lift the quality of this profit.',
-        watch: 'PAT growth versus underwriting turning positive.',
-      }
-    case 'returns':
-      return {
-        soWhat: mm.netMargin == null
-          ? 'PAT margin pending.'
-          : `Only ${mm.netMargin.toFixed(1)}% of premium reaches the shareholder — a thin margin while ROE is held back by the large post-IPO equity base.`,
-        why: 'PAT margin = PAT ÷ GWP. ROE = PAT ÷ net worth; a large equity base dilutes it.',
-        meaning: 'Margin and ROE rise as profit outgrows equity without fresh capital.',
-        watch: 'The PAT-margin trend above, and ROE versus cost of capital.',
-      }
-    case 'capital':
-      return {
-        soWhat: solvency > 0
-          ? `${solvency.toFixed(2)}× solvency — a strong cushion versus the 1.5× regulatory floor.`
-          : 'Solvency pending.',
-        why: solvency > 0 ? `${(solvency - 1.5).toFixed(2)}× above the 1.5× floor.` : 'Awaiting the solvency ratio.',
-        meaning: 'Strong capital funds growth with low risk of a raise — the trend above shows the cushion building.',
-        watch: 'Solvency trend as growth consumes capital.',
-      }
-    case 'ifrs-revenue':
-      return {
-        soWhat: pf.nep == null ? 'Insurance revenue pending.' : `Insurance revenue (net earned premium) is ${crc(pf.nep)}${g != null ? ` (+${g.toFixed(0)}% YoY)` : ''} — the IFRS-style top line.`,
-        why: 'For short-duration health cover, IFRS-style insurance revenue ≈ net earned premium.',
-        meaning: 'The revenue base the IFRS service result and profit are measured against.',
-        watch: 'The revenue trend above and how much converts to a service margin.',
-      }
-    case 'ifrs-service':
-      return {
-        soWhat: ctx.combinedRatio == null
-          ? 'IFRS service result pending.'
-          : ctx.combinedRatio < 100
-            ? 'On IFRS, claims and costs leave a positive insurance-service margin.'
-            : `On IFRS, the combined ratio is ${ctx.combinedRatio.toFixed(1)}% — the service result is thin, just above premium.`,
-        why: ctx.claimsRatio != null && ctx.expenseRatio != null && ctx.combinedRatio != null
-          ? `IFRS claims ${ctx.claimsRatio.toFixed(1)}% + expenses ${ctx.expenseRatio.toFixed(1)}% = ${ctx.combinedRatio.toFixed(1)}% combined.`
-          : 'Claims and expense ratios on the IFRS basis.',
-        meaning: 'The insurance-service result, before finance and investment income — the trend above tracks it.',
-        watch: 'The IFRS combined ratio moving toward 100%.',
-      }
-    case 'ifrs-finance':
-      return {
-        soWhat: inv == null ? 'Investment result pending.' : `The investment book adds ${crc(inv)} — the support that carries the IFRS bottom line.`,
-        why: 'Investment income on the policyholder and shareholder funds; the actual returns are basis-agnostic.',
-        meaning: 'With a thin service result, the finance/investment result is what turns the business profitable.',
-        watch: 'The investment-income trend above and the yield on the book.',
-      }
-    case 'ifrs-profit':
-      return {
-        soWhat: ctx.pat == null
-          ? 'IFRS profit pending.'
-          : `IFRS profit is ${crc(ctx.pat)}${ctx.patGrowth != null ? ` (${ctx.patGrowth >= 0 ? '+' : ''}${ctx.patGrowth.toFixed(0)}% YoY)` : ''} — the trend above shows the climb.`,
-        why: ctx.patMargin != null ? `That is a ${ctx.patMargin.toFixed(1)}% margin on gross written premium, on the IFRS basis.` : 'IFRS profit after tax for the period.',
-        meaning: 'The bottom line an international investor would compare — it can differ materially from IGAAP.',
-        watch: 'IFRS PAT growth and the IFRS margin trend.',
-      }
-    case 'ifrs-margin':
-      return {
-        soWhat: ctx.patMargin == null ? 'IFRS margin pending.' : `${ctx.patMargin.toFixed(1)}% of premium reaches IFRS profit — the shareholder-return read on the IFRS basis.`,
-        why: 'PAT margin (IFRS) = IFRS PAT ÷ gross written premium.',
-        meaning: 'The IFRS-style margin; ROE and solvency are not reported on IFRS and are left out.',
-        watch: 'The IFRS-margin trend above as the service result improves.',
-      }
-  }
-}
-
-function NodeInvestorRead({ read, accent, src, period, ctx }: { read: NodeRead; accent: string; src: ResolvedSource; period?: string; ctx: BasisCtx }) {
-  const lines = [
-    { label: 'Why', value: read.why },
-    { label: 'What it means', value: read.meaning },
-    { label: 'Watch next', value: read.watch },
-  ]
+// Slim source / basis strip for a stage — replaces the old per-node Investor
+// Read card. Carries only the honest basis pill + source tag, no narrative.
+function NodeSourceStrip({ src, period, ctx }: { src: ResolvedSource; period?: string; ctx: BasisCtx }) {
   return (
-    <section className="card-surface relative overflow-hidden p-4" style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${PALETTE.champagneSoft} 125%)` }}>
-      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: `linear-gradient(180deg, ${PALETTE.champagne} 0%, ${accent} 100%)` }} />
-      <div className="pl-2.5">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-champagne">Investor Read</p>
-        <h3 className="mt-0 font-display text-[15px] leading-tight text-navy-deep">So what?</h3>
-        <p className="mt-1.5 max-w-3xl text-[12px] font-medium leading-relaxed text-navy-deep">{read.soWhat}</p>
-        {ctx.isIfrs && (
-          <p className="mt-1.5 max-w-3xl text-[11px] leading-relaxed text-ink-secondary">
-            Figures shown on the <span className="font-semibold text-navy-deep">IFRS</span> basis ({ctx.pLabel}). PAT can read very differently on IGAAP / Statutory vs IFRS — see the “PAT by Accounting Basis” card in the Profit conversion stage.
-          </p>
-        )}
-        <dl className="mt-2.5 grid grid-cols-1 gap-x-5 gap-y-1.5 sm:grid-cols-[120px_1fr]">
-          {lines.map((line) => (
-            <div key={line.label} className="contents">
-              <dt className="text-[9.5px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{line.label}</dt>
-              <dd className="text-[11.5px] leading-relaxed text-navy-deep/85">{line.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
-          <span className="inline-flex items-center gap-1.5">
-            <LensBasisPill basis={ctx.basis} label={ctx.basisLabel} />
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{ctx.isIfrs && ctx.pat == null ? 'Not available' : 'Official'}</span>
-          </span>
-          {ctx.isIfrs ? (
-            <SourceTag source={ctx.sourceLabel} period={ctx.pLabel} confidence="high" />
-          ) : (
-            <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
-          )}
-        </div>
-      </div>
+    <section className="card-surface flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+      <span className="inline-flex items-center gap-1.5">
+        <LensBasisPill basis={ctx.basis} label={ctx.basisLabel} />
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">{ctx.isIfrs && ctx.pat == null ? 'Not available' : 'Official'}</span>
+      </span>
+      {ctx.isIfrs ? (
+        <SourceTag source={ctx.sourceLabel} period={ctx.pLabel} confidence="high" />
+      ) : (
+        <SourceTag source={src.source} period={period} confidence={src.confidence} provenance={src.provenance} />
+      )}
     </section>
   )
 }
@@ -1829,51 +1657,6 @@ function CapitalCard({ company }: { company: Insurer }) {
   )
 }
 
-// Short interpretation strip — a single plain-English takeaway after an
-// infographic, so non-expert users grasp the meaning instantly.
-function InsightStrip({ line, accent }: { line: string; accent: string }) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-xl border px-4 py-2.5" style={{ background: `${accent}10`, borderColor: `${accent}3a` }}>
-      <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: accent }} />
-      <p className="text-[11.5px] leading-relaxed text-navy-deep/90">{line}</p>
-    </div>
-  )
-}
-
-// One plain-English takeaway per stage (real values; honest pending states).
-function lensInsight(id: NodeId, company: Insurer, series: AnnualPoint[], ctx: BasisCtx): string {
-  const latest = series[series.length - 1] as AnnualPoint | undefined
-  const uw = latest ? underwritingFor(company.id, latest) : null
-  const mm = getMarginMetrics(series)
-  const cr = STATUTORY_CR[company.id]?.statutory ?? (company.combinedRatio > 0 ? company.combinedRatio : null)
-  const inv = getEarningsBridge(company.id)[0]?.igaap.investmentIncome ?? null
-  switch (id) {
-    case 'premium': {
-      const g = premiumGrowth(series)
-      return g != null ? `Premium is scaling (+${g.toFixed(0)}%) and most of it is retained and earned.` : 'Most premium is retained after reinsurance and earned through the year.'
-    }
-    case 'combined':
-      return cr == null ? 'Combined ratio pending.' : cr >= 100 ? `Most of premium is still absorbed by claims and costs — combined ${cr.toFixed(1)}% is above ₹100.` : `Claims and costs stay inside ₹100 — combined ${cr.toFixed(1)}%.`
-    case 'underwriting-result':
-      return uw == null ? 'Underwriting result pending.' : uw < 0 ? `Combined ratio above 100, so core underwriting is not yet profitable (${crc(uw)}).` : 'Core underwriting is profitable before investment income.'
-    case 'conversion':
-      return mm.latestPat == null ? 'PAT pending.' : (uw != null && uw < 0 ? `Investment income is still doing the heavy lifting for PAT (${crc(mm.latestPat)}).` : `Underwriting and investment income together drive PAT (${crc(mm.latestPat)}).`)
-    case 'capital':
-      return company.solvency > 0 ? `Capital support remains strong enough to back growth — ${company.solvency.toFixed(2)}× solvency.` : 'Solvency pending.'
-    case 'ifrs-revenue':
-      return premiumFigures(company.id, series).nep == null ? 'Insurance revenue pending.' : `Net earned premium is the IFRS-style revenue base — ${crc(premiumFigures(company.id, series).nep!)}.`
-    case 'ifrs-service':
-      return ctx.combinedRatio == null ? 'IFRS service result pending.' : ctx.combinedRatio < 100 ? `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — the service earns a margin.` : `IFRS combined ${ctx.combinedRatio.toFixed(1)}% — the service result is thin.`
-    case 'ifrs-finance':
-      return inv == null ? 'Investment result pending.' : `Investment income (${crc(inv)}) carries the IFRS bottom line while the service result is thin.`
-    case 'ifrs-profit':
-      return ctx.pat == null ? 'IFRS profit pending.' : `IFRS PAT ${crc(ctx.pat)}${ctx.patMargin != null ? ` at a ${ctx.patMargin.toFixed(1)}% margin` : ''}.`
-    case 'ifrs-margin':
-      return ctx.patMargin == null ? 'IFRS margin pending.' : `${ctx.patMargin.toFixed(1)}% of premium reaches IFRS profit — the shareholder-return read.`
-    default:
-      return ''
-  }
-}
 
 // ─── Lens "Accounting details" drawer — basis, bridge, numbers, why, sources ──
 function DrawerBlock({ title, children }: { title: string; children: ReactNode }) {
@@ -2022,9 +1805,7 @@ function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarte
   // the reader clicks a different story-map stage.
   const trend = stageTrend(id, company, series, meta.accent)
   const header = <StageStoryHeader meta={meta} stage={stage} status={status} onOpenDrawer={onOpenDrawer} />
-  const read = (
-    <NodeInvestorRead read={nodeRead(id, company, series, ctx)} accent={meta.accent} src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
-  )
+  const read = <NodeSourceStrip src={lensSource(id, company.id)} period={ctx.isIfrs ? ctx.pLabel : meta.period} ctx={ctx} />
 
   // Quarterly / monthly: a compact standalone-quarter comparison under the
   // storyline header; the yearly trend still shows below.
@@ -2076,7 +1857,6 @@ function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarte
       {header}
       {infographic}
       {trend && <StageTrendCard data={trend} accent={meta.accent} />}
-      <InsightStrip line={lensInsight(id, company, series, ctx)} accent={meta.accent} />
       {read}
     </div>
   )

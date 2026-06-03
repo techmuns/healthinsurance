@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import {
   CartesianGrid,
   Label,
@@ -23,7 +22,6 @@ import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import {
   getCompanyMarketBridge,
   getCompanyMarketEngineHeroSub,
-  getCompanyTakeawayLine,
 } from '@/lib/companyCopy'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
@@ -104,7 +102,6 @@ export function MarketLandscape() {
       <HeroCard />
       <MainChartBlock />
       <BridgeBlock />
-      <TakeawayStrip />
     </div>
   )
 }
@@ -450,9 +447,6 @@ function MainChartBlock() {
         </div>
       )}
 
-      {gate.ok && clipped.length > 0 && (
-        <AiRead text="Health is gaining share in the GI premium pool, largely at the expense of Others, while Motor remains broadly stable." />
-      )}
       <div className="mt-3 flex justify-end">
         <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} period={span ?? '—'} />
       </div>
@@ -526,20 +520,6 @@ function EngineTooltip({
             </div>
           ))}
       </div>
-    </div>
-  )
-}
-
-function AiRead({ text }: { text: string }) {
-  return (
-    <div className="mt-3 flex items-center gap-2.5 rounded-lg border border-[#E1F2F1] bg-[#F2FAF9] px-3 py-1.5">
-      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-teal/15 text-teal">
-        <Sparkles className="h-2.5 w-2.5" />
-      </span>
-      <p className="text-[12px] leading-snug text-navy-deep">
-        <span className="font-semibold">AI read · </span>
-        {text}
-      </p>
     </div>
   )
 }
@@ -922,76 +902,5 @@ function MetricMini({
       <p className={`relative font-display text-[17px] leading-none ${meta.text}`}>{value}</p>
       <p className="relative mt-1.5 text-[10.5px] leading-snug text-navy-deep/80">{label}</p>
     </div>
-  )
-}
-
-// ─── 4. TAKEAWAY STRIP ─────────────────────────────────────────────────────
-// Highlights known thesis tokens inside the takeaway line with semantic colour
-// so the eye lands on the load-bearing words (growth → teal, prestige → gold,
-// company → navy). Tokens are matched case-insensitively in source order so
-// they don't double-wrap if `getCompanyTakeawayLine` rephrases.
-function highlightTakeaway(line: string, companyShortName: string): ReactNode[] {
-  const tokens: { match: RegExp; className: string }[] = [
-    { match: /fastest structural pool/i, className: 'font-semibold text-teal' },
-    { match: /SAHIs gaining share/i, className: 'font-semibold text-navy-primary' },
-    { match: /compounding faster/i, className: 'font-semibold text-champagne-deep' },
-    { match: /structural growth/i, className: 'font-semibold text-teal' },
-    { match: /gaining share/i, className: 'font-semibold text-navy-primary' },
-    { match: new RegExp(companyShortName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), className: 'font-semibold text-champagne-deep' },
-  ]
-  const out: ReactNode[] = []
-  let cursor = 0
-  while (cursor < line.length) {
-    let nextMatch: { idx: number; len: number; className: string } | null = null
-    for (const t of tokens) {
-      const slice = line.slice(cursor)
-      const m = slice.match(t.match)
-      if (m && m.index != null) {
-        const absIdx = cursor + m.index
-        if (!nextMatch || absIdx < nextMatch.idx) {
-          nextMatch = { idx: absIdx, len: m[0].length, className: t.className }
-        }
-      }
-    }
-    if (!nextMatch) {
-      out.push(line.slice(cursor))
-      break
-    }
-    if (nextMatch.idx > cursor) out.push(line.slice(cursor, nextMatch.idx))
-    out.push(
-      <span key={`${nextMatch.idx}-${nextMatch.len}`} className={nextMatch.className}>
-        {line.slice(nextMatch.idx, nextMatch.idx + nextMatch.len)}
-      </span>,
-    )
-    cursor = nextMatch.idx + nextMatch.len
-  }
-  return out
-}
-
-function TakeawayStrip() {
-  const company = useActiveCompany()
-  const line = getCompanyTakeawayLine(company)
-  const parts = highlightTakeaway(line, company.shortName)
-  return (
-    <section
-      className="relative overflow-hidden rounded-xl border border-[#EAD9B6] px-4 py-2.5 shadow-[0_1px_2px_rgba(23,43,77,0.03),0_8px_18px_rgba(23,43,77,0.05)]"
-      style={{ background: 'linear-gradient(90deg, #F1F8F6 0%, #FAF6EC 55%, #FBF3E2 100%)' }}
-    >
-      <span className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-teal via-[#7FB99B] to-champagne" />
-      <span
-        className="pointer-events-none absolute -right-12 -bottom-10 h-24 w-24 rounded-full opacity-60 blur-2xl"
-        style={{ background: 'rgba(182,139,58,0.18)' }}
-      />
-      <div className="relative flex flex-wrap items-center gap-3 pl-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-white/85 px-2.5 py-0.5 shadow-soft ring-1 ring-[#CFE3DA]">
-          <span className="h-1.5 w-1.5 rounded-full bg-teal shadow-[0_0_6px_rgba(22,142,142,0.55)]" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-teal">
-            Market Read
-          </span>
-        </span>
-        <p className="flex-1 text-[12.5px] leading-snug text-navy-deep">{parts}</p>
-        <SourceTag source={MARKET_SOURCE.source} confidence={MARKET_SOURCE.confidence} provenance={MARKET_SOURCE.provenance} />
-      </div>
-    </section>
   )
 }
