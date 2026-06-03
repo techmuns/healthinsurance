@@ -8,6 +8,7 @@ import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
+  companyColor,
   getIndustryOverview,
   metricById,
   type OverviewMetricId,
@@ -62,13 +63,14 @@ export function ExecutiveOverview() {
       new Map(colModels.get(id)!.rows.map((r) => [r.id, { value: r.metricValue, available: r.metricAvailable }])),
     ]),
   )
-  const tableRows: MetricTableRow[] = model.byShare.map((r) => ({
+  const tableRows: MetricTableRow[] = model.byShare.map((r, idx) => ({
     id: r.id,
     shortName: r.shortName,
     listed: r.listed,
     focal: r.focal,
     isLeader: r.isLeader,
     rank: r.shareRank,
+    color: companyColor(r.id, r.focal, idx),
     cells: Object.fromEntries(
       COL_METRIC_IDS.map((id) => [id, valueByMetric.get(id)!.get(r.id) ?? { value: 0, available: false }]),
     ),
@@ -99,9 +101,9 @@ export function ExecutiveOverview() {
           <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-5">
-          {/* Market Share map — full width. */}
-          <div className="card-surface flex min-w-0 flex-col p-4 sm:p-5">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-stretch">
+          {/* LEFT — Market Share map (the visual side). */}
+          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <CircleDot className="h-4 w-4 text-navy-primary" />
@@ -129,9 +131,8 @@ export function ExecutiveOverview() {
             </div>
           </div>
 
-          {/* Peer Metrics — one plain table, every metric as a column, all
-              companies and all data visible at once (no toggle). */}
-          <div className="card-surface flex min-w-0 flex-col p-4 sm:p-5">
+          {/* RIGHT — Peer metrics table (every metric a column, no toggle). */}
+          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
             <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-navy-primary" />
               <p className="font-display text-[14px] text-navy-deep">Peer Metrics · {model.groupLabel}</p>

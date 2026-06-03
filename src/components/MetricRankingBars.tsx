@@ -27,6 +27,8 @@ export interface MetricTableRow {
   focal: boolean
   isLeader: boolean
   rank: number
+  /** Per-company accent (gold leader / navy selected / teal / blue / slate). */
+  color: string
   cells: Record<string, MetricCell>
 }
 
@@ -58,14 +60,14 @@ export function MetricRankingTable({
 
   return (
     <div className="flex-1 overflow-x-auto">
-      <table className="w-full min-w-[640px] border-collapse text-[11.5px]">
+      <table className="w-full min-w-[420px] border-collapse text-[11px]">
         <thead>
-          <tr className="bg-[#F4F7FC] text-[9px] font-semibold uppercase tracking-[0.05em] text-ink-secondary">
-            <th className="rounded-l-lg px-2.5 py-2 text-center font-semibold">#</th>
-            <th className="px-2.5 py-2 text-left font-semibold">Insurer</th>
-            <th className="px-2.5 py-2 text-left font-semibold">Type</th>
+          <tr className="bg-[#F4F7FC] text-[8.5px] font-semibold uppercase tracking-[0.04em] text-ink-secondary">
+            <th className="rounded-l-lg px-1.5 py-2 text-center font-semibold">#</th>
+            <th className="px-1.5 py-2 text-left font-semibold">Insurer</th>
+            <th className="px-1.5 py-2 text-left font-semibold">Type</th>
             {metrics.map((m) => (
-              <th key={m.id} className="px-2.5 py-2 text-right font-semibold last:rounded-r-lg">
+              <th key={m.id} className="px-1.5 py-2 text-right font-semibold last:rounded-r-lg last:pr-2.5">
                 {m.label}
               </th>
             ))}
@@ -80,26 +82,27 @@ export function MetricRankingTable({
                 className="border-b border-soft-border/60 transition-colors last:border-0 hover:bg-ice/50"
                 style={rowBg ? { background: rowBg } : undefined}
               >
-                <td className="px-2.5 py-2.5 text-center align-middle">
-                  <span className="font-display text-[13px] font-semibold tabular-nums text-navy-deep">{r.rank}</span>
+                <td className="px-1.5 py-2.5 text-center align-middle">
+                  <span className="font-display text-[12.5px] font-semibold tabular-nums text-navy-deep">{r.rank}</span>
                 </td>
-                <td className="px-2.5 py-2.5 align-middle">
+                <td className="px-1.5 py-2.5 align-middle">
                   <div className="flex items-center gap-1.5">
-                    <span className={`truncate text-[12.5px] font-semibold ${r.focal ? 'text-navy-deep' : 'text-ink-primary'}`}>{r.shortName}</span>
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
+                    <span className={`truncate text-[11.5px] font-semibold ${r.focal ? 'text-navy-deep' : 'text-ink-primary'}`}>{r.shortName}</span>
                     {r.isLeader && (
-                      <span className="shrink-0 rounded-full bg-champagne-soft px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-champagne-deep">Leader</span>
+                      <span className="shrink-0 rounded-full bg-champagne-soft px-1 py-px text-[7.5px] font-bold uppercase tracking-wide text-champagne-deep">Leader</span>
                     )}
                     {r.focal && !r.isLeader && (
-                      <span className="shrink-0 rounded-full bg-soft-blue px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-navy-primary">Selected</span>
+                      <span className="shrink-0 rounded-full bg-soft-blue px-1 py-px text-[7.5px] font-bold uppercase tracking-wide text-navy-primary">Selected</span>
                     )}
                   </div>
                 </td>
-                <td className="px-2.5 py-2.5 align-middle text-[10.5px] text-ink-secondary">{r.listed ? 'Listed' : 'Unlisted'}</td>
+                <td className="px-1.5 py-2.5 align-middle text-[10px] text-ink-secondary">{r.listed ? 'Listed' : 'Unlisted'}</td>
                 {metrics.map((m) => {
                   const c = r.cells[m.id]
                   const isBest = bestId.get(m.id) === r.id
                   return (
-                    <td key={m.id} className="px-2.5 py-2.5 text-right align-middle tabular-nums">
+                    <td key={m.id} className="px-1.5 py-2.5 text-right align-middle tabular-nums last:pr-2.5">
                       {c?.available ? (
                         <span className={isBest ? 'font-semibold text-teal' : 'font-medium text-navy-deep'}>{m.format(c.value)}</span>
                       ) : (
