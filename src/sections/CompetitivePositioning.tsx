@@ -91,22 +91,30 @@ function CardIcon({ kind, color }: { kind: 'growth' | 'profit' | 'capital' | 'va
   )
 }
 
-function SummaryCard({ icon, label, cell, explain }: { icon: 'growth' | 'profit' | 'capital' | 'valuation'; label: string; cell: Cell; explain: string }) {
+function SummaryCard({ icon, label, cell, explain, theme }: { icon: 'growth' | 'profit' | 'capital' | 'valuation'; label: string; cell: Cell; explain: string; theme: string }) {
   const accent = cell.tone === 'na' ? SLATE : TONE[cell.tone].fg
   return (
-    <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
-      <div className="flex items-center gap-1.5">
-        <CardIcon kind={icon} color={accent} />
-        <span className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
-      </div>
-      <div className="mt-2.5 flex items-end justify-between">
-        <div className="flex items-baseline gap-1">
-          <span className="font-display text-[26px] leading-none text-navy-deep">{cell.rank ?? 'NA'}</span>
-          {cell.rank != null && <span className="text-[12px] font-medium text-ink-secondary">of {cell.count}</span>}
+    <div
+      className="group relative overflow-hidden rounded-xl2 border p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_12px_28px_rgba(23,43,77,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(23,43,77,0.06),0_18px_38px_rgba(23,43,77,0.1)]"
+      style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${hexA(theme, 0.07)} 100%)`, borderColor: hexA(theme, 0.2) }}
+    >
+      {/* soft tonal layover — a faint colour bloom + a slim accent rib */}
+      <span className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full opacity-70 blur-2xl transition-opacity duration-300 group-hover:opacity-100" style={{ background: hexA(theme, 0.1) }} />
+      <span className="absolute inset-y-3 left-0 w-[3px] rounded-full" style={{ background: hexA(theme, 0.5) }} />
+      <div className="relative pl-2">
+        <div className="flex items-center gap-1.5">
+          <CardIcon kind={icon} color={accent} />
+          <span className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
         </div>
-        <SignalBadge signal={cell.signal} />
+        <div className="mt-2.5 flex items-end justify-between">
+          <div className="flex items-baseline gap-1">
+            <span className="font-display text-[26px] leading-none text-navy-deep">{cell.rank ?? 'NA'}</span>
+            {cell.rank != null && <span className="text-[12px] font-medium text-ink-secondary">of {cell.count}</span>}
+          </div>
+          <SignalBadge signal={cell.signal} />
+        </div>
+        <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{explain}</p>
       </div>
-      <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{explain}</p>
     </div>
   )
 }
@@ -296,43 +304,6 @@ function PeerSignalPanel({ cell, focalName, onPick, pills }: { cell: Cell; focal
   )
 }
 
-// ── Ranking / Table / Trends (secondary views) ──────────────────────────────
-function RankingView({ rows, cellKey }: { rows: ScoreRow[]; cellKey: string }) {
-  const ranked = [...rows].filter((r) => r.cells[cellKey].value != null).sort((a, b) => (a.cells[cellKey].rank ?? 99) - (b.cells[cellKey].rank ?? 99))
-  const na = rows.filter((r) => r.cells[cellKey].value == null)
-  const max = Math.max(...ranked.map((r) => Math.abs(r.cells[cellKey].value as number)), 1)
-  const label = rows[0]?.cells[cellKey].metric.label ?? ''
-  return (
-    <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
-      <p className="mb-3 font-display text-[14px] text-navy-deep">Peer leaderboard · {label}</p>
-      <div className="space-y-2">
-        {ranked.map((r) => {
-          const cell = r.cells[cellKey]
-          const w = Math.max(4, (Math.abs(cell.value as number) / max) * 100)
-          return (
-            <div key={r.insurer.id} className="flex items-center gap-3">
-              <span className="w-5 text-right text-[11px] font-semibold text-ink-secondary">{cell.rank}</span>
-              <span className={['w-28 shrink-0 truncate text-[12px]', r.focal ? 'font-bold text-navy-deep' : 'text-ink-primary'].join(' ')}>{r.insurer.shortName}</span>
-              <div className="relative h-4 flex-1 overflow-hidden rounded-md bg-ice">
-                <div className="h-full rounded-md" style={{ width: `${w}%`, background: r.focal ? TEAL : cell.best ? GOLD : hexA(MUTED_BLUE, 0.5) }} />
-              </div>
-              <span className="w-16 text-right text-[12px] font-semibold tabular-nums text-navy-deep">{fmtValue(cell)}</span>
-            </div>
-          )
-        })}
-        {na.map((r) => (
-          <div key={r.insurer.id} className="flex items-center gap-3 opacity-55">
-            <span className="w-5 text-right text-[11px] text-ink-secondary">—</span>
-            <span className="w-28 shrink-0 truncate text-[12px] text-ink-primary">{r.insurer.shortName}</span>
-            <div className="h-4 flex-1 rounded-md bg-ice" />
-            <span className="w-16 text-right text-[11px] text-ink-secondary">NA</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function TableView({ rows, metrics }: { rows: ScoreRow[]; metrics: MetricDef[] }) {
   return (
     <div className="overflow-x-auto rounded-xl2 border border-soft-border bg-card shadow-soft">
@@ -366,63 +337,9 @@ function TableView({ rows, metrics }: { rows: ScoreRow[]; metrics: MetricDef[] }
   )
 }
 
-function Spark({ values, color }: { values: number[]; color: string }) {
-  const w = 92, h = 26, pad = 3
-  const min = Math.min(...values), max = Math.max(...values)
-  const span = max - min || 1
-  const pts = values.map((v, i) => `${(pad + (i * (w - 2 * pad)) / (values.length - 1)).toFixed(1)},${(h - pad - ((v - min) / span) * (h - 2 * pad)).toFixed(1)}`)
-  return (
-    <svg width={w} height={h} className="overflow-visible">
-      <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={pad + (w - 2 * pad)} cy={h - pad - ((values[values.length - 1] - min) / span) * (h - 2 * pad)} r={2.3} fill={color} />
-    </svg>
-  )
-}
-
-function TrendsView({ rows, metrics, focalName }: { rows: ScoreRow[]; metrics: MetricDef[]; focalName: string }) {
-  const focal = rows.find((r) => r.focal) ?? rows[0]
-  const series = (end: number) => Array.from({ length: 5 }, (_, i) => end * 0.78 + ((end - end * 0.78) * i) / 4)
-  return (
-    <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="font-display text-[14px] text-navy-deep">{focalName} · metric trajectory</p>
-        <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: hexA(GOLD, 0.12), color: '#8A6516' }}>Illustrative · mock</span>
-      </div>
-      <div className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
-        {metrics.map((m) => {
-          const c = focal.cells[m.key]
-          return (
-            <div key={m.key} className="flex items-center justify-between gap-3 rounded-lg bg-ice/40 px-3 py-2">
-              <p className="text-[11.5px] font-semibold text-navy-deep">{m.label}</p>
-              <div className="flex items-center gap-2">
-                {c.value != null ? <Spark values={series(c.value)} color={c.tone === 'na' ? SLATE : TONE[c.tone].fg} /> : <span className="text-[11px] text-ink-secondary">NA</span>}
-                <span className="w-14 text-right text-[12px] font-semibold tabular-nums text-navy-deep">{fmtValue(c)}</span>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-function downloadCsv(rows: ScoreRow[], metrics: MetricDef[], group: string) {
-  const head = ['Company', ...metrics.map((m) => `${m.label} (value)`), ...metrics.map((m) => `${m.label} (rank)`)]
-  const lines = rows.map((r) => [r.insurer.shortName, ...metrics.map((m) => (r.cells[m.key].value == null ? 'NA' : String(r.cells[m.key].value))), ...metrics.map((m) => (r.cells[m.key].rank == null ? 'NA' : String(r.cells[m.key].rank)))])
-  const csv = [head, ...lines].map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n')
-  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `peer-positioning-${group}-${new Date().toISOString().slice(0, 10)}.csv`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
 // ── Page ────────────────────────────────────────────────────────────────────
-type Tab = 'Scorecard' | 'Ranking' | 'Trends' | 'Table'
-const TABS: Tab[] = ['Scorecard', 'Ranking', 'Trends', 'Table']
+type Tab = 'Scorecard' | 'Table'
+const TABS: Tab[] = ['Scorecard', 'Table']
 const PILLS = [
   { key: 'growth', label: 'GWP Growth' },
   { key: 'roe', label: 'ROE' },
@@ -434,7 +351,6 @@ export function CompetitivePositioning() {
   const filters = useFilters()
   const [tab, setTab] = useState<Tab>('Scorecard')
   const [activeKey, setActiveKey] = useState('growth')
-  const [showHelp, setShowHelp] = useState(false)
 
   const card = useMemo(() => getScorecard({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany }), [filters.peerGroup, filters.highlightedCompany])
   const focal = card.focal
@@ -466,27 +382,16 @@ export function CompetitivePositioning() {
             <span className="font-semibold text-navy-deep">{focal.shortName}</span> · {card.groupLabel} peer group · Multi-metric scorecard
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" onClick={() => setShowHelp((v) => !v)} className="rounded-lg border border-soft-border bg-card px-3 py-1.5 text-[12px] font-semibold text-ink-secondary shadow-soft transition-colors hover:text-navy-primary">How to read this</button>
-          <button type="button" onClick={() => downloadCsv(card.rows, card.metrics, card.groupLabel)} className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold text-white shadow-soft" style={{ background: NAVY_PRIMARY }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" /></svg>
-            Download
-          </button>
-        </div>
       </div>
-
-      {showHelp && (
-        <div className="rounded-xl2 border border-soft-border bg-ice/50 p-4 text-[12px] leading-relaxed text-ink-secondary">
-          Each tile shows a metric&rsquo;s <b>value</b>, the company&rsquo;s <b>rank</b> in the peer group, and the <b>gap vs the peer median</b>. Teal = strong, amber = watch, coral = weak, grey = not comparable; a <span style={{ color: GOLD }}>gold dot</span> marks the best in a column. Click a tile or a pill to read its investment meaning on the right. Ranks and medians are computed only within the active peer group; unlisted valuation shows <b>NA</b> and is excluded from that ranking.
-        </div>
-      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <SummaryCard icon="growth" label="Growth" cell={focalRow.cells.growth} explain={explainGrowth} />
-        <SummaryCard icon="profit" label="Profitability" cell={focalRow.cells.roe} explain={explainProfit} />
-        <SummaryCard icon="capital" label="Capital" cell={focalRow.cells.solvency} explain={explainCapital} />
-        <SummaryCard icon="valuation" label="Valuation" cell={focalRow.cells.valuation} explain={explainVal} />
+        {/* Tone-coded by meaning: teal = growth, navy = core profitability,
+            muted blue = capital strength, gold = valuation/premium. */}
+        <SummaryCard icon="growth" label="Growth" cell={focalRow.cells.growth} explain={explainGrowth} theme={TEAL} />
+        <SummaryCard icon="profit" label="Profitability" cell={focalRow.cells.roe} explain={explainProfit} theme={NAVY_PRIMARY} />
+        <SummaryCard icon="capital" label="Capital" cell={focalRow.cells.solvency} explain={explainCapital} theme={MUTED_BLUE} />
+        <SummaryCard icon="valuation" label="Valuation" cell={focalRow.cells.valuation} explain={explainVal} theme={GOLD} />
       </div>
 
       {/* Tabs */}
@@ -517,19 +422,6 @@ export function CompetitivePositioning() {
         </div>
       )}
 
-      {tab === 'Ranking' && (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-1.5">
-            {card.metrics.map((m) => {
-              const on = m.key === activeKey
-              return <button key={m.key} type="button" onClick={() => setActiveKey(m.key)} className={['rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all', on ? 'border-transparent text-white' : 'border-soft-border bg-ice/50 text-ink-secondary hover:text-navy-primary'].join(' ')} style={on ? { background: NAVY_PRIMARY } : undefined}>{m.label}</button>
-            })}
-          </div>
-          <RankingView rows={card.rows} cellKey={activeKey} />
-        </div>
-      )}
-
-      {tab === 'Trends' && <TrendsView rows={card.rows} metrics={card.metrics} focalName={focal.shortName} />}
       {tab === 'Table' && <TableView rows={card.rows} metrics={card.metrics} />}
 
       {/* Source row */}
