@@ -3,6 +3,7 @@ import { BadgeCheck, BarChart3, Building2, CircleDot, Clock, Info, Layers, Netwo
 import { RadialGauge } from '@/components/RadialGauge'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingBars } from '@/components/MetricRankingBars'
+import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
@@ -112,6 +113,9 @@ export function ExecutiveOverview() {
   return (
     <div className="space-y-4">
       <HeroHeader highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
+
+      {/* ── Industry Snapshot — 3-way market-structure ring band ─────────── */}
+      <IndustrySnapshotBand />
 
       {/* ── Top row: Leader · Snapshot · Concentration ───────────────────── */}
       <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
