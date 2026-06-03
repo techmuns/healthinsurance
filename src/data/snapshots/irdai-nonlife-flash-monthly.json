@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "schema_version": "1.0.0",
+    "source": "IRDAI Non-Life Flash Figures",
+    "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+    "upstream_sources": ["irdai_nonlife_flash"],
+    "unit": "Rs crore",
+    "basis": "Gross Direct Premium Written (not earned / net / retained)",
+    "provisional": true,
+    "unaudited": true,
+    "snapshot_id": "irdai-nonlife-flash-monthly",
+    "description": "Monthly industry-wide non-life Gross Direct Premium (per insurer + category totals + GRAND TOTAL) from IRDAI Non-Life Flash Figures.",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "last_fetched_at": null,
+    "parser_status": "pending",
+    "notes": "Empty until ingest-irdai-nonlife-flash.ts has its first successful run. IRDAI's WAF 403s the Actions runner; drop the official file into data/raw/irdai/nonlife-flash/<YYYY-MM>.xlsx (PDF only if no XLSX) to populate. Never fabricated."
+  },
+  "data": []
+}

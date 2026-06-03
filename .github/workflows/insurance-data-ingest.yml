@@ -4,6 +4,11 @@ name: insurance-data-ingest
 # exchanges, normalises, validates, and commits any changed snapshot files.
 # Per the dashboard's source policy, never falls back to mock or unofficial
 # data — if a source fails, the workflow logs the failure and continues.
+#
+# Sources include the IRDAI Non-Life Flash Figures fetcher
+# (scripts/ingest/ingest-irdai-nonlife-flash.ts), which runs on the MONTHLY
+# cadence below and via workflow_dispatch. When IRDAI's WAF 403s the runner it
+# logs the block and keeps the previous snapshot unchanged (never blanks data).
 
 on:
   schedule:

@@ -27,6 +27,14 @@ import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
+import irdaiFlashLatestJson from '@/data/snapshots/irdai-nonlife-flash-latest.json'
+import irdaiFlashMonthlyJson from '@/data/snapshots/irdai-nonlife-flash-monthly.json'
+import irdaiFlashSourcesJson from '@/data/snapshots/irdai-nonlife-flash-sources.json'
+import type {
+  IrdaiNonLifeFlashRow,
+  IrdaiNonLifeFlashSource,
+  IrdaiNonLifeFlashEnvelope,
+} from '@/data/snapshots/_schemas'
 import type { TimePeriod, PeerGroup, Insurer, Signal } from '@/data/types'
 
 type Dataset = 'official' | 'mixed' | 'mock' | 'pending'
@@ -393,4 +401,112 @@ export function getDataFreshness(): {
     quality: meta.dataset === 'official' ? 'Official' : 'Mixed',
     periodCoverage: 'Annual',
   }
+}
+
+// ─── IRDAI Non-Life Flash Figures (monthly GI premium) ──────────────────────
+// Self-contained snapshots written by ingest-irdai-nonlife-flash.ts. Gross
+// Direct Premium WRITTEN, Rs crore, provisional & unaudited. The dashboard
+// reads these for the monthly / YTD industry premium view and matches the
+// selected company to a flash row by normalized name.
+
+const flashLatest = irdaiFlashLatestJson as unknown as IrdaiNonLifeFlashEnvelope<IrdaiNonLifeFlashRow>
+const flashMonthly = irdaiFlashMonthlyJson as unknown as IrdaiNonLifeFlashEnvelope<IrdaiNonLifeFlashRow>
+const flashSources = irdaiFlashSourcesJson as unknown as IrdaiNonLifeFlashEnvelope<IrdaiNonLifeFlashSource>
+
+// company_id → name fragments that appear in the IRDAI normalized/original name.
+// Life insurers are intentionally absent (they don't appear in the non-life flash).
+const FLASH_COMPANY_ALIASES: Record<string, string[]> = {
+  'niva-bupa': ['niva bupa', 'max bupa'],
+  'star-health': ['star health'],
+  'care-health': ['care health', 'religare'],
+  'aditya-birla': ['aditya birla'],
+  manipalcigna: ['manipalcigna', 'manipal cigna'],
+  'icici-lombard': ['icici lombard'],
+  'bajaj-general': ['bajaj allianz'],
+}
+
+export interface IrdaiNonLifeFlashView {
+  /** True only when a real (non-pending) report has been ingested. */
+  available: boolean
+  dataset: Dataset
+  lastUpdated: string | null
+  lastFetchedAt: string | null
+  /** Best source link: the downloaded file URL when known, else the IRDAI page. */
+  sourceUrl: string | null
+  sourceName: 'IRDAI Non-Life Flash Figures'
+  reportMonth: string | null
+  reportYear: number | null
+  /** "April 2025" — for captions / source tags. */
+  reportLabel: string | null
+  fyCurrent: string | null
+  fyPrevious: string | null
+  unit: 'Rs crore'
+  rows: IrdaiNonLifeFlashRow[]
+  grandTotal: IrdaiNonLifeFlashRow | null
+  generalTotal: IrdaiNonLifeFlashRow | null
+  standaloneTotal: IrdaiNonLifeFlashRow | null
+  specializedTotal: IrdaiNonLifeFlashRow | null
+}
+
+function flashTotalRow(rows: IrdaiNonLifeFlashRow[], re: RegExp): IrdaiNonLifeFlashRow | null {
+  return rows.find((r) => r.insurer_group === 'Total' && re.test(r.insurer_name_original)) ?? null
+}
+
+/** Latest month of IRDAI Non-Life Flash Figures, shaped for the dashboard. */
+export function getIrdaiNonLifeFlashLatest(): IrdaiNonLifeFlashView {
+  const meta = flashLatest._meta
+  const rows = flashLatest.data ?? []
+  const grandTotal = rows.find((r) => /grand\s*total/i.test(r.insurer_name_original)) ?? null
+  const available = rows.length > 0 && meta.dataset !== 'pending'
+  const reportMonth = meta.report_month ?? grandTotal?.report_month ?? null
+  const reportYear = meta.report_year ?? grandTotal?.report_year ?? null
+  return {
+    available,
+    dataset: meta.dataset,
+    lastUpdated: meta.last_updated ?? null,
+    lastFetchedAt: meta.last_fetched_at ?? null,
+    sourceUrl: grandTotal?.source_url ?? meta.source_url ?? null,
+    sourceName: 'IRDAI Non-Life Flash Figures',
+    reportMonth,
+    reportYear,
+    reportLabel: reportMonth && reportYear ? `${reportMonth} ${reportYear}` : null,
+    fyCurrent: meta.financial_year_current ?? grandTotal?.financial_year_current ?? null,
+    fyPrevious: meta.financial_year_previous ?? grandTotal?.financial_year_previous ?? null,
+    unit: 'Rs crore',
+    rows,
+    grandTotal,
+    generalTotal: flashTotalRow(rows, /general\s+insurers/i),
+    standaloneTotal: flashTotalRow(rows, /stand[\s-]*alone/i),
+    specializedTotal: flashTotalRow(rows, /special/i),
+  }
+}
+
+/** Match the selected company to its IRDAI flash row (null = not in this report). */
+export function getIrdaiNonLifeFlashForCompany(
+  companyId: string,
+  view: IrdaiNonLifeFlashView = getIrdaiNonLifeFlashLatest(),
+): IrdaiNonLifeFlashRow | null {
+  const aliases = FLASH_COMPANY_ALIASES[companyId]
+  if (!aliases || !view.available) return null
+  return (
+    view.rows.find(
+      (r) =>
+        r.insurer_group !== 'Total' &&
+        aliases.some(
+          (a) =>
+            r.insurer_name_normalized.toLowerCase().includes(a) ||
+            r.insurer_name_original.toLowerCase().includes(a),
+        ),
+    ) ?? null
+  )
+}
+
+/** Full monthly history (all ingested months) for charts / drill-downs. */
+export function getIrdaiNonLifeFlashHistory(): IrdaiNonLifeFlashRow[] {
+  return flashMonthly.data ?? []
+}
+
+/** Captured source URLs per report month (provenance / audit trail). */
+export function getIrdaiNonLifeFlashSources(): IrdaiNonLifeFlashSource[] {
+  return flashSources.data ?? []
 }

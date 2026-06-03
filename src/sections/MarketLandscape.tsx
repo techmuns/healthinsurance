@@ -29,6 +29,7 @@ import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
+import { IrdaiNonLifeFlashPanel } from '@/components/IrdaiNonLifeFlashPanel'
 
 // Default source-tag preset for Market Engine cards — UI currently reads
 // from mockData.ts; will switch to IRDAI + GI Council snapshots when
@@ -103,6 +104,7 @@ export function MarketLandscape() {
     <div className="space-y-5">
       <HeroCard />
       <MainChartBlock />
+      <IrdaiNonLifeFlashPanel />
       <BridgeBlock />
       <TakeawayStrip />
     </div>

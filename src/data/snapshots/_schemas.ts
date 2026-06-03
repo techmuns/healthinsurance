@@ -328,6 +328,90 @@ export interface ManagementEventRow {
   confidence: SnapshotConfidence
 }
 
+// ─── irdai-nonlife-flash (IRDAI Non-Life Flash Figures) ─────────────────────
+// Monthly industry-wide Gross Direct Premium WRITTEN (not earned / net /
+// retained), Rs crore, PROVISIONAL & UNAUDITED. Source: the official IRDAI
+// "Gross Direct Premium - Flash figures of Non-life Insurers" document family.
+// Produced by scripts/ingest/ingest-irdai-nonlife-flash.ts into three files:
+//   irdai-nonlife-flash-monthly.json  (full history)
+//   irdai-nonlife-flash-latest.json   (newest report month)
+//   irdai-nonlife-flash-sources.json  (captured source URLs per month)
+
+export type IrdaiNonLifeInsurerGroup =
+  | 'General Insurer'
+  | 'Standalone Health'
+  | 'Specialized PSU'
+  | 'Total'
+  | 'Unknown'
+
+export interface IrdaiNonLifeFlashRow {
+  source: 'IRDAI Non-Life Flash Figures'
+  source_url: string
+  downloaded_file_url?: string
+  file_type: 'xlsx' | 'pdf'
+  report_month: string
+  report_year: number
+  financial_year_current: string
+  financial_year_previous: string
+  insurer_name_original: string
+  insurer_name_normalized: string
+  insurer_group: IrdaiNonLifeInsurerGroup
+  /** Gross Direct Premium for the report month — current FY (Rs crore). */
+  premium_for_month_current_year: number | null
+  /** Gross Direct Premium for the report month — previous FY (Rs crore). */
+  premium_for_month_previous_year: number | null
+  /** Cumulative ("up to the month") Gross Direct Premium — current FY. */
+  premium_ytd_current_year: number | null
+  /** Cumulative ("up to the month") Gross Direct Premium — previous FY. */
+  premium_ytd_previous_year: number | null
+  market_share_ytd_percent: number | null
+  growth_yoy_percent: number | null
+  unit: 'Rs crore'
+  provisional: true
+  unaudited: true
+  fetched_at: string
+}
+
+export interface IrdaiNonLifeFlashSource {
+  report_month: string
+  report_year: number
+  month_key: string
+  source: 'IRDAI Non-Life Flash Figures'
+  source_url: string
+  downloaded_file_url: string | null
+  file_type: 'xlsx' | 'pdf' | null
+  status: 'official' | 'blocked' | 'pending'
+  rows: number
+  fetched_at: string
+}
+
+/** Self-contained envelope for the flash snapshots (not part of the merge). */
+export interface IrdaiNonLifeFlashMeta {
+  snapshot_id: string
+  description: string
+  schema_version: string
+  source: 'IRDAI Non-Life Flash Figures'
+  source_url: string
+  dataset: SnapshotDataset
+  last_updated: string | null
+  last_successful_run?: string | null
+  last_fetched_at?: string | null
+  report_month?: string | null
+  report_year?: number | null
+  financial_year_current?: string | null
+  financial_year_previous?: string | null
+  unit: 'Rs crore'
+  provisional: true
+  unaudited: true
+  parser_status: ParserStatus
+  notes?: string
+}
+
+export interface IrdaiNonLifeFlashEnvelope<TRow> {
+  _meta: IrdaiNonLifeFlashMeta
+  data: TRow[]
+}
+
 // ─── data-health ───────────────────────────────────────────────────────────
 
 export interface DataHealthSourceStatus {
