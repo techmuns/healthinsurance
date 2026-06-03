@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { BadgeCheck, BarChart3, CircleDot, Clock, Info, ShieldCheck } from 'lucide-react'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
-import { MetricRankingBars } from '@/components/MetricRankingBars'
+import { MetricRankingTable, type MetricTableRow } from '@/components/MetricRankingBars'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -10,11 +9,15 @@ import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
   getIndustryOverview,
-  OVERVIEW_METRICS,
+  metricById,
   type OverviewMetricId,
 } from '@/lib/industryOverview'
 import { useFilters } from '@/state/filters'
 import { DATA_FRESHNESS } from '@/data/mockData'
+
+// All metrics shown as columns, left → right. Market Share first (also the row
+// sort key), then the four operating/quality metrics.
+const COL_METRIC_IDS: OverviewMetricId[] = ['share', 'premium', 'settlement', 'renewal', 'retention']
 
 const FY = 'FY25'
 const SOURCE_PROVENANCE = {
@@ -24,36 +27,6 @@ const SOURCE_PROVENANCE = {
 // Quiet, on-theme source chip reused across the cards.
 function CardSource() {
   return <SourceTag source="IRDAI + Company filing" period={FY} confidence="high" provenance={SOURCE_PROVENANCE} />
-}
-
-function MetricToggle({ value, onChange }: { value: OverviewMetricId; onChange: (id: OverviewMetricId) => void }) {
-  // Market Share lives permanently in the left card, so the ranking toggle
-  // only offers the bar-charted metrics.
-  const rankingMetrics = OVERVIEW_METRICS.filter((m) => m.id !== 'share')
-  return (
-    <div className="inline-flex flex-wrap items-center gap-1">
-      <span className="mr-1 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">View by</span>
-      {rankingMetrics.map((m) => {
-        const on = m.id === value
-        return (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => onChange(m.id)}
-            aria-pressed={on}
-            className={[
-              'rounded-full px-2.5 py-1 text-[10.5px] font-medium transition-all duration-200',
-              on
-                ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#1B3260]'
-                : 'bg-ice text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
-            ].join(' ')}
-          >
-            {m.label}
-          </button>
-        )
-      })}
-    </div>
-  )
 }
 
 /** Tiny tone-coded micro-insight chip (embedded near a chart title). */
@@ -74,12 +47,32 @@ function InsightChip({ label, tone = 'slate' }: { label: string; tone?: 'slate' 
 export function ExecutiveOverview() {
   const filters = useFilters()
   const { period } = filters
-  const [metricId, setMetricId] = useState<OverviewMetricId>('premium')
-  const model = getIndustryOverview(filters, metricId)
+  // One model per metric so every metric can be shown as its own column.
+  const colMetrics = COL_METRIC_IDS.map(metricById)
+  const colModels = new Map(COL_METRIC_IDS.map((id) => [id, getIndustryOverview(filters, id)]))
+  const model = colModels.get('premium')!
   const { leader, runnerUp, highlighted, concentration } = model
   const annualBasisNote = period !== 'Annual'
-  // Rank-1 insurer on the currently-toggled metric — drives a quiet footer insight.
-  const metricLeaderName = model.rows.find((r) => r.metricAvailable)?.shortName
+
+  // Build the table: rows = companies sorted by market share; each row carries
+  // every metric's value, indexed by metric id, so the table needs no toggle.
+  const valueByMetric = new Map<OverviewMetricId, Map<string, { value: number; available: boolean }>>(
+    COL_METRIC_IDS.map((id) => [
+      id,
+      new Map(colModels.get(id)!.rows.map((r) => [r.id, { value: r.metricValue, available: r.metricAvailable }])),
+    ]),
+  )
+  const tableRows: MetricTableRow[] = model.byShare.map((r) => ({
+    id: r.id,
+    shortName: r.shortName,
+    listed: r.listed,
+    focal: r.focal,
+    isLeader: r.isLeader,
+    rank: r.shareRank,
+    cells: Object.fromEntries(
+      COL_METRIC_IDS.map((id) => [id, valueByMetric.get(id)!.get(r.id) ?? { value: 0, available: false }]),
+    ),
+  }))
 
   if (!leader || model.count === 0) {
     return (
@@ -106,10 +99,9 @@ export function ExecutiveOverview() {
           <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-stretch">
-          {/* LEFT — Market Share map. Always visible; never changes with the
-              ranking toggle (it reads market share straight from the model). */}
-          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
+        <div className="grid grid-cols-1 gap-5">
+          {/* Market Share map — full width. */}
+          <div className="card-surface flex min-w-0 flex-col p-4 sm:p-5">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <CircleDot className="h-4 w-4 text-navy-primary" />
@@ -137,31 +129,23 @@ export function ExecutiveOverview() {
             </div>
           </div>
 
-          {/* RIGHT — ranked board for the toggled metric (Premium / Settlement
-              / Renewal / Retention). The toggle lives in this card's header. */}
-          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
-            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="h-4 w-4 text-navy-primary" />
-                <p className="font-display text-[14px] text-navy-deep">{model.metric.label} Ranking</p>
-                <span
-                  className="cursor-default text-ink-secondary/60"
-                  title="Ranked high → low. Navy = selected · gold = leader. Secondary value shown per row."
-                >
-                  <Info className="h-3.5 w-3.5" />
-                </span>
-              </div>
-              <MetricToggle value={metricId} onChange={setMetricId} />
+          {/* Peer Metrics — one plain table, every metric as a column, all
+              companies and all data visible at once (no toggle). */}
+          <div className="card-surface flex min-w-0 flex-col p-4 sm:p-5">
+            <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+              <BarChart3 className="h-4 w-4 text-navy-primary" />
+              <p className="font-display text-[14px] text-navy-deep">Peer Metrics · {model.groupLabel}</p>
+              <span
+                className="cursor-default text-ink-secondary/60"
+                title="Every metric as a column. Sorted by market share. Navy = selected · gold = leader · teal = best in column."
+              >
+                <Info className="h-3.5 w-3.5" />
+              </span>
             </div>
 
-            <MetricRankingBars model={model} />
+            <MetricRankingTable metrics={colMetrics} rows={tableRows} />
 
-            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-              {metricLeaderName && (
-                <span className="text-[10px] text-ink-secondary">
-                  <span className="font-semibold text-navy-deep">{metricLeaderName}</span> leads on {model.metric.label.toLowerCase()}
-                </span>
-              )}
+            <div className="mt-3 flex justify-end pt-2">
               <CardSource />
             </div>
           </div>
