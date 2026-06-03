@@ -19,9 +19,11 @@ import type { TimePeriod } from '@/data/types'
 /** Months in fiscal order — Apr is month-offset 0, Mar is 11. */
 export const FISCAL_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'] as const
 
-// Inclusive fiscal-year window the dashboard exposes in the selector. The mock
-// + snapshot data lives in FY21–FY26, so the selectable universe matches that.
-export const FY_MIN = 21
+// Inclusive fiscal-year window the dashboard exposes in the selector. The floor
+// is FY19 so the range picker supports "2019 onward" per the investor request,
+// even though real annual data currently starts at FY22 — pre-FY22 years render
+// an honest "pending / not publicly disclosed" marker, never fabricated values.
+export const FY_MIN = 19
 export const FY_MAX = 26
 
 /** Largest valid month index (FY_MIN..FY_MAX, inclusive). */
@@ -193,7 +195,9 @@ export function toOptionValue(idx: number, period: TimePeriod): string {
   return fromOptionValue(idx, period)
 }
 
-/** Default = the full annual span the data covers, so nothing is hidden until
- *  the user deliberately narrows the range. Derived from FY_MIN/FY25 rather
- *  than a hardcoded FY22–FY25 string. */
-export const DEFAULT_RANGE: DateRange = { from: fyStartIdx(FY_MIN), to: fyEndIdx(25) }
+/** Default opens on the populated annual span (FY22–FY25) so the dashboard never
+ *  loads onto empty pre-FY22 years, while the selector still reaches back to
+ *  FY_MIN (2019). Widen the range from the header to see the honest pending
+ *  markers for the earlier, not-yet-sourced years. */
+export const DEFAULT_FROM_FY = 22
+export const DEFAULT_RANGE: DateRange = { from: fyStartIdx(DEFAULT_FROM_FY), to: fyEndIdx(25) }
