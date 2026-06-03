@@ -3,7 +3,9 @@
     "schema_version": "1.0.0",
     "source": "IRDAI Non-Life Flash Figures",
     "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
-    "upstream_sources": ["irdai_nonlife_flash"],
+    "upstream_sources": [
+      "irdai_nonlife_flash"
+    ],
     "unit": "Rs crore",
     "basis": "Gross Direct Premium Written (not earned / net / retained)",
     "provisional": true,
@@ -11,11 +13,180 @@
     "snapshot_id": "irdai-nonlife-flash-sources",
     "description": "Captured IRDAI Non-Life Flash Figures source URLs / files, per report month.",
     "dataset": "pending",
-    "last_updated": null,
-    "last_fetched_at": null,
-    "last_attempt_status": "pending",
-    "parser_status": "pending",
-    "notes": "Records the official IRDAI source URL / downloaded file captured for each report month. Empty until the source is reachable or a file is staged."
+    "last_updated": "2026-06-03",
+    "last_fetched_at": "2026-06-03T10:40:57.401Z",
+    "last_attempt_status": "blocked",
+    "parser_status": "blocked",
+    "notes": "IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated."
   },
-  "data": []
+  "data": [
+    {
+      "report_month": "April",
+      "report_year": 2025,
+      "month_key": "2025-04",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "May",
+      "report_year": 2025,
+      "month_key": "2025-05",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "June",
+      "report_year": 2025,
+      "month_key": "2025-06",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "July",
+      "report_year": 2025,
+      "month_key": "2025-07",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "August",
+      "report_year": 2025,
+      "month_key": "2025-08",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "September",
+      "report_year": 2025,
+      "month_key": "2025-09",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "October",
+      "report_year": 2025,
+      "month_key": "2025-10",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "November",
+      "report_year": 2025,
+      "month_key": "2025-11",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "December",
+      "report_year": 2025,
+      "month_key": "2025-12",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "January",
+      "report_year": 2026,
+      "month_key": "2026-01",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "February",
+      "report_year": 2026,
+      "month_key": "2026-02",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "March",
+      "report_year": 2026,
+      "month_key": "2026-03",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "April",
+      "report_year": 2026,
+      "month_key": "2026-04",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    },
+    {
+      "report_month": "May",
+      "report_year": 2026,
+      "month_key": "2026-05",
+      "source": "IRDAI Non-Life Flash Figures",
+      "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+      "downloaded_file_url": null,
+      "file_type": null,
+      "status": "blocked",
+      "rows": 0,
+      "fetched_at": "2026-06-03T10:40:57.401Z"
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 {
   "last_successful_run": "2026-06-02T17:46:12.502Z",
-  "last_failed_run": "2026-06-03T09:13:21.904Z",
-  "sources_checked": 4,
+  "last_failed_run": "2026-06-03T10:41:14.853Z",
+  "sources_checked": 5,
   "sources_success": 0,
   "sources_failed": 1,
   "metrics_updated": [
@@ -214,6 +214,7 @@
   ],
   "parser_warnings": [
     "[irdai_monthly_business] To populate Monthly: download the IRDAI \"Monthly Business Figures – Non-Life Insurers\" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.",
+    "[irdai_nonlife_flash] IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated.",
     "[gicouncil_flash_sahi] 2026-04: HTTP 403 for https://www.gicouncil.in/media/4642/flash-report-april-pdf.pdf",
     "[gicouncil_flash_sahi] 2026-03: HTTP 403 for https://www.gicouncil.in/media/4629/flsh-report-march-2026.pdf",
     "[gicouncil_flash_sahi] 2026-02: HTTP 403 for https://www.gicouncil.in/media/4603/flash_feb_2026.pdf",
@@ -246,7 +247,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-03T09:12:59.873Z",
+      "last_attempt_at": "2026-06-03T10:40:52.631Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -394,21 +395,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T09:13:20.609Z",
+      "last_attempt_at": "2026-06-03T10:41:14.124Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T09:13:03.327Z",
+      "last_attempt_at": "2026-06-03T10:40:57.480Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T09:13:13.943Z",
+      "last_attempt_at": "2026-06-03T10:41:07.490Z",
+      "last_success_at": null,
+      "records_fetched": 0
+    },
+    {
+      "source_id": "irdai_nonlife_flash",
+      "status": "blocked",
+      "last_attempt_at": "2026-06-03T10:40:57.401Z",
       "last_success_at": null,
       "records_fetched": 0
     }

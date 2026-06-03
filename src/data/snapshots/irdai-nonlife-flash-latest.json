@@ -3,21 +3,23 @@
     "schema_version": "1.0.0",
     "source": "IRDAI Non-Life Flash Figures",
     "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
-    "upstream_sources": ["irdai_nonlife_flash"],
+    "upstream_sources": [
+      "irdai_nonlife_flash"
+    ],
     "unit": "Rs crore",
     "basis": "Gross Direct Premium Written (not earned / net / retained)",
     "provisional": true,
     "unaudited": true,
     "snapshot_id": "irdai-nonlife-flash-latest",
-    "description": "Most recent month of IRDAI Non-Life Flash Figures (per insurer + totals + GRAND TOTAL).",
+    "description": "Most recent month of IRDAI Non-Life Flash Figures.",
     "dataset": "pending",
     "last_updated": null,
     "last_successful_run": null,
-    "last_fetched_at": null,
+    "last_fetched_at": "2026-06-03T10:40:57.401Z",
     "report_month": null,
     "report_year": null,
-    "parser_status": "pending",
-    "notes": "Empty until ingest-irdai-nonlife-flash.ts has its first successful run. Never fabricated."
+    "parser_status": "blocked",
+    "notes": "IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated."
   },
   "data": []
 }
