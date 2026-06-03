@@ -17,11 +17,11 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
   const baseId = active.split('/')[0]
   return (
     <div className="flex min-h-screen bg-transparent">
-      {/* Left navigation — floating champagne capsule rail, vertically centered */}
-      <aside className="sticky top-0 hidden h-screen w-[264px] shrink-0 items-center justify-center p-4 lg:flex">
-        <div className="flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto scroll-thin rounded-[30px] border border-[rgba(182,139,58,0.18)] bg-gradient-to-b from-[#F8F3E9] to-[#F4ECDC] px-3 py-5 shadow-[0_18px_45px_rgba(23,43,77,0.08)]">
+      {/* Left navigation — light warm-ivory capsule rail, vertically centered */}
+      <aside className="sticky top-0 hidden h-screen w-[256px] shrink-0 items-center justify-center p-4 lg:flex">
+        <div className="flex max-h-[calc(100vh-2rem)] w-full flex-col overflow-y-auto scroll-thin rounded-[26px] border border-[rgba(182,139,58,0.12)] bg-gradient-to-b from-[#FCFBF8] to-[#F6F4EE] px-2.5 py-4 shadow-[0_14px_38px_rgba(23,43,77,0.06)]">
           {/* Brand — compact lockup */}
-          <div className="flex items-center gap-2 px-1.5 pb-3">
+          <div className="flex items-center gap-2 px-1.5 pb-2">
             <OrganicIconBlob shape="blob-a" tone="navySoft" size="xs">
               <Icon name="shield" />
             </OrganicIconBlob>
@@ -29,16 +29,16 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
               <p className="font-display text-[12.5px] font-medium leading-tight tracking-tight text-navy-deep">
                 Insurance
               </p>
-              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-champagne-deep">
+              <p className="text-[8px] font-semibold uppercase tracking-[0.2em] text-champagne-deep/80">
                 Investor Dashboard
               </p>
             </div>
           </div>
 
-          <nav className="mt-2 flex flex-1 flex-col gap-0.5 border-t border-[rgba(182,139,58,0.16)] pt-2.5">
+          <nav className="mt-1.5 flex flex-1 flex-col gap-0.5 border-t border-[rgba(23,43,77,0.06)] pt-2">
             {navGroups.map((groupItem, gi) => (
-              <div key={groupItem.label} className={gi === 0 ? '' : 'mt-2'}>
-                <p className="mb-0.5 px-2 text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">
+              <div key={groupItem.label} className={gi === 0 ? '' : 'mt-2.5'}>
+                <p className="mb-1 px-2.5 text-[9px] font-semibold uppercase tracking-[0.2em] text-[#A8A08D]">
                   {groupItem.label}
                 </p>
                 {groupItem.itemIds.map((id) => {
@@ -52,18 +52,21 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
                       onClick={() => onNavigate(item.id)}
                       title={item.question}
                       className={[
-                        'group flex w-full items-center gap-2.5 rounded-2xl py-1 pl-1.5 pr-3 text-left text-[13px] leading-tight transition-all duration-200',
+                        'group relative flex w-full items-center gap-2.5 rounded-xl py-1 pl-2 pr-3 text-left text-[13px] leading-tight transition-all duration-200',
                         isActive
-                          ? 'border border-white/12 bg-gradient-to-br from-[#2A4680] to-[#1E3563] font-semibold text-white shadow-[0_8px_20px_rgba(23,43,77,0.16)]'
-                          : 'border border-transparent text-[#657184] hover:bg-white/55 hover:text-navy-deep',
+                          ? 'bg-gradient-to-br from-[#2A4680] to-[#1E3563] font-semibold text-white shadow-[0_6px_16px_rgba(23,43,77,0.14)]'
+                          : 'text-[#7B8494] hover:bg-white/70 hover:text-navy-deep',
                       ].join(' ')}
                     >
+                      {/* Slim gold accent on the active item */}
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+                      )}
                       <OrganicIconBlob
                         shape={isActive ? 'blob-b' : 'blob-d'}
-                        tone={isActive ? 'invert' : 'navySoft'}
-                        size="sm"
+                        tone={isActive ? 'glass' : 'ivory'}
+                        size="xs"
                         interactive={!isActive}
-                        className={isActive ? '' : 'ring-1 ring-white/80'}
                       >
                         <Icon name={item.icon} />
                       </OrganicIconBlob>

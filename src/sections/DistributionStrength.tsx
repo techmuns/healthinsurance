@@ -227,9 +227,12 @@ function MainChartBlock() {
           <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
             {company.shortName} channel mix over time
           </h2>
-          <p className="mt-1 text-[12px] text-ink-secondary">
-            Share of GWP by channel · {span} · select channels to compare
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-ink-secondary">
+            <span>Share of GWP by channel · {span}</span>
+            <span className="inline-flex items-center rounded-full bg-champagne-soft px-2 py-0.5 text-[10px] font-semibold text-champagne-deep ring-1 ring-[#EAD9B6]">
+              Bancassurance: structural growth lever
+            </span>
+          </div>
         </div>
       </header>
 

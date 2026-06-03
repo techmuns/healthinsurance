@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BadgeCheck, BarChart3, Building2, CircleDot, Clock, Layers, Network, Percent, Shield, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, BarChart3, Building2, CircleDot, Clock, Info, Layers, Network, Percent, Shield, ShieldCheck } from 'lucide-react'
 import { RadialGauge } from '@/components/RadialGauge'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingBars } from '@/components/MetricRankingBars'
@@ -11,7 +11,6 @@ import { DataEmptyState } from '@/components/DataEmptyState'
 import {
   getIndustryOverview,
   OVERVIEW_METRICS,
-  companyColor,
   type ConcentrationBand,
   type OverviewMetricId,
 } from '@/lib/industryOverview'
@@ -76,6 +75,21 @@ function SnapTile({ icon, label, value, sub }: { icon: React.ReactNode; label: s
   )
 }
 
+/** Tiny tone-coded micro-insight chip (embedded near a chart title). */
+function InsightChip({ label, tone = 'slate' }: { label: string; tone?: 'slate' | 'teal' | 'gold' }) {
+  const c =
+    tone === 'teal'
+      ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
+      : tone === 'gold'
+        ? 'bg-champagne-soft text-champagne-deep ring-[#EAD9B6]'
+        : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${c}`}>
+      {label}
+    </span>
+  )
+}
+
 export function ExecutiveOverview() {
   const filters = useFilters()
   const { period } = filters
@@ -83,6 +97,8 @@ export function ExecutiveOverview() {
   const model = getIndustryOverview(filters, metricId)
   const { leader, runnerUp, highlighted, concentration } = model
   const annualBasisNote = period !== 'Annual'
+  // Rank-1 insurer on the currently-toggled metric — drives a quiet footer insight.
+  const metricLeaderName = model.rows.find((r) => r.metricAvailable)?.shortName
 
   if (!leader || model.count === 0) {
     return (
@@ -127,29 +143,23 @@ export function ExecutiveOverview() {
           </div>
 
           {highlighted && (
-            <div className="mt-2.5 rounded-lg border border-[#D6E2FA] bg-white/70 px-2.5 py-1.5 text-[11px]">
+            <div className="mt-auto rounded-lg border border-[#E6D2A2]/70 bg-white/60 px-2.5 py-1.5 text-[11px]">
               {highlighted.isLeader ? (
                 <span className="text-navy-deep">
                   <span className="font-semibold">{highlighted.shortName}</span> is the market leader.
                 </span>
               ) : (
                 <span className="text-ink-secondary">
-                  Selected · <span className="font-semibold text-navy-deep">{highlighted.shortName}</span> · Rank{' '}
-                  <span className="font-semibold text-navy-deep">#{highlighted.shareRank}</span> · Share{' '}
-                  <span className="font-semibold text-navy-deep">{highlighted.share.toFixed(1)}%</span>
+                  <span className="font-semibold text-navy-deep">{highlighted.shortName}</span> · #{highlighted.shareRank} ·{' '}
+                  <span className="font-semibold text-navy-deep">{highlighted.share.toFixed(1)}%</span> · challenger cluster
                 </span>
               )}
             </div>
           )}
-
-          <div className="mt-auto flex items-center justify-between pt-2.5">
-            <span className="text-[9px] text-ink-secondary/80">GWP — premium, not profit</span>
-            <CardSource />
-          </div>
         </div>
 
         {/* Card 2 — Industry Snapshot (2×2 tiles) */}
-        <div className="card-surface card-interactive flex min-h-[228px] flex-col p-4">
+        <div className="card-surface card-tint-slate card-interactive flex min-h-[228px] flex-col p-4">
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-navy-primary" />
             <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-navy-primary">Industry Snapshot</span>
@@ -165,36 +175,45 @@ export function ExecutiveOverview() {
             />
             <SnapTile icon={<Percent className="h-3.5 w-3.5" />} label="Avg share" value={`${model.avgShare.toFixed(1)}%`} sub="per insurer" />
           </div>
-          <div className="mt-auto flex items-center justify-between rounded-lg bg-ice px-3 py-1.5">
+          <div
+            className="mt-auto flex items-center justify-between rounded-lg bg-ice/80 px-3 py-1.5"
+            title="Combined gross written premium — a premium metric, not profit."
+          >
             <span className="text-[10px] font-medium uppercase tracking-wide text-ink-secondary">Combined GWP</span>
             <span className="text-[12.5px] font-semibold tabular-nums text-navy-deep">
               ₹{Math.round(model.totalPremium).toLocaleString('en-IN')} Cr
             </span>
           </div>
-          <div className="mt-1.5 flex justify-end">
-            <CardSource />
-          </div>
         </div>
 
         {/* Card 3 — Market Concentration (gauge) */}
-        <div className="card-surface card-interactive flex min-h-[228px] flex-col p-4">
-          <div className="flex items-center gap-1.5">
-            <Network className="h-3.5 w-3.5 text-teal" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Market Concentration</span>
+        <div className="card-surface card-tint-teal card-interactive flex min-h-[228px] flex-col p-4">
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Network className="h-3.5 w-3.5 text-teal" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-teal">Market Concentration</span>
+            </div>
+            <span
+              className="cursor-default text-ink-secondary/70"
+              title="HHI on a 0–1 scale · Low < 0.10 · Moderate 0.10–0.25 · High > 0.25"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </span>
           </div>
           <p className="mt-1 font-display text-[16px] leading-tight" style={{ color: bandColor(concentration.band) }}>
             {concentration.bandLabel}
           </p>
           <RadialGauge value={concentration.hhi} display={concentration.hhi.toFixed(2)} caption="HHI · 0–1" band={concentration.band} />
-          <p className="-mt-1 text-center text-[11px] text-ink-secondary">
-            Top 3 players control <span className="font-semibold text-navy-deep">{concentration.top3Share.toFixed(1)}%</span> of the pool.
+          <p className="mt-auto text-center text-[10.5px] text-ink-secondary">
+            Top 3 hold <span className="font-semibold text-navy-deep">{concentration.top3Share.toFixed(1)}%</span> of the pool
           </p>
-          <p className="mt-1 text-center text-[9px] text-ink-secondary/80">Low &lt; 0.10 · Moderate 0.10–0.25 · High &gt; 0.25</p>
-          <div className="mt-auto flex justify-end pt-1">
-            <CardSource />
-          </div>
         </div>
       </section>
+
+      {/* One compact source row for the whole snapshot strip */}
+      <div className="-mt-1 flex justify-end">
+        <CardSource />
+      </div>
 
       {/* ── Peer landscape: Market Share map (left, constant) + metric
             rankings (right, toggled) ───────────────────────────────────── */}
@@ -209,31 +228,29 @@ export function ExecutiveOverview() {
           {/* LEFT — Market Share map. Always visible; never changes with the
               ranking toggle (it reads market share straight from the model). */}
           <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
-            <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <CircleDot className="h-4 w-4 text-navy-primary" />
                 <p className="font-display text-[14px] text-navy-deep">Market Share Map</p>
+                <span
+                  className="cursor-default text-ink-secondary/60"
+                  title="Circle size = market share. Navy ring = selected · gold ring = leader. Hover a circle for share & premium."
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </span>
               </div>
-              <span className="text-[10.5px] text-ink-secondary">Circle size = market share</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <InsightChip tone="slate" label={`Top 3 · ${concentration.top3Share.toFixed(1)}%`} />
+                {highlighted && !highlighted.isLeader && (
+                  <InsightChip tone="slate" label={`${highlighted.shortName} #${highlighted.shareRank}`} />
+                )}
+                {runnerUp && <InsightChip tone="gold" label={`Lead +${model.leadGap.toFixed(1)} pp`} />}
+              </div>
             </div>
 
             <MarketBubbleChart model={model} height={360} />
 
-            {/* Color legend */}
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-              {model.byShare.map((r, i) => (
-                <span key={r.id} className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
-                  <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
-                  {r.shortName}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-              <span className="text-[9px] text-ink-secondary/80">
-                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
-                <span className="font-semibold text-champagne-deep">gold</span> = leader
-              </span>
+            <div className="mt-auto flex justify-end pt-2">
               <CardSource />
             </div>
           </div>
@@ -241,22 +258,28 @@ export function ExecutiveOverview() {
           {/* RIGHT — ranked board for the toggled metric (Premium / Settlement
               / Renewal / Retention). The toggle lives in this card's header. */}
           <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
-            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+            <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <BarChart3 className="h-4 w-4 text-navy-primary" />
                 <p className="font-display text-[14px] text-navy-deep">{model.metric.label} Ranking</p>
+                <span
+                  className="cursor-default text-ink-secondary/60"
+                  title="Ranked high → low. Navy = selected · gold = leader. Secondary value shown per row."
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </span>
               </div>
               <MetricToggle value={metricId} onChange={setMetricId} />
             </div>
-            <span className="mb-2 text-[10.5px] text-ink-secondary">Ranked high → low · {metricId === 'premium' ? 'market share' : 'premium'} shown as secondary</span>
 
             <MetricRankingBars model={model} />
 
             <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-              <span className="text-[9px] text-ink-secondary/80">
-                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
-                <span className="font-semibold text-champagne-deep">gold</span> = leader
-              </span>
+              {metricLeaderName && (
+                <span className="text-[10px] text-ink-secondary">
+                  <span className="font-semibold text-navy-deep">{metricLeaderName}</span> leads on {model.metric.label.toLowerCase()}
+                </span>
+              )}
               <CardSource />
             </div>
           </div>

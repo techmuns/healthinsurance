@@ -426,9 +426,12 @@ function MainChartBlock() {
           <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
             Where is the GI premium pool shifting?
           </h2>
-          <p className="mt-1 text-[12px] text-ink-secondary">
-            Health vs Motor vs Others · {span ?? '—'} · mock
-          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-ink-secondary">
+            <span>Health · Motor · Others · {span ?? '—'}</span>
+            <span className="inline-flex items-center rounded-full bg-teal-soft px-2 py-0.5 text-[10px] font-semibold text-teal ring-1 ring-[#BFE3E1]">
+              Health mix gaining share
+            </span>
+          </div>
         </div>
         <ChartToggle value={mode} onChange={setMode} />
       </header>
