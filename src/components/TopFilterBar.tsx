@@ -92,9 +92,9 @@ export function TopFilterBar({ route }: { route?: string }) {
   const availability = resolvePeriodAvailability(company.id, company.shortName, effectiveFreq ?? period)
 
   return (
-    <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
+    <div className="sticky top-0 z-30 px-4 pt-2 sm:px-6">
       {/* Light, integrated control strip — calm and secondary to the content. */}
-      <div className="flex flex-wrap items-end gap-x-4 gap-y-2.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-4 py-2 shadow-soft backdrop-blur-md">
+      <div className="flex flex-wrap items-end gap-x-3.5 gap-y-1.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-3.5 py-1.5 shadow-soft backdrop-blur-md">
         {/* Peer group — primary lens; drives which companies appear below. */}
         <div>
           <FieldLabel hint="Universe lens — filters which insurers appear in the Company dropdown and across all charts">

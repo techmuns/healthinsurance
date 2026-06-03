@@ -18,8 +18,11 @@ const rankBadge = (focal: boolean, leader: boolean) =>
 
 export function IndustryRankTable({ model }: { model: OverviewModel }) {
   const { metric, rows, others } = model
+  // Keep the table at four columns in every view: Rank · Insurer · a reference
+  // column · the selected metric (value + bar). Premium is the reference column
+  // unless premium *is* the metric, in which case market share takes its place.
   const showPremiumCol = metric.id !== 'premium'
-  const showShareCol = metric.id !== 'share'
+  const showShareCol = metric.id === 'premium'
 
   const maxPrimary = Math.max(...rows.filter((r) => r.metricAvailable).map((r) => r.metricValue), 1)
   // Stable color index by share rank so table tones match the bubble map.

@@ -101,7 +101,15 @@ export function DashboardShell({ active, onNavigate, children }: DashboardShellP
           })}
         </div>
 
-        <main className="mx-auto w-full max-w-[1180px] flex-1 px-4 py-6 sm:px-6">
+        {/* The Industry Overview is a full-width command surface; every other
+            section stays in the calmer centered reading column. */}
+        <main
+          className={
+            baseId === 'overview'
+              ? 'w-full min-w-0 flex-1 overflow-x-hidden px-4 py-4 sm:px-6'
+              : 'mx-auto w-full max-w-[1180px] flex-1 px-4 py-6 sm:px-6'
+          }
+        >
           <div key={baseId} className="animate-fade-in">
             {children}
           </div>
