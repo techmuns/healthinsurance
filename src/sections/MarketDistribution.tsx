@@ -76,10 +76,15 @@ function curveThrough(pts: { x: number; y: number }[]): string {
   return d
 }
 
-/** Subtle one-line insight rail shared by both cards. */
-function InsightLine({ children }: { children: ReactNode }) {
+/** Subtle one-line insight rail shared by both cards. `tone="premium"` gives a
+ *  soft warm-gold tint for the Channel Mix card. */
+function InsightLine({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'premium' }) {
+  const cls =
+    tone === 'premium'
+      ? 'border-[#EAD49A] bg-[#FFF8EA] text-[#8A6A1E]'
+      : 'border-[rgba(23,43,77,0.06)] bg-[#FAFBFD] text-ink-secondary'
   return (
-    <p className="mt-3 rounded-lg border border-[rgba(23,43,77,0.06)] bg-[#FAFBFD] px-3 py-2 text-[11.5px] leading-snug text-ink-secondary">
+    <p className={`mt-3 rounded-lg border px-3 py-2 text-[11.5px] leading-snug ${cls}`}>
       {children}
     </p>
   )
@@ -294,31 +299,32 @@ const DIST_SOURCE = {
   },
 }
 
-// Stack order bottom → top. Soft, desaturated, theme-aligned tones — muted
-// navy / teal / periwinkle / ochre / slate / mist. No loud or neon fills; each
-// band reads as a gentle tinted overlay rather than a saturated colour block.
+// Stack order bottom → top. Refined, theme-aligned palette: navy agency base ·
+// teal broker/health growth · powder-blue banca · muted gold corporate agents ·
+// slate direct · mist others. Soft but clear — used at gentle per-band opacity
+// so the stack reads as layered premium tints, never harsh or muddy.
 const CH_ORDER: DistChannel[] = ['Agents', 'Brokers', 'Banca', 'Corporate Agents', 'Direct', 'Others']
-const CH_GRAD: Record<DistChannel, [string, string]> = {
-  Agents: ['#566B91', '#41557A'],
-  Brokers: ['#74B2AB', '#549A93'],
-  Banca: ['#A3B4DC', '#8398C8'],
-  'Corporate Agents': ['#DAC089', '#C9AC74'],
-  Direct: ['#B3BCC8', '#9BA6B4'],
-  Others: ['#E5E9EF', '#D6DCE4'],
-}
 const CH_SOLID: Record<DistChannel, string> = {
-  Agents: '#475A80',
-  Brokers: '#589E97',
-  Banca: '#8A9ECF',
-  'Corporate Agents': '#C9AC74',
-  Direct: '#9BA6B4',
-  Others: '#D6DCE4',
+  Agents: '#244C86',
+  Brokers: '#2AA39A',
+  Banca: '#6F93DC',
+  'Corporate Agents': '#D6A84A',
+  Direct: '#9EAABD',
+  Others: '#E6EBF2',
 }
-// White label only on the one genuinely dark band (Agents); a soft deep-ink
-// label on every lighter band keeps contrast clean without looking harsh.
+const CH_OPACITY: Record<DistChannel, number> = {
+  Agents: 0.86,
+  Brokers: 0.82,
+  Banca: 0.78,
+  'Corporate Agents': 0.78,
+  Direct: 0.7,
+  Others: 0.65,
+}
+// White labels on the dark navy/teal bands; deep-navy labels on the lighter
+// powder-blue / gold / slate / mist bands. Readable, never harsh.
 const CH_DARKBAND: Record<DistChannel, boolean> = {
   Agents: true,
-  Brokers: false,
+  Brokers: true,
   Banca: false,
   'Corporate Agents': false,
   Direct: false,
@@ -374,14 +380,8 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
     <div ref={ref} className="w-full" style={{ height: H }}>
       {w > 0 && n >= 2 && (
         <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
-          <defs>
-            {channels.map((ch) => (
-              <linearGradient key={ch} id={`mix-${ch.replace(/\s+/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={CH_GRAD[ch][0]} />
-                <stop offset="100%" stopColor={CH_GRAD[ch][1]} />
-              </linearGradient>
-            ))}
-          </defs>
+          {/* very soft plot-area tint behind the translucent bands */}
+          <rect x={padL} y={padT} width={plotW} height={plotH} rx={6} fill="#FAFBFD" />
 
           {/* x-axis year labels */}
           {rows.map((r, i) => (
@@ -397,9 +397,12 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
               <path
                 key={ch}
                 d={bandPath(ch)}
-                fill={`url(#mix-${ch.replace(/\s+/g, '')})`}
-                opacity={dim ? 0.3 : 0.94}
-                style={{ transition: 'opacity 0.25s ease', filter: 'drop-shadow(0 1px 2px rgba(23,43,77,0.05))' }}
+                fill={CH_SOLID[ch]}
+                fillOpacity={dim ? 0.28 : CH_OPACITY[ch]}
+                stroke="#FFFFFF"
+                strokeOpacity={0.55}
+                strokeWidth={1}
+                style={{ transition: 'fill-opacity 0.25s ease' }}
               >
                 <title>{`${ch} · ${last ? (((numOrNull(last[ch]) ?? 0) / totLast) * 100).toFixed(1) : '—'}%`}</title>
               </path>
@@ -422,7 +425,7 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
                   textAnchor={i === 0 ? 'start' : 'middle'}
                   fontSize={10.5}
                   fontWeight={600}
-                  fill={CH_DARKBAND[ch] ? '#FFFFFF' : '#3A4862'}
+                  fill={CH_DARKBAND[ch] ? '#FFFFFF' : '#24416E'}
                   opacity={hovered != null && hovered !== ch ? 0.3 : 1}
                   style={{ fontVariantNumeric: 'tabular-nums', transition: 'opacity 0.25s ease' }}
                 >
@@ -486,7 +489,7 @@ function ChannelMixCard() {
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
           <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} channel mix over time</h2>
           {lever && (
-            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'rgba(84,154,147,0.1)', color: '#467E78', boxShadow: 'inset 0 0 0 1px rgba(84,154,147,0.22)' }}>
+            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: '#EAF7F5', color: '#227C76', boxShadow: 'inset 0 0 0 1px #B8DEDA' }}>
               {lever.ch}: growth lever
             </span>
           )}
@@ -538,9 +541,9 @@ function ChannelMixCard() {
       )}
 
       {rows.length >= 2 && lever && (
-        <InsightLine>
+        <InsightLine tone="premium">
           <strong className="font-semibold text-navy-deep">{lever.ch}</strong> share rose to{' '}
-          <strong className="font-semibold" style={{ color: '#467E78' }}>{lever.latest.toFixed(1)}%</strong> in {last?.period}, the key driver of channel growth.
+          <strong className="font-semibold" style={{ color: '#B7831F' }}>{lever.latest.toFixed(1)}%</strong> in {last?.period}, the key driver of channel growth.
         </InsightLine>
       )}
 
