@@ -23,7 +23,7 @@ export function SectionTabs({
   onSelect: (id: string) => void
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-soft-border">
+    <div className="inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(23,43,77,0.08)] bg-white/70 p-1 shadow-soft backdrop-blur">
       {tabs.map((t) => {
         const on = t.id === active
         return (
@@ -33,14 +33,16 @@ export function SectionTabs({
             onClick={() => onSelect(t.id)}
             aria-current={on ? 'page' : undefined}
             className={[
-              'relative inline-flex items-center gap-1.5 px-3.5 py-2 text-[13px] font-semibold transition-colors',
-              on ? 'text-navy-deep' : 'text-ink-secondary hover:text-navy-primary',
+              'relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ease-out',
+              on
+                ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-[0_4px_12px_rgba(23,43,77,0.18)]'
+                : 'text-ink-secondary hover:bg-ice hover:text-navy-primary',
             ].join(' ')}
             title={t.locked ? 'Pending data integration' : undefined}
           >
+            {on && <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_5px_rgba(182,139,58,0.7)]" />}
             {t.label}
-            {t.locked && <Lock className="h-3 w-3 text-ink-secondary/70" />}
-            {on && <span className="absolute inset-x-2.5 -bottom-px h-[2.5px] rounded-full bg-champagne" />}
+            {t.locked && <Lock className="h-3 w-3 opacity-70" />}
           </button>
         )
       })}

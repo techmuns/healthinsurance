@@ -77,8 +77,13 @@ function NextControl({ section, onGo }: { section?: SectionDef; onGo: (navId: st
 export default function App() {
   const [activeId, setActiveId] = useState(SECTIONS[0].navId)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // Section-transition indicator: a soft navy blob naming the section being
+  // scrolled toward; fades out once the next section settles.
+  const [transit, setTransit] = useState<{ label: string; dir: 1 | -1; visible: boolean }>({ label: '', dir: 1, visible: false })
   const scrollRef = useRef<HTMLElement>(null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
+  const activeIdRef = useRef(activeId)
+  activeIdRef.current = activeId
 
   // Update the active tab as sections cross the viewport's vertical centre.
   useEffect(() => {
@@ -100,6 +105,40 @@ export default function App() {
       if (el) obs.observe(el)
     })
     return () => obs.disconnect()
+  }, [])
+
+  // Show the transition blob while scrolling toward the adjacent section.
+  useEffect(() => {
+    const root = scrollRef.current
+    if (!root) return
+    let lastY = root.scrollTop
+    let ticking = false
+    let hideTimer: ReturnType<typeof setTimeout> | undefined
+    const update = () => {
+      ticking = false
+      const y = root.scrollTop
+      const dir: 1 | -1 = y >= lastY ? 1 : -1
+      lastY = y
+      const activeIdx = SECTIONS.findIndex((s) => s.navId === activeIdRef.current)
+      const nextIdx = activeIdx + dir
+      if (nextIdx >= 0 && nextIdx < SECTIONS.length) {
+        const label = SECTIONS[nextIdx].label
+        setTransit((t) => (t.visible && t.label === label && t.dir === dir ? t : { label, dir, visible: true }))
+      }
+      clearTimeout(hideTimer)
+      hideTimer = setTimeout(() => setTransit((t) => ({ ...t, visible: false })), 240)
+    }
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true
+        requestAnimationFrame(update)
+      }
+    }
+    root.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      root.removeEventListener('scroll', onScroll)
+      clearTimeout(hideTimer)
+    }
   }, [])
 
   const scrollTo = (navId: string) => {
@@ -152,6 +191,21 @@ export default function App() {
 
         {/* Secondary navigation drawer (opened from the menu button) */}
         <NavDrawer open={drawerOpen} activeId={activeId} onClose={() => setDrawerOpen(false)} onNavigate={goFromNav} />
+
+        {/* Section-transition blob — soft navy glow naming the next section */}
+        <div
+          aria-hidden={!transit.visible}
+          className={[
+            'pointer-events-none fixed bottom-7 left-1/2 z-50 -translate-x-1/2 transition-all duration-300 ease-out',
+            transit.visible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0',
+          ].join(' ')}
+        >
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-br from-[#2A4680] to-[#1B3260] px-4 py-2 text-[12.5px] font-medium text-white shadow-[0_12px_34px_rgba(23,43,77,0.4)] backdrop-blur-md">
+            {transit.dir === 1 ? <ArrowDown className="h-3.5 w-3.5 text-champagne" /> : <ArrowUp className="h-3.5 w-3.5 text-champagne" />}
+            <span className="text-white/70">{transit.dir === 1 ? 'Next' : 'Back to'}</span>
+            <span className="font-semibold">{transit.label}</span>
+          </div>
+        </div>
       </div>
     </FilterProvider>
   )

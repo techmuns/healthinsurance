@@ -243,6 +243,27 @@ function netWorthFor(companyId: string, p: BasisPeriod): number | null {
   return c.netWorth[(p.startsWith('Q4') ? p.slice(2) : p) as BasisPeriod] ?? null
 }
 
+/** Net earned premium (₹ Cr) for a company + period (basis-neutral premium). */
+export function getBasisNep(companyId: string, period: BasisPeriod): number | null {
+  return NEP[companyId]?.[period] ?? null
+}
+
+/** Statutory solvency ratio (x) for a company + period. Always statutory. */
+export function getBasisSolvency(companyId: string, period: BasisPeriod): number | null {
+  return SOLVENCY[companyId]?.[period] ?? null
+}
+
+/** Statutory RoE (%) = IGAAP PAT ÷ reported net worth. There is no IFRS equity
+ *  to compute an IFRS RoE cleanly, so this statutory figure is the only RoE. */
+export function getStatutoryRoe(companyId: string, period: BasisPeriod): number | null {
+  const c = PROFIT_BY_BASIS[companyId]
+  if (!c) return null
+  const pat = c.igaap[period]?.pat
+  const nw = netWorthFor(companyId, period)
+  if (pat == null || nw == null || nw === 0) return null
+  return (pat / nw) * 100
+}
+
 /** Annual snapshot fallback (non-SAHI companies) — IGAAP/statutory only. */
 export interface FallbackInput {
   roe: number | null
