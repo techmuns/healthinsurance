@@ -16,6 +16,13 @@ function hexA(hex: string, a: number): string {
 const NAVY = '#27457E'
 const GOLD = '#B68B3A'
 
+/** Compact, one-line metric value — premium in ₹ Cr abbreviated to k Cr so it
+ *  never wraps in the narrow column; ratios use the metric's own formatter. */
+function fmtCompact(m: OverviewMetricDef, v: number): string {
+  if (m.unit === '₹ Cr') return v >= 1000 ? `₹${(v / 1000).toFixed(1)}k Cr` : `₹${Math.round(v)} Cr`
+  return m.format(v)
+}
+
 export interface MetricCell {
   value: number
   available: boolean
@@ -63,11 +70,11 @@ export function MetricRankingTable({
       <table className="w-full min-w-[420px] border-collapse text-[11px]">
         <thead>
           <tr className="bg-[#F4F7FC] text-[8.5px] font-semibold uppercase tracking-[0.04em] text-ink-secondary">
-            <th className="rounded-l-lg px-1.5 py-2 text-center font-semibold">#</th>
-            <th className="px-1.5 py-2 text-left font-semibold">Insurer</th>
-            <th className="px-1.5 py-2 text-left font-semibold">Type</th>
+            <th className="rounded-l-lg px-1 py-2 text-center font-semibold">#</th>
+            <th className="px-1 py-2 text-left font-semibold">Insurer</th>
+            <th className="px-1 py-2 text-left font-semibold">Type</th>
             {metrics.map((m) => (
-              <th key={m.id} className="px-1.5 py-2 text-right font-semibold last:rounded-r-lg last:pr-2.5">
+              <th key={m.id} className="px-1 py-2 text-right font-semibold last:rounded-r-lg last:pr-2.5">
                 {m.label}
               </th>
             ))}
@@ -82,10 +89,10 @@ export function MetricRankingTable({
                 className="border-b border-soft-border/60 transition-colors last:border-0 hover:bg-ice/50"
                 style={rowBg ? { background: rowBg } : undefined}
               >
-                <td className="px-1.5 py-2.5 text-center align-middle">
+                <td className="px-1 py-2.5 text-center align-middle">
                   <span className="font-display text-[12.5px] font-semibold tabular-nums text-navy-deep">{r.rank}</span>
                 </td>
-                <td className="px-1.5 py-2.5 align-middle">
+                <td className="px-1 py-2.5 align-middle">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.color }} />
                     <span className={`truncate text-[11.5px] font-semibold ${r.focal ? 'text-navy-deep' : 'text-ink-primary'}`}>{r.shortName}</span>
@@ -97,14 +104,14 @@ export function MetricRankingTable({
                     )}
                   </div>
                 </td>
-                <td className="px-1.5 py-2.5 align-middle text-[10px] text-ink-secondary">{r.listed ? 'Listed' : 'Unlisted'}</td>
+                <td className="px-1 py-2.5 align-middle text-[10px] text-ink-secondary">{r.listed ? 'Listed' : 'Unlisted'}</td>
                 {metrics.map((m) => {
                   const c = r.cells[m.id]
                   const isBest = bestId.get(m.id) === r.id
                   return (
-                    <td key={m.id} className="px-1.5 py-2.5 text-right align-middle tabular-nums last:pr-2.5">
+                    <td key={m.id} className="whitespace-nowrap px-1 py-2.5 text-right align-middle tabular-nums last:pr-2.5">
                       {c?.available ? (
-                        <span className={isBest ? 'font-semibold text-teal' : 'font-medium text-navy-deep'}>{m.format(c.value)}</span>
+                        <span className={isBest ? 'font-semibold text-teal' : 'font-medium text-navy-deep'}>{fmtCompact(m, c.value)}</span>
                       ) : (
                         <span className="text-ink-secondary/40">n/a</span>
                       )}
