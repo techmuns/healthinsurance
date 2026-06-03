@@ -1,22 +1,18 @@
-import { useState } from 'react'
 import { ModuleCard } from '@/components/ModuleCard'
-import { DataEmptyState } from '@/components/DataEmptyState'
+import { LockedPanel, LockedControl } from '@/components/LockedPanel'
 import { VerdictStrip } from '@/components/VerdictStrip'
-import { SegmentedControl } from '@/components/SegmentedControl'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyMaster } from '@/lib/dataLayer'
-
-type View = 'Trend' | 'Change' | 'Table'
 
 /**
  * Ownership section.
  *
- * We don't yet pull shareholding-pattern data from NSE / BSE / company IR.
- * Rather than render mock holder splits, the section surfaces an explicit
- * unavailable state until ingest-ownership.ts pulls the live PDFs.
+ * We don't yet pull shareholding-pattern data from NSE / BSE / company IR, so
+ * the whole section is LOCKED (rather than rendering mock holder splits): the
+ * View control is disabled and a premium lock panel stands in until
+ * ingest-ownership.ts pulls the live PDFs.
  */
 export function Ownership() {
-  const [view, setView] = useState<View>('Trend')
   const company = useActiveCompany()
   // Listed status is data-driven from company-master — no hardcoded id list, so
   // newly added insurers carry the correct listed/unlisted copy automatically.
@@ -26,9 +22,9 @@ export function Ownership() {
     <div className="space-y-6">
       <VerdictStrip
         eyebrow="Ownership Signal"
-        verdict="Awaiting filings ingestion"
+        verdict="Locked · awaiting filings ingestion"
         tone="navy"
-        badge="Pending"
+        badge="Locked"
         summary={`Shareholding pattern for ${company.shortName} not yet ingested. Quarterly shareholding PDFs will populate this section once ingest-ownership.ts runs against NSE / BSE / company-IR filings.`}
         source="Unavailable"
         sourceFrequency="Quarterly"
@@ -43,22 +39,22 @@ export function Ownership() {
         question="Who owns the company, and are serious investors increasing or reducing exposure?"
         title={`${company.shortName} · Ownership Trend`}
         icon="ownership"
-        controls={
-          <SegmentedControl<View> label="View" options={['Trend', 'Change', 'Table'] as View[]} value={view} onChange={setView} size="sm" />
-        }
+        controls={<LockedControl label="View" options={['Trend', 'Change', 'Table']} />}
       >
         {listed ? (
-          <DataEmptyState
-            kind="pending"
+          <LockedPanel
+            embedded
             height={280}
-            title="Shareholding data pending"
-            body={`${company.shortName} is listed — the next ingest-ownership.ts run pulls the quarterly shareholding-pattern PDF from NSE corporate filings and populates this section.`}
+            title="Shareholding data locked"
+            message={`${company.shortName} is listed — the next ingest-ownership.ts run pulls the quarterly shareholding-pattern PDF from NSE corporate filings and unlocks this section.`}
           />
         ) : (
-          <DataEmptyState
-            kind="not-disclosed"
+          <LockedPanel
+            embedded
             height={280}
-            body={`${company.shortName} is unlisted — the quarterly shareholding pattern is not publicly disclosed for unlisted insurers.`}
+            title="Not publicly disclosed"
+            message={`${company.shortName} is unlisted — the quarterly shareholding pattern is not publicly disclosed for unlisted insurers.`}
+            pill="Locked · not disclosed"
           />
         )}
       </ModuleCard>
