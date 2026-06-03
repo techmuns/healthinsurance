@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, type ComponentType } from 'react'
-import { ArrowDown, ArrowUp } from 'lucide-react'
+import { useState, type ComponentType } from 'react'
 import { FilterProvider } from '@/state/filters'
 import { TopTabBar, type TopTab } from '@/components/TopTabBar'
-import { NavDrawer } from '@/components/NavDrawer'
+import { Sidebar } from '@/components/Sidebar'
 import { TopFilterBar } from '@/components/TopFilterBar'
 import { ExecutiveOverview } from '@/sections/ExecutiveOverview'
 import { MarketDistribution } from '@/sections/MarketDistribution'
@@ -22,8 +21,8 @@ interface SectionDef {
   hasSub?: boolean
 }
 
-// The six full-screen notebook pages, in scroll order. `navId` matches the
-// nav/route id (so the filter bar stays route-aware); `anchor` is the DOM id.
+// The six top-level pages. Exactly one is rendered at a time — navigation is by
+// the top tab bar or the left sidebar, never by scrolling.
 const SECTIONS: SectionDef[] = [
   { navId: 'overview', anchor: 'executive-overview', label: 'Executive Overview', Comp: ExecutiveOverview },
   { navId: 'market-distribution', anchor: 'market-distribution', label: 'Market & Distribution', Comp: MarketDistribution },
@@ -35,8 +34,7 @@ const SECTIONS: SectionDef[] = [
 
 const TABS: TopTab[] = SECTIONS.map(({ navId, anchor, label }) => ({ navId, anchor, label }))
 
-/** Wraps a section that manages internal tabs so its routing stays local
- *  (it no longer drives the global route now that every page is mounted). */
+/** Wraps a section that manages internal tabs so its routing stays local. */
 function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
   const [sub, setSub] = useState<string | undefined>(undefined)
   const onNavigate = (route: string) => {
@@ -46,174 +44,67 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
   return <Comp onNavigate={onNavigate} sub={sub} />
 }
 
-/** Subtle bottom-right page control — scrolls to the next page (or back to top
- *  on the last one). */
-function NextControl({ section, onGo }: { section?: SectionDef; onGo: (navId: string) => void }) {
-  if (!section) {
-    return (
-      <button
-        type="button"
-        onClick={() => onGo(SECTIONS[0].navId)}
-        className="group inline-flex items-center gap-1.5 rounded-full border border-[rgba(23,43,77,0.1)] bg-white/70 px-3 py-1.5 text-[11.5px] font-medium text-ink-secondary shadow-soft backdrop-blur transition-all hover:border-muted-blue hover:text-navy-primary"
-      >
-        Back to top
-        <ArrowUp className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5" />
-      </button>
-    )
-  }
+/** Renders just the active section — a hard page swap (no scroll transition). */
+function SectionRenderer({ section }: { section: SectionDef }) {
+  const Comp = section.Comp
   return (
-    <button
-      type="button"
-      onClick={() => onGo(section.navId)}
-      className="group inline-flex items-center gap-1.5 rounded-full border border-[rgba(23,43,77,0.1)] bg-white/70 px-3 py-1.5 text-[11.5px] font-medium text-ink-secondary shadow-soft backdrop-blur transition-all hover:border-muted-blue hover:text-navy-primary"
-    >
-      <span className="text-ink-secondary/70">Next:</span>
-      <span className="font-semibold text-navy-deep">{section.label}</span>
-      <ArrowDown className="h-3.5 w-3.5 transition-transform group-hover:translate-y-0.5" />
-    </button>
+    <div key={section.navId} className="w-full animate-page-enter">
+      {section.hasSub ? <StatefulSection Comp={Comp} /> : <Comp />}
+    </div>
   )
 }
 
 export default function App() {
   const [activeId, setActiveId] = useState(SECTIONS[0].navId)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  // Section-transition indicator: a soft navy blob naming the section being
-  // scrolled toward; fades out once the next section settles.
-  const [transit, setTransit] = useState<{ label: string; dir: 1 | -1; visible: boolean }>({ label: '', dir: 1, visible: false })
-  const scrollRef = useRef<HTMLElement>(null)
-  const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
-  const activeIdRef = useRef(activeId)
-  activeIdRef.current = activeId
+  const [navOpen, setNavOpen] = useState(false)
 
-  // Update the active tab as sections cross the viewport's vertical centre.
-  useEffect(() => {
-    const root = scrollRef.current
-    if (!root) return
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            const navId = (e.target as HTMLElement).dataset.navid
-            if (navId) setActiveId(navId)
-          }
-        }
-      },
-      { root, rootMargin: '-48% 0px -48% 0px', threshold: 0 },
-    )
-    SECTIONS.forEach((s) => {
-      const el = sectionRefs.current[s.navId]
-      if (el) obs.observe(el)
-    })
-    return () => obs.disconnect()
-  }, [])
+  const active = SECTIONS.find((s) => s.navId === activeId) ?? SECTIONS[0]
 
-  // Show the transition blob while scrolling toward the adjacent section.
-  useEffect(() => {
-    const root = scrollRef.current
-    if (!root) return
-    let lastY = root.scrollTop
-    let ticking = false
-    let hideTimer: ReturnType<typeof setTimeout> | undefined
-    const update = () => {
-      ticking = false
-      const y = root.scrollTop
-      const dir: 1 | -1 = y >= lastY ? 1 : -1
-      lastY = y
-      const activeIdx = SECTIONS.findIndex((s) => s.navId === activeIdRef.current)
-      const nextIdx = activeIdx + dir
-      if (nextIdx >= 0 && nextIdx < SECTIONS.length) {
-        const label = SECTIONS[nextIdx].label
-        setTransit((t) => (t.visible && t.label === label && t.dir === dir ? t : { label, dir, visible: true }))
-      }
-      clearTimeout(hideTimer)
-      hideTimer = setTimeout(() => setTransit((t) => ({ ...t, visible: false })), 320)
-    }
-    const onScroll = () => {
-      if (!ticking) {
-        ticking = true
-        requestAnimationFrame(update)
-      }
-    }
-    root.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      root.removeEventListener('scroll', onScroll)
-      clearTimeout(hideTimer)
-    }
-  }, [])
-
-  const scrollTo = (navId: string) => {
-    sectionRefs.current[navId]?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const goFromNav = (navId: string) => {
-    setDrawerOpen(false)
-    scrollTo(navId)
+  // Single source of truth for the active section — shared by tabs + sidebar.
+  // No scrolling, no scrollIntoView; the chosen section is rendered directly.
+  const select = (navId: string) => {
+    setActiveId(navId)
+    setNavOpen(false)
   }
 
   return (
     <FilterProvider>
-      <div className="flex h-screen flex-col overflow-hidden">
-        {/* Sticky header: compact notebook tabs + global filter strip */}
-        <header className="shrink-0">
-          <TopTabBar tabs={TABS} activeId={activeId} onSelect={scrollTo} onOpenMenu={() => setDrawerOpen(true)} />
-          <TopFilterBar route={activeId} />
-        </header>
-
-        {/* Full-width scroll-snap notebook — each section is a full-screen page */}
-        <main
-          ref={scrollRef}
-          className="relative min-h-0 flex-1 overflow-y-auto scroll-smooth lg:snap-y lg:snap-proximity"
-        >
-          {SECTIONS.map((s, i) => {
-            const Comp = s.Comp
-            return (
-              <section
-                key={s.navId}
-                id={s.anchor}
-                data-navid={s.navId}
-                ref={(el) => (sectionRefs.current[s.navId] = el)}
-                className="relative flex min-h-full w-full flex-col px-4 py-5 sm:px-6 lg:px-8 lg:snap-start lg:snap-always"
-              >
-                <div className="w-full animate-fade-in">
-                  {s.hasSub ? <StatefulSection Comp={Comp} /> : <Comp />}
-                </div>
-                <div className="mt-auto flex justify-end pt-6">
-                  <NextControl section={SECTIONS[i + 1]} onGo={scrollTo} />
-                </div>
-              </section>
-            )
-          })}
-
-          <footer className="border-t border-soft-border px-6 py-4 text-center text-[11px] text-ink-secondary">
-            Insurance Investment Dashboard · Headline figures sourced from company filings &amp; IRDAI disclosures · Some quarterly splits illustrative
-          </footer>
-        </main>
-
-        {/* Secondary navigation drawer (opened from the menu button) */}
-        <NavDrawer open={drawerOpen} activeId={activeId} onClose={() => setDrawerOpen(false)} onNavigate={goFromNav} />
-
-        {/* Section transition — a blue shadow that drags up from the bottom edge
-            plus a labelled blob, so a page change is unmistakably felt. */}
-        <div
-          aria-hidden
-          className={[
-            'pointer-events-none fixed inset-x-0 bottom-0 z-40 h-48 transition-all duration-300 ease-out',
-            transit.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0',
-          ].join(' ')}
-          style={{ background: 'radial-gradient(125% 100% at 50% 125%, rgba(39,69,126,0.30), rgba(49,90,169,0.12) 42%, transparent 72%)' }}
+      <div className="flex h-screen overflow-hidden">
+        {/* Lean collapsible left navigation (slim rail + slide-out panel) */}
+        <Sidebar
+          activeId={activeId}
+          open={navOpen}
+          onOpen={() => setNavOpen(true)}
+          onClose={() => setNavOpen(false)}
+          onNavigate={select}
         />
-        <div
-          aria-hidden={!transit.visible}
-          className={[
-            'pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 transition-all duration-300 ease-out',
-            transit.visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-8 scale-95 opacity-0',
-          ].join(' ')}
-        >
-          <div className="flex items-center gap-2.5 rounded-full border border-white/20 bg-gradient-to-br from-[#3358A0] to-[#1B3260] px-5 py-2.5 text-[13px] font-medium text-white shadow-[0_0_0_6px_rgba(39,69,126,0.12),0_20px_48px_rgba(23,43,77,0.5)] backdrop-blur-md">
-            {transit.dir === 1 ? <ArrowDown className="h-4 w-4 text-champagne" /> : <ArrowUp className="h-4 w-4 text-champagne" />}
-            <span className="text-white/70">{transit.dir === 1 ? 'Next' : 'Back to'}</span>
-            <span className="font-semibold tracking-tight">{transit.label}</span>
-          </div>
+
+        {/* Main application column */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="shrink-0">
+            <TopTabBar tabs={TABS} activeId={activeId} onSelect={select} onOpenMenu={() => setNavOpen(true)} />
+            <TopFilterBar route={activeId} />
+          </header>
+
+          {/* Only this content area scrolls — the shell stays fixed like an app. */}
+          <main className="relative min-h-0 flex-1 overflow-y-auto scroll-thin">
+            {/* Ambient colour-psychology field: navy depth, a teal live-signal
+                glow, a soft gold premium strip. Subtle, behind the content. */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+              <div className="absolute -left-28 top-6 h-72 w-72 rounded-full bg-[#27457E] opacity-[0.05] blur-3xl" />
+              <div className="absolute right-[-7rem] top-1/3 h-80 w-80 rounded-full bg-[#168E8E] opacity-[0.045] blur-3xl" />
+              <div className="absolute bottom-[-5rem] left-1/3 h-64 w-72 rounded-full bg-[#B68B3A] opacity-[0.04] blur-3xl" />
+              <div className="absolute right-1/4 top-2 h-px w-1/3 bg-gradient-to-r from-transparent via-[#B68B3A]/20 to-transparent" />
+            </div>
+
+            <div className="relative z-[1] flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-8">
+              <SectionRenderer section={active} />
+
+              <footer className="mt-auto border-t border-soft-border pt-4 text-center text-[11px] text-ink-secondary">
+                Insurance Investment Dashboard · Headline figures sourced from company filings &amp; IRDAI disclosures · Some quarterly splits illustrative
+              </footer>
+            </div>
+          </main>
         </div>
       </div>
     </FilterProvider>
