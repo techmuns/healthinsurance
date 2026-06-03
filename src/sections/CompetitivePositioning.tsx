@@ -112,14 +112,13 @@ function SummaryCard({ icon, label, cell, explain }: { icon: 'growth' | 'profit'
 }
 
 // ── Heatmap ─────────────────────────────────────────────────────────────────
-function HeatCell({ cell, focal, onPick }: { cell: Cell; focal: boolean; onPick: (k: string) => void }) {
+function HeatCell({ cell, onPick }: { cell: Cell; onPick: (k: string) => void }) {
   const t = TONE[cell.tone]
   const isNA = cell.value == null
   const diff = fmtDiff(cell)
-  // Gold emphasis follows the reference: the selected company's whole row plus
-  // the best value in each column. Everything else stays a calm, softly-bordered
-  // pastel tile — never a loud block.
-  const highlight = !isNA && (focal || cell.best)
+  // Exactly one gold ring per metric column — the single best value (rank 1).
+  // Everything else stays a calm, softly-bordered pastel tile, never a loud block.
+  const highlight = !isNA && cell.best
   const title = isNA
     ? `${cell.metric.label}: not disclosed for this peer`
     : `${cell.metric.label} · Rank ${cell.rank} of ${cell.count}${diff ? ` · ${diff} vs peer median` : ''}`
@@ -129,7 +128,7 @@ function HeatCell({ cell, focal, onPick }: { cell: Cell; focal: boolean; onPick:
         type="button"
         title={title}
         onClick={() => onPick(cell.metric.key)}
-        className="relative flex min-h-[54px] w-full flex-col items-center justify-center rounded-[11px] px-2.5 py-2 text-center transition duration-200 hover:brightness-[0.985]"
+        className="relative flex min-h-[54px] w-full items-center justify-center rounded-[11px] px-2.5 py-2 text-center transition duration-200 hover:brightness-[0.985]"
         style={{
           background: t.bg,
           boxShadow: highlight
@@ -141,7 +140,7 @@ function HeatCell({ cell, focal, onPick }: { cell: Cell; focal: boolean; onPick:
           <span
             className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full"
             style={{ background: GOLD, boxShadow: `0 0 0 2px ${hexA(GOLD, 0.22)}` }}
-            title={cell.best ? 'Best in column' : 'Selected company'}
+            title="Best in column"
           />
         )}
         {isNA ? (
@@ -149,10 +148,7 @@ function HeatCell({ cell, focal, onPick }: { cell: Cell; focal: boolean; onPick:
             —
           </span>
         ) : (
-          <>
-            <span className="font-display text-[15px] leading-none" style={{ color: t.fg }}>{fmtValue(cell)}</span>
-            <span className="mt-1 text-[9px] font-medium uppercase tracking-wide" style={{ color: hexA(t.fg, 0.6) }}>Rank {cell.rank}</span>
-          </>
+          <span className="font-display text-[15px] leading-none" style={{ color: t.fg }}>{fmtValue(cell)}</span>
         )}
       </button>
     </td>
@@ -206,7 +202,7 @@ function HeatmapScorecard({ rows, metrics, activeKey, onPick }: { rows: ScoreRow
               {groups.map((g, gi) => (
                 <Fragment key={g.group}>
                   {g.items.map((m) => (
-                    <HeatCell key={m.key} cell={r.cells[m.key]} focal={r.focal} onPick={onPick} />
+                    <HeatCell key={m.key} cell={r.cells[m.key]} onPick={onPick} />
                   ))}
                   {gi < groups.length - 1 && <td className="w-5" aria-hidden />}
                 </Fragment>
@@ -236,7 +232,7 @@ function Legend() {
           {i.label}
         </span>
       ))}
-      <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full" style={{ background: GOLD }} /> selected · best in column</span>
+      <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full" style={{ background: GOLD }} /> best in column</span>
     </div>
   )
 }
