@@ -87,14 +87,12 @@ export function ExecutiveOverview() {
     )
   }
 
-  // The left card is a premium-scaled market map for share/premium, and a
-  // ranked bar chart for the tightly-clustered quality ratios.
+  // Market Share is a packed-bubble dominance map (circle size = share); every
+  // other metric is a ranked horizontal bar board.
   const isBubble = model.metric.chartKind === 'bubble'
-  const leftTitle = isBubble ? 'Market Map' : `${model.metric.label} Ranking`
+  const leftTitle = isBubble ? 'Market Share Map' : `${model.metric.label} Ranking`
   const leftCaption = isBubble
-    ? model.metric.id === 'premium'
-      ? 'Bubble size = premium'
-      : 'Bubble size = market share'
+    ? 'Circle size = market share · larger = more dominant'
     : 'Ranked high → low · premium shown as secondary'
   const LeftIcon = isBubble ? CircleDot : BarChart3
 
