@@ -28,8 +28,8 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/60 px-4 py-10 text-center text-sm text-ink-secondary">
-        Promise tracking is not wired for {companyName} in this mock dataset.
+      <div className="rounded-xl2 border border-dashed border-[#EFE2C3] bg-gold-soft/45 px-4 py-10 text-center text-sm text-ink-secondary">
+        Promise tracking for {companyName} is not connected yet — source mapped, ingestion not complete.
       </div>
     )
   }
@@ -72,7 +72,9 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
               <th className="px-3 py-2.5 font-semibold">Date</th>
               <th className="px-3 py-2.5 font-semibold">Metric</th>
               <th className="px-3 py-2.5 font-semibold">Target</th>
-              <th className="px-3 py-2.5 font-semibold">Current</th>
+              <th className="px-3 py-2.5 font-semibold">
+                Current<span className="ml-0.5 align-top text-[8px] font-bold text-gold" title="Indicative — anchored to audited FY25 disclosures + management commentary; source-backed feed pending">▲</span>
+              </th>
               <th className="px-3 py-2.5 font-semibold">Status</th>
               <th className="px-3 py-2.5 font-semibold">Source</th>
             </tr>
@@ -97,6 +99,14 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
           </tbody>
         </table>
       </div>
+      {/* Honest framing: the "Current" column is not a source-pulled feed yet. */}
+      <p className="flex items-start gap-1.5 text-[10.5px] leading-snug text-ink-secondary">
+        <span className="mt-px font-bold text-gold">▲</span>
+        <span>
+          <span className="font-semibold text-navy-deep">Current values are indicative.</span> They are anchored to {companyName}&apos;s audited FY25
+          disclosures and management commentary, not yet pulled from a source-backed feed — promises, targets, dates and sources are as stated by management.
+        </span>
+      </p>
     </div>
   )
 }

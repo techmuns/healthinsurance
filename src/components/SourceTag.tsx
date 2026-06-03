@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { DataStatusPill, type DataStatus } from './DataStatusPill'
 
 // ---------------------------------------------------------------------------
 //  SourceTag — small, premium source indicator placed at the corner of every
@@ -43,6 +44,9 @@ export type SourceLabel =
 
 export type SourceConfidence = 'high' | 'medium' | 'low' | 'pending'
 
+/** Reporting cadence of the underlying source. */
+export type SourceFrequency = 'Annual' | 'Quarterly' | 'Monthly' | 'Event-based' | 'Point-in-time'
+
 export interface SourceProvenance {
   source_name?: string
   source_url?: string
@@ -53,6 +57,10 @@ export interface SourceTagProps {
   source: SourceLabel | string
   /** Optional period suffix, e.g. "FY26" or "Q4 FY25". */
   period?: string
+  /** Reporting cadence — shown inline as a quiet chip when set. */
+  frequency?: SourceFrequency
+  /** Honest data state — shown as a small pill in the hover popover. */
+  status?: DataStatus
   confidence?: SourceConfidence
   provenance?: SourceProvenance
   /** Popover anchor — defaults to right; switch to "left" for left-aligned tags. */
@@ -91,6 +99,8 @@ function linkKind(url: string): string {
 export function SourceTag({
   source,
   period,
+  frequency,
+  status,
   confidence = 'high',
   provenance,
   align = 'right',
@@ -116,6 +126,12 @@ export function SourceTag({
         <>
           <span aria-hidden className="text-ink-secondary/50">·</span>
           <span>{period}</span>
+        </>
+      )}
+      {frequency && (
+        <>
+          <span aria-hidden className="text-ink-secondary/50">·</span>
+          <span className="font-medium text-muted-blue/90">{frequency}</span>
         </>
       )}
       {url && <ExternalLink className="ml-0.5 h-3 w-3 shrink-0 text-ink-secondary/55 transition-colors group-hover:text-muted-blue" aria-hidden />}
@@ -147,6 +163,12 @@ export function SourceTag({
           </>
         )}
       </span>
+      {(status || frequency) && (
+        <span className="mt-2 flex flex-wrap items-center gap-2">
+          {status && <DataStatusPill status={status} />}
+          {frequency && <span className="text-[10px] font-medium text-ink-secondary">{frequency} cadence</span>}
+        </span>
+      )}
       {url && (
         <span className="mt-2 flex items-center gap-1 border-t border-soft-border pt-2 text-[9.5px] font-medium italic text-ink-secondary/80">
           <ExternalLink className="h-2.5 w-2.5" aria-hidden />

@@ -1,5 +1,5 @@
-import { Database } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
+import { DataEmptyState } from '@/components/DataEmptyState'
 import { PromiseTracker } from '@/components/PromiseTracker'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { InvestorRead } from '@/components/InvestorRead'
@@ -27,6 +27,8 @@ export function ManagementEvents() {
         badge="Partial"
         summary={`Promise tracker compares ${company.shortName}'s public guidance to its FY25 audited disclosures. Event feed and management commentary blocks are pending the ingest-management-events.ts ingestion run.`}
         source={promises.length > 0 ? 'Company filing' : 'Unavailable'}
+        sourceFrequency="Event-based"
+        sourceStatus={promises.length > 0 ? 'available' : 'pending'}
         sourceProvenance={{
           source_name: 'Guidance from earnings calls + audited FY25 metrics from company press releases',
           source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q4-FY-2025.pdf',
@@ -41,18 +43,12 @@ export function ManagementEvents() {
         {promises.length > 0 ? (
           <PromiseTracker items={promises} companyName={company.shortName} />
         ) : (
-          <div
-            className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-gradient-to-br from-white via-ice/80 to-soft-blue/50 px-8 text-center"
-            style={{ height: 260 }}
-          >
-            <span className="blob-c mb-3 inline-flex h-12 w-12 items-center justify-center bg-soft-blue text-navy-primary">
-              <Database className="h-5 w-5" />
-            </span>
-            <p className="text-[13px] font-semibold text-navy-deep">No promise-tracker entries wired for {company.shortName}</p>
-            <p className="mt-1.5 max-w-md text-[11.5px] leading-relaxed text-ink-secondary">
-              The promise tracker is currently populated only for Niva Bupa. Other insurers will appear once their guidance commitments are extracted from earnings-call transcripts.
-            </p>
-          </div>
+          <DataEmptyState
+            kind="pending"
+            height={260}
+            title={`Promise tracker not connected for ${company.shortName}`}
+            body="Populated for Niva Bupa today. Other insurers appear once their guidance commitments are extracted from earnings-call transcripts."
+          />
         )}
       </ModuleCard>
 
@@ -80,18 +76,12 @@ function EventFeedUnavailable({ companyName }: { companyName: string }) {
       title="Insurance Event Feed"
       icon="events"
     >
-      <div
-        className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-gradient-to-br from-white via-ice/80 to-soft-blue/50 px-8 text-center"
-        style={{ height: 260 }}
-      >
-        <span className="blob-c mb-3 inline-flex h-12 w-12 items-center justify-center bg-soft-blue text-navy-primary">
-          <Database className="h-5 w-5" />
-        </span>
-        <p className="text-[13px] font-semibold text-navy-deep">Event feed not yet ingested</p>
-        <p className="mt-1.5 max-w-md text-[11.5px] leading-relaxed text-ink-secondary">
-          KMP appointments, board changes, ESOP issues and other regulatory events for {companyName} will populate this feed once ingest-management-events.ts pulls NSE / BSE corporate filings + company-IR press releases.
-        </p>
-      </div>
+      <DataEmptyState
+        kind="pending"
+        height={260}
+        title="Event feed not yet ingested"
+        body={`KMP appointments, board changes, ESOP issues and other regulatory events for ${companyName} populate this feed once ingest-management-events.ts pulls NSE / BSE corporate filings + company-IR press releases.`}
+      />
     </ModuleCard>
   )
 }

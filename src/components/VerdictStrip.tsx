@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { SignalBadge } from './SignalBadge'
-import { SourceTag, type SourceLabel, type SourceConfidence, type SourceProvenance } from './SourceTag'
+import { SourceTag, type SourceLabel, type SourceConfidence, type SourceFrequency, type SourceProvenance } from './SourceTag'
+import type { DataStatus } from './DataStatusPill'
 
 export type VerdictTone = 'teal' | 'positive' | 'navy' | 'warning' | 'negative'
 
@@ -27,6 +28,8 @@ export interface VerdictStripProps {
   /** Source tag rendered at the bottom-right corner of the strip. */
   source?: SourceLabel | string
   sourcePeriod?: string
+  sourceFrequency?: SourceFrequency
+  sourceStatus?: DataStatus
   sourceConfidence?: SourceConfidence
   sourceProvenance?: SourceProvenance
 }
@@ -44,6 +47,8 @@ export function VerdictStrip({
   stats,
   source,
   sourcePeriod,
+  sourceFrequency,
+  sourceStatus,
   sourceConfidence,
   sourceProvenance,
 }: VerdictStripProps) {
@@ -75,6 +80,8 @@ export function VerdictStrip({
           <SourceTag
             source={source}
             period={sourcePeriod}
+            frequency={sourceFrequency}
+            status={sourceStatus}
             confidence={sourceConfidence}
             provenance={sourceProvenance}
           />
