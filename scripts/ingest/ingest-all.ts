@@ -12,6 +12,7 @@
 import type { Fetcher } from './types'
 import { ingestIrdaiMonthly } from './ingest-irdai-monthly'
 import { ingestGicouncilFlash } from './ingest-gicouncil-flash'
+import { ingestGicouncilSegment } from './ingest-gicouncil-segment'
 import { ingestIrdaiAnnual } from './ingest-irdai-annual'
 import { ingestIrdaiQuarterly } from './ingest-irdai-quarterly'
 import { ingestCompanyDisclosures } from './ingest-company-disclosures'
@@ -27,6 +28,7 @@ import { closeBrowser } from './browser'
 const ALL: Fetcher[] = [
   ingestIrdaiMonthly,
   ingestGicouncilFlash,
+  ingestGicouncilSegment,
   ingestIrdaiAnnual,
   ingestIrdaiQuarterly,
   ingestCompanyDisclosures,

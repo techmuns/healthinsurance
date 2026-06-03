@@ -137,9 +137,39 @@ export interface InsurerMonthlyRow {
   month: string
   fiscal_year: string
   gross_direct_premium: number | null
+  // ── Segment premiums (₹ Cr). Headline value is the PURE MONTHLY figure when
+  //    `monthly_basis === 'monthly'`, or the cumulative "up to month" figure when
+  //    `monthly_basis === 'up_to_month'` (first month with no predecessor YTD).
+  //    Source: GI Council Segmentwise Report only. A missing column stays null
+  //    (never coerced to 0). The matching `*_ytd` field always carries the raw
+  //    cumulative value the report published, so the basis is auditable.
   health_premium: number | null
   retail_health_premium: number | null
   group_health_premium: number | null
+  government_health_premium: number | null
+  overseas_medical_premium: number | null
+  motor_premium: number | null
+  fire_premium: number | null
+  crop_premium: number | null
+  marine_premium: number | null
+  other_premium: number | null
+  // ── Cumulative ("for the period up to [month]") counterparts of each segment.
+  health_premium_ytd: number | null
+  retail_health_premium_ytd: number | null
+  group_health_premium_ytd: number | null
+  government_health_premium_ytd: number | null
+  overseas_medical_premium_ytd: number | null
+  motor_premium_ytd: number | null
+  fire_premium_ytd: number | null
+  crop_premium_ytd: number | null
+  marine_premium_ytd: number | null
+  other_premium_ytd: number | null
+  /** Whether the headline segment fields are a true single-month delta
+   *  (YTD − prior YTD) or a cumulative figure shown because no prior month
+   *  exists yet. The UI must label 'up_to_month' rows honestly. */
+  monthly_basis: 'monthly' | 'up_to_month'
+  /** Human period label, e.g. "For the period up to May 2025". */
+  source_period?: string
   market_share: number | null
   growth_yoy: number | null
   growth_mom: number | null
@@ -153,6 +183,13 @@ export interface IndustrySegmentRow {
   period: string
   fiscal_year: string
   health_premium: number | null
+  // Health sub-splits for the INDUSTRY total — populated for monthly rows from
+  // the GI Council Segmentwise Report. Optional so existing annual rows (which
+  // carry only the top-level segments) stay valid.
+  retail_health_premium?: number | null
+  group_health_premium?: number | null
+  government_health_premium?: number | null
+  overseas_medical_premium?: number | null
   motor_premium: number | null
   fire_premium: number | null
   crop_premium: number | null
@@ -161,6 +198,10 @@ export interface IndustrySegmentRow {
   total_gi_premium: number | null
   health_share: number | null
   motor_share: number | null
+  /** Present on monthly rows: whether segment figures are a true single-month
+   *  delta or a cumulative "up to month" value. */
+  monthly_basis?: 'monthly' | 'up_to_month'
+  source_period?: string
   provenance: ProvenanceEntry
 }
 

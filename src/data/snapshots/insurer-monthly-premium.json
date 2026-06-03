@@ -6,9 +6,9 @@
     "dataset": "pending",
     "last_updated": null,
     "last_successful_run": null,
-    "upstream_sources": ["irdai_monthly_business", "gi_council"],
+    "upstream_sources": ["irdai_monthly_business", "gi_council", "gicouncil_segmentwise"],
     "parser_status": "pending",
-    "notes": "Empty until ingest-irdai-monthly.ts has its first successful run. Monthly view in the UI shows EmptyState while this is empty."
+    "notes": "Empty until a monthly fetcher has its first successful run. Segment-wise premium (health/retail/group/government/overseas + motor/fire/crop/marine/other, both monthly and YTD) comes from ingest-gicouncil-segment.ts — drop the official GI Council Segmentwise XLSX into data/raw/gicouncil/segment/<YYYY-MM>.xlsx (or set INGEST_FETCH_PROXY) to populate. Monthly view in the UI shows EmptyState while this is empty."
   },
   "data": []
 }

@@ -99,6 +99,56 @@ export function validateRatios(row: {
   return out
 }
 
+// Monthly segment-premium fields (GI Council Segmentwise Report).
+const SEGMENT_FIELDS = [
+  'health_premium', 'retail_health_premium', 'group_health_premium',
+  'government_health_premium', 'overseas_medical_premium',
+  'motor_premium', 'fire_premium', 'crop_premium', 'marine_premium', 'other_premium',
+]
+
+/**
+ * Validate a monthly segment-premium row (insurer-monthly-premium /
+ * industry-segment-premium). Guards the GI Council Segmentwise parser:
+ *   • premiums (and their YTD counterparts) cannot be negative → reject;
+ *   • the cumulative `*_ytd` must be ≥ the single-month headline → warn;
+ *   • health total should equal the sum of its 4 sub-splits → warn.
+ * Non-segment rows (e.g. existing annual industry rows) pass straight through.
+ */
+export function validateMonthlySegmentRow(row: Record<string, unknown>): ValidationIssue[] {
+  const out: ValidationIssue[] = []
+  const premiumFields = [
+    ...SEGMENT_FIELDS,
+    ...SEGMENT_FIELDS.map((s) => `${s}_ytd`),
+    'gross_direct_premium',
+    'total_gi_premium',
+  ]
+  for (const f of premiumFields) {
+    const v = row[f]
+    if (typeof v === 'number' && v < 0) {
+      out.push({ level: 'error', metric_id: f, message: `${f} (${v}) is negative — premium cannot be negative.` })
+    }
+  }
+  // Cumulative ≥ single month.
+  for (const s of SEGMENT_FIELDS) {
+    const m = row[s]
+    const y = row[`${s}_ytd`]
+    if (typeof m === 'number' && typeof y === 'number' && y + 0.01 < m) {
+      out.push({ level: 'warning', metric_id: s, message: `${s}_ytd (${y}) < monthly (${m}) — cumulative should be ≥ the month.` })
+    }
+  }
+  // Health total vs sum of sub-splits (when all five present).
+  const h = row.health_premium
+  const parts = [row.retail_health_premium, row.group_health_premium, row.government_health_premium, row.overseas_medical_premium]
+  if (typeof h === 'number' && parts.every((v) => typeof v === 'number')) {
+    const sum = (parts as number[]).reduce((a, b) => a + b, 0)
+    const tol = Math.max(Math.abs(h) * 0.02, 1)
+    if (Math.abs(sum - h) > tol) {
+      out.push({ level: 'warning', metric_id: 'health_premium', message: `health_premium (${h}) ≠ sum of sub-splits (${sum.toFixed(1)}).` })
+    }
+  }
+  return out
+}
+
 export function validateFiscalYear(fy: string): ValidationIssue | null {
   if (!/^FY\d{2,4}$/.test(fy)) {
     return { level: 'error', message: `Fiscal year "${fy}" does not match FYxx pattern. Run normaliseFy first.` }
@@ -149,6 +199,9 @@ export function validateByTarget(target: string, row: Record<string, unknown>): 
       return validateAnnualRow(row)
     case 'distribution-channel-mix':
       return validateDistributionRow(row)
+    case 'insurer-monthly-premium':
+    case 'industry-segment-premium':
+      return validateMonthlySegmentRow(row)
     default:
       return []
   }

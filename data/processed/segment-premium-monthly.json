@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "snapshot_id": "segment-premium-monthly",
+    "description": "Monthly segment-wise gross direct premium (non-life) from the GI Council Segmentwise Report. Stores both cumulative (ytd) and computed single-month (monthly) values per segment.",
+    "source": "GI Council Segmentwise Report (Statistics → Industry Statistics)",
+    "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+    "dataset": "pending",
+    "last_fetched_at": "2026-06-03T08:04:46.501Z",
+    "last_updated": null,
+    "note": "Pending — GI Council 403s the runner. Set INGEST_FETCH_PROXY (India-IP relay) or drop the official XLSX into data/raw/gicouncil/segment/<YYYY-MM>.xlsx.",
+    "warnings": []
+  },
+  "months": []
+}
