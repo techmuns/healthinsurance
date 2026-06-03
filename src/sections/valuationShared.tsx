@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ExternalLink, Minus } from 'lucide-react'
+import { ExternalLink, Lock, Minus } from 'lucide-react'
 import { valSrc } from '@/data/valuationSources'
 import type { Rating, ValConfidence } from '@/data/valuationData'
 
@@ -30,15 +30,19 @@ export const ratingTone: Record<Rating, { fg: string; bg: string }> = {
 const VAL_TONE: Record<ValConfidence, { label: string; fg: string; bg: string; dot: string }> = {
   verified: { label: 'Verified', fg: '#0E6F6D', bg: '#E2F4F1', dot: TEAL },
   secondary: { label: 'Secondary', fg: '#9A6B12', bg: '#FBF3E2', dot: GOLD },
-  pending: { label: 'Source pending', fg: '#64748B', bg: '#EEF1F6', dot: '#94A3B8' },
+  pending: { label: 'Locked', fg: '#64748B', bg: '#EEF1F6', dot: '#94A3B8' },
 }
 
-/** Verified / Secondary / Source-pending validation status pill. */
+/** Verified / Secondary / Locked (source-pending) validation status pill. */
 export function ValPill({ c, className = '' }: { c: ValConfidence; className?: string }) {
   const t = VAL_TONE[c]
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${className}`} style={{ color: t.fg, background: t.bg }}>
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.dot }} />
+      {c === 'pending' ? (
+        <Lock className="h-2.5 w-2.5" style={{ color: '#B68B3A' }} />
+      ) : (
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.dot }} />
+      )}
       {t.label}
     </span>
   )
@@ -48,7 +52,12 @@ export function ValPill({ c, className = '' }: { c: ValConfidence; className?: s
 export function OpenSource({ id }: { id: string }) {
   const s = valSrc(id)
   if (!s || !s.source_url) {
-    return <span className="inline-flex items-center gap-1 text-[10px] font-medium italic text-ink-secondary/70">Source pending</span>
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-ice px-2 py-0.5 text-[10px] font-semibold text-ink-secondary ring-1 ring-soft-border" title="Source pending — locked until a citable note is ingested">
+        <Lock className="h-2.5 w-2.5 text-champagne-deep" />
+        Locked
+      </span>
+    )
   }
   return (
     <a

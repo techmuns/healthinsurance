@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarClock, Gauge, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, CalendarClock, Gauge, Lock, TrendingDown, TrendingUp } from 'lucide-react'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
@@ -318,7 +318,7 @@ function Takeaway({ icon, tone, head, name, detail, pending }: { icon: React.Rea
       </div>
       <p className="mt-1.5 flex items-center gap-1 text-[12.5px] font-semibold text-navy-deep">
         {name}
-        {!pending && <ArrowUpRight className="h-3 w-3 text-ink-secondary/50" />}
+        {pending ? <Lock className="h-3 w-3 text-champagne-deep" /> : <ArrowUpRight className="h-3 w-3 text-ink-secondary/50" />}
       </p>
       <p className="mt-0.5 text-[10.5px] text-ink-secondary">{detail}</p>
     </div>
