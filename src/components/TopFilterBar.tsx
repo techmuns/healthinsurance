@@ -5,10 +5,18 @@ import { useFilters, useActiveCompany } from '@/state/filters'
 import { insurers } from '@/data/mockData'
 import { resolvePeriodAvailability } from '@/lib/periodData'
 import { sectionFrequencyKind } from '@/nav'
-import type { PeerGroup, TimePeriod } from '@/data/types'
+import type { PeerGroup, ProfitabilityFrequency, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
 const periods: TimePeriod[] = ['Monthly', 'Quarterly', 'Annual']
+const profitabilityPeriods: ProfitabilityFrequency[] = ['Quarterly', 'Annual']
+// Sections with no frequency toggle show a short, static reporting-basis label
+// in the SAME header slot — so the control area never disappears or resizes.
+const STATIC_BASIS: Record<string, string> = {
+  valuation: 'Latest available',
+  ownership: 'Reported quarterly',
+  management: 'Event-based',
+}
 
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   return (
@@ -30,6 +38,7 @@ export function TopFilterBar({ section }: { section?: string }) {
     period,
     setPeriod,
     profitabilityFrequency,
+    setProfitabilityFrequency,
   } = useFilters()
   const company = useActiveCompany()
   const isOverview = section === 'overview'
@@ -40,7 +49,6 @@ export function TopFilterBar({ section }: { section?: string }) {
   // CURRENT section (null where frequency doesn't apply) — so the data-status
   // pill never claims a misleading "<period> pending" on a non-frequency section.
   const freqKind = sectionFrequencyKind(section ?? '')
-  const globalApplies = freqKind === 'operating'
   const effectiveFreq: TimePeriod | null =
     freqKind === 'operating' ? period : freqKind === 'profitability' ? profitabilityFrequency : null
 
@@ -103,20 +111,31 @@ export function TopFilterBar({ section }: { section?: string }) {
 
         <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
 
-        {/* Period — the GLOBAL frequency toggle. Drives only the operating
-            sections; dimmed + annotated on sections that don't use it. */}
+        {/* Period — ONE adaptive control slot. Fixed size so the header never
+            reflows when switching sections; only the content inside crossfades:
+            3-way toggle (operating) · 2-way toggle (Profitability) · a short
+            static reporting-basis label (Valuation / Ownership / Management). */}
         <div>
-          <FieldLabel hint="Monthly / Quarterly / Annual — applies to the operating sections only (Overview, Market, Premium, Distribution, Peers)">Period</FieldLabel>
-          <div className={globalApplies ? '' : 'pointer-events-none select-none opacity-40'} aria-disabled={!globalApplies}>
-            <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
+          <FieldLabel hint="Reporting frequency for the section in view — operating sections toggle Monthly/Quarterly/Annual; Profitability toggles Quarterly/Annual; others show their reporting basis">Period</FieldLabel>
+          <div className="flex h-[30px] min-w-[200px] items-center">
+            <div key={freqKind} className="animate-fade-soft">
+              {freqKind === 'operating' ? (
+                <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
+              ) : freqKind === 'profitability' ? (
+                <SegmentedControl<ProfitabilityFrequency>
+                  options={profitabilityPeriods}
+                  value={profitabilityFrequency}
+                  onChange={setProfitabilityFrequency}
+                  size="sm"
+                />
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3 py-1.5 text-[11px] font-medium text-ink-secondary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-blue/45" aria-hidden />
+                  {STATIC_BASIS[section ?? ''] ?? 'Published annually'}
+                </span>
+              )}
+            </div>
           </div>
-          <p className="mt-1 max-w-[15rem] text-[9.5px] leading-tight text-ink-secondary/80">
-            {freqKind === 'operating'
-              ? 'Applies to operating sections only.'
-              : freqKind === 'profitability'
-                ? 'Profitability uses its own Annual / Quarterly toggle.'
-                : 'Not applicable to this section.'}
-          </p>
         </div>
 
         <div className="ml-auto flex items-end gap-4">

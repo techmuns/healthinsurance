@@ -44,12 +44,11 @@ import {
 import { SignalBadge } from '@/components/SignalBadge'
 import { SourceTag } from '@/components/SourceTag'
 import { Drawer } from '@/components/Drawer'
-import { SegmentedControl } from '@/components/SegmentedControl'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance } from '@/lib/dataLayer'
-import type { Insurer, ProfitabilityFrequency, TimePeriod } from '@/data/types'
+import type { Insurer, TimePeriod } from '@/data/types'
 import { BasisExplainer, BASIS_TONE } from '@/components/AccountingBasisControls'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
 import { getEarningsBridge } from '@/data/earningsBridge'
@@ -2164,7 +2163,9 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
   // Profitability runs its OWN Quarterly/Annual frequency (it ignores the global
   // header Period toggle — profit isn't reported monthly). Aliased to `period`
   // so the section's existing period-aware logic is unchanged.
-  const { range, profitabilityFrequency, setProfitabilityFrequency } = useFilters()
+  // Profitability's frequency now lives entirely in the top-header control slot;
+  // the section just consumes it (no local toggle).
+  const { range, profitabilityFrequency } = useFilters()
   const period: TimePeriod = profitabilityFrequency
   const navigate = onNavigate ?? (() => {})
   // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
@@ -2261,17 +2262,6 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
             <BasisExplainer basis={basis} className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
-            {/* Profitability's OWN frequency toggle — independent of the global
-                header Period. No Monthly (profit isn't reported monthly). */}
-            <div className="flex flex-col items-end gap-0.5">
-              <SegmentedControl<ProfitabilityFrequency>
-                options={['Quarterly', 'Annual']}
-                value={profitabilityFrequency}
-                onChange={setProfitabilityFrequency}
-                size="sm"
-              />
-              <span className="text-[9px] uppercase tracking-[0.08em] text-ink-secondary/70">Profitability frequency</span>
-            </div>
             <LensSwitcher activeKey={lens.key} onNavigate={navigate} />
           </div>
         </div>
