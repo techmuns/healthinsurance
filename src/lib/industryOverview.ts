@@ -34,6 +34,14 @@ export interface OverviewMetricDef {
   key: MetricKey
   /** Toggle + column label. */
   label: string
+  /** Section heading, e.g. "Renewal Overview". */
+  title: string
+  /**
+   * How the left card visualizes this metric. 'bubble' (premium-scaled market
+   * map) suits share / premium; 'bars' (ranked horizontal bars) suits the
+   * tightly-clustered quality ratios where bubbles would overlap.
+   */
+  chartKind: 'bubble' | 'bars'
   /** Bubble-chart axis label. */
   axisLabel: string
   unit: '%' | '₹ Cr'
@@ -44,11 +52,11 @@ const pct = (v: number) => (Number.isInteger(v) ? `${v}%` : `${v.toFixed(1)}%`)
 const cr = (v: number) => `₹${Math.round(v).toLocaleString('en-IN')} Cr`
 
 export const OVERVIEW_METRICS: OverviewMetricDef[] = [
-  { id: 'share', key: 'marketShare', label: 'Market share', axisLabel: 'Market share (%)', unit: '%', format: (v) => `${v.toFixed(1)}%` },
-  { id: 'premium', key: 'premiumCollection', label: 'Premium', axisLabel: 'Premium · GWP (₹ Cr)', unit: '₹ Cr', format: cr },
-  { id: 'settlement', key: 'settlementRatio', label: 'Settlement', axisLabel: 'Claim settlement ratio (%)', unit: '%', format: pct },
-  { id: 'renewal', key: 'renewalRate', label: 'Renewal', axisLabel: 'Renewal rate (%)', unit: '%', format: pct },
-  { id: 'retention', key: 'customerRetention', label: 'Retention', axisLabel: 'Customer retention (%)', unit: '%', format: pct },
+  { id: 'share', key: 'marketShare', label: 'Market share', title: 'Market Share Overview', chartKind: 'bubble', axisLabel: 'Market share (%)', unit: '%', format: (v) => `${v.toFixed(1)}%` },
+  { id: 'premium', key: 'premiumCollection', label: 'Premium', title: 'Premium Overview', chartKind: 'bubble', axisLabel: 'Premium · GWP (₹ Cr)', unit: '₹ Cr', format: cr },
+  { id: 'settlement', key: 'settlementRatio', label: 'Settlement', title: 'Settlement Overview', chartKind: 'bars', axisLabel: 'Claim settlement ratio (%)', unit: '%', format: pct },
+  { id: 'renewal', key: 'renewalRate', label: 'Renewal', title: 'Renewal Overview', chartKind: 'bars', axisLabel: 'Renewal rate (%)', unit: '%', format: pct },
+  { id: 'retention', key: 'customerRetention', label: 'Retention', title: 'Retention Overview', chartKind: 'bars', axisLabel: 'Customer retention (%)', unit: '%', format: pct },
 ]
 
 export function metricById(id: OverviewMetricId): OverviewMetricDef {

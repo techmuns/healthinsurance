@@ -61,6 +61,8 @@ export function MarketBubbleChart({ model, height = 320 }: { model: OverviewMode
   // (premium-vs-premium would be a degenerate diagonal); ratio metrics plot the
   // ratio against premium scale — the more revealing "scale vs quality" view.
   const metricIsShare = metric.id === 'share' || metric.id === 'premium'
+  // Premium view sizes bubbles by premium; market-share view sizes by share.
+  const sizeByPremium = metric.id === 'premium'
 
   const plotted = model.byShare.filter((r) => r.premiumAvailable && (metricIsShare ? r.shareAvailable : r.metricAvailable))
   const maxShare = Math.max(...plotted.map((r) => r.share), 1)
@@ -68,10 +70,12 @@ export function MarketBubbleChart({ model, height = 320 }: { model: OverviewMode
 
   const points: Point[] = plotted.map((r, idx) => {
     const y = metricIsShare ? r.share : r.metricValue
+    const sizeVal = sizeByPremium ? r.premium : r.share
+    const sizeMax = sizeByPremium ? maxPremium : maxShare
     return {
       x: r.premium,
       y,
-      r: 9 + 17 * Math.sqrt(Math.max(r.share, 0) / maxShare),
+      r: 9 + 17 * Math.sqrt(Math.max(sizeVal, 0) / sizeMax),
       color: companyColor(r.id, r.focal, idx),
       shortName: r.shortName,
       premium: r.premium,

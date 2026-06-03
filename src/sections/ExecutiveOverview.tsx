@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Building2, CircleDot, Layers, ListOrdered, Network, Percent, Shield } from 'lucide-react'
+import { BarChart3, Building2, CircleDot, Layers, ListOrdered, Network, Percent, Shield } from 'lucide-react'
 import { RadialGauge } from '@/components/RadialGauge'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
+import { MetricRankingBars } from '@/components/MetricRankingBars'
 import { IndustryRankTable } from '@/components/IndustryRankTable'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
@@ -86,6 +87,17 @@ export function ExecutiveOverview() {
       </div>
     )
   }
+
+  // The left card is a premium-scaled market map for share/premium, and a
+  // ranked bar chart for the tightly-clustered quality ratios.
+  const isBubble = model.metric.chartKind === 'bubble'
+  const leftTitle = isBubble ? 'Market Map' : `${model.metric.label} Ranking`
+  const leftCaption = isBubble
+    ? model.metric.id === 'premium'
+      ? 'Bubble size = premium'
+      : 'Bubble size = market share'
+    : 'Ranked high → low · premium shown as secondary'
+  const LeftIcon = isBubble ? CircleDot : BarChart3
 
   return (
     <div className="space-y-4">
@@ -199,7 +211,7 @@ export function ExecutiveOverview() {
               <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Peer Landscape</span>
             </div>
             <div className="flex items-baseline gap-2.5">
-              <h2 className="font-display text-[21px] leading-tight text-navy-deep">Market Share Overview</h2>
+              <h2 className="font-display text-[21px] leading-tight text-navy-deep">{model.metric.title}</h2>
               <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
             </div>
           </div>
@@ -207,29 +219,37 @@ export function ExecutiveOverview() {
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
-          {/* Bubble map */}
+          {/* Left card — market map (share/premium) or ranked bars (ratios) */}
           <div className="card-surface flex min-h-[400px] min-w-0 flex-col p-4 lg:flex-[1.45]">
             <div className="mb-1 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5">
-                <CircleDot className="h-4 w-4 text-navy-primary" />
-                <p className="font-display text-[14px] text-navy-deep">Market Map</p>
+                <LeftIcon className="h-4 w-4 text-navy-primary" />
+                <p className="font-display text-[14px] text-navy-deep">{leftTitle}</p>
               </div>
-              <span className="text-[10.5px] text-ink-secondary">Bubble size = market share</span>
+              <span className="text-[10.5px] text-ink-secondary">{leftCaption}</span>
             </div>
-            <MarketBubbleChart model={model} height={288} />
-            {/* Color legend */}
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-              {model.byShare.map((r, i) => (
-                <span key={r.id} className="inline-flex items-center gap-1 text-[10px] text-ink-secondary">
-                  <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
-                  {r.shortName}
-                </span>
-              ))}
-            </div>
+
+            {isBubble ? (
+              <>
+                <MarketBubbleChart model={model} height={288} />
+                {/* Color legend (bubble only — bars label themselves) */}
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  {model.byShare.map((r, i) => (
+                    <span key={r.id} className="inline-flex items-center gap-1 text-[10px] text-ink-secondary">
+                      <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
+                      {r.shortName}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <MetricRankingBars model={model} />
+            )}
+
             <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
               <span className="text-[9px] text-ink-secondary/80">
-                <span className="font-semibold text-navy-primary">Navy glow</span> = selected ·{' '}
-                <span className="font-semibold text-champagne-deep">gold ring</span> = leader
+                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
+                <span className="font-semibold text-champagne-deep">gold</span> = leader
               </span>
               <CardSource />
             </div>
