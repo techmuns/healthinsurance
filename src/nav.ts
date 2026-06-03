@@ -49,9 +49,10 @@ export const navGroups: { label: string; itemIds: string[] }[] = [
 
 // ── Frequency-toggle ownership ──────────────────────────────────────────────
 // The global header frequency toggle (Monthly / Quarterly / Annual) drives ONLY
-// these "operating" sections. Profitability runs its own local Quarterly/Annual
-// toggle; Valuation / Ownership / Management have no frequency toggle at all.
-export const OPERATING_SECTION_IDS = ['overview', 'market', 'growth', 'distribution', 'peers'] as const
+// these "operating" sections. Profitability runs a 2-way Quarterly/Annual toggle
+// in the same header slot; Competitive Position, Valuation, Ownership and
+// Management have no frequency toggle — they show a short static basis label.
+export const OPERATING_SECTION_IDS = ['overview', 'market', 'growth', 'distribution'] as const
 
 export type SectionFrequencyKind = 'operating' | 'profitability' | 'none'
 

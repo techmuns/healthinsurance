@@ -467,7 +467,10 @@ export function CompetitivePositioning() {
   const focal = card.focal
   const focalRow = card.rows.find((r) => r.focal) ?? card.rows[0]
   const activeCell = focalRow.cells[activeKey] ?? focalRow.cells.growth
-  const rangeLabel = formatRange(filters.range, filters.period)
+  // Competitive Position has no frequency toggle — the scorecard is a latest-
+  // figures snapshot — so the range reads in stable Annual (FY) vocabulary and
+  // never flips with the global period control.
+  const rangeLabel = formatRange(filters.range, 'Annual')
   const isMock = filters.dataset === 'mock'
 
   const explainGrowth = focalRow.cells.growth.tone === 'leader' || focalRow.cells.growth.tone === 'strong'
@@ -563,7 +566,7 @@ export function CompetitivePositioning() {
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: isMock ? GOLD : TEAL }} />
           {isMock ? 'Mock dataset' : 'Official dataset'}
         </span>
-        <span>{rangeLabel} · {filters.period} basis · {card.groupLabel} peers · Updated {filters.updatedAsOf}</span>
+        <span>{rangeLabel} · scorecard basis · {card.groupLabel} peers · Updated {filters.updatedAsOf}</span>
       </div>
     </div>
   )

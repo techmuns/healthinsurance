@@ -13,6 +13,7 @@ const profitabilityPeriods: ProfitabilityFrequency[] = ['Quarterly', 'Annual']
 // Sections with no frequency toggle show a short, static reporting-basis label
 // in the SAME header slot — so the control area never disappears or resizes.
 const STATIC_BASIS: Record<string, string> = {
+  peers: 'Scorecard basis',
   valuation: 'Latest available',
   ownership: 'Reported quarterly',
   management: 'Event-based',
