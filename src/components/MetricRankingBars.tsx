@@ -39,11 +39,11 @@ export function MetricRankingBars({ model }: { model: OverviewModel }) {
   return (
     <div className="flex flex-1 flex-col">
       {/* Column header */}
-      <div className="flex items-center gap-4 px-3 pb-1.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">
+      <div className="flex items-center gap-3 px-3 pb-1.5 text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">
         <span className="w-7 shrink-0 text-center">#</span>
-        <span className="w-[190px] shrink-0">Insurer</span>
-        <span className="w-[96px] shrink-0 text-right">{refLabel}</span>
-        <span className="w-[86px] shrink-0 text-right">{metric.label}</span>
+        <span className="w-[140px] shrink-0">Insurer</span>
+        <span className="w-[70px] shrink-0 text-right">{refLabel}</span>
+        <span className="w-[92px] shrink-0 text-right">{metric.label}</span>
         <span className="flex-1">{metric.label} ranking</span>
       </div>
 
@@ -62,7 +62,7 @@ export function MetricRankingBars({ model }: { model: OverviewModel }) {
           return (
             <div
               key={r.id}
-              className={`flex items-center gap-4 rounded-xl px-3 py-2 transition-all duration-200 ${r.focal ? 'focal-mark' : 'hover:bg-ice/60'}`}
+              className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200 ${r.focal ? 'focal-mark' : 'hover:bg-ice/60'}`}
             >
               {/* Rank */}
               <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold shadow-soft ${rankBadge(r.focal, r.isLeader)}`}>
@@ -70,7 +70,7 @@ export function MetricRankingBars({ model }: { model: OverviewModel }) {
               </span>
 
               {/* Insurer + listed/unlisted */}
-              <div className="w-[190px] shrink-0">
+              <div className="w-[140px] shrink-0">
                 <div className="flex items-center gap-1.5">
                   <span className={`truncate text-[13px] font-semibold ${r.focal ? 'text-navy-deep' : 'text-ink-primary'}`}>{r.shortName}</span>
                   {r.isLeader && (
@@ -88,10 +88,10 @@ export function MetricRankingBars({ model }: { model: OverviewModel }) {
               </div>
 
               {/* Reference value (supporting) */}
-              <span className="w-[96px] shrink-0 text-right text-[11.5px] tabular-nums text-ink-secondary">{refVal}</span>
+              <span className="w-[70px] shrink-0 text-right text-[11.5px] tabular-nums text-ink-secondary">{refVal}</span>
 
               {/* Selected metric value (dominant) */}
-              <span className="w-[86px] shrink-0 text-right text-[15px] font-semibold tabular-nums text-navy-deep">{metric.format(r.metricValue)}</span>
+              <span className="w-[92px] shrink-0 whitespace-nowrap text-right text-[14px] font-semibold tabular-nums text-navy-deep">{metric.format(r.metricValue)}</span>
 
               {/* Bar (dominant, fills the row) */}
               <div className="h-3 flex-1 overflow-hidden rounded-full bg-ice">

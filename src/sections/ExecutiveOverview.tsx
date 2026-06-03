@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { BarChart3, Building2, CircleDot, Layers, Network, Percent, Shield } from 'lucide-react'
+import { BadgeCheck, BarChart3, Building2, CircleDot, Clock, Layers, Network, Percent, Shield, ShieldCheck } from 'lucide-react'
 import { RadialGauge } from '@/components/RadialGauge'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingBars } from '@/components/MetricRankingBars'
+import { AboutView } from '@/components/AboutView'
+import { SignalBadge } from '@/components/SignalBadge'
+import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
@@ -30,10 +33,13 @@ function bandColor(band: ConcentrationBand): string {
 }
 
 function MetricToggle({ value, onChange }: { value: OverviewMetricId; onChange: (id: OverviewMetricId) => void }) {
+  // Market Share lives permanently in the left card, so the ranking toggle
+  // only offers the bar-charted metrics.
+  const rankingMetrics = OVERVIEW_METRICS.filter((m) => m.id !== 'share')
   return (
     <div className="inline-flex flex-wrap items-center gap-1">
       <span className="mr-1 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">View by</span>
-      {OVERVIEW_METRICS.map((m) => {
+      {rankingMetrics.map((m) => {
         const on = m.id === value
         return (
           <button
@@ -73,7 +79,7 @@ function SnapTile({ icon, label, value, sub }: { icon: React.ReactNode; label: s
 export function ExecutiveOverview() {
   const filters = useFilters()
   const { period } = filters
-  const [metricId, setMetricId] = useState<OverviewMetricId>('share')
+  const [metricId, setMetricId] = useState<OverviewMetricId>('premium')
   const model = getIndustryOverview(filters, metricId)
   const { leader, runnerUp, highlighted, concentration } = model
   const annualBasisNote = period !== 'Annual'
@@ -81,24 +87,15 @@ export function ExecutiveOverview() {
   if (!leader || model.count === 0) {
     return (
       <div className="space-y-4">
-        <PageHeader groupLabel={model.groupLabel} highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
+        <HeroHeader highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
         <DataEmptyState kind="pending" title="No insurers in this pool" body="Switch the Peer Group above to see the industry overview." height={280} />
       </div>
     )
   }
 
-  // Market Share is a packed-bubble dominance map (circle size = share); every
-  // other metric is a ranked horizontal bar board.
-  const isBubble = model.metric.chartKind === 'bubble'
-  const leftTitle = isBubble ? 'Market Share Map' : `${model.metric.label} Ranking`
-  const leftCaption = isBubble
-    ? 'Circle size = market share · larger = more dominant'
-    : 'Ranked high → low · premium shown as secondary'
-  const LeftIcon = isBubble ? CircleDot : BarChart3
-
   return (
     <div className="space-y-4">
-      <PageHeader groupLabel={model.groupLabel} highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
+      <HeroHeader highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
 
       {/* ── Top row: Leader · Snapshot · Concentration ───────────────────── */}
       <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
@@ -199,56 +196,69 @@ export function ExecutiveOverview() {
         </div>
       </section>
 
-      {/* ── Peer landscape header + wide bubble/ranking row ──────────────── */}
+      {/* ── Peer landscape: Market Share map (left, constant) + metric
+            rankings (right, toggled) ───────────────────────────────────── */}
       <section>
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="mb-0.5 flex items-center gap-2">
-              <span className="h-3 w-[3px] rounded-full bg-champagne" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Peer Landscape</span>
-            </div>
-            <div className="flex items-baseline gap-2.5">
-              <h2 className="font-display text-[21px] leading-tight text-navy-deep">{model.metric.title}</h2>
-              <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
-            </div>
-          </div>
-          <MetricToggle value={metricId} onChange={setMetricId} />
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-3 w-[3px] rounded-full bg-champagne" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Peer Landscape</span>
+          <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
         </div>
 
-        {/* One full-width card: bubble market map (Market Share) or a ranked
-            horizontal bar board (Premium / Settlement / Renewal / Retention). */}
-        <div className="card-surface flex min-h-[440px] w-full min-w-0 flex-col p-4 sm:p-5">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5">
-              <LeftIcon className="h-4 w-4 text-navy-primary" />
-              <p className="font-display text-[14px] text-navy-deep">{leftTitle}</p>
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-stretch">
+          {/* LEFT — Market Share map. Always visible; never changes with the
+              ranking toggle (it reads market share straight from the model). */}
+          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <CircleDot className="h-4 w-4 text-navy-primary" />
+                <p className="font-display text-[14px] text-navy-deep">Market Share Map</p>
+              </div>
+              <span className="text-[10.5px] text-ink-secondary">Circle size = market share</span>
             </div>
-            <span className="text-[10.5px] text-ink-secondary">{leftCaption}</span>
+
+            <MarketBubbleChart model={model} height={360} />
+
+            {/* Color legend */}
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+              {model.byShare.map((r, i) => (
+                <span key={r.id} className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
+                  <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
+                  {r.shortName}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+              <span className="text-[9px] text-ink-secondary/80">
+                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
+                <span className="font-semibold text-champagne-deep">gold</span> = leader
+              </span>
+              <CardSource />
+            </div>
           </div>
 
-          {isBubble ? (
-            <>
-              <MarketBubbleChart model={model} height={360} />
-              {/* Color legend (bubble only — bars label themselves) */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                {model.byShare.map((r, i) => (
-                  <span key={r.id} className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
-                    <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
-                    {r.shortName}
-                  </span>
-                ))}
+          {/* RIGHT — ranked board for the toggled metric (Premium / Settlement
+              / Renewal / Retention). The toggle lives in this card's header. */}
+          <div className="card-surface flex min-h-[440px] min-w-0 flex-col p-4 sm:p-5">
+            <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <BarChart3 className="h-4 w-4 text-navy-primary" />
+                <p className="font-display text-[14px] text-navy-deep">{model.metric.label} Ranking</p>
               </div>
-            </>
-          ) : (
-            <MetricRankingBars model={model} />
-          )}
+              <MetricToggle value={metricId} onChange={setMetricId} />
+            </div>
+            <span className="mb-2 text-[10.5px] text-ink-secondary">Ranked high → low · {metricId === 'premium' ? 'market share' : 'premium'} shown as secondary</span>
 
-          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            <span className="text-[9px] text-ink-secondary/80">
-              <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
-              <span className="font-semibold text-champagne-deep">gold</span> = leader
-            </span>
-            <CardSource />
+            <MetricRankingBars model={model} />
+
+            <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+              <span className="text-[9px] text-ink-secondary/80">
+                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
+                <span className="font-semibold text-champagne-deep">gold</span> = leader
+              </span>
+              <CardSource />
+            </div>
           </div>
         </div>
       </section>
@@ -256,47 +266,77 @@ export function ExecutiveOverview() {
   )
 }
 
-function PageHeader({
-  groupLabel,
+// Compact, filter-aware hero — layered navy → champagne backdrop with the
+// petal end-cap art, the highlighted-company chip, and the data-status chips.
+function HeroHeader({
   highlightName,
   period,
   annualBasisNote,
 }: {
-  groupLabel: string
   highlightName?: string
   period: string
   annualBasisNote: boolean
 }) {
   return (
-    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-      <div>
-        <h1 className="font-display text-[25px] leading-tight text-navy-deep sm:text-[27px]">Industry Overview</h1>
-        <p className="mt-0.5 text-[12.5px] text-ink-secondary">
-          Get a quick snapshot of standalone health insurers and market leadership.
+    <header className="card-surface relative min-h-[170px] overflow-hidden rounded-[28px] px-5 py-5 sm:px-6">
+      <HeaderRibbonArt />
+      {/* Layered ambient backdrop: subtle navy gradient + champagne glow + teal accent */}
+      <span
+        className="pointer-events-none absolute inset-0 opacity-[0.55]"
+        style={{
+          background:
+            'radial-gradient(circle at 12% 25%, rgba(238,244,255,0.7) 0%, transparent 50%), radial-gradient(circle at 92% 90%, rgba(244,236,219,0.65) 0%, transparent 55%), radial-gradient(circle at 75% 15%, rgba(225,242,241,0.55) 0%, transparent 45%)',
+        }}
+      />
+
+      {/* About this view — floating top-right */}
+      <div className="absolute right-5 top-5 z-20 sm:right-6 sm:top-6">
+        <AboutView text="Standalone health insurers vs the selected peer group — market leadership, premium and quality rankings on an FY25 annual basis." />
+      </div>
+
+      {/* Left content */}
+      <div className="relative z-10 max-w-2xl">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <SignalBadge label="Industry Overview" tone="navy" size="sm" />
+          {highlightName && (
+            <span className="text-[11px] font-medium text-ink-secondary">
+              · <span className="font-semibold text-champagne">{highlightName}</span> highlighted
+            </span>
+          )}
+        </div>
+        <h1 className="font-display text-[27px] leading-[1.1] text-navy-deep sm:text-[31px]">
+          Insurance Investment Dashboard
+        </h1>
+        <p className="mt-1.5 max-w-xl text-[13px] leading-relaxed text-ink-secondary">
+          Who leads, who&rsquo;s improving, and where risk is building.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="inline-flex items-center rounded-lg border border-soft-border bg-white/80 px-2.5 py-1 text-[11px] font-medium text-navy-deep shadow-soft">
-          {groupLabel}
-        </span>
-        {highlightName && (
-          <span className="inline-flex items-center gap-1 rounded-lg border border-[#D6E2FA] bg-white/80 px-2.5 py-1 text-[11px] shadow-soft">
-            <span className="text-ink-secondary">Highlighting</span>
-            <span className="font-semibold text-navy-primary">{highlightName}</span>
-          </span>
+
+      {/* Status chips — float lower-right on desktop, flow under title on mobile */}
+      <div className="relative z-20 mt-5 flex flex-wrap gap-2.5 sm:absolute sm:bottom-6 sm:right-6 sm:mt-0">
+        <div className="flex items-center gap-1.5 rounded-lg border border-[#D6E2FA] bg-white/85 px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
+          <Clock className="h-3.5 w-3.5 text-navy-primary" />
+          <span className="text-ink-secondary">Updated</span>
+          <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
+        </div>
+        {annualBasisNote ? (
+          <div
+            className="flex items-center gap-1.5 rounded-lg border border-[#F0E1BE] bg-[#FBF6EA] px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5"
+            title={`Industry structure is reported annually — showing ${FY} regardless of the ${period} toggle.`}
+          >
+            <Clock className="h-3.5 w-3.5 text-champagne-deep" />
+            <span className="font-semibold text-champagne-deep">{FY} · annual basis</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
+            <BadgeCheck className="h-3.5 w-3.5 text-teal" />
+            <span className="font-semibold text-teal">Annual basis · current</span>
+          </div>
         )}
-        <span
-          className={[
-            'inline-flex items-center rounded-lg px-2.5 py-1 text-[11px] font-medium shadow-soft',
-            annualBasisNote ? 'border border-[#F0E1BE] bg-[#FBF6EA] text-champagne-deep' : 'border border-[#BFE3E1] bg-teal-soft text-teal',
-          ].join(' ')}
-          title={annualBasisNote ? `Industry structure is reported annually — showing ${FY} regardless of the ${period} toggle.` : undefined}
-        >
-          {FY} · Annual basis
-        </span>
-        <span className="hidden items-center rounded-lg border border-soft-border bg-white/80 px-2.5 py-1 text-[11px] text-ink-secondary shadow-soft sm:inline-flex">
-          Updated {DATA_FRESHNESS.lastUpdated}
-        </span>
+        <div className="flex items-center gap-1.5 rounded-lg border border-[#BFE3E1] bg-teal-soft px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
+          <ShieldCheck className="h-3.5 w-3.5 text-teal" />
+          <span className="font-semibold text-teal">{DATA_FRESHNESS.quality}</span>
+        </div>
       </div>
     </header>
   )

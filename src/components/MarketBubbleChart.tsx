@@ -12,12 +12,13 @@
 import { useMemo, useState } from 'react'
 import { companyColor, FOCAL_COLOR, LEADER_COLOR, type OverviewModel } from '@/lib/industryOverview'
 
-// ── Fixed design space (the SVG scales responsively to the card width) ───────
-const VIEW_W = 960
-const VIEW_H = 360
+// ── Fixed design space (the SVG scales responsively to the card width). A
+// near-square frame so the cluster fills the half-width Market Share card. ───
+const VIEW_W = 560
+const VIEW_H = 380
 const CX = VIEW_W / 2
 const CY = VIEW_H / 2
-const MARGIN = 16
+const MARGIN = 14
 
 interface Bubble {
   id: string
@@ -64,9 +65,9 @@ function packBubbles(
     }))
 
   const PAD = 5
-  // Vertical gravity > horizontal so the cluster spreads to fill the wide card.
-  const GX = 0.011
-  const GY = 0.019
+  // Near-equal gravity → a rounded cluster that fills the near-square frame.
+  const GX = 0.016
+  const GY = 0.018
   for (let iter = 0; iter < 320; iter++) {
     for (const n of nodes) {
       n.x += (CX - n.x) * GX
