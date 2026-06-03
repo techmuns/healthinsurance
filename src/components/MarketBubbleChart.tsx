@@ -1,13 +1,14 @@
-// Market-share bubble map for the Industry Overview. X = premium scale (GWP),
-// Y = the selected metric (market share by default), bubble size = pool weight
-// (market share). The market leader carries a champagne crown; the selected
-// company gets a navy glow + ring so it is findable at a glance.
+// Full-width market-share bubble map (Market Share tab only). X = premium scale
+// (GWP), Y = market share %, bubble size = market share. The market leader gets
+// a champagne ring, the selected company a navy glow + ring. Labels are kept to
+// just company name + share %, placed above each bubble (the selected company's
+// label drops below so it never collides with its neighbour on the diagonal).
 
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
 import { companyColor, FOCAL_COLOR, LEADER_COLOR, type OverviewModel } from '@/lib/industryOverview'
 
 const FOCAL = FOCAL_COLOR
-const LEADER_RING = LEADER_COLOR // champagne ring marks the market leader (no crown)
+const LEADER_RING = LEADER_COLOR
 
 interface Point {
   x: number
@@ -17,19 +18,13 @@ interface Point {
   shortName: string
   premium: number
   share: number
-  metricLabel: string
   focal: boolean
   isLeader: boolean
-  labelSide: 'left' | 'right'
 }
 
 const fmtK = (v: number) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)
 
-interface TooltipPayload {
-  payload: Point
-}
-
-function ChartTooltip({ active, payload, metricLabel, metricIsShare }: { active?: boolean; payload?: TooltipPayload[]; metricLabel: string; metricIsShare: boolean }) {
+function ChartTooltip({ active, payload }: { active?: boolean; payload?: { payload: Point }[] }) {
   if (!active || !payload || payload.length === 0) return null
   const p = payload[0].payload
   return (
@@ -46,79 +41,53 @@ function ChartTooltip({ active, payload, metricLabel, metricIsShare }: { active?
       <div className="tabular-nums text-ink-secondary">
         Premium (GWP) <span className="font-semibold text-ink-primary">₹{Math.round(p.premium).toLocaleString('en-IN')} Cr</span>
       </div>
-      {!metricIsShare && (
-        <div className="tabular-nums text-ink-secondary">
-          {metricLabel} <span className="font-semibold text-ink-primary">{p.metricLabel}</span>
-        </div>
-      )}
     </div>
   )
 }
 
-export function MarketBubbleChart({ model, height = 320 }: { model: OverviewModel; height?: number }) {
-  const metric = model.metric
-  // Premium and Market-share both render the canonical share map on the Y-axis
-  // (premium-vs-premium would be a degenerate diagonal); ratio metrics plot the
-  // ratio against premium scale — the more revealing "scale vs quality" view.
-  const metricIsShare = metric.id === 'share' || metric.id === 'premium'
-  // Premium view sizes bubbles by premium; market-share view sizes by share.
-  const sizeByPremium = metric.id === 'premium'
-
-  const plotted = model.byShare.filter((r) => r.premiumAvailable && (metricIsShare ? r.shareAvailable : r.metricAvailable))
+export function MarketBubbleChart({ model, height = 360 }: { model: OverviewModel; height?: number }) {
+  const plotted = model.byShare.filter((r) => r.premiumAvailable && r.shareAvailable)
   const maxShare = Math.max(...plotted.map((r) => r.share), 1)
   const maxPremium = Math.max(...plotted.map((r) => r.premium), 1)
 
-  const points: Point[] = plotted.map((r, idx) => {
-    const y = metricIsShare ? r.share : r.metricValue
-    const sizeVal = sizeByPremium ? r.premium : r.share
-    const sizeMax = sizeByPremium ? maxPremium : maxShare
-    return {
-      x: r.premium,
-      y,
-      r: 9 + 17 * Math.sqrt(Math.max(sizeVal, 0) / sizeMax),
-      color: companyColor(r.id, r.focal, idx),
-      shortName: r.shortName,
-      premium: r.premium,
-      share: r.share,
-      metricLabel: metric.format(r.metricValue),
-      focal: r.focal,
-      isLeader: r.isLeader,
-      // The two biggest insurers (rightmost on the premium axis) label to the
-      // left — keeps the leader's label off the edge and separates the often
-      // adjacent #2/#3 bubbles so labels never collide.
-      labelSide: idx < 2 ? 'left' : 'right',
-    }
-  })
+  const points: Point[] = plotted.map((r, idx) => ({
+    x: r.premium,
+    y: r.share,
+    r: 10 + 16 * Math.sqrt(Math.max(r.share, 0) / maxShare),
+    color: companyColor(r.id, r.focal, idx),
+    shortName: r.shortName,
+    premium: r.premium,
+    share: r.share,
+    focal: r.focal,
+    isLeader: r.isLeader,
+  }))
 
-  const xMax = Math.ceil((maxPremium * 1.18) / 1000) * 1000
-  const ys = points.map((p) => p.y)
-  const yHi = Math.max(...ys, 1)
-  const yLo = Math.min(...ys, 0)
-  const yDomain: [number, number] = metricIsShare
-    ? [0, Math.ceil((yHi * 1.18) / 5) * 5]
-    : [Math.max(0, Math.floor(yLo - Math.max(2, (yHi - yLo) * 0.45))), Math.min(100, Math.ceil(yHi + Math.max(2, (yHi - yLo) * 0.45)))]
+  // Tight right padding (the data spreads across the full card width); generous
+  // headroom above so the top bubble's label is never clipped.
+  const xMax = Math.ceil((maxPremium * 1.1) / 1000) * 1000
+  const yMax = Math.ceil((maxShare * 1.28) / 5) * 5
 
-  const yAxisLabel = metricIsShare ? 'Market share (%)' : metric.axisLabel
-
-  // Custom bubble: glow (focal) → disc → crown (leader) → name + value label.
   const renderBubble = (props: { cx?: number; cy?: number; payload?: Point }) => {
-    const { cx, cy, payload } = props
-    if (cx == null || cy == null || !payload) return <g />
-    const p = payload
-    const labelX = p.labelSide === 'right' ? cx + p.r + 7 : cx - p.r - 7
-    const anchor = p.labelSide === 'right' ? 'start' : 'end'
+    const { cx, cy, payload: p } = props
+    if (cx == null || cy == null || !p) return <g />
     const stroke = p.focal ? FOCAL : p.isLeader ? LEADER_RING : '#FFFFFF'
     const strokeWidth = p.focal ? 2.6 : p.isLeader ? 2.4 : 1.2
+    const shareColor = p.focal ? FOCAL : p.isLeader ? '#9C7430' : '#3D5F9F'
+    // Selected company labels below its bubble; everyone else above — this
+    // splits the otherwise-adjacent labels on the ascending diagonal.
+    const below = p.focal
+    const nameY = below ? cy + p.r + 13 : cy - p.r - 14
+    const shareY = below ? cy + p.r + 25 : cy - p.r - 2
     return (
       <g>
         {p.focal && <circle cx={cx} cy={cy} r={p.r + 7} fill="rgba(39,69,126,0.12)" />}
         {!p.focal && p.isLeader && <circle cx={cx} cy={cy} r={p.r + 6} fill="rgba(182,139,58,0.12)" />}
-        <circle cx={cx} cy={cy} r={p.r} fill={p.color} fillOpacity={0.88} stroke={stroke} strokeWidth={strokeWidth} />
-        <text x={labelX} y={cy - 2} textAnchor={anchor} fontSize={11.5} fontWeight={600} fill="#172B4D">
+        <circle cx={cx} cy={cy} r={p.r} fill={p.color} fillOpacity={0.9} stroke={stroke} strokeWidth={strokeWidth} />
+        <text x={cx} y={nameY} textAnchor="middle" fontSize={11.5} fontWeight={600} fill="#172B4D">
           {p.shortName}
         </text>
-        <text x={labelX} y={cy + 11} textAnchor={anchor} fontSize={10.5} fill="#6B7280">
-          {p.share.toFixed(1)}%{!metricIsShare ? ` · ${p.metricLabel}` : ''}
+        <text x={cx} y={shareY} textAnchor="middle" fontSize={12} fontWeight={700} fill={shareColor}>
+          {p.share.toFixed(1)}%
         </text>
       </g>
     )
@@ -126,7 +95,7 @@ export function MarketBubbleChart({ model, height = 320 }: { model: OverviewMode
 
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <ScatterChart margin={{ top: 22, right: 30, bottom: 26, left: 10 }}>
+      <ScatterChart margin={{ top: 34, right: 30, bottom: 28, left: 12 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" />
         <XAxis
           type="number"
@@ -141,18 +110,15 @@ export function MarketBubbleChart({ model, height = 320 }: { model: OverviewMode
         <YAxis
           type="number"
           dataKey="y"
-          domain={yDomain}
+          domain={[0, yMax]}
           unit="%"
           tick={{ fontSize: 11, fill: '#6B7280' }}
           tickLine={false}
           axisLine={{ stroke: '#EEF1F7' }}
-          width={48}
-          label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', offset: 14, fontSize: 10.5, fill: '#6B7280', style: { textAnchor: 'middle' } }}
+          width={46}
+          label={{ value: 'Market share (%)', angle: -90, position: 'insideLeft', offset: 12, fontSize: 10.5, fill: '#6B7280', style: { textAnchor: 'middle' } }}
         />
-        <Tooltip
-          cursor={{ strokeDasharray: '3 3', stroke: '#C7D2E5' }}
-          content={<ChartTooltip metricLabel={metric.label} metricIsShare={metricIsShare} />}
-        />
+        <Tooltip cursor={{ strokeDasharray: '3 3', stroke: '#C7D2E5' }} content={<ChartTooltip />} />
         <Scatter data={points} shape={renderBubble} isAnimationActive={false} />
       </ScatterChart>
     </ResponsiveContainer>

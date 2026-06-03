@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { BarChart3, Building2, CircleDot, Layers, ListOrdered, Network, Percent, Shield } from 'lucide-react'
+import { BarChart3, Building2, CircleDot, Layers, Network, Percent, Shield } from 'lucide-react'
 import { RadialGauge } from '@/components/RadialGauge'
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingBars } from '@/components/MetricRankingBars'
-import { IndustryRankTable } from '@/components/IndustryRankTable'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
@@ -218,53 +217,40 @@ export function ExecutiveOverview() {
           <MetricToggle value={metricId} onChange={setMetricId} />
         </div>
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
-          {/* Left card — market map (share/premium) or ranked bars (ratios) */}
-          <div className="card-surface flex min-h-[400px] min-w-0 flex-col p-4 lg:flex-[1.45]">
-            <div className="mb-1 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <LeftIcon className="h-4 w-4 text-navy-primary" />
-                <p className="font-display text-[14px] text-navy-deep">{leftTitle}</p>
-              </div>
-              <span className="text-[10.5px] text-ink-secondary">{leftCaption}</span>
+        {/* One full-width card: bubble market map (Market Share) or a ranked
+            horizontal bar board (Premium / Settlement / Renewal / Retention). */}
+        <div className="card-surface flex min-h-[440px] w-full min-w-0 flex-col p-4 sm:p-5">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <LeftIcon className="h-4 w-4 text-navy-primary" />
+              <p className="font-display text-[14px] text-navy-deep">{leftTitle}</p>
             </div>
-
-            {isBubble ? (
-              <>
-                <MarketBubbleChart model={model} height={288} />
-                {/* Color legend (bubble only — bars label themselves) */}
-                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-                  {model.byShare.map((r, i) => (
-                    <span key={r.id} className="inline-flex items-center gap-1 text-[10px] text-ink-secondary">
-                      <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
-                      {r.shortName}
-                    </span>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <MetricRankingBars model={model} />
-            )}
-
-            <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
-              <span className="text-[9px] text-ink-secondary/80">
-                <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
-                <span className="font-semibold text-champagne-deep">gold</span> = leader
-              </span>
-              <CardSource />
-            </div>
+            <span className="text-[10.5px] text-ink-secondary">{leftCaption}</span>
           </div>
 
-          {/* Ranking table */}
-          <div className="card-surface flex min-h-[400px] min-w-0 flex-col p-4 lg:min-w-[360px] lg:flex-[0.95]">
-            <div className="mb-2 flex items-center gap-1.5">
-              <ListOrdered className="h-4 w-4 text-navy-primary" />
-              <p className="font-display text-[14px] text-navy-deep">Top Players · {model.metric.label}</p>
-            </div>
-            <IndustryRankTable model={model} />
-            <div className="mt-auto flex justify-end pt-2">
-              <CardSource />
-            </div>
+          {isBubble ? (
+            <>
+              <MarketBubbleChart model={model} height={360} />
+              {/* Color legend (bubble only — bars label themselves) */}
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                {model.byShare.map((r, i) => (
+                  <span key={r.id} className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
+                    <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
+                    {r.shortName}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <MetricRankingBars model={model} />
+          )}
+
+          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+            <span className="text-[9px] text-ink-secondary/80">
+              <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
+              <span className="font-semibold text-champagne-deep">gold</span> = leader
+            </span>
+            <CardSource />
           </div>
         </div>
       </section>
