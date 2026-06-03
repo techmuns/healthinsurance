@@ -126,7 +126,7 @@ export default function App() {
         setTransit((t) => (t.visible && t.label === label && t.dir === dir ? t : { label, dir, visible: true }))
       }
       clearTimeout(hideTimer)
-      hideTimer = setTimeout(() => setTransit((t) => ({ ...t, visible: false })), 240)
+      hideTimer = setTimeout(() => setTransit((t) => ({ ...t, visible: false })), 320)
     }
     const onScroll = () => {
       if (!ticking) {
@@ -192,18 +192,27 @@ export default function App() {
         {/* Secondary navigation drawer (opened from the menu button) */}
         <NavDrawer open={drawerOpen} activeId={activeId} onClose={() => setDrawerOpen(false)} onNavigate={goFromNav} />
 
-        {/* Section-transition blob — soft navy glow naming the next section */}
+        {/* Section transition — a blue shadow that drags up from the bottom edge
+            plus a labelled blob, so a page change is unmistakably felt. */}
+        <div
+          aria-hidden
+          className={[
+            'pointer-events-none fixed inset-x-0 bottom-0 z-40 h-48 transition-all duration-300 ease-out',
+            transit.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0',
+          ].join(' ')}
+          style={{ background: 'radial-gradient(125% 100% at 50% 125%, rgba(39,69,126,0.30), rgba(49,90,169,0.12) 42%, transparent 72%)' }}
+        />
         <div
           aria-hidden={!transit.visible}
           className={[
-            'pointer-events-none fixed bottom-7 left-1/2 z-50 -translate-x-1/2 transition-all duration-300 ease-out',
-            transit.visible ? 'translate-y-0 opacity-100' : 'translate-y-3 opacity-0',
+            'pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 transition-all duration-300 ease-out',
+            transit.visible ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-8 scale-95 opacity-0',
           ].join(' ')}
         >
-          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-gradient-to-br from-[#2A4680] to-[#1B3260] px-4 py-2 text-[12.5px] font-medium text-white shadow-[0_12px_34px_rgba(23,43,77,0.4)] backdrop-blur-md">
-            {transit.dir === 1 ? <ArrowDown className="h-3.5 w-3.5 text-champagne" /> : <ArrowUp className="h-3.5 w-3.5 text-champagne" />}
+          <div className="flex items-center gap-2.5 rounded-full border border-white/20 bg-gradient-to-br from-[#3358A0] to-[#1B3260] px-5 py-2.5 text-[13px] font-medium text-white shadow-[0_0_0_6px_rgba(39,69,126,0.12),0_20px_48px_rgba(23,43,77,0.5)] backdrop-blur-md">
+            {transit.dir === 1 ? <ArrowDown className="h-4 w-4 text-champagne" /> : <ArrowUp className="h-4 w-4 text-champagne" />}
             <span className="text-white/70">{transit.dir === 1 ? 'Next' : 'Back to'}</span>
-            <span className="font-semibold">{transit.label}</span>
+            <span className="font-semibold tracking-tight">{transit.label}</span>
           </div>
         </div>
       </div>

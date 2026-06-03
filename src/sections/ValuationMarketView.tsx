@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts'
-import { ArrowRight, ArrowUpRight, Check, Info, Search, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Info, Search, TrendingDown, TrendingUp } from 'lucide-react'
 import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
-  focalFinancials,
   focalMultiples,
   FOCAL_VALUATION_ID,
   marketSnapshot,
@@ -16,7 +15,7 @@ import { srcTag } from '@/data/valuationSources'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import type { Insurer } from '@/data/types'
-import { CORAL, Eyebrow, GOLD, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
+import { CORAL, Eyebrow, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
 
 export function ValuationMarketView() {
   const company = useActiveCompany()
@@ -42,16 +41,6 @@ export function ValuationMarketView() {
     : 'Above Street targets'
   const premiumStance = premiumVsStar != null && premiumVsStar > 5
   const stanceLabel = premiumStance ? 'Premium to listed peers' : premiumVsStar != null && premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with peer'
-
-  // Drivers behind the multiple — all from the FY26 filing.
-  const justified = [
-    { label: 'Growth · GWP YoY', value: `+${focalFinancials.gwpGrowthFY26.toFixed(0)}%`, strong: focalFinancials.gwpGrowthFY26 >= 15, supports: true },
-    { label: 'Profit growth · PAT YoY', value: `+${focalFinancials.patGrowthFY26.toFixed(0)}%`, strong: focalFinancials.patGrowthFY26 >= 15, supports: true },
-    { label: 'Net margin · PAT/GWP', value: `${focalFinancials.netMarginFY26.toFixed(1)}%`, strong: focalFinancials.netMarginFY26 >= 4, supports: focalFinancials.netMarginFY26 > 0 },
-    { label: 'Retail-health share', value: `${focalFinancials.retailShareFY26.toFixed(1)}%`, strong: focalFinancials.retailShareDeltaBps > 0, supports: true },
-  ]
-  const supportCount = justified.filter((d) => d.strong).length
-  const justifiedVerdict = supportCount >= 3 ? 'Premium looks earned' : supportCount >= 2 ? 'Premium partly earned' : 'Premium hard to justify'
 
   // ── Operating-quality compass (relative, from insurers[] headline metrics) ──
   const peerGroup = insurers.filter((i) => i.peerGroup === company.peerGroup && i.id !== company.id)
@@ -116,62 +105,7 @@ export function ValuationMarketView() {
           </section>
 
 
-          {/* ═══ 3. MULTIPLE JUSTIFICATION ════════════════════════════════════════ */}
-          <section>
-            <Eyebrow label="Multiple Justification" title="Is the multiple justified?" note="FY26 · the multiple set against the operating drivers behind it" />
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.15fr]">
-              {/* The multiples */}
-              <div className="card-surface relative overflow-hidden p-5">
-                <span className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[radial-gradient(circle,rgba(39,69,126,0.08),transparent_65%)]" />
-                <div className="flex items-start justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Valuation Multiples</p>
-                  <ValPill c="secondary" />
-                </div>
-                <div className="mt-3 flex items-end gap-2">
-                  <span className="font-display text-[40px] leading-none text-navy-deep">{xMult(pGwp)}</span>
-                  <span className="mb-1.5 text-[12px] text-ink-secondary">P / GWP · FY26</span>
-                </div>
-                <p className="mt-1 text-[11.5px] text-ink-secondary">Price-to-premium — how the market prices each rupee of FY26 gross premium.</p>
-                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-soft-border pt-3">
-                  <MiniMult k="P / GWP" v={xMult(pGwp)} id="niva-pgwp" />
-                  <MiniMult k="P / E" v={xMult(focalMultiples.pe, 1)} id="niva-pe" />
-                  <MiniMult k="P / B" v={xMult(focalMultiples.pb, 1)} id="niva-pb" />
-                </div>
-              </div>
-
-              {/* Driver validation scorecard */}
-              <div className="card-surface flex flex-col p-5">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Does each driver back the premium?</p>
-                    <p className="mt-1 text-[11px] text-ink-secondary">Operating drivers from the FY26 filing — fast to scan.</p>
-                  </div>
-                  <ValPill c="verified" />
-                </div>
-                <div className="mt-3 grid flex-1 gap-2 sm:grid-cols-2">
-                  {justified.map((d) => (
-                    <div key={d.label} className="flex items-center gap-2 rounded-xl border border-soft-border bg-ice/50 px-2.5 py-2">
-                      <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={d.strong ? { background: '#E9F4EC', color: GREEN } : { background: '#FBF3E2', color: GOLD }}>
-                        {d.strong ? <Check className="h-3 w-3" /> : <Info className="h-3 w-3" />}
-                      </span>
-                      <span className="flex-1 truncate text-[11px] text-navy-deep">{d.label}</span>
-                      <span className="font-display text-[13px] leading-none tabular-nums text-navy-deep">{d.value}</span>
-                      <span className="rounded-full px-1.5 py-0.5 text-[9px] font-semibold" style={d.strong ? { background: '#E9F4EC', color: GREEN } : { background: '#FBF3E2', color: GOLD }}>{d.strong ? 'Strong' : 'Watch'}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex items-center justify-between border-t border-soft-border pt-3">
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold" style={{ background: supportCount >= 3 ? '#E9F4EC' : '#FBF3E2', color: supportCount >= 3 ? GREEN : GOLD }}>
-                    {supportCount >= 3 ? <Check className="h-3.5 w-3.5" /> : <Info className="h-3.5 w-3.5" />}
-                    {justifiedVerdict} · {supportCount}/4 drivers strong
-                  </span>
-                  <SourceTag {...srcTag('niva-fy26-gwp')} />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* ═══ 4. PEER COMPARISON ═══════════════════════════════════════════════ */}
+          {/* ═══ PEER COMPARISON ══════════════════════════════════════════════════ */}
           <section>
             <Eyebrow
               label="Peer Comparison"
@@ -454,12 +388,3 @@ function Tile({ k, v, sub, tone = 'navy' }: { k: string; v: string; sub?: string
   )
 }
 
-function MiniMult({ k, v, id }: { k: string; v: string; id: string }) {
-  return (
-    <div className="rounded-lg bg-ice/60 px-2.5 py-1.5 text-center">
-      <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{k}</p>
-      <p className="mt-0.5 font-display text-[15px] leading-none text-navy-deep">{v}</p>
-      <div className="mt-1 flex justify-center"><OpenSource id={id} /></div>
-    </div>
-  )
-}

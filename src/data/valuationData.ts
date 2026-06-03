@@ -123,21 +123,14 @@ export interface AnalystReport {
   confidence: ValConfidence
 }
 
-// Two verifiable reads: the most recent datable single-broker note we can cite
-// (Motilal Oswal, via Business Standard) and the live Street consensus. Other
-// individual broker targets (Nuvama, Kotak, ICICI Sec, Jefferies…) are NOT
-// listed because we cannot open a citable note for them — they are surfaced as
-// "Source pending" in the UI rather than invented.
+// Per-broker analyst rows. Only Motilal Oswal has an individually citable note
+// (via Business Standard) — it carries a real rating, target, date and source.
+// The other brokers below are documented coverers of the name, but we cannot
+// open a citable note for each, so their rating / target / date / thesis stay
+// null and the row is shown as "Source pending" — NEVER invented. The 8-analyst
+// Street consensus is carried separately in `analystConsensus`.
+const PENDING_THESIS = 'Covers the stock; individual note not citable here yet.'
 export const analystReports: AnalystReport[] = [
-  {
-    brokerage: 'Street consensus',
-    rating: 'Buy',
-    targetPrice: 87.6,
-    reportDate: 'May 2026',
-    thesis: 'Buy-skewed — 8 analysts, 0 sell; avg ₹87.6, range ₹76–100.',
-    sourceId: 'niva-consensus',
-    confidence: 'secondary',
-  },
   {
     brokerage: 'Motilal Oswal',
     rating: 'Buy',
@@ -147,10 +140,14 @@ export const analystReports: AnalystReport[] = [
     sourceId: 'niva-mosl',
     confidence: 'secondary',
   },
+  { brokerage: 'Nuvama', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
+  { brokerage: 'Kotak Institutional Equities', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
+  { brokerage: 'ICICI Securities', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
+  { brokerage: 'Jefferies', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
 ]
 
-/** Count of brokers we know cover the name but whose individual notes are not citable here. */
-export const coveragePendingCount = Math.max(0, analystConsensus.analystCount - 1)
+/** Analysts in the consensus whose individual note isn't itemised above. */
+export const coveragePendingCount = Math.max(0, analystConsensus.analystCount - analystReports.length)
 
 // ── Analyst thesis — grounded in the FY26 filing + the cited broker note ─────
 export interface AnalystThesis {
