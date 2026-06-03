@@ -46,3 +46,18 @@ export const navGroups: { label: string; itemIds: string[] }[] = [
   { label: 'Company', itemIds: ['profitability', 'valuation', 'peers'] },
   { label: 'Governance', itemIds: ['ownership', 'management'] },
 ]
+
+// ── Frequency-toggle ownership ──────────────────────────────────────────────
+// The global header frequency toggle (Monthly / Quarterly / Annual) drives ONLY
+// these "operating" sections. Profitability runs its own local Quarterly/Annual
+// toggle; Valuation / Ownership / Management have no frequency toggle at all.
+export const OPERATING_SECTION_IDS = ['overview', 'market', 'growth', 'distribution', 'peers'] as const
+
+export type SectionFrequencyKind = 'operating' | 'profitability' | 'none'
+
+/** How a section relates to the frequency controls. */
+export function sectionFrequencyKind(sectionId: string): SectionFrequencyKind {
+  if ((OPERATING_SECTION_IDS as readonly string[]).includes(sectionId)) return 'operating'
+  if (sectionId === 'profitability') return 'profitability'
+  return 'none'
+}

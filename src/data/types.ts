@@ -44,6 +44,8 @@ export interface SeriesPoint {
 
 export type PeerGroup = 'SAHI' | 'General' | 'Life' | 'All'
 export type TimePeriod = 'Monthly' | 'Quarterly' | 'Annual'
+/** Profitability has its OWN frequency (no Monthly — profit isn't reported monthly). */
+export type ProfitabilityFrequency = 'Quarterly' | 'Annual'
 export type Scope = 'industry-overview' | 'company-view'
 export type Dataset = 'mock' | 'live'
 

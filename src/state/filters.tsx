@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Dataset, DashboardFilters, PeerGroup, Scope, TimePeriod } from '@/data/types'
+import type { Dataset, DashboardFilters, PeerGroup, ProfitabilityFrequency, Scope, TimePeriod } from '@/data/types'
 import type { SeriesPoint } from '@/data/types'
 import { insurers, FOCAL_COMPANY, DATA_FRESHNESS } from '@/data/mockData'
 import { DEFAULT_RANGE, isPeriodLabel, labelInRange, type DateRange } from '@/lib/dateRange'
@@ -12,6 +12,9 @@ interface FilterContextValue extends DashboardFilters {
   setPeriod: (t: TimePeriod) => void
   setRange: (r: DateRange) => void
   setDataset: (d: Dataset) => void
+  /** Profitability's OWN frequency — independent of the global `period` toggle. */
+  profitabilityFrequency: ProfitabilityFrequency
+  setProfitabilityFrequency: (f: ProfitabilityFrequency) => void
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null)
@@ -21,6 +24,9 @@ export function FilterProvider({ children }: { children: ReactNode }) {
   const [highlightedCompany, setHighlightedCompanyState] = useState(FOCAL_COMPANY)
   const [peerGroup, setPeerGroupState] = useState<PeerGroup>('SAHI')
   const [period, setPeriod] = useState<TimePeriod>('Annual')
+  // Profitability ignores the global `period` and tracks its own Quarterly/Annual
+  // toggle (profit isn't reported monthly, so it has no Monthly option).
+  const [profitabilityFrequency, setProfitabilityFrequency] = useState<ProfitabilityFrequency>('Annual')
   const [range, setRange] = useState<DateRange>(DEFAULT_RANGE)
   const [dataset, setDataset] = useState<Dataset>('mock')
 
@@ -57,6 +63,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       highlightedCompany,
       peerGroup,
       period,
+      profitabilityFrequency,
       range,
       dataset,
       updatedAsOf: DATA_FRESHNESS.lastUpdated,
@@ -64,10 +71,11 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       setHighlightedCompany,
       setPeerGroup,
       setPeriod,
+      setProfitabilityFrequency,
       setRange,
       setDataset,
     }),
-    [scope, highlightedCompany, peerGroup, period, range, dataset, setHighlightedCompany],
+    [scope, highlightedCompany, peerGroup, period, profitabilityFrequency, range, dataset, setHighlightedCompany],
   )
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>

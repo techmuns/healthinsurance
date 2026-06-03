@@ -91,16 +91,28 @@ export function resolvePeriodAvailability(
     return { period, available: true, kind: 'available', title: `${period} data`, body: '', lastUpdated }
   }
 
-  // The whole period hasn't been downloaded yet (e.g. Monthly) → pending for all.
+  // The whole period hasn't been downloaded yet → an honest, frequency-specific
+  // pending/disclosure state (never a blank chart or a fabricated value).
   if (!periodHasAnyData(period)) {
-    return {
-      period,
-      available: false,
-      kind: 'period-pending',
-      title: `${period} data pending`,
-      body: `${period} figures haven't been downloaded yet. This section turns on automatically once the ${period.toLowerCase()} data lands — no redesign needed.`,
-      lastUpdated,
-    }
+    const copy =
+      period === 'Monthly'
+        ? {
+            // Monthly premium IS publicly disclosed (GI Council segment feed) — so
+            // this is genuinely "pending ingestion", not "undisclosed". Metrics
+            // with no monthly source at all simply stay on Quarterly/Annual.
+            title: 'Monthly data pending',
+            body: 'Monthly figures are not ingested yet for this selection. Where a metric is not published monthly, use the Quarterly or Annual view.',
+          }
+        : period === 'Quarterly'
+          ? {
+              title: 'Quarterly data pending',
+              body: 'Quarterly data is pending or not disclosed for this selection — the Annual view carries the full reported story.',
+            }
+          : {
+              title: 'Annual data pending',
+              body: 'Annual data for this selection has not been ingested yet — it turns on automatically once it lands.',
+            }
+    return { period, available: false, kind: 'period-pending', title: copy.title, body: copy.body, lastUpdated }
   }
 
   // The dataset exists, but not for this specific company yet.

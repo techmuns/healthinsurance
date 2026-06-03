@@ -44,11 +44,12 @@ import {
 import { SignalBadge } from '@/components/SignalBadge'
 import { SourceTag } from '@/components/SourceTag'
 import { Drawer } from '@/components/Drawer'
+import { SegmentedControl } from '@/components/SegmentedControl'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance } from '@/lib/dataLayer'
-import type { Insurer, TimePeriod } from '@/data/types'
+import type { Insurer, ProfitabilityFrequency, TimePeriod } from '@/data/types'
 import { BasisExplainer, BASIS_TONE } from '@/components/AccountingBasisControls'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
 import { getEarningsBridge } from '@/data/earningsBridge'
@@ -577,9 +578,9 @@ function resolveStage(
   const rupee = (v: number | null, badge: (n: number) => { label: string; tone: StatusTone }) =>
     v == null ? { value: 'Pending', missing: true, badge: pending } : { value: crc(v), missing: false, badge: badge(v) }
 
-  // Quarterly / Monthly — only ratio + PAT metrics have a standalone-quarter cell.
+  // Quarterly — only ratio + PAT metrics have a standalone-quarter cell.
   if (period !== 'Annual') {
-    if (period === 'Monthly' || !quarter) return { value: 'Pending', missing: true, badge: pending }
+    if (!quarter) return { value: 'Pending', missing: true, badge: pending }
     const ig = getBasisProfit(company.id, 'igaap', quarter)
     const ifr = getBasisProfit(company.id, 'ifrs', quarter)
     switch (id) {
@@ -1078,7 +1079,7 @@ function lensSource(id: NodeId, companyId: string): ResolvedSource {
 // Quarterly detail body. Combined ratio and PAT (or PAT margin) have a real Q4
 // source; other stages (and Monthly) have no quarterly source yet → honest
 // Pending. Shows the quarter value + the prior Q4 as a thin two-point trend.
-function quarterlyNodeBody(stage: LensStage, lens: LensConfig, company: Insurer, period: TimePeriod, quarter: BasisPeriod | null, quarterPrev: BasisPeriod | null): ReactNode {
+function quarterlyNodeBody(stage: LensStage, lens: LensConfig, company: Insurer, quarter: BasisPeriod | null, quarterPrev: BasisPeriod | null): ReactNode {
   const id = stage.semantic
   type QM = { key: 'combinedRatio' | 'patMarginGwp' | 'pat' | 'claimsRatio' | 'expenseRatio'; basis: AccountingBasis; pct: boolean; lowerBetter: boolean; label: string }
   let qm: QM | null = null
@@ -1094,7 +1095,7 @@ function quarterlyNodeBody(stage: LensStage, lens: LensConfig, company: Insurer,
   const cur = qm && quarter ? getBasisProfit(company.id, qm.basis, quarter)?.[qm.key] ?? null : null
   if (!qm || cur == null || !quarter) {
     return (
-      <PendingNote>{`${period === 'Quarterly' ? 'Quarterly' : 'Monthly'} ${stage.label.toLowerCase()} has no standalone-quarter source yet. Switch Period to Annual for the full story, the bridge and the investor read.`}</PendingNote>
+      <PendingNote>{`Quarterly profitability data pending — ${stage.label.toLowerCase()} has no standalone-quarter source yet. Switch this section to Annual for the full story, the bridge and the investor read.`}</PendingNote>
     )
   }
   const prior = quarterPrev ? getBasisProfit(company.id, qm.basis, quarterPrev)?.[qm.key] ?? null : null
@@ -2032,7 +2033,7 @@ function ProfitabilityDetail({ stage, lens, company, series, ctx, period, quarte
     return (
       <div key={`${lens.key}-${id}`} className="animate-fade-in space-y-4">
         {header}
-        {quarterlyNodeBody(stage, lens, company, period, quarter, quarterPrev)}
+        {quarterlyNodeBody(stage, lens, company, quarter, quarterPrev)}
         {trend && <StageTrendCard data={trend} accent={meta.accent} />}
         {read}
       </div>
@@ -2160,7 +2161,11 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
   const lens = lensFromRoute(lensKey)
   const basis = lens.dataBasis
   const company = useActiveCompany()
-  const { range, period } = useFilters()
+  // Profitability runs its OWN Quarterly/Annual frequency (it ignores the global
+  // header Period toggle — profit isn't reported monthly). Aliased to `period`
+  // so the section's existing period-aware logic is unchanged.
+  const { range, profitabilityFrequency, setProfitabilityFrequency } = useFilters()
+  const period: TimePeriod = profitabilityFrequency
   const navigate = onNavigate ?? (() => {})
   // Clip the annual story to the dashboard-wide Data Range (fiscal-year axis).
   const series = getAnnualSeries(company.id).filter((p) => labelInRange(p.fy, range))
@@ -2187,7 +2192,7 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
       ? (`Q4${latestFy}` as BasisPeriod)
       : null
   const quarterPrev: BasisPeriod | null = quarter === 'Q4FY26' && labelInRange('FY25', range) ? 'Q4FY25' : null
-  const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : period === 'Monthly' ? 'Monthly' : 'FY25'
+  const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : 'FY25'
 
   const stages = buildLensStages(lens, company, series, basisCtx, period, quarter)
 
@@ -2256,6 +2261,17 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
             <BasisExplainer basis={basis} className="mt-1.5 max-w-2xl" />
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
+            {/* Profitability's OWN frequency toggle — independent of the global
+                header Period. No Monthly (profit isn't reported monthly). */}
+            <div className="flex flex-col items-end gap-0.5">
+              <SegmentedControl<ProfitabilityFrequency>
+                options={['Quarterly', 'Annual']}
+                value={profitabilityFrequency}
+                onChange={setProfitabilityFrequency}
+                size="sm"
+              />
+              <span className="text-[9px] uppercase tracking-[0.08em] text-ink-secondary/70">Profitability frequency</span>
+            </div>
             <LensSwitcher activeKey={lens.key} onNavigate={navigate} />
           </div>
         </div>

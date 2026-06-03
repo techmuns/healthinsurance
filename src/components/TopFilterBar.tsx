@@ -4,6 +4,7 @@ import { DataRangeControl } from './DataRangeControl'
 import { useFilters, useActiveCompany } from '@/state/filters'
 import { insurers } from '@/data/mockData'
 import { resolvePeriodAvailability } from '@/lib/periodData'
+import { sectionFrequencyKind } from '@/nav'
 import type { PeerGroup, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
@@ -28,9 +29,20 @@ export function TopFilterBar({ section }: { section?: string }) {
     setPeerGroup,
     period,
     setPeriod,
+    profitabilityFrequency,
   } = useFilters()
   const company = useActiveCompany()
   const isOverview = section === 'overview'
+
+  // The global Period toggle drives only the "operating" sections. Profitability
+  // runs its own local Quarterly/Annual toggle; Valuation/Ownership/Management
+  // have no frequency. `effectiveFreq` is the frequency that actually governs the
+  // CURRENT section (null where frequency doesn't apply) — so the data-status
+  // pill never claims a misleading "<period> pending" on a non-frequency section.
+  const freqKind = sectionFrequencyKind(section ?? '')
+  const globalApplies = freqKind === 'operating'
+  const effectiveFreq: TimePeriod | null =
+    freqKind === 'operating' ? period : freqKind === 'profitability' ? profitabilityFrequency : null
 
   // Company dropdown options are scoped to the current peer group — picking
   // a peer group first narrows the universe, then the user selects a
@@ -41,7 +53,7 @@ export function TopFilterBar({ section }: { section?: string }) {
   // selected company has real data at the selected period, and that period's
   // last-updated date. So changing Period/Company is visible in the control bar
   // itself, not only down in the page.
-  const availability = resolvePeriodAvailability(company.id, company.shortName, period)
+  const availability = resolvePeriodAvailability(company.id, company.shortName, effectiveFreq ?? period)
 
   return (
     <div className="sticky top-0 z-30 px-4 pt-3 sm:px-6">
@@ -83,28 +95,45 @@ export function TopFilterBar({ section }: { section?: string }) {
         {/* Data Range — dashboard-wide active window. Granularity follows the
             Period toggle (FY / quarter / month). Drives every clipped chart. */}
         <div>
-          <FieldLabel hint="Active window — every chart, card and table is clipped to this range">
+          <FieldLabel hint="Active window — every chart, card and table is clipped to this range. In Quarterly/Monthly, the quarter/month picker is limited to the selected years.">
             Data Range
           </FieldLabel>
-          <DataRangeControl />
+          <DataRangeControl frequency={effectiveFreq} />
         </div>
 
         <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
 
-        {/* Period */}
+        {/* Period — the GLOBAL frequency toggle. Drives only the operating
+            sections; dimmed + annotated on sections that don't use it. */}
         <div>
-          <FieldLabel hint="Monthly / quarterly series pending the next IRDAI ingestion run">Period</FieldLabel>
-          <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
+          <FieldLabel hint="Monthly / Quarterly / Annual — applies to the operating sections only (Overview, Market, Premium, Distribution, Peers)">Period</FieldLabel>
+          <div className={globalApplies ? '' : 'pointer-events-none select-none opacity-40'} aria-disabled={!globalApplies}>
+            <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
+          </div>
+          <p className="mt-1 max-w-[15rem] text-[9.5px] leading-tight text-ink-secondary/80">
+            {freqKind === 'operating'
+              ? 'Applies to operating sections only.'
+              : freqKind === 'profitability'
+                ? 'Profitability uses its own Annual / Quarterly toggle.'
+                : 'Not applicable to this section.'}
+          </p>
         </div>
 
         <div className="ml-auto flex items-end gap-4">
-          {/* Data status — reflects the SELECTED company + period: "Official"
-              when real data exists, or an honest "<Period> pending" otherwise. */}
+          {/* Data status — reflects the SELECTED company + the frequency that
+              actually governs this section. Sections with no frequency (Valuation /
+              Ownership / Management) show a neutral "Source-based" pill instead of
+              a misleading "<period> pending". */}
           <div>
-            <FieldLabel hint={availability.available ? 'Every value is real, from official filings — hover any source tag for the URL' : availability.body}>
+            <FieldLabel hint={effectiveFreq == null ? 'This section reads from its own source on its own cadence — see the source tag inside the section' : availability.available ? 'Every value is real, from official filings — hover any source tag for the URL' : availability.body}>
               Data status
             </FieldLabel>
-            {availability.available ? (
+            {effectiveFreq == null ? (
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-soft-border bg-card px-2.5 py-1.5 text-[12px] font-semibold text-ink-secondary">
+                <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                Source-based
+              </span>
+            ) : availability.available ? (
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-teal-soft px-2.5 py-1.5 text-[12px] font-semibold text-teal ring-1 ring-[#CFE3DA]">
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
                 Official
@@ -112,16 +141,16 @@ export function TopFilterBar({ section }: { section?: string }) {
             ) : (
               <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#FBF6EA] px-2.5 py-1.5 text-[12px] font-semibold text-[#8C6B1A] ring-1 ring-[#EAD9B6]">
                 <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                {period} pending
+                {effectiveFreq} pending
               </span>
             )}
           </div>
 
-          {/* Updated — the selected period's last-ingestion date (honest per period). */}
+          {/* Updated — the governing frequency's last-ingestion date (honest per period). */}
           <div className="hidden md:block">
             <FieldLabel>Updated</FieldLabel>
             <span className="inline-flex items-center rounded-lg border border-soft-border bg-card px-2.5 py-1.5 text-[12px] font-semibold text-navy-deep">
-              {availability.lastUpdated ?? '—'}
+              {effectiveFreq == null ? '—' : availability.lastUpdated ?? '—'}
             </span>
           </div>
         </div>
