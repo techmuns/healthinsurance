@@ -1,114 +1,22 @@
 import { useState } from 'react'
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts'
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ExternalLink,
-  Info,
-  Minus,
-  Search,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, Info, Search, TrendingDown, TrendingUp } from 'lucide-react'
 import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
-  analystReports,
-  coveragePendingCount,
   focalFinancials,
   focalMultiples,
   FOCAL_VALUATION_ID,
   marketSnapshot,
   peerValuation,
   UNLISTED_METHODOLOGY,
-  type Rating,
-  type ValConfidence,
   type PeerValuationRow,
 } from '@/data/valuationData'
-import { srcTag, valSrc } from '@/data/valuationSources'
+import { srcTag } from '@/data/valuationSources'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import type { Insurer } from '@/data/types'
-
-// ── Colour psychology (kept subtle, light, source-backed) ────────────────────
-//   Navy      → trust, institutional seriousness, the focal name
-//   Teal      → verified positive signal · upside · value created since listing
-//   Green     → strong operating support behind the multiple
-//   Gold      → premium valuation · secondary confidence · watch item
-//   Blue-gray → neutral analytical context (peers, IPO reference)
-//   Coral     → risk · downside · weak support (only where the data is negative)
-const NAVY = '#27457E'
-const TEAL = '#168E8E'
-const GREEN = '#3F9C6B'
-const GOLD = '#B68B3A'
-const PEER = '#A6B2C6'
-const CORAL = '#C2766B'
-
-const clamp = (v: number, lo = 16, hi = 96) => Math.max(lo, Math.min(hi, v))
-const fmtCr = (v: number | null) => (v == null ? 'n/a' : v >= 1000 ? `₹${(v / 1000).toFixed(1)}k Cr` : `₹${v.toFixed(0)} Cr`)
-const px = (v: number | null) => (v == null ? 'Pending' : `₹${Number.isInteger(v) ? v : v.toFixed(1)}`)
-const xMult = (v: number | null, d = 2) => (v == null ? 'n/a' : `${v.toFixed(d)}x`)
-const upPct = (v: number | null) => (v == null ? 'Pending' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`)
-
-const ratingTone: Record<Rating, { fg: string; bg: string }> = {
-  Buy: { fg: '#0E6F6D', bg: '#E2F4F1' },
-  Hold: { fg: '#9A6B12', bg: '#FBF3E2' },
-  Sell: { fg: '#B0564A', bg: '#F8ECEC' },
-}
-
-const VAL_TONE: Record<ValConfidence, { label: string; fg: string; bg: string; dot: string }> = {
-  verified: { label: 'Verified', fg: '#0E6F6D', bg: '#E2F4F1', dot: TEAL },
-  secondary: { label: 'Secondary', fg: '#9A6B12', bg: '#FBF3E2', dot: GOLD },
-  pending: { label: 'Source pending', fg: '#64748B', bg: '#EEF1F6', dot: '#94A3B8' },
-}
-
-/** Verified / Secondary / Source-pending validation status pill. */
-function ValPill({ c, className = '' }: { c: ValConfidence; className?: string }) {
-  const t = VAL_TONE[c]
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none ${className}`} style={{ color: t.fg, background: t.bg }}>
-      <span className="h-1.5 w-1.5 rounded-full" style={{ background: t.dot }} />
-      {t.label}
-    </span>
-  )
-}
-
-/** Small "Open source" button — one click opens the exact report / filing. */
-function OpenSource({ id }: { id: string }) {
-  const s = valSrc(id)
-  if (!s || !s.source_url) {
-    return <span className="inline-flex items-center gap-1 text-[10px] font-medium italic text-ink-secondary/70">Source pending</span>
-  }
-  return (
-    <a
-      href={s.source_url}
-      target="_blank"
-      rel="noreferrer"
-      title={`${s.report_title} — opens in a new tab`}
-      className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-navy-primary transition-all hover:border-muted-blue hover:bg-white hover:text-navy-deep hover:shadow-soft"
-    >
-      Open source
-      <ExternalLink className="h-2.5 w-2.5" />
-    </a>
-  )
-}
-
-function Eyebrow({ label, title, note, right }: { label: string; title: string; note?: string; right?: React.ReactNode }) {
-  return (
-    <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-      <div className="flex items-start gap-2.5">
-        <span className="mt-1 h-7 w-1 rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">{label}</p>
-          <h2 className="mt-0.5 font-display text-[20px] leading-tight text-navy-deep">{title}</h2>
-          {note && <p className="mt-0.5 text-[11.5px] text-ink-secondary">{note}</p>}
-        </div>
-      </div>
-      {right}
-    </div>
-  )
-}
+import { CORAL, Eyebrow, GOLD, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
 
 export function ValuationMarketView() {
   const company = useActiveCompany()
@@ -207,98 +115,6 @@ export function ValuationMarketView() {
             </div>
           </section>
 
-          {/* ═══ 2. STREET VIEW ═══════════════════════════════════════════════════ */}
-          <section>
-            <Eyebrow label="Street View" title="What does the Street think it's worth?" note={`${ac.analystCount} analysts cover the stock · ${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell`} right={<ValPill c="secondary" />} />
-            <div className="card-surface p-5">
-              <div className="grid gap-4 lg:grid-cols-[1.25fr_1fr]">
-                {/* Compact KPI grid */}
-                <div>
-                  <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                    {[
-                      { k: 'Consensus target', v: px(target), tone: 'navy' as const, sub: 'avg of Street' },
-                      { k: 'Current price', v: px(price), tone: 'navy' as const, sub: marketSnapshot.priceAsOf },
-                      { k: 'Implied upside', v: upPct(upsideConsensus), tone: (upsideConsensus ?? 0) >= 0 ? ('teal' as const) : ('red' as const), sub: 'to consensus' },
-                      { k: 'Highest target', v: px(ac.highestTargetPrice), tone: 'teal' as const, sub: 'Street high' },
-                      { k: 'Lowest target', v: px(ac.lowestTargetPrice), tone: 'navy' as const, sub: 'Street low' },
-                      { k: 'Analysts', v: `${ac.analystCount}`, tone: 'navy' as const, sub: `${ac.buyCount} Buy · ${ac.sellCount} Sell` },
-                    ].map((kpi) => (
-                      <div key={kpi.k} className="rounded-xl border border-soft-border bg-ice/50 px-3 py-2.5">
-                        <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{kpi.k}</p>
-                        <p className={`mt-1 font-display text-[18px] leading-none ${kpi.tone === 'teal' ? 'text-teal' : kpi.tone === 'red' ? 'text-signal-negative' : 'text-navy-deep'}`}>{kpi.v}</p>
-                        <p className="mt-0.5 text-[9px] text-ink-secondary/80">{kpi.sub}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-soft-border bg-white/60 px-3 py-2">
-                    <span className="text-[11px] font-semibold text-navy-deep">Rating split</span>
-                    <div className="flex h-2.5 w-40 overflow-hidden rounded-full bg-soft-border">
-                      <span style={{ width: `${(ac.buyCount / ac.analystCount) * 100}%`, background: ratingTone.Buy.fg }} />
-                      <span style={{ width: `${(ac.holdCount / ac.analystCount) * 100}%`, background: ratingTone.Hold.fg }} />
-                      <span style={{ width: `${(ac.sellCount / ac.analystCount) * 100}%`, background: ratingTone.Sell.fg }} />
-                    </div>
-                    <span className="text-[11px] text-ink-secondary"><b className="text-teal">{ac.buyCount} Buy</b> · <b className="text-champagne-deep">{ac.holdCount} Hold</b> · <b className="text-signal-negative">{ac.sellCount} Sell</b></span>
-                  </div>
-                </div>
-
-                {/* Analyst target range */}
-                <div className="rounded-xl border border-soft-border bg-gradient-to-br from-[#FBFCFE] to-[#F4F7FB] p-3.5">
-                  <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Where the price sits in the target range</p>
-                  <LensRange price={price} target={target} lo={ac.lowestTargetPrice} hi={ac.highestTargetPrice} analysts={ac.analystCount} />
-                </div>
-              </div>
-
-              {/* Analyst table — every row carries a clickable source + confidence */}
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-left text-[11.5px]">
-                  <thead>
-                    <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
-                      <th className="py-1.5 pr-3 font-semibold">Analyst / Source</th>
-                      <th className="py-1.5 pr-3 font-semibold">Valuation view</th>
-                      <th className="py-1.5 pr-3 text-right font-semibold">Key number</th>
-                      <th className="py-1.5 pr-3 font-semibold">Date</th>
-                      <th className="py-1.5 pr-3 font-semibold">Source</th>
-                      <th className="py-1.5 font-semibold">Confidence</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {analystReports.map((r) => {
-                      const up = r.targetPrice != null ? (r.targetPrice / price - 1) * 100 : null
-                      return (
-                        <tr key={r.brokerage} className="border-b border-[#F2F4F8] align-top last:border-0">
-                          <td className="py-2 pr-3">
-                            <span className="font-semibold text-navy-deep">{r.brokerage}</span>
-                            {r.rating && <span className="ml-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold" style={{ color: ratingTone[r.rating].fg, background: ratingTone[r.rating].bg }}>{r.rating}</span>}
-                          </td>
-                          <td className="py-2 pr-3 text-ink-secondary">{r.thesis}</td>
-                          <td className="py-2 pr-3 text-right tabular-nums">
-                            <span className="font-semibold text-navy-deep">{px(r.targetPrice)}</span>
-                            {up != null && <span className={`ml-1 text-[10px] ${up >= 0 ? 'text-teal' : 'text-signal-negative'}`}>{upPct(up)}</span>}
-                          </td>
-                          <td className="whitespace-nowrap py-2 pr-3 text-ink-secondary">{r.reportDate}</td>
-                          <td className="py-2 pr-3"><OpenSource id={r.sourceId} /></td>
-                          <td className="py-2"><ValPill c={r.confidence} /></td>
-                        </tr>
-                      )
-                    })}
-                    {/* Honest coverage gap — never invent the other brokers' targets */}
-                    <tr className="align-top">
-                      <td className="py-2 pr-3 font-semibold text-ink-secondary">Other brokers ({coveragePendingCount}+)</td>
-                      <td className="py-2 pr-3 italic text-ink-secondary">Cover the name, but no citable note on record here</td>
-                      <td className="py-2 pr-3 text-right text-ink-secondary">—</td>
-                      <td className="py-2 pr-3 text-ink-secondary">—</td>
-                      <td className="py-2 pr-3"><span className="text-[10px] font-medium italic text-ink-secondary/70">Source pending</span></td>
-                      <td className="py-2"><ValPill c="pending" /></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[10.5px] text-ink-secondary">Targets shown only where a note is citable; the rest are marked <b>Source pending</b>, never invented.</p>
-                <SourceTag {...srcTag('niva-consensus')} />
-              </div>
-            </div>
-          </section>
 
           {/* ═══ 3. MULTIPLE JUSTIFICATION ════════════════════════════════════════ */}
           <section>
@@ -644,32 +460,6 @@ function MiniMult({ k, v, id }: { k: string; v: string; id: string }) {
       <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{k}</p>
       <p className="mt-0.5 font-display text-[15px] leading-none text-navy-deep">{v}</p>
       <div className="mt-1 flex justify-center"><OpenSource id={id} /></div>
-    </div>
-  )
-}
-
-function LensRange({ price, target, lo, hi, analysts }: { price: number; target: number | null; lo: number | null; hi: number | null; analysts: number }) {
-  if (lo == null || hi == null || hi <= lo) return <p className="mt-3 text-[10px] text-ink-secondary">Target range pending.</p>
-  const pct = (v: number) => Math.max(2, Math.min(98, ((v - lo) / (hi - lo)) * 100))
-  const near = Math.abs(price - (target ?? price)) / (target ?? price) < 0.04
-  const priceTone = near ? GOLD : target != null && price < target ? TEAL : CORAL
-  return (
-    <div className="mt-3">
-      <p className="mb-1 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">Analyst target range · {analysts} analysts</p>
-      <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg,#F8ECEC,#FBF3E2,#E6F4F1)' }}>
-        {target != null && <span className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-navy-primary/45" style={{ left: `${pct(target)}%` }} />}
-        <span className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${pct(price)}%`, background: priceTone }} />
-      </div>
-      <div className="mt-1 flex justify-between text-[8.5px] text-ink-secondary">
-        <span>Low {px(lo)}</span>
-        <span className="font-semibold text-navy-deep/70">Cons. {px(target)}</span>
-        <span>High {px(hi)}</span>
-      </div>
-      <div className="mt-1.5 flex items-center gap-3 text-[8.5px] text-ink-secondary">
-        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: priceTone }} />Price</span>
-        <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-navy-primary/45" />Consensus</span>
-        <span className="inline-flex items-center gap-1"><Minus className="h-2.5 w-2.5" /> {near ? 'near fair value' : target != null && price < target ? 'below target' : 'above target'}</span>
-      </div>
     </div>
   )
 }

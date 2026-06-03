@@ -685,7 +685,7 @@ function SahiShiftCard() {
   )
 }
 
-function CompanyBridgeCard() {
+export function CompanyBridgeCard() {
   const company = useActiveCompany()
   const { peerGroup, range } = useFilters()
   const gate = usePeriodGate()

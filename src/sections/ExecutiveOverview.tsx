@@ -6,10 +6,9 @@ import { IndustryLeaders } from '@/components/IndustryLeaders'
 import { AboutView } from '@/components/AboutView'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { PeriodPending } from '@/components/PeriodPending'
-import { Icon } from '@/components/icons'
+import { Icon, type IconKey } from '@/components/icons'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getFilteredInsurers, getMarketShareSlices } from '@/lib/insurers'
-import { navItems } from '@/nav'
 import { DATA_FRESHNESS, PEER_GROUP_LABEL } from '@/data/mockData'
 
 // Curated "next click" destinations — each tile carries a per-section accent
@@ -26,13 +25,16 @@ type DeepLinkAccent = {
 }
 const deepLinkConfig: {
   id: string
-  label?: string
+  label: string
+  icon: IconKey
   learn: string
   preview: string
   accent: DeepLinkAccent
 }[] = [
   {
-    id: 'market',
+    id: 'market-distribution/market-snapshot',
+    label: 'Market & Distribution',
+    icon: 'market',
     learn: 'Why the sector is growing',
     preview: 'Sector tailwind',
     accent: {
@@ -45,7 +47,9 @@ const deepLinkConfig: {
     },
   },
   {
-    id: 'growth',
+    id: 'market-distribution/premium-engine',
+    label: 'Premium Engine',
+    icon: 'growth',
     learn: 'How {co} is growing',
     preview: 'Premium flow',
     accent: {
@@ -58,7 +62,9 @@ const deepLinkConfig: {
     },
   },
   {
-    id: 'profitability',
+    id: 'company-performance/profitability',
+    label: 'Profitability',
+    icon: 'capital',
     learn: 'Whether growth is profitable',
     preview: 'Profit conversion',
     accent: {
@@ -72,6 +78,8 @@ const deepLinkConfig: {
   },
   {
     id: 'peers',
+    label: 'Peer Comparison',
+    icon: 'peers',
     learn: 'How {co} compares',
     preview: 'Peer ranking',
     accent: {
@@ -84,7 +92,9 @@ const deepLinkConfig: {
     },
   },
   {
-    id: 'valuation',
+    id: 'company-performance/valuation',
+    label: 'Valuation',
+    icon: 'valuation',
     learn: 'Whether the stock is expensive',
     preview: 'Valuation discipline',
     accent: {
@@ -97,8 +107,9 @@ const deepLinkConfig: {
     },
   },
   {
-    id: 'ownership',
+    id: 'ownership-governance/ownership',
     label: 'Governance',
+    icon: 'ownership',
     learn: 'Who owns and runs the company',
     preview: 'Risk control',
     accent: {
@@ -125,13 +136,9 @@ export function ExecutiveOverview({ onNavigate }: { onNavigate?: (id: string) =>
   const shareContext = peerGroup === 'All' ? 'Premium-weighted, full universe' : `${groupLabel} pool`
 
   const deepLinks = deepLinkConfig.map((d) => {
-    const item = navItems.find((n) => n.id === d.id)!
     return {
-      ...item,
-      label: d.label ?? item.label,
+      ...d,
       learn: d.learn.replace('{co}', company.shortName),
-      preview: d.preview,
-      accent: d.accent,
     }
   })
 

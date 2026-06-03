@@ -1,22 +1,48 @@
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Lock } from 'lucide-react'
 import { SegmentedControl } from './SegmentedControl'
 import { DataRangeControl } from './DataRangeControl'
 import { useFilters, useActiveCompany } from '@/state/filters'
 import { insurers } from '@/data/mockData'
 import { resolvePeriodAvailability } from '@/lib/periodData'
-import { sectionFrequencyKind } from '@/nav'
+import { routeFrequencyKind, staticBasisLabel } from '@/nav'
 import type { PeerGroup, ProfitabilityFrequency, TimePeriod } from '@/data/types'
 
 const peerGroups: PeerGroup[] = ['SAHI', 'General', 'Life', 'All']
-const periods: TimePeriod[] = ['Monthly', 'Quarterly', 'Annual']
 const profitabilityPeriods: ProfitabilityFrequency[] = ['Quarterly', 'Annual']
-// Sections with no frequency toggle show a short, static reporting-basis label
-// in the SAME header slot — so the control area never disappears or resizes.
-const STATIC_BASIS: Record<string, string> = {
-  peers: 'Scorecard basis',
-  valuation: 'Latest available',
-  ownership: 'Reported quarterly',
-  management: 'Event-based',
+
+// Operating period toggle — Quarterly / Annual are live; Monthly is locked
+// (lock icon + "Monthly data pending") until monthly data is wired, and can't be
+// selected. Same fixed footprint as the other toggles so the header never reflows.
+function OperatingPeriodToggle({ value, onChange }: { value: TimePeriod; onChange: (t: TimePeriod) => void }) {
+  return (
+    <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+      {(['Monthly', 'Quarterly', 'Annual'] as TimePeriod[]).map((p) => {
+        const locked = p === 'Monthly'
+        const active = p === value && !locked
+        return (
+          <button
+            key={p}
+            type="button"
+            disabled={locked}
+            aria-pressed={active}
+            onClick={() => !locked && onChange(p)}
+            title={locked ? 'Monthly data pending' : undefined}
+            className={[
+              'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200',
+              locked
+                ? 'cursor-not-allowed text-ink-secondary/45'
+                : active
+                  ? 'bg-navy-primary text-white shadow-soft'
+                  : 'text-ink-secondary hover:text-navy-primary',
+            ].join(' ')}
+          >
+            {locked && <Lock className="h-2.5 w-2.5" />}
+            {p}
+          </button>
+        )
+      })}
+    </div>
+  )
 }
 
 function FieldLabel({ children, hint }: { children: string; hint?: string }) {
@@ -30,7 +56,7 @@ function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   )
 }
 
-export function TopFilterBar({ section }: { section?: string }) {
+export function TopFilterBar({ route }: { route?: string }) {
   const {
     highlightedCompany,
     setHighlightedCompany,
@@ -42,14 +68,15 @@ export function TopFilterBar({ section }: { section?: string }) {
     setProfitabilityFrequency,
   } = useFilters()
   const company = useActiveCompany()
-  const isOverview = section === 'overview'
+  const baseId = route?.split('/')[0]
+  const isOverview = baseId === 'overview'
 
   // The global Period toggle drives only the "operating" sections. Profitability
   // runs its own local Quarterly/Annual toggle; Valuation/Ownership/Management
   // have no frequency. `effectiveFreq` is the frequency that actually governs the
   // CURRENT section (null where frequency doesn't apply) — so the data-status
   // pill never claims a misleading "<period> pending" on a non-frequency section.
-  const freqKind = sectionFrequencyKind(section ?? '')
+  const freqKind = routeFrequencyKind(route ?? '')
   const effectiveFreq: TimePeriod | null =
     freqKind === 'operating' ? period : freqKind === 'profitability' ? profitabilityFrequency : null
 
@@ -121,7 +148,7 @@ export function TopFilterBar({ section }: { section?: string }) {
           <div className="flex h-[30px] min-w-[200px] items-center">
             <div key={freqKind} className="animate-fade-soft">
               {freqKind === 'operating' ? (
-                <SegmentedControl<TimePeriod> options={periods} value={period} onChange={setPeriod} size="sm" />
+                <OperatingPeriodToggle value={period} onChange={setPeriod} />
               ) : freqKind === 'profitability' ? (
                 <SegmentedControl<ProfitabilityFrequency>
                   options={profitabilityPeriods}
@@ -132,7 +159,7 @@ export function TopFilterBar({ section }: { section?: string }) {
               ) : (
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-ice px-3 py-1.5 text-[11px] font-medium text-ink-secondary">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-blue/45" aria-hidden />
-                  {STATIC_BASIS[section ?? ''] ?? 'Published annually'}
+                  {staticBasisLabel(route ?? '')}
                 </span>
               )}
             </div>

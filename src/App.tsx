@@ -2,40 +2,36 @@ import { useEffect, useMemo, useState, type ComponentType } from 'react'
 import { DashboardShell } from '@/components/DashboardShell'
 import { FilterProvider } from '@/state/filters'
 import { ExecutiveOverview } from '@/sections/ExecutiveOverview'
-import { MarketLandscape } from '@/sections/MarketLandscape'
-import { CompanyGrowthEngine } from '@/sections/CompanyGrowthEngine'
-import { DistributionStrength } from '@/sections/DistributionStrength'
-import { ProfitabilityCapital } from '@/sections/ProfitabilityCapital'
+import { MarketDistribution } from '@/sections/MarketDistribution'
+import { CompanyPerformance } from '@/sections/CompanyPerformance'
+import { StreetView } from '@/sections/StreetView'
 import { CompetitivePositioning } from '@/sections/CompetitivePositioning'
-import { ValuationMarketView } from '@/sections/ValuationMarketView'
-import { Ownership } from '@/sections/Ownership'
-import { ManagementEvents } from '@/sections/ManagementEvents'
+import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 
-const sections: Record<string, ComponentType<{ onNavigate?: (id: string) => void; lens?: string }>> = {
+// Six consolidated sections. `peers` (Peer Comparison) renders the peer
+// scorecard directly; the other multi-area sections are tabbed wrappers.
+const sections: Record<string, ComponentType<{ onNavigate?: (id: string) => void; sub?: string }>> = {
   overview: ExecutiveOverview,
-  market: MarketLandscape,
-  growth: CompanyGrowthEngine,
-  distribution: DistributionStrength,
-  profitability: ProfitabilityCapital,
+  'market-distribution': MarketDistribution,
+  'company-performance': CompanyPerformance,
+  'street-view': StreetView,
   peers: CompetitivePositioning,
-  valuation: ValuationMarketView,
-  ownership: Ownership,
-  management: ManagementEvents,
+  'ownership-governance': OwnershipGovernance,
 }
 
 export default function App() {
-  // `active` may be a plain section id ("profitability") or a nested lens route
-  // ("profitability/ifrs"). The base id selects the section component; the lens
-  // suffix is passed through so the section can render the right sub-view.
+  // `active` may be a plain section id ("street-view") or a section/tab route
+  // ("company-performance/valuation", "company-performance/profitability/ifrs").
+  // The base id selects the section; the `sub` suffix is the active tab (and any
+  // nested lens), passed through so the section renders the right sub-view.
   const [active, setActive] = useState('overview')
-  const [baseId, lens] = useMemo(() => {
+  const [baseId, sub] = useMemo(() => {
     const slash = active.indexOf('/')
     return slash === -1 ? [active, undefined] : [active.slice(0, slash), active.slice(slash + 1)]
   }, [active])
   const Section = sections[baseId] ?? ExecutiveOverview
 
-  // Scroll to top when the section (not just the lens) changes, so switching
-  // lenses keeps the reader's place rather than jerking to the top each time.
+  // Scroll to top when the section (not just the tab) changes.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [baseId])
@@ -43,12 +39,10 @@ export default function App() {
   return (
     <FilterProvider>
       <DashboardShell active={active} onNavigate={setActive}>
-        {/* Soft page-change transition: each section fades + slides up gently
-            when the section changes. Keyed on the base section id (not the full
-            route) so switching lenses inside a section updates in place — calm,
-            no full-page re-animation — while page-to-page navigation animates. */}
+        {/* Soft page-change transition keyed on the base section id, so switching
+            tabs inside a section updates in place rather than re-animating. */}
         <div key={baseId} className="animate-page-enter">
-          <Section onNavigate={setActive} lens={lens} />
+          <Section onNavigate={setActive} sub={sub} />
         </div>
       </DashboardShell>
     </FilterProvider>
