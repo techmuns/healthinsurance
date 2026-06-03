@@ -60,46 +60,53 @@ export function CompanyGrowthEngine() {
         source={PREMIUM_SOURCE}
       />
 
-      {/* Premium Engine — a clean grouped bar chart (Gross / Net / Earned per
-          year). Card surface gets a subtle navy + teal tinted backdrop so it
-          reads as the "premium machine" panel rather than a plain white container. */}
-      <section
-        className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_36px_rgba(23,43,77,0.07)] sm:p-6"
-        style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F7FAFD 60%, #F1F8F6 100%)' }}
-      >
-        <span
-          className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full opacity-60 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.14) 0%, transparent 70%)' }}
-        />
-        <span
-          className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full opacity-50 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(49,90,169,0.12) 0%, transparent 70%)' }}
-        />
-        <header className="relative mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#EEF1F7] pb-4">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.6)]" />
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
-                Premium Story
-              </p>
-            </div>
-            <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
-              Premium Engine
-            </h2>
-            <p className="mt-1 text-[12px] text-ink-secondary">
-              How <span className="font-semibold text-navy-deep">{company.shortName}</span> writes,
-              retains, and earns premium over time
-            </p>
-          </div>
-        </header>
-        <div className="relative">
-          <PremiumFlowQuality focalId={company.id} />
-        </div>
-      </section>
+      <PremiumEngineBlock />
 
       {/* Calculation basis strip for the derived-quarter logic. */}
       <QuarterlyCalcCard company={company} />
     </div>
+  )
+}
+
+// Premium Engine — the premium flow/quality chart in its tinted "premium
+// machine" panel. Exported so the composed Market & Distribution page can
+// mount it directly.
+export function PremiumEngineBlock() {
+  const company = useActiveCompany()
+  return (
+    <section
+      className="relative overflow-hidden rounded-[1.15rem] border border-[#E4E8F0] p-5 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_14px_36px_rgba(23,43,77,0.07)] sm:p-6"
+      style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F7FAFD 60%, #F1F8F6 100%)' }}
+    >
+      <span
+        className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full opacity-60 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(22,142,142,0.14) 0%, transparent 70%)' }}
+      />
+      <span
+        className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full opacity-50 blur-3xl"
+        style={{ background: 'radial-gradient(circle, rgba(49,90,169,0.12) 0%, transparent 70%)' }}
+      />
+      <header className="relative mb-4 flex flex-wrap items-start justify-between gap-3 border-b border-[#EEF1F7] pb-4">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.6)]" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">
+              Premium Story
+            </p>
+          </div>
+          <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">
+            Premium Engine
+          </h2>
+          <p className="mt-1 text-[12px] text-ink-secondary">
+            How <span className="font-semibold text-navy-deep">{company.shortName}</span> writes,
+            retains, and earns premium over time
+          </p>
+        </div>
+      </header>
+      <div className="relative">
+        <PremiumFlowQuality focalId={company.id} />
+      </div>
+    </section>
   )
 }
 
