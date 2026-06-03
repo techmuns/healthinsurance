@@ -55,15 +55,30 @@ function StreetSignal({ kind, score, reason }: { kind: SignalKind; score: number
 }
 
 // ── KPI card ──────────────────────────────────────────────────────────────--
+// Tone-coded tint presets — a faint colour fill + bloom so each KPI tile is
+// instantly readable by meaning (teal = upside, navy = price, slate = neutral,
+// coral = downside) while staying premium and calm.
+const KPI_TINT: Record<'navy' | 'teal' | 'coral' | 'slate', { bg: string; border: string; glow: string }> = {
+  navy: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(39,69,126,0.06) 100%)', border: 'rgba(39,69,126,0.18)', glow: 'rgba(39,69,126,0.10)' },
+  teal: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(22,142,142,0.07) 100%)', border: 'rgba(22,142,142,0.18)', glow: 'rgba(22,142,142,0.10)' },
+  coral: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(199,93,84,0.06) 100%)', border: 'rgba(199,93,84,0.18)', glow: 'rgba(199,93,84,0.10)' },
+  slate: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(140,151,168,0.07) 100%)', border: 'rgba(140,151,168,0.20)', glow: 'rgba(140,151,168,0.10)' },
+}
+
 function Kpi({ label, value, sub, tone = 'navy' }: { label: string; value: string; sub: string; tone?: 'navy' | 'teal' | 'coral' | 'slate' }) {
   const color = tone === 'teal' ? 'text-teal' : tone === 'coral' ? 'text-coral' : tone === 'slate' ? 'text-ink-secondary' : 'text-navy-deep'
   const bar = tone === 'teal' ? TEAL : tone === 'coral' ? CORAL : tone === 'slate' ? SLATE : NAVY
+  const tint = KPI_TINT[tone]
   return (
-    <div className="relative overflow-hidden rounded-[1.15rem] border border-soft-border bg-white p-4 shadow-soft">
+    <div
+      className="group relative overflow-hidden rounded-[1.15rem] border p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_24px_rgba(23,43,77,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(23,43,77,0.06),0_16px_34px_rgba(23,43,77,0.1)]"
+      style={{ background: tint.bg, borderColor: tint.border }}
+    >
+      <span className="pointer-events-none absolute -right-8 -top-9 h-24 w-24 rounded-full opacity-70 blur-2xl transition-opacity duration-300 group-hover:opacity-100" style={{ background: tint.glow }} />
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: bar }} />
-      <p className="pl-1.5 text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
-      <p className={`mt-1 pl-1.5 font-display text-[24px] leading-none ${color}`}>{value}</p>
-      <p className="mt-1 pl-1.5 text-[10px] text-ink-secondary/85">{sub}</p>
+      <p className="relative pl-1.5 text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
+      <p className={`relative mt-1 pl-1.5 font-display text-[24px] leading-none ${color}`}>{value}</p>
+      <p className="relative mt-1 pl-1.5 text-[10px] text-ink-secondary/85">{sub}</p>
     </div>
   )
 }

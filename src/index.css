@@ -53,6 +53,9 @@ body {
   .card-surface {
     border-radius: 1.15rem;
     background-color: #ffffff;
+    /* Faint cool sheen so a card never reads as flat white — a premium
+       texture, not a colour block. Tone variants below still override. */
+    background-image: linear-gradient(159deg, #ffffff 0%, #fcfdfe 56%, #f6f9fd 100%);
     border: 1px solid rgba(23, 43, 77, 0.1);
     box-shadow:
       0 1px 2px rgba(23, 43, 77, 0.04),

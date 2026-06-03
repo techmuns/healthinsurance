@@ -294,29 +294,32 @@ const DIST_SOURCE = {
   },
 }
 
-// Stack order bottom → top; colours map to meaning, soft and premium.
+// Stack order bottom → top. Soft, desaturated, theme-aligned tones — muted
+// navy / teal / periwinkle / ochre / slate / mist. No loud or neon fills; each
+// band reads as a gentle tinted overlay rather than a saturated colour block.
 const CH_ORDER: DistChannel[] = ['Agents', 'Brokers', 'Banca', 'Corporate Agents', 'Direct', 'Others']
 const CH_GRAD: Record<DistChannel, [string, string]> = {
-  Agents: ['#345CA0', '#27457E'],
-  Brokers: ['#2BA8A0', '#168E8E'],
-  Banca: ['#6E96DC', '#4F7BCF'],
-  'Corporate Agents': ['#CDA55A', '#B68B3A'],
-  Direct: ['#A7B1BE', '#8C97A8'],
-  Others: ['#D9DFE7', '#C3CBD6'],
+  Agents: ['#566B91', '#41557A'],
+  Brokers: ['#74B2AB', '#549A93'],
+  Banca: ['#A3B4DC', '#8398C8'],
+  'Corporate Agents': ['#DAC089', '#C9AC74'],
+  Direct: ['#B3BCC8', '#9BA6B4'],
+  Others: ['#E5E9EF', '#D6DCE4'],
 }
 const CH_SOLID: Record<DistChannel, string> = {
-  Agents: '#27457E',
-  Brokers: '#168E8E',
-  Banca: '#4F7BCF',
-  'Corporate Agents': '#B68B3A',
-  Direct: '#8C97A8',
-  Others: '#C3CBD6',
+  Agents: '#475A80',
+  Brokers: '#589E97',
+  Banca: '#8A9ECF',
+  'Corporate Agents': '#C9AC74',
+  Direct: '#9BA6B4',
+  Others: '#D6DCE4',
 }
-// White label on the dark bands, dark ink on the light ones.
+// White label only on the one genuinely dark band (Agents); a soft deep-ink
+// label on every lighter band keeps contrast clean without looking harsh.
 const CH_DARKBAND: Record<DistChannel, boolean> = {
   Agents: true,
-  Brokers: true,
-  Banca: true,
+  Brokers: false,
+  Banca: false,
   'Corporate Agents': false,
   Direct: false,
   Others: false,
@@ -395,8 +398,8 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
                 key={ch}
                 d={bandPath(ch)}
                 fill={`url(#mix-${ch.replace(/\s+/g, '')})`}
-                opacity={dim ? 0.28 : 1}
-                style={{ transition: 'opacity 0.25s ease', filter: 'drop-shadow(0 1px 3px rgba(23,43,77,0.08))' }}
+                opacity={dim ? 0.3 : 0.94}
+                style={{ transition: 'opacity 0.25s ease', filter: 'drop-shadow(0 1px 2px rgba(23,43,77,0.05))' }}
               >
                 <title>{`${ch} · ${last ? (((numOrNull(last[ch]) ?? 0) / totLast) * 100).toFixed(1) : '—'}%`}</title>
               </path>
@@ -418,8 +421,8 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
                   y={cy}
                   textAnchor={i === 0 ? 'start' : 'middle'}
                   fontSize={10.5}
-                  fontWeight={700}
-                  fill={CH_DARKBAND[ch] ? '#FFFFFF' : '#2C3A4F'}
+                  fontWeight={600}
+                  fill={CH_DARKBAND[ch] ? '#FFFFFF' : '#3A4862'}
                   opacity={hovered != null && hovered !== ch ? 0.3 : 1}
                   style={{ fontVariantNumeric: 'tabular-nums', transition: 'opacity 0.25s ease' }}
                 >
@@ -483,7 +486,7 @@ function ChannelMixCard() {
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
           <h2 className="font-display text-[20px] leading-tight text-navy-deep">{company.shortName} channel mix over time</h2>
           {lever && (
-            <span className="inline-flex items-center rounded-full bg-champagne-soft px-2 py-0.5 text-[10px] font-semibold text-champagne-deep ring-1 ring-[#EAD9B6]">
+            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: 'rgba(84,154,147,0.1)', color: '#467E78', boxShadow: 'inset 0 0 0 1px rgba(84,154,147,0.22)' }}>
               {lever.ch}: growth lever
             </span>
           )}
@@ -518,11 +521,11 @@ function ChannelMixCard() {
                 key={ch}
                 onMouseEnter={() => setHovered(ch)}
                 onMouseLeave={() => setHovered(null)}
-                className={[
-                  'inline-flex cursor-default items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-all',
-                  hovered === ch ? 'border-transparent text-navy-deep shadow-soft' : 'border-soft-border text-ink-secondary',
-                ].join(' ')}
-                style={hovered === ch ? { background: `${CH_SOLID[ch]}14` } : undefined}
+                className="inline-flex cursor-default items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-all"
+                style={{
+                  background: `${CH_SOLID[ch]}${hovered === ch ? '22' : '12'}`,
+                  borderColor: `${CH_SOLID[ch]}${hovered === ch ? '55' : '2E'}`,
+                }}
               >
                 <span className="h-2 w-2 rounded-full" style={{ background: CH_SOLID[ch] }} />
                 {ch}
@@ -537,7 +540,7 @@ function ChannelMixCard() {
       {rows.length >= 2 && lever && (
         <InsightLine>
           <strong className="font-semibold text-navy-deep">{lever.ch}</strong> share rose to{' '}
-          <strong className="font-semibold text-teal">{lever.latest.toFixed(1)}%</strong> in {last?.period}, the key driver of channel growth.
+          <strong className="font-semibold" style={{ color: '#467E78' }}>{lever.latest.toFixed(1)}%</strong> in {last?.period}, the key driver of channel growth.
         </InsightLine>
       )}
 
