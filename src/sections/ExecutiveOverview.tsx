@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { BarChart3, Building2, CircleDot, Layers, Network, Percent, Shield } from 'lucide-react'
 import { RadialGauge } from '@/components/RadialGauge'
-import { MarketBubbleChart } from '@/components/MarketBubbleChart'
+import { PackedBubbleChart } from '@/components/PackedBubbleChart'
 import { MetricRankingBars } from '@/components/MetricRankingBars'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
   getIndustryOverview,
   OVERVIEW_METRICS,
-  companyColor,
   type ConcentrationBand,
   type OverviewMetricId,
 } from '@/lib/industryOverview'
@@ -87,15 +86,11 @@ export function ExecutiveOverview() {
     )
   }
 
-  // The left card is a premium-scaled market map for share/premium, and a
-  // ranked bar chart for the tightly-clustered quality ratios.
+  // Market Share gets a packed circle-dominance map; the other metrics get a
+  // full-width ranked bar board.
   const isBubble = model.metric.chartKind === 'bubble'
-  const leftTitle = isBubble ? 'Market Map' : `${model.metric.label} Ranking`
-  const leftCaption = isBubble
-    ? model.metric.id === 'premium'
-      ? 'Bubble size = premium'
-      : 'Bubble size = market share'
-    : 'Ranked high → low · premium shown as secondary'
+  const leftTitle = isBubble ? 'Market Share Map' : `${model.metric.label} Ranking`
+  const leftCaption = isBubble ? 'Circle size = market share' : 'Ranked high → low · premium shown as secondary'
   const LeftIcon = isBubble ? CircleDot : BarChart3
 
   return (
@@ -228,27 +223,21 @@ export function ExecutiveOverview() {
             <span className="text-[10.5px] text-ink-secondary">{leftCaption}</span>
           </div>
 
-          {isBubble ? (
-            <>
-              <MarketBubbleChart model={model} height={360} />
-              {/* Color legend (bubble only — bars label themselves) */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-                {model.byShare.map((r, i) => (
-                  <span key={r.id} className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
-                    <span className="h-2 w-2 rounded-full" style={{ background: companyColor(r.id, r.focal, i) }} />
-                    {r.shortName}
-                  </span>
-                ))}
-              </div>
-            </>
-          ) : (
-            <MetricRankingBars model={model} />
-          )}
+          {isBubble ? <PackedBubbleChart model={model} /> : <MetricRankingBars model={model} />}
 
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
             <span className="text-[9px] text-ink-secondary/80">
-              <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
-              <span className="font-semibold text-champagne-deep">gold</span> = leader
+              {isBubble ? (
+                <>
+                  <span className="font-semibold text-champagne-deep">Gold + crown</span> = leader ·{' '}
+                  <span className="font-semibold text-navy-primary">navy ring</span> = selected
+                </>
+              ) : (
+                <>
+                  <span className="font-semibold text-navy-primary">Navy</span> = selected ·{' '}
+                  <span className="font-semibold text-champagne-deep">gold</span> = leader
+                </>
+              )}
             </span>
             <CardSource />
           </div>
