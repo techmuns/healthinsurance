@@ -83,13 +83,68 @@ interface Parsed {
 
 function parsePage(html: string, sourceUrl: string): Parsed {
   const $ = cheerio.load(html)
-  const reports = parseReportTables($, sourceUrl)
+  // Primary: Moneycontrol's "Broker Research" cards (#broker_research .brrs_bx).
+  let reports = parseBrokerResearch($, sourceUrl)
+  // Fallback: a generic broker/rating/target table, should the DOM change.
+  if (reports.length === 0) reports = parseReportTablesFallback($, sourceUrl)
   const consensus = parseConsensus($, reports)
   return { reports, consensus }
 }
 
-/** Scan tables for a broker-research grid (broker · rating · target · date). */
-function parseReportTables(
+/**
+ * Moneycontrol "Broker Research" cards. Each `.brrs_bx` block is one broker
+ * note: broker name (`.brstk_name h3`), date (`.br_date`), a BUY/SELL/HOLD
+ * button, a Target Price (a `<td>` "Target Price <strong>NN</strong>"), and a
+ * link to the research PDF (`.download_report a`) used as the row's source.
+ */
+function parseBrokerResearch($: cheerio.CheerioAPI, sourceUrl: string): StreetAnalystReportRow[] {
+  const out: StreetAnalystReportRow[] = []
+  const seen = new Set<string>()
+
+  $('.brrs_bx').each((_, el) => {
+    const $el = $(el)
+    const brokerage = $el.find('.brstk_name h3').first().text().trim()
+    if (!brokerage) return
+
+    const dateRaw = $el.find('.br_date').first().text().trim()
+    const report_date = dateRaw && dateRaw !== '-' ? dateRaw : '—'
+
+    const btn = $el.find('button[class*="button_"]').first()
+    const ratingText = btn.text().trim() || (btn.attr('class') ?? '').replace(/^.*button_([a-z]+).*$/i, '$1')
+    const rating = normaliseRating(ratingText)
+
+    let target_price: number | null = null
+    $el.find('td').each((__, td) => {
+      const cell = $(td)
+      if (/target\s*price/i.test(cell.text())) {
+        target_price = toNum(cell.find('strong').first().text()) ?? toNum(cell.text())
+      }
+    })
+
+    // Not a real call without at least a rating or a target.
+    if (rating == null && target_price == null) return
+
+    const href = $el.find('.download_report a[href]').first().attr('href')
+    const source_url = href && /^https?:/i.test(href) ? href : sourceUrl
+    const key = `${brokerage}::${report_date}::${target_price ?? ''}`
+    if (seen.has(key)) return
+    seen.add(key)
+    out.push({
+      brokerage,
+      rating,
+      target_price,
+      report_date,
+      thesis: null,
+      source_id: null,
+      source_url,
+      confidence: 'secondary',
+    })
+  })
+  return out
+}
+
+/** Generic fallback: scan tables for a broker/rating/target grid. */
+function parseReportTablesFallback(
   $: cheerio.CheerioAPI,
   sourceUrl: string,
 ): StreetAnalystReportRow[] {
@@ -151,30 +206,32 @@ function parseConsensus(
   $: cheerio.CheerioAPI,
   reports: StreetAnalystReportRow[],
 ): Partial<StreetAnalystConsensus> {
+  // Moneycontrol's "Consensus Recommendations" widget renders client-side (an
+  // empty #consensus_graph in the static HTML), so derive the consensus from
+  // the broker cards we parsed — one (latest) note per broker, so a broker with
+  // several notes isn't counted multiple times.
+  const latestByBroker = reports.filter(
+    (r, i) => reports.findIndex((x) => x.brokerage === r.brokerage) === i,
+  )
+  const targets = latestByBroker.map((r) => r.target_price).filter((t): t is number => t != null)
+  const avg = targets.length
+    ? Math.round((targets.reduce((a, b) => a + b, 0) / targets.length) * 10) / 10
+    : null
+
+  // The live quote IS server-rendered, so the current price can be read here.
   const bodyText = $('body').text().replace(/\s+/g, ' ')
+  const priceM = bodyText.match(/(?:last\s*price|ltp)[^0-9₹.]{0,16}?([\d,]+\.\d{1,2})/i)
 
-  const numAfter = (label: RegExp): number | null => {
-    const re = new RegExp(label.source + '[^0-9₹.\\-]{0,24}?([\\d,]+(?:\\.\\d+)?)', 'i')
-    const m = bodyText.match(re)
-    return m ? toNum(m[1]) : null
-  }
-
-  const targets = reports.map((r) => r.target_price).filter((t): t is number => t != null)
-  const derivedAvg = targets.length ? Math.round((targets.reduce((a, b) => a + b, 0) / targets.length) * 10) / 10 : null
-
-  const buyFromRows = reports.filter((r) => isBuySide(r.rating)).length
-  const sellFromRows = reports.filter((r) => isSell(r.rating)).length
-  const holdFromRows = reports.filter((r) => r.rating === 'Hold' || r.rating === 'Equal-weight').length
-
+  const n = latestByBroker.length || null
   return {
-    current_price: numAfter(/last\s*price|current\s*price|ltp\b/),
-    consensus_target_price: numAfter(/consensus\s*target|average\s*target|target\s*price/) ?? derivedAvg,
-    highest_target_price: numAfter(/high(?:est)?\s*target|max\s*target/) ?? (targets.length ? Math.max(...targets) : null),
-    lowest_target_price: numAfter(/low(?:est)?\s*target|min\s*target/) ?? (targets.length ? Math.min(...targets) : null),
-    analyst_count: numAfter(/no\.?\s*of\s*analysts|analysts\s*covering|brokerages?\b/) ?? (reports.length || null),
-    buy_count: numAfter(/\bbuy\b/) ?? (reports.length ? buyFromRows : null),
-    hold_count: numAfter(/\bhold\b/) ?? (reports.length ? holdFromRows : null),
-    sell_count: numAfter(/\bsell\b/) ?? (reports.length ? sellFromRows : null),
+    current_price: priceM ? toNum(priceM[1]) : null,
+    consensus_target_price: avg,
+    highest_target_price: targets.length ? Math.max(...targets) : null,
+    lowest_target_price: targets.length ? Math.min(...targets) : null,
+    analyst_count: n,
+    buy_count: n ? latestByBroker.filter((r) => isBuySide(r.rating)).length : null,
+    hold_count: n ? latestByBroker.filter((r) => r.rating === 'Hold' || r.rating === 'Equal-weight').length : null,
+    sell_count: n ? latestByBroker.filter((r) => isSell(r.rating)).length : null,
     last_updated: nowIso().slice(0, 10),
   }
 }
