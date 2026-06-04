@@ -150,8 +150,6 @@ export function MarketTrendExplorer() {
   const ranked = [...TREND_COMPANIES].sort(
     (a, b) => (valAt(b.id, activeYear) ?? -Infinity) - (valAt(a.id, activeYear) ?? -Infinity),
   )
-  const bubbleMax = Math.max(1, ...ranked.map((c) => valAt(c.id, activeYear) ?? 0))
-  const dia = (v: number | null) => (v == null ? 0 : 16 + (v / bubbleMax) * (48 - 16))
 
   const chartData = years.map((y) => {
     const row: Record<string, number | string | null> = { year: y }
@@ -201,7 +199,7 @@ export function MarketTrendExplorer() {
           <h3 className="font-display text-[15px] text-navy-deep">{metric.title}</h3>
           <span
             className="cursor-default text-ink-secondary/60"
-            title="Hover any year on the chart to set the left bubbles to that year. Hover a company anywhere — bubble, line, or table row — to highlight it everywhere in its colour."
+            title="Hover a year on the chart for that year's values. Hover a company — its line or its table row — to highlight it everywhere in its colour."
           >
             <Info className="h-3.5 w-3.5" />
           </span>
@@ -232,70 +230,8 @@ export function MarketTrendExplorer() {
         </div>
       ) : (
         <>
-          {/* ── Left bubbles + right trend chart, equal height, side by side ── */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-stretch">
-            {/* LEFT — current market position (bubbles) for the active year. */}
-            <div className="surface-soft flex h-[336px] flex-col rounded-xl p-3.5">
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Current Position</span>
-                <span className="rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary">
-                  {activeYear} · {hoverYear ? 'hovered' : 'latest'}
-                </span>
-              </div>
-              <div className="flex flex-1 flex-col justify-center gap-0.5">
-                {ranked.map((c, idx) => {
-                  const v = valAt(c.id, activeYear)
-                  const focal = c.id === FOCAL_COMPANY_ID
-                  const d = dia(v)
-                  return (
-                    <div
-                      key={c.id}
-                      onMouseEnter={() => setHoverCompany(c.id)}
-                      onMouseLeave={() => setHoverCompany(null)}
-                      className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors"
-                      style={{ background: rowTint(c.id) }}
-                    >
-                      <div className="flex h-[52px] w-[52px] shrink-0 items-center justify-center">
-                        {v != null ? (
-                          <span
-                            className="rounded-full transition-all duration-200"
-                            style={{
-                              width: d,
-                              height: d,
-                              background: hexA(c.color, 0.16),
-                              border: `1.5px solid ${c.color}`,
-                              boxShadow: hoverCompany === c.id ? `0 0 0 3px ${hexA(c.color, 0.16)}` : 'none',
-                            }}
-                          />
-                        ) : (
-                          <span className="text-[10px] italic text-ink-secondary/45">n/a</span>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c.color }} />
-                          <span className={`truncate text-[12px] font-semibold ${focal ? 'text-navy-deep' : 'text-ink-primary'}`}>
-                            {c.name}
-                          </span>
-                          {focal && (
-                            <span className="shrink-0 rounded-full bg-soft-blue px-1 py-px text-[7.5px] font-bold uppercase tracking-wide text-navy-primary">
-                              Niva Bupa
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[9.5px] text-ink-secondary">Rank {idx + 1}</div>
-                      </div>
-                      <div className="shrink-0 text-right font-display text-[15px] tabular-nums text-navy-deep">
-                        {v != null ? metric.format(v) : '—'}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* RIGHT — multi-line trend chart. */}
-            <div className="surface-soft flex h-[336px] flex-col rounded-xl p-3 pr-2">
+          {/* ── Multi-line trend chart (full width) ─────────────────────────── */}
+          <div className="surface-soft flex h-[360px] flex-col rounded-xl p-3 pr-2">
               <div className="mb-1 flex items-center justify-between px-1">
                 <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">
                   Trend · {firstYear}–{lastYear}
@@ -372,10 +308,9 @@ export function MarketTrendExplorer() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-            </div>
           </div>
 
-          {/* ── Detail table (below the pair, full width) ──────────────────── */}
+          {/* ── Detail table (full width) ──────────────────────────────────── */}
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[520px] border-collapse text-[11px]">
               <thead>
