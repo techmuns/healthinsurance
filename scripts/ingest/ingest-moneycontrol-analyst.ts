@@ -24,6 +24,7 @@ import type {
   StreetAnalystConsensus,
   StreetAnalystReportRow,
   StreetAnalystSnapshot,
+  StreetMarket,
   StreetRating,
 } from '../../src/data/snapshots/_schemas'
 import { appendLog, nowIso, readSnapshot, writeSnapshot } from './util'
@@ -181,21 +182,33 @@ function parseReportTablesFallback(
 
 // ─── consensus parsing (JSON feed) ───────────────────────────────────────────
 
-/** Live current price from Moneycontrol's pricefeed JSON. */
-function parsePriceJson(buffer: Buffer): number | null {
+/** Live market quote from Moneycontrol's pricefeed JSON (price + 52wk range). */
+function parsePriceFeed(buffer: Buffer): StreetMarket | null {
   let j: unknown
   try {
     j = JSON.parse(buffer.toString('utf8'))
   } catch {
     return null
   }
-  // pricefeed shape: { data: { pricecurrent | lastvalue | LTP, ... } }
-  const data = (j as { data?: Record<string, unknown> })?.data ?? (j as Record<string, unknown>)
-  for (const k of ['pricecurrent', 'lastprice', 'lastvalue', 'LTP', 'BSEUpdatedPrice', 'NSEUpdatedPrice']) {
-    const n = toNum((data as Record<string, unknown>)?.[k])
-    if (n != null && n > 0) return n
+  // pricefeed shape: { data: { pricecurrent, "52H", "52L", pricepercentchange, lastupd, ... } }
+  const data = ((j as { data?: Record<string, unknown> })?.data ?? j) as Record<string, unknown>
+  const pick = (...keys: string[]): number | null => {
+    for (const k of keys) {
+      const n = toNum(data?.[k])
+      if (n != null) return n
+    }
+    return null
   }
-  return null
+  const current = pick('pricecurrent', 'lastprice', 'lastvalue', 'LTP')
+  if (current == null || current <= 0) return null
+  const lastupd = data?.lastupd
+  return {
+    current_price: current,
+    week_high_52: pick('52H', '52WH', 'fiftytwoweekhigh'),
+    week_low_52: pick('52L', '52WL', 'fiftytwoweeklow'),
+    price_change_pct: pick('pricepercentchange', 'perchange', 'percentchange'),
+    price_as_of: typeof lastupd === 'string' && lastupd.trim() ? lastupd.trim() : null,
+  }
 }
 
 /**
@@ -357,13 +370,16 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
       }
     }
 
-    // 3. Live price (JSON pricefeed).
-    let price: number | null = null
+    // 3. Live market quote (JSON pricefeed) — current price + 52-week range.
+    let market: StreetMarket | null = null
     try {
       const { buffer, mode } = await fetchOrLoadRaw(PRICE_URL, 'moneycontrol/price', `niva-price-${date}.json`, /\.json$/i)
-      price = parsePriceJson(buffer)
-      if (price != null) upstream.push('Moneycontrol Price')
-      await appendLog(`${PARSER_NAME}.log`, { source: 'price', mode, price })
+      market = parsePriceFeed(buffer)
+      if (market) {
+        if (!market.price_as_of) market.price_as_of = date
+        upstream.push('Moneycontrol Price')
+      }
+      await appendLog(`${PARSER_NAME}.log`, { source: 'price', mode, price: market?.current_price ?? null })
     } catch (err) {
       const msg = errMsg(err)
       blocked = blocked || isBlock(msg)
@@ -371,14 +387,14 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
     }
 
     const derived = deriveConsensus(reports)
-    const gotData = reports.length > 0 || apiConsensus != null
+    const gotData = reports.length > 0 || apiConsensus != null || market != null
 
     if (gotData) {
       // Merge: JSON consensus wins, broker-note derivation fills gaps, prior
       // snapshot is the final fallback so a single missing field never nulls a
       // previously-known number.
       const consensus: StreetAnalystConsensus = {
-        current_price: firstNum(price, existing?.consensus.current_price),
+        current_price: firstNum(market?.current_price, existing?.consensus.current_price),
         consensus_target_price: firstNum(apiConsensus?.consensus_target_price, derived.consensus_target_price, existing?.consensus.consensus_target_price),
         highest_target_price: firstNum(apiConsensus?.highest_target_price, derived.highest_target_price, existing?.consensus.highest_target_price),
         lowest_target_price: firstNum(apiConsensus?.lowest_target_price, derived.lowest_target_price, existing?.consensus.lowest_target_price),
@@ -408,6 +424,7 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
           notes: `Live Moneycontrol pull from: ${upstream.join(', ') || 'n/a'}. Missing fields stay null (never fabricated).`,
         },
         consensus,
+        market: market ?? existing?.market,
         reports: finalReports,
       } satisfies StreetAnalystSnapshot)
     } else if (existing && hasRealReports(existing)) {

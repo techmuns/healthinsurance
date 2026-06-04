@@ -447,6 +447,15 @@ export interface StreetAnalystConsensus {
   last_updated: string | null
 }
 
+/** Live market quote for the focal name, from Moneycontrol's pricefeed. */
+export interface StreetMarket {
+  current_price: number | null
+  week_high_52: number | null
+  week_low_52: number | null
+  price_change_pct: number | null
+  price_as_of: string | null
+}
+
 export interface StreetAnalystMeta {
   snapshot_id: string
   description: string
@@ -469,6 +478,7 @@ export interface StreetAnalystMeta {
 export interface StreetAnalystSnapshot {
   _meta: StreetAnalystMeta
   consensus: StreetAnalystConsensus
+  market?: StreetMarket
   reports: StreetAnalystReportRow[]
 }
 

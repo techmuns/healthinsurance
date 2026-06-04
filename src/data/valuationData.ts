@@ -37,7 +37,7 @@ export interface MarketSnapshot {
   listDate: string
 }
 
-export const marketSnapshot: MarketSnapshot = {
+const seedMarketSnapshot: MarketSnapshot = {
   company: 'Niva Bupa',
   ticker: 'NSE: NIVABUPA',
   currentPrice: 83.5,
@@ -48,6 +48,20 @@ export const marketSnapshot: MarketSnapshot = {
   ipoPrice: 74,
   listPrice: 78.14,
   listDate: '14 Nov 2024',
+}
+
+// Parsed view of the daily Moneycontrol snapshot, shared by the overlays below.
+const streetData = streetSnapshot as unknown as StreetAnalystSnapshot
+
+// Live market-quote overlay: current price + 52-week range come from the daily
+// Moneycontrol pricefeed when present, else the seed values (never blanked).
+export const marketSnapshot: MarketSnapshot = {
+  ...seedMarketSnapshot,
+  currentPrice:
+    streetData?.market?.current_price ?? streetData?.consensus?.current_price ?? seedMarketSnapshot.currentPrice,
+  weekHigh52: streetData?.market?.week_high_52 ?? seedMarketSnapshot.weekHigh52,
+  weekLow52: streetData?.market?.week_low_52 ?? seedMarketSnapshot.weekLow52,
+  priceAsOf: streetData?.market?.price_as_of ?? seedMarketSnapshot.priceAsOf,
 }
 
 // ── Reported financials used to build the multiples ─────────────────────────
@@ -235,7 +249,7 @@ function deriveRatingLabel(buy: number | null, hold: number | null, sell: number
 }
 
 function buildCoverage(): { consensus: AnalystConsensus; reports: AnalystReport[] } {
-  const snap = streetSnapshot as unknown as StreetAnalystSnapshot
+  const snap = streetData
   const hasReal =
     snap?._meta?.dataset !== 'pending' && Array.isArray(snap?.reports) && snap.reports.length > 0
   if (!hasReal) return { consensus: seedAnalystConsensus, reports: seedAnalystReports }
