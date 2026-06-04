@@ -2,7 +2,7 @@
   "last_successful_run": "2026-06-04T07:11:34.420Z",
   "last_failed_run": "2026-06-04T08:38:15.782Z",
   "sources_checked": 2,
-  "sources_success": 0,
+  "sources_success": 1,
   "sources_failed": 0,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
@@ -225,8 +225,7 @@
     "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
     "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
     "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
-    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE",
-    "[moneycontrol_analyst] Moneycontrol page fetched but no broker-recommendation rows matched the parser — DOM may have changed; kept prior snapshot."
+    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE"
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -389,7 +388,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-04T11:13:57.970Z",
+      "last_attempt_at": "2026-06-04T11:25:35.496Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -423,10 +422,10 @@
     },
     {
       "source_id": "moneycontrol_analyst",
-      "status": "pending",
-      "last_attempt_at": "2026-06-04T11:13:59.433Z",
-      "last_success_at": null,
-      "records_fetched": 0
+      "status": "success",
+      "last_attempt_at": "2026-06-04T11:25:38.667Z",
+      "last_success_at": "2026-06-04T11:25:38.667Z",
+      "records_fetched": 6
     }
   ]
 }
