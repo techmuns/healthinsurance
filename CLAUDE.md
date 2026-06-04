@@ -33,6 +33,7 @@ Project guidance for Claude Code sessions on this repository.
 
 **Non-negotiable honesty rules** (these protect the "best-in-class" trust)
 - Show **real, source-backed data**; never silently fall back to mock or fabricated numbers.
+- **No real data? Ask — every time.** If real, source-backed data for a requested chart / metric / period / year is not available (source blocked, snapshot empty, only a partial basis exists), **STOP and ask Neha how to proceed** — provide a source file, paste figures, re-scope, enable a fetch, or wait for ingestion. Never fabricate, never silently substitute, and never derive a number from an incomplete basis that would mislead. (Standing instruction, Neha, 2026-06-04.)
 - **Missing ≠ zero** — render an honest "not available" marker, never a fake 0.
 - **Honest period + basis labels** (FY25 vs Q3 FY25 vs TTM; premium ≠ profit).
 - Respect **protected charts** and **default states** (see below) — announce before changing.
