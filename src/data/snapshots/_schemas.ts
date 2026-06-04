@@ -453,8 +453,11 @@ export interface StreetAnalystMeta {
   schema_version: string
   company_id: string
   company_name: string
-  source: 'Moneycontrol'
+  /** Primary source label (kept for back-compat). */
+  source: string
   source_url: string
+  /** Every upstream feed that contributed to this snapshot, for transparency. */
+  upstream_sources?: string[]
   dataset: SnapshotDataset
   last_updated: string | null
   last_successful_run?: string | null

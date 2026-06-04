@@ -1,21 +1,21 @@
 // ---------------------------------------------------------------------------
 //  Fetcher — Daily analyst coverage for the focal listed insurer (Niva Bupa),
-//  scraped from Moneycontrol.
+//  aggregated from Moneycontrol's free, public feeds.
 //
 //  Produces the self-contained snapshot src/data/snapshots/street-analyst-
-//  snapshot.json that powers the Street View page: each covering broker's
-//  latest rating + target, plus the consensus (counts, average / high / low
-//  target). This is NOT routed through the generic merge gate — like the IRDAI
-//  Non-Life Flash fetcher, it writes its own envelope directly.
+//  snapshot.json that powers the Street View page. It pulls from MULTIPLE
+//  Moneycontrol feeds and merges them:
+//    1. Broker Research cards (HTML)  → individual broker notes (rating, target,
+//       date, research-PDF link as the source).
+//    2. Estimates / price-forecast (JSON API) → full consensus: analyst count,
+//       recommendation split, target high / low / average.
+//    3. Price feed (JSON API) → live current price.
 //
-//  Source policy (identical to the rest of the pipeline):
-//    • OFFLINE-FIRST: live (INGEST_OFFLINE=0) fetches the Moneycontrol page and
-//      stages the HTML to data/raw/moneycontrol/; offline replays the newest
-//      staged HTML.
-//    • BLOCK-TOLERANT: Moneycontrol can 403 a datacenter IP (like NSE/IRDAI).
-//      On a block / empty parse / error we KEEP the prior snapshot (never blank
-//      real data) and never fabricate a number — a missing field stays null.
-//      Set the INGEST_FETCH_PROXY repo secret to fetch through an in-region IP.
+//  Every feed is OFFLINE-FIRST (staged to data/raw/moneycontrol/ so the next
+//  offline run replays it) and BLOCK-TOLERANT: a failed/empty feed is skipped,
+//  the prior snapshot is never blanked, and a missing field stays null — never
+//  fabricated. Consensus prefers the JSON feed and falls back to deriving from
+//  the broker notes, so the page degrades gracefully if one feed changes shape.
 // ---------------------------------------------------------------------------
 
 import * as cheerio from 'cheerio'
@@ -36,17 +36,29 @@ const SNAPSHOT_FILE = 'street-analyst-snapshot.json'
 
 const COMPANY_ID = 'niva-bupa'
 const COMPANY_NAME = 'Niva Bupa'
+// Moneycontrol stock code (scId/did) + NSE symbol for Niva Bupa.
+const SC_ID = process.env.MONEYCONTROL_SCID ?? 'NBH'
 
-// Moneycontrol stock page for Niva Bupa. The recommendations / forecast data is
-// rendered on (or linked from) this quote page. Overridable via env so the
-// exact slug/code can be corrected from CI without a code change once the first
-// live run stages the real HTML to data/raw/moneycontrol/.
-const DEFAULT_URL =
+// Feed URLs (all overridable via env so they can be corrected from CI without a
+// code change once the first live run stages the real responses).
+const BROKER_URL =
   process.env.MONEYCONTROL_NIVA_URL ??
   'https://www.moneycontrol.com/india/stockpricequote/insurance/nivabupahealthinsurance/NBH'
+const PRICE_URL =
+  process.env.MONEYCONTROL_PRICE_URL ??
+  `https://priceapi.moneycontrol.com/pricefeed/nse/equitycash/${SC_ID}`
+// Candidate consensus / price-forecast JSON endpoints (the feeds behind the
+// page's client-rendered "Consensus Recommendations" widget). We try each and
+// keep the first that yields data; all responses are staged for refinement.
+const FORECAST_URLS = (process.env.MONEYCONTROL_FORECAST_URL
+  ? [process.env.MONEYCONTROL_FORECAST_URL]
+  : [
+      `https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=${SC_ID}&deviceType=W`,
+      `https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=${SC_ID}&deviceType=W`,
+      `https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=${SC_ID}&deviceType=W`,
+    ])
 
 // ─── rating vocabulary ───────────────────────────────────────────────────────
-// Map Moneycontrol's varied broker-call wording onto our six-rating scale.
 function normaliseRating(raw: string | null | undefined): StreetRating | null {
   if (!raw) return null
   const s = raw.trim().toLowerCase()
@@ -59,8 +71,9 @@ function normaliseRating(raw: string | null | undefined): StreetRating | null {
   return null
 }
 
-function toNum(v: string | null | undefined): number | null {
+function toNum(v: unknown): number | null {
   if (v == null) return null
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
   const n = parseFloat(String(v).replace(/[₹,\s%]/g, ''))
   return Number.isFinite(n) ? n : null
 }
@@ -68,28 +81,7 @@ function toNum(v: string | null | undefined): number | null {
 const isBuySide = (r: StreetRating | null) => r === 'Buy' || r === 'Add'
 const isSell = (r: StreetRating | null) => r === 'Reduce' || r === 'Sell'
 
-// ─── parsing ─────────────────────────────────────────────────────────────────
-// Moneycontrol's DOM changes over time, so the parser is deliberately defensive
-// and multi-strategy: it scans every table on the page for a broker-research /
-// recommendations shape (a header row mentioning broker + rating/reco + target),
-// and reads the consensus from a recommendations summary block. Anything it
-// can't confidently read is left null/empty (which keeps the prior snapshot),
-// never guessed.
-
-interface Parsed {
-  reports: StreetAnalystReportRow[]
-  consensus: Partial<StreetAnalystConsensus>
-}
-
-function parsePage(html: string, sourceUrl: string): Parsed {
-  const $ = cheerio.load(html)
-  // Primary: Moneycontrol's "Broker Research" cards (#broker_research .brrs_bx).
-  let reports = parseBrokerResearch($, sourceUrl)
-  // Fallback: a generic broker/rating/target table, should the DOM change.
-  if (reports.length === 0) reports = parseReportTablesFallback($, sourceUrl)
-  const consensus = parseConsensus($, reports)
-  return { reports, consensus }
-}
+// ─── broker-note parsing (HTML) ──────────────────────────────────────────────
 
 /**
  * Moneycontrol "Broker Research" cards. Each `.brrs_bx` block is one broker
@@ -121,7 +113,6 @@ function parseBrokerResearch($: cheerio.CheerioAPI, sourceUrl: string): StreetAn
       }
     })
 
-    // Not a real call without at least a rating or a target.
     if (rating == null && target_price == null) return
 
     const href = $el.find('.download_report a[href]').first().attr('href')
@@ -140,6 +131,9 @@ function parseBrokerResearch($: cheerio.CheerioAPI, sourceUrl: string): StreetAn
       confidence: 'secondary',
     })
   })
+
+  // Fallback: a generic broker/rating/target table, should the DOM change.
+  if (out.length === 0) return parseReportTablesFallback($, sourceUrl)
   return out
 }
 
@@ -150,7 +144,6 @@ function parseReportTablesFallback(
 ): StreetAnalystReportRow[] {
   const out: StreetAnalystReportRow[] = []
   const seen = new Set<string>()
-
   $('table').each((_, table) => {
     const headers = $(table)
       .find('tr')
@@ -165,75 +158,142 @@ function parseReportTablesFallback(
     const iTarget = findCol(/target|tp\b|price\s*target/)
     if (iBroker === -1 || (iReco === -1 && iTarget === -1)) return
     const iDate = findCol(/date|as\s*on|reported/)
-
     $(table)
       .find('tr')
       .slice(1)
       .each((__, row) => {
-        const cells = $(row)
-          .find('td')
-          .map((___, c) => $(c).text().trim())
-          .get()
+        const cells = $(row).find('td').map((___, c) => $(c).text().trim()).get()
         if (cells.length === 0) return
         const brokerage = cells[iBroker]?.trim()
         if (!brokerage) return
         const rating = iReco !== -1 ? normaliseRating(cells[iReco]) : null
         const target_price = iTarget !== -1 ? toNum(cells[iTarget]) : null
-        // Skip rows that carry neither a rating nor a target — not a real call.
         if (rating == null && target_price == null) return
         const report_date = iDate !== -1 && cells[iDate] ? cells[iDate] : nowIso().slice(0, 10)
         const key = `${brokerage}::${report_date}::${target_price ?? ''}`
         if (seen.has(key)) return
         seen.add(key)
-        out.push({
-          brokerage,
-          rating,
-          target_price,
-          report_date,
-          thesis: null,
-          source_id: null,
-          source_url: sourceUrl,
-          confidence: 'secondary',
-        })
+        out.push({ brokerage, rating, target_price, report_date, thesis: null, source_id: null, source_url: sourceUrl, confidence: 'secondary' })
       })
   })
   return out
 }
 
-/** Read the consensus summary (counts + avg/high/low target + price). Falls
- *  back to deriving counts/targets from the parsed broker rows when present. */
-function parseConsensus(
-  $: cheerio.CheerioAPI,
-  reports: StreetAnalystReportRow[],
-): Partial<StreetAnalystConsensus> {
-  // Moneycontrol's "Consensus Recommendations" widget renders client-side (an
-  // empty #consensus_graph in the static HTML), so derive the consensus from
-  // the broker cards we parsed — one (latest) note per broker, so a broker with
-  // several notes isn't counted multiple times.
+// ─── consensus parsing (JSON feed) ───────────────────────────────────────────
+
+/** Live current price from Moneycontrol's pricefeed JSON. */
+function parsePriceJson(buffer: Buffer): number | null {
+  let j: unknown
+  try {
+    j = JSON.parse(buffer.toString('utf8'))
+  } catch {
+    return null
+  }
+  // pricefeed shape: { data: { pricecurrent | lastvalue | LTP, ... } }
+  const data = (j as { data?: Record<string, unknown> })?.data ?? (j as Record<string, unknown>)
+  for (const k of ['pricecurrent', 'lastprice', 'lastvalue', 'LTP', 'BSEUpdatedPrice', 'NSEUpdatedPrice']) {
+    const n = toNum((data as Record<string, unknown>)?.[k])
+    if (n != null && n > 0) return n
+  }
+  return null
+}
+
+/**
+ * Heuristic consensus reader for Moneycontrol's estimates/forecast JSON. The
+ * exact shape is unknown until the first live run stages a real response, so we
+ * walk the JSON and pick numbers under clearly-named keys: target high / low /
+ * average, analyst count, and the recommendation split. Anything not clearly
+ * matched stays null (then the consensus falls back to the broker notes).
+ */
+function parseForecastJson(buffer: Buffer): Partial<StreetAnalystConsensus> | null {
+  let j: unknown
+  try {
+    j = JSON.parse(buffer.toString('utf8'))
+  } catch {
+    return null
+  }
+  let avg: number | null = null
+  let high: number | null = null
+  let low: number | null = null
+  let count: number | null = null
+  let buy: number | null = null
+  let outperform: number | null = null
+  let hold: number | null = null
+  let underperform: number | null = null
+  let sell: number | null = null
+  const looseTargets: number[] = []
+
+  const set = (cur: number | null, n: number) => (cur == null ? n : cur)
+  const add = (cur: number | null, n: number) => (cur ?? 0) + n
+
+  const visit = (node: unknown): void => {
+    if (node == null || typeof node !== 'object') return
+    if (Array.isArray(node)) {
+      node.forEach(visit)
+      return
+    }
+    for (const [k, v] of Object.entries(node as Record<string, unknown>)) {
+      const key = k.toLowerCase()
+      const num = toNum(v)
+      if (num != null) {
+        if (/(avg|average|mean|consensus)/.test(key) && /target|price/.test(key)) avg = set(avg, num)
+        else if (/(high|max|upper)/.test(key) && /target|price/.test(key)) high = set(high, num)
+        else if (/(low|min|lower)/.test(key) && /target|price/.test(key)) low = set(low, num)
+        else if (/target/.test(key) && /price/.test(key)) looseTargets.push(num)
+        else if (/(numberofanalyst|analystcount|noofanalyst|totalanalyst|coveredby|brokercount)/.test(key.replace(/[_\s-]/g, ''))) count = set(count, num)
+        else if (/strongbuy|^buy$|buycount|buyreco/.test(key.replace(/[_\s-]/g, ''))) buy = add(buy, num)
+        else if (/outperform/.test(key)) outperform = add(outperform, num)
+        else if (/hold|neutral/.test(key)) hold = add(hold, num)
+        else if (/underperform/.test(key)) underperform = add(underperform, num)
+        else if (/strongsell|^sell$|sellcount/.test(key.replace(/[_\s-]/g, ''))) sell = add(sell, num)
+      }
+      if (v && typeof v === 'object') visit(v)
+    }
+  }
+  visit(j)
+
+  const buyTot = buy != null || outperform != null ? (buy ?? 0) + (outperform ?? 0) : null
+  const sellTot = sell != null || underperform != null ? (sell ?? 0) + (underperform ?? 0) : null
+  const anyTarget = avg ?? high ?? low ?? (looseTargets.length ? 1 : null)
+  const anyCounts = count ?? buyTot ?? hold ?? sellTot
+  if (anyTarget == null && anyCounts == null) return null
+
+  return {
+    consensus_target_price: avg ?? (looseTargets.length ? round1(mean(looseTargets)) : null),
+    highest_target_price: high ?? (looseTargets.length ? Math.max(...looseTargets) : null),
+    lowest_target_price: low ?? (looseTargets.length ? Math.min(...looseTargets) : null),
+    analyst_count: count,
+    buy_count: buyTot,
+    hold_count: hold,
+    sell_count: sellTot,
+  }
+}
+
+const mean = (a: number[]) => a.reduce((x, y) => x + y, 0) / a.length
+const round1 = (n: number) => Math.round(n * 10) / 10
+
+/** Consensus derived from the broker notes — one latest note per broker. */
+function deriveConsensus(reports: StreetAnalystReportRow[]): Partial<StreetAnalystConsensus> {
   const latestByBroker = reports.filter(
     (r, i) => reports.findIndex((x) => x.brokerage === r.brokerage) === i,
   )
   const targets = latestByBroker.map((r) => r.target_price).filter((t): t is number => t != null)
-  const avg = targets.length
-    ? Math.round((targets.reduce((a, b) => a + b, 0) / targets.length) * 10) / 10
-    : null
-
-  // The live quote IS server-rendered, so the current price can be read here.
-  const bodyText = $('body').text().replace(/\s+/g, ' ')
-  const priceM = bodyText.match(/(?:last\s*price|ltp)[^0-9₹.]{0,16}?([\d,]+\.\d{1,2})/i)
-
   const n = latestByBroker.length || null
   return {
-    current_price: priceM ? toNum(priceM[1]) : null,
-    consensus_target_price: avg,
+    consensus_target_price: targets.length ? round1(mean(targets)) : null,
     highest_target_price: targets.length ? Math.max(...targets) : null,
     lowest_target_price: targets.length ? Math.min(...targets) : null,
     analyst_count: n,
     buy_count: n ? latestByBroker.filter((r) => isBuySide(r.rating)).length : null,
     hold_count: n ? latestByBroker.filter((r) => r.rating === 'Hold' || r.rating === 'Equal-weight').length : null,
     sell_count: n ? latestByBroker.filter((r) => isSell(r.rating)).length : null,
-    last_updated: nowIso().slice(0, 10),
   }
+}
+
+/** First non-null across the inputs (in priority order). */
+function firstNum(...vals: Array<number | null | undefined>): number | null {
+  for (const v of vals) if (v != null) return v
+  return null
 }
 
 // ─── snapshot writing (block-tolerant) ───────────────────────────────────────
@@ -258,78 +318,99 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
   frequency: 'daily',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
+    const date = fetched_at.slice(0, 10)
     const warnings: string[] = []
+    const upstream: string[] = []
     const existing = await readExisting()
-
-    let parsed: Parsed | null = null
     let blocked = false
-    let sourceUrl = DEFAULT_URL
+
+    // 1. Broker Research cards (HTML).
+    let reports: StreetAnalystReportRow[] = []
     try {
-      const { buffer, raw_file, mode } = await fetchOrLoadRaw(
-        DEFAULT_URL,
-        'moneycontrol',
-        `niva-analyst-${fetched_at.slice(0, 10)}.html`,
-        /\.html?$/i,
-      )
-      sourceUrl = DEFAULT_URL
-      parsed = parsePage(buffer.toString('utf8'), sourceUrl)
-      await appendLog(`${PARSER_NAME}.log`, {
-        source: SOURCE_ID,
-        status: 'parsed',
-        mode,
-        raw_file: raw_file.split('/').pop(),
-        reports: parsed.reports.length,
-      })
-      if (parsed.reports.length === 0) {
-        warnings.push('Moneycontrol page fetched but no broker-recommendation rows matched the parser — DOM may have changed; kept prior snapshot.')
-      }
+      const { buffer, mode } = await fetchOrLoadRaw(BROKER_URL, 'moneycontrol', `niva-broker-${date}.html`, /\.html?$/i)
+      reports = parseBrokerResearch(cheerio.load(buffer.toString('utf8')), BROKER_URL)
+      if (reports.length) upstream.push('Moneycontrol Broker Research')
+      else warnings.push('Broker Research page fetched but no broker cards matched (DOM may have changed).')
+      await appendLog(`${PARSER_NAME}.log`, { source: 'broker_research', mode, reports: reports.length })
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      blocked = /\b(401|403)\b/.test(msg) || /offline/i.test(msg)
-      warnings.push(`Moneycontrol fetch failed: ${msg}`)
-      await appendLog(`${PARSER_NAME}.log`, { source: SOURCE_ID, status: blocked ? 'blocked' : 'error', error: msg })
+      const msg = errMsg(err)
+      blocked = blocked || isBlock(msg)
+      warnings.push(`Broker Research fetch failed: ${msg}`)
     }
 
-    const gotData = !!parsed && parsed.reports.length > 0
+    // 2. Consensus / price-forecast (JSON API). Try candidates; keep first hit.
+    let apiConsensus: Partial<StreetAnalystConsensus> | null = null
+    for (let i = 0; i < FORECAST_URLS.length; i++) {
+      try {
+        const { buffer, mode } = await fetchOrLoadRaw(FORECAST_URLS[i], 'moneycontrol/forecast', `niva-forecast${i}-${date}.json`, /\.json$/i)
+        const parsed = parseForecastJson(buffer)
+        await appendLog(`${PARSER_NAME}.log`, { source: 'forecast', endpoint: i, mode, got: !!parsed })
+        if (parsed) {
+          apiConsensus = parsed
+          upstream.push('Moneycontrol Estimates')
+          break
+        }
+      } catch (err) {
+        const msg = errMsg(err)
+        blocked = blocked || isBlock(msg)
+        warnings.push(`Forecast endpoint ${i} failed: ${msg}`)
+      }
+    }
+
+    // 3. Live price (JSON pricefeed).
+    let price: number | null = null
+    try {
+      const { buffer, mode } = await fetchOrLoadRaw(PRICE_URL, 'moneycontrol/price', `niva-price-${date}.json`, /\.json$/i)
+      price = parsePriceJson(buffer)
+      if (price != null) upstream.push('Moneycontrol Price')
+      await appendLog(`${PARSER_NAME}.log`, { source: 'price', mode, price })
+    } catch (err) {
+      const msg = errMsg(err)
+      blocked = blocked || isBlock(msg)
+      warnings.push(`Price fetch failed: ${msg}`)
+    }
+
+    const derived = deriveConsensus(reports)
+    const gotData = reports.length > 0 || apiConsensus != null
 
     if (gotData) {
-      // Live authoritative pull → write fresh coverage (each row carries its MC
-      // source URL). Consensus merges parsed values over the prior ones so a
-      // single missing field never nulls a previously-known number.
+      // Merge: JSON consensus wins, broker-note derivation fills gaps, prior
+      // snapshot is the final fallback so a single missing field never nulls a
+      // previously-known number.
       const consensus: StreetAnalystConsensus = {
-        current_price: pick(parsed!.consensus.current_price, existing?.consensus.current_price),
-        consensus_target_price: pick(parsed!.consensus.consensus_target_price, existing?.consensus.consensus_target_price),
-        highest_target_price: pick(parsed!.consensus.highest_target_price, existing?.consensus.highest_target_price),
-        lowest_target_price: pick(parsed!.consensus.lowest_target_price, existing?.consensus.lowest_target_price),
-        analyst_count: pick(parsed!.consensus.analyst_count, existing?.consensus.analyst_count),
-        buy_count: pick(parsed!.consensus.buy_count, existing?.consensus.buy_count),
-        hold_count: pick(parsed!.consensus.hold_count, existing?.consensus.hold_count),
-        sell_count: pick(parsed!.consensus.sell_count, existing?.consensus.sell_count),
-        last_updated: parsed!.consensus.last_updated ?? fetched_at.slice(0, 10),
+        current_price: firstNum(price, existing?.consensus.current_price),
+        consensus_target_price: firstNum(apiConsensus?.consensus_target_price, derived.consensus_target_price, existing?.consensus.consensus_target_price),
+        highest_target_price: firstNum(apiConsensus?.highest_target_price, derived.highest_target_price, existing?.consensus.highest_target_price),
+        lowest_target_price: firstNum(apiConsensus?.lowest_target_price, derived.lowest_target_price, existing?.consensus.lowest_target_price),
+        analyst_count: firstNum(apiConsensus?.analyst_count, derived.analyst_count, existing?.consensus.analyst_count),
+        buy_count: firstNum(apiConsensus?.buy_count, derived.buy_count, existing?.consensus.buy_count),
+        hold_count: firstNum(apiConsensus?.hold_count, derived.hold_count, existing?.consensus.hold_count),
+        sell_count: firstNum(apiConsensus?.sell_count, derived.sell_count, existing?.consensus.sell_count),
+        last_updated: date,
       }
+      // Keep prior reports if this run got consensus but no fresh broker cards.
+      const finalReports = reports.length > 0 ? reports : existing?.reports ?? []
       await writeSnapshot(SNAPSHOT_FILE, {
         _meta: {
           snapshot_id: 'street-analyst',
-          description:
-            'Daily analyst coverage (broker ratings + targets + consensus) for Niva Bupa. Source: Moneycontrol.',
+          description: 'Daily analyst coverage (broker ratings + targets + consensus) for Niva Bupa, aggregated from Moneycontrol feeds.',
           schema_version: '1.0.0',
           company_id: COMPANY_ID,
           company_name: COMPANY_NAME,
           source: 'Moneycontrol',
-          source_url: sourceUrl,
+          source_url: BROKER_URL,
+          upstream_sources: upstream,
           dataset: 'official',
-          last_updated: fetched_at.slice(0, 10),
+          last_updated: date,
           last_successful_run: fetched_at,
           last_fetched_at: fetched_at,
           parser_status: 'ready',
-          notes: 'Live Moneycontrol pull. Each row carries its source URL; missing fields stay null (never fabricated).',
+          notes: `Live Moneycontrol pull from: ${upstream.join(', ') || 'n/a'}. Missing fields stay null (never fabricated).`,
         },
         consensus,
-        reports: parsed!.reports,
+        reports: finalReports,
       } satisfies StreetAnalystSnapshot)
     } else if (existing && hasRealReports(existing)) {
-      // No new data (block / DOM change) but we already hold real coverage →
-      // keep it, only refreshing the fetch-attempt metadata. Never blanks data.
       await writeSnapshot(SNAPSHOT_FILE, {
         ...existing,
         _meta: {
@@ -337,13 +418,12 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
           last_fetched_at: fetched_at,
           parser_status: blocked ? 'blocked' : existing._meta.parser_status,
           notes: blocked
-            ? 'Moneycontrol blocked this run (datacenter IP 403). Kept prior coverage. Set INGEST_FETCH_PROXY to fetch via an in-region IP.'
+            ? 'Moneycontrol feeds blocked this run (datacenter IP). Kept prior coverage. Set INGEST_FETCH_PROXY to fetch via an in-region IP.'
             : existing._meta.notes,
         },
       } satisfies StreetAnalystSnapshot)
     }
-    // else: no data and no prior real data → leave the seed file untouched
-    // (the curated seed is itself real, source-backed coverage).
+    // else: no data and no prior real data → leave the curated seed untouched.
 
     const status: FetchResult['status'] = gotData ? 'success' : blocked ? 'blocked' : 'pending'
     return {
@@ -351,16 +431,16 @@ export const ingestMoneycontrolAnalyst: Fetcher = {
       status,
       raw_file: null,
       records: [],
-      records_fetched: gotData ? parsed!.reports.length : 0,
+      records_fetched: reports.length,
       fetched_at,
       warnings: warnings.length ? warnings : undefined,
     }
   },
 }
 
-/** First non-null of the two (parsed wins; falls back to prior). */
-function pick(a: number | null | undefined, b: number | null | undefined): number | null {
-  if (a != null) return a
-  if (b != null) return b
-  return null
+function errMsg(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
+}
+function isBlock(msg: string): boolean {
+  return /\b(401|403)\b/.test(msg) || /offline/i.test(msg)
 }
