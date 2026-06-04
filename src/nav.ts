@@ -8,22 +8,18 @@ export interface NavItem {
   question: string
 }
 
-// Six consolidated top-level sections. Each section renders its sub-areas as
-// in-page tabs (not sidebar children), so the rail stays short and scannable.
+// Two top-level pages. Page switching is primarily via the header switcher
+// blocks; the sidebar mirrors the same two destinations as app-level icon
+// navigation (it deliberately does NOT duplicate the SAHI sub-tabs, which live
+// as pills under the SAHI header).
 export const navItems: NavItem[] = [
-  { id: 'overview', label: 'Executive Overview', shortLabel: 'Overview', icon: 'overview', question: 'What is the full investor signal right now?' },
-  { id: 'market-distribution', label: 'Market & Distribution', shortLabel: 'Market', icon: 'market', question: 'Where is the premium pool shifting, how is premium written, and through which channels?' },
-  { id: 'company-performance', label: 'Company Performance', shortLabel: 'Company', icon: 'capital', question: 'Is the company profitable, fairly valued, and ahead of peers over time?' },
-  { id: 'street-view', label: 'Street View', shortLabel: 'Street', icon: 'commentary', question: 'What do brokers and analysts think it is worth?' },
-  { id: 'peers', label: 'Peer Comparison', shortLabel: 'Peers', icon: 'peers', question: 'How do listed and unlisted peers compare?' },
-  { id: 'ownership-governance', label: 'Ownership & Governance', shortLabel: 'Governance', icon: 'ownership', question: 'Who owns the company, and what governance events matter?' },
+  { id: 'industry', label: 'Industry Insights', shortLabel: 'Industry', icon: 'home', question: 'How is the overall insurance industry doing right now?' },
+  { id: 'sahi', label: 'SAHI Analysis', shortLabel: 'SAHI', icon: 'analytics', question: 'How do the standalone health insurers compare in depth?' },
 ]
 
 /** Sidebar grouping — keeps the rail scannable without changing the labels. */
 export const navGroups: { label: string; itemIds: string[] }[] = [
-  { label: 'Overview', itemIds: ['overview'] },
-  { label: 'Business', itemIds: ['market-distribution', 'company-performance', 'street-view', 'peers'] },
-  { label: 'Governance', itemIds: ['ownership-governance'] },
+  { label: 'Pages', itemIds: ['industry', 'sahi'] },
 ]
 
 export type SectionFrequencyKind = 'operating' | 'profitability' | 'none'

@@ -47,7 +47,7 @@ function InsightChip({ label, tone = 'slate' }: { label: string; tone?: 'slate' 
   )
 }
 
-export function ExecutiveOverview() {
+export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | 'sahi' }) {
   const filters = useFilters()
   const { period } = filters
   // One model per metric so every metric can be shown as its own column.
@@ -56,6 +56,25 @@ export function ExecutiveOverview() {
   const model = colModels.get('premium')!
   const { leader, runnerUp, highlighted, concentration } = model
   const annualBasisNote = period !== 'Annual'
+
+  // ── Industry Insights — the clean industry homepage: hero + market-structure
+  //    snapshot + premium-pool shift. No peer/company cards, no selectors. ────
+  if (view === 'industry') {
+    return (
+      <div className="space-y-4">
+        <HeroHeader period={period} annualBasisNote={annualBasisNote} />
+        <IndustrySnapshotBand />
+        <PoolShiftCard />
+      </div>
+    )
+  }
+
+  // ── SAHI · Overview — peer landscape + the Market Trend Explorer. ─────────
+  if (!leader || model.count === 0) {
+    return (
+      <DataEmptyState kind="pending" title="No insurers in this pool" body="Adjust the data range to see the SAHI overview." height={280} />
+    )
+  }
 
   // Build the table: rows = companies sorted by market share; each row carries
   // every metric's value, indexed by metric id, so the table needs no toggle.
@@ -78,27 +97,9 @@ export function ExecutiveOverview() {
     ),
   }))
 
-  if (!leader || model.count === 0) {
-    return (
-      <div className="space-y-4">
-        <HeroHeader highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
-        <DataEmptyState kind="pending" title="No insurers in this pool" body="Switch the Peer Group above to see the industry overview." height={280} />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-4">
-      <HeroHeader highlightName={highlighted?.shortName} period={period} annualBasisNote={annualBasisNote} />
-
-      {/* ── Industry Snapshot — 3-way market-structure ring band ─────────── */}
-      <IndustrySnapshotBand />
-
-      {/* ── Pool Shift — where the GI premium pool is moving (FY22 → FY25) ── */}
-      <PoolShiftCard />
-
-      {/* ── Peer landscape: Market Share map (left, constant) + metric
-            rankings (right, toggled) ───────────────────────────────────── */}
+      {/* ── Peer landscape: Market Share map (left) + metric rankings (right) ─ */}
       <section>
         <div className="mb-3 flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />

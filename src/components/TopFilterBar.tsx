@@ -56,7 +56,17 @@ function FieldLabel({ children, hint }: { children: string; hint?: string }) {
   )
 }
 
-export function TopFilterBar({ route }: { route?: string }) {
+export function TopFilterBar({
+  route,
+  showPeerGroup = false,
+  showCompany = false,
+}: {
+  route?: string
+  /** Peer-group lens — hidden by default in the SAHI-only IA. */
+  showPeerGroup?: boolean
+  /** Company / highlight selector — hidden by default in the SAHI-only IA. */
+  showCompany?: boolean
+}) {
   const {
     highlightedCompany,
     setHighlightedCompany,
@@ -95,38 +105,46 @@ export function TopFilterBar({ route }: { route?: string }) {
     <div className="sticky top-0 z-30 px-4 pt-2 sm:px-6">
       {/* Light, integrated control strip — calm and secondary to the content. */}
       <div className="flex flex-wrap items-end gap-x-3.5 gap-y-1.5 rounded-xl2 border border-[rgba(23,43,77,0.08)] bg-white/80 px-3.5 py-1.5 shadow-soft backdrop-blur-md">
-        {/* Peer group — primary lens; drives which companies appear below. */}
-        <div>
-          <FieldLabel hint="Universe lens — filters which insurers appear in the Company dropdown and across all charts">
-            Peer Group
-          </FieldLabel>
-          <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
-        </div>
+        {/* Peer group — primary lens; drives which companies appear below.
+            Hidden in the SAHI-only IA (the universe is assumed SAHI). */}
+        {showPeerGroup && (
+          <>
+            <div>
+              <FieldLabel hint="Universe lens — filters which insurers appear in the Company dropdown and across all charts">
+                Peer Group
+              </FieldLabel>
+              <SegmentedControl<PeerGroup> options={peerGroups} value={peerGroup} onChange={setPeerGroup} size="sm" />
+            </div>
+            <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
+          </>
+        )}
 
-        <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
-
-        {/* Company / highlight company — filtered by selected peer group. */}
-        <label className="block">
-          <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : 'Choose from the current peer group'}>
-            {isOverview ? 'Highlight' : 'Company'}
-          </FieldLabel>
-          <span className="relative block">
-            <select
-              value={highlightedCompany}
-              onChange={(e) => setHighlightedCompany(e.target.value)}
-              className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-all duration-200 hover:border-muted-blue focus:border-navy-primary"
-            >
-              {companyOptions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-secondary" />
-          </span>
-        </label>
-
-        <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
+        {/* Company / highlight company — filtered by selected peer group.
+            Hidden by default; the deep sections default to the focal SAHI. */}
+        {showCompany && (
+          <>
+            <label className="block">
+              <FieldLabel hint={isOverview ? 'Outlines this company inside the industry visuals' : 'Choose from the current peer group'}>
+                {isOverview ? 'Highlight' : 'Company'}
+              </FieldLabel>
+              <span className="relative block">
+                <select
+                  value={highlightedCompany}
+                  onChange={(e) => setHighlightedCompany(e.target.value)}
+                  className="w-full appearance-none rounded-lg border border-soft-border bg-ice py-1.5 pl-3 pr-8 text-[13px] font-semibold text-navy-deep outline-none transition-all duration-200 hover:border-muted-blue focus:border-navy-primary"
+                >
+                  {companyOptions.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-secondary" />
+              </span>
+            </label>
+            <div className="hidden h-8 w-px self-end bg-soft-border sm:block" />
+          </>
+        )}
 
         {/* Data Range — dashboard-wide active window. Granularity follows the
             Period toggle (FY / quarter / month). Drives every clipped chart. */}

@@ -13,6 +13,8 @@ import {
   MessageSquareQuote,
   Newspaper,
   LayoutDashboard,
+  Home,
+  BarChart3,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -31,6 +33,8 @@ export type IconKey =
   | 'commentary'
   | 'events'
   | 'overview'
+  | 'home'
+  | 'analytics'
 
 export const iconMap: Record<IconKey, LucideIcon> = {
   growth: TrendingUp,
@@ -47,6 +51,8 @@ export const iconMap: Record<IconKey, LucideIcon> = {
   commentary: MessageSquareQuote,
   events: Newspaper,
   overview: LayoutDashboard,
+  home: Home,
+  analytics: BarChart3,
 }
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

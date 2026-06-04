@@ -1,44 +1,50 @@
 import { useState, type ComponentType } from 'react'
 import { FilterProvider } from '@/state/filters'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
-import { TopTabBar, type TopTab } from '@/components/TopTabBar'
+import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
+import { SectionTabs, type SectionTab } from '@/components/SectionTabs'
 import { Sidebar } from '@/components/Sidebar'
 import { TopFilterBar } from '@/components/TopFilterBar'
 import { ExecutiveOverview } from '@/sections/ExecutiveOverview'
 import { MarketDistribution } from '@/sections/MarketDistribution'
-import { CompanyPerformance } from '@/sections/CompanyPerformance'
+import { ProfitabilityReview } from '@/sections/ProfitabilityReview'
+import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
-import { CompetitivePositioning } from '@/sections/CompetitivePositioning'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
-interface SectionDef {
-  navId: string
-  anchor: string
-  label: string
-  Comp: ComponentType<SectionProps>
-  /** Section drives internal tabs via onNavigate/sub — give it local state. */
-  hasSub?: boolean
-}
-
-// The six top-level pages. Exactly one is rendered at a time — navigation is by
-// the top tab bar or the left sidebar, never by scrolling.
-const SECTIONS: SectionDef[] = [
-  { navId: 'overview', anchor: 'executive-overview', label: 'Executive Overview', Comp: ExecutiveOverview },
-  { navId: 'market-distribution', anchor: 'market-distribution', label: 'Market & Distribution', Comp: MarketDistribution },
-  { navId: 'company-performance', anchor: 'company-performance', label: 'Company Performance', Comp: CompanyPerformance, hasSub: true },
-  { navId: 'street-view', anchor: 'street-view', label: 'Street View', Comp: StreetView },
-  { navId: 'peers', anchor: 'peer-comparison', label: 'Peer Comparison', Comp: CompetitivePositioning },
-  { navId: 'ownership-governance', anchor: 'ownership-governance', label: 'Ownership & Governance', Comp: OwnershipGovernance, hasSub: true },
+// ── SAHI Analysis sub-navigation ────────────────────────────────────────────
+// The six SAHI deep-dive tabs (compact pills under the SAHI header). Each maps
+// to a route string that drives the data row's period/basis behaviour.
+const SAHI_TABS: SectionTab[] = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'distribution', label: 'Distribution' },
+  { id: 'profitability', label: 'Profitability' },
+  { id: 'valuation', label: 'Valuation' },
+  { id: 'street-view', label: 'Street View' },
+  { id: 'governance', label: 'Governance' },
 ]
 
-const TABS: TopTab[] = SECTIONS.map(({ navId, anchor, label }) => ({ navId, anchor, label }))
+const SAHI_ROUTE: Record<string, string> = {
+  overview: 'overview',
+  distribution: 'market-distribution',
+  profitability: 'company-performance/profitability',
+  valuation: 'company-performance/valuation',
+  'street-view': 'street-view',
+  governance: 'ownership-governance',
+}
 
-// Per-section colour-psychology aura. Each section gets its own faint tonal
-// field so navigation feels alive and tone-coded to the section's meaning:
-//   navy = core analysis · teal = growth/live · blue = company analysis ·
-//   gold = valuation/premium · lavender = comparison · slate = governance.
+// Per-view colour-psychology aura key (reuses the section palette below).
+const AURA_KEY: Record<string, string> = {
+  overview: 'peers',
+  distribution: 'market-distribution',
+  profitability: 'company-performance',
+  valuation: 'company-performance',
+  'street-view': 'street-view',
+  governance: 'ownership-governance',
+}
+
 const SECTION_AURA: Record<string, { a: string; b: string; c: string }> = {
   overview: { a: '#27457E', b: '#168E8E', c: '#B68B3A' },
   'market-distribution': { a: '#168E8E', b: '#4F7BCF', c: '#27457E' },
@@ -58,58 +64,77 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
   return <Comp onNavigate={onNavigate} sub={sub} />
 }
 
-/** Renders just the active section — a hard page swap (no scroll transition). */
-// Each section is wrapped in its own error boundary so a render failure in one
-// page is contained to that page (a calm recovery card) instead of unmounting
-// the whole app into a blank white screen. The boundary resets on navigation.
-function SectionRenderer({ section }: { section: SectionDef }) {
-  const Comp = section.Comp
-  return (
-    <div key={section.navId} className="w-full animate-page-enter">
-      <SectionErrorBoundary resetKey={section.navId} sectionLabel={section.label}>
-        {section.hasSub ? <StatefulSection Comp={Comp} /> : <Comp />}
-      </SectionErrorBoundary>
-    </div>
-  )
+/** Renders the active SAHI deep-dive sub-section. */
+function SahiContent({ tab }: { tab: string }) {
+  switch (tab) {
+    case 'distribution':
+      return <MarketDistribution />
+    case 'profitability':
+      return <ProfitabilityReview />
+    case 'valuation':
+      return <ValuationMarketView />
+    case 'street-view':
+      return <StreetView />
+    case 'governance':
+      return <StatefulSection Comp={OwnershipGovernance} />
+    case 'overview':
+    default:
+      return <ExecutiveOverview view="sahi" />
+  }
 }
 
 export default function App() {
-  const [activeId, setActiveId] = useState(SECTIONS[0].navId)
+  const [page, setPage] = useState<TopPage>('industry')
+  const [sahiTab, setSahiTab] = useState('overview')
   const [navOpen, setNavOpen] = useState(false)
 
-  const active = SECTIONS.find((s) => s.navId === activeId) ?? SECTIONS[0]
-  const aura = SECTION_AURA[activeId] ?? SECTION_AURA.overview
+  const auraKey = page === 'industry' ? 'overview' : AURA_KEY[sahiTab] ?? 'peers'
+  const aura = SECTION_AURA[auraKey] ?? SECTION_AURA.overview
 
-  // Single source of truth for the active section — shared by tabs + sidebar.
-  // No scrolling, no scrollIntoView; the chosen section is rendered directly.
-  const select = (navId: string) => {
-    setActiveId(navId)
+  const selectPage = (p: TopPage) => {
+    setPage(p)
     setNavOpen(false)
   }
+  // Sidebar mirrors the two pages as app-level icon nav.
+  const onSidebarNavigate = (id: string) => selectPage(id === 'sahi' ? 'sahi' : 'industry')
+
+  const viewKey = page === 'industry' ? 'industry' : `sahi-${sahiTab}`
 
   return (
     <FilterProvider>
       <div className="flex h-screen overflow-hidden">
-        {/* Lean collapsible left navigation (slim rail + slide-out panel) */}
+        {/* Lean collapsible left navigation — app-level (the two pages). */}
         <Sidebar
-          activeId={activeId}
+          activeId={page}
           open={navOpen}
           onOpen={() => setNavOpen(true)}
           onClose={() => setNavOpen(false)}
-          onNavigate={select}
+          onNavigate={onSidebarNavigate}
         />
 
         {/* Main application column */}
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="shrink-0">
-            <TopTabBar tabs={TABS} activeId={activeId} onSelect={select} onOpenMenu={() => setNavOpen(true)} />
-            <TopFilterBar route={activeId} />
+            {/* Header switcher blocks — the primary page switch. */}
+            <div className="border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2.5 backdrop-blur-md sm:px-5">
+              <HeaderSwitcher active={page} onSelect={selectPage} />
+            </div>
+
+            {/* SAHI Analysis workspace controls — compact data row + sub-nav
+                pills. Hidden entirely on the clean Industry Insights page. */}
+            {page === 'sahi' && (
+              <div className="animate-fade-soft">
+                <TopFilterBar route={SAHI_ROUTE[sahiTab]} />
+                <div className="px-4 pt-2.5 sm:px-6">
+                  <SectionTabs tabs={SAHI_TABS} active={sahiTab} onSelect={setSahiTab} />
+                </div>
+              </div>
+            )}
           </header>
 
           {/* Only this content area scrolls — the shell stays fixed like an app. */}
           <main className="relative min-h-0 flex-1 overflow-y-auto scroll-thin">
-            {/* Ambient colour-psychology field — retoned per section so each
-                page reads as its own tonal world while staying subtle. */}
+            {/* Ambient colour-psychology field — retoned per view. */}
             <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
               <div className="absolute -left-28 top-6 h-72 w-72 rounded-full opacity-[0.06] blur-3xl transition-colors duration-700 ease-out" style={{ backgroundColor: aura.a }} />
               <div className="absolute right-[-7rem] top-1/3 h-80 w-80 rounded-full opacity-[0.05] blur-3xl transition-colors duration-700 ease-out" style={{ backgroundColor: aura.b }} />
@@ -118,7 +143,14 @@ export default function App() {
             </div>
 
             <div className="relative z-[1] flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-8">
-              <SectionRenderer section={active} />
+              <div key={viewKey} className="w-full animate-page-enter">
+                <SectionErrorBoundary
+                  resetKey={viewKey}
+                  sectionLabel={page === 'industry' ? 'Industry Insights' : 'SAHI Analysis'}
+                >
+                  {page === 'industry' ? <ExecutiveOverview view="industry" /> : <SahiContent tab={sahiTab} />}
+                </SectionErrorBoundary>
+              </div>
 
               <footer className="mt-auto border-t border-soft-border pt-4 text-center text-[11px] text-ink-secondary">
                 Insurance Investment Dashboard · Headline figures sourced from company filings &amp; IRDAI disclosures · Some quarterly splits illustrative
