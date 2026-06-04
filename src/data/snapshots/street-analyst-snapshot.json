@@ -10,7 +10,7 @@
     "dataset": "mixed",
     "last_updated": "2026-06-04",
     "last_successful_run": null,
-    "last_fetched_at": null,
+    "last_fetched_at": "2026-06-04T11:13:59.433Z",
     "parser_status": "manual_fallback",
     "notes": "Seed = curated, source-backed broker notes (each cited via valuationSources.ts). The daily Moneycontrol fetcher overwrites this with live coverage; on a block/empty fetch the prior data is kept (never blanked, never fabricated)."
   },
