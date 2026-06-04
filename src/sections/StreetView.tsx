@@ -300,7 +300,7 @@ export function StreetView() {
                     <td className={`py-2.5 pr-3 text-right tabular-nums ${u == null ? 'text-ink-secondary/40' : u >= 0 ? 'text-teal' : 'text-coral'}`}>{u == null ? '—' : upPct(u)}</td>
                     <td className="whitespace-nowrap py-2.5 pr-3 text-ink-secondary">{r.reportDate}</td>
                     <td className="py-2.5 pr-3 text-ink-secondary">{r.thesis}</td>
-                    <td className="py-2.5 pr-3"><OpenSource id={r.sourceId} /></td>
+                    <td className="py-2.5 pr-3"><OpenSource id={r.sourceId} url={r.sourceUrl} /></td>
                     <td className="py-2.5"><ValPill c={r.confidence} /></td>
                   </tr>
                 )

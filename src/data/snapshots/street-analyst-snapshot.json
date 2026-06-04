@@ -1,0 +1,110 @@
+{
+  "_meta": {
+    "snapshot_id": "street-analyst",
+    "description": "Daily analyst coverage (broker ratings + targets + consensus) for the focal listed insurer, Niva Bupa. Source: Moneycontrol. Seeded with curated source-backed broker notes; refreshed daily by scripts/ingest/ingest-moneycontrol-analyst.ts.",
+    "schema_version": "1.0.0",
+    "company_id": "niva-bupa",
+    "company_name": "Niva Bupa",
+    "source": "Moneycontrol",
+    "source_url": "https://www.moneycontrol.com/india/stockpricequote/insurance/nivabupahealthinsurance/NBH",
+    "dataset": "mixed",
+    "last_updated": "2026-06-04",
+    "last_successful_run": null,
+    "last_fetched_at": null,
+    "parser_status": "manual_fallback",
+    "notes": "Seed = curated, source-backed broker notes (each cited via valuationSources.ts). The daily Moneycontrol fetcher overwrites this with live coverage; on a block/empty fetch the prior data is kept (never blanked, never fabricated)."
+  },
+  "consensus": {
+    "current_price": 83.5,
+    "consensus_target_price": 89.8,
+    "highest_target_price": 97,
+    "lowest_target_price": 84,
+    "analyst_count": 4,
+    "buy_count": 3,
+    "hold_count": 1,
+    "sell_count": 0,
+    "last_updated": "10 May 2026"
+  },
+  "reports": [
+    {
+      "brokerage": "Motilal Oswal",
+      "rating": "Buy",
+      "target_price": 97,
+      "report_date": "10 May 2026",
+      "thesis": "4QFY26 NEP growth strong; operating efficiency offsetting higher claims.",
+      "source_id": "niva-mosl-may26",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "JM Financial",
+      "rating": "Add",
+      "target_price": 84,
+      "report_date": "Nov 2025",
+      "thesis": "Claims ratio beat estimates; IFRS profitability on track, though EPS estimates trimmed.",
+      "source_id": "niva-jm-nov25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "ICICI Securities",
+      "rating": "Buy",
+      "target_price": 90,
+      "report_date": "6 Nov 2025",
+      "thesis": "GST / input-tax-credit overhang addressed; stays bullish on Niva Bupa.",
+      "source_id": "niva-isec-nov25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "Motilal Oswal",
+      "rating": "Buy",
+      "target_price": 92,
+      "report_date": "3 Nov 2025",
+      "thesis": "2QFY26 NEP +17% YoY; claims & opex pressure noted, but Buy retained.",
+      "source_id": "niva-mosl-nov25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "ICICI Securities",
+      "rating": "Buy",
+      "target_price": 92,
+      "report_date": "11 Aug 2025",
+      "thesis": "Bullish update; target maintained at ₹92.",
+      "source_id": "niva-isec-aug25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "Motilal Oswal",
+      "rating": "Buy",
+      "target_price": 101,
+      "report_date": "7 Aug 2025",
+      "thesis": "Most bullish target on record; growth thesis retained despite claims pressure.",
+      "source_id": "niva-mosl-aug25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "Motilal Oswal",
+      "rating": "Buy",
+      "target_price": 100,
+      "report_date": "23 Apr 2025",
+      "thesis": "Initiation-style bullish thesis: fast-growing health insurer, retail-health share gains.",
+      "source_id": "niva-mosl-apr25",
+      "source_url": null,
+      "confidence": "secondary"
+    },
+    {
+      "brokerage": "Morgan Stanley",
+      "rating": "Equal-weight",
+      "target_price": 88,
+      "report_date": "23 Dec 2024",
+      "thesis": "Neutral-positive initiation; expects health-insurance tailwinds, but rating stays Equal-weight.",
+      "source_id": "niva-ms-dec24",
+      "source_url": null,
+      "confidence": "secondary"
+    }
+  ]
+}

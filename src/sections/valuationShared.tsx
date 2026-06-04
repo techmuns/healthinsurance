@@ -53,10 +53,12 @@ export function ValPill({ c, className = '' }: { c: ValConfidence; className?: s
   )
 }
 
-/** Small "Open source" button — one click opens the exact report / filing. */
-export function OpenSource({ id }: { id: string }) {
+/** Small "Open source" button — one click opens the exact report / filing.
+ *  `url` (dynamic Moneycontrol rows) takes precedence over the curated `id`. */
+export function OpenSource({ id, url }: { id: string; url?: string }) {
   const s = valSrc(id)
-  if (!s || !s.source_url) {
+  const href = url ?? s?.source_url
+  if (!href) {
     return (
       <span className="inline-flex items-center gap-1 rounded-full bg-ice px-2 py-0.5 text-[10px] font-semibold text-ink-secondary ring-1 ring-soft-border" title="Source pending — locked until a citable note is ingested">
         <Lock className="h-2.5 w-2.5 text-champagne-deep" />
@@ -64,12 +66,13 @@ export function OpenSource({ id }: { id: string }) {
       </span>
     )
   }
+  const title = url ? 'Moneycontrol' : s?.report_title ?? 'Source'
   return (
     <a
-      href={s.source_url}
+      href={href}
       target="_blank"
       rel="noreferrer"
-      title={`${s.report_title} — opens in a new tab`}
+      title={`${title} — opens in a new tab`}
       className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-navy-primary transition-all hover:border-muted-blue hover:bg-white hover:text-navy-deep hover:shadow-soft"
     >
       Open source

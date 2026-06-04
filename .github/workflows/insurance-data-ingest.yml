@@ -12,6 +12,9 @@ name: insurance-data-ingest
 
 on:
   schedule:
+    # Daily — every day at 03:30 UTC (~09:00 IST): live market quote +
+    # Moneycontrol analyst coverage for the Street View page.
+    - cron: '30 3 * * *'
     # Monthly — first Tuesday of each month at 04:30 UTC
     # (after IRDAI monthly business-figures release window).
     - cron: '30 4 1-7 * 2'
@@ -38,7 +41,7 @@ on:
         required: true
         default: 'all'
         type: choice
-        options: [all, monthly, quarterly, annual]
+        options: [all, daily, monthly, quarterly, annual]
       live:
         description: 'Set to "true" to enable live network fetches'
         required: true
@@ -80,6 +83,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "value=${{ inputs.cadence }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 3 * * *" ]; then
+            # The daily cron only runs the 'daily' fetchers (market quote +
+            # Moneycontrol analyst coverage) — cheap, idempotent, every day.
+            echo "value=daily" >> "$GITHUB_OUTPUT"
           else
             # A push can request a specific cadence via a commit-message tag,
             # e.g. "[ingest:quarterly]" / "[ingest:monthly]" / "[ingest:all]";
@@ -87,6 +94,7 @@ jobs:
             MSG="$(git log -1 --pretty=%B 2>/dev/null || true)"
             case "$MSG" in
               *"[ingest:all]"*)       echo "value=all"       >> "$GITHUB_OUTPUT" ;;
+              *"[ingest:daily]"*)     echo "value=daily"     >> "$GITHUB_OUTPUT" ;;
               *"[ingest:annual]"*)    echo "value=annual"    >> "$GITHUB_OUTPUT" ;;
               *"[ingest:quarterly]"*) echo "value=quarterly" >> "$GITHUB_OUTPUT" ;;
               *"[ingest:monthly]"*)   echo "value=monthly"   >> "$GITHUB_OUTPUT" ;;

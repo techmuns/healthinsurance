@@ -412,6 +412,63 @@ export interface IrdaiNonLifeFlashEnvelope<TRow> {
   data: TRow[]
 }
 
+// ─── street-analyst (Moneycontrol analyst coverage) ────────────────────────
+// Daily-refreshed analyst coverage for the focal listed insurer (Niva Bupa):
+// each covering broker's latest rating + target, plus the consensus. Source:
+// Moneycontrol. Self-contained envelope (NOT part of the generic merge), and
+// block-tolerant — a failed/empty fetch never blanks real data and never
+// fabricates a number (missing stays null).
+
+export type StreetRating = 'Buy' | 'Add' | 'Hold' | 'Equal-weight' | 'Reduce' | 'Sell'
+
+export interface StreetAnalystReportRow {
+  brokerage: string
+  rating: StreetRating | null
+  target_price: number | null
+  report_date: string
+  thesis: string | null
+  /** Reference into valuationSources.ts (curated seed rows). */
+  source_id?: string | null
+  /** Direct source URL (dynamic rows scraped from Moneycontrol). */
+  source_url?: string | null
+  /** Validation status as rendered by the Street View confidence pill. */
+  confidence: 'verified' | 'secondary' | 'pending'
+}
+
+export interface StreetAnalystConsensus {
+  current_price: number | null
+  consensus_target_price: number | null
+  highest_target_price: number | null
+  lowest_target_price: number | null
+  analyst_count: number | null
+  buy_count: number | null
+  hold_count: number | null
+  sell_count: number | null
+  last_updated: string | null
+}
+
+export interface StreetAnalystMeta {
+  snapshot_id: string
+  description: string
+  schema_version: string
+  company_id: string
+  company_name: string
+  source: 'Moneycontrol'
+  source_url: string
+  dataset: SnapshotDataset
+  last_updated: string | null
+  last_successful_run?: string | null
+  last_fetched_at?: string | null
+  parser_status: ParserStatus
+  notes?: string
+}
+
+export interface StreetAnalystSnapshot {
+  _meta: StreetAnalystMeta
+  consensus: StreetAnalystConsensus
+  reports: StreetAnalystReportRow[]
+}
+
 // ─── data-health ───────────────────────────────────────────────────────────
 
 export interface DataHealthSourceStatus {

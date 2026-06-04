@@ -23,6 +23,7 @@ import { ingestDistribution } from './ingest-distribution'
 import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
+import { ingestMoneycontrolAnalyst } from './ingest-moneycontrol-analyst'
 import { buildSnapshots } from './build-snapshots'
 import { appendLog } from './util'
 import { closeBrowser } from './browser'
@@ -41,14 +42,17 @@ const ALL: Fetcher[] = [
   ingestOwnership,
   ingestManagementEvents,
   ingestValuation,
+  ingestMoneycontrolAnalyst,
 ]
 
 const CADENCE = (process.env.CADENCE ?? 'all').toLowerCase()
 
 function shouldRun(f: Fetcher): boolean {
-  // 'daily' fetchers (e.g. valuation) are cheap and idempotent, so they ride
-  // along on the 'monthly' and 'all' cadences to keep them exercised.
+  // 'daily' fetchers (valuation quote + Moneycontrol analyst coverage) are cheap
+  // and idempotent. They run on their own 'daily' cadence (the daily cron), and
+  // also ride along on 'monthly' and 'all' so they stay exercised.
   if (CADENCE === 'all') return true
+  if (CADENCE === 'daily') return f.frequency === 'daily'
   if (CADENCE === 'monthly') return f.frequency === 'monthly' || f.frequency === 'daily'
   if (CADENCE === 'quarterly') return f.frequency === 'quarterly' || f.frequency === 'monthly'
   if (CADENCE === 'annual') return f.frequency === 'annual'

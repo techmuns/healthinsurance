@@ -11,6 +11,9 @@
 //  Investing.com analyst consensus. Last checked 2026-06-01.
 // ---------------------------------------------------------------------------
 
+import streetSnapshot from '@/data/snapshots/street-analyst-snapshot.json'
+import type { StreetAnalystSnapshot } from '@/data/snapshots/_schemas'
+
 // Broker rating vocabulary, ordered bullish → bearish. "Add" (accumulate) sits
 // on the buy side; "Equal-weight" is a neutral/hold stance; "Reduce" leans sell.
 export type Rating = 'Buy' | 'Add' | 'Hold' | 'Equal-weight' | 'Reduce' | 'Sell'
@@ -105,7 +108,7 @@ export interface AnalystConsensus {
 // below): Motilal Oswal ₹97 (Buy), ICICI Securities ₹90 (Buy), JM Financial ₹84
 // (Add), Morgan Stanley ₹88 (Equal-weight). Avg ₹89.8, range ₹84–97; 3 buy-side,
 // 1 neutral, 0 sell. Add counts buy-side; Equal-weight counts neutral.
-export const analystConsensus: AnalystConsensus = {
+const seedAnalystConsensus: AnalystConsensus = {
   currentPrice: marketSnapshot.currentPrice,
   consensusTargetPrice: 89.8,
   highestTargetPrice: 97,
@@ -126,6 +129,9 @@ export interface AnalystReport {
   reportDate: string
   thesis: string
   sourceId: string
+  /** Direct source URL for dynamic (Moneycontrol-scraped) rows without a
+   *  curated sourceId. When present, the "Open source" button uses it directly. */
+  sourceUrl?: string
   confidence: ValConfidence
 }
 
@@ -135,7 +141,7 @@ export interface AnalystReport {
 // Upside is computed live against the current price in the UI, never stored.
 // Multiple notes from the same broker are kept as a history; the consensus
 // above collapses them to each broker's latest view.
-export const analystReports: AnalystReport[] = [
+const seedAnalystReports: AnalystReport[] = [
   {
     brokerage: 'Motilal Oswal',
     rating: 'Buy',
@@ -209,6 +215,64 @@ export const analystReports: AnalystReport[] = [
     confidence: 'secondary',
   },
 ]
+
+// ── Live overlay ─────────────────────────────────────────────────────────────
+// Street View reads its analyst coverage from the daily Moneycontrol snapshot
+// (src/data/snapshots/street-analyst-snapshot.json), refreshed by the daily
+// GitHub Action. The curated rows above are the SEED + fallback: if the snapshot
+// is empty/pending (e.g. a first run before any successful fetch), the page
+// shows the curated, source-backed coverage instead of going blank. A missing
+// value is never coerced to a number — it stays null and renders as pending.
+
+function deriveRatingLabel(buy: number | null, hold: number | null, sell: number | null): Rating | null {
+  if (buy == null && hold == null && sell == null) return null
+  const b = buy ?? 0
+  const h = hold ?? 0
+  const s = sell ?? 0
+  if (b >= h && b >= s) return 'Buy'
+  if (s > b && s > h) return 'Sell'
+  return 'Hold'
+}
+
+function buildCoverage(): { consensus: AnalystConsensus; reports: AnalystReport[] } {
+  const snap = streetSnapshot as unknown as StreetAnalystSnapshot
+  const hasReal =
+    snap?._meta?.dataset !== 'pending' && Array.isArray(snap?.reports) && snap.reports.length > 0
+  if (!hasReal) return { consensus: seedAnalystConsensus, reports: seedAnalystReports }
+
+  const reports: AnalystReport[] = snap.reports.map((r) => ({
+    brokerage: r.brokerage,
+    rating: r.rating,
+    targetPrice: r.target_price,
+    reportDate: r.report_date,
+    thesis: r.thesis ?? '',
+    sourceId: r.source_id ?? '',
+    sourceUrl: r.source_url ?? undefined,
+    confidence: r.confidence,
+  }))
+
+  const c = snap.consensus
+  const consensus: AnalystConsensus = {
+    currentPrice: c.current_price ?? seedAnalystConsensus.currentPrice,
+    consensusTargetPrice: c.consensus_target_price,
+    highestTargetPrice: c.highest_target_price,
+    lowestTargetPrice: c.lowest_target_price,
+    analystCount: c.analyst_count ?? seedAnalystConsensus.analystCount,
+    buyCount: c.buy_count ?? seedAnalystConsensus.buyCount,
+    holdCount: c.hold_count ?? seedAnalystConsensus.holdCount,
+    sellCount: c.sell_count ?? seedAnalystConsensus.sellCount,
+    ratingLabel: deriveRatingLabel(c.buy_count, c.hold_count, c.sell_count) ?? seedAnalystConsensus.ratingLabel,
+    lastUpdated: c.last_updated ?? seedAnalystConsensus.lastUpdated,
+  }
+  return { consensus, reports }
+}
+
+const _coverage = buildCoverage()
+
+/** Consensus shown on Street View — daily Moneycontrol snapshot, seed fallback. */
+export const analystConsensus: AnalystConsensus = _coverage.consensus
+/** Per-broker notes shown on Street View — daily Moneycontrol snapshot, seed fallback. */
+export const analystReports: AnalystReport[] = _coverage.reports
 
 /** Distinct brokers behind the itemised notes (history collapses by broker). */
 export const itemisedBrokerCount = new Set(analystReports.map((r) => r.brokerage)).size
