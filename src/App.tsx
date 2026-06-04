@@ -145,24 +145,25 @@ export default function App() {
 
         {/* Main application column */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="shrink-0">
-            {/* Header switcher blocks — the primary page switch. */}
-            <div className="border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2.5 backdrop-blur-md sm:px-5">
-              <HeaderSwitcher active={page} onSelect={selectPage} />
-            </div>
-
-            {/* SAHI Analysis workspace header — split left (title + sub-nav) /
-                right (Company → Year → Period). Hidden on Industry Insights. */}
-            {page === 'sahi' && (
-              <div className="animate-fade-soft">
-                <SahiAnalysisHeader
-                  tabs={SAHI_TABS}
-                  activeTab={sahiTab}
-                  onSelectTab={setSahiTab}
-                  route={SAHI_ROUTE[sahiTab]}
-                />
+          <header className="shrink-0 border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2.5 backdrop-blur-md sm:px-5">
+            {/* Combined header band — switcher blocks on the left; the entire
+                SAHI command area (title + sub-nav chips + company/year/period)
+                in the top-right, shown only when SAHI Analysis is active. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 lg:flex-nowrap">
+              <div className="shrink-0">
+                <HeaderSwitcher active={page} onSelect={selectPage} />
               </div>
-            )}
+              {page === 'sahi' && (
+                <div className="min-w-0 flex-1 animate-fade-soft">
+                  <SahiAnalysisHeader
+                    tabs={SAHI_TABS}
+                    activeTab={sahiTab}
+                    onSelectTab={setSahiTab}
+                    route={SAHI_ROUTE[sahiTab]}
+                  />
+                </div>
+              )}
+            </div>
           </header>
 
           {/* Only this content area scrolls — the shell stays fixed like an app. */}
