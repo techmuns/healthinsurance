@@ -21,9 +21,14 @@ export const px = (v: number | null) => (v == null ? 'Pending' : `₹${Number.is
 export const xMult = (v: number | null, d = 2) => (v == null ? 'n/a' : `${v.toFixed(d)}x`)
 export const upPct = (v: number | null) => (v == null ? 'Pending' : `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`)
 
+// Tone by rating, bullish → bearish. Buy/Add read teal-green (positive), Hold/
+// Equal-weight read amber/slate (neutral), Reduce/Sell read coral (caution).
 export const ratingTone: Record<Rating, { fg: string; bg: string }> = {
   Buy: { fg: '#0E6F6D', bg: '#E2F4F1' },
+  Add: { fg: '#2E8B63', bg: '#E7F4EC' },
   Hold: { fg: '#9A6B12', bg: '#FBF3E2' },
+  'Equal-weight': { fg: '#647488', bg: '#EEF1F6' },
+  Reduce: { fg: '#B0564A', bg: '#F8ECEC' },
   Sell: { fg: '#B0564A', bg: '#F8ECEC' },
 }
 

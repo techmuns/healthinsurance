@@ -11,7 +11,9 @@
 //  Investing.com analyst consensus. Last checked 2026-06-01.
 // ---------------------------------------------------------------------------
 
-export type Rating = 'Buy' | 'Hold' | 'Sell'
+// Broker rating vocabulary, ordered bullish → bearish. "Add" (accumulate) sits
+// on the buy side; "Equal-weight" is a neutral/hold stance; "Reduce" leans sell.
+export type Rating = 'Buy' | 'Add' | 'Hold' | 'Equal-weight' | 'Reduce' | 'Sell'
 export type Listing = 'Listed' | 'Unlisted'
 export type ValConfidence = 'verified' | 'secondary' | 'pending'
 
@@ -99,17 +101,21 @@ export interface AnalystConsensus {
   lastUpdated: string
 }
 
+// Consensus reflects each covering broker's MOST RECENT note (see analystReports
+// below): Motilal Oswal ₹97 (Buy), ICICI Securities ₹90 (Buy), JM Financial ₹84
+// (Add), Morgan Stanley ₹88 (Equal-weight). Avg ₹89.8, range ₹84–97; 3 buy-side,
+// 1 neutral, 0 sell. Add counts buy-side; Equal-weight counts neutral.
 export const analystConsensus: AnalystConsensus = {
   currentPrice: marketSnapshot.currentPrice,
-  consensusTargetPrice: 87.6,
-  highestTargetPrice: 100,
-  lowestTargetPrice: 76,
-  analystCount: 8,
-  buyCount: 8,
-  holdCount: 0,
+  consensusTargetPrice: 89.8,
+  highestTargetPrice: 97,
+  lowestTargetPrice: 84,
+  analystCount: 4,
+  buyCount: 3,
+  holdCount: 1,
   sellCount: 0,
   ratingLabel: 'Buy',
-  lastUpdated: 'May 2026',
+  lastUpdated: '10 May 2026',
 }
 
 // ── Analyst reports — only sourced rows; never fabricated ────────────────────
@@ -123,31 +129,92 @@ export interface AnalystReport {
   confidence: ValConfidence
 }
 
-// Per-broker analyst rows. Only Motilal Oswal has an individually citable note
-// (via Business Standard) — it carries a real rating, target, date and source.
-// The other brokers below are documented coverers of the name, but we cannot
-// open a citable note for each, so their rating / target / date / thesis stay
-// null and the row is shown as "Source pending" — NEVER invented. The 8-analyst
-// Street consensus is carried separately in `analystConsensus`.
-const PENDING_THESIS = 'Covers the stock; individual note not citable here yet.'
+// Dated broker notes on record, newest first. Every row carries a real rating,
+// target, date and a citable source (press coverage of the broker note) wired
+// through `sourceId` → valuationSources.ts → the row's "Open source" button.
+// Upside is computed live against the current price in the UI, never stored.
+// Multiple notes from the same broker are kept as a history; the consensus
+// above collapses them to each broker's latest view.
 export const analystReports: AnalystReport[] = [
+  {
+    brokerage: 'Motilal Oswal',
+    rating: 'Buy',
+    targetPrice: 97,
+    reportDate: '10 May 2026',
+    thesis: '4QFY26 NEP growth strong; operating efficiency offsetting higher claims.',
+    sourceId: 'niva-mosl-may26',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'JM Financial',
+    rating: 'Add',
+    targetPrice: 84,
+    reportDate: 'Nov 2025',
+    thesis: 'Claims ratio beat estimates; IFRS profitability on track, though EPS estimates trimmed.',
+    sourceId: 'niva-jm-nov25',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'ICICI Securities',
+    rating: 'Buy',
+    targetPrice: 90,
+    reportDate: '6 Nov 2025',
+    thesis: 'GST / input-tax-credit overhang addressed; stays bullish on Niva Bupa.',
+    sourceId: 'niva-isec-nov25',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'Motilal Oswal',
+    rating: 'Buy',
+    targetPrice: 92,
+    reportDate: '3 Nov 2025',
+    thesis: '2QFY26 NEP +17% YoY; claims & opex pressure noted, but Buy retained.',
+    sourceId: 'niva-mosl-nov25',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'ICICI Securities',
+    rating: 'Buy',
+    targetPrice: 92,
+    reportDate: '11 Aug 2025',
+    thesis: 'Bullish update; target maintained at ₹92.',
+    sourceId: 'niva-isec-aug25',
+    confidence: 'secondary',
+  },
+  {
+    brokerage: 'Motilal Oswal',
+    rating: 'Buy',
+    targetPrice: 101,
+    reportDate: '7 Aug 2025',
+    thesis: 'Most bullish target on record; growth thesis retained despite claims pressure.',
+    sourceId: 'niva-mosl-aug25',
+    confidence: 'secondary',
+  },
   {
     brokerage: 'Motilal Oswal',
     rating: 'Buy',
     targetPrice: 100,
     reportDate: '23 Apr 2025',
-    thesis: 'Best-in-class retail-health growth; scale-led margin lever.',
-    sourceId: 'niva-mosl',
+    thesis: 'Initiation-style bullish thesis: fast-growing health insurer, retail-health share gains.',
+    sourceId: 'niva-mosl-apr25',
     confidence: 'secondary',
   },
-  { brokerage: 'Nuvama', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
-  { brokerage: 'Kotak Institutional Equities', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
-  { brokerage: 'ICICI Securities', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
-  { brokerage: 'Jefferies', rating: null, targetPrice: null, reportDate: '—', thesis: PENDING_THESIS, sourceId: '', confidence: 'pending' },
+  {
+    brokerage: 'Morgan Stanley',
+    rating: 'Equal-weight',
+    targetPrice: 88,
+    reportDate: '23 Dec 2024',
+    thesis: 'Neutral-positive initiation; expects health-insurance tailwinds, but rating stays Equal-weight.',
+    sourceId: 'niva-ms-dec24',
+    confidence: 'secondary',
+  },
 ]
 
+/** Distinct brokers behind the itemised notes (history collapses by broker). */
+export const itemisedBrokerCount = new Set(analystReports.map((r) => r.brokerage)).size
+
 /** Analysts in the consensus whose individual note isn't itemised above. */
-export const coveragePendingCount = Math.max(0, analystConsensus.analystCount - analystReports.length)
+export const coveragePendingCount = Math.max(0, analystConsensus.analystCount - itemisedBrokerCount)
 
 // ── Analyst thesis — grounded in the FY26 filing + the cited broker note ─────
 export interface AnalystThesis {

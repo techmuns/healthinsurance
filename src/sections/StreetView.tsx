@@ -2,7 +2,7 @@ import { ArrowUpRight, CalendarClock, Gauge, Lock, TrendingDown, TrendingUp } fr
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
-import { analystConsensus, analystReports, coveragePendingCount, FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
+import { analystConsensus, analystReports, itemisedBrokerCount, FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
 import { srcTag } from '@/data/valuationSources'
 import { OpenSource, px, ratingTone, upPct, ValPill } from './valuationShared'
 
@@ -246,8 +246,8 @@ export function StreetView() {
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Top Analyst Takeaways</p>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Takeaway icon={<TrendingUp className="h-3.5 w-3.5" />} tone="teal" head="Most bullish" name="Motilal Oswal" detail={`Buy · ${px(hi)} · ${upPct(up(hi))}`} pending={false} />
-            <Takeaway icon={<TrendingDown className="h-3.5 w-3.5" />} tone="slate" head="Most conservative" name={`Street low · ${px(lo)}`} detail={`${upPct(up(lo))} · broker source pending`} pending />
-            <Takeaway icon={<CalendarClock className="h-3.5 w-3.5" />} tone="navy" head="Latest update" name={`Consensus · ${ac.lastUpdated}`} detail={`${px(target)} avg · ${ac.buyCount}/0/0`} pending={false} />
+            <Takeaway icon={<TrendingDown className="h-3.5 w-3.5" />} tone="slate" head="Most conservative" name="JM Financial" detail={`Add · ${px(lo)} · ${upPct(up(lo))}`} pending={false} />
+            <Takeaway icon={<CalendarClock className="h-3.5 w-3.5" />} tone="navy" head="Latest update" name={`Motilal Oswal · ${ac.lastUpdated}`} detail={`Buy ${px(hi)} · ${px(target)} consensus`} pending={false} />
           </div>
         </div>
       </div>
@@ -279,7 +279,7 @@ export function StreetView() {
               {analystReports.map((r) => {
                 const u = up(r.targetPrice)
                 return (
-                  <tr key={r.brokerage} className="border-b border-[#F2F4F8] align-top transition-colors last:border-0 hover:bg-ice/40">
+                  <tr key={r.sourceId} className="border-b border-[#F2F4F8] align-top transition-colors last:border-0 hover:bg-ice/40">
                     <td className="py-2.5 pr-3 font-semibold text-navy-deep">{r.brokerage}</td>
                     <td className="py-2.5 pr-3">
                       {r.rating ? (
@@ -301,7 +301,7 @@ export function StreetView() {
           </table>
         </div>
         <p className="mt-3 text-[10.5px] text-ink-secondary">
-          {analystReports.length} brokers itemised{coveragePendingCount > 0 ? ` · ${coveragePendingCount} more contribute to the ${ac.analystCount}-analyst consensus without an individually citable note` : ''}. Targets are shown only where a note is citable; the rest are <b>Source pending</b>, never invented.
+          {analystReports.length} dated broker notes on record from {itemisedBrokerCount} brokers — every row carries a live source. The consensus above reflects each broker&rsquo;s most recent view; older notes are kept as history.
         </p>
       </div>
     </div>
