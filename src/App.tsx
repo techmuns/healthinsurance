@@ -2,11 +2,12 @@ import { useState, type ComponentType } from 'react'
 import { FilterProvider } from '@/state/filters'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
-import { SectionTabs, type SectionTab } from '@/components/SectionTabs'
+import { SahiAnalysisHeader } from '@/components/SahiAnalysisHeader'
+import { type SectionTab } from '@/components/SectionTabs'
 import { Sidebar } from '@/components/Sidebar'
-import { TopFilterBar } from '@/components/TopFilterBar'
 import { ExecutiveOverview } from '@/sections/ExecutiveOverview'
 import { MarketDistribution } from '@/sections/MarketDistribution'
+import { CompetitivePositioning } from '@/sections/CompetitivePositioning'
 import { ProfitabilityReview } from '@/sections/ProfitabilityReview'
 import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
@@ -15,10 +16,11 @@ import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
 // ── SAHI Analysis sub-navigation ────────────────────────────────────────────
-// The six SAHI deep-dive tabs (compact pills under the SAHI header). Each maps
-// to a route string that drives the data row's period/basis behaviour.
+// The detailed SAHI workspace starts directly at Companies (Overview has moved
+// to Industry Insights > Health Industry Insights). Each tab maps to a route
+// string that drives the period/basis behaviour in the SAHI header.
 const SAHI_TABS: SectionTab[] = [
-  { id: 'overview', label: 'Overview' },
+  { id: 'companies', label: 'Companies' },
   { id: 'distribution', label: 'Distribution' },
   { id: 'profitability', label: 'Profitability' },
   { id: 'valuation', label: 'Valuation' },
@@ -27,7 +29,7 @@ const SAHI_TABS: SectionTab[] = [
 ]
 
 const SAHI_ROUTE: Record<string, string> = {
-  overview: 'overview',
+  companies: 'peers',
   distribution: 'market-distribution',
   profitability: 'company-performance/profitability',
   valuation: 'company-performance/valuation',
@@ -37,7 +39,7 @@ const SAHI_ROUTE: Record<string, string> = {
 
 // Per-view colour-psychology aura key (reuses the section palette below).
 const AURA_KEY: Record<string, string> = {
-  overview: 'peers',
+  companies: 'peers',
   distribution: 'market-distribution',
   profitability: 'company-performance',
   valuation: 'company-performance',
@@ -64,7 +66,36 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
   return <Comp onNavigate={onNavigate} sub={sub} />
 }
 
-/** Renders the active SAHI deep-dive sub-section. */
+/**
+ * Industry Insights — the broad insight homepage, two stacked layers:
+ *   A. Overall Industry View  (macro insurance market)
+ *   B. Health Industry Insights  (the SAHI overview, bridging macro → SAHI)
+ * No company / year / period controls here — it stays a clean insight layer.
+ */
+function IndustryInsightsPage() {
+  return (
+    <div className="space-y-6">
+      {/* A · Overall Industry View — hero + market-structure snapshot + pool. */}
+      <ExecutiveOverview view="industry" />
+
+      {/* B · Health Industry Insights — high-level SAHI summary + share trend. */}
+      <section>
+        <div className="mb-4 mt-1 flex items-center gap-2.5 border-t border-soft-border pt-5">
+          <span className="h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+          <div className="leading-tight">
+            <p className="font-display text-[17px] text-navy-deep">Health Industry Insights</p>
+            <p className="text-[11.5px] text-ink-secondary">
+              How the health insurance &amp; standalone-health-insurer (SAHI) segment is evolving
+            </p>
+          </div>
+        </div>
+        <ExecutiveOverview view="sahi" />
+      </section>
+    </div>
+  )
+}
+
+/** Renders the active SAHI deep-dive sub-section (no Overview — that has moved). */
 function SahiContent({ tab }: { tab: string }) {
   switch (tab) {
     case 'distribution':
@@ -77,15 +108,15 @@ function SahiContent({ tab }: { tab: string }) {
       return <StreetView />
     case 'governance':
       return <StatefulSection Comp={OwnershipGovernance} />
-    case 'overview':
+    case 'companies':
     default:
-      return <ExecutiveOverview view="sahi" />
+      return <CompetitivePositioning />
   }
 }
 
 export default function App() {
   const [page, setPage] = useState<TopPage>('industry')
-  const [sahiTab, setSahiTab] = useState('overview')
+  const [sahiTab, setSahiTab] = useState('companies')
   const [navOpen, setNavOpen] = useState(false)
 
   const auraKey = page === 'industry' ? 'overview' : AURA_KEY[sahiTab] ?? 'peers'
@@ -120,14 +151,16 @@ export default function App() {
               <HeaderSwitcher active={page} onSelect={selectPage} />
             </div>
 
-            {/* SAHI Analysis workspace controls — compact data row + sub-nav
-                pills. Hidden entirely on the clean Industry Insights page. */}
+            {/* SAHI Analysis workspace header — split left (title + sub-nav) /
+                right (Company → Year → Period). Hidden on Industry Insights. */}
             {page === 'sahi' && (
               <div className="animate-fade-soft">
-                <TopFilterBar route={SAHI_ROUTE[sahiTab]} />
-                <div className="px-4 pt-2.5 sm:px-6">
-                  <SectionTabs tabs={SAHI_TABS} active={sahiTab} onSelect={setSahiTab} />
-                </div>
+                <SahiAnalysisHeader
+                  tabs={SAHI_TABS}
+                  activeTab={sahiTab}
+                  onSelectTab={setSahiTab}
+                  route={SAHI_ROUTE[sahiTab]}
+                />
               </div>
             )}
           </header>
@@ -148,7 +181,7 @@ export default function App() {
                   resetKey={viewKey}
                   sectionLabel={page === 'industry' ? 'Industry Insights' : 'SAHI Analysis'}
                 >
-                  {page === 'industry' ? <ExecutiveOverview view="industry" /> : <SahiContent tab={sahiTab} />}
+                  {page === 'industry' ? <IndustryInsightsPage /> : <SahiContent tab={sahiTab} />}
                 </SectionErrorBoundary>
               </div>
 
