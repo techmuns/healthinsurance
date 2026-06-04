@@ -191,6 +191,13 @@ export const ingestCompanyAnnualHistory: Fetcher = {
 // ─── Annual-report discovery ─────────────────────────────────────────────────
 
 const ANNUAL_REPORT = /annual[\s_-]*report|integrated[\s_-]*(annual[\s_-]*)?report/i
+// Broader fallback: the multi-year summary also lives in audited annual
+// financial statements / annual disclosures, which the unlisted insurers
+// (Care, Aditya Birla, ManipalCigna) publish instead of a glossy "annual
+// report". The FY25 anchor still gates everything, so a document without a
+// real multi-year table simply yields nothing — never a wrong number.
+const REPORT_DOC =
+  /annual[\s_-]*report|integrated[\s_-]*(annual[\s_-]*)?report|audited[\s_-]*financial|financial[\s_-]*statement|annual[\s_-]*account|annual[\s_-]*financial|annual[\s_-]*disclosure/i
 const DENY = /(mgt[\s_-]*7|grievance|policy[\s_-]*wording|prospectus|brochure|claim[\s_-]*form|kyc|advert|agent[\s_-]*code|charter|nomination|cookie|privacy|terms)/i
 
 interface ResolvedReport {
@@ -226,9 +233,13 @@ async function resolveAnnualReport(c: CompanyMaster['data'][number]): Promise<Re
         }
       }
     }
-    // 3. Walk the landing page for annual-report PDFs (latest first).
-    if (!pdfUrl && landing) {
-      pdfUrl = await discoverAnnualReportPdf(landing).catch(() => null)
+    // 3. Walk the disclosure page, then the IR page, for a report PDF.
+    const pages = [c.financial_disclosure_url, c.investor_relations_url].filter(
+      (u, i, a): u is string => !!u && a.indexOf(u) === i,
+    )
+    for (const page of pages) {
+      if (pdfUrl) break
+      pdfUrl = await discoverAnnualReportPdf(page).catch(() => null)
     }
     if (!pdfUrl) return null
   }
@@ -244,15 +255,20 @@ async function resolveAnnualReport(c: CompanyMaster['data'][number]): Promise<Re
   return { buffer, raw_file, sourceUrl: pdfUrl ?? landing ?? '' }
 }
 
-/** Find the latest annual-report PDF on a disclosure/IR page (one level deep). */
+/** Find the latest report PDF on a disclosure/IR page (one level deep).
+ *  Prefers a true "annual report" (carries the 5-year table); falls back to an
+ *  audited annual financial statement (≥2-year comparative). */
 async function discoverAnnualReportPdf(url: string, depth = 0): Promise<string | null> {
   const $ = await fetchHtml(url)
   const pdfs = findLinks($, url, (href) => /\.pdf(\?|$)/i.test(href))
-  const reports = pdfs.filter((h) => {
+  const ok = (h: string, re: RegExp) => {
     const last = h.split('/').pop() ?? h
-    return ANNUAL_REPORT.test(last) && !DENY.test(last)
-  })
-  if (reports.length) return reports.sort().reverse()[0]
+    return re.test(last) && !DENY.test(last)
+  }
+  const annual = pdfs.filter((h) => ok(h, ANNUAL_REPORT))
+  if (annual.length) return annual.sort().reverse()[0]
+  const docs = pdfs.filter((h) => ok(h, REPORT_DOC))
+  if (docs.length) return docs.sort().reverse()[0]
   if (depth >= 1) return null
   // Recurse into "annual report" / "financials" sub-pages (bounded).
   const subs = findLinks($, url, (href, text) => {
