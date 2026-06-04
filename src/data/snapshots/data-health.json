@@ -391,7 +391,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-04T11:53:00.889Z",
+      "last_attempt_at": "2026-06-04T12:01:32.020Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -426,8 +426,8 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-04T11:53:02.610Z",
-      "last_success_at": "2026-06-04T11:53:02.610Z",
+      "last_attempt_at": "2026-06-04T12:01:33.811Z",
+      "last_success_at": "2026-06-04T12:01:33.811Z",
       "records_fetched": 6
     }
   ]
