@@ -1,5 +1,6 @@
 import { useState, type ComponentType } from 'react'
 import { FilterProvider } from '@/state/filters'
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { TopTabBar, type TopTab } from '@/components/TopTabBar'
 import { Sidebar } from '@/components/Sidebar'
 import { TopFilterBar } from '@/components/TopFilterBar'
@@ -58,11 +59,16 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
 }
 
 /** Renders just the active section — a hard page swap (no scroll transition). */
+// Each section is wrapped in its own error boundary so a render failure in one
+// page is contained to that page (a calm recovery card) instead of unmounting
+// the whole app into a blank white screen. The boundary resets on navigation.
 function SectionRenderer({ section }: { section: SectionDef }) {
   const Comp = section.Comp
   return (
     <div key={section.navId} className="w-full animate-page-enter">
-      {section.hasSub ? <StatefulSection Comp={Comp} /> : <Comp />}
+      <SectionErrorBoundary resetKey={section.navId} sectionLabel={section.label}>
+        {section.hasSub ? <StatefulSection Comp={Comp} /> : <Comp />}
+      </SectionErrorBoundary>
     </div>
   )
 }
