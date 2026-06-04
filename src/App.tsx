@@ -147,10 +147,11 @@ export default function App() {
         {/* Main application column */}
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="shrink-0 border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2 backdrop-blur-md sm:px-5">
-            {/* One header band: switcher blocks (left) + the SAHI command area
-                in the top-right (only on SAHI). Fixed band height via min-h, so
-                switching Industry ↔ SAHI never changes the header height. */}
-            <div className="flex min-h-[58px] items-center gap-x-4">
+            {/* One header band, ONE shared fixed height (sized for the SAHI
+                command bar). Switcher blocks (left) + SAHI command area (right,
+                only on SAHI). Industry uses the same height — switcher blocks
+                sit vertically centered and airy. Same height ⇒ no content jump. */}
+            <div className="flex min-h-[76px] items-center gap-x-4">
               <div className="shrink-0">
                 <HeaderSwitcher active={page} onSelect={selectPage} />
               </div>

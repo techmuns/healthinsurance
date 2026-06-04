@@ -18,7 +18,7 @@ const FYS = Array.from({ length: FY_MAX - FY_MIN + 1 }, (_, i) => FY_MIN + i)
 const ord = (fy: number, q: number) => fy * 4 + q
 
 const SELECT_CLS =
-  'appearance-none rounded-lg border border-soft-border bg-white/85 py-0.5 pl-2 pr-6 text-[11.5px] font-semibold text-navy-deep outline-none transition-all duration-200 hover:border-muted-blue focus:border-navy-primary disabled:cursor-not-allowed disabled:opacity-40'
+  'appearance-none rounded-lg border border-soft-border bg-white/85 py-1 pl-2.5 pr-6 text-[11.5px] font-semibold text-navy-deep outline-none transition-all duration-200 hover:border-muted-blue focus:border-navy-primary disabled:cursor-not-allowed disabled:opacity-40'
 
 function L({ children }: { children: string }) {
   return <span className="shrink-0 text-[9px] font-semibold uppercase tracking-[0.06em] text-ink-secondary">{children}</span>
@@ -99,7 +99,7 @@ export function SahiAnalysisHeader({
   for (let fy = startFY; fy <= endFY; fy++) for (let q = 1; q <= 4; q++) quarterOpts.push({ value: `${fy}-${q}`, label: `FY${fy} Q${q}` })
 
   return (
-    <div className="flex min-w-0 flex-col justify-center gap-1.5">
+    <div className="flex min-w-0 flex-col justify-center gap-2.5">
       {/* ROW 1 — subsection chips */}
       <div className="flex flex-wrap items-center gap-1">
         {tabs.map((t) => {
@@ -168,7 +168,7 @@ export function SahiAnalysisHeader({
         </div>
 
         {/* Period toggle */}
-        <div className="inline-flex h-[26px] items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+        <div className="inline-flex h-[30px] items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
           {[{ label: 'Annual', q: false }, { label: 'Quarterly', q: true }].map((m) => {
             const active = quarterly === m.q
             return (
@@ -178,7 +178,7 @@ export function SahiAnalysisHeader({
                 onClick={() => setMode(m.q)}
                 aria-pressed={active}
                 className={[
-                  'rounded-full px-2.5 py-0.5 text-[11px] font-medium transition-all duration-200',
+                  'rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200',
                   active ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary',
                 ].join(' ')}
               >
