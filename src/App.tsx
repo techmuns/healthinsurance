@@ -1,5 +1,6 @@
-import { useState, type ComponentType } from 'react'
-import { FilterProvider } from '@/state/filters'
+import { useEffect, useState, type ComponentType } from 'react'
+import { FilterProvider, useFilters } from '@/state/filters'
+import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
 import { SahiAnalysisHeader } from '@/components/SahiAnalysisHeader'
@@ -27,15 +28,6 @@ const SAHI_TABS: SectionTab[] = [
   { id: 'street-view', label: 'Street View' },
   { id: 'governance', label: 'Governance' },
 ]
-
-const SAHI_ROUTE: Record<string, string> = {
-  companies: 'peers',
-  distribution: 'market-distribution',
-  profitability: 'company-performance/profitability',
-  valuation: 'company-performance/valuation',
-  'street-view': 'street-view',
-  governance: 'ownership-governance',
-}
 
 // Per-view colour-psychology aura key (reuses the section palette below).
 const AURA_KEY: Record<string, string> = {
@@ -73,6 +65,15 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
  * No company / year / period controls here — it stays a clean insight layer.
  */
 function IndustryInsightsPage() {
+  // The Industry page carries no period/range controls, so reset to the annual
+  // full-span default on entry — SAHI may have left a quarter/period selection
+  // on the shared filters, and the macro charts should read clean annual data.
+  const { setPeriod, setRange } = useFilters()
+  useEffect(() => {
+    setPeriod('Annual')
+    setRange(DEFAULT_RANGE)
+  }, [setPeriod, setRange])
+
   return (
     <div className="space-y-6">
       {/* A · Overall Industry View — hero + market-structure snapshot + pool. */}
@@ -146,24 +147,8 @@ export default function App() {
         {/* Main application column */}
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="shrink-0 border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2.5 backdrop-blur-md sm:px-5">
-            {/* Combined header band — switcher blocks on the left; the entire
-                SAHI command area (title + sub-nav chips + company/year/period)
-                in the top-right, shown only when SAHI Analysis is active. */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 lg:flex-nowrap">
-              <div className="shrink-0">
-                <HeaderSwitcher active={page} onSelect={selectPage} />
-              </div>
-              {page === 'sahi' && (
-                <div className="min-w-0 flex-1 animate-fade-soft">
-                  <SahiAnalysisHeader
-                    tabs={SAHI_TABS}
-                    activeTab={sahiTab}
-                    onSelectTab={setSahiTab}
-                    route={SAHI_ROUTE[sahiTab]}
-                  />
-                </div>
-              )}
-            </div>
+            {/* Top-level page switcher blocks — identical on both pages. */}
+            <HeaderSwitcher active={page} onSelect={selectPage} />
           </header>
 
           {/* Only this content area scrolls — the shell stays fixed like an app. */}
@@ -177,6 +162,13 @@ export default function App() {
             </div>
 
             <div className="relative z-[1] flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-8">
+              {/* SAHI hero/header — same footprint/height as the Industry hero.
+                  Rendered above (and outside) the keyed content so its controls
+                  and local state persist across subsection switches. */}
+              {page === 'sahi' && (
+                <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
+              )}
+
               <div key={viewKey} className="w-full animate-page-enter">
                 <SectionErrorBoundary
                   resetKey={viewKey}
