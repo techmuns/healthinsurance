@@ -2,6 +2,7 @@ import { BadgeCheck, BarChart3, CircleDot, Clock, Info, ShieldCheck } from 'luci
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingTable, type MetricTableRow } from '@/components/MetricRankingBars'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
+import { SahiShareTrend } from '@/components/SahiShareTrend'
 import { PoolShiftCard } from '@/sections/MarketDistribution'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -155,6 +156,16 @@ export function ExecutiveOverview() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── SAHI share by year — toggle the denominator (segment / retail / overall) ── */}
+      <section>
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-3 w-[3px] rounded-full bg-champagne" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Share Trajectory</span>
+          <span className="text-[11px] text-ink-secondary">FY22–FY24 · standalone health insurers</span>
+        </div>
+        <SahiShareTrend />
       </section>
     </div>
   )

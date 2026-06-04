@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "snapshot_id": "sahi-share-history",
+    "description": "Standalone health insurer (SAHI) market share by fiscal year, FY22-FY24, on three bases: share of the SAHI segment, of the retail-health market, and of the overall health market.",
+    "schema_version": "1.0.0",
+    "dataset": "industry",
+    "last_updated": "2026-06-04",
+    "metric_basis": "GDPI (gross direct premium income) - a premium metric, not profit",
+    "periods": [
+      "FY22",
+      "FY23",
+      "FY24"
+    ],
+    "segment_base_retail_gdpi_inr_bn": {
+      "FY22": 156.0,
+      "FY23": 190.62,
+      "FY24": 236.38
+    },
+    "industry_total_retail_gdpi_inr_bn": {
+      "FY22": 307.38,
+      "FY23": 354.3,
+      "FY24": 422.0
+    },
+    "industry_total_overall_gdpi_inr_bn": {
+      "FY22": 731.23,
+      "FY23": 896.96,
+      "FY24": 1077.98
+    },
+    "bases": {
+      "segment": {
+        "label": "Share of the SAHI segment",
+        "definition": "Each insurer's retail-health GDPI as a % of the combined retail-health GDPI of the five SAHIs (Star, Care, Niva Bupa, Aditya Birla, ManipalCigna).",
+        "stated_or_computed": "computed",
+        "note": "Computed from Exhibit 41 retail-health GDPI; the five SAHIs ~= the entire SAHI segment. Matches the DRHP's stated Niva Bupa SAHI share of 13.87% / 15.58% / 16.24% for FY22/23/24."
+      },
+      "retail": {
+        "label": "Share of the retail-health market",
+        "definition": "Each insurer's GDPI as a % of total all-India retail-health GDPI (all insurers).",
+        "stated_or_computed": "stated (Exhibit 41)",
+        "note": "SAHIs combined = 56.01% of retail health in FY24."
+      },
+      "overall": {
+        "label": "Share of the overall health market",
+        "definition": "Each insurer's GDPI as a % of total all-India health GDPI incl. group & government (excludes personal-accident & overseas medical).",
+        "stated_or_computed": "stated (Exhibit 40)",
+        "note": "Public insurers (e.g. New India ~17%) still lead this all-in base."
+      }
+    },
+    "source": {
+      "source_name": "Niva Bupa Health Insurance Co. Ltd. - Draft Red Herring Prospectus (filed 1 Jul 2024), 'Industry Overview' (Redseer Report), Exhibit 40 (overall health) & Exhibit 41 (retail health), pp. 153-155.",
+      "source_url": "https://www.bseindia.com/corporates/download/383206/Niva%20Bupa%20Health%20Insurance%20Co%20Ltd%20DRHP_20240701153212.pdf",
+      "source_file": "data/raw/industry/Niva Bupa Health Insurance Co Ltd DRHP_20240701153212.pdf",
+      "upstream": "GIC Segment-wise Report, company public disclosures, Redseer analysis",
+      "fetched_at": "2026-06-04",
+      "confidence": "high"
+    }
+  },
+  "data": [
+    {
+      "company_id": "star-health",
+      "short_name": "Star Health",
+      "segment_share_pct": {
+        "FY22": 64.93,
+        "FY23": 62.69,
+        "FY24": 59.02
+      },
+      "retail_share_pct": {
+        "FY22": 32.95,
+        "FY23": 33.73,
+        "FY24": 33.06
+      },
+      "overall_share_pct": {
+        "FY22": 15.44,
+        "FY23": 14.22,
+        "FY24": 13.95
+      },
+      "retail_gdpi_inr_bn": {
+        "FY22": 101.29,
+        "FY23": 119.5,
+        "FY24": 139.51
+      },
+      "overall_gdpi_inr_bn": {
+        "FY22": 112.94,
+        "FY23": 127.55,
+        "FY24": 150.34
+      }
+    },
+    {
+      "company_id": "care-health",
+      "short_name": "Care Health",
+      "segment_share_pct": {
+        "FY22": 13.91,
+        "FY23": 14.31,
+        "FY24": 16.81
+      },
+      "retail_share_pct": {
+        "FY22": 7.06,
+        "FY23": 7.7,
+        "FY24": 9.42
+      },
+      "overall_share_pct": {
+        "FY22": 4.68,
+        "FY23": 5.24,
+        "FY24": 6.07
+      },
+      "retail_gdpi_inr_bn": {
+        "FY22": 21.7,
+        "FY23": 27.28,
+        "FY24": 39.74
+      },
+      "overall_gdpi_inr_bn": {
+        "FY22": 34.26,
+        "FY23": 46.98,
+        "FY24": 65.46
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "short_name": "Niva Bupa",
+      "segment_share_pct": {
+        "FY22": 13.83,
+        "FY23": 15.58,
+        "FY24": 16.25
+      },
+      "retail_share_pct": {
+        "FY22": 7.02,
+        "FY23": 8.38,
+        "FY24": 9.1
+      },
+      "overall_share_pct": {
+        "FY22": 3.76,
+        "FY23": 4.45,
+        "FY24": 5.1
+      },
+      "retail_gdpi_inr_bn": {
+        "FY22": 21.57,
+        "FY23": 29.7,
+        "FY24": 38.4
+      },
+      "overall_gdpi_inr_bn": {
+        "FY22": 27.49,
+        "FY23": 39.87,
+        "FY24": 54.94
+      }
+    },
+    {
+      "company_id": "aditya-birla",
+      "short_name": "Aditya Birla",
+      "segment_share_pct": {
+        "FY22": 4.36,
+        "FY23": 4.38,
+        "FY24": 4.77
+      },
+      "retail_share_pct": {
+        "FY22": 2.21,
+        "FY23": 2.36,
+        "FY24": 2.67
+      },
+      "overall_share_pct": {
+        "FY22": 2.16,
+        "FY23": 2.85,
+        "FY24": 3.2
+      },
+      "retail_gdpi_inr_bn": {
+        "FY22": 6.8,
+        "FY23": 8.35,
+        "FY24": 11.27
+      },
+      "overall_gdpi_inr_bn": {
+        "FY22": 15.82,
+        "FY23": 25.57,
+        "FY24": 34.47
+      }
+    },
+    {
+      "company_id": "manipalcigna",
+      "short_name": "ManipalCigna",
+      "segment_share_pct": {
+        "FY22": 2.97,
+        "FY23": 3.04,
+        "FY24": 3.16
+      },
+      "retail_share_pct": {
+        "FY22": 1.51,
+        "FY23": 1.63,
+        "FY24": 1.77
+      },
+      "overall_share_pct": {
+        "FY22": 1.33,
+        "FY23": 1.48,
+        "FY24": 1.54
+      },
+      "retail_gdpi_inr_bn": {
+        "FY22": 4.64,
+        "FY23": 5.79,
+        "FY24": 7.46
+      },
+      "overall_gdpi_inr_bn": {
+        "FY22": 9.69,
+        "FY23": 13.27,
+        "FY24": 16.56
+      }
+    }
+  ]
+}
