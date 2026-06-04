@@ -225,7 +225,10 @@
     "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
     "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
     "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
-    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE"
+    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE",
+    "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
+    "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
+    "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W"
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -388,7 +391,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-04T11:25:35.496Z",
+      "last_attempt_at": "2026-06-04T11:53:00.889Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -423,8 +426,8 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-04T11:25:38.667Z",
-      "last_success_at": "2026-06-04T11:25:38.667Z",
+      "last_attempt_at": "2026-06-04T11:53:02.610Z",
+      "last_success_at": "2026-06-04T11:53:02.610Z",
       "records_fetched": 6
     }
   ]
