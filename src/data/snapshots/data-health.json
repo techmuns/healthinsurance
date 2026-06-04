@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-04T06:43:36.093Z",
-  "last_failed_run": "2026-06-04T06:43:36.093Z",
+  "last_successful_run": "2026-06-04T07:11:34.420Z",
+  "last_failed_run": "2026-06-04T07:11:34.420Z",
   "sources_checked": 3,
   "sources_success": 2,
   "sources_failed": 1,
@@ -194,7 +194,9 @@
     "gwp::star-health::FY23",
     "nwp::star-health::FY23",
     "gwp::star-health::FY22",
-    "nwp::star-health::FY22"
+    "nwp::star-health::FY22",
+    "gwp::star-health::FY21",
+    "nwp::star-health::FY21"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -238,7 +240,7 @@
     {
       "source_id": "irdai_handbook",
       "status": "failed",
-      "last_attempt_at": "2026-06-04T06:42:45.508Z",
+      "last_attempt_at": "2026-06-04T07:07:45.833Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/handbook-of-indian-insurance-statistics"
@@ -359,8 +361,8 @@
     {
       "source_id": "distribution_extract",
       "status": "success",
-      "last_attempt_at": "2026-06-04T06:43:29.435Z",
-      "last_success_at": "2026-06-04T06:43:29.435Z",
+      "last_attempt_at": "2026-06-04T07:11:27.462Z",
+      "last_success_at": "2026-06-04T07:11:27.462Z",
       "records_fetched": 2
     },
     {
@@ -422,9 +424,9 @@
     {
       "source_id": "company_annual_history",
       "status": "success",
-      "last_attempt_at": "2026-06-04T06:42:48.978Z",
-      "last_success_at": "2026-06-04T06:42:48.978Z",
-      "records_fetched": 3
+      "last_attempt_at": "2026-06-04T07:07:49.264Z",
+      "last_success_at": "2026-06-04T07:07:49.264Z",
+      "records_fetched": 4
     }
   ]
 }
