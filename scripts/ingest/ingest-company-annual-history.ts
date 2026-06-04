@@ -46,8 +46,11 @@ import { fetchHtml, fetchOrLoadRaw, findLinks, parsePdf } from './parsers'
 const SOURCE_ID = 'company_annual_history'
 
 // Years we backfill. FY25 stays owned by ingest-company-disclosures; we only
-// fill earlier rows so the two fetchers never contend for the same key.
-const BACKFILL_YEARS = ['FY24', 'FY23', 'FY22'] as const
+// fill earlier rows so the two fetchers never contend for the same key. The
+// latest annual report's multi-year table typically reaches ~FY21; FY20/FY19
+// only appear in it when the report prints a longer (7-10yr) highlights table,
+// and are otherwise sourced from older reports (see ARCHIVE_HINTS).
+const BACKFILL_YEARS = ['FY24', 'FY23', 'FY22', 'FY21', 'FY20', 'FY19'] as const
 
 interface CompanyMaster {
   data: Array<{
@@ -365,7 +368,10 @@ function anchoredSeries(text: string, label: RegExp, anchor: number): AnchoredSe
     for (const reversed of [false, true]) {
       const oriented = reversed ? [...nums].reverse() : nums
       for (const scale of UNIT_SCALES) {
-        const scaled = oriented.slice(0, 5).map((v) => round2(v * scale))
+        // Horizon FY25..FY19 at most (7 cols). A 5-year table fills to ~FY21;
+        // a longer highlights table reaches FY20/FY19. Anchor + strict-decrease
+        // + cliff guard keep the deeper tail honest (garbage is trimmed off).
+        const scaled = oriented.slice(0, 7).map((v) => round2(v * scale))
         if (scaled.length < 2) continue
         const first = scaled[0]
         if (!within(first, anchor, ANCHOR_TOLERANCE)) continue
