@@ -17,6 +17,7 @@ import { ingestGicouncilSegment } from './ingest-gicouncil-segment'
 import { ingestIrdaiAnnual } from './ingest-irdai-annual'
 import { ingestIrdaiQuarterly } from './ingest-irdai-quarterly'
 import { ingestCompanyDisclosures } from './ingest-company-disclosures'
+import { ingestCompanyAnnualHistory } from './ingest-company-annual-history'
 import { ingestQuarterlyDisclosures } from './ingest-quarterly-disclosures'
 import { ingestDistribution } from './ingest-distribution'
 import { ingestOwnership } from './ingest-ownership'
@@ -34,6 +35,7 @@ const ALL: Fetcher[] = [
   ingestIrdaiAnnual,
   ingestIrdaiQuarterly,
   ingestCompanyDisclosures,
+  ingestCompanyAnnualHistory,
   ingestQuarterlyDisclosures,
   ingestDistribution,
   ingestOwnership,
