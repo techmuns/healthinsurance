@@ -4,8 +4,8 @@
     "description": "Per-insurer annual financial snapshot — GWP, NWP, NEP, PAT, ratios, market share, distribution and retention indicators. Drives Premium Engine annual view, Profitability, Competitive Position, Executive Overview.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-02",
-    "last_successful_run": "2026-06-02T17:46:12.492Z",
+    "last_updated": "2026-06-04",
+    "last_successful_run": "2026-06-04T06:43:36.088Z",
     "upstream_sources": [
       "irdai_handbook",
       "irdai_public_disclosures",
@@ -505,6 +505,57 @@
         "parsed_at": "2026-05-29T17:13:54.888Z",
         "parser_name": "seed-annual-summary",
         "confidence": "medium"
+      }
+    },
+    {
+      "company_id": "star-health",
+      "fiscal_year": "FY24",
+      "gwp": 15254.45,
+      "nwp": 14067.36,
+      "nep": null,
+      "provenance": {
+        "source_name": "star-health FY24 — multi-year financial summary, star-health annual report (anchored to FY25 GWP)",
+        "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_period": "FY24",
+        "fetched_at": "2026-06-04T06:42:48.978Z",
+        "parsed_at": "2026-06-04T06:43:01.663Z",
+        "parser_name": "ingest-company-annual-history",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "star-health",
+      "fiscal_year": "FY23",
+      "gwp": 12952.47,
+      "nwp": 12319.64,
+      "nep": null,
+      "provenance": {
+        "source_name": "star-health FY23 — multi-year financial summary, star-health annual report (anchored to FY25 GWP)",
+        "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_period": "FY23",
+        "fetched_at": "2026-06-04T06:42:48.978Z",
+        "parsed_at": "2026-06-04T06:43:01.663Z",
+        "parser_name": "ingest-company-annual-history",
+        "confidence": "high"
+      }
+    },
+    {
+      "company_id": "star-health",
+      "fiscal_year": "FY22",
+      "gwp": 11463.47,
+      "nwp": 10809.49,
+      "nep": null,
+      "provenance": {
+        "source_name": "star-health FY22 — multi-year financial summary, star-health annual report (anchored to FY25 GWP)",
+        "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+        "source_period": "FY22",
+        "fetched_at": "2026-06-04T06:42:48.978Z",
+        "parsed_at": "2026-06-04T06:43:01.663Z",
+        "parser_name": "ingest-company-annual-history",
+        "confidence": "high"
       }
     }
   ]
