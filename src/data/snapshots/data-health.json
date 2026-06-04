@@ -1,8 +1,8 @@
 {
   "last_successful_run": "2026-06-04T07:11:34.420Z",
-  "last_failed_run": "2026-06-04T07:11:34.420Z",
-  "sources_checked": 3,
-  "sources_success": 2,
+  "last_failed_run": "2026-06-04T08:38:15.782Z",
+  "sources_checked": 5,
+  "sources_success": 0,
   "sources_failed": 1,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
@@ -221,19 +221,26 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[irdai_handbook] To populate industry/annual data: download the IRDAI \"Handbook of Indian Insurance Statistics\" PDF and drop it into data/raw/irdai/annual/. The next run uses it automatically.",
-    "[company_annual_history] niva-bupa: multi-year table not anchor-validated against FY25 GWP 7407 — left as n/a (no guess).",
-    "[company_annual_history] care-health: no annual-report PDF discovered for history backfill.",
-    "[company_annual_history] aditya-birla: no annual-report PDF discovered for history backfill.",
-    "[company_annual_history] manipalcigna: no annual-report PDF discovered for history backfill.",
-    "[company_annual_history] icici-lombard: no annual-report PDF discovered for history backfill.",
-    "[company_annual_history] bajaj-general: no annual-report PDF discovered for history backfill.",
-    "[company_annual_history] hdfc-life: multi-year table not anchor-validated against FY25 GWP 70824 — left as n/a (no guess).",
-    "[company_annual_history] sbi-life: no annual-report PDF discovered for history backfill.",
-    "[distribution_extract] star-health: no NL-36 / channel-mix table found in 1 PDF(s).",
-    "[distribution_extract] icici-lombard: no NL-36 / channel-mix table found in 14 PDF(s).",
-    "[distribution_extract] bajaj-general: no NL-36 / channel-mix table found in 2 PDF(s).",
-    "[distribution_extract] hdfc-life: no NL-36 / channel-mix table found in 1 PDF(s)."
+    "[irdai_monthly_business] To populate Monthly: download the IRDAI \"Monthly Business Figures – Non-Life Insurers\" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.",
+    "[irdai_nonlife_flash] IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated.",
+    "[gicouncil_flash_sahi] 2026-04: HTTP 403 for https://www.gicouncil.in/media/4642/flash-report-april-pdf.pdf",
+    "[gicouncil_flash_sahi] 2026-03: HTTP 403 for https://www.gicouncil.in/media/4629/flsh-report-march-2026.pdf",
+    "[gicouncil_flash_sahi] 2026-02: HTTP 403 for https://www.gicouncil.in/media/4603/flash_feb_2026.pdf",
+    "[gicouncil_flash_sahi] 2026-01: HTTP 403 for https://www.gicouncil.in/media/4594/jan-2026-flash-report-1.pdf",
+    "[gicouncil_flash_sahi] 2025-12: HTTP 403 for https://www.gicouncil.in/media/4588/flash_december_2025.pdf",
+    "[gicouncil_flash_sahi] 2025-11: HTTP 403 for https://www.gicouncil.in/media/4579/flash-report-nov-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-10: HTTP 403 for https://www.gicouncil.in/media/4576/flash-report-october-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-09: HTTP 403 for https://www.gicouncil.in/media/4568/month-of-september-flash-report.pdf",
+    "[gicouncil_flash_sahi] 2025-08: HTTP 403 for https://www.gicouncil.in/media/4563/flash-report-august-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-07: HTTP 403 for https://www.gicouncil.in/media/4557/flash-report-july-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-06: HTTP 403 for https://www.gicouncil.in/media/4544/flash-reportt-june-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-05: HTTP 403 for https://www.gicouncil.in/media/4537/flash-report-may-2025.pdf",
+    "[gicouncil_flash_sahi] 2025-04: HTTP 403 for https://www.gicouncil.in/media/4523/flash_april_2025.pdf",
+    "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
+    "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
+    "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
+    "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
+    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE"
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -248,7 +255,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-03T10:40:52.631Z",
+      "last_attempt_at": "2026-06-04T08:37:54.537Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -396,28 +403,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T10:41:14.124Z",
+      "last_attempt_at": "2026-06-04T08:38:15.022Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T10:40:57.480Z",
+      "last_attempt_at": "2026-06-04T08:37:58.526Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "pending",
-      "last_attempt_at": "2026-06-03T10:41:07.490Z",
+      "last_attempt_at": "2026-06-04T08:38:08.959Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "blocked",
-      "last_attempt_at": "2026-06-03T10:40:57.401Z",
+      "last_attempt_at": "2026-06-04T08:37:58.444Z",
       "last_success_at": null,
       "records_fetched": 0
     },
