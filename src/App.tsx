@@ -146,9 +146,20 @@ export default function App() {
 
         {/* Main application column */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="shrink-0 border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2.5 backdrop-blur-md sm:px-5">
-            {/* Top-level page switcher blocks — identical on both pages. */}
-            <HeaderSwitcher active={page} onSelect={selectPage} />
+          <header className="shrink-0 border-b border-[rgba(23,43,77,0.07)] bg-[#FAF9F6]/85 px-3 py-2 backdrop-blur-md sm:px-5">
+            {/* One header band: switcher blocks (left) + the SAHI command area
+                in the top-right (only on SAHI). Fixed band height via min-h, so
+                switching Industry ↔ SAHI never changes the header height. */}
+            <div className="flex min-h-[58px] items-center gap-x-4">
+              <div className="shrink-0">
+                <HeaderSwitcher active={page} onSelect={selectPage} />
+              </div>
+              {page === 'sahi' && (
+                <div className="min-w-0 flex-1 animate-fade-soft">
+                  <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
+                </div>
+              )}
+            </div>
           </header>
 
           {/* Only this content area scrolls — the shell stays fixed like an app. */}
@@ -162,13 +173,6 @@ export default function App() {
             </div>
 
             <div className="relative z-[1] flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-8">
-              {/* SAHI hero/header — same footprint/height as the Industry hero.
-                  Rendered above (and outside) the keyed content so its controls
-                  and local state persist across subsection switches. */}
-              {page === 'sahi' && (
-                <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
-              )}
-
               <div key={viewKey} className="w-full animate-page-enter">
                 <SectionErrorBoundary
                   resetKey={viewKey}
