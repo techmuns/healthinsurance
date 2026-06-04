@@ -5,8 +5,20 @@ import { TrendingUp } from 'lucide-react'
 // ---------------------------------------------------------------------------
 //  Industry Snapshot band — three lean ring cards giving the FY25 structure of
 //  the Indian insurance market in one glance: segment mix, SAHI vs non-SAHI,
-//  and PSU vs private. Figures are the user-provided, source-attributed market
-//  totals (IRDAI Annual Report 2024-25 + company disclosures).
+//  and PSU vs private.
+//
+//  Figures are the real FY25 (FY2024-25) market totals, cross-checked against
+//  public sources (Jun 2026):
+//    • Life total premium ₹8.86 lakh Cr — IRDAI Annual Report 2024-25.
+//    • Non-life gross premium ₹3.07 lakh Cr; health = 41% of non-life ≈
+//      ₹1.26 lakh Cr — IRDAI / General Insurance Council FY25.
+//    • SAHI ≈ ₹0.40 lakh Cr (Star ₹16.8k + Care ₹8.3k + Niva ₹7.0k + Aditya
+//      Birla + ManipalCigna) ≈ a third of health — company filings.
+//    • PSU vs private split is on a TOTAL-premium basis: LIC = 57% of life
+//      (IRDAI) keeps the public sector roughly level with private overall.
+//  NOTE: still hardcoded here (not yet pipeline-fed). The SAHI rupee total and
+//  the general-insurance public/private split are best estimates from filings;
+//  everything else is directly sourced. Wire to the ingest pipeline next.
 // ---------------------------------------------------------------------------
 
 interface Seg {
@@ -37,31 +49,31 @@ const CARDS: RingCard[] = [
     title: '1. Market Size by Segment (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Market Share (%)',
     segments: [
-      { name: 'Health Insurance', premium: 611700, share: 32.7, color: TEAL, labelColor: '#147C7B' },
-      { name: 'Life Insurance', premium: 1163400, share: 62.1, color: NAVY, labelColor: '#27457E' },
-      { name: 'General Insurance (Other than Health)', premium: 97000, share: 5.2, color: VIOLET, labelColor: '#6F54A6' },
+      { name: 'Life Insurance', premium: 886000, share: 74.3, color: NAVY, labelColor: '#27457E' },
+      { name: 'General Insurance (Other than Health)', premium: 181000, share: 15.1, color: VIOLET, labelColor: '#6F54A6' },
+      { name: 'Health Insurance', premium: 126000, share: 10.6, color: TEAL, labelColor: '#147C7B' },
     ],
-    insight: 'Life insurance remains the largest segment, while Health is the fastest growing.',
+    insight: 'Life is the largest segment by far; health is the fastest-growing but still ~11% of total premium.',
     tone: 'teal',
   },
   {
     title: '2. SAHI vs Non-SAHI (Health Insurance) (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Share (%)',
     segments: [
-      { name: 'SAHI (Standalone Health Insurers)', premium: 467100, share: 76.4, color: TEAL, labelColor: '#147C7B' },
-      { name: 'Non-SAHI (Health business of GI)', premium: 144600, share: 23.6, color: GREY, labelColor: '#6B7480' },
+      { name: 'Non-SAHI (Health business of GI)', premium: 86000, share: 68.3, color: GREY, labelColor: '#6B7480' },
+      { name: 'SAHI (Standalone Health Insurers)', premium: 40000, share: 31.7, color: TEAL, labelColor: '#147C7B' },
     ],
-    insight: 'SAHI accounts for 76.4% of the total health insurance market.',
+    insight: 'Standalone health insurers write about a third of health premium — general insurers write the rest.',
     tone: 'teal',
   },
   {
     title: '3. PSU vs Private (Total Insurance) (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Share (%)',
     segments: [
-      { name: 'PSU Insurers', premium: 525000, share: 28.1, color: GOLD, labelColor: '#9C7430' },
-      { name: 'Private Insurers', premium: 1345000, share: 71.9, color: NAVY, labelColor: '#27457E' },
+      { name: 'Private Insurers', premium: 593000, share: 49.7, color: NAVY, labelColor: '#27457E' },
+      { name: 'PSU Insurers', premium: 600000, share: 50.3, color: GOLD, labelColor: '#9C7430' },
     ],
-    insight: 'Private insurers dominate with 71.9% share of the total insurance market.',
+    insight: 'On total premium, public and private are roughly level — LIC’s scale offsets private’s lead in general insurance.',
     tone: 'gold',
   },
 ]
@@ -188,7 +200,7 @@ export function IndustrySnapshotBand() {
 
       <div className="mt-2 flex justify-end">
         <span className="text-[10px] text-ink-secondary/80">
-          Source: IRDAI Annual Report 2024-25, Company Annual Reports, Public Disclosures
+          Source: IRDAI Annual Report 2024-25 · General Insurance Council FY25 · company filings. PSU/private split shown on a total-premium basis.
         </span>
       </div>
     </section>
