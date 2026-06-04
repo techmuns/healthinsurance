@@ -2,6 +2,7 @@ import { BadgeCheck, BarChart3, CircleDot, Clock, Info, ShieldCheck } from 'luci
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingTable, type MetricTableRow } from '@/components/MetricRankingBars'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
+import { PoolShiftCard } from '@/sections/MarketDistribution'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
@@ -91,6 +92,9 @@ export function ExecutiveOverview() {
 
       {/* ── Industry Snapshot — 3-way market-structure ring band ─────────── */}
       <IndustrySnapshotBand />
+
+      {/* ── Pool Shift — where the GI premium pool is moving (FY22 → FY25) ── */}
+      <PoolShiftCard />
 
       {/* ── Peer landscape: Market Share map (left, constant) + metric
             rankings (right, toggled) ───────────────────────────────────── */}

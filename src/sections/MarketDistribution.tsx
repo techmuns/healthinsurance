@@ -18,22 +18,17 @@ import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 
 /**
- * Market & Distribution — a clean 50/50 surface of exactly two chart cards.
+ * Market & Distribution — the Channel Mix surface: the active company's GWP by
+ * channel as a smooth 100% stacked-area mix over time. It reads the global
+ * header's Data Range + Company, and every figure is derived from real,
+ * source-backed series — never hardcoded.
  *
- *   Left  · Pool Shift   → Health / Motor / Others share of the GI premium pool
- *                          as a premium multi-line trend (FY22 → FY25).
- *   Right · Channel Mix  → the active company's GWP by channel as a smooth 100%
- *                          stacked-area mix over time.
- *
- * Both charts are dynamic: they read the global header's Data Range (and the
- * Channel Mix card reads the header's Company), and every figure is derived
- * from real source-backed series — never hardcoded. There is no summary /
- * key-takeaways strip; the section ends after the two cards.
+ * (The GI "Pool Shift" trend card now lives on the Executive Overview page; it
+ * is still defined and exported from this file and imported there.)
  */
 export function MarketDistribution() {
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
-      <PoolShiftCard />
+    <div className="grid grid-cols-1 gap-6">
       <ChannelMixCard />
     </div>
   )
@@ -183,7 +178,7 @@ function PoolTooltip({
   )
 }
 
-function PoolShiftCard() {
+export function PoolShiftCard() {
   const gate = usePeriodGate()
   const { data: rows } = useRangeClip(giPremiumMix)
   const lastIdx = rows.length - 1
