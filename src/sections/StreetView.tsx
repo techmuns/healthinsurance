@@ -2,7 +2,7 @@ import { ArrowUpRight, CalendarClock, Gauge, Lock, TrendingDown, TrendingUp } fr
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
-import { analystConsensus, analystReports, itemisedBrokerCount, FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
+import { analystConsensus, analystReports, FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
 import { srcTag } from '@/data/valuationSources'
 import { OpenSource, px, ratingTone, upPct, ValPill } from './valuationShared'
 
@@ -155,6 +155,14 @@ export function StreetView() {
   const reason = `${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell · ${upPct(upside)} upside`
   const up = (t: number | null) => (t != null ? (t / price - 1) * 100 : null)
 
+  // One row per broker: hide duplicate/older notes and keep each broker's most
+  // recent call (the latest note is the Moneycontrol-sourced one for the brokers
+  // that issued several). analystReports is ordered newest-first, so the first
+  // occurrence of each broker is the one to keep.
+  const latestByBroker = analystReports.filter(
+    (r, i) => analystReports.findIndex((x) => x.brokerage === r.brokerage) === i,
+  )
+
   // Takeaways (all source-backed; unattributed figures marked source-pending).
   const dom = { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
 
@@ -257,7 +265,7 @@ export function StreetView() {
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">All Analyst Views</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-secondary">Every broker on record — citable notes carry a live source; the rest are marked Source pending, never invented.</p>
+            <p className="mt-0.5 text-[11.5px] text-ink-secondary">Each broker&rsquo;s most recent call — one row per broker, every row with a live source.</p>
           </div>
           <SourceTag {...srcTag('niva-consensus')} />
         </div>
@@ -276,7 +284,7 @@ export function StreetView() {
               </tr>
             </thead>
             <tbody>
-              {analystReports.map((r) => {
+              {latestByBroker.map((r) => {
                 const u = up(r.targetPrice)
                 return (
                   <tr key={r.sourceId} className="border-b border-[#F2F4F8] align-top transition-colors last:border-0 hover:bg-ice/40">
@@ -301,7 +309,7 @@ export function StreetView() {
           </table>
         </div>
         <p className="mt-3 text-[10.5px] text-ink-secondary">
-          {analystReports.length} dated broker notes on record from {itemisedBrokerCount} brokers — every row carries a live source. The consensus above reflects each broker&rsquo;s most recent view; older notes are kept as history.
+          {latestByBroker.length} brokers on record — each shown with its most recent target; the consensus above reflects these latest views. Targets are sourced, never invented.
         </p>
       </div>
     </div>
