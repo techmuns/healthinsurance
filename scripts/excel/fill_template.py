@@ -1,24 +1,25 @@
 #!/usr/bin/env python3
 """
-Phase 5 - Template filler.
+Phase 5 - Template filler (Chunk 2B).
 
 Reads ``schema-map.json`` (the cell contract) and ``data/processed/excel-values.json``
 (the normalized, source-backed value store) and writes a filled copy of the
 workbook, preserving the original formatting and every Excel formula.
 
-Honesty model (per project policy + the task brief):
+Honesty model (per project policy + the governing charter):
 * The source template is treated as a *layout only*. We do NOT keep its original
-  numbers. Each fillable cell is either (a) written from a source-backed value,
-  or (b) left blank and recorded on the **Missing Data** sheet. Missing != zero.
-* Formula cells are preserved untouched, so the workbook's own totals / YoY /
-  mix-% recompute from whatever inputs we *did* source - which doubles as a
-  reconciliation check.
-* The Capital IQ plug-in cells (Market Cap / EV / 3-yr P/E in 'Comps') are
-  formulas that only worked with the paid plug-in. We replace them with a fetched
-  value when we have one, or clear them (so Excel shows a blank, not a #NAME?
-  error) and record them as missing.
-* Two sheets are appended: **Source Audit** (every filled value, full
-  provenance) and **Missing Data** (every unfilled cell, with a reason).
+  numbers. Each fillable cell is either (a) written from a source-backed value
+  that passed every gate, or (b) left blank and recorded on **Missing Data** or
+  **Blocked Data**. Missing != zero.
+* A value is FILLED only when it has a normalized value AND is not flagged
+  ``conflict_needs_review``. Source-conflicting values are kept in the store but
+  NOT filled - they land on Blocked Data so a reviewer can adjudicate.
+* Three sheets are appended: **Source Audit** (every filled value, full
+  documentary provenance so the dashboard can click through to the source),
+  **Missing Data** (cells with no source value yet), and **Blocked Data**
+  (extracted-but-withheld values, categorized: parser_failed, mangled_extraction,
+  period_unclear, unit_unclear, basis_unclear, scope_unclear, low_confidence_ppt,
+  source_conflict).
 
 Usage:
     python3 scripts/excel/fill_template.py [template.xlsx] [output.xlsx]
@@ -36,11 +37,14 @@ from openpyxl.styles import Alignment, Font, PatternFill
 REPO = Path(__file__).resolve().parents[2]
 SCHEMA = REPO / "schema-map.json"
 VALUES = REPO / "data" / "processed" / "excel-values.json"
+HELD_BACK = REPO / "data" / "processed" / "excel-held-back.json"
+FILINGS = REPO / "src" / "data" / "snapshots" / "company-filings-snapshot.json"
 TEMPLATE = REPO / "templates" / "niva-bupa-portfolio-review.xlsx"
 OUT = REPO / "output" / "Niva_Bupa_portfolio_review__filled.xlsx"
 
 AUDIT_SHEET = "Source Audit"
 MISSING_SHEET = "Missing Data"
+BLOCKED_SHEET = "Blocked Data"
 
 MISSING_REASON = {
     "available": "Source supported but value not yet fetched - run the ingestion job (needs internet egress).",
@@ -50,6 +54,8 @@ MISSING_REASON = {
     "narrative": "Editorial summary from transcripts - populated by a reviewer, not a numeric fetch.",
     "excluded_from_core": "Outside the source-backed core dataset (curated news).",
 }
+
+PPT_TYPES = {"investor_presentation", "quarterly_ppt", "investor_ppt"}
 
 
 def header(ws, titles, fill="1F4E5F"):
@@ -69,18 +75,41 @@ def autosize(ws, widths):
         ws.column_dimensions[get_column_letter(i)].width = w
 
 
+def load_json(path, default):
+    return json.loads(path.read_text()) if path.exists() else default
+
+
+def blocked_category(rec):
+    """Map a blocked company-filings record to one separated category."""
+    dt = rec.get("document_type")
+    es = rec.get("extraction_status")
+    reason = f"{rec.get('sanity_reason') or ''} {rec.get('parser_notes') or ''}".lower()
+    if dt in PPT_TYPES:
+        return "low_confidence_ppt"
+    if es == "mangled" or "fused-column" in reason or "mangled" in reason:
+        return "mangled_extraction"
+    if es in ("parser_failed", "no_metrics_found"):
+        return "parser_failed"
+    if "period" in reason and "unclear" in reason:
+        return "period_unclear"
+    if "unit" in reason and "unclear" in reason:
+        return "unit_unclear"
+    return "needs_review"
+
+
 def main(template_path: Path, out_path: Path) -> None:
     schema = json.loads(SCHEMA.read_text())
     store = json.loads(VALUES.read_text()) if VALUES.exists() else {}
+    held = load_json(HELD_BACK, {"data": []}).get("data", [])
+    filings = load_json(FILINGS, {"data": []}).get("data", [])
 
     wb = openpyxl.load_workbook(template_path)  # keep formulas
-    # Drop any stale audit sheets from a previous run.
-    for s in (AUDIT_SHEET, MISSING_SHEET):
+    for s in (AUDIT_SHEET, MISSING_SHEET, BLOCKED_SHEET):
         if s in wb.sheetnames:
             del wb[s]
 
-    audit_rows, missing_rows = [], []
-    filled = skipped = 0
+    audit_rows, missing_rows, blocked_rows = [], [], []
+    filled = skipped = conflict_blocked = 0
 
     for sheet in schema["sheets"]:
         name = sheet["sheet"]
@@ -93,7 +122,10 @@ def main(template_path: Path, out_path: Path) -> None:
             key = f"{b['entity']}::{b['metric']}::{b['period']}"
             entry = store.get(key)
             cell = b["cell"]
-            if entry and entry.get("normalized_value") is not None:
+            has_value = bool(entry and entry.get("normalized_value") is not None)
+            is_conflict = bool(entry and entry.get("conflict_status") == "conflict_needs_review")
+
+            if has_value and not is_conflict:
                 ws[cell] = entry["normalized_value"]
                 filled += 1
                 audit_rows.append([
@@ -102,11 +134,26 @@ def main(template_path: Path, out_path: Path) -> None:
                     entry.get("transformation_used"), entry.get("source_name"),
                     entry.get("source_url"), entry.get("fetched_at"),
                     entry.get("confidence"), entry.get("source_status", "available"),
+                    # --- extended documentary provenance (Chunk 2B) ---
+                    entry.get("source_layer"), entry.get("document_type"),
+                    entry.get("document_title"), entry.get("source_file"),
+                    entry.get("filing_date"), entry.get("extraction_status"),
+                    entry.get("sanity_status"), entry.get("conflict_status", "none"),
+                ])
+            elif has_value and is_conflict:
+                # Source-conflicting: keep in store, do NOT fill (charter rule).
+                ws[cell] = None
+                conflict_blocked += 1
+                comp = (entry.get("competing_values") or [{}])[0]
+                blocked_rows.append([
+                    "source_conflict", b["entity"], b["metric"], b["period"],
+                    entry.get("raw_value"), entry.get("normalized_value"),
+                    entry.get("confidence"), entry.get("document_type") or entry.get("source_layer"),
+                    entry.get("filing_date"), entry.get("source_url") or entry.get("source_file"),
+                    f"conflicts with {comp.get('source_layer')} value {comp.get('normalized_value')} "
+                    f"(rank {comp.get('priority_rank')}); higher-priority value kept in store, cell withheld.",
                 ])
             else:
-                # No source-backed value: blank the cell (missing != zero). This
-                # also clears CIQ plug-in formulas so the workbook shows a blank
-                # rather than a #NAME? error once the paid plug-in is gone.
                 ws[cell] = None
                 skipped += 1
                 status = b.get("source_status", "available")
@@ -117,12 +164,36 @@ def main(template_path: Path, out_path: Path) -> None:
                     "unavailable_publicly" if status in ("backup", "excluded_from_core") else "pending_fetch",
                 ])
 
-    # --- Source Audit sheet ------------------------------------------------
+    # --- Blocked Data: held-back (basis/scope) + blocked filings records ----
+    for h in held:
+        blocked_rows.append([
+            h.get("hold_reason"), h.get("company_id"), h.get("metric"), h.get("filing_period"),
+            h.get("raw_value"), h.get("normalized_value"), h.get("confidence"),
+            h.get("document_type"), h.get("filing_date"),
+            h.get("source_url") or h.get("source_file"), h.get("note"),
+        ])
+    for rec in filings:
+        if rec.get("eligible_for_excel"):
+            continue
+        cat = blocked_category(rec)
+        reason = rec.get("sanity_reason") or rec.get("parser_notes") or rec.get("suggested_manual_fallback") or ""
+        blocked_rows.append([
+            cat, rec.get("company_id"), rec.get("metric"), rec.get("filing_period"),
+            rec.get("raw_value"), rec.get("normalized_value"),
+            rec.get("provenance", {}).get("confidence"), rec.get("document_type"),
+            rec.get("filing_date"), rec.get("source_url") or rec.get("source_file"), reason,
+        ])
+
+    # --- Source Audit sheet (extended documentary provenance) --------------
     aud = wb.create_sheet(AUDIT_SHEET)
-    header(aud, ["Sheet", "Cell", "Entity", "Metric", "Period", "Unit",
-                 "Raw value", "Normalized value", "Transformation",
-                 "Source name", "Source URL", "Fetched at", "Confidence", "Status"])
-    autosize(aud, [18, 7, 14, 26, 12, 9, 13, 15, 30, 34, 46, 22, 11, 12])
+    audit_cols = ["Sheet", "Cell", "Entity", "Metric", "Period", "Unit",
+                  "Raw value", "Normalized value", "Transformation",
+                  "Source name", "Source URL", "Fetched at", "Confidence", "Status",
+                  "Source layer", "Document type", "Document title", "Source file",
+                  "Filing date", "Extraction status", "Sanity status", "Conflict status"]
+    header(aud, audit_cols)
+    autosize(aud, [18, 7, 14, 26, 12, 9, 13, 15, 30, 30, 44, 22, 11, 11,
+                   15, 18, 30, 30, 12, 16, 12, 16])
     for r in audit_rows:
         aud.append(r)
 
@@ -134,25 +205,38 @@ def main(template_path: Path, out_path: Path) -> None:
     for r in missing_rows:
         mis.append(r)
 
+    # --- Blocked Data sheet (extracted but withheld, categorized) ----------
+    blk = wb.create_sheet(BLOCKED_SHEET)
+    header(blk, ["Category", "Company", "Metric", "Period", "Raw value",
+                 "Normalized value", "Confidence", "Document type / layer",
+                 "Filing date", "Source (URL or file)", "Reason / note"], fill="5A4A1F")
+    autosize(blk, [20, 16, 20, 11, 13, 15, 11, 22, 12, 46, 60])
+    blocked_rows.sort(key=lambda r: (str(r[0]), str(r[1]), str(r[2])))
+    for r in blocked_rows:
+        blk.append(r)
+
     # --- Run banner on the audit sheet (top, above the freeze) ------------
     aud.insert_rows(1)
     banner = aud.cell(1, 1,
         f"Source-backed fill - generated {datetime.now(timezone.utc).isoformat()} - "
-        f"{filled} cells filled from official sources, {skipped} marked missing. "
-        f"Template treated as layout only; original values NOT retained. Every "
-        f"filled cell is traceable below.")
+        f"{filled} cells filled from official sources, {skipped} missing, "
+        f"{len(blocked_rows)} blocked/withheld (incl. {conflict_blocked} source-conflict). "
+        f"Template treated as layout only; original values NOT retained. Every filled "
+        f"cell is traceable to its source document below.")
     banner.font = Font(italic=True, color="555555")
-    aud.merge_cells(start_row=1, start_column=1, end_row=1, end_column=14)
+    aud.merge_cells(start_row=1, start_column=1, end_row=1, end_column=len(audit_cols))
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out_path)
 
-    total = filled + skipped
+    total = filled + skipped + conflict_blocked
     pct = (100.0 * filled / total) if total else 0.0
     print(f"filled workbook written -> {out_path}")
     print(f"  fillable cells: {total}")
     print(f"  filled from official sources: {filled} ({pct:.1f}%)")
     print(f"  marked missing (Missing Data sheet): {skipped}")
+    print(f"  withheld at a cell (source-conflict): {conflict_blocked}")
+    print(f"  Blocked Data rows (held-back + blocked filings + conflicts): {len(blocked_rows)}")
     print(f"  audit rows: {len(audit_rows)}")
 
 

@@ -48,8 +48,10 @@ def main(filled_path: Path) -> int:
 
     hard, soft = [], []
 
-    # Expected partition from schema-map + store.
-    expected_fill, expected_miss = set(), set()
+    # Expected partition from schema-map + store. A store entry flagged
+    # conflict_needs_review is NOT filled (charter: source-conflicting -> withhold)
+    # and is NOT missing either - it is a third "blocked" bucket on Blocked Data.
+    expected_fill, expected_miss, expected_blocked = set(), set(), set()
     for s in schema["sheets"]:
         for b in s["bindings"]:
             if not b.get("fillable"):
@@ -58,7 +60,10 @@ def main(filled_path: Path) -> int:
             key = f"{b['entity']}::{b['metric']}::{b['period']}"
             e = store.get(key)
             if e and e.get("normalized_value") is not None:
-                expected_fill.add(cellref)
+                if e.get("conflict_status") == "conflict_needs_review":
+                    expected_blocked.add(cellref)
+                else:
+                    expected_fill.add(cellref)
             else:
                 expected_miss.add(cellref)
 
@@ -115,10 +120,16 @@ def main(filled_path: Path) -> int:
             hard.append(f"H2 {len(miss_a)} expected-filled cell(s) absent from Source Audit, e.g. {sorted(miss_a)[:3]}.")
         if extra_a:
             hard.append(f"H2 {len(extra_a)} audited cell(s) not expected to be filled, e.g. {sorted(extra_a)[:3]}.")
+    # Conflict-blocked cells must be on NEITHER sheet (withheld from the workbook).
+    leaked = expected_blocked & (audit_cells | missing_cells)
+    if leaked:
+        hard.append(f"H2 {len(leaked)} source-conflict cell(s) leaked into Audit/Missing, e.g. {sorted(leaked)[:3]}.")
     total_expected = len(expected_fill) + len(expected_miss)
     total_seen = len(audit_cells) + len(missing_cells)
     if total_seen < total_expected:
         soft.append(f"S1 partition counts: {total_seen} accounted vs {total_expected} expected (some empty cells skipped).")
+    if expected_blocked:
+        soft.append(f"S1 {len(expected_blocked)} cell(s) withheld as source_conflict (kept in store, on Blocked Data).")
 
     # H5 invariants from the value store (entity+period legs).
     legs = defaultdict(dict)
@@ -148,6 +159,19 @@ def main(filled_path: Path) -> int:
     backups = sum(1 for v in store.values() if v.get("source_status") == "backup")
     if backups:
         soft.append(f"S2 {backups} backup-sourced value(s) (Screener/Trendlyne) present - tagged low-confidence, review before publishing.")
+
+    # Blocked Data sheet stats (extracted-but-withheld, categorized).
+    if "Blocked Data" in wb.sheetnames:
+        blk = wb["Blocked Data"]
+        by_cat = defaultdict(int)
+        for r in range(2, blk.max_row + 1):
+            cat = blk.cell(r, 1).value
+            if cat:
+                by_cat[cat] += 1
+        if by_cat:
+            soft.append("S1 blocked by category: " + ", ".join(f"{k}={v}" for k, v in sorted(by_cat.items())))
+    else:
+        soft.append("S1 Blocked Data sheet absent (no withheld values).")
 
     return report(hard, soft)
 
