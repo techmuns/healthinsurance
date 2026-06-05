@@ -14,7 +14,7 @@
     "description": "Captured IRDAI Non-Life Flash Figures source URLs / files, per report month.",
     "dataset": "pending",
     "last_updated": "2026-06-05",
-    "last_fetched_at": "2026-06-05T08:29:56.890Z",
+    "last_fetched_at": "2026-06-05T12:34:44.882Z",
     "last_attempt_status": "blocked",
     "parser_status": "blocked",
     "notes": "IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated."
@@ -30,7 +30,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "May",
@@ -42,7 +42,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "June",
@@ -54,7 +54,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "July",
@@ -66,7 +66,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "August",
@@ -78,7 +78,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "September",
@@ -90,7 +90,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "October",
@@ -102,7 +102,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "November",
@@ -114,7 +114,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "December",
@@ -126,7 +126,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "January",
@@ -138,7 +138,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "February",
@@ -150,7 +150,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "March",
@@ -162,7 +162,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "April",
@@ -174,7 +174,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     },
     {
       "report_month": "May",
@@ -186,7 +186,7 @@
       "file_type": null,
       "status": "blocked",
       "rows": 0,
-      "fetched_at": "2026-06-05T08:29:56.890Z"
+      "fetched_at": "2026-06-05T12:34:44.882Z"
     }
   ]
 }

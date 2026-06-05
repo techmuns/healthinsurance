@@ -1,7 +1,7 @@
 {
   "last_successful_run": "2026-06-04T07:11:34.420Z",
-  "last_failed_run": "2026-06-05T08:30:28.337Z",
-  "sources_checked": 6,
+  "last_failed_run": "2026-06-05T12:35:29.139Z",
+  "sources_checked": 7,
   "sources_success": 1,
   "sources_failed": 1,
   "metrics_updated": [
@@ -258,7 +258,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-05T08:29:53.171Z",
+      "last_attempt_at": "2026-06-05T12:34:40.667Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -406,28 +406,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T08:30:14.128Z",
+      "last_attempt_at": "2026-06-05T12:35:00.722Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T08:29:57.102Z",
+      "last_attempt_at": "2026-06-05T12:34:45.021Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T08:30:07.315Z",
+      "last_attempt_at": "2026-06-05T12:34:54.744Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "blocked",
-      "last_attempt_at": "2026-06-05T08:29:56.890Z",
+      "last_attempt_at": "2026-06-05T12:34:44.882Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -441,9 +441,16 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-05T08:30:14.706Z",
-      "last_success_at": "2026-06-05T08:30:14.706Z",
+      "last_attempt_at": "2026-06-05T12:35:01.567Z",
+      "last_success_at": "2026-06-05T12:35:01.567Z",
       "records_fetched": 6
+    },
+    {
+      "source_id": "price_history",
+      "status": "pending",
+      "last_attempt_at": "2026-06-05T12:35:27.290Z",
+      "last_success_at": null,
+      "records_fetched": 0
     }
   ]
 }
