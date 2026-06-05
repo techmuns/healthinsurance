@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "snapshot_id": "screener-crosscheck-snapshot",
+    "description": "BACKUP-ONLY cross-check metrics from Screener public pages (3-yr avg P/E, headline ratios). Never a core/official source.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "source_policy": "official-first; Screener used only where no official equivalent exists. All values confidence:low.",
+    "last_successful_run": null,
+    "parser_status": "pending"
+  },
+  "data": []
+}

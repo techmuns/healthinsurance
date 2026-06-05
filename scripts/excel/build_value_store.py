@@ -158,6 +158,28 @@ def main():
         for field, entity, metric in INDUSTRY_MAP:
             emit(store, entity, metric, period, r.get(field), "identity", "INR_cr", prov)
 
+    # --- price-history-snapshot -> Historical Stock Movement -------------
+    # (Populated by fetch-investing in CI / from staged NSE CSVs.)
+    for r in load("price-history-snapshot"):
+        prov = r.get("provenance", {})
+        date = r.get("date")
+        if not date:
+            continue
+        emit(store, r["company_id"], "close_price", date, r.get("close"), "identity", "INR", prov)
+        emit(store, r["company_id"], "traded_quantity", date, r.get("traded_qty"), "identity", "shares", prov)
+        emit(store, r["company_id"], "deliverable_quantity", date, r.get("deliverable_qty"), "identity", "shares", prov)
+
+    # --- valuation-snapshot -> Comps (latest market cap / EV) ------------
+    latest = {}
+    for r in load("valuation-snapshot"):
+        cid, d = r.get("company_id"), r.get("date", "")
+        if cid and (cid not in latest or d > latest[cid].get("date", "")):
+            latest[cid] = r
+    for cid, r in latest.items():
+        prov = r.get("provenance", {})
+        emit(store, cid, "market_cap", "as_on_run_date", r.get("market_cap"), "identity", "INR_cr", prov)
+        emit(store, cid, "enterprise_value", "as_on_run_date", r.get("enterprise_value"), "identity", "INR_cr", prov)
+
     # --- distribution-channel-mix -> Channel Mix -------------------------
     for r in load("distribution-channel-mix"):
         prov = r.get("provenance", {})
