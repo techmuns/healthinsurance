@@ -2,9 +2,12 @@
   "_meta": {
     "id": "excel-held-back",
     "description": "Company-filings values that were well-extracted (eligible) but NOT wired to Excel because the metric basis/scope cannot be unambiguously matched to the cell. These are NOT parser failures - they keep full source proof and appear on the Blocked Data sheet.",
+    "preferred_ratio_basis": "statutory_1n",
+    "preferred_ratio_basis_rule": "For combined/claims/expense/commission ratios, when both the statutory IRDAI 1/n basis and a company-adjusted ex-1/n basis exist, the Excel cell uses the statutory 1/n value; the adjusted value is recorded here as basis_mismatch_ex_1n_adjusted. If a source's basis is unclear, it is held basis_unclear and not auto-filled.",
     "reasons": {
-      "basis_unclear": "non-statutory / adjusted basis vs the statutory IGAAP cell",
-      "scope_unclear": "company-wide vs health-only / GDPI vs total GWP"
+      "basis_unclear": "non-statutory / adjusted basis vs the statutory IGAAP cell; basis (1/n vs ex-1/n) not clearly stated",
+      "scope_unclear": "company-wide vs health-only / GDPI vs total GWP",
+      "basis_mismatch_ex_1n_adjusted": "ex-1/n / management-adjusted ratio superseded by the statutory 1/n value for the Excel cell"
     }
   },
   "data": [
@@ -483,6 +486,21 @@
       "hold_reason": "scope_unclear",
       "source_description": "niva-bupa public disclosure for Q4FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
       "note": "company-wide vs health-only / GDPI vs total GWP scope not confirmed for the cell"
+    },
+    {
+      "company_id": "niva-bupa",
+      "metric": "combined_ratio_igaap",
+      "filing_period": "FY25",
+      "raw_value": 96.1,
+      "normalized_value": 0.961,
+      "unit": "ratio",
+      "document_type": null,
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "confidence": "high",
+      "hold_reason": "basis_mismatch_ex_1n_adjusted",
+      "source_description": "Niva Bupa FY2024-25 Annual Report — Schedule 1 'Premium Earned [Net]'. Headline GWP 7,407 Cr is ex-1/n; gross_direct_premium 6,762.23 Cr is the Revenue-Account (IRDAI 1/n) basis that NWP 5,369.43 Cr and NEP 4,894.46 Cr derive from (reinsurance ceded 1,392.80 Cr).",
+      "note": "alternate basis 0.961 (ex-1/n / management-adjusted) superseded by the statutory 1/n value 1.0122 [company_filing]; kept for review, not used in Excel"
     }
   ]
 }

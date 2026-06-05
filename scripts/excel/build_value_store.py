@@ -45,6 +45,17 @@ QUARTER_RE = re.compile(r"^Q[1-4]FY\d{2}$")
 FLOW_RATIOS = {"combined_ratio", "claims_ratio", "expense_ratio", "commission_ratio"}
 YTD_BASIS = "year_to_date"
 
+# Durable basis rule (Neha, 2026-06-05): insurance ratios can be reported on the
+# statutory IRDAI 1/n basis OR a company-adjusted ex-1/n basis. When both exist,
+# the Excel cell ALWAYS uses the statutory 1/n value; the differing adjusted value
+# is kept on Blocked Data as an alternate basis (basis_mismatch_ex_1n_adjusted),
+# never a blocking conflict. If a source's basis is unclear, do not auto-fill.
+PREFERRED_RATIO_BASIS = "statutory_1n"
+# Ratios subject to the 1/n vs ex-1/n basis distinction. IRDAI NL-20 public
+# disclosures are the statutory 1/n source.
+RATIO_BASIS_METRICS = {"combined_ratio_igaap", "claims_ratio_igaap",
+                       "expense_ratio_igaap", "commission_ratio_igaap"}
+
 REPO = Path(__file__).resolve().parents[2]
 SNAP = REPO / "src" / "data" / "snapshots"
 OUT = REPO / "data" / "processed" / "excel-values.json"
@@ -90,6 +101,7 @@ def add_candidate(entity, metric, period, raw_value, normalized_value, transform
         "document_type": extra.get("document_type"), "document_title": extra.get("document_title"),
         "filing_date": extra.get("filing_date"), "extraction_status": extra.get("extraction_status"),
         "sanity_status": extra.get("sanity_status"), "column_basis": extra.get("column_basis"),
+        "ratio_basis": extra.get("ratio_basis"),
     })
 
 
@@ -235,9 +247,11 @@ def collect_company_filings():
             prov = {"source_name": p.get("source_name") or r.get("source_description"),
                     "source_url": r.get("source_url"), "source_file": r.get("source_file"),
                     "fetched_at": p.get("parsed_at"), "confidence": p.get("confidence", "high")}
+            # IRDAI NL-20 public-disclosure ratios are the statutory 1/n basis.
             extra = {"document_type": r.get("document_type"), "document_title": r.get("document_title"),
                      "filing_date": r.get("filing_date"), "extraction_status": r.get("extraction_status"),
-                     "sanity_status": r.get("sanity_status"), "column_basis": column_basis}
+                     "sanity_status": r.get("sanity_status"), "column_basis": column_basis,
+                     "ratio_basis": PREFERRED_RATIO_BASIS if CF_RATIO_MAP[metric] in RATIO_BASIS_METRICS else None}
             add_candidate(r["company_id"], CF_RATIO_MAP[metric], r.get("filing_period"), r.get("raw_value"),
                           r.get("normalized_value"), r.get("transformation_used"), r.get("unit"),
                           prov, RANK_CF_DISCLOSURE, "company_filing", "available", extra)
@@ -263,18 +277,36 @@ def collect_company_filings():
 def resolve():
     store = {}
     conflicts = 0
+    alternates: list[dict] = []
     for key, cands in CANDIDATES.items():
         cands.sort(key=lambda c: (c["priority_rank"], CONF_ORDER.get(c["confidence"], 4)))
         winner = cands[0]
+        # preferred_ratio_basis = statutory_1n: when the winner is a statutory 1/n
+        # ratio, a differing lower-priority value is an alternate BASIS (ex-1/n /
+        # adjusted), not a conflict - the statutory value still fills the cell.
+        winner_statutory = winner["metric"] in RATIO_BASIS_METRICS and winner.get("ratio_basis") == PREFERRED_RATIO_BASIS
         conflict_status, competing = "none", []
         for c in cands[1:]:
             if c["priority_rank"] <= RANK_EXISTING and c["normalized_value"] is not None and winner["normalized_value"] is not None:
                 a, b = winner["normalized_value"], c["normalized_value"]
                 denom = max(abs(a), abs(b)) or 1.0
                 if abs(a - b) / denom > 0.01:
-                    conflict_status = "conflict_needs_review"
-                    competing.append({"normalized_value": b, "source_layer": c["source_layer"],
-                                      "source_name": c["source_name"], "priority_rank": c["priority_rank"]})
+                    if winner_statutory and c.get("ratio_basis") != PREFERRED_RATIO_BASIS:
+                        alternates.append({
+                            "company_id": winner["entity"], "metric": winner["metric"],
+                            "filing_period": winner["period"], "raw_value": c.get("raw_value"),
+                            "normalized_value": b, "unit": c.get("unit"),
+                            "document_type": c.get("document_type"), "filing_date": c.get("filing_date"),
+                            "source_url": c.get("source_url") or c.get("source_file"),
+                            "confidence": c.get("confidence"), "hold_reason": "basis_mismatch_ex_1n_adjusted",
+                            "source_description": c.get("source_name"),
+                            "note": f"alternate basis {b} (ex-1/n / management-adjusted) superseded by the statutory "
+                                    f"1/n value {a} [{winner['source_layer']}]; kept for review, not used in Excel",
+                        })
+                    else:
+                        conflict_status = "conflict_needs_review"
+                        competing.append({"normalized_value": b, "source_layer": c["source_layer"],
+                                          "source_name": c["source_name"], "priority_rank": c["priority_rank"]})
         if conflict_status == "conflict_needs_review":
             conflicts += 1
         store[key] = {
@@ -284,25 +316,32 @@ def resolve():
                 "confidence", "source_status", "source_layer", "priority_rank",
                 "document_type", "document_title", "filing_date", "extraction_status", "sanity_status",
                 "column_basis")},
+            "ratio_basis": winner.get("ratio_basis"),
             "eligible_for_excel": True,
             "conflict_status": conflict_status,
             "competing_values": competing,
         }
-    return store, conflicts
+    return store, conflicts, alternates
 
 
 def main():
     collect_existing()
     wired, held = collect_company_filings()
-    store, conflicts = resolve()
+    store, conflicts, alternates = resolve()
+    # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
+    # land on Blocked Data alongside the held company-filing values.
+    held = held + alternates
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(store, indent=2, ensure_ascii=False))
     OUT_HELD.write_text(json.dumps({
         "_meta": {
             "id": "excel-held-back",
             "description": "Company-filings values that were well-extracted (eligible) but NOT wired to Excel because the metric basis/scope cannot be unambiguously matched to the cell. These are NOT parser failures - they keep full source proof and appear on the Blocked Data sheet.",
-            "reasons": {"basis_unclear": "non-statutory / adjusted basis vs the statutory IGAAP cell",
-                        "scope_unclear": "company-wide vs health-only / GDPI vs total GWP"},
+            "preferred_ratio_basis": "statutory_1n",
+            "preferred_ratio_basis_rule": "For combined/claims/expense/commission ratios, when both the statutory IRDAI 1/n basis and a company-adjusted ex-1/n basis exist, the Excel cell uses the statutory 1/n value; the adjusted value is recorded here as basis_mismatch_ex_1n_adjusted. If a source's basis is unclear, it is held basis_unclear and not auto-filled.",
+            "reasons": {"basis_unclear": "non-statutory / adjusted basis vs the statutory IGAAP cell; basis (1/n vs ex-1/n) not clearly stated",
+                        "scope_unclear": "company-wide vs health-only / GDPI vs total GWP",
+                        "basis_mismatch_ex_1n_adjusted": "ex-1/n / management-adjusted ratio superseded by the statutory 1/n value for the Excel cell"},
         },
         "data": held,
     }, indent=2, ensure_ascii=False))
