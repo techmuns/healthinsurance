@@ -24,3 +24,12 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+
+# Generated filled workbook (produced by the ingestion job / locally; CI uploads
+# it as an artifact). The template under templates/ is the committed source.
+/output/*.xlsx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
