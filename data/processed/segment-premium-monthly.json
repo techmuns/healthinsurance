@@ -5,7 +5,7 @@
     "source": "GI Council Segmentwise Report (Statistics → Industry Statistics)",
     "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
     "dataset": "pending",
-    "last_fetched_at": "2026-06-05T14:27:32.225Z",
+    "last_fetched_at": "2026-06-05T14:57:01.220Z",
     "last_updated": null,
     "note": "Pending — GI Council 403s the runner. Set INGEST_FETCH_PROXY (India-IP relay) or drop the official XLSX into data/raw/gicouncil/segment/<YYYY-MM>.xlsx.",
     "warnings": []

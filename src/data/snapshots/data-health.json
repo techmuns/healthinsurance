@@ -1,6 +1,6 @@
 {
   "last_successful_run": "2026-06-04T07:11:34.420Z",
-  "last_failed_run": "2026-06-05T14:28:11.485Z",
+  "last_failed_run": "2026-06-05T14:57:43.251Z",
   "sources_checked": 7,
   "sources_success": 1,
   "sources_failed": 1,
@@ -261,7 +261,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-05T14:27:18.382Z",
+      "last_attempt_at": "2026-06-05T14:56:46.532Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -409,28 +409,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T14:27:38.139Z",
+      "last_attempt_at": "2026-06-05T14:57:08.297Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T14:27:22.950Z",
+      "last_attempt_at": "2026-06-05T14:56:50.182Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T14:27:32.225Z",
+      "last_attempt_at": "2026-06-05T14:57:01.220Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "blocked",
-      "last_attempt_at": "2026-06-05T14:27:22.817Z",
+      "last_attempt_at": "2026-06-05T14:56:50.106Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -444,14 +444,14 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-05T14:27:39.577Z",
-      "last_success_at": "2026-06-05T14:27:39.577Z",
+      "last_attempt_at": "2026-06-05T14:57:09.613Z",
+      "last_success_at": "2026-06-05T14:57:09.613Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-05T14:28:06.022Z",
+      "last_attempt_at": "2026-06-05T14:57:39.506Z",
       "last_success_at": null,
       "records_fetched": 0
     }
