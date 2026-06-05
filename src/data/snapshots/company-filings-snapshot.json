@@ -7,10 +7,10 @@
     "unit_convention": "ratios -> fraction (0.65); solvency -> multiple (3.03x); premiums/PAT -> INR crore. transformation_used recorded per value.",
     "governing_objective": "accuracy > coverage; only eligible_for_excel values may later enter the workbook; every eligible value carries dashboard-ready source proof.",
     "parser": "fetch-company-filings",
-    "generated_at": "2026-06-05T16:47:03.666Z",
+    "generated_at": "2026-06-05T18:26:00.226Z",
     "docs_parsed": 22,
-    "records": 121,
-    "eligible_for_excel": 97,
+    "records": 127,
+    "eligible_for_excel": 103,
     "blocked": 24
   },
   "data": [
@@ -44,7 +44,7 @@
       "provenance": {
         "source_name": "bajaj-general annual report for FY25 - public source: https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.451Z",
+        "parsed_at": "2026-06-05T18:26:02.068Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -79,7 +79,7 @@
       "provenance": {
         "source_name": "bajaj-general annual report for FY25 - public source: https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.451Z",
+        "parsed_at": "2026-06-05T18:26:02.068Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -98,7 +98,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -134,7 +134,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -170,7 +170,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -206,7 +206,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -242,7 +242,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -278,7 +278,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -314,7 +314,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -350,7 +350,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -386,7 +386,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -422,7 +422,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -458,7 +458,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -494,7 +494,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-05-23) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:05.865Z",
+        "parsed_at": "2026-06-05T18:26:02.492Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -530,7 +530,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -566,7 +566,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -602,7 +602,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -638,7 +638,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -674,7 +674,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -710,7 +710,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -746,7 +746,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -782,7 +782,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2026-02-15) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.217Z",
+        "parsed_at": "2026-06-05T18:26:02.867Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -818,7 +818,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -854,7 +854,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -890,7 +890,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -926,7 +926,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -962,7 +962,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -998,7 +998,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1034,7 +1034,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1070,7 +1070,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:06.636Z",
+        "parsed_at": "2026-06-05T18:26:03.300Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1106,7 +1106,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1142,7 +1142,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1178,7 +1178,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1214,7 +1214,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1250,7 +1250,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1286,7 +1286,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1322,7 +1322,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1358,7 +1358,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1394,7 +1394,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1430,7 +1430,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1466,7 +1466,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1502,7 +1502,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-25) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.079Z",
+        "parsed_at": "2026-06-05T18:26:03.747Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1538,7 +1538,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-13) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.411Z",
+        "parsed_at": "2026-06-05T18:26:04.099Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1574,7 +1574,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-13) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.411Z",
+        "parsed_at": "2026-06-05T18:26:04.099Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1610,7 +1610,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-13) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.411Z",
+        "parsed_at": "2026-06-05T18:26:04.099Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1646,7 +1646,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2025-08-13) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.411Z",
+        "parsed_at": "2026-06-05T18:26:04.099Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1682,7 +1682,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1718,7 +1718,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1754,7 +1754,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1790,7 +1790,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1826,7 +1826,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1862,7 +1862,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1898,7 +1898,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1934,7 +1934,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for Q2FY25 (filed 2025-11-18) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:07.805Z",
+        "parsed_at": "2026-06-05T18:26:04.462Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -1970,7 +1970,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-08-14) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.152Z",
+        "parsed_at": "2026-06-05T18:26:04.818Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2006,7 +2006,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-08-14) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.152Z",
+        "parsed_at": "2026-06-05T18:26:04.818Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2042,7 +2042,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-08-14) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.152Z",
+        "parsed_at": "2026-06-05T18:26:04.818Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2078,7 +2078,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-08-14) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.152Z",
+        "parsed_at": "2026-06-05T18:26:04.818Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2114,7 +2114,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2150,7 +2150,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2186,7 +2186,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2222,7 +2222,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2258,7 +2258,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2294,7 +2294,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2330,7 +2330,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2366,7 +2366,7 @@
       "provenance": {
         "source_name": "care-health public disclosure for period n/a (filed 2024-02-07) - public source: https://cms.careinsurance.com/cms/public/public_disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.454Z",
+        "parsed_at": "2026-06-05T18:26:05.115Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2418,7 +2418,7 @@
       "provenance": {
         "source_name": "hdfc-life quarterly results for FY25 - public source: https://www.hdfclife.com/about-us/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:08.508Z",
+        "parsed_at": "2026-06-05T18:26:05.168Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2453,7 +2453,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.820Z",
+        "parsed_at": "2026-06-05T18:26:07.510Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2488,7 +2488,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.821Z",
+        "parsed_at": "2026-06-05T18:26:07.510Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2523,7 +2523,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.821Z",
+        "parsed_at": "2026-06-05T18:26:07.511Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2558,7 +2558,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.821Z",
+        "parsed_at": "2026-06-05T18:26:07.511Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2593,7 +2593,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.821Z",
+        "parsed_at": "2026-06-05T18:26:07.511Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2628,7 +2628,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.822Z",
+        "parsed_at": "2026-06-05T18:26:07.511Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2663,7 +2663,7 @@
       "provenance": {
         "source_name": "icici-lombard annual report for FY25 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.822Z",
+        "parsed_at": "2026-06-05T18:26:07.511Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2698,7 +2698,7 @@
       "provenance": {
         "source_name": "icici-lombard quarterly results for FY24 - public source: https://www.icicilombard.com/investor-relations",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.869Z",
+        "parsed_at": "2026-06-05T18:26:07.558Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2717,7 +2717,7 @@
       "provenance": {
         "source_name": "icici-lombard public disclosure for Q3FY23 - public source: https://www.icicilombard.com/about-us/public-disclosure",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:10.906Z",
+        "parsed_at": "2026-06-05T18:26:07.595Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -2768,7 +2768,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q4FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.028Z",
+        "parsed_at": "2026-06-05T18:26:07.704Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2803,7 +2803,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q4FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.028Z",
+        "parsed_at": "2026-06-05T18:26:07.704Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2838,7 +2838,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q4FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.028Z",
+        "parsed_at": "2026-06-05T18:26:07.704Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2873,7 +2873,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q4FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.028Z",
+        "parsed_at": "2026-06-05T18:26:07.704Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2908,7 +2908,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q3FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.140Z",
+        "parsed_at": "2026-06-05T18:26:07.811Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2943,7 +2943,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q3FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.140Z",
+        "parsed_at": "2026-06-05T18:26:07.811Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -2978,7 +2978,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q3FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.140Z",
+        "parsed_at": "2026-06-05T18:26:07.811Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3013,7 +3013,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q3FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.140Z",
+        "parsed_at": "2026-06-05T18:26:07.811Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3048,7 +3048,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q1FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.238Z",
+        "parsed_at": "2026-06-05T18:26:07.905Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3083,7 +3083,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q1FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.238Z",
+        "parsed_at": "2026-06-05T18:26:07.905Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3118,7 +3118,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q1FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.238Z",
+        "parsed_at": "2026-06-05T18:26:07.905Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3153,7 +3153,7 @@
       "provenance": {
         "source_name": "niva-bupa investor presentation for Q1FY26 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.238Z",
+        "parsed_at": "2026-06-05T18:26:07.905Z",
         "confidence": "low",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3188,7 +3188,7 @@
       "provenance": {
         "source_name": "niva-bupa annual report for FY25 - public source: https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.841Z",
+        "parsed_at": "2026-06-05T18:26:08.485Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3223,7 +3223,7 @@
       "provenance": {
         "source_name": "niva-bupa annual report for FY25 - public source: https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.841Z",
+        "parsed_at": "2026-06-05T18:26:08.485Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3258,7 +3258,7 @@
       "provenance": {
         "source_name": "niva-bupa annual report for FY25 - public source: https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.841Z",
+        "parsed_at": "2026-06-05T18:26:08.485Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3293,7 +3293,7 @@
       "provenance": {
         "source_name": "niva-bupa annual report for FY25 - public source: https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.841Z",
+        "parsed_at": "2026-06-05T18:26:08.485Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3328,7 +3328,7 @@
       "provenance": {
         "source_name": "niva-bupa annual report for FY25 - public source: https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:11.841Z",
+        "parsed_at": "2026-06-05T18:26:08.485Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -3347,7 +3347,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3383,7 +3383,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3419,7 +3419,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3455,7 +3455,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3491,7 +3491,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3527,7 +3527,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3563,7 +3563,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3599,7 +3599,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.348Z",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3625,6 +3625,78 @@
       "company_id": "niva-bupa",
       "source_company": "niva-bupa",
       "document_type": "public_disclosure",
+      "document_title": "Website Public Disclosure Dec 25",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Dec-25.pdf",
+      "source_description": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "35829b931bd257b6ce0fabfb2face6bb54bb4f53df8c0cd9c32ff6e0780788bd",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 145357,
+      "normalized_value": 1453.57,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "Q3FY26",
+      "period_start": "2025-10-01",
+      "period_end": "2025-12-31",
+      "raw_excerpt": "For the quarter ended December 31, 2025 | \"Premiums earned (Net)\" -> current_standalone = 145357 Rs. Lakhs = 1453.57 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_standalone); Rs. Lakhs -> crore; For the quarter ended December 31, 2025",
+      "column_basis": "standalone_quarter"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
+      "document_title": "Website Public Disclosure Dec 25",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Dec-25.pdf",
+      "source_description": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "35829b931bd257b6ce0fabfb2face6bb54bb4f53df8c0cd9c32ff6e0780788bd",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q3FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:08.941Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 409562,
+      "normalized_value": 4095.62,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "9MFY26",
+      "period_start": "2025-04-01",
+      "period_end": "2025-12-31",
+      "raw_excerpt": "Up to the quarter ended December 31, 2025 | \"Premiums earned (Net)\" -> current_ytd = 409562 Rs. Lakhs = 4095.62 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_ytd); Rs. Lakhs -> crore; Up to the quarter ended December 31, 2025",
+      "column_basis": "year_to_date"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
       "document_title": "Website Public Disclosure Sep 25",
       "filing_date": null,
       "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
@@ -3635,7 +3707,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3671,7 +3743,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3707,7 +3779,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3743,7 +3815,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3779,7 +3851,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3815,7 +3887,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3851,7 +3923,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3887,7 +3959,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.731Z",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3908,6 +3980,78 @@
       "suggested_manual_fallback": null,
       "parser_notes": "column-aware NL-20: current_ytd -> H1FY26 (point_in_time); Solvency Margin Ratio (No. of times) - As at September 30, 2025",
       "column_basis": "point_in_time"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
+      "document_title": "Website Public Disclosure Sep 25",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Sep-25.pdf",
+      "source_description": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "b64567de2dda9c746ec290018f491636d2902bd205afe5a9ad5e5c41ab1a8e79",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 142205,
+      "normalized_value": 1422.05,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "Q2FY26",
+      "period_start": "2025-07-01",
+      "period_end": "2025-09-30",
+      "raw_excerpt": "For the quarter ended September 30, 2025 | \"Premiums earned (Net)\" -> current_standalone = 142205 Rs. Lakhs = 1422.05 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_standalone); Rs. Lakhs -> crore; For the quarter ended September 30, 2025",
+      "column_basis": "standalone_quarter"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
+      "document_title": "Website Public Disclosure Sep 25",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Sep-25.pdf",
+      "source_description": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "b64567de2dda9c746ec290018f491636d2902bd205afe5a9ad5e5c41ab1a8e79",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q2FY25 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:09.331Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 264204,
+      "normalized_value": 2642.04,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "H1FY26",
+      "period_start": "2025-04-01",
+      "period_end": "2025-09-30",
+      "raw_excerpt": "Up to the quarter ended September 30, 2025 | \"Premiums earned (Net)\" -> current_ytd = 264204 Rs. Lakhs = 2642.04 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_ytd); Rs. Lakhs -> crore; Up to the quarter ended September 30, 2025",
+      "column_basis": "year_to_date"
     },
     {
       "company_id": "niva-bupa",
@@ -3939,7 +4083,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:12.848Z",
+        "parsed_at": "2026-06-05T18:26:09.453Z",
         "confidence": "low",
         "extraction_route": "none"
       }
@@ -3958,7 +4102,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -3994,7 +4138,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4030,7 +4174,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4066,7 +4210,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4102,7 +4246,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4138,7 +4282,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4174,7 +4318,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4210,7 +4354,7 @@
       "provenance": {
         "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:13.286Z",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
         "confidence": "high",
         "extraction_route": "parseNl20 (column-aware NL-20 analytical ratios)"
       },
@@ -4231,6 +4375,78 @@
       "suggested_manual_fallback": null,
       "parser_notes": "column-aware NL-20: current_ytd -> H1FY25 (point_in_time); Solvency Margin Ratio (No. of times) - As at September 30, 2024",
       "column_basis": "point_in_time"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
+      "document_title": "Website public disclosure SEP 24",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-public-disclosure-SEP-24.pdf",
+      "source_description": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "72202ef57ba8889a742720447e4a10b01f1ac957ee8eb9bc5cb5786a287354b9",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 121322,
+      "normalized_value": 1213.22,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "Q2FY25",
+      "period_start": "2024-07-01",
+      "period_end": "2024-09-30",
+      "raw_excerpt": "For the quarter ended September 30, 2024 | \"Premiums earned (Net)\" -> current_standalone = 121322 Rs. Lakhs = 1213.22 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_standalone); Rs. Lakhs -> crore; For the quarter ended September 30, 2024",
+      "column_basis": "standalone_quarter"
+    },
+    {
+      "company_id": "niva-bupa",
+      "source_company": "niva-bupa",
+      "document_type": "public_disclosure",
+      "document_title": "Website public disclosure SEP 24",
+      "filing_date": null,
+      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-public-disclosure-SEP-24.pdf",
+      "source_description": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_priority_field": "public_disclosure_url",
+      "checksum_sha256": "72202ef57ba8889a742720447e4a10b01f1ac957ee8eb9bc5cb5786a287354b9",
+      "provenance": {
+        "source_name": "niva-bupa public disclosure for Q2FY24 - public source: https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "parser_name": "fetch-company-filings",
+        "parsed_at": "2026-06-05T18:26:09.911Z",
+        "confidence": "high",
+        "extraction_route": "parseRevenueAccount (NL-1 statutory revenue account)"
+      },
+      "metric": "nep",
+      "raw_value": 223124,
+      "normalized_value": 2231.24,
+      "unit": "INR_cr",
+      "transformation_used": "Rs. Lakhs -> INR crore (x0.01)",
+      "filing_period": "H1FY25",
+      "period_start": "2024-04-01",
+      "period_end": "2024-09-30",
+      "raw_excerpt": "Up to the quarter ended September 30, 2024 | \"Premiums earned (Net)\" -> current_ytd = 223124 Rs. Lakhs = 2231.24 cr",
+      "extraction_status": "extracted",
+      "sanity_status": "ok",
+      "sanity_reason": "",
+      "needs_review": false,
+      "eligible_for_excel": true,
+      "suggested_manual_fallback": null,
+      "parser_notes": "NL-1 revenue account: NEP (current_ytd); Rs. Lakhs -> crore; Up to the quarter ended September 30, 2024",
+      "column_basis": "year_to_date"
     },
     {
       "company_id": "star-health",
@@ -4262,7 +4478,7 @@
       "provenance": {
         "source_name": "star-health annual report for FY25 - public source: https://www.starhealth.in/investors/financial-information/",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:14.404Z",
+        "parsed_at": "2026-06-05T18:26:11.147Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -4297,7 +4513,7 @@
       "provenance": {
         "source_name": "star-health annual report for FY25 - public source: https://www.starhealth.in/investors/financial-information/",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:14.404Z",
+        "parsed_at": "2026-06-05T18:26:11.147Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }
@@ -4332,7 +4548,7 @@
       "provenance": {
         "source_name": "star-health annual report for FY25 - public source: https://www.starhealth.in/investors/financial-information/",
         "parser_name": "fetch-company-filings",
-        "parsed_at": "2026-06-05T16:47:14.404Z",
+        "parsed_at": "2026-06-05T18:26:11.147Z",
         "confidence": "medium",
         "extraction_route": "extractByPatterns + sanitiseQuarterly"
       }

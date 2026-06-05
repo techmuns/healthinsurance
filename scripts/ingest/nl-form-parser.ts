@@ -340,3 +340,140 @@ export function parseNl20(text: string, rows: RowSpec[] = DEFAULT_ROWS): Nl20Res
   if (layout === 'percent') extractSeparateSolvency(text, cols, out)
   return out
 }
+
+// ---------------------------------------------------------------------------
+//  Chunk 2E - NL-1 Revenue Account (statutory) parser.
+//
+//  "FORM NL-1-B-RA  REVENUE ACCOUNT FOR THE PERIOD ENDED ON <date>" carries the
+//  statutory net premium figures. Its header is the same column grid as NL-20,
+//  but DOUBLED (e.g. 8 columns = the 4 periods printed twice: segment block +
+//  total block, which are identical for a mono-line health insurer). Amounts are
+//  in the unit stated by the "(Amount in Rs. Lakhs)" marker.
+//
+//  Scope (2E): extract ONLY "Premiums earned (Net)" -> NEP, which is the one
+//  revenue-account line whose basis is unambiguous (net earned premium = the NEP
+//  cell). GWP/GDPI (NL-4, segmented, GDPI!=GWP scope) and PAT (NL-2 P&L, blank in
+//  these web disclosures) are NOT taken here - they are reported, held.
+//
+//  Safety: if the unit marker is missing -> unit_unclear; if the column count is
+//  not 4 or 8, or a doubled (8-col) block's halves disagree, or the cell count
+//  doesn't match the columns -> column alignment uncertain -> BLOCK, never guess.
+// ---------------------------------------------------------------------------
+
+export interface Nl1Value {
+  metric: string
+  raw_value: number          // amount AS PRINTED (e.g. lakhs)
+  normalized_crore: number   // converted to INR crore
+  unit_label: string         // e.g. "Rs. Lakhs"
+  period: string
+  period_start: string
+  period_end: string
+  column_basis: ColumnBasis
+  column_kind: ColumnKind
+  column_header: string
+  row_label: string
+  row_cells: number[]
+}
+export interface Nl1Result {
+  found: boolean
+  unit_label: string | null
+  to_crore: number | null    // multiply printed amount by this to get crore
+  values: Nl1Value[]
+  blocked: Nl20Block[]
+  notes: string[]
+}
+
+/** Stated-unit -> factor to convert a printed amount to INR crore. */
+function unitToCrore(text: string): { label: string; factor: number } | null {
+  if (/\(?\s*Amount\s+in\s+Rs\.?\s*Lakhs/i.test(text) || /Rs\.?\s*in\s*Lakhs|₹\s*in\s*Lakhs/i.test(text)) return { label: 'Rs. Lakhs', factor: 0.01 }
+  if (/\(?\s*Amount\s+in\s+Rs\.?\s*Crore/i.test(text) || /Rs\.?\s*in\s*Crore|₹\s*in\s*Crore/i.test(text)) return { label: 'Rs. Crore', factor: 1 }
+  if (/Rs\.?\s*in\s*(?:'?000|Thousands)|Amount\s+in\s+(?:Rs\.?\s*)?(?:'?000|Thousands)/i.test(text)) return { label: "Rs. '000", factor: 0.0001 }
+  return null
+}
+
+/** Parse the revenue-account period columns (accepts 4, or 8 = a validated doubled block). */
+function raColumns(section: string): Nl20Column[] | null {
+  const headerWindow = section.split(/\b1\s*Premiums?\s+earned/i)[0] || section.slice(0, 900)
+  const re = new RegExp(`(For|Up\\s?to)\\s+the\\s+quarter\\s+ended\\s+(?:on\\s+)?${DATE_RE}`, 'gi')
+  const all: Nl20Column[] = []
+  let mm: RegExpExecArray | null
+  while ((mm = re.exec(headerWindow)) !== null) {
+    const basis: 'standalone' | 'ytd' = /^For/i.test(mm[1]) ? 'standalone' : 'ytd'
+    const d = parseDate(mm[2]); if (!d) return null
+    all.push({
+      kind: 'current_standalone', basis, isCurrent: true, header: mm[0].replace(/\s+/g, ' ').trim(),
+      day: d.day, month: d.month, year: d.year, endQuarter: quarterOf(d.month), fy: fyOf(d.month, d.year), periodEnd: iso(d.year, d.month, d.day),
+    })
+  }
+  if (all.length !== 4 && all.length !== 8) return null
+  // For a doubled (8-col) block the second half must repeat the first (same period dates).
+  if (all.length === 8) {
+    for (let i = 0; i < 4; i++) if (all[i].periodEnd !== all[i + 4].periodEnd || all[i].basis !== all[i + 4].basis) return null
+  }
+  const cols = all.slice(0, 4)
+  const order: ColumnKind[] = ['current_standalone', 'current_ytd', 'prior_standalone', 'prior_ytd']
+  cols.forEach((c, i) => { c.kind = order[i]; c.isCurrent = i < 2 })
+  if (cols[0].basis !== 'standalone' || cols[1].basis !== 'ytd') return null
+  return cols
+}
+
+/** Indian-format integer amounts (e.g. "1,42,205" or "142205"; "(x)" negative). Skips schedule refs like "NL-4". */
+function readAmounts(after: string, n: number): number[] | null {
+  const tok = /\((\d{1,2}(?:,\d{2,3})+|\d{4,})\)|(\d{1,2}(?:,\d{2,3})+|\d{4,})/g
+  const out: number[] = []
+  let t: RegExpExecArray | null
+  while ((t = tok.exec(after)) !== null && out.length < n) {
+    const raw = (t[1] ?? t[2]).replace(/,/g, '')
+    out.push(t[1] != null ? -parseInt(raw, 10) : parseInt(raw, 10))
+  }
+  return out.length < n ? null : out
+}
+
+export function parseRevenueAccount(text: string): Nl1Result {
+  const out: Nl1Result = { found: false, unit_label: null, to_crore: null, values: [], blocked: [], notes: [] }
+  const m = /FORM\s+NL\W*1\W*[A-Z]?\W*RA\b/i.exec(text)
+  if (!m || m.index == null) return out
+  const rest = text.slice(m.index + 40)
+  const nxt = /FORM\s+NL[-\s]*[2-9]/i.exec(rest)
+  const section = text.slice(m.index, nxt ? m.index + 40 + nxt.index : Math.min(text.length, m.index + 4000)).replace(/\s+/g, ' ').trim()
+  out.found = true
+
+  // The "(Amount in Rs. Lakhs)" marker is a document-level property of the NL
+  // schedules (IRDAI prints it once); scan the whole document for it.
+  const unit = unitToCrore(text)
+  if (!unit) { out.blocked.push({ metric: 'nep', reason: 'unit_unclear', detail: 'no "(Amount in Rs. Lakhs/Crore/000)" unit marker found near NL-1 - withheld' }); return out }
+  out.unit_label = unit.label; out.to_crore = unit.factor
+
+  const cols = raColumns(section)
+  if (!cols) { out.blocked.push({ metric: 'nep', reason: 'column_alignment_unclear', detail: 'NL-1 revenue-account columns could not be resolved (need 4, or a validated doubled 8, "For/Up to the quarter ended <date>" headers)' }); return out }
+
+  // "Premiums earned (Net)" row. After the label there may be a schedule ref (NL-4) - readAmounts skips it.
+  const lm = /Premiums?\s+earned\s*\(\s*Net\s*\)/i.exec(section)
+  if (!lm || lm.index == null) { out.notes.push('NL-1 found but "Premiums earned (Net)" row not located'); return out }
+  // The row prints a schedule ref ("NL-4") that pdf-parse may fuse to the first
+  // amount ("NL-41,21,322"). Strip a single leading "NL-<digit>" so the ref digit
+  // is not read as part of the first value.
+  const after = section.slice(lm.index + lm[0].length, lm.index + lm[0].length + 360).replace(/^\s*NL\W*\d/i, ' ')
+  // Read up to 8 cells; if 8 present, validate the doubled block.
+  const probe = readAmounts(after, 8)
+  let cells = probe
+  if (probe && probe.length === 8) {
+    for (let i = 0; i < 4; i++) if (probe[i] !== probe[i + 4]) { out.blocked.push({ metric: 'nep', reason: 'doubled_block_mismatch', detail: `NL-1 doubled segment/total block disagree at column ${i} (${probe[i]} vs ${probe[i + 4]}) - withheld` }); return out }
+    cells = probe.slice(0, 4)
+  }
+  if (!cells || cells.length < 4) { cells = readAmounts(after, 4) }
+  if (!cells || cells.length < 4) { out.blocked.push({ metric: 'nep', reason: 'column_alignment_unclear', detail: 'NL-1 "Premiums earned (Net)" cells did not line up with the columns - withheld' }); return out }
+
+  const label = lm[0].replace(/\s+/g, ' ').trim()
+  const push = (col: Nl20Column, period: string, periodStart: string, basis: ColumnBasis, lakhs: number) => out.values.push({
+    metric: 'nep', raw_value: lakhs, normalized_crore: +(lakhs * unit.factor).toFixed(2), unit_label: unit.label,
+    period, period_start: periodStart, period_end: col.periodEnd, column_basis: basis, column_kind: col.kind,
+    column_header: col.header, row_label: label, row_cells: cells!.slice(0, 4),
+  })
+  const c0 = cols[0], c1 = cols[1], c3 = cols[3]
+  const q0 = quarterLabel(c0.endQuarter, c0.fy)
+  if (cells[0] != null) push(c0, q0, quarterStart(c0.endQuarter, c0.fy), 'standalone_quarter', cells[0])
+  if (cells[1] != null) { const yl = ytdLabel(c1.endQuarter, c1.fy); if (yl !== q0) push(c1, yl, ytdStart(c1.fy), 'year_to_date', cells[1]) }
+  if (cells[3] != null && c3.endQuarter === 4) push(c3, fyLabel(c3.fy), ytdStart(c3.fy), 'year_to_date', cells[3])
+  return out
+}

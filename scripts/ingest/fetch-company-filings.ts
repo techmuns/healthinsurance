@@ -31,7 +31,7 @@ import { REPO_ROOT, writeSnapshot, nowIso } from './util'
 import { parsePdf, extractByPatterns } from './parsers'
 import { extractDisclosure, isPublicDisclosureForm } from './disclosure-extract'
 import { QUARTERLY_PATTERNS, sanitiseQuarterly } from './quarterly-extract'
-import { parseNl20, type Nl20Result } from './nl-form-parser'
+import { parseNl20, parseRevenueAccount, type Nl20Result, type Nl1Result } from './nl-form-parser'
 
 const PARSER_NAME = 'fetch-company-filings'
 const REGISTRY = resolve(REPO_ROOT, 'data/source-map/company-source-registry.json')
@@ -300,6 +300,59 @@ function buildNl20Records(
   return out
 }
 
+/**
+ * Build FilingRecords from a parsed NL-1 Revenue Account (Chunk 2E). Only NEP
+ * ("Premiums earned (Net)") is taken - the one revenue-account line whose basis
+ * unambiguously matches a cell. Amounts are converted from the form's stated unit
+ * (e.g. Rs Lakhs) to INR crore here, so normalizeValue is NOT re-applied. The
+ * bridge still holds premiums from filings pending a basis/scope sign-off.
+ */
+function buildNl1Records(
+  doc: InvRow, ra: Nl1Result, source_url: string | null, source_description: string,
+  urlField: string | null, fallback: string, refGwp: number | undefined,
+): FilingRecord[] {
+  const out: FilingRecord[] = []
+  const common = {
+    company_id: doc.company_id, source_company: doc.company_id,
+    document_type: doc.document_type, document_title: doc.document_title, filing_date: doc.filing_date,
+    source_url, source_file: doc.source_file, source_description, source_priority_field: urlField,
+    checksum_sha256: doc.checksum_sha256,
+    provenance: {
+      source_name: source_description, parser_name: PARSER_NAME, parsed_at: nowIso(),
+      confidence: 'high' as Conf, extraction_route: 'parseRevenueAccount (NL-1 statutory revenue account)',
+    },
+  }
+  for (const v of ra.values) {
+    const normalized = v.normalized_crore
+    const san = runSanity(v.metric, normalized, normalized, doc.document_type, refGwp)
+    const eligible = san.status === 'ok'
+    out.push({
+      ...common, metric: v.metric, raw_value: v.raw_value,
+      normalized_value: san.status === 'failed' ? null : normalized,
+      unit: 'INR_cr', transformation_used: `${v.unit_label} -> INR crore (x${ra.to_crore})`,
+      filing_period: v.period, period_start: v.period_start, period_end: v.period_end,
+      raw_excerpt: `${v.column_header} | "${v.row_label}" -> ${v.column_kind} = ${v.raw_value} ${v.unit_label} = ${normalized} cr`,
+      extraction_status: 'extracted', sanity_status: san.status, sanity_reason: san.reason,
+      needs_review: san.needs_review, eligible_for_excel: eligible,
+      suggested_manual_fallback: eligible ? null : fallback,
+      parser_notes: `NL-1 revenue account: ${v.metric.toUpperCase()} (${v.column_kind}); ${v.unit_label} -> crore; ${v.column_header}`,
+      column_basis: v.column_basis,
+    })
+  }
+  for (const b of ra.blocked) {
+    out.push({
+      ...common, metric: b.metric, raw_value: null, normalized_value: null, unit: 'n/a',
+      transformation_used: 'n/a', filing_period: doc.filing_period,
+      period_start: doc.period_start, period_end: doc.period_end, raw_excerpt: null,
+      extraction_status: 'extracted', sanity_status: 'flagged',
+      sanity_reason: `${b.reason}: ${b.detail}`, needs_review: true, eligible_for_excel: false,
+      suggested_manual_fallback: fallback,
+      parser_notes: `NL-1 revenue-account parser withheld a value (${b.reason})`,
+    })
+  }
+  return out
+}
+
 export async function runCompanyFilings(): Promise<{ records: FilingRecord[]; warnings: string[] }> {
   const fetched_at = nowIso()
   const registry = (await readJson<{ data: RegRow[] }>(REGISTRY)).data
@@ -358,10 +411,18 @@ export async function runCompanyFilings(): Promise<{ records: FilingRecord[]; wa
     // found:false and falls through to the existing extractDisclosure path.
     if (doc.document_type === 'public_disclosure') {
       const nl20 = parseNl20(text)
+      const ra = parseRevenueAccount(text)  // Chunk 2E: NL-1 statutory NEP
+      const recs: FilingRecord[] = []
       if (nl20.found && (nl20.values.length > 0 || nl20.blocked.length > 0)) {
-        records.push(...buildNl20Records(doc, nl20, source_url, source_description, urlField, fallback, refGwp.get(doc.company_id)))
-        continue
+        recs.push(...buildNl20Records(doc, nl20, source_url, source_description, urlField, fallback, refGwp.get(doc.company_id)))
       }
+      // Only emit NL-1 records when NEP was actually extracted. A found-but-blocked
+      // revenue account (e.g. a different unit/layout on non-Niva disclosures) is
+      // left untouched here - this keeps Chunk 2E's effect to the validated cases.
+      if (ra.found && ra.values.length > 0) {
+        recs.push(...buildNl1Records(doc, ra, source_url, source_description, urlField, fallback, refGwp.get(doc.company_id)))
+      }
+      if (recs.length > 0) { records.push(...recs); continue }
     }
 
     // Route to the right extractor.
