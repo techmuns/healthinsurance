@@ -3,7 +3,7 @@
     "artifact": "schema-map",
     "schema_version": "1.0.0",
     "phase": "1 - template reader",
-    "generated_at": "2026-06-05T12:15:06.259264+00:00",
+    "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
     "template_file": "niva-bupa-portfolio-review.xlsx",
     "template_origin": "Built with the S&P Capital IQ Excel plug-in (see _CIQHiddenCacheSheet and CIQ() formulas in 'Comps'). This pipeline rebuilds those outputs from official public sources.",
     "source_policy": "official-first (IRDAI / GI Council / NSE-BSE / company public disclosures). Screener / Trendlyne / Investing are clearly-tagged, lower-confidence BACKUP only, used where no official equivalent exists. Login-free (Neha, 2026-06-05).",

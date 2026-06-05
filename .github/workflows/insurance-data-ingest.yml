@@ -135,13 +135,43 @@ jobs:
           cat src/data/snapshots/data-health.json
           echo "::endgroup::"
 
+      # ─── Excel template build (Phases 1-2-5-7) ───────────────────────────
+      - name: Setup Python (Excel build)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Excel build deps
+        run: pip install openpyxl
+
+      - name: Build filled workbook (schema-map → value store → fill)
+        run: |
+          python3 scripts/excel/build_schema_map.py templates/niva-bupa-portfolio-review.xlsx
+          python3 scripts/excel/build_value_store.py
+          python3 scripts/excel/fill_template.py
+
+      - name: Upload filled workbook + audit (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: niva-bupa-portfolio-review-filled
+          path: |
+            output/Niva_Bupa_portfolio_review__filled.xlsx
+            schema-map.json
+            data/processed/excel-values.json
+          if-no-files-found: warn
+
+      - name: QA gate (fails the run on a hard violation, e.g. unsourced value)
+        run: python3 scripts/excel/qa_checks.py
+
       - name: Commit changes
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          # Stage only the data layer + snapshot files so unrelated changes
-          # never sneak in via a scheduled run.
-          git add data/ src/data/snapshots/
+          # Stage only the data layer + snapshot + schema artefacts so unrelated
+          # changes never sneak in via a scheduled run. The filled .xlsx is an
+          # artifact (git-ignored), not committed.
+          git add data/ src/data/snapshots/ schema-map.json
           if ! git diff --staged --quiet; then
             git commit -m "data: ingest ${{ steps.cadence.outputs.value }} run @ $(date -u +%Y-%m-%dT%H:%MZ)"
             git push

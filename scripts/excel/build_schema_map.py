@@ -29,9 +29,10 @@ This script is READ-ONLY with respect to the workbook. It never modifies it.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 import openpyxl
@@ -307,7 +308,9 @@ def main(template_path: Path) -> None:
             "artifact": "schema-map",
             "schema_version": "1.0.0",
             "phase": "1 - template reader",
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            # Deterministic: keyed to template content (no wall-clock), so the
+            # committed artifact only changes when the template actually changes.
+            "template_sha256": hashlib.sha256(template_path.read_bytes()).hexdigest(),
             "template_file": template_path.name,
             "template_origin": "Built with the S&P Capital IQ Excel plug-in (see _CIQHiddenCacheSheet and CIQ() formulas in 'Comps'). This pipeline rebuilds those outputs from official public sources.",
             "source_policy": "official-first (IRDAI / GI Council / NSE-BSE / company public disclosures). Screener / Trendlyne / Investing are clearly-tagged, lower-confidence BACKUP only, used where no official equivalent exists. Login-free (Neha, 2026-06-05).",
