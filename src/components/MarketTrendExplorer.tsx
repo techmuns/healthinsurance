@@ -301,8 +301,10 @@ export function MarketTrendExplorer() {
         })}
       </div>
 
-      {/* 2×2 grid of mini metric cards. */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* Mini metric cards — 2×2 by default; a single clean row of four on wide
+          desktop (the panel is now full-width), keeping the charts well-
+          proportioned and all four health lenses visible at a glance. */}
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((m) => (
           <MiniMetricCard key={m.id} metric={m} hoverId={hoverId} setHover={setHover} />
         ))}

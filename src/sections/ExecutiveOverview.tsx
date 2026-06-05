@@ -2,7 +2,6 @@ import { BadgeCheck, BarChart3, CircleDot, Clock, Info, ShieldCheck } from 'luci
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingTable, type MetricTableRow } from '@/components/MetricRankingBars'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
-import { MarketTrendExplorer } from '@/components/MarketTrendExplorer'
 import { PoolShiftCard } from '@/sections/MarketDistribution'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -64,14 +63,10 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
       <div className="space-y-4">
         <HeroHeader period={period} annualBasisNote={annualBasisNote} />
         <IndustrySnapshotBand />
-
-        {/* Combined executive insight block — the GI pool-shift trend (left) sits
-            side by side with the Market Trend Explorer (right) as one 50:50 row:
-            equal height, aligned top edges, same card styling. */}
-        <section className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
-          <PoolShiftCard />
-          <MarketTrendExplorer />
-        </section>
+        {/* GI pool-shift trend — full width on its own row. The health-share
+            charts that used to sit beside it now lead the SAHI Analysis block
+            below (composed in IndustryInsightsPage). */}
+        <PoolShiftCard />
       </div>
     )
   }
@@ -110,7 +105,7 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
       <section>
         <div className="mb-3 flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Peer Landscape</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Company-Specific Analysis</span>
           <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
         </div>
 

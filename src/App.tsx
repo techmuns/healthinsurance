@@ -6,6 +6,7 @@ import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
 import { SahiAnalysisHeader } from '@/components/SahiAnalysisHeader'
 import { type SectionTab } from '@/components/SectionTabs'
 import { Sidebar } from '@/components/Sidebar'
+import { MarketTrendExplorer } from '@/components/MarketTrendExplorer'
 import { ExecutiveOverview } from '@/sections/ExecutiveOverview'
 import { MarketDistribution } from '@/sections/MarketDistribution'
 import { CompetitivePositioning } from '@/sections/CompetitivePositioning'
@@ -60,8 +61,9 @@ function StatefulSection({ Comp }: { Comp: ComponentType<SectionProps> }) {
 
 /**
  * Industry Insights — the broad insight homepage, two stacked layers:
- *   A. Overall Industry View  (macro insurance market)
- *   B. Health Industry Insights  (the SAHI overview, bridging macro → SAHI)
+ *   A. Overall Industry View  (macro insurance market + GI pool shift)
+ *   B. SAHI Analysis  (the health drilldown: health-share & premium charts →
+ *      the company-specific insurer comparison)
  * No company / year / period controls here — it stays a clean insight layer.
  */
 function IndustryInsightsPage() {
@@ -76,21 +78,27 @@ function IndustryInsightsPage() {
 
   return (
     <div className="space-y-6">
-      {/* A · Overall Industry View — hero + market-structure snapshot + pool. */}
+      {/* A · Overall Industry View — hero + market-structure snapshot + GI pool. */}
       <ExecutiveOverview view="industry" />
 
-      {/* B · Health Industry Insights — high-level SAHI summary + share trend. */}
+      {/* B · SAHI Analysis — the health drilldown, one connected block:
+            1) health-share charts (share within SAHI, retail, overall, GDPI),
+            2) the company-specific insurer comparison.
+            (A company read / investor interpretation is a planned third layer.) */}
       <section>
         <div className="mb-4 mt-1 flex items-center gap-2.5 border-t border-soft-border pt-5">
           <span className="h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
           <div className="leading-tight">
-            <p className="font-display text-[17px] text-navy-deep">Health Industry Insights</p>
+            <p className="font-display text-[17px] text-navy-deep">SAHI Analysis</p>
             <p className="text-[11.5px] text-ink-secondary">
-              How the health insurance &amp; standalone-health-insurer (SAHI) segment is evolving
+              Inside health — share &amp; premium trends across the standalone insurers (SAHI), then insurer by insurer
             </p>
           </div>
         </div>
-        <ExecutiveOverview view="sahi" />
+        <div className="space-y-6">
+          <MarketTrendExplorer />
+          <ExecutiveOverview view="sahi" />
+        </div>
       </section>
     </div>
   )

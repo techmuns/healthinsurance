@@ -231,7 +231,7 @@ export function PoolShiftCard() {
           height={264}
         />
       ) : (
-        <div className="min-h-[280px] flex-1" style={{ width: '100%' }}>
+        <div className="shrink-0" style={{ width: '100%', height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={rows} margin={{ top: 14, right: 64, left: 4, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
