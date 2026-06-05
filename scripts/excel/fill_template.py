@@ -107,6 +107,10 @@ def main(template_path: Path, out_path: Path) -> None:
     store = json.loads(VALUES.read_text()) if VALUES.exists() else {}
     held = load_json(HELD_BACK, {"data": []}).get("data", [])
     filings = load_json(FILINGS, {"data": []}).get("data", [])
+    # Cells where the statutory 1/n basis was selected over an adjusted ex-1/n value
+    # (an alternate-basis record exists on Blocked Data) -> annotate the audit row.
+    basis_selected = {(h.get("company_id"), h.get("metric"), h.get("filing_period"))
+                      for h in held if h.get("hold_reason") == "basis_mismatch_ex_1n_adjusted"}
 
     wb = openpyxl.load_workbook(template_path)  # keep formulas
     for s in (AUDIT_SHEET, MISSING_SHEET, BLOCKED_SHEET):
@@ -146,6 +150,9 @@ def main(template_path: Path, out_path: Path) -> None:
                     entry.get("sanity_status"), entry.get("conflict_status", "none"),
                     # --- which NL-form column the value came from (Chunk 2C-A) ---
                     entry.get("column_basis"),
+                    # --- statutory-vs-adjusted basis note ---
+                    "Selected statutory 1/n basis for comparability"
+                    if (b["entity"], b["metric"], b["period"]) in basis_selected else "",
                 ])
             elif has_value and is_conflict:
                 # Source-conflicting: keep in store, do NOT fill (charter rule).
@@ -198,10 +205,10 @@ def main(template_path: Path, out_path: Path) -> None:
                   "Source name", "Source URL", "Fetched at", "Confidence", "Status",
                   "Source layer", "Document type", "Document title", "Source file",
                   "Filing date", "Extraction status", "Sanity status", "Conflict status",
-                  "Column basis"]
+                  "Column basis", "Basis note"]
     header(aud, audit_cols)
     autosize(aud, [18, 7, 14, 26, 12, 9, 13, 15, 30, 30, 44, 22, 11, 11,
-                   15, 18, 30, 30, 12, 16, 12, 16, 18])
+                   15, 18, 30, 30, 12, 16, 12, 16, 18, 44])
     for r in audit_rows:
         aud.append(r)
 

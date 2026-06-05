@@ -300,8 +300,7 @@ def resolve():
                             "source_url": c.get("source_url") or c.get("source_file"),
                             "confidence": c.get("confidence"), "hold_reason": "basis_mismatch_ex_1n_adjusted",
                             "source_description": c.get("source_name"),
-                            "note": f"alternate basis {b} (ex-1/n / management-adjusted) superseded by the statutory "
-                                    f"1/n value {a} [{winner['source_layer']}]; kept for review, not used in Excel",
+                            "note": "Annual report adjusted ex-1/n ratio; not comparable to statutory 1/n cell",
                         })
                     else:
                         conflict_status = "conflict_needs_review"
