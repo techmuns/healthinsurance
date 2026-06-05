@@ -31,15 +31,19 @@ import json
 import re
 from pathlib import Path
 
-# A standalone-quarter period (e.g. "Q1FY25"). In a statutory NL-form the FIRST
-# data column is the standalone quarter, which matches a standalone-quarter cell.
+# A standalone-quarter period (e.g. "Q1FY25"). In a statutory NL-form the
+# "For the Quarter ended" column is the standalone quarter, matching such a cell.
 QUARTER_RE = re.compile(r"^Q[1-4]FY\d{2}$")
-# Flow ratios accumulate over the year, so on a full-year/Q4 NL-form the full-year
-# figure is the YTD column, NOT the first (standalone-quarter) column this path
-# reads. Selecting the YTD column is column-aware work deferred to Chunk 2C, so
-# full-year flow ratios are HELD. Point-in-time solvency reads identically in the
-# standalone and YTD columns, so it is safe at any period.
+# Flow ratios accumulate over the year: on a full-year/Q4 NL-form the full-year
+# figure is the YTD ("Upto the Quarter ended 31 March") column, NOT the
+# standalone-quarter column. The Chunk 2C-A column-aware NL-20 parser tags every
+# value with the column it came from (column_basis), so a full-year flow ratio is
+# wired ONLY when it is column-verified as "year_to_date". Any other full-year
+# flow ratio is still HELD - we never promote a standalone-quarter value into a
+# full-year cell. Point-in-time solvency reads identically in the standalone and
+# YTD columns, so it is safe at any period.
 FLOW_RATIOS = {"combined_ratio", "claims_ratio", "expense_ratio", "commission_ratio"}
+YTD_BASIS = "year_to_date"
 
 REPO = Path(__file__).resolve().parents[2]
 SNAP = REPO / "src" / "data" / "snapshots"
@@ -85,7 +89,7 @@ def add_candidate(entity, metric, period, raw_value, normalized_value, transform
         "priority_rank": rank, "source_layer": source_layer,
         "document_type": extra.get("document_type"), "document_title": extra.get("document_title"),
         "filing_date": extra.get("filing_date"), "extraction_status": extra.get("extraction_status"),
-        "sanity_status": extra.get("sanity_status"),
+        "sanity_status": extra.get("sanity_status"), "column_basis": extra.get("column_basis"),
     })
 
 
@@ -208,10 +212,13 @@ def collect_company_filings():
         # Wire: statutory ratios from public disclosures only (basis is unambiguous).
         if r.get("document_type") == "public_disclosure" and metric in CF_RATIO_MAP:
             period = r.get("filing_period") or ""
-            # Full-year flow ratios live in the YTD column (not this path's first
-            # column) -> hold for the Chunk 2C column-aware parser; the annual
-            # snapshot supplies the full-year cell in the meantime.
-            if metric in FLOW_RATIOS and not QUARTER_RE.match(period):
+            column_basis = r.get("column_basis")
+            # Full-year flow ratios live in the YTD ("Upto the Quarter ended")
+            # column. Wire one ONLY when the column-aware parser confirms it came
+            # from that column (column_basis == "year_to_date"). Otherwise it
+            # could be a standalone-quarter value mislabelled as the full year ->
+            # hold it (never promote a quarter value into a full-year cell).
+            if metric in FLOW_RATIOS and not QUARTER_RE.match(period) and column_basis != YTD_BASIS:
                 held.append({
                     "company_id": r["company_id"], "metric": metric, "raw_value": r.get("raw_value"),
                     "normalized_value": r.get("normalized_value"), "unit": r.get("unit"),
@@ -220,9 +227,8 @@ def collect_company_filings():
                     "source_url": r.get("source_url"), "source_file": r.get("source_file"),
                     "confidence": r.get("provenance", {}).get("confidence"),
                     "hold_reason": "period_unclear", "source_description": r.get("source_description"),
-                    "note": "full-year NL-form: statutory full-year flow ratio is the YTD column; "
-                            "standalone-column value withheld; annual snapshot supplies the cell; "
-                            "column-aware selection deferred to Chunk 2C",
+                    "note": "full-year flow ratio not column-verified as the YTD column; "
+                            "standalone-column value withheld so it is not promoted to a full-year cell",
                 })
                 continue
             p = r.get("provenance", {})
@@ -231,7 +237,7 @@ def collect_company_filings():
                     "fetched_at": p.get("parsed_at"), "confidence": p.get("confidence", "high")}
             extra = {"document_type": r.get("document_type"), "document_title": r.get("document_title"),
                      "filing_date": r.get("filing_date"), "extraction_status": r.get("extraction_status"),
-                     "sanity_status": r.get("sanity_status")}
+                     "sanity_status": r.get("sanity_status"), "column_basis": column_basis}
             add_candidate(r["company_id"], CF_RATIO_MAP[metric], r.get("filing_period"), r.get("raw_value"),
                           r.get("normalized_value"), r.get("transformation_used"), r.get("unit"),
                           prov, RANK_CF_DISCLOSURE, "company_filing", "available", extra)
@@ -276,7 +282,8 @@ def resolve():
                 "entity", "metric", "period", "unit", "raw_value", "normalized_value",
                 "transformation_used", "source_name", "source_url", "source_file", "fetched_at",
                 "confidence", "source_status", "source_layer", "priority_rank",
-                "document_type", "document_title", "filing_date", "extraction_status", "sanity_status")},
+                "document_type", "document_title", "filing_date", "extraction_status", "sanity_status",
+                "column_basis")},
             "eligible_for_excel": True,
             "conflict_status": conflict_status,
             "competing_values": competing,

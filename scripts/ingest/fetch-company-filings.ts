@@ -31,6 +31,7 @@ import { REPO_ROOT, writeSnapshot, nowIso } from './util'
 import { parsePdf, extractByPatterns } from './parsers'
 import { extractDisclosure, isPublicDisclosureForm } from './disclosure-extract'
 import { QUARTERLY_PATTERNS, sanitiseQuarterly } from './quarterly-extract'
+import { parseNl20, type Nl20Result } from './nl-form-parser'
 
 const PARSER_NAME = 'fetch-company-filings'
 const REGISTRY = resolve(REPO_ROOT, 'data/source-map/company-source-registry.json')
@@ -86,6 +87,10 @@ interface FilingRecord {
   eligible_for_excel: boolean
   suggested_manual_fallback: string | null
   parser_notes: string
+  // Which NL-form column a public-disclosure value came from (Chunk 2C-A). Present
+  // only on column-aware NL-20 records; the bridge requires "year_to_date" before
+  // it will wire a full-year flow ratio. Absent on all other extraction routes.
+  column_basis?: string
   provenance: { source_name: string; parser_name: string; parsed_at: string; confidence: Conf; extraction_route: string }
 }
 
@@ -240,6 +245,61 @@ function runSanity(
   return { status: 'ok', reason: '', needs_review: false, mangled: false }
 }
 
+/**
+ * Build column-aware FilingRecords from a parsed NL-20 analytical-ratios
+ * schedule (Chunk 2C-A). Each value already carries its own header-derived
+ * period and the column it came from, so one document yields several
+ * period-correct records (standalone quarter, full-year YTD, prior full-year).
+ * Period is always known from the form header, so there is no period_unclear
+ * here; uncertain column alignment is surfaced as a withheld (blocked) record.
+ */
+function buildNl20Records(
+  doc: InvRow, nl20: Nl20Result, source_url: string | null, source_description: string,
+  urlField: string | null, fallback: string, refGwp: number | undefined,
+): FilingRecord[] {
+  const out: FilingRecord[] = []
+  const common = {
+    company_id: doc.company_id, source_company: doc.company_id,
+    document_type: doc.document_type, document_title: doc.document_title, filing_date: doc.filing_date,
+    source_url, source_file: doc.source_file, source_description, source_priority_field: urlField,
+    checksum_sha256: doc.checksum_sha256,
+    provenance: {
+      source_name: source_description, parser_name: PARSER_NAME, parsed_at: nowIso(),
+      confidence: 'high' as Conf, extraction_route: 'parseNl20 (column-aware NL-20 analytical ratios)',
+    },
+  }
+  for (const v of nl20.values) {
+    const { normalized, unit, transformation } = normalizeValue(v.metric, v.raw_value)
+    const san = runSanity(v.metric, v.raw_value, normalized, doc.document_type, refGwp)
+    const extraction_status: FilingRecord['extraction_status'] = san.mangled ? 'mangled' : 'extracted'
+    const eligible = extraction_status === 'extracted' && san.status === 'ok'
+    out.push({
+      ...common, metric: v.metric, raw_value: v.raw_value,
+      normalized_value: extraction_status === 'mangled' || san.status === 'failed' ? null : normalized,
+      unit, transformation_used: transformation,
+      filing_period: v.period, period_start: v.period_start, period_end: v.period_end,
+      raw_excerpt: `${v.column_header} | "${v.row_label}" cells=[${v.row_cells.join(', ')}] -> ${v.column_kind} = ${v.raw_value}`,
+      extraction_status, sanity_status: san.status, sanity_reason: san.reason,
+      needs_review: san.needs_review, eligible_for_excel: eligible,
+      suggested_manual_fallback: eligible ? null : fallback,
+      parser_notes: `column-aware NL-20: ${v.column_kind} -> ${v.period} (${v.column_basis}); ${v.column_header}`,
+      column_basis: v.column_basis,
+    })
+  }
+  for (const b of nl20.blocked) {
+    out.push({
+      ...common, metric: b.metric, raw_value: null, normalized_value: null, unit: 'n/a',
+      transformation_used: 'n/a', filing_period: doc.filing_period,
+      period_start: doc.period_start, period_end: doc.period_end, raw_excerpt: null,
+      extraction_status: 'extracted', sanity_status: 'flagged',
+      sanity_reason: `${b.reason}: ${b.detail}`, needs_review: true, eligible_for_excel: false,
+      suggested_manual_fallback: fallback,
+      parser_notes: `NL-20 column-aware parser withheld a value (${b.reason}); column alignment not certain`,
+    })
+  }
+  return out
+}
+
 export async function runCompanyFilings(): Promise<{ records: FilingRecord[]; warnings: string[] }> {
   const fetched_at = nowIso()
   const registry = (await readJson<{ data: RegRow[] }>(REGISTRY)).data
@@ -288,6 +348,20 @@ export async function runCompanyFilings(): Promise<{ records: FilingRecord[]; wa
     if (!text || text.length < 200) {
       records.push(failRow('parser_failed', 'empty/too-short text (possibly image-based / needs OCR)', 'Likely scanned PDF; manual capture or OCR needed.'))
       continue
+    }
+
+    // Chunk 2C-A: column-aware NL-20 (analytical ratios) path for public
+    // disclosures. It reads the statutory schedule's column headers and maps
+    // each ratio to the correct period per column (standalone quarter / YTD
+    // full-year / prior-year), emitting several period-correct records per doc.
+    // Decimal layout only (e.g. Care Health); the percentage/** layout returns
+    // found:false and falls through to the existing extractDisclosure path.
+    if (doc.document_type === 'public_disclosure') {
+      const nl20 = parseNl20(text)
+      if (nl20.found && (nl20.values.length > 0 || nl20.blocked.length > 0)) {
+        records.push(...buildNl20Records(doc, nl20, source_url, source_description, urlField, fallback, refGwp.get(doc.company_id)))
+        continue
+      }
     }
 
     // Route to the right extractor.

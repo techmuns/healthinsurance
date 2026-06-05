@@ -94,6 +94,11 @@ def blocked_category(rec):
         return "period_unclear"
     if "unit" in reason and "unclear" in reason:
         return "unit_unclear"
+    # Chunk 2C-A: the column-aware NL-form parser withholds a value when the
+    # table columns cannot be lined up with certainty (e.g. a point-in-time
+    # metric disagrees across its standalone/YTD columns).
+    if "column" in reason or "alignment" in reason:
+        return "column_unclear"
     return "needs_review"
 
 
@@ -139,6 +144,8 @@ def main(template_path: Path, out_path: Path) -> None:
                     entry.get("document_title"), entry.get("source_file"),
                     entry.get("filing_date"), entry.get("extraction_status"),
                     entry.get("sanity_status"), entry.get("conflict_status", "none"),
+                    # --- which NL-form column the value came from (Chunk 2C-A) ---
+                    entry.get("column_basis"),
                 ])
             elif has_value and is_conflict:
                 # Source-conflicting: keep in store, do NOT fill (charter rule).
@@ -190,10 +197,11 @@ def main(template_path: Path, out_path: Path) -> None:
                   "Raw value", "Normalized value", "Transformation",
                   "Source name", "Source URL", "Fetched at", "Confidence", "Status",
                   "Source layer", "Document type", "Document title", "Source file",
-                  "Filing date", "Extraction status", "Sanity status", "Conflict status"]
+                  "Filing date", "Extraction status", "Sanity status", "Conflict status",
+                  "Column basis"]
     header(aud, audit_cols)
     autosize(aud, [18, 7, 14, 26, 12, 9, 13, 15, 30, 30, 44, 22, 11, 11,
-                   15, 18, 30, 30, 12, 16, 12, 16])
+                   15, 18, 30, 30, 12, 16, 12, 16, 18])
     for r in audit_rows:
         aud.append(r)
 
