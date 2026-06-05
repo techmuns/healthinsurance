@@ -47,7 +47,11 @@ const INR_CR_METRICS = new Set(['gwp', 'nwp', 'nep', 'pat', 'net_worth', 'invest
 const RATIO_METRICS = new Set(['claims_ratio', 'expense_ratio', 'combined_ratio', 'commission_ratio', 'roe'])
 const RECENT_PERIOD_FROM = '2022-04-01'
 const RECENT_FILING_FROM = '2023-01-01'
-const PER_COMPANY_CAP = 8
+// Raised from 8: once the inventory period labels were corrected (Chunk 2F), a
+// company like Niva has 10+ correctly-recent disclosures, and a cap of 8 dropped
+// the quarterly ones when the year-end files were (correctly) admitted. 14 keeps
+// the quarterly + year-end public disclosures without losing coverage.
+const PER_COMPANY_CAP = 14
 
 interface InvRow {
   company_id: string; document_title: string; document_type: string

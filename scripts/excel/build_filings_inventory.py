@@ -49,8 +49,27 @@ TYPE_RULES = [
 
 FY_PATTERNS = [re.compile(r"20(\d{2})[-_](?:20)?(\d{2})"), re.compile(r"FY[-_ ]?20?(\d{2})", re.I)]
 QTR_PATTERN = re.compile(r"\bQ([1-4])\b.*?FY?[-_ ]?(\d{2})", re.I)
-MONTH_QTR = {"jun": "Q1", "sep": "Q2", "dec": "Q3", "mar": "Q4"}
-MONTH_PATTERN = re.compile(r"(jun|sep|dec|mar)[-_ ]?(\d{2})", re.I)
+MONTH_NUM = {"jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+             "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12}
+# Calendar month + year (from "<Month>-<YYYY|YY>" filenames) -> Indian fiscal
+# quarter (Apr-Mar FY, labelled by ending year; Jun=Q1, Sep=Q2, Dec=Q3, Mar=Q4).
+# Y4 (4-digit year, optional intervening day) is tried first so "sept-30-2022"
+# reads the YEAR 2022, not the day 30; Y2 handles "Sep-24". The previous pattern
+# took only 2 digits ("Mar-2025" -> "20" -> Q4FY20) and never did the calendar->FY
+# shift ("Sep-2024" -> Q2FY24 instead of the correct Q2FY25).
+_MON = r"(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*"
+MONTH_Y4 = re.compile(_MON + r"[-_ ]?(?:\d{1,2}(?:st|nd|rd|th)?[-_ ]+)?(\d{4})\b", re.I)
+MONTH_Y2 = re.compile(_MON + r"[-_ ]?(\d{2})(?!\d)", re.I)
+
+
+def month_year_to_period(mon_abbr: str, year_str: str) -> str:
+    mo = MONTH_NUM[mon_abbr.lower()]
+    yr = int(year_str)
+    if yr < 100:
+        yr += 2000
+    q = 1 if 4 <= mo <= 6 else 2 if 7 <= mo <= 9 else 3 if 10 <= mo <= 12 else 4
+    fy = yr + 1 if mo >= 4 else yr  # Apr-Dec -> FY(yr+1); Jan-Mar -> FY(yr)
+    return f"Q{q}FY{fy % 100:02d}"
 OLD_NL = re.compile(r"(\d{2})(\d{2})q([1-4])")        # 1213q1 -> Q1 FY13
 EPOCH = re.compile(r"(?<!\d)(1[0-9]{9})(?!\d)")
 ISO_DATE = re.compile(r"(20\d{2})[-_](\d{2})[-_](\d{2})")
@@ -73,9 +92,9 @@ def infer_period(name: str) -> str | None:
     m = QTR_PATTERN.search(name)
     if m:
         return f"Q{m.group(1)}FY{m.group(2)}"
-    m = MONTH_PATTERN.search(name)
+    m = MONTH_Y4.search(name) or MONTH_Y2.search(name)
     if m:
-        return f"{MONTH_QTR[m.group(1).lower()]}FY{m.group(2)}"
+        return month_year_to_period(m.group(1), m.group(2))
     for rx in FY_PATTERNS:
         m = rx.search(name)
         if m:
@@ -133,23 +152,25 @@ def sha256_of(p: Path) -> tuple[str, int]:
     return h.hexdigest(), n
 
 
-def load_prior_locks() -> dict[str, str]:
-    """Map a stable key (source_file or source_url) -> previously recorded
-    checksum, from the last committed inventory. Drives source-locking."""
+def load_prior_locks() -> dict[str, dict]:
+    """Map a stable key (source_file or source_url) -> {checksum, fetched_at} from
+    the last committed inventory. Drives source-locking, and lets unchanged files
+    keep their original staging timestamp so a fresh clone's mtimes don't churn the
+    inventory."""
     if not OUT.exists():
         return {}
     try:
         prior = json.loads(OUT.read_text())["data"]
     except (json.JSONDecodeError, KeyError):
         return {}
-    locks = {}
+    locks: dict[str, dict] = {}
     for r in prior:
         chk = r.get("checksum_sha256") or r.get("sha256")  # accept the pre-rename field too
         if not chk:
             continue
         for key in (r.get("source_file"), r.get("source_url")):
             if key:
-                locks[key] = chk
+                locks[key] = {"checksum": chk, "fetched_at": r.get("fetched_at")}
     return locks
 
 
@@ -184,14 +205,21 @@ def main() -> None:
             src_file = str(p.relative_to(REPO))
             period = infer_period(name)
             pstart, pend = period_to_dates(period)
-            fetched_at = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).isoformat()
+
+            prior = prior_locks.get(src_file)
+            changed = bool(prior and prior["checksum"] != sha)
+            # Unchanged file -> keep its original staging timestamp (a re-clone
+            # resets mtimes, which would otherwise churn every fetched_at).
+            if prior and not changed and prior.get("fetched_at"):
+                fetched_at = prior["fetched_at"]
+            else:
+                fetched_at = datetime.fromtimestamp(p.stat().st_mtime, tz=timezone.utc).isoformat()
 
             notes = []
             if exclude:
                 notes.append("non-financial / excluded from metrics")
-            changed = src_file in prior_locks and prior_locks[src_file] != sha
             if changed:
-                notes.append(f"checksum changed vs prior inventory (was {prior_locks[src_file][:12]}...)")
+                notes.append(f"checksum changed vs prior inventory (was {prior['checksum'][:12]}...)")
 
             rows.append({
                 "company_id": company_id,
