@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "id": "fy-calendar",
+    "description": "Canonical Indian fiscal-year / quarter -> calendar-date mapping. The insurance FY runs 1 Apr - 31 Mar; FYxx labels the year ENDING 31-Mar-20xx. Used to convert any 'FYxx' / 'QnFYxx' period label into explicit start/end dates so filings, metrics, and Excel columns line up unambiguously.",
+    "schema_version": "1.0.0",
+    "rule": "FYxx: start = 1-Apr-(20xx-1), end = 31-Mar-20xx. Q1 = Apr-Jun, Q2 = Jul-Sep, Q3 = Oct-Dec (all in 20xx-1), Q4 = Jan-Mar (in 20xx).",
+    "last_updated": "2026-06-05"
+  },
+  "quarter_months": {
+    "Q1": "Apr-Jun",
+    "Q2": "Jul-Sep",
+    "Q3": "Oct-Dec",
+    "Q4": "Jan-Mar"
+  },
+  "examples": {
+    "Q1FY26": { "start": "2025-04-01", "end": "2025-06-30" },
+    "Q2FY26": { "start": "2025-07-01", "end": "2025-09-30" },
+    "Q3FY26": { "start": "2025-10-01", "end": "2025-12-31" },
+    "Q4FY26": { "start": "2026-01-01", "end": "2026-03-31" },
+    "FY26":   { "start": "2025-04-01", "end": "2026-03-31" },
+    "Q1FY25": { "start": "2024-04-01", "end": "2024-06-30" },
+    "FY25":   { "start": "2024-04-01", "end": "2025-03-31" }
+  }
+}
