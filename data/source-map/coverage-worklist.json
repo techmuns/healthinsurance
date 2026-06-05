@@ -1,0 +1,139 @@
+{
+  "_meta": {
+    "id": "coverage-worklist",
+    "chunk": "2D - official-file coverage pack",
+    "description": "Official source files needed to raise dashboard coverage, that CANNOT be auto-fetched from this environment. Each row is a precise manual download. Honesty rule: no unofficial-source workarounds - blocked sources are marked source_blocked with exact steps.",
+    "generated_at": "2026-06-05T17:47:57.279149+00:00",
+    "environment_block": "This sandbox's network policy is an allowlist: package registries are reachable (pypi.org 200, registry.npmjs.org 200, github 301) but every insurance/IRDAI domain returns HTTP 403 (starhealth.in, irdai.gov.in, transactions.nivabupa.com, cms.careinsurance.com, icicilombard.com) - and so does example.com. Official disclosures therefore cannot be fetched here; they must be downloaded manually or fetched by an egress-enabled CI run.",
+    "egress_probe": {
+      "https://www.starhealth.in/investors/financial-information/": 403,
+      "https://www.irdai.gov.in": 403,
+      "https://transactions.nivabupa.com": 403,
+      "https://cms.careinsurance.com": 403,
+      "https://example.com": 403,
+      "https://pypi.org": 200,
+      "https://registry.npmjs.org": 200
+    },
+    "drop_path_convention": "data/raw/company-filings/<company_id>/<period>/  -- after dropping, run: python3 scripts/excel/build_filings_inventory.py ; npx tsx scripts/ingest/fetch-company-filings.ts ; python3 scripts/excel/build_value_store.py ; python3 scripts/excel/fill_template.py ; python3 scripts/excel/qa_checks.py",
+    "accuracy_rules": "Stage PUBLIC-DISCLOSURE NL-forms only. No investor-PPT values. No annual-report fused tables (deferred). Staged values still pass every eligibility/basis/scope/column/conflict gate before any cell is filled.",
+    "checksum_note": "checksum_sha256 is null until the file is staged; build_filings_inventory.py computes it and source-locks it on staging."
+  },
+  "data": [
+    {
+      "priority": 1,
+      "company_id": "star-health",
+      "document_title": "Star Health & Allied Insurance - Website Public Disclosures (NL-20 Analytical Ratios + NL-1..NL-25 schedules)",
+      "document_type": "public_disclosure",
+      "source_url": "https://www.starhealth.in/investors/financial-information/",
+      "alternative_official_source": "IRDAI Business Analytics / public-disclosure portal (bap.irdai.gov.in) -> General Insurers -> Star Health",
+      "expected_filing_periods": [
+        "FY25 (year ended 31-Mar-2025)",
+        "Q1FY26 (Jun-2025)",
+        "Q2FY26 (Sep-2025)",
+        "Q3FY26 (Dec-2025)",
+        "FY26 year-end (when published)"
+      ],
+      "filing_date": null,
+      "checksum_sha256": null,
+      "fetch_status": "source_blocked",
+      "blocked_reason": "starhealth.in returns HTTP 403 from this sandbox (egress allowlist). Already present in filings-inventory as declared_pending; not auto-fetchable here.",
+      "drop_path": "data/raw/company-filings/star-health/<period>/",
+      "unlocks_cells": 23,
+      "unlocks_detail": "Star claims_ratio_igaap, combined_ratio_igaap, solvency_ratio, expense_ratio_igaap across FY23-FY26 + H1FY25/H1FY26 + Q4FY25/Q4FY26 (SAHIs comparison sheet). Highest single coverage win; column-aware NL-20 parser already handles this layout.",
+      "manual_steps": [
+        "Open https://www.starhealth.in/investors/financial-information/ in a browser.",
+        "Under 'Public Disclosures', download the quarterly 'Periodic/Public Disclosures' PDF for each period (FY25 year-end + Sep-2024, Dec-2024, Jun/Sep/Dec-2025).",
+        "Save each as data/raw/company-filings/star-health/<period>/PublicDisclosure_<period>.pdf (e.g. .../star-health/FY25/ , .../star-health/Q2FY26/ ).",
+        "Re-run the staging+pipeline commands in _meta.drop_path_convention."
+      ]
+    },
+    {
+      "priority": 2,
+      "company_id": "care-health",
+      "document_title": "Care Health Insurance - Public Disclosure, year ended 31-Mar-2023 (Q4 FY23 / 'Qtr 4 22-23'), NL-20 Analytical Ratios",
+      "document_type": "public_disclosure",
+      "source_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "alternative_official_source": "careinsurance.com -> About Us -> Financial Information -> Public Disclosures (archive)",
+      "expected_filing_periods": [
+        "FY23 (year ended 31-Mar-2023)"
+      ],
+      "filing_date": null,
+      "checksum_sha256": null,
+      "fetch_status": "source_blocked",
+      "blocked_reason": "cms.careinsurance.com returns HTTP 403 from this sandbox. The FY23 year-end disclosure is NOT staged (Care's staged year-end 'Qtr 4' files stop at FY21; FY24/FY25/FY26 came from loose recent files). FY23 cannot be derived from any staged file's prior-year column.",
+      "drop_path": "data/raw/company-filings/care-health/FY23/",
+      "unlocks_cells": 3,
+      "unlocks_detail": "Care claims_ratio_igaap FY23 (AC19), combined_ratio_igaap FY23 (AC21), solvency_ratio FY23 (AC32). The 31-Mar-2023 filing's YTD column gives full-year FY23; its prior column also confirms FY22.",
+      "manual_steps": [
+        "Open the Care public-disclosure archive and locate the disclosure for the quarter/period ended 31-Mar-2023 (FY23 year-end).",
+        "Download the NL-20 'Analytical Ratios' schedule PDF (decimal layout, already supported).",
+        "Save as data/raw/company-filings/care-health/FY23/PublicDisclosure_FY23.pdf and re-run the pipeline."
+      ]
+    },
+    {
+      "priority": 4,
+      "company_id": "icici-lombard",
+      "document_title": "ICICI Lombard - recent company-TOTAL public disclosure / NL-20 (non-segmental)",
+      "document_type": "public_disclosure",
+      "source_url": "https://www.icicilombard.com/about-us/public-disclosure",
+      "alternative_official_source": "IRDAI public-disclosure portal -> General Insurers -> ICICI Lombard",
+      "expected_filing_periods": [
+        "FY25",
+        "recent quarters FY26"
+      ],
+      "filing_date": null,
+      "checksum_sha256": null,
+      "fetch_status": "source_blocked",
+      "blocked_reason": "icicilombard.com returns HTTP 403. The only staged ICICI public disclosure (Q3FY23) is the SEGMENTAL NL-20 variant (blocked by the column-aware parser - no standalone/YTD grid).",
+      "drop_path": "data/raw/company-filings/icici-lombard/<period>/",
+      "unlocks_cells": 0,
+      "unlocks_detail": "LOW PRIORITY: the current schema has NO ICICI ratio bindings, so this unlocks 0 dashboard cells today. Fetch only if ICICI is added as a peer column. Must be the company-total (not per-segment) NL-20 to be clean.",
+      "manual_steps": [
+        "Only needed if ICICI is added to the dashboard as a peer.",
+        "Download a recent company-TOTAL public-disclosure NL-20 (not the per-segment variant) and drop into data/raw/company-filings/icici-lombard/<period>/."
+      ]
+    }
+  ],
+  "not_a_download_gap": [
+    {
+      "company_id": "niva-bupa",
+      "metrics": [
+        "total_gwp",
+        "pat_igaap",
+        "claims_ratio_igaap"
+      ],
+      "periods": [
+        "FY25"
+      ],
+      "status": "file_present_parser_deferred",
+      "detail": "Niva FY24-25 Annual Report IS staged (data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf). These figures live in annual-report fused tables, whose parsing is explicitly deferred (2D rule 2). This is a PARSER gap, not a download gap. NL-1 'Revenue Account' premium extraction is the cleaner future path."
+    },
+    {
+      "company_id": "niva-bupa",
+      "metrics": [
+        "total_gwp",
+        "pat_igaap",
+        "combined_ratio_igaap",
+        "solvency_ratio"
+      ],
+      "periods": [
+        "FY26"
+      ],
+      "status": "source_not_yet_published",
+      "detail": "FY26 ended 31-Mar-2026; the FY26 annual report is not yet published. FY26 quarter/9M ratios already filled from staged NL-forms where the cell exists."
+    },
+    {
+      "company_id": "ALL-SAHIs",
+      "metrics": [
+        "pat_ifrs",
+        "claims_ratio_ifrs",
+        "*_ifrs"
+      ],
+      "periods": [
+        "all"
+      ],
+      "status": "not_publicly_reported",
+      "detail": "Indian SAHIs file IGAAP, not IFRS. 63 IFRS-basis cells have no public official source and should remain blank (recommend reclassifying from 'available')."
+    }
+  ]
+}
