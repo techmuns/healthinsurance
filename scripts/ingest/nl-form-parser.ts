@@ -1,35 +1,34 @@
 // ---------------------------------------------------------------------------
-//  Chunk 2C-A - Column-aware IRDAI NL-20 (Analytical Ratios) parser.
+//  Column-aware IRDAI NL-20 (Analytical Ratios) parser.   Chunks 2C-A + 2C-B.
 //
 //  IRDAI public-disclosure "FORM NL-20 - ANALYTICAL RATIOS SCHEDULE" prints a
-//  fixed multi-column table. After pdf-parse flattens it, the four column
-//  headers appear in a stable order, each as "(For|Upto) the Quarter ended
-//  <date>", followed by numbered rows "<n> <Particulars> <c1> <c2> <c3> <c4>":
+//  fixed multi-column table. After pdf-parse flattens it, the column headers
+//  appear in a stable order, each as "(For|Up to) the [Q]uarter ended <date>",
+//  followed by the ratio rows. Two real-world layouts are handled:
 //
-//     For the Quarter ended 31 Mar 2025   <- col0  standalone, CURRENT  (Q4 FY25)
-//     Upto the Quarter ended 31 Mar 2025  <- col1  year-to-date, CURRENT (FY25)
-//     For the Quarter ended 31 Mar 2024   <- col2  standalone, PRIOR    (Q4 FY24)
-//     Upto the Quarter ended 31 Mar 2024  <- col3  year-to-date, PRIOR   (FY24)
-//     10 Combined Ratio  0.97  1.03  0.90  0.95
+//   * DECIMAL (2C-A, e.g. Care Health): space-separated decimals, solvency is an
+//     in-table row.        "10 Combined Ratio  0.97  1.03  0.90  0.95"
+//   * PERCENT/** (2C-B, e.g. Niva Bupa): "**"-tagged labels, percentages run
+//     together separated only by "%", and solvency lives on a SEPARATE
+//     "Solvency Margin Ratio (No. of times) <x>" line (point-in-time, "As at").
+//                          "11Combined Ratio**101.30%103.47%101.81%104.73%"
 //
-//  The whole point of this parser is to put each ratio in the RIGHT period by
-//  reading the RIGHT column, so:
-//   * a quarterly standalone cell <- the "For the Quarter ended" column,
-//   * an annual / full-year cell  <- the "Upto the Quarter ended 31 March"
-//                                    column of the year-end filing (statutory FY,
-//                                    NOT the standalone Q4 column),
-//   * a prior-year full-year cell <- the prior "Upto ... 31 March" column,
-//   * point-in-time solvency      <- read identically in the standalone and YTD
-//                                    columns (validated equal, else blocked).
+//  Column order is always: current standalone, current YTD, prior standalone,
+//  prior YTD. The whole point is to put each ratio in the RIGHT period by
+//  reading the RIGHT column:
+//   * a standalone-quarter cell <- the "For the [Q]uarter ended" column -> QnFY,
+//   * a YTD cell                <- the "Up to the [Q]uarter ended" column, whose
+//                                  period is H1/9M/FY for a Sep/Dec/Mar filing,
+//   * a prior full-year cell    <- the prior "Up to ... 31 March" column,
+//   * point-in-time solvency    <- DECIMAL: standalone==YTD in-table (validated);
+//                                  PERCENT: the separate line, whose "As at" date
+//                                  must match the NL-20 current quarter-end.
 //
 //  Safety (governing charter, "accuracy > coverage"): if the column headers
-//  cannot be resolved, or a row's numeric cells don't line up with the column
-//  count, or a point-in-time value disagrees across its standalone/YTD columns,
-//  the value is BLOCKED (recorded with a reason) instead of guessed.
-//
-//  Scope (Chunk 2C-A): the DECIMAL NL-20 layout (e.g. Care Health, "0.97").
-//  The percentage / "**" layout (e.g. Niva Bupa) is left to the existing
-//  extractDisclosure path and returns {found:false} from here.
+//  cannot be resolved, a row's cells don't line up with the column count, a
+//  point-in-time value disagrees across its columns, or the table is the
+//  SEGMENTAL NL-20 variant (metrics-as-columns, one period, e.g. some ICICI
+//  filings), the value is BLOCKED (recorded with a reason) instead of guessed.
 // ---------------------------------------------------------------------------
 
 const MONTHS: Record<string, number> = {
@@ -81,15 +80,17 @@ export interface Nl20Result {
 }
 
 interface RowSpec { metric: string; label: RegExp; pointInTime: boolean }
+type Layout = 'decimal' | 'percent' | 'segmental'
 
-// Only the three ratios that (a) are unambiguous in the NL-20 layout and (b) map
-// to a statutory IGAAP Excel cell. Expense/commission are intentionally excluded
-// here: NL-20 prints two expense bases (to GDP and to NWP) plus a separate
-// commission line, so mapping them to the single combined-ratio expense
-// component is not certain -> left for a later, explicitly-scoped pass.
+// In-table rows that are unambiguous in the NL-20 layout and map to a statutory
+// IGAAP cell. Net Commission (single line) is included; expense is excluded - the
+// form prints two/three expense bases, so mapping to the cell is not certain.
+// Solvency is an in-table row in the DECIMAL layout; in the PERCENT layout it is
+// read from a separate point-in-time line (see extractSeparateSolvency).
 const DEFAULT_ROWS: RowSpec[] = [
   { metric: 'claims_ratio', label: /Net Incurred Claims to Net Earned Premium/i, pointInTime: false },
   { metric: 'combined_ratio', label: /Combined Ratio/i, pointInTime: false },
+  { metric: 'commission_ratio', label: /Net Commission Ratio/i, pointInTime: false },
   { metric: 'solvency_ratio', label: /Available Solvency margin Ratio to Required\s+Solvency Margin Ratio/i, pointInTime: true },
 ]
 
@@ -97,6 +98,14 @@ const pad2 = (n: number) => String(n).padStart(2, '0')
 const iso = (y: number, m: number, d: number) => `${y}-${pad2(m)}-${pad2(d)}`
 const fyLabel = (fy: number) => `FY${pad2(fy % 100)}`
 const quarterLabel = (q: number, fy: number) => `Q${q}FY${pad2(fy % 100)}`
+/** YTD period label for a column whose quarter ends in endQuarter (Q1==std, Q2->H1, Q3->9M, Q4->FY). */
+function ytdLabel(endQuarter: 1 | 2 | 3 | 4, fy: number): string {
+  if (endQuarter === 1) return quarterLabel(1, fy)
+  if (endQuarter === 2) return `H1FY${pad2(fy % 100)}`
+  if (endQuarter === 3) return `9MFY${pad2(fy % 100)}`
+  return fyLabel(fy)
+}
+const ytdStart = (fy: number) => iso(fy - 1, 4, 1)
 
 function quarterOf(month: number): 1 | 2 | 3 | 4 {
   if (month >= 4 && month <= 6) return 1
@@ -115,6 +124,17 @@ function quarterStart(q: 1 | 2 | 3 | 4, fy: number): string {
   return iso(fy, 1, 1)
 }
 
+/** Parse a header/as-at date in either "30th June, 2024" or "September 30, 2024" order. */
+function parseDate(s: string): { day: number; month: number; year: number } | null {
+  const t = s.trim()
+  let m = t.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+)\.?,?\s+(\d{4})$/)  // day month year
+  if (m) { const mo = MONTHS[m[2].slice(0, 3).toLowerCase()]; if (mo) return { day: +m[1], month: mo, year: +m[3] } }
+  m = t.match(/^([A-Za-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/)      // month day year
+  if (m) { const mo = MONTHS[m[1].slice(0, 3).toLowerCase()]; if (mo) return { day: +m[2], month: mo, year: +m[3] } }
+  return null
+}
+const DATE_RE = '(\\d{1,2}(?:st|nd|rd|th)?\\s+[A-Za-z]+\\.?,?\\s+\\d{4}|[A-Za-z]+\\.?\\s+\\d{1,2}(?:st|nd|rd|th)?,?\\s+\\d{4})'
+
 /** Locate the NL-20 analytical-ratios schedule and return its whitespace-normalized text. */
 function sliceNl20(text: string): string | null {
   const m = /FORM\s+NL[-\s]*20\b[\s\S]{0,80}?ANALYTICAL\s+RATIOS/i.exec(text)
@@ -126,23 +146,35 @@ function sliceNl20(text: string): string | null {
   return text.slice(start, end).replace(/\s+/g, ' ').trim()
 }
 
-/** Parse the 2 or 4 column headers (std,ytd[,std,ytd]) in document order. */
+/**
+ * Which NL-20 layout this section is:
+ *  - 'segmental' : metrics-as-columns, per-segment Current/Previous rows, single
+ *                  period (e.g. some ICICI filings) -> not a standalone/YTD grid.
+ *  - 'percent'   : "**"-tagged labels, values printed as percentages.
+ *  - 'decimal'   : space-separated decimals (Care Health).
+ */
+function detectLayout(section: string): Layout {
+  if (/Segmental\s+Reporting/i.test(section) || /Total\s*-?\s*Current Period/i.test(section) ||
+      (/\bCurrent Period\b/i.test(section) && /\bPrevious Period\b/i.test(section))) return 'segmental'
+  if (/Combined Ratio\s*\*\*/i.test(section) || /\d(?:\.\d+)?\s*%/.test(section)) return 'percent'
+  return 'decimal'
+}
+
+/** Parse the 2 or 4 column headers (std,ytd[,std,ytd]) in document order. Both date orders + "Up to"/"Upto"/"on". */
 function parseColumns(section: string): Nl20Column[] | null {
-  const headerWindow = section.split(/\b1\s+Gross Direct Premium Growth Rate/i)[0] || section.slice(0, 700)
-  const re = /(For|Upto)\s+the\s+Quarter\s+ended\s+(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]+),?\s+(\d{4})/gi
+  const headerWindow = section.split(/\b1\s*Gross Direct Premium Growth Rate/i)[0] || section.slice(0, 700)
+  const re = new RegExp(`(For|Up\\s?to)\\s+the\\s+quarter\\s+ended\\s+(?:on\\s+)?${DATE_RE}`, 'gi')
   const cols: Nl20Column[] = []
   let mm: RegExpExecArray | null
   while ((mm = re.exec(headerWindow)) !== null) {
     const basis: 'standalone' | 'ytd' = /^For/i.test(mm[1]) ? 'standalone' : 'ytd'
-    const day = parseInt(mm[2], 10)
-    const month = MONTHS[mm[3].slice(0, 3).toLowerCase()]
-    const year = parseInt(mm[4], 10)
-    if (!month) return null
+    const d = parseDate(mm[2])
+    if (!d) return null
     cols.push({
       kind: 'current_standalone', basis, isCurrent: true,
       header: mm[0].replace(/\s+/g, ' ').trim(),
-      day, month, year, endQuarter: quarterOf(month), fy: fyOf(month, year),
-      periodEnd: iso(year, month, day),
+      day: d.day, month: d.month, year: d.year,
+      endQuarter: quarterOf(d.month), fy: fyOf(d.month, d.year), periodEnd: iso(d.year, d.month, d.day),
     })
   }
   if (cols.length !== 2 && cols.length !== 4) return null
@@ -156,12 +188,18 @@ function parseColumns(section: string): Nl20Column[] | null {
   return cols
 }
 
-/** Read the n numeric cells that follow a row label. Decimals/paren-negatives/NA; null on a short row. */
-function readRow(section: string, label: RegExp, n: number): { label: string; cells: (number | null)[] } | null {
+/**
+ * Read the n numeric cells that follow a row label. DECIMAL cells are bare
+ * decimals; PERCENT cells are "<x>%" run together. Paren = negative, NA = null,
+ * short row = null (caller treats that as "absent", never a guess).
+ */
+function readRow(section: string, label: RegExp, n: number, layout: Layout): { label: string; cells: (number | null)[] } | null {
   const m = label.exec(section)
   if (!m || m.index == null) return null
-  const after = section.slice(m.index + m[0].length, m.index + m[0].length + 240)
-  const tok = /\((\d+\.\d+)\)|(\d+\.\d+)|\b(NA|N\.A\.)\b/gi
+  const after = section.slice(m.index + m[0].length, m.index + m[0].length + 260)
+  const tok = layout === 'percent'
+    ? /\((\d+(?:\.\d+)?)\)\s*%|(\d+(?:\.\d+)?)\s*%|\b(NA|N\.A\.)\b/gi
+    : /\((\d+\.\d+)\)|(\d+\.\d+)|\b(NA|N\.A\.)\b/gi
   const cells: (number | null)[] = []
   let t: RegExpExecArray | null
   while ((t = tok.exec(after)) !== null && cells.length < n) {
@@ -170,10 +208,12 @@ function readRow(section: string, label: RegExp, n: number): { label: string; ce
     else cells.push(null)
   }
   if (cells.length < n) return null
+  // PERCENT cells are reported as percentages (e.g. 101.30); normalizeValue
+  // downstream divides by 100. DECIMAL cells are already fractions.
   return { label: m[0].replace(/\s+/g, ' ').trim(), cells }
 }
 
-/** Emit period-correct values for one row, picking the right column per the cell-period policy. */
+/** Emit period-correct values for one in-table row, picking the right column per the cell-period policy. */
 function emitRow(out: Nl20Result, spec: RowSpec, cols: Nl20Column[], label: string, cells: (number | null)[]): void {
   const push = (col: Nl20Column, period: string, periodStart: string, basis: ColumnBasis, value: number) => {
     out.values.push({
@@ -183,56 +223,96 @@ function emitRow(out: Nl20Result, spec: RowSpec, cols: Nl20Column[], label: stri
       row_label: label, row_cells: cells, is_point_in_time: spec.pointInTime,
     })
   }
-  const col0 = cols[0]                       // current standalone
-  const col1 = cols[1]                       // current YTD
-  const col2 = cols.length === 4 ? cols[2] : null  // prior standalone
-  const col3 = cols.length === 4 ? cols[3] : null  // prior YTD
+  const col0 = cols[0]                              // current standalone
+  const col1 = cols[1]                              // current YTD
+  const col2 = cols.length === 4 ? cols[2] : null   // prior standalone
+  const col3 = cols.length === 4 ? cols[3] : null   // prior YTD
+  const q0 = quarterLabel(col0.endQuarter, col0.fy)
 
   if (spec.pointInTime) {
-    // Solvency is a balance-sheet snapshot: standalone == YTD by construction.
-    // (The PIT-equality check ran before this; cells here are validated.)
+    // Solvency is a balance-sheet snapshot: standalone == YTD by construction
+    // (validated by the caller). The same value labels both the quarter and YTD.
     const cur = cells[0]
     if (cur != null) {
-      push(col0, quarterLabel(col0.endQuarter, col0.fy), quarterStart(col0.endQuarter, col0.fy), 'point_in_time', cur)
-      if (col0.endQuarter === 4) push(col1, fyLabel(col0.fy), iso(col0.fy - 1, 4, 1), 'point_in_time', cur)
+      push(col0, q0, quarterStart(col0.endQuarter, col0.fy), 'point_in_time', cur)
+      const yl = ytdLabel(col0.endQuarter, col0.fy)
+      if (yl !== q0) push(col1, yl, ytdStart(col0.fy), 'point_in_time', cur)
     }
-    // Prior-year full-year point-in-time (only from a year-end filing).
-    if (col3 && col3.endQuarter === 4) {
-      const prior = cells[3]
-      if (prior != null) push(col3, fyLabel(col3.fy), iso(col3.fy - 1, 4, 1), 'point_in_time', prior)
-    }
+    if (col3 && col3.endQuarter === 4 && cells[3] != null) push(col3, fyLabel(col3.fy), ytdStart(col3.fy), 'point_in_time', cells[3])
     return
   }
 
   // Flow ratios accumulate over the year.
   // col0: standalone quarter -> QnFY (always).
-  if (cells[0] != null) push(col0, quarterLabel(col0.endQuarter, col0.fy), quarterStart(col0.endQuarter, col0.fy), 'standalone_quarter', cells[0])
-  // col1: YTD -> full year ONLY at the year-end (31 March) filing (else partial: skip).
-  if (cells[1] != null && col1.endQuarter === 4) push(col1, fyLabel(col1.fy), iso(col1.fy - 1, 4, 1), 'year_to_date', cells[1])
-  // col3: prior-year YTD -> prior full year ONLY at the year-end filing.
-  if (col3 && cells[3] != null && col3.endQuarter === 4) push(col3, fyLabel(col3.fy), iso(col3.fy - 1, 4, 1), 'year_to_date', cells[3])
+  if (cells[0] != null) push(col0, q0, quarterStart(col0.endQuarter, col0.fy), 'standalone_quarter', cells[0])
+  // col1: YTD -> H1 / 9M / FY by the quarter it ends in (Q1 == standalone: skip dup).
+  if (cells[1] != null) {
+    const yl = ytdLabel(col1.endQuarter, col1.fy)
+    if (yl !== q0) push(col1, yl, ytdStart(col1.fy), 'year_to_date', cells[1])
+  }
+  // col3: prior-year YTD -> prior full year ONLY at the year-end (31 March) filing.
+  if (col3 && cells[3] != null && col3.endQuarter === 4) push(col3, fyLabel(col3.fy), ytdStart(col3.fy), 'year_to_date', cells[3])
   // col2 (prior standalone quarter) is recognised but not wired: it maps to no
   // current Excel cell and is better sourced from its own primary filing.
   if (col2) out.notes.push(`prior standalone column recognised but not wired for ${spec.metric} (${col2.header})`)
+}
+
+/**
+ * PERCENT-layout solvency: the modern NL-form prints it on a separate
+ * "Solvency Margin Ratio (No. of times) <x>" line, point-in-time as at the
+ * quarter-end. The "As at <date>" of the solvency statement MUST match the
+ * NL-20 current quarter-end, else the period basis is unconfirmed -> block.
+ */
+function extractSeparateSolvency(text: string, cols: Nl20Column[], out: Nl20Result): void {
+  const cur = cols[0]
+  const mv = /(?<!Required\s)Solvency Margin Ratio\s*\(No\.?\s*of\s*times\)\s*([\d]+(?:\.\d+)?)/i.exec(text)
+  if (!mv) return  // no solvency line -> absent (not blocked)
+  const v = parseFloat(mv[1])
+  if (!(v > 0) || v > 10) {
+    out.blocked.push({ metric: 'solvency_ratio', reason: 'solvency_out_of_range', detail: `solvency ${v} outside the plausible 0-10x band - withheld` })
+    return
+  }
+  const md = new RegExp(`SOLVENCY MARGIN[\\s\\S]{0,200}?As at\\s+${DATE_RE}`, 'i').exec(text)
+  const asat = md ? parseDate(md[1]) : null
+  if (!asat || asat.month !== cur.month || asat.year !== cur.year) {
+    out.blocked.push({
+      metric: 'solvency_ratio', reason: 'solvency_period_unverified',
+      detail: `solvency 'As at' date (${md ? md[1] : 'not found'}) does not confirm the NL-20 current quarter-end ${cur.periodEnd}; withheld`,
+    })
+    return
+  }
+  const q0 = quarterLabel(cur.endQuarter, cur.fy)
+  const header = `Solvency Margin Ratio (No. of times) - As at ${md![1].replace(/\s+/g, ' ').trim()}`
+  const mk = (period: string, periodStart: string, kind: ColumnKind) => out.values.push({
+    metric: 'solvency_ratio', raw_value: v, period, period_start: periodStart, period_end: cur.periodEnd,
+    column_basis: 'point_in_time', column_kind: kind, column_header: header,
+    row_label: 'Solvency Margin Ratio (No. of times)', row_cells: [v], is_point_in_time: true,
+  })
+  mk(q0, quarterStart(cur.endQuarter, cur.fy), 'current_standalone')
+  const yl = ytdLabel(cur.endQuarter, cur.fy)
+  if (yl !== q0) mk(yl, ytdStart(cur.fy), 'current_ytd')
 }
 
 export function parseNl20(text: string, rows: RowSpec[] = DEFAULT_ROWS): Nl20Result {
   const out: Nl20Result = { found: false, values: [], blocked: [], columns: [], notes: [] }
   const section = sliceNl20(text)
   if (!section) return out
-  // Decimal layout only. The percentage / "**" layout has its own validated
-  // extractor (extractDisclosure); defer to it rather than mis-read columns.
-  if (/Combined Ratio\s*\*\*/i.test(section) || /Combined Ratio.{0,40}?\d\s*%/i.test(section)) {
-    out.notes.push('NL-20 present but percentage/** layout - deferred to extractDisclosure (out of 2C-A scope)')
+  out.found = true
+
+  const layout = detectLayout(section)
+  if (layout === 'segmental') {
+    out.blocked.push({
+      metric: '(table)', reason: 'segmental_nl20_layout',
+      detail: 'NL-20 segmental variant (metrics-as-columns, per-segment Current/Previous rows, single reporting period); company-total ratios are not in a standalone/YTD column structure - withheld',
+    })
     return out
   }
-  out.found = true
 
   const cols = parseColumns(section)
   if (!cols) {
     out.blocked.push({
       metric: '(table)', reason: 'column_alignment_unclear',
-      detail: 'NL-20 header columns could not be resolved (need 2 or 4 "For/Upto the Quarter ended <date>" headers, standalone before YTD)',
+      detail: 'NL-20 header columns could not be resolved (need 2 or 4 "For/Up to the quarter ended <date>" headers, standalone before YTD)',
     })
     return out
   }
@@ -240,7 +320,10 @@ export function parseNl20(text: string, rows: RowSpec[] = DEFAULT_ROWS): Nl20Res
   const n = cols.length
 
   for (const spec of rows) {
-    const row = readRow(section, spec.label, n)
+    // In the percent layout solvency is not an in-table row - it is read from the
+    // separate point-in-time line below.
+    if (layout === 'percent' && spec.pointInTime) continue
+    const row = readRow(section, spec.label, n, layout)
     if (!row) continue  // row simply absent in this form -> missing, not blocked
     if (spec.pointInTime) {
       const c0 = row.cells[0], c1 = row.cells[1]
@@ -254,5 +337,6 @@ export function parseNl20(text: string, rows: RowSpec[] = DEFAULT_ROWS): Nl20Res
     }
     emitRow(out, spec, cols, row.label, row.cells)
   }
+  if (layout === 'percent') extractSeparateSolvency(text, cols, out)
   return out
 }
