@@ -164,7 +164,7 @@ export function MarketTrendExplorer() {
   }
 
   return (
-    <div className="card-surface flex min-w-0 flex-col p-4 sm:p-5">
+    <div className="card-surface flex h-full min-w-0 flex-col p-4 sm:p-5">
       {/* ── Metric tabs ─────────────────────────────────────────────────── */}
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         {METRIC_ORDER.map((id) => {

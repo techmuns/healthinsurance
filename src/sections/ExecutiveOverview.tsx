@@ -64,7 +64,14 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
       <div className="space-y-4">
         <HeroHeader period={period} annualBasisNote={annualBasisNote} />
         <IndustrySnapshotBand />
-        <PoolShiftCard />
+
+        {/* Combined executive insight block — the GI pool-shift trend (left) sits
+            side by side with the Market Trend Explorer (right) as one 50:50 row:
+            equal height, aligned top edges, same card styling. */}
+        <section className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+          <PoolShiftCard />
+          <MarketTrendExplorer />
+        </section>
       </div>
     )
   }
@@ -157,16 +164,6 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ── Market Trend Explorer — metric-driven: share, premium & growth trends ── */}
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <span className="h-3 w-[3px] rounded-full bg-champagne" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Market Trend Explorer</span>
-          <span className="text-[11px] text-ink-secondary">standalone health insurers · pick a metric</span>
-        </div>
-        <MarketTrendExplorer />
       </section>
     </div>
   )
