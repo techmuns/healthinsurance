@@ -12,7 +12,8 @@
     "ingest": "tsx scripts/ingest/ingest-all.ts",
     "ingest:monthly": "CADENCE=monthly tsx scripts/ingest/ingest-all.ts",
     "ingest:quarterly": "CADENCE=quarterly tsx scripts/ingest/ingest-all.ts",
-    "ingest:annual": "CADENCE=annual tsx scripts/ingest/ingest-all.ts"
+    "ingest:annual": "CADENCE=annual tsx scripts/ingest/ingest-all.ts",
+    "ingest:filings": "tsx scripts/ingest/fetch-company-filings.ts"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
