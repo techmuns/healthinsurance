@@ -21,6 +21,10 @@
     ],
     "source_locking": "Each run compares checksum_sha256 to the previously committed inventory keyed by source_file/source_url; a mismatch sets source_changed_needs_review=true.",
     "fetched_at_note": "For staged_local rows, fetched_at = local file mtime (staging time in this workspace), not necessarily original publication.",
+    "excluded_companies": [
+      "reliance-health"
+    ],
+    "excluded_note": "Companies with exclude_from_filings_inventory=true in company-master.json (defunct / irdai_industry_only) are omitted entirely from this manifest.",
     "note": "From this cloud box every official site 403s; declared_pending rows fetch in CI or via manual drop."
   },
   "data": [

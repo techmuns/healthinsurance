@@ -32,6 +32,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 RAW = REPO / "data" / "raw"
 REGISTRY = REPO / "data" / "source-map" / "company-source-registry.json"
+MASTER = REPO / "src" / "data" / "snapshots" / "company-master.json"
 SCHEMA = REPO / "schema-map.json"
 OUT = REPO / "data" / "source-map" / "filings-inventory.json"
 
@@ -156,6 +157,10 @@ def main() -> None:
     registry = json.loads(REGISTRY.read_text())["data"]
     reg_by_id = {c["company_id"]: c for c in registry}
     reg_ids = set(reg_by_id)
+    # Companies scoped out of the company-filings layer (e.g. defunct,
+    # irdai_industry_only). They must NOT produce filing/inventory rows.
+    master = {c["company_id"]: c for c in json.loads(MASTER.read_text())["data"]}
+    excluded = {cid for cid, c in master.items() if c.get("exclude_from_filings_inventory")}
     prior_locks = load_prior_locks()
     rows = []
 
@@ -169,6 +174,8 @@ def main() -> None:
                 continue
             rel = p.relative_to(root)
             company_id = rel.parts[0] if rel.parts else "unknown"
+            if company_id in excluded:
+                continue
             name = p.name
             dtype, exclude = classify(name)
             if base == "announcements" and dtype == "other":
@@ -218,6 +225,8 @@ def main() -> None:
     ]
     for c in registry:
         cid = c["company_id"]
+        if cid in excluded:
+            continue
         have = staged_types.get(cid, set())
         for field, dtype in URL_TO_TYPE:
             url = c.get(field)
@@ -255,6 +264,8 @@ def main() -> None:
                        "source_changed_needs_review", "notes"],
             "source_locking": "Each run compares checksum_sha256 to the previously committed inventory keyed by source_file/source_url; a mismatch sets source_changed_needs_review=true.",
             "fetched_at_note": "For staged_local rows, fetched_at = local file mtime (staging time in this workspace), not necessarily original publication.",
+            "excluded_companies": sorted(excluded),
+            "excluded_note": "Companies with exclude_from_filings_inventory=true in company-master.json (defunct / irdai_industry_only) are omitted entirely from this manifest.",
             "note": "From this cloud box every official site 403s; declared_pending rows fetch in CI or via manual drop.",
         },
         "data": rows,

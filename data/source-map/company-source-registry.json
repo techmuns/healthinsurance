@@ -6,6 +6,7 @@
     "dataset": "official",
     "source_policy": "official-first, login-free. URLs are public landing / disclosure pages only. From this cloud box every official site returns 403, so newly-added URLs are tagged verification_status='best_known_unverified' and must be confirmed on the first live (CI / manual-drop) fetch. Nothing here is fabricated data; these are source pointers.",
     "last_updated": "2026-06-05",
+    "exclusions": "Entities flagged in company-master.json with source_scope='irdai_industry_only' (e.g. reliance-health, a defunct SAHI line) are intentionally NOT in this registry: they carry no company-filing source expectations and must not generate filing/inventory/missing-data rows. Their historical values come only from IRDAI industry data (schema-map source_key='industry_premium').",
     "source_priority_profiles": {
       "_doc": "Ranked list of which URL field to trust per metric group. The bridge derives source_priority_rank = index. screener_backup / trendlyne_backup / investing_price_only are synthetic backup tokens, always lowest. Backups never override an official value unless it is missing or stale.",
       "listed": {
@@ -269,17 +270,6 @@
       "bse_filing_url": null, "nse_filing_url": null,
       "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
       "parent_company": null, "verification_status": "best_known_unverified", "notes": "Unlisted PSU; disclosure URL to confirm. Premium best from IRDAI."
-    },
-    {
-      "company_id": "reliance-health", "company_name": "Reliance Health Insurance (defunct)", "insurer_type": "Unlisted",
-      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
-      "official_website": null,
-      "investor_relations_url": null, "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
-      "public_disclosure_url": null,
-      "bse_filing_url": null, "nse_filing_url": null,
-      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
-      "parent_company": null, "verification_status": "defunct",
-      "notes": "Defunct SAHI line (business moved to Reliance General ~2020). Appears in Industry Growth as a zero/legacy row; no active source."
     },
     {
       "company_id": "religare-enterprises", "company_name": "Religare Enterprises", "insurer_type": "Listed Parent",

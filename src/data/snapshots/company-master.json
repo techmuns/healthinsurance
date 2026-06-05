@@ -367,6 +367,9 @@
       "financial_disclosure_url": null,
       "irdai_registration_number": null,
       "active_status": "defunct",
+      "source_scope": "irdai_industry_only",
+      "exclude_from_company_filings": true,
+      "exclude_from_filings_inventory": true,
       "last_checked_at": "2026-06-05"
     },
     {
