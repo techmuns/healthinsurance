@@ -15,7 +15,7 @@
     "dataset": "pending",
     "last_updated": null,
     "last_successful_run": null,
-    "last_fetched_at": "2026-06-06T07:29:39.286Z",
+    "last_fetched_at": "2026-06-07T08:05:45.619Z",
     "parser_status": "blocked",
     "notes": "IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated.",
     "warnings": []
