@@ -27,6 +27,7 @@
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises'
 import { dirname, resolve, extname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..')
@@ -59,6 +60,7 @@ const URL_RE = /https:\/\/irdai\.gov\.in\/documents\/[^\s)|"'<>]+download=true/g
 interface ManifestEntry {
   filename: string
   bytes: number
+  sha256?: string
   fetched_at: string
 }
 interface Manifest {
@@ -350,35 +352,49 @@ async function main(): Promise<number> {
   const usedNames = new Set<string>(
     Object.values(known).map((v) => v.filename).filter(Boolean),
   )
+  // Content fingerprint -> existing filename, so the same spreadsheet behind two
+  // different IRDAI links is stored once (IRDAI exposes Hindi/English + version
+  // variants of the same monthly file).
+  const knownHashes = new Map<string, string>()
+  for (const v of Object.values(known)) if (v.sha256) knownHashes.set(v.sha256, v.filename)
+
   let newCount = 0
+  let dupCount = 0
   let failures = 0
 
   for (const url of urls) {
     if (known[url]) continue // already have this exact link — skip.
-    const name = await uniqueName(deriveFilename(url), usedNames)
-    const dest = resolve(OUT_DIR, name)
     try {
       const buffer = await downloadXlsx(url)
       if (!buffer) throw new Error('all routes blocked or returned non-xlsx')
-      await writeFile(dest, buffer)
-      known[url] = {
-        filename: name,
-        bytes: buffer.length,
-        fetched_at: new Date().toISOString(),
+      const sha256 = createHash('sha256').update(buffer).digest('hex')
+
+      const existing = knownHashes.get(sha256)
+      if (existing) {
+        // Same bytes as a file we already have — record the link, skip the copy.
+        known[url] = { filename: existing, bytes: buffer.length, sha256, fetched_at: new Date().toISOString() }
+        dupCount++
+        console.log(`  = duplicate of ${existing} — link recorded, no copy saved`)
+        continue
       }
+
+      const name = await uniqueName(deriveFilename(url), usedNames)
+      await writeFile(resolve(OUT_DIR, name), buffer)
+      known[url] = { filename: name, bytes: buffer.length, sha256, fetched_at: new Date().toISOString() }
+      knownHashes.set(sha256, name)
       newCount++
       console.log(`  + saved: ${name}  (${buffer.length.toLocaleString()} bytes)`)
     } catch (err) {
       failures++
-      usedNames.delete(name)
-      console.error(`  ! failed: ${name}  (${err instanceof Error ? err.message : String(err)})`)
+      console.error(`  ! failed: ${deriveFilename(url)}  (${err instanceof Error ? err.message : String(err)})`)
     }
   }
 
   await saveManifest(manifest)
 
   console.log(
-    `\nDone. ${newCount} new file(s) saved; ${urls.length - newCount} already had / skipped. ` +
+    `\nDone. ${newCount} new file(s) saved; ${dupCount} duplicate link(s) recorded; ` +
+      `${urls.length - newCount - dupCount} already had / skipped. ` +
       `Total tracked: ${Object.keys(known).length}.`,
   )
 
