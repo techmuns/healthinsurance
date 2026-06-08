@@ -1,0 +1,53 @@
+name: monthly ingestion
+
+# Monthly pull of IRDAI Non-Life downloadable Excel sheets.
+# Calls the muns chat agent to scrape https://irdai.gov.in/non-life, extracts
+# every Excel download link from the answer, and saves only links we have not
+# already stored into the repo-root folder `non-life-monthly/`. Repeat links
+# are skipped (deduped via non-life-monthly/manifest.json); revised sheets get
+# a fresh URL from IRDAI and are saved as new files.
+#
+# The access token lives in the repo secret MUNS_API_TOKEN — never in code.
+
+on:
+  schedule:
+    # 06:00 UTC on the 1st of every month.
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-ingestion
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run monthly ingestion
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+        run: python scripts/monthly_ingestion.py
+
+      - name: Commit new files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add non-life-monthly
+          if git diff --staged --quiet; then
+            echo "No new files this run — nothing to commit."
+          else
+            git commit -m "non-life-monthly: ingest IRDAI Excel sheets @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            git push
+          fi
