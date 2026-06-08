@@ -346,6 +346,12 @@
 			let slots_list = [];	/* A9 Script */
 
 			var width = window.innerWidth || document.documentElement.clientWidth;
+
+			console.log('is_ad_lite_user in define_dfp-slot ' + is_ad_lite_user);
+
+			setTimeout(() => {
+				console.log('is_ad_lite_user in define_dfp-slot settimeout' + is_ad_lite_user);
+			}, 1000);
 			var adKey = "";
 			var slot1='';var slot2='';var slot3='';var slot4='';var slot5='';var slot6='';var slot7='';
 
@@ -357,39 +363,52 @@
 			googletag.cmd.push(function() {
 
 				
-									
-													/* A9 Script */
+									if (is_ad_lite_user) {
+						
+							/* A9 Script */
 							slots_list.push(
-								{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728', sizes: [[970, 90], [728, 90]] },
+								{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', sizes: [[160, 600], [120, 600]] },
 							);
 							/* A9 Script */
-							googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728', [[970, 90], [728, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', [[160, 600], [120, 600]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160').addService(googletag.pubads());						
 						
-						/* A9 Script */
-						slots_list.push(
-							{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970', sizes: [[728, 90], [970, 90], [970, 250]] },
-							{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300', sizes: [[250, 250], [300, 250], [200, 200]] },
-							{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', sizes: [[160, 600], [120, 600]] },
-							{ slotID: 'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160', sizes: [[160, 600], [120, 600]] },
-						);
-						/* A9 Script */
+					} else {
+						
+															/* A9 Script */
+								slots_list.push(
+									{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728', sizes: [[970, 90], [728, 90]] },
+								);
+								/* A9 Script */
+								googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728', [[970, 90], [728, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728').addService(googletag.pubads());
+							
+							/* A9 Script */
+							slots_list.push(
+								{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970', sizes: [[728, 90], [970, 90], [970, 250]] },
+								{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300', sizes: [[250, 250], [300, 250], [200, 200]] },
+								{ slotID: 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', sizes: [[160, 600], [120, 600]] },
+								{ slotID: 'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160', sizes: [[160, 600], [120, 600]] },
+							);
+							/* A9 Script */
 
-						googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970', [[728, 90], [970, 90], [970, 250]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_ADVNCCHRT_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_ADVNCCHRT_AS_ATF_728').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NEWS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NEWS_AS_ATF_728').addService(googletag.pubads());
-						googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300', [[250, 250], [300, 250], [200, 200]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_BROKERSRCH_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_BROKERSRCH_AS_ATF_728').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FINANCIALS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FINANCIALS_AS_ATF_728').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_PEERS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_PEERS_AS_ATF_728').addService(googletag.pubads());
-						googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', [[160, 600], [120, 600]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160').addService(googletag.pubads());						
-						googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160', [[160, 600], [120, 600]], 'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_1x1', [1, 1],  'MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_1x1').addService(googletag.pubads());
-						//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_Slider_1x1', [1, 1],  'MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_Slider_1x1').addService(googletag.pubads());    
-						googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1').addService(googletag.pubads());
-						googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1').addService(googletag.pubads());
-						googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2').addService(googletag.pubads());
-						googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3').addService(googletag.pubads());
-									
+							googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970', [[728, 90], [970, 90], [970, 250]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_970').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_ADVNCCHRT_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_ADVNCCHRT_AS_ATF_728').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NEWS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NEWS_AS_ATF_728').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300', [[250, 250], [300, 250], [200, 200]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_NWS_AS_ATF_300').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_BROKERSRCH_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_BROKERSRCH_AS_ATF_728').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FINANCIALS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FINANCIALS_AS_ATF_728').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_PEERS_AS_ATF_728', [[728, 90], [970, 90]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_PEERS_AS_ATF_728').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160', [[160, 600], [120, 600]], 'MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160').addService(googletag.pubads());						
+							googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160', [[160, 600], [120, 600]], 'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_FRM_160').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_1x1', [1, 1],  'MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_1x1').addService(googletag.pubads());
+							//googletag.defineSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_Slider_1x1', [1, 1],  'MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_PG_Slider_1x1').addService(googletag.pubads());    
+							googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2').addService(googletag.pubads());
+							googletag.defineSlot('/1039154/MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3', [1, 1],  'MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3').addService(googletag.pubads());
+						
+					}
+					
+				
 					googletag.pubads().setTargeting('sc_id', 'NBH');
 					googletag.pubads().setTargeting('sector_name','Life &amp; Health Insura');
 					googletag.pubads().setTargeting('meta_keywords', ['Niva Bupa Healt Share Price',' Niva Bupa Healt Stock Price',' Niva Bupa Healt',' Niva Bupa Health Insurance Company Ltd.','Stock','Price','Niva Bupa Health Insurance Company Ltd. Quote','Niva Bupa Healt News','Misc. Commercial Services','Niva Bupa Healt share price','Niva Bupa Health Insurance Company Ltd. share prices','chart','graph','volumes','52-week high low','bid price','bid quantity','offer price','offer quantity','intraday',' NSE/BSE Forecast News and Live Quotes',' Niva Bupa Healt Forecast',' Niva Bupa Healt Earning Analyst',' Niva Bupa Healt Recommendation',' Niva Bupa Healt Analysts Ratings',' Niva Bupa Healt Valuation ',' Niva Bupa Healt Estimates']);
@@ -670,7 +689,7 @@
 			<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
 		<meta name='dailymotion-domain-verification' content='dmpn9sdnwtvex9ltc' />
 <style tyle="text/css">
-	.rightNav{display:flex;align-items:center;gap:6px;justify-content:end}.header_desktop,.header_desktop *{margin:0;padding:0;box-sizing:border-box}.header_desktop{background-color:#fff}.header_desktop a,.lang_link,.topnav a{text-decoration:none!important;outline:0}.topnav a:focus{outline: 1px solid #000 !important;}input{outline:0}img{max-width:100%;height:auto}.mc_menu_icon{float:left;padding-top:14px;padding-right:10px;margin-right:10px}.header_desktop .arrow{vertical-align:middle}li,ul{list-style:none}.PR{position:relative}.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden}* html .clearfix{height:1%}.clearfix{display:block}.topnav{background-color:#f6f8fb;padding-bottom:1px}.login_after>a,.special_wrapbx a{color:#333;font:400 11px Lato,sans-serif}.special_wrapbx a:focus{outline: 2px solid #000 !important}.user_after_login a, .user_before_login a {color: #333333;font: 11px 'Lato',sans-serif;}.dropdown-menu{display:none;background-clip:border-box!important}.header_desktop .dropdown-menu>li{border-bottom:1px solid #e9e9e9}.header_desktop .dropdown-menu>li>a{display:block;padding:10px;margin:0;font:13px Lato,sans-serif;color:#333}.header_desktop .dropdown-menu>li>a:focus{background: #30659f;color: #fff}.header_desktop .arrow,.lang_link{display:inline-block}.header_desktop .dropdown-menu>li>a:hover{background:#30659f;color:#fff;border:none}.header_desktop .dropdown-menu>li:last-child{border:none}.lan_dropbx{float:left;padding:10px 0}.lan_dropbx:focus{outline:2px solid #000}.special_wrapbx{float:left;margin-left:20px}.lang_link{font:400 11px Lato,sans-serif;color:#666!important}.main_header_wrapper{width:1260px; position: relative; margin:0 auto}.main_header_wrapper .imageWrapper{float: left;margin-top: 3px;margin-left: -14px;}.searchBox{width:424px;position:absolute;left:50%;top:2px;margin-left:-212px;border:1px solid #bababa;border-radius:17px;background-color:#fff;z-index:0;height:30px;z-index:999}.searchBox .searchboxInner{background:#fff;border:0;height:27px;margin:1px;border-radius:17px}.searchBox .searchboxInner .txtsrchbox{margin-top:0px;width:100%;border:0;outline:0;height:25px;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.searchBox .searchboxInner .txtsrchbox:focus{outline: 2px solid #000}.common_dropmenu.dropdown-menu{margin:0;border-radius:0}.header_desktop .dropdown-menu{border:1px solid #e2e2e2;box-shadow:0 2px 5px rgba(0,0,0,.175)}.common_dropmenu:after,.common_dropmenu:before{bottom:100%;border:solid transparent;content:" ";height:0;width:0;position:absolute;pointer-events:none;left:20px}.header_desktop .arrow,.logo_wrapper{position:relative}.common_dropmenu:after{border-color:rgba(255,255,255,0);border-bottom-color:#fff;border-width:6px;margin-left:-6px}.common_dropmenu:before{border-color:rgba(209,211,214,0);border-bottom-color:#e2e2e2;border-width:8px;margin-left:-8px}.header_desktop .arrow{border:solid #707070;border-width:0 1px 1px 0;padding:2px;margin-left:3px;top:-2px; width: auto; height: auto; margin-bottom: 0px;}.header_desktop .arrow.down{transform:rotate(45deg);-webkit-transform:rotate(45deg)}.sept{height:12px;float:left;width:1px;background-color:#333;margin-top:13px}.speacial_dropbx{padding:10px 20px 10px 0;float:left}.expert_link{padding:10px 5px;float:left}.appbanner_drop .dropdown-menu,.speacial_dropbx .dropdown-menu{left:-100px !important;width:1000px;padding:15px}.speacial_dropbx .dropdown-menu .bx-viewport {height: 100% !important;}.specialsbutton{border: 1px solid #005492; border-radius: 3px; padding: 3px 15px 3px 7px; background-color: #ffffff; font-family: "Lato", sans-serif !important; color: #666666 !important;}.specialsbutton .arrow {margin-left: 5px; right: -8px;}.speacial_dropbx .specialsbutton+.common_dropmenu:before, .speacial_dropbx .specialsbutton+.common_dropmenu:after{left: 136px;}.lan_dropbx .dropdown-menu{ left:0px !important;}.appbanner_drop .dropdown-menu{left:-170px}.speacial_dropbx .common_dropmenu:after,.speacial_dropbx .common_dropmenu:before{left:125px}.appbanner_drop .common_dropmenu:after,.appbanner_drop .common_dropmenu:before{left:180px}.splist li{float:left;border-right:0 solid #8c8c8c;margin-right:18px;width: auto !important;}.splist li:last-child{border-right:none;margin-right:0;padding-right:0}.top_search{width:424px;position:absolute;left:50%;top:2px;margin-left:-212px;border:1px solid #bababa;border-radius:17px;background-color:#fff;z-index:0;height:30px}.top_search_input{width:100%;border:0;outline:0;height:100%;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.top_search_btn{position:absolute;right:2px;top:2px;display:inline-block;border:0;background-color:#0065a1;width:24px;height:24px;border-radius:100%;cursor:pointer;display:flex;justify-content:center;align-items:center;color:#fff!important}.top_search_btn svg{width:10px;height:10px}.top_fl{float:left}.top_fr{float:right}.ad_hed_fl,.log_list{float:left}.log_list>.login_after{float:left;padding:8px 0}.log_list>li:last-child>a{border-right:0}.hed_mid{padding:10px 0 0;border-bottom:1px solid #e2e2e2;min-height:90px}.ad_hed_fr{float:right}.main_nav>li{float:left;margin-bottom:-1px}.main_nav>li:focus{outline: 2px solid #000 !important}.tooltipbox {position:absolute; top: 31px; padding:5px; display:none; z-index:99999999999; margin:-7px 0 0 -5px;}.tooltip_popup {border-radius: 3px; -webkit-border-radius:2px; background:#fff;}.logo_home{position:absolute;width:180px;height:70px;left:50%;margin-left:-90px;top:50%;margin-top:-35px}.navbg{border-bottom:1px solid #e5e5e5;padding-top:1px}svg{fill:currentColor}.main_nav{display:block;position:relative}.main_nav>li>a{display:inline-block; padding:10px 7px;font:700 12px Lato,sans-serif;color:#202020;border:1px solid transparent;border-bottom:0 solid transparent}.main_nav>li.active>a{color:#0065a1;background-color:#f7f7f7;font-weight:900}.main_nav>li.active>a>.arrow.down{border:solid #2f669e;border-width:0 2px 2px 0}.main_nav>li:hover>a{color:#0065a1}.main_nav>li.sub_nav:hover>a{text-decoration:none;border:1px solid #d9d9d9;border-bottom:0 solid transparent;background-color:#fff;position:relative;z-index:9999;transition:.3s all;color:#0065a1}.main_nav>li.sub_nav:hover>a .arrow.down{border:solid #0065a1;border-width:0 1px 1px 0}.mega_menu{position:absolute;left:0;width:100%;background:#fff;display:none;z-index:999;border:1px solid #ccc;box-shadow:0 3px 3px 0 #898989;margin-top:-1px;color:#666;font:400 11px Lato,sans-serif}.main_nav>li.sub_nav:hover .mega_menu{display:block}.main_nav>li.sub_nav:hover .trans_wrapper{display:block}.header_desktop.expand .appbanner_drop .dropdown-menu,.header_desktop.header1024 .main_header_wrapper,.header_desktop.header1024 .speacial_dropbx .dropdown-menu{width:990px}.header_desktop.header1024 .main_nav>li>a{padding:10px 5px;font-size:11px}.header_desktop .bapro>a{color:#B64D0C!important}.main_nav>li.budnav>a{color: #fff;background-color: #ef861a;}.main_nav>li.budnav>a:hover{color:#fff;}.navmenu_sub{background-color:#f7f7f7}.navlist_sub>li{float:left;padding:8px 0}.navlist_sub>li>a{display:inline-block;font:400 12px Lato,sans-serif;color:#333;padding:0 7px}.navlist_sub>li:first-child>a{padding-left:0}.navlist_sub>li:last-child>a{border-right:0}.header_desktop.header1024 .navlist_sub>li>a{padding:0 5px}.header_desktop.header1024 .navlist_sub>li:first-child>a{padding-left:0}.logo_fl{float:left;position:relative}.adright_top{float:right}.be_apro{position:absolute;right:2px;bottom:2px;font:400 11px Lato,sans-serif;color:#f08414!important;border-bottom:1px solid #f08414}.be_apro span{font-weight:700}.common_dropmenu{display:none}.droplogbox{display:none; position:absolute; width:100%; border: 1px solid #E2E2E2; box-shadow: 0 2px 5px rgba(0,0,0,0.175); width:304px; z-index:99999; background-color:#fff; left:auto; right:-2px; top:30px;}.hamburger_menu_desktop{display:none}.icpancakeblock{display:none}.new_tagtp {top: -4px; left: 2px; vertical-align:middle;}.new_tagtp svg{width:28px; height:15px;}.newtag-1{fill:#0066af;}.newtag-2{fill:#fff;}.menu_boxpd{ padding:25px 40px 25px 0px;}.market_menu{display:flex;}.market_menu.clearfix{display:flex;}.market_menu > li{float:left; width:30%; border-left:1px solid #E5E5E5; padding-left:40px;}.market_menu > li:first-child{border-left:0px;}.market_listmenu > li > a{color:#666666; font:400 11px 'Lato',sans-serif; display:block; padding:7px 0px;}.market_listmenu > li:last-child > a{ padding-bottom:0px;}.market_listmenu > li.bold{ margin-top:10px;}.market_listmenu > li.bold:first-child{ margin-top:0px;}.market_listmenu > li.bold > a{color:#000000; font:700 12px 'Lato',sans-serif;}.market_listmenu > li > a:focus{outline: 1px solid !important;}.market_listmenu > li.bold > span{color:#000000; font:700 12px 'Lato',sans-serif; display:block; padding:7px 0px;}.market_listmenu > li > a:hover{color:#0065A1; text-decoration:underline !important;}.for_mcpro_users{display:none}.logo_home.logo_home_with_pro, .logo_fl.logo_home_with_pro{top: 80%;}.upgrade{background-color: #F8F0EB; border-radius: 3px; font: 11px/18px "Lato", sans-serif; font-weight: bold; color: #B64D0C; width: 60px; height: 20px; display: inline-block; text-align: center; /* margin-top: 6px; margin-right:6px; */}.upgrade:hover{text-decoration: none; color: #E9610C;}.upgrade:focus{outline: 2px solid #000 !important}.header_desktop .bapro>a{color:#B64D0C!important}.bapro.proMenu{height: 25px; line-height: 21px; color: #F08414; background-color: #F8F0EB; border-radius: 3px; text-align: center; margin: 5px 0 0 4px; display:flex; align-items:center}.header_desktop .main_nav .bapro.proMenu a {padding: 0 5px;}.header_desktop.header1024 .main_nav .bapro.proMenu a {padding: 0px 4px;}.menu-logo-top{border-bottom: 1px dotted #EAE8E8;padding-bottom:15px;margin-bottom:10px}.menu-logo-top .logo1{width: 117px;height: auto;margin-bottom: 12px}.menu-logo-top p{font-size: 11px;color: #666}.invest-top-sec{display: flex;justify-content: space-between;padding-left:10px;}.rgt-sd{ flex: 0 0 32%}.rgt-sd p{display: flex;align-items: flex-end;}.logo2{width: 72px;height: auto}.invest-top-sec .heading3{font:bold 12px/20px Lato,sans-serif;color: #000;text-transform: uppercase;}.invest-top-sec p{color:#666; font:normal 10px/12px Lato,sans-serif; align-items: center;}.invest-top-sec p img{margin-left: 5px}.invest-top-sec p svg{margin-left: 5px}.investNW .subc_list>li {border-bottom: 0px !important;}.tit-txt1 {color: #000;font:bold 12px Lato,sans-serif;display: block;margin-bottom: 5px}.tit-txt2{color: #666;font:normal 11px/16px Lato,sans-serif;padding-right: 40px}.invst-menu .subc_fr .subc_list:last-child > li{margin-top: 0}.invst-menu .mcp_btn_blue_tp{top:31%;min-width: 90px;text-align: center;}a.mcApp_btn{display:none;} a.myfeeds {background-color: #D6DBE3; width: 76px; height: 20px; border-radius: 3px; display: inline-block; font: 700 11px/20px "Lato", sans-serif; color: #666666; text-align: center; text-decoration: none; position: relative; /* top: 7px; margin-right: 7px; */} a.myfeeds span {margin-right: 5px; display: inline-block; position: relative; top: -1px;} a.myfeeds:hover span {display: inline-block; position: relative; top: -1px; } a.myfeeds:focus{outline: 2px solid #000 !important} a.myfeeds span svg {fill: #666;} a.myfeeds:hover span svg {fill: #fff;} a.myfeeds:hover {background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 3px;} .advertisement_box{background-color: #F2F2F2; justify-content: center;flex-wrap: wrap;} .advertisement_box .advHolder{border: 1px solid #C3C3C3;} .advertisement_box .advHead {display: none; justify-content: space-between; align-items: center;} .advertisement_box .lhs{font-size:10px;} .advertisement_box .advHead .rhs {position: relative; top: 0px;} .advertisement_box .removeadtext {position: static; font: 400 10px/16px 'Lato', sans-serif; color: #222222; margin: auto; background-color: #dbdbdb; padding: 0 7px 0 12px; clip-path: polygon(11% 0%, 100% 0%, 100% 100%, 0% 100%); height: 19px; display: flex; align-items: center; justify-content: flex-end;} .advertisement_box .rhs svg{display: none;} .advertisement_box .rhs a:hover, .advertisement_box .rhs a:hover .removeadtext{text-decoration:none;} .budgetMenu .gryBox{ background-color: #017728; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .budgetMenu.active .gryBox {background-color: #1A6DA3;}	.main_nav>li.budgetMenu>a { color: #fff; font-weight: 400;} .main_nav>li.budgetMenu>a:hover { color: #fff; } .budgetMenu svg{ position: relative;left: 1px; top: -1px; margin: 0 0.5px 0 -0.5px; vertical-align: middle;} .BlackElectionButton div {background-color: #000000; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlackElectionButton {color: #ffffff;} .OrangeElectionButton div {background: rgb(175,75,13); background: linear-gradient(180deg, rgba(175,75,13,1) 0%, rgba(203,109,22,1) 52%, rgba(231,143,31,1) 100%);padding: 1px 6px 2px 6px; display: inline; border-radius: 4px; } .main_nav>li.sub_nav:hover>a.OrangeElectionButton {color: #ffffff;} .BlueIPLButton div {background-color: #061E69; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlueIPLButton {color: #ffffff;} .advisoryAlert {width: 96px; height: 20px; border-radius: 4px; border: 1px solid #D17A7A; background-color: #FFD9D9; font: 700 10px/17px "Lato", sans-serif; color: #DE2628; display: inline-block; vertical-align: middle; text-align: center; position: relative; top: 6px; margin-right: 5px;} .advisoryAlert span {margin-right: 2px;} .advisoryAlert:hover {color: #DE2628; text-decoration: none;} .footer990 .footer_container {width: 990px;margin: 0 auto;padding: 0 5px;} .footer990 .footer_body {padding: 25px 40px 0px;} .footer990 .stocks {gap: 6px;} .menu_l2.active a{font-size:13px; color: #000 !important;font-weight: 900} .navmenu_sub.pleft-15{padding-left: 15px;}li.menu_l2.fadein_nav {/*margin-right: 12px;*/ position: relative; display: inline-block; width: 75px; } .fadein_nav .new_tagtp {left: auto; position: absolute; right: -13px; top: 5px; }.css-go-pro-now-logo {display: inline-block; font-weight: bold; color: #B64D0C; text-decoration: underline; animation: popbounce_go_pro_brand 1.5s infinite ease-in-out; } @keyframes popbounce_go_pro_brand {0%, 100% { transform: scale(1); } 30% { transform: scale(1.3) rotate(-2deg); } 60% { transform: scale(1.15) rotate(2deg); } }
+	.rightNav{display:flex;align-items:center;gap:6px;justify-content:end}.header_desktop,.header_desktop *{margin:0;padding:0;box-sizing:border-box}.header_desktop{background-color:#fff}.header_desktop a,.lang_link,.topnav a{text-decoration:none!important;outline:0}.topnav a:focus{outline: 1px solid #000 !important;}input{outline:0}img{max-width:100%;height:auto}.mc_menu_icon{float:left;padding-top:14px;padding-right:10px;margin-right:10px}.header_desktop .arrow{vertical-align:middle}li,ul{list-style:none}.PR{position:relative}.clearfix:after{content:".";display:block;height:0;clear:both;visibility:hidden}* html .clearfix{height:1%}.clearfix{display:block}.topnav{background-color:#f6f8fb;padding-bottom:1px}.login_after>a,.special_wrapbx a{color:#333;font:400 11px Lato,sans-serif}.special_wrapbx a:focus{outline: 2px solid #000 !important}.user_after_login a, .user_before_login a {color: #333333;font: 11px 'Lato',sans-serif;}.dropdown-menu{display:none;background-clip:border-box!important}.header_desktop .dropdown-menu>li{border-bottom:1px solid #e9e9e9}.header_desktop .dropdown-menu>li>a{display:block;padding:10px;margin:0;font:13px Lato,sans-serif;color:#333}.header_desktop .dropdown-menu>li>a:focus{background: #30659f;color: #fff}.header_desktop .arrow,.lang_link{display:inline-block}.header_desktop .dropdown-menu>li>a:hover{background:#30659f;color:#fff;border:none}.header_desktop .dropdown-menu>li:last-child{border:none}.lan_dropbx{float:left;padding:10px 0}.lan_dropbx:focus{outline:2px solid #000}.special_wrapbx{float:left;margin-left:20px}.lang_link{font:400 11px Lato,sans-serif;color:#666!important}.main_header_wrapper{width:1260px; position: relative; margin:0 auto}.main_header_wrapper .imageWrapper{float: left;margin-top: 3px;margin-left: -14px;}.searchBox{width:424px;position:absolute;left:50%;top:2px;margin-left:-212px;border:1px solid #bababa;border-radius:17px;background-color:#fff;z-index:0;height:30px;z-index:999}.searchBox .searchboxInner{background:#fff;border:0;height:27px;margin:1px;border-radius:17px}.searchBox .searchboxInner .txtsrchbox{margin-top:0px;width:100%;border:0;outline:0;height:25px;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.searchBox .searchboxInner .txtsrchbox:focus{outline: 2px solid #000}.common_dropmenu.dropdown-menu{margin:0;border-radius:0}.header_desktop .dropdown-menu{border:1px solid #e2e2e2;box-shadow:0 2px 5px rgba(0,0,0,.175)}.common_dropmenu:after,.common_dropmenu:before{bottom:100%;border:solid transparent;content:" ";height:0;width:0;position:absolute;pointer-events:none;left:20px}.header_desktop .arrow,.logo_wrapper{position:relative}.common_dropmenu:after{border-color:rgba(255,255,255,0);border-bottom-color:#fff;border-width:6px;margin-left:-6px}.common_dropmenu:before{border-color:rgba(209,211,214,0);border-bottom-color:#e2e2e2;border-width:8px;margin-left:-8px}.header_desktop .arrow{border:solid #707070;border-width:0 1px 1px 0;padding:2px;margin-left:3px;top:-2px; width: auto; height: auto; margin-bottom: 0px;}.header_desktop .arrow.down{transform:rotate(45deg);-webkit-transform:rotate(45deg)}.sept{height:12px;float:left;width:1px;background-color:#333;margin-top:13px}.speacial_dropbx{padding:10px 20px 10px 0;float:left}.expert_link{padding:10px 5px;float:left}.appbanner_drop .dropdown-menu,.speacial_dropbx .dropdown-menu{left:-100px !important;width:1000px;padding:15px}.speacial_dropbx .dropdown-menu .bx-viewport {height: 100% !important;}.specialsbutton{border: 1px solid #005492; border-radius: 3px; padding: 3px 15px 3px 7px; background-color: #ffffff; font-family: "Lato", sans-serif !important; color: #666666 !important;}.specialsbutton .arrow {margin-left: 5px; right: -8px;}.speacial_dropbx .specialsbutton+.common_dropmenu:before, .speacial_dropbx .specialsbutton+.common_dropmenu:after{left: 136px;}.lan_dropbx .dropdown-menu{ left:0px !important;}.appbanner_drop .dropdown-menu{left:-170px}.speacial_dropbx .common_dropmenu:after,.speacial_dropbx .common_dropmenu:before{left:125px}.appbanner_drop .common_dropmenu:after,.appbanner_drop .common_dropmenu:before{left:180px}.splist li{float:left;border-right:0 solid #8c8c8c;margin-right:18px;width: auto !important;}.splist li:last-child{border-right:none;margin-right:0;padding-right:0}.top_search{width:424px;position:absolute;left:50%;top:2px;margin-left:-212px;border:1px solid #bababa;border-radius:17px;background-color:#fff;z-index:0;height:30px}.top_search_input{width:100%;border:0;outline:0;height:100%;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.top_search_btn{position:absolute;right:2px;top:2px;display:inline-block;border:0;background-color:#0065a1;width:24px;height:24px;border-radius:100%;cursor:pointer;display:flex;justify-content:center;align-items:center;color:#fff!important}.top_search_btn svg{width:10px;height:10px}.top_fl{float:left}.top_fr{float:right}.ad_hed_fl,.log_list{float:left}.log_list>.login_after{float:left;padding:8px 0}.log_list>li:last-child>a{border-right:0}.hed_mid{padding:10px 0 0;border-bottom:1px solid #e2e2e2;min-height:90px}.ad_hed_fr{float:right}.main_nav>li{float:left;margin-bottom:-1px}.main_nav>li:focus{outline: 2px solid #000 !important}.tooltipbox {position:absolute; top: 31px; padding:5px; display:none; z-index:99999999999; margin:-7px 0 0 -5px;}.tooltip_popup {border-radius: 3px; -webkit-border-radius:2px; background:#fff;}.logo_home{position:absolute;width:180px;height:70px;left:50%;margin-left:-90px;top:50%;margin-top:-35px}.navbg{border-bottom:1px solid #e5e5e5;padding-top:1px}svg{fill:currentColor}.main_nav{display:block;position:relative}.main_nav>li>a{display:inline-block; padding:10px 7px;font:700 12px Lato,sans-serif;color:#202020;border:1px solid transparent;border-bottom:0 solid transparent}.main_nav>li.active>a{color:#0065a1;background-color:#f7f7f7;font-weight:900}.main_nav>li.active>a>.arrow.down{border:solid #2f669e;border-width:0 2px 2px 0}.main_nav>li:hover>a{color:#0065a1}.main_nav>li.sub_nav:hover>a{text-decoration:none;border:1px solid #d9d9d9;border-bottom:0 solid transparent;background-color:#fff;position:relative;z-index:9999;transition:.3s all;color:#0065a1}.main_nav>li.sub_nav:hover>a .arrow.down{border:solid #0065a1;border-width:0 1px 1px 0}.mega_menu{position:absolute;left:0;width:100%;background:#fff;display:none;z-index:999;border:1px solid #ccc;box-shadow:0 3px 3px 0 #898989;margin-top:-1px;color:#666;font:400 11px Lato,sans-serif}.main_nav>li.sub_nav:hover .mega_menu{display:block}.main_nav>li.sub_nav:hover .trans_wrapper{display:block}.header_desktop.expand .appbanner_drop .dropdown-menu,.header_desktop.header1024 .main_header_wrapper,.header_desktop.header1024 .speacial_dropbx .dropdown-menu{width:990px}.header_desktop.header1024 .main_nav>li>a{padding:10px 5px;font-size:11px}.header_desktop .bapro>a{color:#B64D0C!important}.main_nav>li.budnav>a{color: #fff;background-color: #ef861a;}.main_nav>li.budnav>a:hover{color:#fff;}.navmenu_sub{background-color:#f7f7f7}.navlist_sub>li{float:left;padding:8px 0}.navlist_sub>li>a{display:inline-block;font:400 12px Lato,sans-serif;color:#333;padding:0 7px}.navlist_sub>li:first-child>a{padding-left:0}.navlist_sub>li:last-child>a{border-right:0}.header_desktop.header1024 .navlist_sub>li>a{padding:0 5px}.header_desktop.header1024 .navlist_sub>li:first-child>a{padding-left:0}.logo_fl{float:left;position:relative}.adright_top{float:right}.be_apro{position:absolute;right:2px;bottom:2px;font:400 11px Lato,sans-serif;color:#f08414!important;border-bottom:1px solid #f08414}.be_apro span{font-weight:700}.common_dropmenu{display:none}.droplogbox{display:none; position:absolute; width:100%; border: 1px solid #E2E2E2; box-shadow: 0 2px 5px rgba(0,0,0,0.175); width:304px; z-index:99999; background-color:#fff; left:auto; right:-2px; top:30px;}.hamburger_menu_desktop{display:none}.icpancakeblock{display:none}.new_tagtp {top: -4px; left: 2px; vertical-align:middle;}.new_tagtp svg{width:28px; height:15px;}.newtag-1{fill:#0066af;}.newtag-2{fill:#fff;}.menu_boxpd{ padding:25px 40px 25px 0px;}.market_menu{display:flex;}.market_menu.clearfix{display:flex;}.market_menu > li{float:left; width:30%; border-left:1px solid #E5E5E5; padding-left:40px;}.market_menu > li:first-child{border-left:0px;}.market_listmenu > li > a{color:#666666; font:400 11px 'Lato',sans-serif; display:block; padding:7px 0px;}.market_listmenu > li:last-child > a{ padding-bottom:0px;}.market_listmenu > li.bold{ margin-top:10px;}.market_listmenu > li.bold:first-child{ margin-top:0px;}.market_listmenu > li.bold > a{color:#000000; font:700 12px 'Lato',sans-serif;}.market_listmenu > li > a:focus{outline: 1px solid !important;}.market_listmenu > li.bold > span{color:#000000; font:700 12px 'Lato',sans-serif; display:block; padding:7px 0px;}.market_listmenu > li > a:hover{color:#0065A1; text-decoration:underline !important;}.for_mcadfree_users{display:none}.for_mcadlite_users{display:none}.for_mcpro_users{display:none}.for_mcsuperpro_users{display:none}.logo_for_mcadfree_users{display:none}.logo_for_mcadlite_users{display:none}.logo_for_mcpro_users{display:none}.logo_for_mcsuperpro_users{display:none}.logo_home.logo_home_with_adfree, .logo_fl.logo_home_with_adfree{top: 80%;}.logo_home.logo_home_with_adlite, .logo_fl.logo_home_with_adlite{top: 80%;}.logo_home.logo_home_with_pro, .logo_fl.logo_home_with_pro{top: 80%;}.logo_home.logo_home_with_superpro, .logo_fl.logo_home_with_superpro{top: 80%;}.upgrade{background-color: #F8F0EB; border-radius: 3px; font: 11px/18px "Lato", sans-serif; font-weight: bold; color: #B64D0C; width: 60px; height: 20px; display: inline-block; text-align: center; /* margin-top: 6px; margin-right:6px; */}.upgrade:hover{text-decoration: none; color: #E9610C;}.upgrade:focus{outline: 2px solid #000 !important}.header_desktop .bapro>a{color:#B64D0C!important}.bapro.proMenu{height: 25px; line-height: 21px; color: #F08414; background-color: #F8F0EB; border-radius: 3px; text-align: center; margin: 5px 0 0 4px; display:flex; align-items:center}.header_desktop .main_nav .bapro.proMenu a {padding: 0 5px;}.header_desktop.header1024 .main_nav .bapro.proMenu a {padding: 0px 4px;}.menu-logo-top{border-bottom: 1px dotted #EAE8E8;padding-bottom:15px;margin-bottom:10px}.menu-logo-top .logo1{width: 117px;height: auto;margin-bottom: 12px}.menu-logo-top p{font-size: 11px;color: #666}.invest-top-sec{display: flex;justify-content: space-between;padding-left:10px;}.rgt-sd{ flex: 0 0 32%}.rgt-sd p{display: flex;align-items: flex-end;}.logo2{width: 72px;height: auto}.invest-top-sec .heading3{font:bold 12px/20px Lato,sans-serif;color: #000;text-transform: uppercase;}.invest-top-sec p{color:#666; font:normal 10px/12px Lato,sans-serif; align-items: center;}.invest-top-sec p img{margin-left: 5px}.invest-top-sec p svg{margin-left: 5px}.investNW .subc_list>li {border-bottom: 0px !important;}.tit-txt1 {color: #000;font:bold 12px Lato,sans-serif;display: block;margin-bottom: 5px}.tit-txt2{color: #666;font:normal 11px/16px Lato,sans-serif;padding-right: 40px}.invst-menu .subc_fr .subc_list:last-child > li{margin-top: 0}.invst-menu .mcp_btn_blue_tp{top:31%;min-width: 90px;text-align: center;}a.mcApp_btn{display:none;} a.myfeeds {background-color: #D6DBE3; width: 76px; height: 20px; border-radius: 3px; display: inline-block; font: 700 11px/20px "Lato", sans-serif; color: #666666; text-align: center; text-decoration: none; position: relative; /* top: 7px; margin-right: 7px; */} a.myfeeds span {margin-right: 5px; display: inline-block; position: relative; top: -1px;} a.myfeeds:hover span {display: inline-block; position: relative; top: -1px; } a.myfeeds:focus{outline: 2px solid #000 !important} a.myfeeds span svg {fill: #666;} a.myfeeds:hover span svg {fill: #fff;} a.myfeeds:hover {background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 3px;} .advertisement_box{background-color: #F2F2F2; justify-content: center;flex-wrap: wrap;} .advertisement_box .advHolder{border: 1px solid #C3C3C3;} .advertisement_box .advHead {display: none; justify-content: space-between; align-items: center;} .advertisement_box .lhs{font-size:10px;} .advertisement_box .advHead .rhs {position: relative; top: 0px;} .advertisement_box .removeadtext {position: static; font: 400 10px/16px 'Lato', sans-serif; color: #222222; margin: auto; background-color: #dbdbdb; padding: 0 7px 0 12px; clip-path: polygon(11% 0%, 100% 0%, 100% 100%, 0% 100%); height: 19px; display: flex; align-items: center; justify-content: flex-end;} .advertisement_box .rhs svg{display: none;} .advertisement_box .rhs a:hover, .advertisement_box .rhs a:hover .removeadtext{text-decoration:none;} .budgetMenu .gryBox{ background-color: #017728; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .budgetMenu.active .gryBox {background-color: #1A6DA3;}	.main_nav>li.budgetMenu>a { color: #fff; font-weight: 400;} .main_nav>li.budgetMenu>a:hover { color: #fff; } .budgetMenu svg{ position: relative;left: 1px; top: -1px; margin: 0 0.5px 0 -0.5px; vertical-align: middle;} .BlackElectionButton div {background-color: #000000; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlackElectionButton {color: #ffffff;} .OrangeElectionButton div {background: rgb(175,75,13); background: linear-gradient(180deg, rgba(175,75,13,1) 0%, rgba(203,109,22,1) 52%, rgba(231,143,31,1) 100%);padding: 1px 6px 2px 6px; display: inline; border-radius: 4px; } .main_nav>li.sub_nav:hover>a.OrangeElectionButton {color: #ffffff;} .BlueIPLButton div {background-color: #061E69; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlueIPLButton {color: #ffffff;} .advisoryAlert {width: 96px; height: 20px; border-radius: 4px; border: 1px solid #D17A7A; background-color: #FFD9D9; font: 700 10px/17px "Lato", sans-serif; color: #DE2628; display: inline-block; vertical-align: middle; text-align: center; position: relative; top: 6px; margin-right: 5px;} .advisoryAlert span {margin-right: 2px;} .advisoryAlert:hover {color: #DE2628; text-decoration: none;} .footer990 .footer_container {width: 990px;margin: 0 auto;padding: 0 5px;} .footer990 .footer_body {padding: 25px 40px 0px;} .footer990 .stocks {gap: 6px;} .menu_l2.active a{font-size:13px; color: #000 !important;font-weight: 900} .navmenu_sub.pleft-15{padding-left: 15px;}li.menu_l2.fadein_nav {/*margin-right: 12px;*/ position: relative; display: inline-block; width: 75px; } .fadein_nav .new_tagtp {left: auto; position: absolute; right: -13px; top: 5px; }.css-go-pro-now-logo {display: inline-block; font-weight: bold; color: #B64D0C; text-decoration: underline; animation: popbounce_go_pro_brand 1.5s infinite ease-in-out; } @keyframes popbounce_go_pro_brand {0%, 100% { transform: scale(1); } 30% { transform: scale(1.3) rotate(-2deg); } 60% { transform: scale(1.15) rotate(2deg); } }
 </style>
 <style tyle="text/css">
 	/* Options Trading Webinar - L2 Menu ->  -> Start * /
@@ -678,10 +697,10 @@
 	/* End <- Options Trading Webinar */
 </style>
 <style tyle="text/css">
-@media screen and (max-width:1279px){.header_desktop .main_header_wrapper{width:990px}.header_desktop .speacial_dropbx .dropdown-menu,.header_desktop.expand .appbanner_drop .dropdown-menu{width:990px}.header_desktop .main_nav>li>a{padding:10px 5px;font-size:11px}.navlist_sub>li>a{padding:0 5px}.searchBox .searchboxInner .txtsrchbox{margin-top:0px;width:100%;border:0;outline:0;height:25px;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.top_search_btn{position:absolute;right:2px;top:2px;display:inline-block;border:0;background-color:#0065a1;width:24px;height:24px;border-radius:100%;cursor:pointer;display:flex;justify-content:center;align-items:center;color:#fff!important}.top_search_btn svg{width:10px;height:10px}} @media screen and (max-width:980px){ .mob-hide{display:none !important;}.header_desktop{display:none}.icpancakeblock{display:block} .upgrade_your_exp {font: 13px/18px "Lato", sans-serif !important; color: #333333 !important;  background-color: #F9F1EC; border-left: 5px solid #652900; padding: 10px 25px !important; font-weight: 600 !important;} .removeads {width: 100px; height: 30px; border-radius: 30px; font: 9px/11px 'Lato', sans-serif !important; font-weight: 500 !important; color: #FFFFFF !important; padding: 10px 22px !important; position: absolute; top: 0; right: 0; background-color: #652900; bottom: 0; margin: auto 10px !important;} .lending_strip {font: 13px/18px "Lato", sans-serif !important; color: #FFFFFF !important;  background-color: #F5D74F; border-left: 5px solid #594D17; padding: 10px 25px !important; font-weight: 600 !important;} .lending_strip_applynow {width: 100px; height: 30px; border-radius: 30px; font: 9px/11px 'Lato', sans-serif !important; font-weight: 500 !important; color: #FFFFFF !important; padding: 10px 22px !important; position: absolute; top: 0; right: 0; background-color: #594D17; bottom: 0; margin: auto 10px !important;} .advertisement_box {background-color: #EFF1FA; margin-bottom: 10px; display: flex; justify-content: center;flex-wrap: wrap;padding: 10px 0 10px 0;} .advertisement_box .advHead {width: 300px;} .budgetMenu .gryBox{ background-color: #55A847; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .wap_menu_strip .budgetMenu a { color: #fff;position: relative; font-weight: 400;} .wap_menu_strip li.budgetMenu.active a { color: #fff; font-weight: 400;} .budgetMenu svg{ position: relative;left: 1px; top: -1px; margin: 0 0.5px 0 -0.5px; vertical-align: middle;} .BlackElectionButton div {background-color: #000000; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlackElectionButton {color: #ffffff;} .OrangeElectionButton div {background: rgb(175,75,13); background: linear-gradient(180deg, rgba(175,75,13,1) 0%, rgba(203,109,22,1) 52%, rgba(231,143,31,1) 100%); padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.OrangeElectionButton {color: #ffffff;} .BlueIPLButton div {background-color: #0646EA; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlueIPLButton {color: #ffffff;} .GreenIPLButton div {background-color: #36C87D; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.GreenIPLButton {color: #114425;} .advisoryAlertBox {position: absolute; top: 8px; right: 40px;} .advisoryAlert {width: 96px; height: 20px; border-radius: 4px; border: 1px solid #D17A7A; background-color: #FFD9D9; font: 700 10px/19px "Lato", sans-serif; color: #DE2628; display: inline-block; vertical-align: middle; text-align: center; position: relative; top: 6px; margin-right: 5px;} .advisoryAlert span {margin-right: 2px;} .advisoryAlert:hover {color: #DE2628; text-decoration: none;} }
+@media screen and (max-width:1279px){.header_desktop .main_header_wrapper{width:990px}.header_desktop .speacial_dropbx .dropdown-menu,.header_desktop.expand .appbanner_drop .dropdown-menu{width:990px}.header_desktop .main_nav>li>a{padding:10px 5px;font-size:11px}.navlist_sub>li>a{padding:0 5px}.searchBox .searchboxInner .txtsrchbox{margin-top:0px;width:100%;border:0;outline:0;height:25px;border-radius:17px;padding:2px 30px 2px 15px;font:400 13px Lato,sans-serif}.top_search_btn{position:absolute;right:2px;top:2px;display:inline-block;border:0;background-color:#0065a1;width:24px;height:24px;border-radius:100%;cursor:pointer;display:flex;justify-content:center;align-items:center;color:#fff!important}.top_search_btn svg{width:10px;height:10px}} @media screen and (max-width:980px){ .mob-hide{display:none !important;}.header_desktop{display:none}.icpancakeblock{display:block} .upgrade_your_exp {font: 13px/18px "Lato", sans-serif !important; color: #333333 !important;  background-color: #F9F1EC; border-left: 5px solid #652900; padding: 10px 25px !important; font-weight: 600 !important;} .removeads {width: 100px; height: 30px; border-radius: 30px; font: 9px/11px 'Lato', sans-serif !important; font-weight: 500 !important; color: #FFFFFF !important; padding: 10px 22px !important; position: absolute; top: 0; right: 0; background-color: #652900; bottom: 0; margin: auto 10px !important;} .lending_strip {font: 13px/18px "Lato", sans-serif !important; color: #FFFFFF !important;  background-color: #F5D74F; border-left: 5px solid #594D17; padding: 10px 25px !important; font-weight: 600 !important;} .lending_strip_applynow {width: 100px; height: 30px; border-radius: 30px; font: 9px/11px 'Lato', sans-serif !important; font-weight: 500 !important; color: #FFFFFF !important; padding: 10px 22px !important; position: absolute; top: 0; right: 0; background-color: #594D17; bottom: 0; margin: auto 10px !important;} .advertisement_box {background-color: #EFF1FA; margin-bottom: 10px; display: flex; justify-content: center;flex-wrap: wrap;padding: 10px 0 10px 0;} .advertisement_box .advHead {width: 300px;} .budgetMenu .gryBox{ background-color: #55A847; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;}.wap_menu_strip .budgetMenu a { color: #fff;position: relative; font-weight: 400;} .wap_menu_strip li.budgetMenu.active a { color: #fff; font-weight: 400;} .budgetMenu svg{ position: relative;left: 1px; top: -1px; margin: 0 0.5px 0 -0.5px; vertical-align: middle;} .BlackElectionButton div {background-color: #000000; padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlackElectionButton {color: #ffffff;} .OrangeElectionButton div {background: rgb(175,75,13); background: linear-gradient(180deg, rgba(175,75,13,1) 0%, rgba(203,109,22,1) 52%, rgba(231,143,31,1) 100%); padding: 1px 6px 2px 6px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.OrangeElectionButton {color: #ffffff;} .BlueIPLButton div {background-color: #0646EA; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.BlueIPLButton {color: #ffffff;} .GreenIPLButton div {background-color: #36C87D; padding: 1px 2px 2px 2px; display: inline; border-radius: 4px;} .main_nav>li.sub_nav:hover>a.GreenIPLButton {color: #114425;} .advisoryAlertBox {position: absolute; top: 8px; right: 40px;} .advisoryAlert {width: 96px; height: 20px; border-radius: 4px; border: 1px solid #D17A7A; background-color: #FFD9D9; font: 700 10px/19px "Lato", sans-serif; color: #DE2628; display: inline-block; vertical-align: middle; text-align: center; position: relative; top: 6px; margin-right: 5px;} .advisoryAlert span {margin-right: 2px;} .advisoryAlert:hover {color: #DE2628; text-decoration: none;} }
 </style>
 <style tyle="text/css">
-.slick-slider { position: relative; display: block; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -khtml-user-select: none; -ms-touch-action: pan-y; touch-action: pan-y; -webkit-tap-highlight-color: transparent; } .slick-list { position: relative; display: block; overflow: hidden; margin: 0; padding: 0; } .slick-list:focus { outline: none; } .slick-list.dragging { cursor: pointer; cursor: hand; } .slick-slider .slick-track, .slick-slider .slick-list { -webkit-transform: translate3d(0, 0, 0); -moz-transform: translate3d(0, 0, 0); -ms-transform: translate3d(0, 0, 0); -o-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); } .slick-track { position: relative; top: 0; left: 0; display: block; margin-left: auto; margin-right: auto; } .slick-track:before, .slick-track:after { display: table; content: ''; } .slick-track:after { clear: both; } .slick-loading .slick-track { visibility: hidden; } .slick-slide { display: none; float: left; height: 100%; min-height: 1px; } [dir='rtl'] .slick-slide { float: right; } .slick-slide img { display: block; } .slick-slide.slick-loading img { display: none; } .slick-slide.dragging img { pointer-events: none; } .slick-initialized .slick-slide { display: block; } .slick-loading .slick-slide { visibility: hidden; } .slick-vertical .slick-slide { display: block; height: auto; border: 1px solid transparent; } .slick-arrow.slick-hidden { display: none; }
+.slick-slider { position: relative; display: block; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -khtml-user-select: none; -ms-touch-action: pan-y; touch-action: pan-y; -webkit-tap-highlight-color: transparent; } .slick-list { position: relative; display: block; overflow: hidden; margin: 0; padding: 0; } .slick-list:focus { outline: none; } .slick-list.dragging { cursor: pointer; cursor: hand; } .slick-slider .slick-track, .slick-slider .slick-list { -webkit-transform: translate3d(0, 0, 0); -moz-transform: translate3d(0, 0, 0); -ms-transform: translate3d(0, 0, 0); -o-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); } .slick-track { position: relative; top: 0; left: 0; display: block; margin-left: auto; margin-right: auto; } .slick-track:before, .slick-track:after { display: table; content: ''; } .slick-track:after { clear: both; } .slick-loading .slick-track { visibility: hidden; } .slick-slide { display: none; float: left; height: 100%; min-height: 1px; } [dir='rtl'] .slick-slide { float: right; } .slick-slide img { display: block; } .slick-slide.slick-loading img { display: none; } .slick-slide.dragging img { pointer-events: none; } .slick-initialized .slick-slide { display: block; } .slick-loading .slick-slide { visibility: hidden; } .slick-vertical .slick-slide { display: block; height: auto; border: 1px solid transparent; } .slick-arrow.slick-hidden { display: none; }.header_desktop { min-height: 80px; }.responsive_true .icpancakeblock { min-height: 50px; }
 </style>
 	<!-- Credit Score Cashback Offer CSS -> Start -->
 	<style tyle="text/css">
@@ -1235,7 +1254,7 @@
 										<span class="user_icon">
 																								<svg class="grey_user_icon" xmlns="https://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(21964 4933)"><circle id="Ellipse_745_copy_2" data-name="Ellipse 745 copy 2" cx="8" cy="8" r="8" transform="translate(-21964 -4933)" fill="#535866"/><path id="Shape_37_copy_2" data-name="Shape 37 copy 2" d="M0,7.966a4.841,4.841,0,0,1,2.3-.99.6.6,0,0,0,.057-.465,5.809,5.809,0,0,1-.58-1.6,1.783,1.783,0,0,1-.427-1.248.755.755,0,0,1,.22-.518A3.007,3.007,0,0,1,2,.877,2.563,2.563,0,0,1,4.15,0,2.674,2.674,0,0,1,6.332.834,2.421,2.421,0,0,1,6.772,2.7c-.021.116-.035.209-.05.3-.008.05-.016.1-.024.151a.759.759,0,0,1,.224.522A1.792,1.792,0,0,1,6.5,4.912a5.743,5.743,0,0,1-.579,1.593.673.673,0,0,0,.055.469A4.619,4.619,0,0,1,8.3,7.965l-.448.519A3.93,3.93,0,0,0,5.9,7.657a2.254,2.254,0,0,1-1.753.817,2.28,2.28,0,0,1-1.763-.815,4.138,4.138,0,0,0-1.937.832Zm4.142-.178a1.581,1.581,0,0,0,1.2-.538A1.4,1.4,0,0,1,5.262,6.3a.356.356,0,0,1,.031-.078A4.743,4.743,0,0,0,5.828,4.71a.342.342,0,0,1,.179-.285,1.025,1.025,0,0,0,.23-.757.526.526,0,0,0-.1-.118L6.086,3.5a.343.343,0,0,1-.094-.3c.023-.122.037-.215.053-.312s.03-.192.053-.321a1.745,1.745,0,0,0-.3-1.3A2.043,2.043,0,0,0,4.15.686,1.926,1.926,0,0,0,2.538,1.3a2.528,2.528,0,0,0-.266,1.881.342.342,0,0,1-.088.328l-.046.045a.494.494,0,0,0-.1.12c0,.339.1.691.221.75a.343.343,0,0,1,.188.29,4.765,4.765,0,0,0,.534,1.511A.349.349,0,0,1,3,6.286a1.316,1.316,0,0,1-.075.968A1.6,1.6,0,0,0,4.142,7.788Z" transform="translate(-21960.271 -4929.345)" fill="#fff"/></g></svg>
 																																</span>
-										<a href="#" class="userlink" tabindex="0" aria-expanded="false"> Hello, Login</a>
+										<a href="#" id="userLink" class="userlink" tabindex="0" aria-expanded="false"> Hello, Login</a>
 									</div>
 									<div class="user_after_login alp" style="display:none;">
 										<span class="user_icon">
@@ -2018,7 +2037,8 @@ function dfpGutter_getCookie(e){
 			<div class="main_header_wrapper">
 				<div class="clearfix logo_wrapper">
 											<div class="header_innerpage" style="display:block;">
-														<div class="logo_fl for_nonpro_users"  style="min-height:70px; width:180px;"  >
+														<!-- For Normal User -->
+							<div class="logo_fl logo_for_nonpro_users"  style="min-height:70px; width:180px;"  >
 								<a href="https://www.moneycontrol.com/" title="Moneycontrol">
 																				<img src="https://images.moneycontrol.com/images/common/headfoot/logo.png?impolicy=mchigh" alt="Moneycontrol" title="Moneycontrol" width="180" height="70" style="width:100%;" />
 																	</a>
@@ -2029,11 +2049,35 @@ function dfpGutter_getCookie(e){
 								</a>
 								<a href="#" title="Pro" class="be_apro mc_logo_only_pro" style=" cursor: default; display:none; font-weight: bold; border-bottom: none !important;">PRO</a>
 							</div>
-							<div class="logo_fl logo_home_with_pro for_mcpro_users"  style="margin-top: 20px;"  >
+
+							<!-- For MC Ad Free User -->
+							<div class="logo_fl logo_home_with_adfree logo_for_mcadfree_users" style="margin-top: 20px;display: none; width:203px; height:28px;">
 								<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol PRO">
-																				<img src="https://images.moneycontrol.com/images/common/header/mc_pro_logo_181x28.png?impolicy=mchigh" alt="Moneycontrol PRO" title="Moneycontrol PRO" width="181" height="70" />
+									<img src="https://images.moneycontrol.com/images/common/headfoot/mc_adlite_logo_web.svg" alt="Moneycontrol AD Lite" title="Moneycontrol AD Lite" width="203" height="28" style="width:100%;" />
+								</a>
+							</div>
+
+							<!-- For MC Ad Lite User -->
+							<div class="logo_fl logo_home_with_adlite logo_for_mcadlite_users" style="margin-top: 20px;display:none; width:203px; height:28px;">
+								<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol PRO">
+									<img src="https://images.moneycontrol.com/images/common/headfoot/mc_adlite_logo_web.svg" alt="Moneycontrol AD Lite" title="Moneycontrol AD Lite" width="203" height="28" style="width:100%;" />
+								</a>
+							</div>
+
+							<!-- For MC PRO User -->
+							<div class="logo_fl logo_home_with_pro logo_for_mcpro_users" style="display:none; width:173px; height:28px;"  style="margin-top: 20px;"  >
+								<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol PRO">
+																				<img src="https://images.moneycontrol.com/images/common/headfoot/mc_pro_logo_web.svg" alt="Moneycontrol PRO" title="Moneycontrol PRO" width="173" height="28" />
 																	</a>
 							</div>
+
+							<!-- For MC Super PRO User -->
+							<div class="logo_fl logo_home_with_pro logo_for_mcsuperpro_users" style="margin-top: 20px;display:none; width:231px; height:28px;">
+								<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol Super PRO">
+									<img src="https://images.moneycontrol.com/images/common/headfoot/mc_super_pro_logo_web.svg" alt="Moneycontrol Super PRO" title="Moneycontrol Super PRO" width="231" height="28" style="width:100%;" />
+								</a>
+							</div>
+
 														<div class="adright_top" style="min-height:105px;">
 																<div>
 									<div position="1" class="FR" id="MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_ATF_728">
@@ -2198,6 +2242,13 @@ function dfpGutter_getCookie(e){
 																							</a>
 																	</li>
 															<li class=" bold">
+																				<a href="https://www.moneycontrol.com/markets/technicals/" title="Technical Analysis"   >
+												TECHNICAL ANALYSIS														<sup class="new_tagtp">
+															<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 28 15"><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect class="newtag-1" width="28" height="15" rx="7.5"/><path class="newtag-2" d="M7.42,6.84c0-.4,0-.73,0-1H8l0,.64h0a1.44,1.44,0,0,1,1.28-.72c.54,0,1.37.32,1.37,1.64V9.66H10V7.43c0-.62-.24-1.14-.9-1.14A1,1,0,0,0,8.17,7a1.09,1.09,0,0,0-.05.33V9.66h-.7Z"/><path class="newtag-2" d="M12.25,7.86A1.23,1.23,0,0,0,13.58,9.2,2.6,2.6,0,0,0,14.65,9l.12.5a3,3,0,0,1-1.29.24,1.79,1.79,0,0,1-1.9-1.95,1.87,1.87,0,0,1,1.81-2.08A1.64,1.64,0,0,1,15,7.53c0,.14,0,.26,0,.33Zm2.06-.51a1,1,0,0,0-1-1.14,1.16,1.16,0,0,0-1.08,1.14Z"/><path class="newtag-2" d="M16.14,5.79l.52,2c.11.43.21.83.28,1.23h0a12.5,12.5,0,0,1,.34-1.22l.63-2h.59l.6,1.94c.15.46.26.87.35,1.26h0a12.41,12.41,0,0,1,.3-1.25l.55-1.95H21L19.8,9.66h-.64l-.59-1.84c-.14-.43-.25-.82-.35-1.27h0a12,12,0,0,1-.36,1.28l-.62,1.83h-.64L15.42,5.79Z"/></g></g></svg>
+														</sup>
+																							</a>
+																	</li>
+															<li class=" bold">
 																				<a href="https://www.moneycontrol.com/markets/unlisted-shares/top-companies/" title="Unlisted Shares"   >
 												UNLISTED SHARES											</a>
 																	</li>
@@ -2219,10 +2270,7 @@ function dfpGutter_getCookie(e){
 									</li>
 																<li>
 										<a href="https://www.moneycontrol.com/stock-scanner/technical/" title="Technical Scanner"   >
-										Technical Scanner												<sup class="new_tagtp">
-													<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 28 15"><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect class="newtag-1" width="28" height="15" rx="7.5"/><path class="newtag-2" d="M7.42,6.84c0-.4,0-.73,0-1H8l0,.64h0a1.44,1.44,0,0,1,1.28-.72c.54,0,1.37.32,1.37,1.64V9.66H10V7.43c0-.62-.24-1.14-.9-1.14A1,1,0,0,0,8.17,7a1.09,1.09,0,0,0-.05.33V9.66h-.7Z"/><path class="newtag-2" d="M12.25,7.86A1.23,1.23,0,0,0,13.58,9.2,2.6,2.6,0,0,0,14.65,9l.12.5a3,3,0,0,1-1.29.24,1.79,1.79,0,0,1-1.9-1.95,1.87,1.87,0,0,1,1.81-2.08A1.64,1.64,0,0,1,15,7.53c0,.14,0,.26,0,.33Zm2.06-.51a1,1,0,0,0-1-1.14,1.16,1.16,0,0,0-1.08,1.14Z"/><path class="newtag-2" d="M16.14,5.79l.52,2c.11.43.21.83.28,1.23h0a12.5,12.5,0,0,1,.34-1.22l.63-2h.59l.6,1.94c.15.46.26.87.35,1.26h0a12.41,12.41,0,0,1,.3-1.25l.55-1.95H21L19.8,9.66h-.64l-.59-1.84c-.14-.43-.25-.82-.35-1.27h0a12,12,0,0,1-.36,1.28l-.62,1.83h-.64L15.42,5.79Z"/></g></g></svg>
-												</sup>
-																				</a>
+										Technical Scanner										</a>
 									</li>
 													</ul>
 					</li>
@@ -2259,10 +2307,7 @@ function dfpGutter_getCookie(e){
 									</li>
 																<li>
 										<a href="https://www.moneycontrol.com/markets/fii-dii-data/" title="FII & DII Activity"   >
-										FII & DII Activity												<sup class="new_tagtp">
-													<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 28 15"><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect class="newtag-1" width="28" height="15" rx="7.5"/><path class="newtag-2" d="M7.42,6.84c0-.4,0-.73,0-1H8l0,.64h0a1.44,1.44,0,0,1,1.28-.72c.54,0,1.37.32,1.37,1.64V9.66H10V7.43c0-.62-.24-1.14-.9-1.14A1,1,0,0,0,8.17,7a1.09,1.09,0,0,0-.05.33V9.66h-.7Z"/><path class="newtag-2" d="M12.25,7.86A1.23,1.23,0,0,0,13.58,9.2,2.6,2.6,0,0,0,14.65,9l.12.5a3,3,0,0,1-1.29.24,1.79,1.79,0,0,1-1.9-1.95,1.87,1.87,0,0,1,1.81-2.08A1.64,1.64,0,0,1,15,7.53c0,.14,0,.26,0,.33Zm2.06-.51a1,1,0,0,0-1-1.14,1.16,1.16,0,0,0-1.08,1.14Z"/><path class="newtag-2" d="M16.14,5.79l.52,2c.11.43.21.83.28,1.23h0a12.5,12.5,0,0,1,.34-1.22l.63-2h.59l.6,1.94c.15.46.26.87.35,1.26h0a12.41,12.41,0,0,1,.3-1.25l.55-1.95H21L19.8,9.66h-.64l-.59-1.84c-.14-.43-.25-.82-.35-1.27h0a12,12,0,0,1-.36,1.28l-.62,1.83h-.64L15.42,5.79Z"/></g></g></svg>
-												</sup>
-																				</a>
+										FII & DII Activity										</a>
 									</li>
 																<li>
 										<a href="https://www.moneycontrol.com/markets/corporate-action/" title="Corporate Action"   >
@@ -2301,10 +2346,7 @@ function dfpGutter_getCookie(e){
 																	</li>
 															<li class=" bold">
 																				<a href="https://www.moneycontrol.com/bonds/" title="Bonds"   data-google-interstitial="false"  >
-												BONDS														<sup class="new_tagtp">
-															<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 28 15"><g id="Layer_2" data-name="Layer 2"><g id="Layer_1-2" data-name="Layer 1"><rect class="newtag-1" width="28" height="15" rx="7.5"/><path class="newtag-2" d="M7.42,6.84c0-.4,0-.73,0-1H8l0,.64h0a1.44,1.44,0,0,1,1.28-.72c.54,0,1.37.32,1.37,1.64V9.66H10V7.43c0-.62-.24-1.14-.9-1.14A1,1,0,0,0,8.17,7a1.09,1.09,0,0,0-.05.33V9.66h-.7Z"/><path class="newtag-2" d="M12.25,7.86A1.23,1.23,0,0,0,13.58,9.2,2.6,2.6,0,0,0,14.65,9l.12.5a3,3,0,0,1-1.29.24,1.79,1.79,0,0,1-1.9-1.95,1.87,1.87,0,0,1,1.81-2.08A1.64,1.64,0,0,1,15,7.53c0,.14,0,.26,0,.33Zm2.06-.51a1,1,0,0,0-1-1.14,1.16,1.16,0,0,0-1.08,1.14Z"/><path class="newtag-2" d="M16.14,5.79l.52,2c.11.43.21.83.28,1.23h0a12.5,12.5,0,0,1,.34-1.22l.63-2h.59l.6,1.94c.15.46.26.87.35,1.26h0a12.41,12.41,0,0,1,.3-1.25l.55-1.95H21L19.8,9.66h-.64l-.59-1.84c-.14-.43-.25-.82-.35-1.27h0a12,12,0,0,1-.36,1.28l-.62,1.83h-.64L15.42,5.79Z"/></g></g></svg>
-														</sup>
-																							</a>
+												BONDS											</a>
 																	</li>
 															<li class=" bold">
 																				<a href="https://www.moneycontrol.com/markets/stock-deals/" title="Deals"   >
@@ -3923,7 +3965,6 @@ function dfpGutter_getCookie(e){
 			.responsive_true .icpancakeblock .trend_searchbx .trend_cb .cb_search .cb_brdb{ border-bottom: 1px solid #0463A0; }
 			.responsive_true .icpancakeblock .trend_searchbx .trend_cb .cb_search span{color: #0463A0 !important;} */
 
-		    
 			.responsive_true .icpancakeblock .trend_searchbx .trend_cb .cb_search{ padding: 3px 15px 3px 7px; align-items: center; font:400 14px 'Lato', sans-serif; border-radius: 3px; color: #0463A0; display: flex; background:rgba(255,255,255,0);
 		        background: -webkit-linear-gradient(-90.85797535948deg , rgba(136,206,24,255) 0%, rgba(164,229,60,255) 13%, rgba(218,178,8,255) 33%, rgba(145,7,7,255) 59%, rgba(98,4,43,255) 78%, rgba(41,2,35,255) 100%);
 		        background: -o-linear-gradient(-90.85797535948deg , rgba(136,206,24,255) 0%, rgba(164,229,60,255) 13%, rgba(218,178,8,255) 33%, rgba(145,7,7,255) 59%, rgba(98,4,43,255) 78%, rgba(41,2,35,255) 100%);
@@ -4006,12 +4047,7 @@ function dfpGutter_getCookie(e){
 			<div class="mcApp_strip header_get_app_strip" id="mcApp_strip">
 				<div class="mcApp_strip_container">
 					<span class="close_btn">
-						<svg xmlns="https://www.w3.org/2000/svg" width="7.414" height="7.414" viewBox="0 0 7.414 7.414">
-							<g id="Group_2" data-name="Group 2" transform="translate(0.707 0.707)">
-								<line id="Line_1" data-name="Line 1" x2="6" y2="6" fill="none" stroke="#555657" stroke-linecap="round" stroke-width="1"/>
-								<line id="Line_2" data-name="Line 2" x1="6" y2="6" fill="none" stroke="#555657" stroke-linecap="round" stroke-width="1"/>
-							</g>
-						</svg>
+						<svg xmlns="https://www.w3.org/2000/svg" width="7.414" height="7.414" viewBox="0 0 7.414 7.414"><g id="Group_2" data-name="Group 2" transform="translate(0.707 0.707)"><line id="Line_1" data-name="Line 1" x2="6" y2="6" fill="none" stroke="#555657" stroke-linecap="round" stroke-width="1"/><line id="Line_2" data-name="Line 2" x1="6" y2="6" fill="none" stroke="#555657" stroke-linecap="round" stroke-width="1"/></g></svg>
 					</span>
 					<a href="https://www.moneycontrol.com/" title="Moneycontrol" alt="Moneycontrol" class="mid_info_wrap">
 						<div class="app_img_wrap">
@@ -4028,21 +4064,37 @@ function dfpGutter_getCookie(e){
 
 		<div class="iconpancake"></div>
 
-					<div class="FL mc_moblogo for_nonpro_users" >
+					<!-- For Normal User -->
+			<div class="FL mc_moblogo logo_for_nonpro_users" >
 				<a href="https://www.moneycontrol.com/" title="Moneycontrol">
 												<img src="https://images.moneycontrol.com/images/common/header/logo_105x22.png?impolicy=mchigh" width="105" height="22" alt="Moneycontrol" title="Moneycontrol" />
 									</a>
 			</div>
 
-			<div class="FL mc_moblogo for_mcpro_users" >
+			<!-- For MC Ad Free User -->
+			<div class="FL mc_moblogo logo_for_mcadfree_users" style="display: none;">
+				<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol AD Lite"><img src="https://images.moneycontrol.com/images/common/headfoot/mc_adlite_logo_wap.svg" width="162" height="22" alt="Moneycontrol AD Lite" title="Moneycontrol AD Lite" /></a>
+			</div>
+
+			<!-- For MC Ad Lite User -->
+			<div class="FL mc_moblogo logo_for_mcadlite_users" style="display: none;">
+				<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol AD Lite"><img src="https://images.moneycontrol.com/images/common/headfoot/mc_adlite_logo_wap.svg" width="162" height="22" alt="Moneycontrol AD Lite" title="Moneycontrol AD Lite" /></a>
+			</div>
+
+			<!-- For MC PRO User -->
+			<div class="FL mc_moblogo logo_for_mcpro_users" >
 				<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol PRO">
-												<img src="https://images.moneycontrol.com/images/common/header/logo_with_pro_144x22.png?impolicy=mchigh" width="144" height="22" alt="Moneycontrol PRO" title="Moneycontrol PRO" />
+												<img src="https://images.moneycontrol.com/images/common/headfoot/mc_pro_logo_wap.svg" width="143" height="22" alt="Moneycontrol PRO" title="Moneycontrol PRO" />
 									</a>
+			</div>
+
+			<!-- For MC Super PRO User -->
+			<div class="FL mc_moblogo logo_for_mcsuperpro_users" style="display: none;">
+				<a href="https://www.moneycontrol.com/pro-top-stories" title="Moneycontrol Super PRO"><img src="https://images.moneycontrol.com/images/common/headfoot/mc_super_pro_logo_wap.svg" width="193" height="22" alt="Moneycontrol Super PRO" title="Moneycontrol Super PRO" /></a>
 			</div>
 				<div class="blp">
 			<a href="#" class="nonProBtn linkSignIn for_nonpro_users pro_promotion" data-toggle="modal" data-target="#LoginModal" onclick="GAEventTracker( 'Navigation', 'Top', 'Go PRO Now' );">
-										<!-- <span>Ad-Free @&#x20b9;99</span> -->
-						<span>Go PRO Now</span>
+										<span>Go PRO Now</span>
 								<svg xmlns="https://www.w3.org/2000/svg" width="4" height="7" viewBox="0 0 4 7"><path id="Polygon_1" data-name="Polygon 1" d="M3.5,0,7,4H0Z" transform="translate(4) rotate(90)" fill="#f36223"/></svg>
 			</a>
 		</div>
@@ -4127,13 +4179,11 @@ function dfpGutter_getCookie(e){
 					</form>
 				</div>
 				<a href="#" aria-label="search" onclick="$('#form_topsearch').submit();" class="top_search_btn" role="button">
-					<svg version="1.1" id="Capa_1" xmlns="https://www.w3.org/2000/svg" xmlns:xlink="https://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 192.904 192.904" style="enable-background:new 0 0 192.904 192.904;" xml:space="preserve">
-						<path d="M190.707,180.101l-47.078-47.077c11.702-14.072,18.752-32.142,18.752-51.831C162.381,36.423,125.959,0,81.191,0
+					<svg version="1.1" id="Capa_1" xmlns="https://www.w3.org/2000/svg" xmlns:xlink="https://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 192.904 192.904" style="enable-background:new 0 0 192.904 192.904;" xml:space="preserve"><path d="M190.707,180.101l-47.078-47.077c11.702-14.072,18.752-32.142,18.752-51.831C162.381,36.423,125.959,0,81.191,0
 						C36.422,0,0,36.423,0,81.193c0,44.767,36.422,81.187,81.191,81.187c19.688,0,37.759-7.049,51.831-18.751l47.079,47.078
 						c1.464,1.465,3.384,2.197,5.303,2.197c1.919,0,3.839-0.732,5.304-2.197C193.637,187.778,193.637,183.03,190.707,180.101z M15,81.193
 						C15,44.694,44.693,15,81.191,15c36.497,0,66.189,29.694,66.189,66.193c0,36.496-29.692,66.187-66.189,66.187
-						C44.693,147.38,15,117.689,15,81.193z"></path>
-					</svg>
+						C44.693,147.38,15,117.689,15,81.193z"></path></svg>
 				</a>
 			</div>
 		</div>
@@ -4418,17 +4468,34 @@ function dfpGutter_getCookie(e){
 					<!-- End <- L1 Menu - WAP -->
 <script language="Javascript">
 document.addEventListener("DOMContentLoaded", function() {
+	var ad_free = readCookieRevamp( 'ad_free' );
+	var ad_lite = readCookieRevamp( 'ad_lite' );
 	var mcpro = readCookieRevamp( 'mcpro' );
 	var mcproplus = readCookieRevamp( 'mcproplus' );
-	var ad_free = readCookieRevamp( 'ad_free' );
-	if( mcpro == '1' ) {
-		$( '.for_mcpro_users' ).show();
-		$( '.for_nonpro_users' ).hide();
-	} else {
 
-		$( '.for_mcpro_users' ).hide();
-		$( '.for_nonpro_users' ).show();
-	}
+	/* WEB - MC Logo by User Subscription -> Start */
+		if( mcproplus == '1' ) {
+			$( '.logo_for_mcsuperpro_users' ).show();
+			$( '.logo_for_mcadfree_users, .logo_for_mcadlite_users, .logo_for_nonpro_users, .logo_for_mcpro_users' ).hide();
+
+		} else if( mcpro == '1' ) {
+			$( '.logo_for_mcpro_users' ).show();
+			$( '.logo_for_mcadfree_users, .logo_for_mcadlite_users, .logo_for_nonpro_users, .logo_for_mcsuperpro_users' ).hide();
+
+		} else if( ad_free == '1' ) {
+			$( '.logo_for_mcadfree_users' ).show();
+			$( '.logo_for_mcadlite_users, .logo_for_nonpro_users, .logo_for_mcpro_users, .logo_for_mcsuperpro_users' ).hide();
+
+		} else if( ad_lite == '1' ) {
+			$( '.logo_for_mcadlite_users' ).show();
+			$( '.logo_for_mcadfree_users, .logo_for_nonpro_users, .logo_for_mcpro_users, .logo_for_mcsuperpro_users' ).hide();
+
+		} else {
+			$( '.logo_for_nonpro_users' ).show();
+			$( '.logo_for_mcadfree_users, .logo_for_mcadlite_users, .logo_for_mcpro_users, .logo_for_mcsuperpro_users' ).hide();
+
+		}
+	/* End <- WEB - MC Logo by User Subscription */
 
 	if( readCookieRevamp( 'nnmc' ) ) {
 		var usernnmc = readCookieRevamp( 'nnmc' );
@@ -4539,23 +4606,24 @@ document.addEventListener("DOMContentLoaded", function() {
 			}
 		/* End <- Check for User Email and Mobile verification */
 
+		/* same code is present on moneycontrol_header_test.js and moneycontrol_header.js */
 		/* Header Avatar Icon -> Start */
 			if( $( '.user_icon' ).length || $( '.propic' ).length ) {
-				/* For SuperPRO User */
-				if( mcproplus == '1' ) {
+				if( mcproplus == '1' ) {	/* For SuperPRO User */
 					$( '.user_icon, .propic' ).html( '<svg class="gold_user_icon" width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="https://www.w3.org/2000/svg"><circle cx="8.75" cy="8.75" r="8" fill="url(#paint0_linear_618_650)"/><path fill-rule="evenodd" clip-rule="evenodd" d="M6.81426 7.34099C6.67771 7.74424 6.69244 8.16235 6.80347 8.68527C6.82923 8.8066 6.79137 8.93269 6.70304 9.01976C6.63261 9.08919 6.59594 9.13021 6.57384 9.16533C6.55736 9.19153 6.55348 9.20737 6.55348 9.22767C6.55348 9.23381 6.55333 9.23995 6.55302 9.24609C6.5323 9.65457 6.60471 9.8808 6.81684 10.058C6.87977 10.1105 6.92309 10.1828 6.93978 10.2631C7.04791 10.7832 7.34188 11.5117 7.60589 11.9925C7.61829 12.0151 7.62825 12.0389 7.63561 12.0636C7.66529 12.1631 7.66562 12.2637 7.6603 12.3396C7.65461 12.4207 7.64009 12.5029 7.62214 12.5783C7.61547 12.6063 7.60798 12.6348 7.59974 12.6634C7.84098 12.8897 8.22474 13.1136 8.7506 13.1136C9.28898 13.1136 9.67841 12.8789 9.91845 12.6472C9.90454 12.6069 9.8915 12.5654 9.87994 12.5238C9.85981 12.4514 9.84194 12.3709 9.83293 12.2903C9.82446 12.2145 9.82073 12.1132 9.84736 12.0111C9.85515 11.9812 9.8667 11.9525 9.88174 11.9256C10.1356 11.471 10.3283 10.7982 10.4434 10.2446C10.4657 10.1374 10.535 10.046 10.6322 9.99571C10.7883 9.91481 10.8903 9.69242 10.8677 9.25089L10.8673 9.24086C10.8648 9.13399 10.8225 9.03749 10.7501 8.96844C10.6613 8.88375 10.6212 8.76002 10.6435 8.63936C10.6465 8.6233 10.6489 8.60595 10.6526 8.57922L10.653 8.57668L10.653 8.57667L10.653 8.57659C10.6561 8.55381 10.6603 8.52333 10.6661 8.49146L10.6727 8.44942C10.6843 8.37553 10.6984 8.28577 10.7188 8.18458C10.7733 7.87591 10.7863 7.63166 10.7502 7.41379C10.7158 7.206 10.6337 7.00367 10.4699 6.78217C10.2199 6.5233 9.985 6.37474 9.73617 6.29283C9.63583 6.2598 9.52908 6.23624 9.413 6.22181C9.20097 6.47754 8.67628 6.79509 8.03019 7.03918L7.96289 7.06368C7.53217 7.22044 7.12668 7.31494 6.81426 7.34099ZM9.44946 5.49399C9.62609 5.51251 9.79702 5.5472 9.96357 5.60202C10.3523 5.73 10.69 5.95858 11.0112 6.29582C11.0208 6.3059 11.0298 6.31652 11.0382 6.32763C11.2742 6.64045 11.4115 6.95557 11.4677 7.29501C11.5229 7.62853 11.4963 7.96548 11.4342 8.31582L11.4325 8.32462C11.4151 8.41041 11.4036 8.48329 11.392 8.55745L11.3859 8.59595C11.5172 8.77868 11.588 8.99603 11.5943 9.21837C11.6155 9.64484 11.5546 10.2167 11.123 10.5432C11.0053 11.0692 10.8177 11.7113 10.5556 12.2085L10.5557 12.2095C10.5592 12.2404 10.5674 12.2813 10.5806 12.329C10.588 12.3555 10.5962 12.3817 10.6048 12.4068C11.4898 12.5637 12.3122 13.0178 12.9768 13.5473L12.5236 14.1161C11.9175 13.6332 11.2027 13.25 10.4714 13.1218C10.1186 13.4833 9.54513 13.8409 8.7506 13.8409C8.00389 13.8409 7.45246 13.5251 7.0959 13.1869C6.33448 13.3169 5.58184 13.6556 4.97324 14.1281L4.52721 13.5537C5.20537 13.0271 6.03776 12.6444 6.89431 12.4842C6.90148 12.461 6.90842 12.436 6.91465 12.4098C6.926 12.3621 6.93259 12.3204 6.93481 12.2887L6.93526 12.2813C6.67309 11.7899 6.3893 11.0946 6.25402 10.5285C5.87745 10.1569 5.80328 9.69248 5.82627 9.21745C5.82924 8.9656 5.94156 8.78068 6.05496 8.64678C5.95659 8.09427 5.95592 7.58326 6.13773 7.07187L4.97004 5.26436L4.96923 5.26213C4.95532 5.26978 4.94079 5.27625 4.9258 5.28147C4.87229 5.30029 4.81559 5.30838 4.75895 5.30527C4.70231 5.30216 4.64684 5.28791 4.59571 5.26335C4.54458 5.23878 4.49879 5.20438 4.46096 5.16211C4.42314 5.11984 4.39402 5.07052 4.37527 5.01698C4.3551 4.96395 4.34562 4.90746 4.34737 4.85075C4.34913 4.79403 4.36209 4.73823 4.3855 4.68655C4.40891 4.63487 4.44232 4.58833 4.48379 4.54961C4.52526 4.51089 4.57398 4.48076 4.62715 4.46095C4.68058 4.44148 4.73736 4.43289 4.79416 4.43568C4.85095 4.43846 4.90662 4.45257 4.95789 4.47717C5.00916 4.50176 5.055 4.53636 5.09271 4.57891C5.13043 4.62147 5.15926 4.67113 5.17752 4.72499C5.19861 4.78252 5.20753 4.8438 5.20373 4.90496C5.19993 4.96612 5.18347 5.02582 5.15542 5.08029C5.16429 5.08761 5.17365 5.09432 5.18342 5.10038C6.39534 5.99079 6.7873 4.42173 6.73024 3.86003C6.63722 3.86384 6.54537 3.83822 6.46776 3.78682C6.39015 3.73541 6.33072 3.66084 6.29794 3.57371C6.25849 3.46647 6.26277 3.34803 6.30987 3.24393C6.35696 3.13982 6.44308 3.0584 6.54966 3.01722C6.60313 2.99775 6.65996 2.98916 6.71679 2.99196C6.77363 2.99476 6.82933 3.0089 6.88062 3.03354C6.93192 3.05818 6.97777 3.09283 7.01547 3.13545C7.05318 3.17807 7.08199 3.2278 7.1002 3.28171C7.13028 3.36285 7.13553 3.45111 7.11528 3.53525C7.09502 3.61939 7.05018 3.69559 6.98647 3.75415C7.29242 4.21062 8.58824 5.1568 8.9517 3.70361C8.8934 3.68047 8.84067 3.64525 8.79697 3.60025C8.75328 3.55525 8.71961 3.50151 8.69819 3.44256C8.65947 3.33617 8.6646 3.21876 8.71245 3.11616C8.76029 3.01355 8.84694 2.93415 8.95332 2.89543C9.05971 2.85671 9.17712 2.86184 9.27972 2.90968C9.38233 2.95753 9.46173 3.04418 9.50045 3.15056C9.52069 3.20361 9.53023 3.26014 9.52852 3.31689C9.52681 3.37364 9.51388 3.4295 9.49048 3.48123C9.46708 3.53296 9.43367 3.57955 9.39218 3.6183C9.35069 3.65706 9.30193 3.68722 9.24873 3.70705L9.22689 3.715L9.44946 5.49399Z" fill="#32270A"/><defs><linearGradient id="paint0_linear_618_650" x1="-0.674" y1="-0.00200001" x2="17.694" y2="17.502" gradientUnits="userSpaceOnUse"><stop stop-color="#B48812"/><stop offset="0.128" stop-color="#EDD8A1"/><stop offset="0.291" stop-color="#C1992F"/><stop offset="0.498" stop-color="#EACB79"/><stop offset="0.695" stop-color="#AD8310"/><stop offset="0.867" stop-color="#DDB444"/><stop offset="1" stop-color="#916C06"/></linearGradient></defs></svg>' );
 
-				/* For Pro User */
-				} else if( mcpro == '1' ) {
+				} else if( mcpro == '1' ) {	/* For Pro User */
+					$( '.user_icon, .propic' ).html( '<svg class="orange_user_icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="https://www.w3.org/2000/svg"><g clip-path="url(#clip0_6_1923)"><circle cx="7.9991" cy="7.9992" r="7.3326" fill="#F08414"/><path d="M4.33252 12.6654C4.96005 12.1782 5.7423 11.835 6.53316 11.7206C6.61053 11.5892 6.70079 11.2757 6.6578 11.1316C6.40422 10.6698 6.12054 9.97075 6.01309 9.45385C5.70362 9.1954 5.63055 8.86069 5.65204 8.437C5.65204 8.25482 5.7595 8.13619 5.88844 8.00908C5.73371 7.28034 5.7595 6.69565 6.17212 6.07283C6.675 5.49662 7.23375 5.28478 8.00312 5.34833C8.77248 5.28054 9.30115 5.42459 9.82982 5.97962C10.2038 6.47533 10.2381 6.93715 10.1307 7.54302C10.1092 7.64895 10.0963 7.73792 10.0834 7.81842C10.0748 7.86503 10.0705 7.91163 10.0619 7.95824C10.1952 8.08534 10.2682 8.25905 10.2725 8.44124C10.294 8.86069 10.2124 9.26319 9.8771 9.4369C9.76965 9.9538 9.58483 10.6105 9.32694 11.0723C9.28826 11.2206 9.39571 11.5214 9.46448 11.6528C10.2682 11.7502 11.0376 12.157 11.6651 12.6569" stroke="white" stroke-linejoin="round"/><path d="M6.39502 11.4155C6.54778 11.721 7.08245 12.3321 7.99903 12.3321C8.9156 12.3321 9.45027 11.721 9.60303 11.4155" stroke="white" stroke-linejoin="round"/><path d="M5.70487 6.61682L4.53396 4.80432L4.53322 4.80227C4.52047 4.80928 4.50715 4.81521 4.49341 4.82C4.44436 4.83725 4.39239 4.84466 4.34048 4.84181C4.28857 4.83896 4.23772 4.8259 4.19086 4.80339C4.14399 4.78087 4.10203 4.74934 4.06736 4.71059C4.03269 4.67185 4.00599 4.62665 3.98881 4.57758C3.97032 4.52897 3.96163 4.47719 3.96324 4.42521C3.96485 4.37323 3.97673 4.32208 3.99819 4.27471C4.01965 4.22734 4.05026 4.18468 4.08828 4.14919C4.12629 4.1137 4.17095 4.08608 4.21968 4.06793C4.26865 4.05009 4.32069 4.04221 4.37275 4.04477C4.42481 4.04732 4.47583 4.06025 4.52283 4.08279C4.56982 4.10534 4.61183 4.13705 4.6464 4.17605C4.68097 4.21506 4.7074 4.26058 4.72413 4.30994C4.74346 4.36267 4.75164 4.41884 4.74816 4.4749C4.74467 4.53095 4.72959 4.58567 4.70387 4.6356C4.71201 4.64231 4.72058 4.64846 4.72955 4.65402C5.84036 5.47014 6.19961 4.03198 6.14731 3.51714C6.06206 3.52064 5.97787 3.49715 5.90674 3.45004C5.8356 3.40292 5.78113 3.33457 5.75108 3.25471C5.71492 3.15642 5.71885 3.04786 5.76201 2.95244C5.80517 2.85702 5.88412 2.78239 5.98181 2.74465C6.03081 2.72679 6.0829 2.71892 6.13499 2.72149C6.18709 2.72406 6.23814 2.73702 6.28516 2.7596C6.33217 2.78219 6.37419 2.81395 6.40875 2.85301C6.44332 2.89207 6.46972 2.93765 6.48641 2.98707C6.51398 3.06144 6.51879 3.14234 6.50023 3.21946C6.48167 3.29657 6.44057 3.36642 6.38217 3.4201C6.6626 3.83849 7.85031 4.70573 8.18345 3.37377C8.13002 3.35256 8.08168 3.32028 8.04163 3.27903C8.00158 3.23779 7.97072 3.18853 7.9511 3.1345C7.9156 3.03699 7.9203 2.92937 7.96416 2.83533C8.00801 2.74128 8.08743 2.66851 8.18494 2.63302C8.28245 2.59753 8.39006 2.60222 8.48411 2.64608C8.57816 2.68993 8.65093 2.76935 8.68642 2.86686C8.70497 2.91548 8.71372 2.9673 8.71215 3.01931C8.71058 3.07133 8.69873 3.12253 8.67728 3.16994C8.65584 3.21736 8.62521 3.26006 8.58718 3.29558C8.54915 3.33111 8.50446 3.35875 8.4557 3.37692L8.43568 3.38421L8.69908 5.48954C8.69053 5.73553 8.10872 6.14021 7.33882 6.43107L7.27714 6.45352C6.52874 6.72592 5.86344 6.79319 5.70487 6.61682Z" fill="white"/></g><defs><clipPath id="clip0_6_1923"><rect width="15.9984" height="15.9984" fill="white"/></clipPath></defs></svg>' );
+
+				} else if( ad_free == '1' ) {	/* For Ad Free User */
 					$( '.user_icon, .propic' ).html( '<svg class="green_user_icon" xmlns="https://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(21769 4933)"><circle id="Ellipse_745_copy_2" data-name="Ellipse 745 copy 2" cx="8" cy="8" r="8" transform="translate(-21769 -4933)" fill="#66a650"/><path id="Union_140" data-name="Union 140" d="M0,10.581a4.848,4.848,0,0,1,2.3-.989.6.6,0,0,0,.057-.465,5.781,5.781,0,0,1-.578-1.594,1.784,1.784,0,0,1-.426-1.25.756.756,0,0,1,.219-.517,3.354,3.354,0,0,1,.161-1.817L.675,2.317v0a.416.416,0,0,1-.042.02A.418.418,0,0,1,.1,2.077.411.411,0,1,1,.872,1.8a.437.437,0,0,1-.02.342.081.081,0,0,0,.026.019c1.166.858,1.546-.653,1.493-1.195A.426.426,0,0,1,1.953.687.421.421,0,0,1,2.195.15a.416.416,0,0,1,.53.256.424.424,0,0,1-.109.456c.3.439,1.546,1.351,1.894-.05a.429.429,0,0,1-.243-.25A.412.412,0,1,1,5.041.279.415.415,0,0,1,4.8.816L4.776.823,5.012,2.7a2.252,2.252,0,0,1,1.321.75,2.414,2.414,0,0,1,.439,1.861c-.02.117-.036.209-.048.3-.01.05-.016.1-.024.151a.762.762,0,0,1,.224.522A1.805,1.805,0,0,1,6.5,7.529a5.786,5.786,0,0,1-.58,1.592.674.674,0,0,0,.056.472,4.61,4.61,0,0,1,2.331.989l-.45.52A3.9,3.9,0,0,0,5.9,10.274a2.26,2.26,0,0,1-1.754.816,2.287,2.287,0,0,1-1.764-.816,4.134,4.134,0,0,0-1.935.833ZM2.271,5.792a.344.344,0,0,1-.088.329l-.046.046a.453.453,0,0,0-.105.118c0,.34.1.691.221.75a.351.351,0,0,1,.19.291,4.8,4.8,0,0,0,.532,1.511A.317.317,0,0,1,3,8.9a1.325,1.325,0,0,1-.075.969,1.6,1.6,0,0,0,1.216.533,1.579,1.579,0,0,0,1.2-.537,1.4,1.4,0,0,1-.081-.952.434.434,0,0,1,.029-.077,4.748,4.748,0,0,0,.537-1.511.335.335,0,0,1,.179-.285,1.038,1.038,0,0,0,.228-.759.533.533,0,0,0-.1-.116l-.048-.046a.345.345,0,0,1-.092-.3c.021-.121.037-.215.052-.311s.031-.193.053-.32a1.757,1.757,0,0,0-.3-1.3,1.61,1.61,0,0,0-.961-.517,4.152,4.152,0,0,1-1.214.664c-.022.009-.044.015-.063.024a4.12,4.12,0,0,1-1.241.275A2.931,2.931,0,0,0,2.271,5.792Z" transform="translate(-21764.885 -4930.811)" fill="#fff" stroke="rgba(0,0,0,0)" stroke-miterlimit="10" stroke-width="1"/></g></svg>' );
 
-				/* For Ad Free User */
-				} else if( ad_free == '1' ) {
+				} else if( ad_lite == '1' ) {	/* For Ad Lite User */
 					$( '.user_icon, .propic' ).html( '<svg class="green_user_icon" xmlns="https://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(21769 4933)"><circle id="Ellipse_745_copy_2" data-name="Ellipse 745 copy 2" cx="8" cy="8" r="8" transform="translate(-21769 -4933)" fill="#66a650"/><path id="Union_140" data-name="Union 140" d="M0,10.581a4.848,4.848,0,0,1,2.3-.989.6.6,0,0,0,.057-.465,5.781,5.781,0,0,1-.578-1.594,1.784,1.784,0,0,1-.426-1.25.756.756,0,0,1,.219-.517,3.354,3.354,0,0,1,.161-1.817L.675,2.317v0a.416.416,0,0,1-.042.02A.418.418,0,0,1,.1,2.077.411.411,0,1,1,.872,1.8a.437.437,0,0,1-.02.342.081.081,0,0,0,.026.019c1.166.858,1.546-.653,1.493-1.195A.426.426,0,0,1,1.953.687.421.421,0,0,1,2.195.15a.416.416,0,0,1,.53.256.424.424,0,0,1-.109.456c.3.439,1.546,1.351,1.894-.05a.429.429,0,0,1-.243-.25A.412.412,0,1,1,5.041.279.415.415,0,0,1,4.8.816L4.776.823,5.012,2.7a2.252,2.252,0,0,1,1.321.75,2.414,2.414,0,0,1,.439,1.861c-.02.117-.036.209-.048.3-.01.05-.016.1-.024.151a.762.762,0,0,1,.224.522A1.805,1.805,0,0,1,6.5,7.529a5.786,5.786,0,0,1-.58,1.592.674.674,0,0,0,.056.472,4.61,4.61,0,0,1,2.331.989l-.45.52A3.9,3.9,0,0,0,5.9,10.274a2.26,2.26,0,0,1-1.754.816,2.287,2.287,0,0,1-1.764-.816,4.134,4.134,0,0,0-1.935.833ZM2.271,5.792a.344.344,0,0,1-.088.329l-.046.046a.453.453,0,0,0-.105.118c0,.34.1.691.221.75a.351.351,0,0,1,.19.291,4.8,4.8,0,0,0,.532,1.511A.317.317,0,0,1,3,8.9a1.325,1.325,0,0,1-.075.969,1.6,1.6,0,0,0,1.216.533,1.579,1.579,0,0,0,1.2-.537,1.4,1.4,0,0,1-.081-.952.434.434,0,0,1,.029-.077,4.748,4.748,0,0,0,.537-1.511.335.335,0,0,1,.179-.285,1.038,1.038,0,0,0,.228-.759.533.533,0,0,0-.1-.116l-.048-.046a.345.345,0,0,1-.092-.3c.021-.121.037-.215.052-.311s.031-.193.053-.32a1.757,1.757,0,0,0-.3-1.3,1.61,1.61,0,0,0-.961-.517,4.152,4.152,0,0,1-1.214.664c-.022.009-.044.015-.063.024a4.12,4.12,0,0,1-1.241.275A2.931,2.931,0,0,0,2.271,5.792Z" transform="translate(-21764.885 -4930.811)" fill="#fff" stroke="rgba(0,0,0,0)" stroke-miterlimit="10" stroke-width="1"/></g></svg>' );
 
-				} else {
-					/* For Log-in User */
+				} else {	/* For Log-in User */
 					$( '.user_icon, .propic' ).html( '<svg class="blue_user_icon" xmlns="https://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><g transform="translate(21899 4933)"><circle id="Ellipse_745_copy_2" data-name="Ellipse 745 copy 2" cx="8" cy="8" r="8" transform="translate(-21899 -4933)" fill="#0065a1"/><path id="Shape_37_copy_2" data-name="Shape 37 copy 2" d="M0,7.966a4.841,4.841,0,0,1,2.3-.99.6.6,0,0,0,.057-.465,5.809,5.809,0,0,1-.58-1.6,1.783,1.783,0,0,1-.427-1.248.755.755,0,0,1,.22-.518A3.007,3.007,0,0,1,2,.877,2.563,2.563,0,0,1,4.15,0,2.674,2.674,0,0,1,6.332.834,2.421,2.421,0,0,1,6.772,2.7c-.021.116-.035.209-.05.3-.008.05-.016.1-.024.151a.759.759,0,0,1,.224.522A1.792,1.792,0,0,1,6.5,4.912a5.743,5.743,0,0,1-.579,1.593.673.673,0,0,0,.055.469A4.619,4.619,0,0,1,8.3,7.965l-.448.519A3.93,3.93,0,0,0,5.9,7.657a2.254,2.254,0,0,1-1.753.817,2.28,2.28,0,0,1-1.763-.815,4.138,4.138,0,0,0-1.937.832Zm4.142-.178a1.581,1.581,0,0,0,1.2-.538A1.4,1.4,0,0,1,5.262,6.3a.356.356,0,0,1,.031-.078A4.743,4.743,0,0,0,5.828,4.71a.342.342,0,0,1,.179-.285,1.025,1.025,0,0,0,.23-.757.526.526,0,0,0-.1-.118L6.086,3.5a.343.343,0,0,1-.094-.3c.023-.122.037-.215.053-.312s.03-.192.053-.321a1.745,1.745,0,0,0-.3-1.3A2.043,2.043,0,0,0,4.15.686,1.926,1.926,0,0,0,2.538,1.3a2.528,2.528,0,0,0-.266,1.881.342.342,0,0,1-.088.328l-.046.045a.494.494,0,0,0-.1.12c0,.339.1.691.221.75a.343.343,0,0,1,.188.29,4.765,4.765,0,0,0,.534,1.511A.349.349,0,0,1,3,6.286a1.316,1.316,0,0,1-.075.968A1.6,1.6,0,0,0,4.142,7.788Z" transform="translate(-21895.271 -4929.345)" fill="#fff"/></g></svg>' );
+
 				}
 			}
 		/* End <- Header Avatar Icon */
@@ -4576,15 +4644,17 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 	<!-- Logout Link Change -> Start -->
 	<script type="text/javascript">
-		if( readCookieRevamp( 'nnmc' ) ) {
-			var is_activate_logout_link = true;
-			if( is_activate_logout_link == true ) {
-				var current_page_url = window.location.href;
-				if( current_page_url != '' && current_page_url != undefined ) {
-					$( '.my_acclist .login_user_logout a' ).attr( 'href', 'https://www.moneycontrol.com/mcplus/portfolio/logout.php?ref=' + current_page_url );
+		document.addEventListener("DOMContentLoaded", function() {
+			if( readCookieRevamp( 'nnmc' ) ) {
+				var is_activate_logout_link = true;
+				if( is_activate_logout_link == true ) {
+					var current_page_url = window.location.href;
+					if( current_page_url != '' && current_page_url != undefined ) {
+						$( '.my_acclist .login_user_logout a' ).attr( 'href', 'https://www.moneycontrol.com/mcplus/portfolio/logout.php?ref=' + current_page_url );
+					}
 				}
 			}
-		}
+		});
 	</script>
 	<!-- End <- Logout Link Change -->
 		<!-- Sticky Navigation Menu -> Start -->
@@ -4742,10 +4812,10 @@ document.addEventListener("DOMContentLoaded", function() {
 <script type="text/javascript" src="https://stat3.moneycontrol.com/mcjs/common/bootstrap.min.js"></script>
 <script type="text/javascript" src="https://stat2.moneycontrol.com/mcjs/common/jquery.bxslider-min.js"></script>
 
-<script type="text/javascript" src="https://stat2.moneycontrol.com/mcjs/common/moneycontrol_header.js?v=1.44"></script>
+<script type="text/javascript" src="https://stat2.moneycontrol.com/mcjs/common/moneycontrol_header.js?v=1.45"></script>
 
-<script type="text/javascript" src="https://stat3.moneycontrol.com/mcjs/common/slick.min.js?v=1.0"></script>
-				<link rel="stylesheet" type="text/css" href="https://stat1.moneycontrol.com/mccss/common/mainStyle_other.css?v=2.03" />
+<script type="text/javascript" src="https://stat2.moneycontrol.com/mcjs/common/slick.min.js?v=1.0"></script>
+				<link rel="stylesheet" type="text/css" href="https://stat2.moneycontrol.com/mccss/common/mainStyle_other.css?v=2.03" />
 						<!-- MC Header CSS -> Start -->
 	<style type="text/css">
 		@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap');
@@ -5408,7 +5478,10 @@ document.addEventListener("DOMContentLoaded", function() {
 				var budgetAdDiv = document.getElementById( 'budget_adDiv' );
 				if( budgetAdDiv ) {
 					var childDivs = budgetAdDiv.getElementsByTagName( 'div' );
-					if( childDivs.length === 0 ) { budgetAdDiv.style.minHeight = null; }
+					if( childDivs.length === 0 ) { 
+						if( budgetAdDiv.style.minHeight ) { budgetAdDiv.style.minHeight = null; }
+						if( budgetAdDiv.style.height ) { budgetAdDiv.style.height = null; }
+					}
 				}
 			}
 			removeMinHeightIfNoChild();
@@ -5737,6 +5810,8 @@ document.addEventListener("DOMContentLoaded", function() {
 <!-- End <- Moneycontrol Common header -->
                 <script>
             var user_token_normal = get_dfp_cookie( 'token-normal' );
+            var is_ad_lite_user = false;
+            var show_ad_lite_ad = false;
             if( user_token_normal != '' ) {
             	var ajax_link = 'https://www.moneycontrol.com/monitoring/mc_user_entitlements.php?user_token=' + user_token_normal + '&classic=true';
             	var opts = {
@@ -5771,22 +5846,75 @@ document.addEventListener("DOMContentLoaded", function() {
                         }
                     }
 					if( json_obj.hasOwnProperty( 'entitlements' ) ) {
-						if( !json_obj.entitlements.hasOwnProperty( 'mc_pro' ) ) {
-							launch_dfp_ads();	/* Normal User */
-						} else {
-							/* MC PRO User */
-							is_dfp_ads_visible = false;
-							document.getElementById( 'is_dfp_ads_visible' ).value = is_dfp_ads_visible;
+                        if( json_obj.entitlements.hasOwnProperty( 'ad_lite' )) {
 
-                            pro_users_actions(); /* Runs Only for Pro Users */
-						}
+                            const adLiteExpiry = json_obj.entitlements.ad_lite;
+                            const currentTimestamp = Math.floor(Date.now() / 1000);
+                            
+                            // Check if expired
+                            if (adLiteExpiry <= currentTimestamp) {
+                                // Update cookie to 0 (expired)
+                                document.cookie = "ad_lite=0;max-age=86400;path=/;domain=.moneycontrol.com";
+                            } else {
+                                is_ad_lite_user = true;
+                            }
+
+                        }
+						if( !json_obj.entitlements.hasOwnProperty( 'mc_pro' ) && is_ad_lite_user) {
+                            /* MC Ad lite User */
+                            var pgName = 'mc_pricechart_homepage';
+                            if (pgName == 'mc_market_homepage' || pgName == 'mc_pricechart_homepage' || pgName == 'mc_pricechart_homepage_new') {
+                                launch_dfp_ads();
+                            } else {
+                                is_dfp_ads_visible = false;
+                                document.getElementById( 'is_dfp_ads_visible' ).value = is_dfp_ads_visible;
+                            }
+                        } else {
+                            if( !json_obj.entitlements.hasOwnProperty( 'mc_pro' )) {
+                                launch_dfp_ads();	/* Normal User */
+                            } else {
+
+                                // Check if mc_pro_plus is expired then Update cookie to 0 (expired)
+                                if (json_obj.entitlements.hasOwnProperty('mc_pro_plus')) {
+                                    const mcProPlusExpiry = json_obj.entitlements.mc_pro_plus;
+                                    const currentTimestamp = Math.floor(Date.now() / 1000);
+                                    
+                                    // Check if expired
+                                    if (mcProPlusExpiry <= currentTimestamp) {
+                                        // Update cookie to 0 (expired)
+                                        document.cookie = "mcproplus=0;max-age=86400;path=/;domain=.moneycontrol.com";
+                                    }
+                                }
+
+                                // Check if mc_pro is expired then Update cookie to 0 (expired) else display ad.
+                                if (json_obj.entitlements.hasOwnProperty('mc_pro')) {
+                                    const mcProExpiry = json_obj.entitlements.mc_pro;
+                                    const currentTimestamp = Math.floor(Date.now() / 1000);
+                                    
+                                    // Check if expired
+                                    if (mcProExpiry <= currentTimestamp) {
+                                        // Update cookie to 0 (expired)
+                                        document.cookie = "mcpro=0;max-age=86400;path=/;domain=.moneycontrol.com";
+                                    } else {
+                                        /* MC PRO User */
+                                        is_dfp_ads_visible = false;
+                                        document.getElementById( 'is_dfp_ads_visible' ).value = is_dfp_ads_visible;
+                                        pro_users_actions(); /* Runs Only for Pro Users */
+                                    }
+                                }
+
+                            }
+                        }
+                        
 					} else {
 						launch_dfp_ads();	/* Normal User */
 					}
+                    document.dispatchEvent(new Event("mcUserEntitlementsLoaded"));
             	});
             } else {
 				generate_dfp_ppid();	/* Generate PPID for Free Users */
 				launch_dfp_ads();	/* Free User */
+                document.dispatchEvent(new Event("mcUserEntitlementsLoaded"));
             }
 
                     </script>
@@ -6064,7 +6192,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var dataFeedDomain = "https://priceapi.moneycontrol.com/techCharts/indianMarket/stock";
     var jsDomain = "https://www.moneycontrol.com/mc/";
     var chartUrl = "https://www.moneycontrol.com/mc/stock/chart?scId=";
-    var allowHistory = "Y";
+    var allowHistory = "N";
     var nseId = "NIVABUPA";
     var bseId = "544286";    
     var watchlistDomain = ""
@@ -6079,7 +6207,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var techPeriod = 'D';
     var showInfoPopup = "Y";
     var isIosRequest = "";
-    var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36 Edg/148.0.0.0";
+    var userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
     var accountsDomain = "https://accounts.moneycontrol.com/";
     var imageDomain = "https://images.moneycontrol.com/";
     var strikePriceArr = [];
@@ -6497,16 +6625,16 @@ document.addEventListener("DOMContentLoaded", function() {
                         <input id="nseid" type="hidden" value="NIVABUPA">
                         <input id="bseid" type="hidden" value="544286">
                         <input id="scid" type="hidden" value="NBH">
-                        <input id="bprevclose" type="hidden" value="82.86">
-                        <input id="nprevclose" type="hidden" value="82.85">
+                        <input id="bprevclose" type="hidden" value="82.42">
+                        <input id="nprevclose" type="hidden" value="82.42">
                         <input class="nsepreopenval" type="hidden" value="0">
                     </div>
-                    <div id="nsecp" class="inprice1 nsecp" rel="82.85">82.85</div>
-                    <input id="nsespotval" type="hidden" value="82.85" />
+                    <div id="nsecp" class="inprice1 nsecp" rel="82.42">82.42</div>
+                    <input id="nsespotval" type="hidden" value="82.42" />
                     <div id="nsechange" class="pricupdn nsechange grn"><span
-                            class="greenuparow"></span>1.10 (1.35%)
+                            class="greenuparow"></span>0.67 (0.82%)
                     </div>
-                    <p class="nseasondate">As on 05 Jun, 2026 | 01:31</p>
+                    <p class="nseasondate">As on 05 Jun, 2026 | 03:57</p>
                                         <!-- <a class="inditrade" data-toggle="modal" onclick="placeOrder('NIVABUPA','NBH','S','Niva Bupa Health Insurance Company Ltd.')">Trade</a> -->
                     <!-- Changes cause of Samco START-->
                                         <a href="https://www.moneycontrol.com/tradenow/shared_postback.php?did=NBH" onclick="GAtradeNow()" title="Open Trading A/c" target="_blank"
@@ -6527,7 +6655,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <div id="sp_high" class="FR nseHP">84.23</div>
             </div>
             <div class="rangesick">L <span id="sp_graph_plot_day" class="nseplotday"><strong
-                        style="left: 42%;"></strong></span> <em class="grn">H</em></div>
+                        style="left: 24%;"></strong></span> <em class="grn">H</em></div>
 
             <div class="drang MT20">52 Week Range</div>
             <div class="rangamount clearfix">
@@ -6536,7 +6664,7 @@ document.addEventListener("DOMContentLoaded", function() {
             </div>
             <div class="rangesick">
                 L <span id="sp_graph_plot_year" class="nseplotyr"><strong
-                        style="left: 60%;"></strong></span> <em class="grn">H</em>
+                        style="left: 59%;"></strong></span> <em class="grn">H</em>
             </div>
             <!-- All Time High Low Start MCMKTS-2965 New Req-->
                         <!-- All Time High/Low END -->
@@ -6545,7 +6673,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="clearfix MT20">
                 <div class="FL">
                     <div class="drang">Volume</div>
-                    <div id="nse_vol" class="rangamount nsevol">511,662</div>
+                    <div id="nse_vol" class="rangamount nsevol">859,579</div>
                 </div>
                                                 <div class="FR TAR">
                     <div class="drang" style="margin-bottom: 7px;"><span>* </span>
@@ -6581,47 +6709,47 @@ document.addEventListener("DOMContentLoaded", function() {
                                                     <td class="brdb tar"><strong>QTY</strong></td>
                                                 </tr>
                                                                                                 <tr>
+                                                    <td class="price_buy_quantity">150</td>
+                                                    <td class="brdr tar price_buy_price">82.50
+                                                    </td>
+                                                    <td class="price_sell_price">82.99</td>
+                                                    <td class="tar price_sell_quantity">1203</td>
+                                                </tr>
+                                                                                                <tr>
                                                     <td class="price_buy_quantity">90</td>
-                                                    <td class="brdr tar price_buy_price">82.11
+                                                    <td class="brdr tar price_buy_price">82.33
                                                     </td>
-                                                    <td class="price_sell_price">82.23</td>
-                                                    <td class="tar price_sell_quantity">464</td>
+                                                    <td class="price_sell_price">83.47</td>
+                                                    <td class="tar price_sell_quantity">40</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">343</td>
-                                                    <td class="brdr tar price_buy_price">82.06
+                                                    <td class="price_buy_quantity">5</td>
+                                                    <td class="brdr tar price_buy_price">82.26
                                                     </td>
-                                                    <td class="price_sell_price">82.24</td>
-                                                    <td class="tar price_sell_quantity">691</td>
+                                                    <td class="price_sell_price">83.51</td>
+                                                    <td class="tar price_sell_quantity">1700</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">941</td>
-                                                    <td class="brdr tar price_buy_price">82.05
+                                                    <td class="price_buy_quantity">1292</td>
+                                                    <td class="brdr tar price_buy_price">82.25
                                                     </td>
-                                                    <td class="price_sell_price">82.25</td>
-                                                    <td class="tar price_sell_quantity">561</td>
+                                                    <td class="price_sell_price">83.55</td>
+                                                    <td class="tar price_sell_quantity">300</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">203</td>
-                                                    <td class="brdr tar price_buy_price">82.04
+                                                    <td class="price_buy_quantity">50</td>
+                                                    <td class="brdr tar price_buy_price">82.20
                                                     </td>
-                                                    <td class="price_sell_price">82.26</td>
-                                                    <td class="tar price_sell_quantity">51</td>
-                                                </tr>
-                                                                                                <tr>
-                                                    <td class="price_buy_quantity">263</td>
-                                                    <td class="brdr tar price_buy_price">82.03
-                                                    </td>
-                                                    <td class="price_sell_price">82.27</td>
-                                                    <td class="tar price_sell_quantity">11</td>
+                                                    <td class="price_sell_price">84.00</td>
+                                                    <td class="tar price_sell_quantity">1357</td>
                                                 </tr>
                                                                                                 <tr>
                                                     <td id="b_tot_total_buy_qty" class="brdt"><strong
-                                                            class="market_depth_total">50391</strong></td>
+                                                            class="market_depth_total">0</strong></td>
                                                     <td class="brdt brdr tar UC"><strong>Total</strong></td>
                                                     <td class="brdt tar UC"><strong>Total</strong></td>
                                                     <td id="b_tot_total_sell_qty" class="brdt"><strong
-                                                            class="market_depth_total">176681</strong></td>
+                                                            class="market_depth_total">0</strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -6630,8 +6758,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             </div>
                                                     </div> Bid / Ask
                     </div>
-                    <div class="rangamount"><span class="cls_bid_price">82.11</span> / <span
-                            class="cls_ask_price">82.23</span></div>
+                    <div class="rangamount"><span class="cls_bid_price">0.00</span> / <span
+                            class="cls_ask_price">0.00</span></div>
                 </div>
                 <!-- </div> -->
                 <!-- bid ask end-->
@@ -6728,12 +6856,12 @@ document.addEventListener("DOMContentLoaded", function() {
                             </g>
                         </svg> <span>Pre Opening</span>
                     </div>
-                    <div class="inprice1 bsecp" id="bsecp">82.86</div>
-                    <input id="bsespotval" type="hidden" value="82.86" />
+                    <div class="inprice1 bsecp" id="bsecp">82.42</div>
+                    <input id="bsespotval" type="hidden" value="82.42" />
                     <input class="nsepreopenval" type="hidden" value="0">
                     <div class="pricupdn bsechange grn"><span
-                            class="greenuparow"></span>1.08 (1.32%)</div>
-                    <p class="bseasondate">As on 05 Jun, 2026 | 01:31 </p>
+                            class="greenuparow"></span>0.64 (0.78%)</div>
+                    <p class="bseasondate">As on 05 Jun, 2026 | 04:01 </p>
                                         <!-- Changes cause of Samco START-->
                                         <a href="https://www.moneycontrol.com/tradenow/shared_postback.php?did=NBH" onclick="GAtradeNow()" title="Open Trading A/c" target="_blank"
                         class="trade inditrade mob-hide" id="open_trad_accnt">Open Trading A/c</a>
@@ -6751,7 +6879,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <div id="sp_high" class="FR bseHP">84.15</div>
             </div>
             <div class="rangesick">L <span id="sp_graph_plot_day" class="bseplotday"><strong
-                        style="left: 52%;"></strong></span> <em class="grn">H</em></div>
+                        style="left: 36%;"></strong></span> <em class="grn">H</em></div>
 
             <div class="drang MT20">52 Week Range</div>
             <div class="rangamount clearfix">
@@ -6766,7 +6894,7 @@ document.addEventListener("DOMContentLoaded", function() {
             <div class="clearfix MT20">
                 <div class="FL">
                     <div class="drang">Volume</div>
-                    <div id="bse_vol" class="rangamount bsevol">55,112</div>
+                    <div id="bse_vol" class="rangamount bsevol">84,824</div>
                 </div>
 
                 <div class="FR TAR">
@@ -6802,42 +6930,42 @@ document.addEventListener("DOMContentLoaded", function() {
                                                     <td class="brdb tar"><strong>QTY</strong></td>
                                                 </tr>
                                                                                                 <tr>
+                                                    <td class="price_buy_quantity">150</td>
+                                                    <td class="brdr tar price_buy_price">82.50</td>
+                                                    <td class="price_sell_price">82.99</td>
+                                                    <td class="tar price_sell_quantity">1203</td>
+                                                </tr>
+                                                                                                <tr>
                                                     <td class="price_buy_quantity">90</td>
-                                                    <td class="brdr tar price_buy_price">82.11</td>
-                                                    <td class="price_sell_price">82.23</td>
-                                                    <td class="tar price_sell_quantity">464</td>
+                                                    <td class="brdr tar price_buy_price">82.33</td>
+                                                    <td class="price_sell_price">83.47</td>
+                                                    <td class="tar price_sell_quantity">40</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">343</td>
-                                                    <td class="brdr tar price_buy_price">82.06</td>
-                                                    <td class="price_sell_price">82.24</td>
-                                                    <td class="tar price_sell_quantity">691</td>
+                                                    <td class="price_buy_quantity">5</td>
+                                                    <td class="brdr tar price_buy_price">82.26</td>
+                                                    <td class="price_sell_price">83.51</td>
+                                                    <td class="tar price_sell_quantity">1700</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">941</td>
-                                                    <td class="brdr tar price_buy_price">82.05</td>
-                                                    <td class="price_sell_price">82.25</td>
-                                                    <td class="tar price_sell_quantity">561</td>
+                                                    <td class="price_buy_quantity">1292</td>
+                                                    <td class="brdr tar price_buy_price">82.25</td>
+                                                    <td class="price_sell_price">83.55</td>
+                                                    <td class="tar price_sell_quantity">300</td>
                                                 </tr>
                                                                                                 <tr>
-                                                    <td class="price_buy_quantity">203</td>
-                                                    <td class="brdr tar price_buy_price">82.04</td>
-                                                    <td class="price_sell_price">82.26</td>
-                                                    <td class="tar price_sell_quantity">51</td>
-                                                </tr>
-                                                                                                <tr>
-                                                    <td class="price_buy_quantity">263</td>
-                                                    <td class="brdr tar price_buy_price">82.03</td>
-                                                    <td class="price_sell_price">82.27</td>
-                                                    <td class="tar price_sell_quantity">11</td>
+                                                    <td class="price_buy_quantity">50</td>
+                                                    <td class="brdr tar price_buy_price">82.20</td>
+                                                    <td class="price_sell_price">84.00</td>
+                                                    <td class="tar price_sell_quantity">1357</td>
                                                 </tr>
                                                                                                 <tr>
                                                     <td id="b_tot_total_buy_qty" class="brdt"><strong
-                                                            class="market_depth_total">50391</strong></td>
+                                                            class="market_depth_total">0</strong></td>
                                                     <td class="brdt brdr tar UC"><strong>Total</strong></td>
                                                     <td class="brdt tar UC"><strong>Total</strong></td>
                                                     <td id="b_tot_total_sell_qty" class="brdt"><strong
-                                                            class="market_depth_total">176681</strong></td>
+                                                            class="market_depth_total">0</strong></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -6846,8 +6974,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             </div>
                                                     </div> Bid / Ask
                     </div>
-                    <div class="rangamount"><span class="cls_bid_price">82.11</span> / <span
-                            class="cls_ask_price">82.23</span></div>
+                    <div class="rangamount"><span class="cls_bid_price">0.00</span> / <span
+                            class="cls_ask_price">0.00</span></div>
                 </div>
             </div>
             <!-- bid ask end-->
@@ -6932,8 +7060,8 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="share_aldtl">
             <div class="clearfix">
                 <div class="stickymcont">
-                    <div class="stkname">Niva Bupa Healt</div><div class="pcstkspr nsestkcp bsestkcp futstkcp optstkcp">82.73</div>
-                    <div id="stick_ch_prch" class="advdecl grn"><span class="inclin_arw"></span>0.98<strong>(1.20%)</strong></div>
+                    <div class="stkname">Niva Bupa Healt</div><div class="pcstkspr nsestkcp bsestkcp futstkcp optstkcp">82.42</div>
+                    <div id="stick_ch_prch" class="advdecl grn"><span class="inclin_arw"></span>0.67<strong>(0.82%)</strong></div>
                 </div>
                 <div class="stikstksearch">
                     <div class="searchinres searchBox">
@@ -7904,11 +8032,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         </tr>
                         <tr>
                             <td>Volume</td>
-                            <td class="nsevol bsevol">511,662.00</td>
+                            <td class="nsevol bsevol">859,579.00</td>
                         </tr>
                         <tr>
                             <td>Value (Lacs)</td>
-                            <td class="nsevalue bsevalue">423.91</td>
+                            <td class="nsevalue bsevalue">708.47</td>
                         </tr>
                         <tr>
                             <td>
@@ -7918,7 +8046,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </a>&nbsp;
                                                                 VWAP
                             </td>
-                            <td class="nsevwap bsevwap">83.07</td>
+                            <td class="nsevwap bsevwap">82.92</td>
                         </tr>
                         <tr>
                             <td>Beta</td>
@@ -7929,7 +8057,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         </tr>
                         <tr>
                             <td>Mkt Cap (Rs. Cr.)</td>
-                            <td class="nsemktcap bsemktcap">15,309</td>
+                            <td class="nsemktcap bsemktcap">15,229</td>
                         </tr>
                     </tbody>
                 </table>
@@ -9250,7 +9378,7 @@ document.addEventListener("DOMContentLoaded", function() {
 				<a href="#price_volume" class="mcinhead">Price</a>
 				<ul>
 															<li class="  fnoInsight">
-				10.95% away from 52 week high</li>
+				11.28% away from 52 week high</li>
 								</ul>
 				<!--<div class="tar">
 			<a href="#" class="seemore">+ See More</a>
@@ -10856,7 +10984,7 @@ $('.graph_top_container .nav-tabs li').click(function() {
       priceVolume(pvSel); 
     }, 60000);
     function volumeGraph(volume_json) {
-      // var volume_json = '{"price":{"1 Week":-0.92,"1 Month":5.67,"3 Months":13.97,"YTD":9.72,"1 Year":0.18,"3 Years":"--"},"volume":{"Today":{"delivery":0,"cvol":568122,"cvol_display_text":"6L","delivery_display_text":"","delivery_tooltip_text":"","cvol_tooltip_text":"NSE+BSE Traded Volume : 6L"},"Yesterday":{"delivery":297282,"cvol":497000,"cvol_display_text":"5L","delivery_display_text":"3L (59.82%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 5L","delivery_tooltip_text":"Combined Delivery Volume : 3L"},"1 Week Avg":{"delivery":801872,"cvol":1266046,"cvol_display_text":"13L","delivery_display_text":"8L (63.34%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 13L","delivery_tooltip_text":"Combined Delivery Volume : 8L"},"1 Month Avg":{"delivery":2353804,"cvol":5693707,"cvol_display_text":"57L","delivery_display_text":"24L (41.34%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 57L","delivery_tooltip_text":"Combined Delivery Volume : 24L"}}}';    
+      // var volume_json = '{"price":{"1 Week":-1.29,"1 Month":5.28,"3 Months":13.54,"YTD":9.31,"1 Year":-0.19,"3 Years":"--"},"volume":{"Today":{"delivery":297282,"cvol":497000,"cvol_display_text":"5L","delivery_display_text":"3L (59.82%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 5L","delivery_tooltip_text":"Combined Delivery Volume : 3L"},"Yesterday":{"delivery":297282,"cvol":497000,"cvol_display_text":"5L","delivery_display_text":"3L (59.82%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 5L","delivery_tooltip_text":"Combined Delivery Volume : 3L"},"1 Week Avg":{"delivery":801872,"cvol":1266046,"cvol_display_text":"13L","delivery_display_text":"8L (63.34%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 13L","delivery_tooltip_text":"Combined Delivery Volume : 8L"},"1 Month Avg":{"delivery":2353804,"cvol":5693707,"cvol_display_text":"57L","delivery_display_text":"24L (41.34%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 57L","delivery_tooltip_text":"Combined Delivery Volume : 24L"}}}';    
       if (volume_json != '') {
         var volume_obj = JSON.parse(volume_json);
 
@@ -13164,19 +13292,19 @@ $(document).ready(function() {
 																																		<td><a href="https://www.moneycontrol.com/india/stockpricequote/life-health-insurance/nivabupahealthinsurancecompany/NBH" id="NBH_companyName" target="_blank" title="Niva Bupa Healt" class="fn_semibold">
 								Niva Bupa Healt</a></td>
 								
-																																										<td id="NBH_lastPrice">82.37</td>
+																																										<td id="NBH_lastPrice">82.42</td>
 								
-																																										<td id="NBH_perChange">0.76</td>
+																																										<td id="NBH_perChange">0.82</td>
 								
-																																										<td id="NBH_marketCap">15,219.98</td>
+																																										<td id="NBH_marketCap">15,229.22</td>
 								
-																																										<td id="NBH_scTtm">116.01</td>
+																																										<td id="NBH_scTtm">116.08</td>
 								
 																																										<td id="NBH_priceBook">5.30</td>
 								
 																																										<td id="NBH_roe">4.08</td>
 								
-																																										<td id="NBH_perform1yr">-0.25</td>
+																																										<td id="NBH_perform1yr">-0.19</td>
 								
 																																										<td id="NBH_netProfit">130</td>
 								
@@ -13191,19 +13319,19 @@ $(document).ready(function() {
 																																		<td><a href="https://www.moneycontrol.com/india/stockpricequote/life-health-insurance/lifeinsurancecorporationindia/LIC09" id="LIC09_companyName" target="_blank" title="LIC India" class="fn_semibold">
 								LIC India</a></td>
 								
-																																										<td id="LIC09_lastPrice">399.20</td>
+																																										<td id="LIC09_lastPrice">399.90</td>
 								
-																																										<td id="LIC09_perChange">0.14</td>
+																																										<td id="LIC09_perChange">0.31</td>
 								
-																																										<td id="LIC09_marketCap">504,987.82</td>
+																																										<td id="LIC09_marketCap">505,873.32</td>
 								
-																																										<td id="LIC09_scTtm">8.79</td>
+																																										<td id="LIC09_scTtm">8.81</td>
 								
 																																										<td id="LIC09_priceBook">2.88</td>
 								
 																																										<td id="LIC09_roe">32.74</td>
 								
-																																										<td id="LIC09_perform1yr">-16.54</td>
+																																										<td id="LIC09_perform1yr">-16.39</td>
 								
 																																										<td id="LIC09_netProfit">57,418</td>
 								
@@ -13218,19 +13346,19 @@ $(document).ready(function() {
 																																		<td><a href="https://www.moneycontrol.com/india/stockpricequote/life-health-insurance/sbilifeinsurancecompany/SLI03" id="SLI03_companyName" target="_blank" title="SBI Life Insura" class="fn_semibold">
 								SBI Life Insura</a></td>
 								
-																																										<td id="SLI03_lastPrice">1,789.90</td>
+																																										<td id="SLI03_lastPrice">1,782.80</td>
 								
-																																										<td id="SLI03_perChange">1.42</td>
+																																										<td id="SLI03_perChange">1.01</td>
 								
-																																										<td id="SLI03_marketCap">179,557.67</td>
+																																										<td id="SLI03_marketCap">178,845.42</td>
 								
-																																										<td id="SLI03_scTtm">72.67</td>
+																																										<td id="SLI03_scTtm">72.38</td>
 								
-																																										<td id="SLI03_priceBook">9.51</td>
+																																										<td id="SLI03_priceBook">9.48</td>
 								
 																																										<td id="SLI03_roe">12.94</td>
 								
-																																										<td id="SLI03_perform1yr">0.85</td>
+																																										<td id="SLI03_perform1yr">0.45</td>
 								
 																																										<td id="SLI03_netProfit">2,470</td>
 								
@@ -13245,19 +13373,19 @@ $(document).ready(function() {
 																																		<td><a href="https://www.moneycontrol.com/india/stockpricequote/life-health-insurance/hdfclifeinsurancecompany/HSL01" id="HSL01_companyName" target="_blank" title="HDFC Life" class="fn_semibold">
 								HDFC Life</a></td>
 								
-																																										<td id="HSL01_lastPrice">581.50</td>
+																																										<td id="HSL01_lastPrice">575.30</td>
 								
-																																										<td id="HSL01_perChange">1.35</td>
+																																										<td id="HSL01_perChange">0.27</td>
 								
-																																										<td id="HSL01_marketCap">125,484.86</td>
+																																										<td id="HSL01_marketCap">124,146.93</td>
 								
-																																										<td id="HSL01_scTtm">65.63</td>
+																																										<td id="HSL01_scTtm">64.93</td>
 								
-																																										<td id="HSL01_priceBook">7.22</td>
+																																										<td id="HSL01_priceBook">7.14</td>
 								
 																																										<td id="HSL01_roe">10.77</td>
 								
-																																										<td id="HSL01_perform1yr">-23.65</td>
+																																										<td id="HSL01_perform1yr">-24.46</td>
 								
 																																										<td id="HSL01_netProfit">1,912</td>
 								
@@ -13272,19 +13400,19 @@ $(document).ready(function() {
 																																		<td><a href="https://www.moneycontrol.com/india/stockpricequote/finance-general/iciciprudentiallifeinsurancecompany/IPL01" id="IPL01_companyName" target="_blank" title="ICICI Prudentia" class="fn_semibold">
 								ICICI Prudentia</a></td>
 								
-																																										<td id="IPL01_lastPrice">484.25</td>
+																																										<td id="IPL01_lastPrice">483.25</td>
 								
-																																										<td id="IPL01_perChange">1.50</td>
+																																										<td id="IPL01_perChange">1.29</td>
 								
-																																										<td id="IPL01_marketCap">70,245.00</td>
+																																										<td id="IPL01_marketCap">70,099.94</td>
 								
-																																										<td id="IPL01_scTtm">43.70</td>
+																																										<td id="IPL01_scTtm">43.61</td>
 								
-																																										<td id="IPL01_priceBook">5.36</td>
+																																										<td id="IPL01_priceBook">5.35</td>
 								
 																																										<td id="IPL01_roe">11.79</td>
 								
-																																										<td id="IPL01_perform1yr">-24.09</td>
+																																										<td id="IPL01_perform1yr">-24.24</td>
 								
 																																										<td id="IPL01_netProfit">1,607</td>
 								
@@ -13465,9 +13593,11 @@ Nanakramguda,Seri</p>
             <div class="ad160x600">
                 <div id='MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160'>
                     <script>
-                        googletag.cmd.push(function() {
-                            googletag.display('MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160');
-                        });
+                        setTimeout(() => {
+                            googletag.cmd.push(function() {
+                                googletag.display('MC_ENG_DESKTOP/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_160');
+                            });
+                        }, 1000);
                     </script>
                 </div>
             </div>            
@@ -15407,41 +15537,44 @@ Nanakramguda,Seri</p>
     });
 </script>
 <!-- Mobile Verification Popup End --><!-- End < - Moneycontrol Common Footer -->
-<span id="last_generated" style="display:none">2026-06-05 13:28:12</span>
+<span id="last_generated" style="display:none">2026-06-06 00:16:14</span>
 <script type='text/javascript'>
 	var is_dfp_ads_visible = $.trim( $( '.is_dfp_ads_visible' ).val() ); 
 	var mcpro = readCookieRevamp( 'mcpro' );
+	var ad_lite = readCookieRevamp( 'ad_lite' );
+
+	console.log('In footer ad_lite ' + ad_lite);
 </script>
 		<div id='MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1'>
 	  <script type='text/javascript'>
-		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 			googletag.cmd.push(function() { googletag.display('MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_Slider_1x1'); });
 		}
 	  </script>
 	</div>
 	<div id='MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1'>
 	  <script type='text/javascript'>
-		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 			googletag.cmd.push(function() { googletag.display('MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1'); });
 		}
 	  </script>
 	</div>
 	<div id='MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2'>
 	  <script type='text/javascript'>
-		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 			googletag.cmd.push(function() { googletag.display('MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_2'); });
 		}
 	  </script>
 	</div>
 	<div id='MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3'>
 	  <script type='text/javascript'>
-		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 			googletag.cmd.push(function() { googletag.display('MC_ENG_Desktop/MC_ENG_MARKETS/MC_ENG_STOCKPRICE_AS/MC_ENG_ROS_MKTS_STKPRICE_AS_PG_1x1_3'); });
 		}
 	  </script>
 	</div>
 			<script type='text/javascript'>
-		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+		if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 			/* is_dfp_ads_visible is declared while initialization of DFP */ 
 			googletag.cmd.push(function() {
 							googletag.defineOutOfPageSlot('/1039154/MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SHOSH_OOP', 'MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SHOSH_OOP').addService(googletag.pubads());
@@ -15455,14 +15588,14 @@ Nanakramguda,Seri</p>
 			
 	<div id='MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SHOSH_OOP'>
 		<script type='text/javascript'>
-			if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+			if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 				googletag.cmd.push(function() { googletag.display('MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SHOSH_OOP'); });
 			}
 		</script>
 	</div>
 	<div id='MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SKIN_OOP'>
 		<script type='text/javascript'>
-			if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true')  && (mcpro == '' || mcpro == '0')) { 
+			if( (is_dfp_ads_visible == true || is_dfp_ads_visible === 'true') && (mcpro == '' || mcpro == '0') && (ad_lite == '' || ad_lite == '0')) { 
 				googletag.cmd.push(function() { googletag.display('MC_ENG_DESKTOP/MC_ENG_ROS/MC_ENG_ROS_AS/MC_ENG_ROS_AS_SKIN_OOP'); });
 			}
 		</script>
@@ -15470,7 +15603,7 @@ Nanakramguda,Seri</p>
 	
  </div>
 <!-- FOOTER -->
-<input type="hidden" name="for_cookie_sc_comp_sc_id" id="for_cookie_sc_comp_sc_id" value="Ashapura.Mine_NBH"> <!--JS start from here --> 
+<input type="hidden" name="for_cookie_sc_comp_sc_id" id="for_cookie_sc_comp_sc_id" value="Nifty.50_NBH"> <!--JS start from here --> 
 	<script type="text/javascript" src="https://stat5.moneycontrol.com/assets/js/headfoot.js?v=39.07"></script>
 	<script type="text/javascript" src="https://stat5.moneycontrol.com/assets/js/forum_widget.js?v=39.07"></script>
 <script type="text/javascript" src="https://stat2.moneycontrol.com/mcjs/responsive/common/jquery-ui.js?v=39.07"></script>
@@ -16123,5 +16256,5 @@ $(document).ready(function() {
 <noscript><link rel="stylesheet" href="https://stat1.moneycontrol.com//assets/css/stocks/add_to_watchlist.css?classic=true" type="text/css"></noscript>
 <!-- feedback js end -->
 <script type="text/javascript" src="https://stat5.moneycontrol.com/assets/js/stocks/stock_forecast.js?v=39.07" defer></script>
-<script type="text/javascript"  src="/CSbLfLy08/Fgwlwsu/JAt/xPu8vdX0/atz30kQmw3hf0J1Ga5/Xmlu/YUobYAUS/c2oB"></script><script type="text/javascript"  src="/CSbLfLy08/Fgwlwsu/JAt/xPu8vdX0/kkz30kYiw3EL/M21y/A0VpVEdV/H113?v=bd20092d-0307-e360-669d-79e3df9a17ca" defer></script></body>
+<script type="text/javascript"  src="/CSbLfLy08/Fgwlwsu/JAt/xPu8vdX0/atz30kQmw3hf0J1Ga5/Xmlu/YUobYAUS/c2oB"></script><script type="text/javascript"  src="/CSbLfLy08/Fgwlwsu/JAt/xPu8vdX0/kkz30kYiw3EL/M21y/Em4kHktF/ASp3?v=16b79564-cc55-02ff-4f91-43efb30e1726" defer></script></body>
 </html>

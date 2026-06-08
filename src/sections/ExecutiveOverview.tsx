@@ -2,7 +2,6 @@ import { BadgeCheck, BarChart3, CircleDot, Clock, Info, ShieldCheck } from 'luci
 import { MarketBubbleChart } from '@/components/MarketBubbleChart'
 import { MetricRankingTable, type MetricTableRow } from '@/components/MetricRankingBars'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
-import { MarketTrendExplorer } from '@/components/MarketTrendExplorer'
 import { PoolShiftCard } from '@/sections/MarketDistribution'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
@@ -64,6 +63,9 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
       <div className="space-y-4">
         <HeroHeader period={period} annualBasisNote={annualBasisNote} />
         <IndustrySnapshotBand />
+        {/* GI pool-shift trend — full width on its own row. The health-share
+            charts that used to sit beside it now lead the SAHI Analysis block
+            below (composed in IndustryInsightsPage). */}
         <PoolShiftCard />
       </div>
     )
@@ -103,7 +105,7 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
       <section>
         <div className="mb-3 flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Peer Landscape</span>
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Company-Specific Analysis</span>
           <span className="text-[11px] text-ink-secondary">{FY} · {model.groupLabel}</span>
         </div>
 
@@ -157,16 +159,6 @@ export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | '
             </div>
           </div>
         </div>
-      </section>
-
-      {/* ── Market Trend Explorer — metric-driven: share, premium & growth trends ── */}
-      <section>
-        <div className="mb-3 flex items-center gap-2">
-          <span className="h-3 w-[3px] rounded-full bg-champagne" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Market Trend Explorer</span>
-          <span className="text-[11px] text-ink-secondary">standalone health insurers · pick a metric</span>
-        </div>
-        <MarketTrendExplorer />
       </section>
     </div>
   )

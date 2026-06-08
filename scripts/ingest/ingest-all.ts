@@ -24,6 +24,9 @@ import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
 import { ingestMoneycontrolAnalyst } from './ingest-moneycontrol-analyst'
+import { fetchInvesting } from './fetch-investing'
+import { fetchScreener } from './fetch-screener'
+import { fetchTrendlyne } from './fetch-trendlyne'
 import { buildSnapshots } from './build-snapshots'
 import { appendLog } from './util'
 import { closeBrowser } from './browser'
@@ -43,6 +46,12 @@ const ALL: Fetcher[] = [
   ingestManagementEvents,
   ingestValuation,
   ingestMoneycontrolAnalyst,
+  // Excel-template sources. fetch-investing is official-first (NSE) for the
+  // price/Comps sheets; fetch-screener / fetch-trendlyne are login-free BACKUP
+  // adapters, tagged low-confidence, for cells with no official equivalent.
+  fetchInvesting,
+  fetchScreener,
+  fetchTrendlyne,
 ]
 
 const CADENCE = (process.env.CADENCE ?? 'all').toLowerCase()

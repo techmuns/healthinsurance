@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "snapshot_id": "trendlyne-analyst-snapshot",
+    "description": "BACKUP-ONLY analyst broker targets / recommendations from Trendlyne public pages. Analyst coverage has no official equivalent.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "source_policy": "official-first; aggregator used only where no official source exists (analyst targets). All values confidence:low.",
+    "last_successful_run": null,
+    "parser_status": "pending"
+  },
+  "data": []
+}

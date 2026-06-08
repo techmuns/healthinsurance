@@ -75,11 +75,36 @@ export function isOfflineMode(): boolean {
 
 /** Convert an INR value to crores. Accepts string or number. */
 export function toCrore(v: string | number, scale: 'inr' | 'lakh' | 'crore' = 'crore'): number | null {
-  const n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.\-]/g, '')) : v
+  const n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.-]/g, '')) : v
   if (!isFinite(n)) return null
   if (scale === 'inr') return n / 1e7
   if (scale === 'lakh') return n / 100
   return n
+}
+
+/**
+ * Detect when a fetched page is actually a login wall / CAPTCHA / bot block
+ * rather than real data. We NEVER bypass these — we surface a clear diagnostic
+ * so the operator can stage an authenticated export or an official file instead.
+ * Returns { blocked, reason } so a backup adapter can downgrade to 'blocked'
+ * honestly instead of parsing a login page as if it were data.
+ */
+export function detectAccessBlock(buffer: Buffer | string, url: string): { blocked: boolean; reason: string } {
+  const text = (typeof buffer === 'string' ? buffer : buffer.toString('utf8')).slice(0, 20000).toLowerCase()
+  const signals: Array<[RegExp, string]> = [
+    [/just a moment|cf-browser-verification|cloudflare/i, 'Cloudflare bot challenge'],
+    [/captcha|recaptcha|hcaptcha/i, 'CAPTCHA challenge'],
+    [/please log\s?in|sign in to continue|login required|please sign in/i, 'login wall'],
+    [/access denied|forbidden|not authorized|403 forbidden/i, '403 / access denied'],
+    [/subscribe to (?:view|unlock)|premium (?:feature|content)|upgrade to pro/i, 'paywall'],
+    [/rate limit|too many requests|429/i, 'rate limited'],
+  ]
+  for (const [re, reason] of signals) {
+    if (re.test(text)) return { blocked: true, reason: `${reason} at ${url}` }
+  }
+  // A near-empty body from a host that should return rich data is suspicious.
+  if (text.trim().length < 200) return { blocked: true, reason: `empty/blocked response from ${url}` }
+  return { blocked: false, reason: '' }
 }
 
 /** Normalise a FY label to 'FYxx' (e.g. '2024-25' → 'FY25', 'FY 2024-25' → 'FY25'). */

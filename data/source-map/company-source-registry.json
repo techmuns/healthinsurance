@@ -1,0 +1,290 @@
+{
+  "_meta": {
+    "registry_id": "company-source-registry",
+    "description": "Per-company OFFICIAL source registry for the Excel pipeline. FK-joined to src/data/snapshots/company-master.json on company_id (the identity source of truth). Drives the (Chunk 2) company-filings adapter + the bridge's source-priority resolver. Chunk 1 = registry + inventory only; no parser/bridge changes yet.",
+    "schema_version": "1.0.0",
+    "dataset": "official",
+    "source_policy": "official-first, login-free. URLs are public landing / disclosure pages only. From this cloud box every official site returns 403, so newly-added URLs are tagged verification_status='best_known_unverified' and must be confirmed on the first live (CI / manual-drop) fetch. Nothing here is fabricated data; these are source pointers.",
+    "last_updated": "2026-06-05",
+    "exclusions": "Entities flagged in company-master.json with source_scope='irdai_industry_only' (e.g. reliance-health, a defunct SAHI line) are intentionally NOT in this registry: they carry no company-filing source expectations and must not generate filing/inventory/missing-data rows. Their historical values come only from IRDAI industry data (schema-map source_key='industry_premium').",
+    "source_priority_profiles": {
+      "_doc": "Ranked list of which URL field to trust per metric group. The bridge derives source_priority_rank = index. screener_backup / trendlyne_backup / investing_price_only are synthetic backup tokens, always lowest. Backups never override an official value unless it is missing or stale.",
+      "listed": {
+        "annual": ["annual_report_url", "public_disclosure_url", "irda_public_disclosure_url", "investor_relations_url", "nse_filing_url", "bse_filing_url", "screener_backup", "investing_price_only"],
+        "quarterly": ["quarterly_ppt_url", "quarterly_results_url", "public_disclosure_url", "irda_public_disclosure_url", "nse_filing_url", "bse_filing_url", "screener_backup"],
+        "monthly": ["irda_public_disclosure_url", "investor_relations_url"]
+      },
+      "unlisted": {
+        "annual": ["annual_report_url", "public_disclosure_url", "irda_public_disclosure_url", "investor_relations_url", "screener_backup"],
+        "quarterly": ["quarterly_ppt_url", "quarterly_results_url", "public_disclosure_url", "irda_public_disclosure_url", "screener_backup"],
+        "monthly": ["irda_public_disclosure_url", "investor_relations_url"]
+      },
+      "psu": {
+        "annual": ["annual_report_url", "public_disclosure_url", "irda_public_disclosure_url", "investor_relations_url"],
+        "quarterly": ["public_disclosure_url", "irda_public_disclosure_url", "quarterly_results_url"],
+        "monthly": ["irda_public_disclosure_url"]
+      },
+      "listed_parent_supplementary": {
+        "_doc": "Religare Enterprises (Care's listed parent). SUPPLEMENTARY ONLY for Care. See care_religare_policy below.",
+        "annual": ["annual_report_url", "investor_relations_url", "nse_filing_url", "bse_filing_url"],
+        "quarterly": ["quarterly_ppt_url", "quarterly_results_url", "investor_relations_url", "nse_filing_url"]
+      }
+    },
+    "care_religare_policy": {
+      "primary_for_care": "care-health own public disclosures (irda_public_disclosure_url + public_disclosure_url). These are the source of truth for Care's granular metrics.",
+      "religare_role": "SUPPLEMENTARY ONLY. Religare Enterprises is Care's listed parent; its investor PPT / results add context and a few Care KPIs.",
+      "hard_rule": "NEVER map a Religare consolidated / group number onto Care Health unless the figure is explicitly labelled 'Care Health' or 'Care Health Insurance' in the Religare document. A Religare-sourced Care value must carry source_company='religare-enterprises', metric_label_verbatim, and require_explicit_care_label=true; otherwise it is rejected, not guessed."
+    }
+  },
+  "data": [
+    {
+      "company_id": "niva-bupa", "company_name": "Niva Bupa Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "listed", "ticker": "NIVABUPA", "source_priority_profile": "listed",
+      "official_website": "https://www.nivabupa.com",
+      "investor_relations_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "annual_report_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+      "quarterly_results_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "quarterly_ppt_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "public_disclosure_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "bse_filing_url": null, "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo",
+      "notes": "Focal company. JS-rendered IR page; direct PDF hints in company-master.json. Earnings-call transcript already staged."
+    },
+    {
+      "company_id": "star-health", "company_name": "Star Health and Allied Insurance", "insurer_type": "SAHI",
+      "listed_status": "listed", "ticker": "STARHEALTH", "source_priority_profile": "listed",
+      "official_website": "https://www.starhealth.in",
+      "investor_relations_url": "https://www.starhealth.in/investors/financial-information/",
+      "annual_report_url": "https://www.starhealth.in/investors/financial-information/",
+      "quarterly_results_url": "https://www.starhealth.in/investors/financial-information/",
+      "quarterly_ppt_url": "https://www.starhealth.in/investors/financial-information/",
+      "public_disclosure_url": "https://www.starhealth.in/investors/financial-information/",
+      "bse_filing_url": null, "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=STARHEALTH",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": "Annual report staged."
+    },
+    {
+      "company_id": "care-health", "company_name": "Care Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.careinsurance.com",
+      "investor_relations_url": "https://www.careinsurance.com/about-us/financial-information.html",
+      "annual_report_url": null,
+      "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": "religare-enterprises", "verification_status": "in_repo",
+      "notes": "PRIMARY = Care's own public disclosures (public_disclosure_url + IRDAI). Religare (parent) is SUPPLEMENTARY ONLY per _meta.care_religare_policy: never use Religare consolidated figures as Care unless explicitly labelled 'Care Health'. Multiple Care public-disclosure PDFs already staged.",
+      "require_explicit_care_label_from_parent": true
+    },
+    {
+      "company_id": "aditya-birla", "company_name": "Aditya Birla Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.adityabirlacapital.com/healthinsurance/",
+      "investor_relations_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.adityabirlacapital.com/healthinsurance/about-us/financials",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": "aditya-birla-capital", "verification_status": "in_repo",
+      "notes": "ABHI sits under listed Aditya Birla Capital; ABCL consolidated must not be mapped to ABHI unless explicitly health-segment labelled."
+    },
+    {
+      "company_id": "manipalcigna", "company_name": "ManipalCigna Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.manipalcigna.com",
+      "investor_relations_url": "https://www.manipalcigna.com/disclosures/public-disclosures",
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": ""
+    },
+    {
+      "company_id": "icici-lombard", "company_name": "ICICI Lombard General Insurance", "insurer_type": "General",
+      "listed_status": "listed", "ticker": "ICICIGI", "source_priority_profile": "listed",
+      "official_website": "https://www.icicilombard.com",
+      "investor_relations_url": "https://www.icicilombard.com/investor-relations",
+      "annual_report_url": "https://www.icicilombard.com/investor-relations",
+      "quarterly_results_url": "https://www.icicilombard.com/investor-relations",
+      "quarterly_ppt_url": "https://www.icicilombard.com/investor-relations",
+      "public_disclosure_url": "https://www.icicilombard.com/about-us/public-disclosure",
+      "bse_filing_url": "https://www.bseindia.com/stock-share-price/icici-lombard-general-insurance-company-ltd/icicigi/540716/",
+      "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=ICICIGI",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": "Listed GI peer (Comps + Management commentary). Annual report + press releases staged."
+    },
+    {
+      "company_id": "bajaj-general", "company_name": "Bajaj Allianz General Insurance", "insurer_type": "General",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.bajajallianz.com",
+      "investor_relations_url": "https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
+      "annual_report_url": "https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
+      "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.bajajgeneralinsurance.com/about-us/financial-information.html",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": "Annual report + public disclosures staged."
+    },
+    {
+      "company_id": "hdfc-life", "company_name": "HDFC Life Insurance", "insurer_type": "Peer",
+      "listed_status": "listed", "ticker": "HDFCLIFE", "source_priority_profile": "listed",
+      "official_website": "https://www.hdfclife.com",
+      "investor_relations_url": "https://www.hdfclife.com/about-us/investor-relations",
+      "annual_report_url": "https://www.hdfclife.com/about-us/investor-relations",
+      "quarterly_results_url": "https://www.hdfclife.com/about-us/investor-relations",
+      "quarterly_ppt_url": "https://www.hdfclife.com/about-us/investor-relations",
+      "public_disclosure_url": "https://www.hdfclife.com/about-us/public-disclosure",
+      "bse_filing_url": null, "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=HDFCLIFE",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": "Life insurer; peer context only (not a health-line in this workbook)."
+    },
+    {
+      "company_id": "sbi-life", "company_name": "SBI Life Insurance", "insurer_type": "Peer",
+      "listed_status": "listed", "ticker": "SBILIFE", "source_priority_profile": "listed",
+      "official_website": "https://www.sbilife.co.in",
+      "investor_relations_url": "https://www.sbilife.co.in/en/about-us/investor-relations",
+      "annual_report_url": "https://www.sbilife.co.in/en/about-us/investor-relations",
+      "quarterly_results_url": "https://www.sbilife.co.in/en/about-us/investor-relations/financial-results",
+      "quarterly_ppt_url": "https://www.sbilife.co.in/en/about-us/investor-relations/financial-results",
+      "public_disclosure_url": "https://www.sbilife.co.in/en/about-us/investor-relations",
+      "bse_filing_url": null, "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=SBILIFE",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "in_repo", "notes": "Life insurer; peer context only."
+    },
+    {
+      "company_id": "godigit", "company_name": "Go Digit General Insurance", "insurer_type": "General",
+      "listed_status": "listed", "ticker": "GODIGIT", "source_priority_profile": "listed",
+      "official_website": "https://www.godigit.com",
+      "investor_relations_url": "https://www.godigit.com/about-us/investor-relations",
+      "annual_report_url": "https://www.godigit.com/about-us/investor-relations",
+      "quarterly_results_url": "https://www.godigit.com/about-us/investor-relations",
+      "quarterly_ppt_url": "https://www.godigit.com/about-us/investor-relations",
+      "public_disclosure_url": "https://www.godigit.com/about-us/public-disclosures",
+      "bse_filing_url": "https://www.bseindia.com/stock-share-price/go-digit-general-insurance-ltd/godigit/544210/",
+      "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=GODIGIT",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified",
+      "notes": "Listed GI peer (Comps + Management commentary). URLs to confirm on first live fetch."
+    },
+    {
+      "company_id": "hdfc-ergo", "company_name": "HDFC ERGO General Insurance", "insurer_type": "General",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.hdfcergo.com",
+      "investor_relations_url": "https://www.hdfcergo.com/about-us/public-disclosure",
+      "annual_report_url": "https://www.hdfcergo.com/about-us/public-disclosure",
+      "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.hdfcergo.com/about-us/public-disclosure",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "Retail-health peer; URLs to confirm on first live fetch."
+    },
+    {
+      "company_id": "reliance-general", "company_name": "Reliance General Insurance", "insurer_type": "General",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.reliancegeneral.co.in",
+      "investor_relations_url": "https://www.reliancegeneral.co.in/Insurance/About-Us/Public-Disclosures.aspx",
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.reliancegeneral.co.in/Insurance/About-Us/Public-Disclosures.aspx",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "URLs to confirm on first live fetch."
+    },
+    {
+      "company_id": "sbi-general", "company_name": "SBI General Insurance", "insurer_type": "General",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.sbigeneral.in",
+      "investor_relations_url": "https://www.sbigeneral.in/about-us/public-disclosure",
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.sbigeneral.in/about-us/public-disclosure",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "URLs to confirm on first live fetch."
+    },
+    {
+      "company_id": "galaxy-health", "company_name": "Galaxy Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": "https://www.galaxyhealthinsurance.com",
+      "investor_relations_url": null, "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": null,
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified",
+      "notes": "New SAHI (2024). Thin public disclosure; expect IRDAI-only coverage. Most metrics likely unavailable_publicly initially."
+    },
+    {
+      "company_id": "narayana-health", "company_name": "Narayana Health Insurance", "insurer_type": "SAHI",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "unlisted",
+      "official_website": null,
+      "investor_relations_url": null, "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": null,
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "to_discover",
+      "notes": "New SAHI (Narayana Hrudayalaya). Official site + disclosure URL to discover. Expect IRDAI-only; most metrics unavailable_publicly initially."
+    },
+    {
+      "company_id": "new-india", "company_name": "The New India Assurance", "insurer_type": "PSU",
+      "listed_status": "listed", "ticker": "NIACL", "source_priority_profile": "psu",
+      "official_website": "https://www.newindia.co.in",
+      "investor_relations_url": "https://www.newindia.co.in/portal/financialReport",
+      "annual_report_url": "https://www.newindia.co.in/portal/financialReport",
+      "quarterly_results_url": "https://www.newindia.co.in/portal/financialReport",
+      "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://www.newindia.co.in/portal/publicDisclosure",
+      "bse_filing_url": "https://www.bseindia.com/stock-share-price/the-new-india-assurance-company-ltd/niacl/540769/",
+      "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIACL",
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "Listed PSU (NIACL). URLs to confirm on first live fetch."
+    },
+    {
+      "company_id": "national-insurance", "company_name": "National Insurance", "insurer_type": "PSU",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "psu",
+      "official_website": "https://nationalinsurance.nic.co.in",
+      "investor_relations_url": null,
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://nationalinsurance.nic.co.in/en/about-us/public-disclosures",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "Unlisted PSU; disclosure URL to confirm. Premium best from IRDAI."
+    },
+    {
+      "company_id": "oriental-insurance", "company_name": "The Oriental Insurance", "insurer_type": "PSU",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "psu",
+      "official_website": "https://orientalinsurance.org.in",
+      "investor_relations_url": null,
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://orientalinsurance.org.in/en/web/oicl/public-disclosures",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "Unlisted PSU; disclosure URL to confirm. Premium best from IRDAI."
+    },
+    {
+      "company_id": "united-india", "company_name": "United India Insurance", "insurer_type": "PSU",
+      "listed_status": "unlisted", "ticker": null, "source_priority_profile": "psu",
+      "official_website": "https://uiic.co.in",
+      "investor_relations_url": null,
+      "annual_report_url": null, "quarterly_results_url": null, "quarterly_ppt_url": null,
+      "public_disclosure_url": "https://uiic.co.in/en/public-disclosures",
+      "bse_filing_url": null, "nse_filing_url": null,
+      "irda_public_disclosure_url": "https://irdai.gov.in/public-disclosures",
+      "parent_company": null, "verification_status": "best_known_unverified", "notes": "Unlisted PSU; disclosure URL to confirm. Premium best from IRDAI."
+    },
+    {
+      "company_id": "religare-enterprises", "company_name": "Religare Enterprises", "insurer_type": "Listed Parent",
+      "listed_status": "listed", "ticker": "RELIGARE", "source_priority_profile": "listed_parent_supplementary",
+      "official_website": "https://www.religareenterprises.com",
+      "investor_relations_url": "https://www.religareenterprises.com/investor",
+      "annual_report_url": "https://www.religareenterprises.com/investor",
+      "quarterly_results_url": "https://www.religareenterprises.com/financial-results",
+      "quarterly_ppt_url": "https://www.religareenterprises.com/investor",
+      "public_disclosure_url": null,
+      "bse_filing_url": "https://www.bseindia.com/stock-share-price/religare-enterprises-ltd/religare/532915/",
+      "nse_filing_url": "https://www.nseindia.com/get-quotes/equity?symbol=RELIGARE",
+      "irda_public_disclosure_url": null,
+      "subsidiary_company": "care-health", "verification_status": "best_known_unverified",
+      "notes": "Care Health's LISTED PARENT. SUPPLEMENTARY ONLY for Care per _meta.care_religare_policy. Religare consolidated/group figures are NOT Care numbers; only figures explicitly labelled 'Care Health' in Religare docs may be attributed to Care, tagged source_company='religare-enterprises'."
+    }
+  ]
+}
