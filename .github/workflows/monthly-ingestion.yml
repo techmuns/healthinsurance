@@ -12,8 +12,11 @@ name: monthly ingestion
 #
 # Secrets used:
 #   MUNS_API_TOKEN      (required) bearer token for the chat agent.
-#   INGEST_FETCH_PROXY  (optional) a preferred relay URL template with a {url}
-#                       placeholder, tried before the built-in public relays.
+#   SCRAPERAPI_KEY      (recommended) a free scraperapi.com key. With it, every
+#                       file downloads automatically (IRDAI 403s GitHub IPs, so
+#                       the request is routed through ScraperAPI's India IP).
+#   INGEST_FETCH_PROXY  (optional) an alternative relay URL template with a {url}
+#                       placeholder, used instead of / in addition to the key.
 
 on:
   schedule:
@@ -50,8 +53,10 @@ jobs:
       - name: Run monthly ingestion
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
-          # Optional: a preferred relay URL template (with a {url} placeholder),
-          # tried before the built-in public relays. Unset = built-ins only.
+          # Free scraperapi.com key: routes downloads past IRDAI's WAF. With it
+          # set, every file downloads automatically.
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
+          # Optional alternative relay URL template (with a {url} placeholder).
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
         run: npx tsx scripts/monthly-ingestion.ts
 

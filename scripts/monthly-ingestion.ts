@@ -273,16 +273,34 @@ async function fetchOnce(target: string): Promise<Buffer | null> {
 }
 
 /**
+ * Build the ordered list of relay templates to try. A configured "premium"
+ * relay (a ScraperAPI key, or a custom INGEST_FETCH_PROXY template) reliably
+ * gets past IRDAI's WAF, so when one is present we use only it and skip the
+ * built-in public relays (which IRDAI blocks and which just waste time + the
+ * free quota). With nothing configured, we fall back to the public relays as a
+ * best effort.
+ */
+function relayTemplates(): { templates: string[]; premium: boolean } {
+  const key = (process.env.SCRAPERAPI_KEY || '').trim()
+  const custom = (process.env.INGEST_FETCH_PROXY || '').trim()
+  const templates: string[] = []
+  if (key) {
+    // ScraperAPI fetches from an approved (India) IP and returns raw bytes.
+    templates.push(`https://api.scraperapi.com/?api_key=${key}&country_code=in&url={url}`)
+  }
+  if (custom && (custom.includes('{url}') || custom.includes('{raw}'))) templates.push(custom)
+  if (templates.length > 0) return { templates, premium: true }
+  return { templates: [...RELAYS], premium: false }
+}
+
+/**
  * Download an IRDAI .xlsx. Tries a direct fetch first (works from any IP IRDAI
  * doesn't block), then each relay in turn. Returns the validated bytes, or null
  * if every route failed / returned something that isn't a real spreadsheet.
  */
 async function downloadXlsx(url: string): Promise<Buffer | null> {
   const enc = encodeURIComponent(url)
-  const custom = process.env.INGEST_FETCH_PROXY
-  const templates: string[] = []
-  if (custom && (custom.includes('{url}') || custom.includes('{raw}'))) templates.push(custom)
-  templates.push(...RELAYS)
+  const { templates } = relayTemplates()
 
   // Direct attempt first.
   const direct = await fetchOnce(url)
@@ -369,10 +387,15 @@ async function main(): Promise<number> {
   // run so it doesn't look green while doing nothing. The fix is a working
   // relay: set INGEST_FETCH_PROXY to a relay URL template with a {url} placeholder.
   if (newCount === 0 && failures > 0) {
+    const hasKey = !!(process.env.SCRAPERAPI_KEY || process.env.INGEST_FETCH_PROXY || '').trim()
     console.error(
-      '\nERROR: found links but downloaded nothing — every route (direct + all ' +
-        'public relays) was blocked or returned a non-xlsx. Set INGEST_FETCH_PROXY ' +
-        'to a working relay URL template (with a {url} placeholder).',
+      hasKey
+        ? '\nERROR: found links but downloaded nothing — the configured relay ' +
+            '(SCRAPERAPI_KEY / INGEST_FETCH_PROXY) did not return valid .xlsx files. ' +
+            'Check the key is valid and has quota.'
+        : '\nERROR: found links but downloaded nothing — IRDAI blocks direct + public ' +
+            'relays from GitHub IPs. Add a free SCRAPERAPI_KEY repo secret ' +
+            '(scraperapi.com) and the monthly job will download every file automatically.',
     )
     return 1
   }
