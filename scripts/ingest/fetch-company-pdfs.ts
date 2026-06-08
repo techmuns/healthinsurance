@@ -46,22 +46,27 @@ const TARGETS: Target[] = [
     company_id: 'aditya-birla',
     url: 'https://www.grasim.com/Upload/PDF/aditya-birla-capital-subsidiaries-financial-report-2024-25.pdf',
     dest: 'data/raw/companies/aditya-birla/aditya-birla-ABCL-Subsidiaries-Financial-Report-FY25.pdf',
-    label: 'Aditya Birla Capital subsidiaries financial report FY25 (incl. ABHI audited statements)',
+    label: 'Aditya Birla Capital subsidiaries financial report FY25 (incl. ABHI audited statements) — already staged',
   },
   {
-    company_id: 'aditya-birla',
-    url: 'https://www.grasim.com/Upload/PDF/aditya-birla-capital-subsidiaries-financial-report-2023-24.pdf',
-    dest: 'data/raw/companies/aditya-birla/aditya-birla-ABCL-Subsidiaries-Financial-Report-FY24.pdf',
-    label: 'Aditya Birla Capital subsidiaries financial report FY24 (pattern-guess — may 404)',
-    speculative: true,
+    company_id: 'manipalcigna',
+    url: 'https://www.manipalcigna.com/documents/20124/131100/BSE+Intimation+Annual+Report+24-25.pdf/07472842-8031-513d-59ec-c14d3953d84b?t=1756447017257',
+    dest: 'data/raw/companies/manipalcigna/manipalcigna-Annual-Report-FY25.pdf',
+    label: 'ManipalCigna Annual Report FY25 (BSE intimation, 2024-25) — confirmed direct URL',
   },
   {
     company_id: 'manipalcigna',
     url: 'https://www.manipalcigna.com/documents/20124/131103/Annual+Report+2023.pdf/b1b98948-3b19-85ff-383b-3d7a93a16aaa?t=1703076554969',
     dest: 'data/raw/companies/manipalcigna/manipalcigna-Annual-Report-2023.pdf',
-    label: 'ManipalCigna Annual Report 2023 (FY23 — confirmed URL from search index)',
+    label: 'ManipalCigna Annual Report 2023 (FY23 comparatives) — confirmed URL',
+    speculative: true,
   },
 ]
+// NOTE: manipalcigna.com may 403 GitHub IPs (unlike grasim, which served directly).
+// If the FY25 fetch returns no PDF, set the SCRAPERAPI_KEY repo secret — the relay
+// then routes the request through ScraperAPI's India IP. Aditya Birla FY24 has no
+// working direct URL (grasim hosts only the latest year; the ABCL site 403s), so
+// Aditya FY23 ratios/NEP stay blank until that report is staged another way.
 
 const BROWSER_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
