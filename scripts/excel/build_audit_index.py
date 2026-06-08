@@ -38,7 +38,11 @@ SCHEMA = REPO / "schema-map.json"
 VALUES = REPO / "data" / "processed" / "excel-values.json"
 HELD_BACK = REPO / "data" / "processed" / "excel-held-back.json"
 FILINGS = REPO / "src" / "data" / "snapshots" / "company-filings-snapshot.json"
+TEMPLATE = REPO / "templates" / "niva-bupa-portfolio-review.xlsx"
 OUT = REPO / "src" / "data" / "snapshots" / "extracted-data-audit.json"
+
+# Max referenced cells we record per formula (keeps a big SUM range bounded).
+MAX_FORMULA_INPUTS = 24
 
 # Cell kinds we surface as audit rows. `text` / `empty` are pure layout labels
 # (no value contract) and are skipped. Everything else is shown — including
@@ -97,16 +101,149 @@ def latest_iso(*candidates) -> str | None:
     return max(vals) if vals else None
 
 
+# ---------------------------------------------------------------------------
+#  Formula resolver — reads the committed template and, for each computed
+#  (formula) cell, recovers: the raw Excel formula, the cells it references
+#  (resolved to their metric / period / row label so a reviewer can see WHERE
+#  each number comes from), and a readable "calculation in words". Guarded so
+#  the build still succeeds if openpyxl/the template isn't present (formula
+#  detail is simply omitted then).
+# ---------------------------------------------------------------------------
+
+def build_formula_resolver(schema):
+    try:
+        import re
+        import openpyxl
+        from openpyxl.formula.tokenizer import Tokenizer
+        from openpyxl.utils import range_boundaries, get_column_letter
+    except Exception:
+        return None
+    if not TEMPLATE.exists():
+        return None
+    try:
+        wb = openpyxl.load_workbook(TEMPLATE, data_only=False)
+    except Exception:
+        return None
+
+    # cell -> binding (entity / metric / period) per sheet, from the schema map.
+    cellmap = {sh.get("sheet"): {b.get("cell"): b for b in (sh.get("bindings") or [])}
+               for sh in schema.get("sheets", [])}
+    # row -> human label per sheet, read from the template's leftmost text column.
+    rowlabel = {}
+    for ws in wb.worksheets:
+        rl = {}
+        for r in range(1, (ws.max_row or 0) + 1):
+            for c in range(1, min(ws.max_column or 1, 5) + 1):
+                v = ws.cell(r, c).value
+                if isinstance(v, str) and v.strip() and not v.startswith("="):
+                    rl[r] = v.strip()
+                    break
+        rowlabel[ws.title] = rl
+
+    coord_re = re.compile(r"([A-Z]+)(\d+)")
+
+    def split_ref(value):
+        external = False
+        sheet = None
+        ref = value
+        if "!" in value:
+            sp, ref = value.rsplit("!", 1)
+            sp = sp.strip()
+            if sp.startswith("["):
+                external = True
+            else:
+                sheet = sp.strip("'")
+        return sheet, ref.replace("$", ""), external
+
+    def expand(ref):
+        if ":" in ref:
+            try:
+                c0, r0, c1, r1 = range_boundaries(ref)
+            except Exception:
+                return [ref]
+            return [f"{get_column_letter(c)}{r}" for r in range(r0, r1 + 1) for c in range(c0, c1 + 1)]
+        return [ref]
+
+    def describe(sheet, coord, cur_sheet):
+        s = sheet or cur_sheet
+        b = cellmap.get(s, {}).get(coord) or {}
+        m = coord_re.match(coord)
+        row = int(m.group(2)) if m else None
+        label = rowlabel.get(s, {}).get(row) or b.get("metric") or coord
+        out = {"ref": coord, "label": label}
+        if sheet and sheet != cur_sheet:
+            out["sheet"] = sheet
+        if b.get("period"):
+            out["period"] = b["period"]
+        if b.get("entity"):
+            out["entity"] = b["entity"]
+        if b.get("metric"):
+            out["metric"] = b["metric"]
+        return out
+
+    def resolve(cur_sheet, coord):
+        ws = wb[cur_sheet] if cur_sheet in wb.sheetnames else None
+        if ws is None:
+            return None
+        raw = ws[coord].value
+        if not (isinstance(raw, str) and raw.startswith("=")):
+            return None
+        try:
+            toks = Tokenizer(raw).items
+        except Exception:
+            return {"formula": raw}
+        inputs, seen, words = [], set(), []
+        for t in toks:
+            if t.type == "OPERAND" and t.subtype == "RANGE":
+                sheet, ref, external = split_ref(t.value)
+                if external:
+                    words.append("[external workbook]")
+                    continue
+                coords = expand(ref)
+                labs = [describe(sheet, c, cur_sheet) for c in coords]
+                for lab in labs:
+                    key = (lab.get("sheet"), lab["ref"])
+                    if key not in seen and len(inputs) < MAX_FORMULA_INPUTS:
+                        seen.add(key)
+                        inputs.append(lab)
+                words.append(f"[{labs[0]['label']}]" if len(labs) == 1
+                             else f"[{labs[0]['label']} … {labs[-1]['label']}]")
+            elif t.type == "FUNC":
+                words.append(t.value)            # e.g. "SUM(" or ")"
+            elif t.type == "PAREN":
+                words.append(t.value)
+            elif t.type == "SEP":
+                words.append(",")
+            elif t.type.startswith("OPERATOR"):
+                words.append(t.value)
+            elif t.type == "OPERAND" and t.subtype == "NUMBER":
+                words.append(t.value)
+            elif t.type == "OPERAND" and t.subtype == "TEXT":
+                words.append(f'"{t.value}"')
+        calc = " ".join(w for w in words if w).strip()
+        info = {"formula": raw}
+        if inputs:
+            info["inputs"] = inputs
+        if calc:
+            info["calc"] = calc
+        return info
+
+    return resolve
+
+
 def main() -> None:
     schema = load(SCHEMA, {"sheets": [], "_meta": {}, "sources": {}})
     store = load(VALUES, {})
     held = load(HELD_BACK, {"data": []}).get("data", [])
     filings = load(FILINGS, {"data": []}).get("data", [])
 
+    resolve_formula = build_formula_resolver(schema)
+
     # --- Sheets -> trimmed audit cells -----------------------------------
     sheets = []
     total_cells = 0
     total_computed = 0
+    formula_resolved = 0
     for sh in schema.get("sheets", []):
         role = sh.get("role")
         if role in SKIP_ROLES:
@@ -117,9 +254,19 @@ def main() -> None:
             kind = b.get("cell_kind")
             if kind not in AUDIT_CELL_KINDS:
                 continue
+            cell = pick(b, BINDING_FIELDS)
             if kind == "formula":
                 computed += 1
-            cells.append(pick(b, BINDING_FIELDS))
+                if resolve_formula:
+                    info = resolve_formula(sh.get("sheet"), b.get("cell"))
+                    if info:
+                        cell["formula"] = info.get("formula")
+                        if info.get("calc"):
+                            cell["calc"] = info["calc"]
+                        if info.get("inputs"):
+                            cell["inputs"] = info["inputs"]
+                        formula_resolved += 1
+            cells.append(cell)
         if not cells and not computed:
             continue
         total_cells += len(cells)
@@ -199,8 +346,10 @@ def main() -> None:
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1))
     size_kb = OUT.stat().st_size / 1024
     print(f"extracted-data-audit.json written -> {OUT} ({size_kb:.0f} KB)")
-    print(f"  sheets: {len(sheets)} | audit cells: {total_cells}")
+    print(f"  sheets: {len(sheets)} | audit cells: {total_cells} | computed: {total_computed} (formulas resolved: {formula_resolved})")
     print(f"  value-store entries: {len(values)} | held-back: {len(held_back)} | blocked filings: {len(blocked_filings)}")
+    if not formula_resolved and total_computed:
+        print("  note: formula detail omitted (openpyxl/template unavailable) — coverage unaffected")
 
 
 if __name__ == "__main__":

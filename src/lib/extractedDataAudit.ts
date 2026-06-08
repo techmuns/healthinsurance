@@ -24,6 +24,15 @@ import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 
 // ─── Raw index shapes (as emitted by build_audit_index.py) ──────────────────
 
+interface RawFormulaInput {
+  ref: string
+  label: string
+  sheet?: string
+  entity?: string
+  metric?: string
+  period?: string
+}
+
 interface RawBindingCell {
   cell: string
   section?: string
@@ -36,6 +45,10 @@ interface RawBindingCell {
   fillable?: boolean
   source_key?: string
   source_status?: string
+  /** Computed (formula) cells only: the recipe + where each number comes from. */
+  formula?: string
+  calc?: string
+  inputs?: RawFormulaInput[]
 }
 
 interface RawSheet {
@@ -163,6 +176,20 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   unused: { key: 'unused', label: 'Unused extracted field', color: 'info' },
 }
 
+/** One operand of a computed cell's formula, traced to its source value. */
+export interface FormulaInput {
+  ref: string
+  label: string
+  sheet?: string
+  entityLabel?: string
+  metricLabel?: string
+  period?: string
+  /** Source-backed value of this input (null when it isn't itself fetched). */
+  value: number | string | null
+  unit?: string
+  sourceUrl?: string | null
+}
+
 export interface AuditCell {
   id: string
   sheet: string
@@ -198,6 +225,11 @@ export interface AuditCell {
   qaColor: QaColor
   confidence: string | null
   note: string
+  /** Computed cells: the Excel formula, a plain "calculation in words", and the
+   *  resolved inputs (so a reviewer can see the recipe and replicate it). */
+  formula?: string
+  calc?: string
+  inputs?: FormulaInput[]
 }
 
 export interface SheetStats {
@@ -613,6 +645,21 @@ export function buildAudit(): AuditModel {
         sourceUrl = INDEX.sources[b.source_key ?? '']?.primary_url || null
       }
 
+      const inputs = b.inputs?.map<FormulaInput>((inp) => {
+        const v = inp.entity && inp.metric && inp.period ? values[joinKey(inp.entity, inp.metric, inp.period)] : undefined
+        return {
+          ref: inp.ref,
+          label: inp.label,
+          sheet: inp.sheet,
+          entityLabel: inp.entity ? entityLabel(inp.entity) : undefined,
+          metricLabel: inp.metric ? metricLabel(inp.metric) : undefined,
+          period: inp.period,
+          value: v?.normalized_value ?? null,
+          unit: v?.unit ?? undefined,
+          sourceUrl: v?.source_url ?? null,
+        }
+      })
+
       cells.push({
         id: `${sheet.sheet}!${b.cell}`,
         sheet: sheet.sheet,
@@ -642,6 +689,9 @@ export function buildAudit(): AuditModel {
         qaColor: STATUS_META[status].color,
         confidence,
         note,
+        formula: b.formula,
+        calc: b.calc,
+        inputs,
       })
     }
 

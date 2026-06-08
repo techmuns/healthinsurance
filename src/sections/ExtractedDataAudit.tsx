@@ -405,40 +405,126 @@ function GroupCard({ title, subtitle, focus, cells, stats, open, onToggle }: {
 
 function CellRow({ c }: { c: AuditCell }) {
   const style = QA_STYLE[c.qaColor]
+  const [showCalc, setShowCalc] = useState(false)
+  const hasCalc = !!c.formula
+  const replicated = hasCalc ? replicateSum(c) : null
   return (
-    <tr className={`border-b border-soft-border/60 align-top ${style.tint} hover:bg-soft-blue/40`}>
-      <Td>
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold ${style.pill}`}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.dot }} />
-          {STATUS_META[c.status].label}
-        </span>
-      </Td>
-      <Td className="font-mono text-[10px] text-ink-secondary">{c.cellRef}</Td>
-      <Td className="text-ink-secondary">{c.section}</Td>
-      <Td>
-        <span className="font-medium text-ink-primary">{c.metricLabel}</span>
-        {c.metricId && c.metricId !== c.metricLabel && <span className="block font-mono text-[9px] text-ink-secondary/70">{c.metricId}</span>}
-      </Td>
-      <Td className="text-ink-primary">{c.entityLabel}</Td>
-      <Td className="whitespace-nowrap text-ink-secondary">{c.period}</Td>
-      <Td className="text-right font-mono tabular-nums text-ink-secondary">{formatRaw(c.rawValue)}</Td>
-      <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</Td>
-      <Td className="text-[9.5px] uppercase text-ink-secondary/80">{c.unit || '—'}</Td>
-      <Td>
-        {c.sourceUrl ? (
-          <a href={c.sourceUrl} target="_blank" rel="noreferrer" title={c.sourceName ?? c.sourceUrl}
-            className="group inline-flex items-start gap-1 text-muted-blue hover:text-navy-primary hover:underline">
-            <span className="line-clamp-2 max-w-[200px] leading-snug">{shortSource(c.sourceName) ?? 'Source link'}</span>
-            <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 opacity-70 group-hover:opacity-100" />
-          </a>
-        ) : <span className="line-clamp-2 max-w-[200px] leading-snug text-ink-secondary/80">{shortSource(c.sourceName) ?? '—'}</span>}
-        {c.sourceDate && <span className="mt-0.5 block text-[9px] text-ink-secondary/70">as of {String(c.sourceDate).slice(0, 10)}</span>}
-      </Td>
-      <Td className="whitespace-nowrap text-[10px] text-ink-secondary">{c.fetchedAt ? c.fetchedAt.slice(0, 10) : '—'}</Td>
-      <Td className="text-[10.5px] text-ink-secondary">{c.dashboardField}</Td>
-      <Td className="text-[10px] leading-snug text-ink-secondary">{c.note || '—'}</Td>
-    </tr>
+    <>
+      <tr className={`border-b border-soft-border/60 align-top ${style.tint} hover:bg-soft-blue/40`}>
+        <Td>
+          <span className={`inline-flex items-center gap-1.5 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold ${style.pill}`}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: style.dot }} />
+            {STATUS_META[c.status].label}
+          </span>
+        </Td>
+        <Td className="font-mono text-[10px] text-ink-secondary">{c.cellRef}</Td>
+        <Td className="text-ink-secondary">{c.section}</Td>
+        <Td>
+          <span className="font-medium text-ink-primary">{c.metricLabel}</span>
+          {c.metricId && c.metricId !== c.metricLabel && <span className="block font-mono text-[9px] text-ink-secondary/70">{c.metricId}</span>}
+        </Td>
+        <Td className="text-ink-primary">{c.entityLabel}</Td>
+        <Td className="whitespace-nowrap text-ink-secondary">{c.period}</Td>
+        <Td className="text-right font-mono tabular-nums text-ink-secondary">{formatRaw(c.rawValue)}</Td>
+        <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">
+          {formatValue(c.normalizedValue, c.unit)}
+        </Td>
+        <Td className="text-[9.5px] uppercase text-ink-secondary/80">{c.unit || '—'}</Td>
+        <Td>
+          {c.sourceUrl ? (
+            <a href={c.sourceUrl} target="_blank" rel="noreferrer" title={c.sourceName ?? c.sourceUrl}
+              className="group inline-flex items-start gap-1 text-muted-blue hover:text-navy-primary hover:underline">
+              <span className="line-clamp-2 max-w-[200px] leading-snug">{shortSource(c.sourceName) ?? 'Source link'}</span>
+              <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 opacity-70 group-hover:opacity-100" />
+            </a>
+          ) : <span className="line-clamp-2 max-w-[200px] leading-snug text-ink-secondary/80">{shortSource(c.sourceName) ?? '—'}</span>}
+          {c.sourceDate && <span className="mt-0.5 block text-[9px] text-ink-secondary/70">as of {String(c.sourceDate).slice(0, 10)}</span>}
+        </Td>
+        <Td className="whitespace-nowrap text-[10px] text-ink-secondary">{c.fetchedAt ? c.fetchedAt.slice(0, 10) : '—'}</Td>
+        <Td className="text-[10.5px] text-ink-secondary">{c.dashboardField}</Td>
+        <Td className="text-[10px] leading-snug text-ink-secondary">
+          {hasCalc ? (
+            <div className="space-y-0.5">
+              {c.calc && <div className="text-ink-primary">{c.calc}</div>}
+              <code className="block break-all rounded bg-slate-100 px-1 py-0.5 font-mono text-[9.5px] text-slate-600">{c.formula}</code>
+              {c.inputs && c.inputs.length > 0 && (
+                <button type="button" onClick={() => setShowCalc((v) => !v)} className="inline-flex items-center gap-0.5 text-[9.5px] font-medium text-navy-primary hover:underline">
+                  <ChevronRight className={`h-2.5 w-2.5 transition-transform ${showCalc ? 'rotate-90' : ''}`} />
+                  {showCalc ? 'hide' : 'trace'} {c.inputs.length} input{c.inputs.length > 1 ? 's' : ''}
+                </button>
+              )}
+            </div>
+          ) : (c.note || '—')}
+        </Td>
+      </tr>
+      {hasCalc && showCalc && c.inputs && (
+        <tr className="border-b border-soft-border/60 bg-lavender-soft/15">
+          <td colSpan={13} className="px-3 py-2">
+            <FormulaDetail c={c} replicated={replicated} />
+          </td>
+        </tr>
+      )}
+    </>
   )
+}
+
+/** The expandable "where do the numbers come from" panel for a computed cell. */
+function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | null }) {
+  return (
+    <div className="rounded-lg border border-lavender/30 bg-white/70 p-2.5">
+      <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
+        <span className="font-semibold text-navy-deep">Calculation</span>
+        {c.calc && <span className="text-ink-secondary">{c.calc}</span>}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">{c.formula}</code>
+      </div>
+      <table className="w-full border-collapse text-[10.5px]">
+        <thead>
+          <tr className="text-left text-[9px] uppercase tracking-wide text-ink-secondary">
+            <Th className="w-[44px]">Cell</Th><Th className="min-w-[150px]">Input (row)</Th>
+            <Th className="w-[120px]">Company</Th><Th className="w-[80px]">Period</Th>
+            <Th className="w-[110px] text-right">Value</Th><Th className="min-w-[120px]">Source</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {c.inputs!.map((i) => (
+            <tr key={i.ref} className="border-t border-soft-border/50">
+              <Td className="font-mono text-[9.5px] text-ink-secondary">{i.sheet ? `${i.sheet}!` : ''}{i.ref}</Td>
+              <Td className="text-ink-primary">{i.label}{i.metricLabel && i.metricLabel !== i.label && <span className="block font-mono text-[8.5px] text-ink-secondary/70">{i.metricLabel}</span>}</Td>
+              <Td className="text-ink-secondary">{i.entityLabel ?? '—'}</Td>
+              <Td className="text-ink-secondary">{i.period ?? '—'}</Td>
+              <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">{i.value !== null ? formatValue(i.value, i.unit) : <span className="text-ink-secondary/70">—</span>}</Td>
+              <Td>{i.sourceUrl ? <a href={i.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-muted-blue hover:underline">source<ExternalLink className="h-2.5 w-2.5" /></a> : <span className="text-ink-secondary/60">derived / —</span>}</Td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {replicated !== null && (
+        <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary">
+          Arithmetic check — inputs above sum to <span className="font-semibold text-ink-primary">{formatValue(replicated, c.unit)}</span>
+          {typeof c.normalizedValue === 'number' ? (
+            Math.abs(replicated - c.normalizedValue) < 1e-6
+              ? <> · matches the reported {formatValue(c.normalizedValue, c.unit)} ✓</>
+              : <> · the reported figure is <span className="font-semibold text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</span> — they differ, so the ratios are likely on different bases (e.g. NEP vs GWP); not auto-filled.</>
+          ) : <> (this cell has no separately-reported value; shown only as an arithmetic aid — verify the bases match before relying on it).</>}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Safe replication: only when the formula is purely additive (SUM / +) and
+ *  every input has a numeric value — e.g. combined ratio = claims + expense.
+ *  Anything with −, ×, ÷, ^ is left to the reviewer (no guessing). */
+function replicateSum(c: AuditCell): number | null {
+  if (!c.formula || !c.inputs || c.inputs.length === 0) return null
+  const body = c.formula.replace(/^=/, '').replace(/IFERROR\s*\(/gi, '(')
+  if (/[-*/^]/.test(body.replace(/"[^"]*"/g, ''))) return null // any non-additive operator → skip
+  let sum = 0
+  for (const i of c.inputs) {
+    if (typeof i.value !== 'number') return null
+    sum += i.value
+  }
+  return sum
 }
 
 // ─── Reconciliation tables ──────────────────────────────────────────────────
@@ -640,8 +726,9 @@ async function exportToExcel(
     ['Mapping issues', model.mappingIssues.length],
   ]), 'Summary')
 
-  const header = ['Sheet', 'Cell', 'Section', 'Metric', 'Metric id', 'Company', 'Period', 'Raw value', 'Normalized value', 'Unit', 'Status', 'Source name', 'Source URL', 'Source date', 'Fetched at', 'Dashboard field', 'Notes']
-  const rowOf = (c: AuditCell) => [c.sheet, c.cellRef, c.section, c.metricLabel, c.metricId, c.entityLabel, c.period, c.rawValue ?? '', c.normalizedValue ?? '', c.unit, STATUS_META[c.status].label, c.sourceName ?? '', c.sourceUrl ?? '', c.sourceDate ?? '', c.fetchedAt ?? '', c.dashboardField, c.note]
+  const header = ['Sheet', 'Cell', 'Section', 'Metric', 'Metric id', 'Company', 'Period', 'Raw value', 'Normalized value', 'Unit', 'Status', 'Source name', 'Source URL', 'Source date', 'Fetched at', 'Dashboard field', 'Notes', 'Formula', 'Calculation', 'Calculation inputs']
+  const inputsText = (c: AuditCell) => (c.inputs ?? []).map((i) => `${i.ref}=${i.label}${i.period ? ` (${i.period})` : ''}${i.value !== null ? ` [${i.value}]` : ''}`).join('; ')
+  const rowOf = (c: AuditCell) => [c.sheet, c.cellRef, c.section, c.metricLabel, c.metricId, c.entityLabel, c.period, c.rawValue ?? '', c.normalizedValue ?? '', c.unit, STATUS_META[c.status].label, c.sourceName ?? '', c.sourceUrl ?? '', c.sourceDate ?? '', c.fetchedAt ?? '', c.dashboardField, c.note, c.formula ?? '', c.calc ?? '', inputsText(c)]
   for (const g of view) {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header, ...g.cells.map(rowOf)]), sanitizeSheetName(g.title, used))
   }
