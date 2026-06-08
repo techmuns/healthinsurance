@@ -164,16 +164,16 @@ export interface StatusMeta {
 }
 
 export const STATUS_META: Record<AuditStatus, StatusMeta> = {
-  fetched: { key: 'fetched', label: 'Fetched', color: 'green' },
-  transformed: { key: 'transformed', label: 'Transformed / adjusted', color: 'yellow' },
-  manual_override: { key: 'manual_override', label: 'Manual override', color: 'yellow' },
+  fetched: { key: 'fetched', label: 'Got it', color: 'green' },
+  transformed: { key: 'transformed', label: 'Got it (adjusted)', color: 'yellow' },
+  manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'yellow' },
   missing: { key: 'missing', label: 'Missing', color: 'red' },
-  parser_issue: { key: 'parser_issue', label: 'Parser issue', color: 'red' },
-  source_unavailable: { key: 'source_unavailable', label: 'Source unavailable', color: 'red' },
-  blocked: { key: 'blocked', label: 'Blocked / withheld', color: 'yellow' },
-  computed: { key: 'computed', label: 'Computed in Excel', color: 'info' },
-  not_applicable: { key: 'not_applicable', label: 'Not applicable', color: 'grey' },
-  unused: { key: 'unused', label: 'Unused extracted field', color: 'info' },
+  parser_issue: { key: 'parser_issue', label: "Couldn't read it", color: 'red' },
+  source_unavailable: { key: 'source_unavailable', label: 'No source', color: 'red' },
+  blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
+  computed: { key: 'computed', label: 'Worked out by the sheet', color: 'info' },
+  not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
+  unused: { key: 'unused', label: 'Extra — not used', color: 'info' },
 }
 
 /** One operand of a computed cell's formula, traced to its source value. */
@@ -507,12 +507,12 @@ export function formatRaw(value: number | string | null): string {
 // ─── Status classification (mirrors fill_template.py's join) ────────────────
 
 const MISSING_REASON: Record<string, string> = {
-  available: 'Source supported but value not yet fetched — pending the official fetch (needs egress).',
-  partial: 'Partially available from official disclosures — a period / coverage gap remains.',
-  backup: 'No official equivalent; the backup aggregator returned no value.',
-  computed: 'Computed in-sheet by an Excel formula — no fetch required.',
-  narrative: 'Editorial summary — populated by a reviewer, not a numeric fetch.',
-  excluded_from_core: 'Outside the source-backed core dataset (curated).',
+  available: 'We know the official source — just not pulled in yet.',
+  partial: 'Only part of this is available so far.',
+  backup: 'No official source has this number.',
+  computed: 'The sheet works this out — nothing to fetch.',
+  narrative: 'This is a written note, not a number to fetch.',
+  excluded_from_core: 'Outside the main data we track.',
 }
 
 function numbersDiffer(a: unknown, b: unknown): boolean {
@@ -583,7 +583,7 @@ export function buildAudit(): AuditModel {
 
       if (b.cell_kind === 'input_na') {
         status = 'not_applicable'
-        note = 'Template marks this cell as N/A (not meaningful here).'
+        note = "This cell isn't used in the template."
       } else if (hasValue && entry) {
         rawValue = entry.raw_value ?? null
         normalizedValue = entry.normalized_value ?? null
@@ -596,28 +596,28 @@ export function buildAudit(): AuditModel {
         confidence = entry.confidence ?? null
         if (entry.conflict_status === 'conflict_needs_review') {
           status = 'parser_issue'
-          note = 'Source conflict — competing values; withheld pending review.'
+          note = 'Two sources disagree on this number — held back until someone checks.'
         } else if (isManual(entry)) {
           status = 'manual_override'
           note = entry.basis_note
-            ? `Hand-transcribed from source. ${entry.basis_note}`
-            : 'Hand-transcribed into the curated layer (page-cited), not auto-fetched.'
+            ? `Typed in by hand from the report. ${entry.basis_note}`
+            : 'Typed in by hand from the report (with the page noted).'
         } else if (entry.basis_note) {
           status = 'transformed'
           note = entry.basis_note
         } else if (numbersDiffer(entry.raw_value, entry.normalized_value)) {
           status = 'transformed'
-          note = transformation ? `Normalized: ${transformation}.` : 'Value normalized for the dashboard.'
+          note = 'Tidied up from how the source printed it (e.g. a percentage written as a decimal).'
         } else {
           status = 'fetched'
-          note = transformation && transformation !== 'identity (value used as-is)' ? `Normalized: ${transformation}.` : ''
+          note = ''
         }
         if (b.cell_kind === 'formula') {
-          note = note ? `${note} Also computed in Excel.` : 'We hold a source value; the template also computes this cell in Excel.'
+          note = note ? `${note} The sheet also works this out.` : 'We have this number; the sheet also works it out.'
         }
       } else if (b.cell_kind === 'formula') {
         status = 'computed'
-        note = 'Computed in Excel from its input cells (e.g. claims + expense) — the dashboard recomputes it; no separate fetch needed.'
+        note = 'The sheet works this out from other cells (for example, claims + expense). Nothing to fetch.'
       } else if (blocked) {
         status = 'parser_issue'
         sourceUrl = blocked.source_url ?? null
@@ -633,7 +633,7 @@ export function buildAudit(): AuditModel {
         rawValue = held.raw_value ?? null
         normalizedValue = null
         confidence = held.confidence ?? null
-        note = held.note || `Extracted but withheld (${held.hold_reason ?? 'review'}).`
+        note = held.note || 'We found this number but are holding it back for a check.'
       } else {
         const ss = b.source_status ?? 'available'
         status = ss === 'backup' || ss === 'excluded_from_core' ? 'source_unavailable' : 'missing'
@@ -754,7 +754,7 @@ export function buildAudit(): AuditModel {
           metricLabel: metricLabel(tMetric),
           period: row.fiscal_year,
           dashboardValue: v,
-          reason: 'On the dashboard (annual snapshot) but no traced value in the audit — verify the source/mapping for this cell.',
+          reason: "This number shows on the dashboard, but we can't trace where it came from here. Worth a check.",
         })
       }
     }

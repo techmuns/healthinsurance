@@ -146,8 +146,8 @@ export function ExtractedDataAudit() {
           <div className="leading-tight">
             <h1 className="font-display text-[20px] text-navy-deep">Extracted Data Audit</h1>
             <p className="mt-0.5 max-w-2xl text-[12px] text-ink-secondary">
-              A quality check, not analysis. Confirm — cell by cell — that every value the source template
-              expects is fetched, normalized, source-linked and routed to the right place on the dashboard.
+              A simple check of our numbers. For every figure the template needs, see if we have it,
+              where it came from, and where it's used on the dashboard.
             </p>
             <p className="mt-1 text-[10.5px] text-ink-secondary/80">
               Template: <span className="font-medium text-ink-primary">{model.meta.template_file ?? 'niva-bupa-portfolio-review.xlsx'}</span>
@@ -223,11 +223,11 @@ export function ExtractedDataAudit() {
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
           {filterActive && <span>Showing <span className="font-semibold text-ink-primary">{filtered.length.toLocaleString('en-IN')}</span> of {scopedCells.length.toLocaleString('en-IN')} cells.</span>}
-          <span className="flex flex-wrap items-center gap-2">Legend:
+          <span className="flex flex-wrap items-center gap-2">What the colours mean:
             {(['green', 'yellow', 'red', 'info', 'grey'] as QaColor[]).map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
-                {c === 'green' ? 'fetched' : c === 'yellow' ? 'adjusted / override' : c === 'red' ? 'missing / issue' : c === 'info' ? 'computed / unused' : 'n/a'}
+                {c === 'green' ? 'got it' : c === 'yellow' ? 'got it, tweaked' : c === 'red' ? 'missing' : c === 'info' ? 'worked out / extra' : 'not needed'}
               </span>
             ))}
           </span>
@@ -264,8 +264,7 @@ export function ExtractedDataAudit() {
       )}
 
       <p className="pt-1 text-center text-[10.5px] text-ink-secondary/80">
-        Read-only QA · values join the template cell contract to the normalized value store ·
-        missing ≠ zero · official sources first · the template is treated as layout only.
+        A read-only check. We never guess a number — a blank means we don't have it yet, never a zero. Official sources come first.
       </p>
     </div>
   )
@@ -306,14 +305,14 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
   const pct = strip.totalExpected ? Math.round((strip.dashboardMapped / strip.totalExpected) * 100) : 0
   const scopeWord = scope === 'all' ? 'template' : scope === 'sahi' ? 'SAHI' : 'industry'
   const tiles: { label: string; value: number; color: QaColor }[] = [
-    { label: 'Cells expected', value: strip.totalExpected, color: 'grey' },
-    { label: 'Fetched', value: strip.fetched, color: 'green' },
+    { label: 'Numbers to fill', value: strip.totalExpected, color: 'grey' },
+    { label: 'Got it', value: strip.fetched, color: 'green' },
     { label: 'Missing', value: strip.missing, color: 'red' },
-    { label: 'Parser issues', value: strip.parserIssues, color: 'red' },
-    { label: 'Manual override', value: strip.manualOverride, color: 'yellow' },
-    { label: 'Computed in Excel', value: strip.computed, color: 'info' },
-    { label: 'Source-linked', value: strip.sourceLinked, color: 'info' },
-    { label: 'Dashboard-mapped', value: strip.dashboardMapped, color: 'green' },
+    { label: "Couldn't read", value: strip.parserIssues, color: 'red' },
+    { label: 'Typed by hand', value: strip.manualOverride, color: 'yellow' },
+    { label: 'Worked out by sheet', value: strip.computed, color: 'info' },
+    { label: 'Has a source link', value: strip.sourceLinked, color: 'info' },
+    { label: 'Used on dashboard', value: strip.dashboardMapped, color: 'green' },
   ]
   return (
     <div className="rounded-xl border border-soft-border bg-card p-4 shadow-soft">
@@ -331,8 +330,8 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
           <div className="h-full rounded-full bg-gradient-to-r from-emerald to-teal transition-all" style={{ width: `${pct}%` }} />
         </div>
         <span className="shrink-0 text-[11px] font-medium text-ink-secondary">
-          {pct}% of fetchable {scopeWord} cells have a value
-          {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} computed in Excel</>}
+          {pct}% of the {scopeWord} numbers we need are filled in
+          {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} worked out by the sheet</>}
         </span>
       </div>
     </div>
@@ -375,16 +374,16 @@ function GroupCard({ title, subtitle, focus, cells, stats, open, onToggle }: {
                   <Th className="w-[120px]">Status</Th>
                   <Th className="w-[52px]">Cell</Th>
                   <Th className="min-w-[150px]">Section</Th>
-                  <Th className="min-w-[170px]">Metric (row)</Th>
+                  <Th className="min-w-[170px]">What it is</Th>
                   <Th className="min-w-[120px]">Company</Th>
                   <Th className="w-[78px]">Period</Th>
-                  <Th className="w-[92px] text-right">Raw</Th>
-                  <Th className="w-[110px] text-right">Normalized</Th>
+                  <Th className="w-[92px] text-right">As printed</Th>
+                  <Th className="w-[110px] text-right">Final value</Th>
                   <Th className="w-[58px]">Unit</Th>
                   <Th className="min-w-[180px]">Source</Th>
-                  <Th className="w-[88px]">Fetched</Th>
-                  <Th className="min-w-[160px]">Dashboard field</Th>
-                  <Th className="min-w-[210px]">Notes</Th>
+                  <Th className="w-[88px]">Updated</Th>
+                  <Th className="min-w-[160px]">Used on dashboard</Th>
+                  <Th className="min-w-[210px]">Notes / how it's worked out</Th>
                 </tr>
               </thead>
               <tbody>{shown.map((c) => <CellRow key={c.id} c={c} />)}</tbody>
@@ -473,10 +472,11 @@ function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | n
   return (
     <div className="rounded-lg border border-lavender/30 bg-white/70 p-2.5">
       <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
-        <span className="font-semibold text-navy-deep">Calculation</span>
+        <span className="font-semibold text-navy-deep">How this number is worked out</span>
         {c.calc && <span className="text-ink-secondary">{c.calc}</span>}
         <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">{c.formula}</code>
       </div>
+      <p className="mb-1.5 text-[10px] text-ink-secondary">The numbers that go into it, and where each one comes from:</p>
       <table className="w-full border-collapse text-[10.5px]">
         <thead>
           <tr className="text-left text-[9px] uppercase tracking-wide text-ink-secondary">
@@ -500,12 +500,12 @@ function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | n
       </table>
       {replicated !== null && (
         <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary">
-          Arithmetic check — inputs above sum to <span className="font-semibold text-ink-primary">{formatValue(replicated, c.unit)}</span>
+          Add the inputs up and you get <span className="font-semibold text-ink-primary">{formatValue(replicated, c.unit)}</span>
           {typeof c.normalizedValue === 'number' ? (
             Math.abs(replicated - c.normalizedValue) < 1e-6
-              ? <> · matches the reported {formatValue(c.normalizedValue, c.unit)} ✓</>
-              : <> · the reported figure is <span className="font-semibold text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</span> — they differ, so the ratios are likely on different bases (e.g. NEP vs GWP); not auto-filled.</>
-          ) : <> (this cell has no separately-reported value; shown only as an arithmetic aid — verify the bases match before relying on it).</>}
+              ? <> — same as the reported {formatValue(c.normalizedValue, c.unit)} ✓</>
+              : <> — but the reported figure is <span className="font-semibold text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</span>. They don't match, so these pieces are measured a bit differently. We don't auto-fill it.</>
+          ) : <> (just a quick check — we don't have a reported figure for this one, so don't rely on the total without confirming).</>}
         </p>
       )}
     </div>
@@ -534,8 +534,8 @@ function UnusedTable({ rows }: { rows: ReturnType<typeof buildAudit>['unused'] }
   if (rows.length === 0) return null
   return (
     <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)} icon={<Link2 className="h-4 w-4 text-lavender" />}
-      title="Unused extracted fields"
-      subtitle={`${rows.length} values were extracted & normalized but aren't placed in any template cell`}>
+      title="Extra numbers we have but don't use"
+      subtitle={`${rows.length} numbers we've pulled in that the template doesn't have a spot for`}>
       <table className="w-full border-collapse text-[11px]">
         <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
           <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
@@ -566,16 +566,16 @@ function MappingIssuesTable({ model }: { model: ReturnType<typeof buildAudit> })
   return (
     <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)}
       icon={<AlertTriangle className={`h-4 w-4 ${rows.length > 0 ? 'text-coral' : 'text-emerald'}`} />}
-      title="Mapping issues" tone={rows.length > 0 ? 'warn' : 'ok'}
-      subtitle={rows.length === 0 ? 'None — every canonical dashboard value is traceable here' : `${rows.length} dashboard values can't be traced to a source-backed cell`}>
+      title="Numbers we can't trace yet" tone={rows.length > 0 ? 'warn' : 'ok'}
+      subtitle={rows.length === 0 ? 'None — every dashboard number can be traced back here' : `${rows.length} numbers on the dashboard we can't trace back here yet`}>
       {rows.length === 0 ? (
-        <p className="px-3.5 py-4 text-[12px] text-ink-secondary">Every canonical financial value the dashboard renders is backed by a traced value in this audit. ✓</p>
+        <p className="px-3.5 py-4 text-[12px] text-ink-secondary">Every main dashboard number can be traced back to a source here. ✓</p>
       ) : (
         <table className="w-full border-collapse text-[11px]">
           <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
             <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
               <Th className="min-w-[140px]">Company</Th><Th className="min-w-[170px]">Metric</Th><Th className="w-[80px]">Period</Th>
-              <Th className="w-[120px] text-right">On dashboard</Th><Th className="min-w-[280px]">Why it's flagged</Th>
+              <Th className="w-[120px] text-right">On dashboard</Th><Th className="min-w-[280px]">What's going on</Th>
             </tr>
           </thead>
           <tbody>
