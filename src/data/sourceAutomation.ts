@@ -74,7 +74,7 @@ export const STATE_META: Record<SourceState, StateMeta> = {
 }
 
 /** Basis of a source → whether it may fill a statutory insurance cell. */
-export type SourceBasis = 'statutory' | 'ifrs' | 'broker' | 'market_data'
+export type SourceBasis = 'statutory' | 'ifrs' | 'broker' | 'market_data' | 'screener_fallback'
 
 export const BASIS_META: Record<SourceBasis, { label: string; allowsStatutory: boolean; note: string }> = {
   statutory: { label: 'Statutory (IGAAP)', allowsStatutory: true,
@@ -85,6 +85,15 @@ export const BASIS_META: Record<SourceBasis, { label: string; allowsStatutory: b
     note: 'Broker reports may ONLY feed analyst/broker-view sections — blocked from statutory cells.' },
   market_data: { label: 'Market data', allowsStatutory: false,
     note: 'Exchange price / aggregator data — non-statutory; blocked from statutory cells.' },
+  screener_fallback: { label: 'Screener fallback', allowsStatutory: false,
+    note: 'Third-party aggregator — clearly-labelled, LOWEST-rank fallback, used only after official fetch/staging fails and only for the metrics Screener directly provides (P/E, P/B, ROE). Pending official filing verification; superseded by any official value; never fills a statutory cell.' },
+}
+
+/** The Screener fallback policy (Neha, 2026-06-08) — surfaced in the cockpit. */
+export const SCREENER_POLICY = {
+  label: 'Screener fallback',
+  badge: 'Pending official filing verification',
+  rule: 'Official sources first. Screener is a labelled, lowest-rank fallback used only after official fetch/staging fails, only for metrics it directly provides (P/E, P/B, ROE — none statutory), and is superseded the moment an official filing arrives. It can never fill a statutory cell.',
 }
 
 /** A source may fill a statutory cell only if it is statutory-basis AND official. */
@@ -226,13 +235,19 @@ export const MOCK_EXTRACTION: { docLabel: string; company: string; period: strin
   ],
 }
 
-/** Mock audit trail — approved values entering the source-map / annual_report layer. */
+/** Mock audit trail — approved values entering the source-map / annual_report layer,
+ *  plus the Screener-fallback audit (rule 9: source/metric/company/period/value/
+ *  fetched/verification). Screener rows carry value=null + a pending-verification
+ *  status so nothing is fabricated. */
 export interface AuditRow {
-  company: string; metric: string; period: string; value: number
-  sourceFile: string; page: number; exactLabel: string; basis: SourceBasis; layer: string; approvedAt: string
+  company: string; metric: string; period: string; value: number | null
+  sourceFile: string; page?: number; exactLabel: string; basis: SourceBasis; layer: string
+  approvedAt: string; verification?: string; fetchedAt?: string
 }
 export const MOCK_AUDIT: AuditRow[] = [
-  { company: 'Star Health', metric: 'total_gwp', period: 'FY25', value: 16781.36, sourceFile: 'star-health-AR…2024_2025.pdf', page: 238, exactLabel: 'Gross Written premium', basis: 'statutory', layer: 'annual_report', approvedAt: '2026-06-08' },
-  { company: 'Star Health', metric: 'pat_igaap', period: 'FY25', value: 645.86, sourceFile: 'star-health-AR…2024_2025.pdf', page: 238, exactLabel: 'Profit / (Loss) after tax', basis: 'statutory', layer: 'annual_report', approvedAt: '2026-06-08' },
-  { company: 'Niva Bupa', metric: 'nep', period: 'FY25', value: 4894.46, sourceFile: 'niva-bupa-Website-Public-Disclosures-Mar-2025.pdf', page: 2, exactLabel: 'Premiums earned (Net)', basis: 'statutory', layer: 'company_filing', approvedAt: '2026-06-08' },
+  { company: 'Star Health', metric: 'total_gwp', period: 'FY25', value: 16781.36, sourceFile: 'star-health-AR…2024_2025.pdf', page: 238, exactLabel: 'Gross Written premium', basis: 'statutory', layer: 'annual_report', approvedAt: '2026-06-08', verification: 'official — verified' },
+  { company: 'Star Health', metric: 'pat_igaap', period: 'FY25', value: 645.86, sourceFile: 'star-health-AR…2024_2025.pdf', page: 238, exactLabel: 'Profit / (Loss) after tax', basis: 'statutory', layer: 'annual_report', approvedAt: '2026-06-08', verification: 'official — verified' },
+  { company: 'Niva Bupa', metric: 'nep', period: 'FY25', value: 4894.46, sourceFile: 'niva-bupa-Website-Public-Disclosures-Mar-2025.pdf', page: 2, exactLabel: 'Premiums earned (Net)', basis: 'statutory', layer: 'company_filing', approvedAt: '2026-06-08', verification: 'official — verified' },
+  // Screener fallback (valuation only; statutory never). Dormant: snapshot empty, so value is null — nothing fabricated.
+  { company: 'Star Health', metric: 'pe_ttm', period: 'TTM', value: null, sourceFile: 'Screener.in (backup aggregator)', exactLabel: 'Stock P/E', basis: 'screener_fallback', layer: 'screener_fallback', approvedAt: '—', verification: 'pending official filing verification', fetchedAt: 'awaiting fetch — snapshot empty' },
 ]
