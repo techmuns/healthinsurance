@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Home,
   BarChart3,
+  ClipboardCheck,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -35,6 +36,7 @@ export type IconKey =
   | 'overview'
   | 'home'
   | 'analytics'
+  | 'audit'
 
 export const iconMap: Record<IconKey, LucideIcon> = {
   growth: TrendingUp,
@@ -53,6 +55,7 @@ export const iconMap: Record<IconKey, LucideIcon> = {
   overview: LayoutDashboard,
   home: Home,
   analytics: BarChart3,
+  audit: ClipboardCheck,
 }
 
 export function Icon({ name, className }: { name: IconKey; className?: string }) {

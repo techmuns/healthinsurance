@@ -144,11 +144,12 @@ jobs:
       - name: Install Excel build deps
         run: pip install openpyxl
 
-      - name: Build filled workbook (schema-map → value store → fill)
+      - name: Build filled workbook (schema-map → value store → fill → audit index)
         run: |
           python3 scripts/excel/build_schema_map.py templates/niva-bupa-portfolio-review.xlsx
           python3 scripts/excel/build_value_store.py
           python3 scripts/excel/fill_template.py
+          python3 scripts/excel/build_audit_index.py
 
       - name: Upload filled workbook + audit (artifact)
         if: always()

@@ -15,11 +15,13 @@ export interface NavItem {
 export const navItems: NavItem[] = [
   { id: 'industry', label: 'Industry Insights', shortLabel: 'Industry', icon: 'home', question: 'How is the overall insurance industry doing right now?' },
   { id: 'sahi', label: 'SAHI Analysis', shortLabel: 'SAHI', icon: 'analytics', question: 'How do the standalone health insurers compare in depth?' },
+  { id: 'audit', label: 'Extracted Data Audit', shortLabel: 'Data Audit', icon: 'audit', question: 'Is every source value fetched, normalized and routed into the dashboard correctly?' },
 ]
 
 /** Sidebar grouping — keeps the rail scannable without changing the labels. */
 export const navGroups: { label: string; itemIds: string[] }[] = [
   { label: 'Pages', itemIds: ['industry', 'sahi'] },
+  { label: 'Quality', itemIds: ['audit'] },
 ]
 
 export type SectionFrequencyKind = 'operating' | 'profitability' | 'none'

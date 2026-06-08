@@ -1,6 +1,6 @@
-import { BarChart3, Home, type LucideIcon } from 'lucide-react'
+import { BarChart3, Home, ClipboardCheck, type LucideIcon } from 'lucide-react'
 
-export type TopPage = 'industry' | 'sahi'
+export type TopPage = 'industry' | 'sahi' | 'audit'
 
 // Premium muted gold for the blob icon — brighter on the dark active block for
 // contrast, slightly deeper on the light inactive block.
@@ -17,6 +17,7 @@ interface Block {
 const BLOCKS: Block[] = [
   { id: 'industry', label: 'Industry Insights', sub: 'Overall industry snapshot', Icon: Home },
   { id: 'sahi', label: 'SAHI Analysis', sub: 'Standalone health deep-dive', Icon: BarChart3 },
+  { id: 'audit', label: 'Extracted Data Audit', sub: 'Source-to-dashboard QA', Icon: ClipboardCheck },
 ]
 
 /**

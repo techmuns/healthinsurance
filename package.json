@@ -13,13 +13,15 @@
     "ingest:monthly": "CADENCE=monthly tsx scripts/ingest/ingest-all.ts",
     "ingest:quarterly": "CADENCE=quarterly tsx scripts/ingest/ingest-all.ts",
     "ingest:annual": "CADENCE=annual tsx scripts/ingest/ingest-all.ts",
-    "ingest:filings": "tsx scripts/ingest/fetch-company-filings.ts"
+    "ingest:filings": "tsx scripts/ingest/fetch-company-filings.ts",
+    "audit:index": "python3 scripts/excel/build_audit_index.py"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "recharts": "^2.15.0"
+    "recharts": "^2.15.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -40,7 +42,6 @@
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^5.4.11",
-    "wrangler": "^4.40.0",
-    "xlsx": "^0.18.5"
+    "wrangler": "^4.40.0"
   }
 }

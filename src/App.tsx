@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from 'react'
+import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
 import { Radar } from 'lucide-react'
 import { FilterProvider, useFilters, useActiveCompany } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
@@ -17,6 +17,12 @@ import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 import { SourceAutomationPanel } from '@/components/SourceAutomationPanel'
 import { STATE_META, MOCK_CELL_STATUS } from '@/data/sourceAutomation'
+
+// Lazy — the audit tab carries a ~1 MB cell-level index that should only load
+// when a reviewer actually opens the QA surface, never on first paint.
+const ExtractedDataAudit = lazy(() =>
+  import('@/sections/ExtractedDataAudit').then((m) => ({ default: m.ExtractedDataAudit })),
+)
 
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
@@ -79,6 +85,8 @@ const SECTION_AURA: Record<string, { a: string; b: string; c: string }> = {
   'street-view': { a: '#B68B3A', b: '#27457E', c: '#168E8E' },
   peers: { a: '#6E7BD6', b: '#168E8E', c: '#27457E' },
   'ownership-governance': { a: '#27457E', b: '#8C97A8', c: '#B68B3A' },
+  // Calm, neutral field for the QA surface — navy / slate / muted gold.
+  audit: { a: '#27457E', b: '#8C97A8', c: '#B68B3A' },
 }
 
 /** Wraps a section that manages internal tabs so its routing stays local. */
@@ -160,17 +168,18 @@ export default function App() {
   const [sahiTab, setSahiTab] = useState('companies')
   const [navOpen, setNavOpen] = useState(false)
 
-  const auraKey = page === 'industry' ? 'overview' : AURA_KEY[sahiTab] ?? 'peers'
+  const auraKey = page === 'industry' ? 'overview' : page === 'audit' ? 'audit' : AURA_KEY[sahiTab] ?? 'peers'
   const aura = SECTION_AURA[auraKey] ?? SECTION_AURA.overview
 
   const selectPage = (p: TopPage) => {
     setPage(p)
     setNavOpen(false)
   }
-  // Sidebar mirrors the two pages as app-level icon nav.
-  const onSidebarNavigate = (id: string) => selectPage(id === 'sahi' ? 'sahi' : 'industry')
+  // Sidebar mirrors the top-level pages as app-level icon nav (ids match TopPage).
+  const onSidebarNavigate = (id: string) =>
+    selectPage(id === 'sahi' || id === 'audit' ? id : 'industry')
 
-  const viewKey = page === 'industry' ? 'industry' : `sahi-${sahiTab}`
+  const viewKey = page === 'industry' ? 'industry' : page === 'audit' ? 'audit' : `sahi-${sahiTab}`
 
   return (
     <FilterProvider>
@@ -218,9 +227,17 @@ export default function App() {
               <div key={viewKey} className="w-full animate-page-enter">
                 <SectionErrorBoundary
                   resetKey={viewKey}
-                  sectionLabel={page === 'industry' ? 'Industry Insights' : 'SAHI Analysis'}
+                  sectionLabel={page === 'industry' ? 'Industry Insights' : page === 'audit' ? 'Extracted Data Audit' : 'SAHI Analysis'}
                 >
-                  {page === 'industry' ? <IndustryInsightsPage /> : <SahiContent tab={sahiTab} />}
+                  {page === 'industry' ? (
+                    <IndustryInsightsPage />
+                  ) : page === 'audit' ? (
+                    <Suspense fallback={<div className="py-16 text-center text-[12.5px] text-ink-secondary">Loading the audit index…</div>}>
+                      <ExtractedDataAudit />
+                    </Suspense>
+                  ) : (
+                    <SahiContent tab={sahiTab} />
+                  )}
                 </SectionErrorBoundary>
               </div>
 
