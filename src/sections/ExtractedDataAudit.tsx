@@ -227,7 +227,7 @@ export function ExtractedDataAudit() {
             {(['green', 'yellow', 'red', 'info', 'grey'] as QaColor[]).map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
-                {c === 'green' ? 'got it' : c === 'yellow' ? 'got it, tweaked' : c === 'red' ? 'missing' : c === 'info' ? 'worked out / extra' : 'not needed'}
+                {c === 'green' ? 'fetched' : c === 'yellow' ? 'fetched (adjusted)' : c === 'red' ? 'missing' : c === 'info' ? 'calculated / extra' : 'not needed'}
               </span>
             ))}
           </span>
@@ -306,11 +306,11 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
   const scopeWord = scope === 'all' ? 'template' : scope === 'sahi' ? 'SAHI' : 'industry'
   const tiles: { label: string; value: number; color: QaColor }[] = [
     { label: 'Numbers to fill', value: strip.totalExpected, color: 'grey' },
-    { label: 'Got it', value: strip.fetched, color: 'green' },
+    { label: 'Fetched', value: strip.fetched, color: 'green' },
     { label: 'Missing', value: strip.missing, color: 'red' },
     { label: "Couldn't read", value: strip.parserIssues, color: 'red' },
     { label: 'Typed by hand', value: strip.manualOverride, color: 'yellow' },
-    { label: 'Worked out by sheet', value: strip.computed, color: 'info' },
+    { label: 'Calculated', value: strip.computed, color: 'info' },
     { label: 'Has a source link', value: strip.sourceLinked, color: 'info' },
     { label: 'Used on dashboard', value: strip.dashboardMapped, color: 'green' },
   ]
@@ -331,7 +331,7 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
         </div>
         <span className="shrink-0 text-[11px] font-medium text-ink-secondary">
           {pct}% of the {scopeWord} numbers we need are filled in
-          {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} worked out by the sheet</>}
+          {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} calculated by the sheet</>}
         </span>
       </div>
     </div>
@@ -383,7 +383,7 @@ function GroupCard({ title, subtitle, focus, cells, stats, open, onToggle }: {
                   <Th className="min-w-[180px]">Source</Th>
                   <Th className="w-[88px]">Updated</Th>
                   <Th className="min-w-[160px]">Used on dashboard</Th>
-                  <Th className="min-w-[210px]">Notes / how it's worked out</Th>
+                  <Th className="min-w-[210px]">Notes / how it's calculated</Th>
                 </tr>
               </thead>
               <tbody>{shown.map((c) => <CellRow key={c.id} c={c} />)}</tbody>
@@ -472,7 +472,7 @@ function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | n
   return (
     <div className="rounded-lg border border-lavender/30 bg-white/70 p-2.5">
       <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
-        <span className="font-semibold text-navy-deep">How this number is worked out</span>
+        <span className="font-semibold text-navy-deep">How this number is calculated</span>
         {c.calc && <span className="text-ink-secondary">{c.calc}</span>}
         <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">{c.formula}</code>
       </div>

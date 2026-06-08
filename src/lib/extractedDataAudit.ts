@@ -164,14 +164,14 @@ export interface StatusMeta {
 }
 
 export const STATUS_META: Record<AuditStatus, StatusMeta> = {
-  fetched: { key: 'fetched', label: 'Got it', color: 'green' },
-  transformed: { key: 'transformed', label: 'Got it (adjusted)', color: 'yellow' },
+  fetched: { key: 'fetched', label: 'Fetched', color: 'green' },
+  transformed: { key: 'transformed', label: 'Fetched (adjusted)', color: 'yellow' },
   manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'yellow' },
   missing: { key: 'missing', label: 'Missing', color: 'red' },
   parser_issue: { key: 'parser_issue', label: "Couldn't read it", color: 'red' },
   source_unavailable: { key: 'source_unavailable', label: 'No source', color: 'red' },
   blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
-  computed: { key: 'computed', label: 'Worked out by the sheet', color: 'info' },
+  computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
   unused: { key: 'unused', label: 'Extra — not used', color: 'info' },
 }
@@ -510,7 +510,7 @@ const MISSING_REASON: Record<string, string> = {
   available: 'We know the official source — just not pulled in yet.',
   partial: 'Only part of this is available so far.',
   backup: 'No official source has this number.',
-  computed: 'The sheet works this out — nothing to fetch.',
+  computed: 'Calculated by the sheet — nothing to fetch.',
   narrative: 'This is a written note, not a number to fetch.',
   excluded_from_core: 'Outside the main data we track.',
 }
@@ -613,11 +613,11 @@ export function buildAudit(): AuditModel {
           note = ''
         }
         if (b.cell_kind === 'formula') {
-          note = note ? `${note} The sheet also works this out.` : 'We have this number; the sheet also works it out.'
+          note = note ? `${note} The sheet also calculates it.` : 'We have this number; the sheet also calculates it.'
         }
       } else if (b.cell_kind === 'formula') {
         status = 'computed'
-        note = 'The sheet works this out from other cells (for example, claims + expense). Nothing to fetch.'
+        note = 'Calculated from other cells (for example, claims + expense). Nothing to fetch.'
       } else if (blocked) {
         status = 'parser_issue'
         sourceUrl = blocked.source_url ?? null
