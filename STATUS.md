@@ -7,7 +7,13 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **113 / 2155 fillable cells filled (5.2%). QA passes (no hard violations).**
+- **128 / 2155 fillable cells filled (5.9%). QA passes (no hard violations).**
+- **Aditya Birla Health statutory cells filled** (2026-06-08): GWP/GDPI/NWP/NEP/PAT
+  (FY23–FY25) + claims/expense ratios & solvency (FY24/FY25) hand-transcribed from
+  its **audited FY25 financial statements** — fetched automatically by the
+  `fetch-company-pdfs` workflow (ScraperAPI path; grasim direct URL worked) and read
+  via the `annual_report` layer. The audited **solvency 1.84 superseded a wrong
+  snapshot 2.5** (on Blocked Data). FY23 ratios/NEP not printed → blank.
 - Full pipeline working: **extract → bridge → fill → QA**.
 - **Star Health statutory cells from its FY25 Annual Report** (Neha, 2026-06-08):
   GWP / NWP / NEP / claims+combined+expense ratios / solvency for FY25 (+FY24, +FY23

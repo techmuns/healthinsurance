@@ -225,6 +225,21 @@
       "hold_reason": "superseded_by_annual_report",
       "source_description": "star-health FY25 annual disclosure",
       "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
+    },
+    {
+      "company_id": "aditya-birla",
+      "metric": "solvency_ratio",
+      "filing_period": "FY25",
+      "raw_value": 2.5,
+      "normalized_value": 2.5,
+      "unit": "ratio",
+      "document_type": null,
+      "filing_date": null,
+      "source_url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/Q4-FY-25/130525_ABCL-Results-Press-Release.ashx",
+      "confidence": "high",
+      "hold_reason": "superseded_by_annual_report",
+      "source_description": "Aditya Birla Capital Q4 & FY25 Results Press Release (13 May 2025) — ABHICL segment",
+      "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
     }
   ]
 }
