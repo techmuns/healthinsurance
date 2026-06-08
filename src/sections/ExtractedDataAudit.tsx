@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   Download, Search, ChevronRight, ExternalLink, FileSpreadsheet,
-  RotateCcw, Layers, Table2, AlertTriangle, Link2, Users, Star, LayoutGrid,
+  RotateCcw, Layers, Table2, AlertTriangle, Users, Star, LayoutGrid,
 } from 'lucide-react'
 import {
   buildAudit, STATUS_META, formatValue, formatRaw, stripFor, periodSort,
@@ -256,12 +256,7 @@ export function ExtractedDataAudit() {
       </div>
 
       {/* ── Reconciliation — hidden only in the industry-only lens ───────── */}
-      {scope !== 'industry' && (
-        <>
-          <MappingIssuesTable model={model} />
-          <UnusedTable rows={scope === 'sahi' ? model.unused.filter((r) => companyRank(r.entityId) < 2) : model.unused} />
-        </>
-      )}
+      {scope !== 'industry' && <MappingIssuesTable model={model} />}
 
       <p className="pt-1 text-center text-[10.5px] text-ink-secondary/80">
         A read-only check. We never guess a number — a blank means we don't have it yet, never a zero. Official sources come first.
@@ -523,37 +518,6 @@ function FormulaDetail({ c }: { c: AuditCell }) {
 }
 
 // ─── Reconciliation tables ──────────────────────────────────────────────────
-
-function UnusedTable({ rows }: { rows: ReturnType<typeof buildAudit>['unused'] }) {
-  const [open, setOpen] = useState(false)
-  if (rows.length === 0) return null
-  return (
-    <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)} icon={<Link2 className="h-4 w-4 text-lavender" />}
-      title="Extra numbers we have but don't use"
-      subtitle={`${rows.length} numbers we've pulled in that the template doesn't have a spot for`}>
-      <table className="w-full border-collapse text-[11px]">
-        <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
-          <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
-            <Th className="min-w-[140px]">Company</Th><Th className="min-w-[170px]">Metric</Th><Th className="w-[80px]">Period</Th>
-            <Th className="w-[120px] text-right">Value</Th><Th className="min-w-[200px]">Source</Th><Th className="w-[92px]">Fetched</Th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-soft-border/60 bg-lavender-soft/20 align-top">
-              <Td className="text-ink-primary">{r.entityLabel}</Td>
-              <Td><span className="font-medium text-ink-primary">{r.metricLabel}</span><span className="block font-mono text-[9px] text-ink-secondary/70">{r.metricId}</span></Td>
-              <Td className="text-ink-secondary">{r.period}</Td>
-              <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">{formatValue(r.normalizedValue, r.unit)}</Td>
-              <Td>{r.sourceUrl ? <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-muted-blue hover:underline"><span className="line-clamp-2 max-w-[220px]">{shortSource(r.sourceName) ?? 'Source'}</span><ExternalLink className="h-3 w-3 shrink-0" /></a> : <span className="line-clamp-2 max-w-[220px] text-ink-secondary/80">{shortSource(r.sourceName) ?? '—'}</span>}</Td>
-              <Td className="text-[10px] text-ink-secondary">{r.fetchedAt ? r.fetchedAt.slice(0, 10) : '—'}</Td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </CollapsiblePanel>
-  )
-}
 
 function MappingIssuesTable({ model }: { model: ReturnType<typeof buildAudit> }) {
   const [open, setOpen] = useState(false)

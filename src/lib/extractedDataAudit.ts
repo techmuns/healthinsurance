@@ -383,6 +383,10 @@ const METRIC_LABEL: Record<string, string> = {
 /** Metric id → readable label (curated where it matters, humanized otherwise). */
 export function metricLabel(id: string | undefined): string {
   if (!id) return '—'
+  if (id.includes('::')) {
+    const [base, sub] = id.split('::')
+    return `${metricLabel(base)} · ${titleCase(sub)}`
+  }
   if (METRIC_LABEL[id]) return METRIC_LABEL[id]
   return titleCase(id)
     .replace(/\bIgaap\b/i, '(IGAAP)')
@@ -536,6 +540,24 @@ function isManual(entry: RawValue): boolean {
   )
 }
 
+/** Status + note for any entry that already carries a value (shared by template
+ *  cells and the "data we have, no fixed cell" rows). */
+function valueStatus(entry: RawValue): { status: AuditStatus; note: string } {
+  if (entry.conflict_status === 'conflict_needs_review')
+    return { status: 'parser_issue', note: 'Two sources disagree on this number — held back until someone checks.' }
+  if (isManual(entry))
+    return {
+      status: 'manual_override',
+      note: entry.basis_note
+        ? `Typed in by hand from the report. ${entry.basis_note}`
+        : 'Typed in by hand from the report (with the page noted).',
+    }
+  if (entry.basis_note) return { status: 'transformed', note: entry.basis_note }
+  if (numbersDiffer(entry.raw_value, entry.normalized_value))
+    return { status: 'transformed', note: 'Tidied up from how the source printed it (e.g. a percentage written as a decimal).' }
+  return { status: 'fetched', note: '' }
+}
+
 // ─── Build the model ────────────────────────────────────────────────────────
 
 let CACHE: AuditModel | null = null
@@ -567,7 +589,7 @@ export function buildAudit(): AuditModel {
       const metric = b.metric ?? ''
       const period = b.period ?? ''
       const key = joinKey(entity, metric, period)
-      if (b.fillable) boundKeys.add(key)
+      boundKeys.add(key) // every template cell (input, formula or n/a), not only fillable ones
       const entry = values[key]
       const hasValue = !!entry && entry.normalized_value !== null && entry.normalized_value !== undefined
       const held = heldByKey.get(key)
@@ -729,27 +751,81 @@ export function buildAudit(): AuditModel {
     })
   }
 
-  // ── Unused extracted fields: a store value with no fillable template cell ──
-  const unused: UnusedField[] = []
+  // ── Include EVERY number we've gathered ───────────────────────────────────
+  // Any store value the parsed template didn't pin to a cell is still real
+  // pipeline data, so it's added to the coverage as a row (cell shown as "—",
+  // since the current template layout has no fixed slot for that period/metric).
+  // Nothing is sidelined as "unused".
+  const groupBySheet = new Map(groups.map((g) => [g.sheet, g]))
+  const metricSheet = new Map<string, string>()
+  {
+    const counts = new Map<string, Map<string, number>>()
+    for (const g of groups)
+      for (const c of g.cells) {
+        if (!c.metricId) continue
+        const m = counts.get(c.metricId) ?? new Map<string, number>()
+        m.set(g.sheet, (m.get(g.sheet) ?? 0) + 1)
+        counts.set(c.metricId, m)
+      }
+    for (const [metric, m] of counts)
+      metricSheet.set(metric, [...m.entries()].sort((a, b) => b[1] - a[1])[0][0])
+  }
+  const FALLBACK_SHEET: Record<string, string> = {
+    gross_direct_premium: 'SAHIs comparison',
+    commission_ratio_igaap: 'SAHIs comparison',
+  }
+  const placeFor = (metric: string): AuditGroup | null => {
+    if (metric.startsWith('channel_')) return groupBySheet.get('Channel Mix') ?? null
+    const target = metricSheet.get(metric) ?? FALLBACK_SHEET[metric] ?? 'SAHIs comparison'
+    return groupBySheet.get(target) ?? groups[0] ?? null
+  }
+
+  const touched = new Set<AuditGroup>()
   for (const [key, entry] of Object.entries(values)) {
     if (boundKeys.has(key)) continue
     if (entry.normalized_value === null || entry.normalized_value === undefined) continue
-    unused.push({
-      id: key,
-      entityId: entry.entity ?? '',
-      entityLabel: entityLabel(entry.entity),
+    const g = placeFor(entry.metric ?? '')
+    if (!g) continue
+    const { status, note } = valueStatus(entry)
+    const ent = entry.entity ?? ''
+    g.cells.push({
+      id: `extra!${key}`,
+      sheet: g.sheet,
+      role: g.role,
+      scope: g.scope,
+      companyRank: companyRank(ent),
+      section: 'Data we have (no fixed template cell yet)',
+      entityId: ent,
+      entityLabel: entityLabel(ent),
       metricId: entry.metric ?? '',
       metricLabel: metricLabel(entry.metric),
       period: entry.period ?? '',
+      periodType: '',
+      cellRef: '—',
       unit: entry.unit ?? '',
-      normalizedValue: entry.normalized_value ?? null,
+      cellKind: 'extra',
       rawValue: entry.raw_value ?? null,
+      normalizedValue: entry.normalized_value ?? null,
+      transformation: entry.transformation_used ?? null,
       sourceName: entry.source_name ?? null,
       sourceUrl: entry.source_url ?? null,
+      sourceFile: entry.source_file ?? null,
+      sourceDate: entry.filing_date ?? entry.period ?? null,
       fetchedAt: entry.fetched_at ?? null,
+      dashboardField: dashboardField(g.role, entry.metric ?? ''),
+      status,
+      qaColor: STATUS_META[status].color,
+      confidence: entry.confidence ?? null,
+      note: note
+        ? `${note} (The template has no cell for this exact period/metric yet.)`
+        : 'Data we have — the template has no cell for this exact period/metric yet.',
+      calculatedValue: null,
     })
+    touched.add(g)
   }
-  unused.sort((a, b) => a.entityLabel.localeCompare(b.entityLabel) || a.metricId.localeCompare(b.metricId))
+  for (const g of touched) g.stats = tally(g.cells)
+
+  const unused: UnusedField[] = [] // everything is merged into the coverage above
 
   // ── Mapping issues: a value the dashboard renders but the audit can't trace ─
   // Cross-check the dashboard's canonical annual financial snapshot against the
