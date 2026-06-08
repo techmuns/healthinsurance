@@ -240,6 +240,21 @@
       "hold_reason": "superseded_by_annual_report",
       "source_description": "Aditya Birla Capital Q4 & FY25 Results Press Release (13 May 2025) — ABHICL segment",
       "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
+    },
+    {
+      "company_id": "manipalcigna",
+      "metric": "solvency_ratio",
+      "filing_period": "FY25",
+      "raw_value": 1.7,
+      "normalized_value": 1.7,
+      "unit": "ratio",
+      "document_type": null,
+      "filing_date": null,
+      "source_url": "https://www.manipalcigna.com/public-disclosures",
+      "confidence": "medium",
+      "hold_reason": "superseded_by_annual_report",
+      "source_description": "ManipalCigna FY25 Public Disclosures — FY25 headline figures (summary seed)",
+      "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
     }
   ]
 }
