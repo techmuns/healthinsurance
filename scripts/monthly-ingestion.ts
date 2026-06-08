@@ -110,8 +110,7 @@ function extractAnswer(text: string): string {
   return m ? m[1] : text
 }
 
-/** All IRDAI Excel download URLs, de-duplicated, order preserved. */
-function extractUrls(text: string): string[] {
+function urlsIn(text: string): string[] {
   const seen = new Set<string>()
   const out: string[] = []
   for (const m of text.matchAll(URL_RE)) {
@@ -122,6 +121,42 @@ function extractUrls(text: string): string[] {
     }
   }
   return out
+}
+
+/**
+ * All IRDAI Excel download URLs from the response, de-duplicated, order
+ * preserved. Prefer the curated <ans> list; if that has none (the agent
+ * sometimes answers without a clean table), fall back to scanning the whole
+ * response — the same links also appear in the <sources> block.
+ */
+function extractUrls(text: string): string[] {
+  const fromAns = urlsIn(extractAnswer(text))
+  return fromAns.length > 0 ? fromAns : urlsIn(text)
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Call the agent until it returns at least one link. The agent is an LLM and
+ * occasionally answers without actually scraping, so we retry a few times
+ * before giving up.
+ */
+async function getLinks(token: string, attempts = 3): Promise<string[]> {
+  let urls: string[] = []
+  for (let i = 1; i <= attempts; i++) {
+    console.log(`Calling agent to scrape ${TARGET_PAGE} (attempt ${i}/${attempts}) ...`)
+    const raw = await callAgent(token)
+    urls = extractUrls(raw)
+    if (urls.length > 0) {
+      console.log(`Found ${urls.length} distinct download link(s).`)
+      return urls
+    }
+    // Diagnostic: show how the agent answered when it gave us nothing.
+    const snippet = raw.replace(/\s+/g, ' ').trim().slice(0, 600)
+    console.error(`  no links in response (${raw.length} chars). Head: ${snippet}`)
+    if (i < attempts) await sleep(5000)
+  }
+  return urls
 }
 
 /**
@@ -209,23 +244,21 @@ async function main(): Promise<number> {
   const manifest = await loadManifest()
   const known = manifest.files
 
-  console.log(`Calling agent to scrape ${TARGET_PAGE} ...`)
-  let raw: string
+  let urls: string[]
   try {
-    raw = await callAgent(token)
+    urls = await getLinks(token)
   } catch (err) {
     console.error(`ERROR: ${err instanceof Error ? err.message : String(err)}`)
     return 1
   }
 
-  const urls = extractUrls(extractAnswer(raw))
   if (urls.length === 0) {
     console.error(
-      'WARNING: no IRDAI Excel download links found in the response. Leaving existing files untouched.',
+      'ERROR: the agent returned no IRDAI Excel download links after several ' +
+        'attempts. Nothing downloaded. Existing files left untouched.',
     )
-    return 0
+    return 1
   }
-  console.log(`Found ${urls.length} distinct download link(s) in the answer.`)
 
   const usedNames = new Set<string>(
     Object.values(known).map((v) => v.filename).filter(Boolean),
