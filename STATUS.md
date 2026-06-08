@@ -117,6 +117,14 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
    supply the decks.
 
 ## PENDING — manual download (this sandbox is 403-blocked on insurer sites)
+> **Auto-fetch path (try this first):** `fetch-company-pdfs` workflow (manual
+> `workflow_dispatch`) → `scripts/ingest/fetch-company-pdfs.ts` downloads official
+> PDFs through ScraperAPI's India IP (gets past the WAF/403). **Runs only in GitHub
+> Actions** (needs the `SCRAPERAPI_KEY` secret; api.scraperapi.com is blocked from
+> this sandbox). Curated direct-URL targets: Aditya Birla grasim FY25 (primary),
+> FY24 (guess), ManipalCigna AR-2023. On success the PDFs land in
+> `data/raw/companies/<id>/` and feed the annual_report layer / NL-form parser.
+> Manual download below is the fallback if the proxy can't reach a source.
 5. **Star Health — FY annuals DONE from the annual report; quarters/FY26 pending.**
    FY25/FY24/FY23 statutory cells now filled from the FY25 AR (see "Where it stands").
    Still missing (no source in repo): **H1/9M/Q4 FY25–FY26 and full-year FY26** ratios
