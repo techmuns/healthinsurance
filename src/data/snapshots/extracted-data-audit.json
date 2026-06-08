@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-08T13:28:35.466597+00:00",
+  "generated_at": "2026-06-08T14:13:36.163789+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -276,7 +276,8 @@
      "source_key": "industry_premium",
      "source_status": "available",
      "formula": "=20755+18006",
-     "calc": "20755 + 18006"
+     "calc": "20755 + 18006",
+     "calculated_value": 38761
     },
     {
      "cell": "D5",
@@ -291,7 +292,8 @@
      "source_key": "industry_premium",
      "source_status": "available",
      "formula": "=22731+21293",
-     "calc": "22731 + 21293"
+     "calc": "22731 + 21293",
+     "calculated_value": 44024
     },
     {
      "cell": "E5",
@@ -306,7 +308,8 @@
      "source_key": "industry_premium",
      "source_status": "available",
      "formula": "=25160+26649",
-     "calc": "25160 + 26649"
+     "calc": "25160 + 26649",
+     "calculated_value": 51809
     },
     {
      "cell": "F5",
@@ -841,7 +844,8 @@
        "entity": "Motor Insurance",
        "metric": "gi_segment_gross_premium"
       }
-     ]
+     ],
+     "calculated_value": 85107
     },
     {
      "cell": "N6",
@@ -2013,7 +2017,8 @@
        "entity": "Health Insurance",
        "metric": "gi_segment_gross_premium"
       }
-     ]
+     ],
+     "calculated_value": 122800
     },
     {
      "cell": "N14",
@@ -27329,7 +27334,8 @@
        "entity": "niva-bupa",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.3971
     },
     {
      "cell": "E20",
@@ -27399,7 +27405,8 @@
        "entity": "niva-bupa",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.3637
     },
     {
      "cell": "K20",
@@ -27443,7 +27450,8 @@
        "entity": "niva-bupa",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.2936
     },
     {
      "cell": "C21",
@@ -28517,7 +28525,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=1.85*4",
-     "calc": "1.85 * 4"
+     "calc": "1.85 * 4",
+     "calculated_value": 7.4
     },
     {
      "cell": "K36",
@@ -28545,7 +28554,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=1.79*4%",
-     "calc": "1.79 * 4 %"
+     "calc": "1.79 * 4 %",
+     "calculated_value": 0.0716
     },
     {
      "cell": "P5",
@@ -29942,7 +29952,8 @@
        "entity": "star-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.3025
     },
     {
      "cell": "R20",
@@ -30499,7 +30510,8 @@
        "entity": "star-health",
        "metric": "solvency_ratio"
       }
-     ]
+     ],
+     "calculated_value": 2.21
     },
     {
      "cell": "Z32",
@@ -32269,7 +32281,8 @@
        "entity": "care-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.37
     },
     {
      "cell": "AE20",
@@ -32326,7 +32339,8 @@
        "entity": "care-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.34
     },
     {
      "cell": "AJ20",
@@ -32357,7 +32371,8 @@
        "entity": "care-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.38
     },
     {
      "cell": "AK20",
@@ -32388,7 +32403,8 @@
        "entity": "care-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.33
     },
     {
      "cell": "AM20",
@@ -32419,7 +32435,8 @@
        "entity": "care-health",
        "metric": "claims_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.41
     },
     {
      "cell": "AC21",
@@ -33024,7 +33041,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=972+0.39+1219",
-     "calc": "972 + 0.39 + 1219"
+     "calc": "972 + 0.39 + 1219",
+     "calculated_value": 2191.39
     },
     {
      "cell": "AJ33",
@@ -33063,7 +33081,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=974+1342",
-     "calc": "974 + 1342"
+     "calc": "974 + 1342",
+     "calculated_value": 2316
     },
     {
      "cell": "AM33",
@@ -33154,7 +33173,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=2184+4650",
-     "calc": "2184 + 4650"
+     "calc": "2184 + 4650",
+     "calculated_value": 6834
     },
     {
      "cell": "AJ34",
@@ -33193,7 +33213,8 @@
      "source_key": "company_financials",
      "source_status": "available",
      "formula": "=2362+6410",
-     "calc": "2362 + 6410"
+     "calc": "2362 + 6410",
+     "calculated_value": 8772
     },
     {
      "cell": "AM34",
@@ -33794,7 +33815,8 @@
        "entity": "manipalcigna",
        "metric": "expense_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 1.16
     },
     {
      "cell": "AQ21",
@@ -33825,7 +33847,8 @@
        "entity": "manipalcigna",
        "metric": "expense_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 1.11
     },
     {
      "cell": "AR21",
@@ -33856,7 +33879,8 @@
        "entity": "manipalcigna",
        "metric": "expense_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 1.148
     },
     {
      "cell": "AP22",
@@ -34572,7 +34596,8 @@
        "entity": "aditya-birla",
        "metric": "expense_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 1.101
     },
     {
      "cell": "AZ21",
@@ -34603,7 +34628,8 @@
        "entity": "aditya-birla",
        "metric": "expense_ratio_igaap"
       }
-     ]
+     ],
+     "calculated_value": 1.0482
     },
     {
      "cell": "AX22",
@@ -36397,7 +36423,8 @@
        "entity": "niva-bupa",
        "metric": "pat_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 366.1
     },
     {
      "cell": "H4",
@@ -36981,7 +37008,8 @@
      "source_key": "shareholding",
      "source_status": "available",
      "formula": "=44676098+37778328",
-     "calc": "44676098 + 37778328"
+     "calc": "44676098 + 37778328",
+     "calculated_value": 82454426
     },
     {
      "cell": "D7",
@@ -43077,7 +43105,8 @@
      "source_key": "distribution",
      "source_status": "partial",
      "formula": "=14079/62333",
-     "calc": "14079 / 62333"
+     "calc": "14079 / 62333",
+     "calculated_value": 0.225868
     },
     {
      "cell": "S23",
@@ -43183,7 +43212,8 @@
      "source_key": "distribution",
      "source_status": "partial",
      "formula": "=48877/217343",
-     "calc": "48877 / 217343"
+     "calc": "48877 / 217343",
+     "calculated_value": 0.224884
     },
     {
      "cell": "S24",

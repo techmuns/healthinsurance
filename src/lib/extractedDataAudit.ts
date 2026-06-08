@@ -49,6 +49,8 @@ interface RawBindingCell {
   formula?: string
   calc?: string
   inputs?: RawFormulaInput[]
+  /** Value worked out from our source data — only when every input is present. */
+  calculated_value?: number
 }
 
 interface RawSheet {
@@ -167,9 +169,9 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   fetched: { key: 'fetched', label: 'Fetched', color: 'green' },
   transformed: { key: 'transformed', label: 'Fetched (unit adjusted)', color: 'yellow' },
   manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'yellow' },
-  missing: { key: 'missing', label: 'Missing', color: 'red' },
-  parser_issue: { key: 'parser_issue', label: "Couldn't read it", color: 'red' },
-  source_unavailable: { key: 'source_unavailable', label: 'No source', color: 'red' },
+  missing: { key: 'missing', label: 'Not reachable', color: 'red' },
+  parser_issue: { key: 'parser_issue', label: "Couldn't extract", color: 'red' },
+  source_unavailable: { key: 'source_unavailable', label: 'Not found', color: 'red' },
   blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
   computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
@@ -230,6 +232,8 @@ export interface AuditCell {
   formula?: string
   calc?: string
   inputs?: FormulaInput[]
+  /** The value worked out from our source data (only when every input exists). */
+  calculatedValue?: number | null
 }
 
 export interface SheetStats {
@@ -507,9 +511,9 @@ export function formatRaw(value: number | string | null): string {
 // ─── Status classification (mirrors fill_template.py's join) ────────────────
 
 const MISSING_REASON: Record<string, string> = {
-  available: 'We know the official source — just not pulled in yet.',
+  available: "Not reachable yet — we know the official source, but the site blocks automated pulls (or it hasn't been pulled in).",
   partial: 'Only part of this is available so far.',
-  backup: 'No official source has this number.',
+  backup: 'Data not found — no official source publishes this number.',
   computed: 'Calculated by the sheet — nothing to fetch.',
   narrative: 'This is a written note, not a number to fetch.',
   excluded_from_core: 'Outside the main data we track.',
@@ -624,7 +628,7 @@ export function buildAudit(): AuditModel {
         sourceFile = blocked.source_file ?? null
         sourceDate = blocked.filing_date ?? period
         rawValue = blocked.raw_value ?? null
-        note = blocked.sanity_reason || blocked.parser_notes || 'Extraction failed the parser / sanity gate.'
+        note = "Couldn't extract — we reached the file, but this number came out garbled, so we left it out."
       } else if (held) {
         status = 'blocked'
         sourceUrl = held.source_url ?? null
@@ -660,6 +664,19 @@ export function buildAudit(): AuditModel {
         }
       })
 
+      // For a Calculated cell, say plainly whether we can show a number, and if
+      // not, exactly which input is still missing.
+      if (status === 'computed') {
+        if (b.calculated_value != null) {
+          note = "Calculated from the cells below — we have all of them, so the number is shown."
+        } else {
+          const missingLabels = [...new Set((inputs ?? []).filter((i) => i.value === null).map((i) => i.label))]
+          note = missingLabels.length
+            ? `Calculated from the cells below, but we can't show a number yet — still missing: ${missingLabels.join(', ')}.`
+            : 'Calculated from other cells. Some of the inputs aren\'t available yet.'
+        }
+      }
+
       cells.push({
         id: `${sheet.sheet}!${b.cell}`,
         sheet: sheet.sheet,
@@ -692,6 +709,7 @@ export function buildAudit(): AuditModel {
         formula: b.formula,
         calc: b.calc,
         inputs,
+        calculatedValue: b.calculated_value ?? null,
       })
     }
 

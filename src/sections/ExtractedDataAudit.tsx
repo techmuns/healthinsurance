@@ -227,7 +227,7 @@ export function ExtractedDataAudit() {
             {(['green', 'yellow', 'red', 'info', 'grey'] as QaColor[]).map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
-                {c === 'green' ? 'fetched' : c === 'yellow' ? 'fetched (unit adjusted)' : c === 'red' ? 'missing' : c === 'info' ? 'calculated / extra' : 'not needed'}
+                {c === 'green' ? 'fetched' : c === 'yellow' ? 'fetched (unit adjusted)' : c === 'red' ? "not reachable / can't read / not found" : c === 'info' ? 'calculated / extra' : 'not needed'}
               </span>
             ))}
           </span>
@@ -307,8 +307,8 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
   const tiles: { label: string; value: number; color: QaColor }[] = [
     { label: 'Numbers to fill', value: strip.totalExpected, color: 'grey' },
     { label: 'Fetched', value: strip.fetched, color: 'green' },
-    { label: 'Missing', value: strip.missing, color: 'red' },
-    { label: "Couldn't read", value: strip.parserIssues, color: 'red' },
+    { label: 'Not reachable', value: strip.missing, color: 'red' },
+    { label: "Couldn't extract", value: strip.parserIssues, color: 'red' },
     { label: 'Typed by hand', value: strip.manualOverride, color: 'yellow' },
     { label: 'Calculated', value: strip.computed, color: 'info' },
     { label: 'Has a source link', value: strip.sourceLinked, color: 'info' },
@@ -406,7 +406,10 @@ function CellRow({ c }: { c: AuditCell }) {
   const style = QA_STYLE[c.qaColor]
   const [showCalc, setShowCalc] = useState(false)
   const hasCalc = !!c.formula
-  const replicated = hasCalc ? replicateSum(c) : null
+  // Calculated cells show the value we worked out from our data (when we have
+  // every input); everything else shows the value we fetched.
+  const isCalc = c.status === 'computed'
+  const shownValue = isCalc ? c.calculatedValue ?? null : c.normalizedValue
   return (
     <>
       <tr className={`border-b border-soft-border/60 align-top ${style.tint} hover:bg-soft-blue/40`}>
@@ -426,7 +429,8 @@ function CellRow({ c }: { c: AuditCell }) {
         <Td className="whitespace-nowrap text-ink-secondary">{c.period}</Td>
         <Td className="text-right font-mono tabular-nums text-ink-secondary">{formatRaw(c.rawValue)}</Td>
         <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">
-          {formatValue(c.normalizedValue, c.unit)}
+          {formatValue(shownValue, c.unit)}
+          {isCalc && shownValue !== null && <span className="ml-0.5 align-top text-[8px] font-normal text-lavender" title="Worked out from the cells below">calc</span>}
         </Td>
         <Td className="text-[9.5px] uppercase text-ink-secondary/80">{c.unit || '—'}</Td>
         <Td>
@@ -459,7 +463,7 @@ function CellRow({ c }: { c: AuditCell }) {
       {hasCalc && showCalc && c.inputs && (
         <tr className="border-b border-soft-border/60 bg-lavender-soft/15">
           <td colSpan={13} className="px-3 py-2">
-            <FormulaDetail c={c} replicated={replicated} />
+            <FormulaDetail c={c} />
           </td>
         </tr>
       )}
@@ -468,7 +472,8 @@ function CellRow({ c }: { c: AuditCell }) {
 }
 
 /** The expandable "where do the numbers come from" panel for a computed cell. */
-function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | null }) {
+function FormulaDetail({ c }: { c: AuditCell }) {
+  const worked = c.calculatedValue ?? null
   return (
     <div className="rounded-lg border border-lavender/30 bg-white/70 p-2.5">
       <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]">
@@ -498,33 +503,22 @@ function FormulaDetail({ c, replicated }: { c: AuditCell; replicated: number | n
           ))}
         </tbody>
       </table>
-      {replicated !== null && (
+      {worked !== null ? (
         <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary">
-          Add the inputs up and you get <span className="font-semibold text-ink-primary">{formatValue(replicated, c.unit)}</span>
-          {typeof c.normalizedValue === 'number' ? (
-            Math.abs(replicated - c.normalizedValue) < 1e-6
+          Worked out from these, the value is <span className="font-semibold text-ink-primary">{formatValue(worked, c.unit)}</span>
+          {typeof c.normalizedValue === 'number' && (
+            Math.abs(worked - c.normalizedValue) < 1e-6
               ? <> — same as the reported {formatValue(c.normalizedValue, c.unit)} ✓</>
-              : <> — but the reported figure is <span className="font-semibold text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</span>. They don't match, so these pieces are measured a bit differently. We don't auto-fill it.</>
-          ) : <> (just a quick check — we don't have a reported figure for this one, so don't rely on the total without confirming).</>}
+              : <> — but the reported figure is <span className="font-semibold text-ink-primary">{formatValue(c.normalizedValue, c.unit)}</span>. They don't match, so these pieces are measured a bit differently — worth a check.</>
+          )}
+        </p>
+      ) : (
+        <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary">
+          We can't show a number yet — one or more of the inputs above is still missing (shown as "—").
         </p>
       )}
     </div>
   )
-}
-
-/** Safe replication: only when the formula is purely additive (SUM / +) and
- *  every input has a numeric value — e.g. combined ratio = claims + expense.
- *  Anything with −, ×, ÷, ^ is left to the reviewer (no guessing). */
-function replicateSum(c: AuditCell): number | null {
-  if (!c.formula || !c.inputs || c.inputs.length === 0) return null
-  const body = c.formula.replace(/^=/, '').replace(/IFERROR\s*\(/gi, '(')
-  if (/[-*/^]/.test(body.replace(/"[^"]*"/g, ''))) return null // any non-additive operator → skip
-  let sum = 0
-  for (const i of c.inputs) {
-    if (typeof i.value !== 'number') return null
-    sum += i.value
-  }
-  return sum
 }
 
 // ─── Reconciliation tables ──────────────────────────────────────────────────

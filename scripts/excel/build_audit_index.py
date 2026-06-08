@@ -110,8 +110,10 @@ def latest_iso(*candidates) -> str | None:
 #  detail is simply omitted then).
 # ---------------------------------------------------------------------------
 
-def build_formula_resolver(schema):
+def build_formula_resolver(schema, store):
     try:
+        import ast
+        import operator
         import re
         import openpyxl
         from openpyxl.formula.tokenizer import Tokenizer
@@ -181,6 +183,83 @@ def build_formula_resolver(schema):
             out["metric"] = b["metric"]
         return out
 
+    # ---- value-from-our-data: evaluate a formula using the source-backed store,
+    #      but ONLY when every referenced cell has a value (missing != guessed). ----
+    def store_value(sheet, coord, cur_sheet):
+        s = sheet or cur_sheet
+        b = cellmap.get(s, {}).get(coord) or {}
+        e, m, p = b.get("entity"), b.get("metric"), b.get("period")
+        if e and m and p:
+            v = store.get(f"{e}::{m}::{p}")
+            if v and v.get("normalized_value") is not None:
+                return v["normalized_value"]
+        return None
+
+    _OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
+            ast.Div: operator.truediv, ast.Pow: operator.pow,
+            ast.USub: operator.neg, ast.UAdd: operator.pos}
+
+    def _seval(node):
+        if isinstance(node, ast.BinOp):
+            return _OPS[type(node.op)](_seval(node.left), _seval(node.right))
+        if isinstance(node, ast.UnaryOp):
+            return _OPS[type(node.op)](_seval(node.operand))
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return node.value
+        raise ValueError("unsupported expression")
+
+    sum_re = re.compile(r"(SUM|AVERAGE)\(([^()]+)\)", re.I)
+    ref_re = re.compile(r"(?:'[^']+'|\[\d+\][^!']*'?)?!?\$?[A-Z]{1,3}\$?\d+")
+
+    def compute(cur_sheet, coord):
+        ws = wb[cur_sheet] if cur_sheet in wb.sheetnames else None
+        if ws is None:
+            return None
+        raw = ws[coord].value
+        if not (isinstance(raw, str) and raw.startswith("=")):
+            return None
+        if "IFERROR" in raw.upper():
+            return None            # error-guarded formulas: leave to the reviewer
+        bad = [False]
+        expr = raw[1:]
+
+        def repl_sum(m):
+            fn = m.group(1).upper()
+            vals = []
+            for part in m.group(2).split(","):
+                part = part.strip()
+                for c in (expand(part) if ":" in part else [part.replace("$", "")]):
+                    sheet, ref, ext = split_ref(c)
+                    v = None if ext else store_value(sheet, ref, cur_sheet)
+                    if v is None:
+                        bad[0] = True
+                        return "0"
+                    vals.append(v)
+            if not vals:
+                bad[0] = True
+                return "0"
+            joined = "+".join(repr(v) for v in vals)
+            return f"({joined})" if fn == "SUM" else f"(({joined})/{len(vals)})"
+
+        def repl_ref(m):
+            sheet, ref, ext = split_ref(m.group(0))
+            v = None if ext else store_value(sheet, ref, cur_sheet)
+            if v is None:
+                bad[0] = True
+                return "0"
+            return repr(v)
+
+        expr = sum_re.sub(repl_sum, expr)
+        expr = ref_re.sub(repl_ref, expr)
+        if bad[0]:
+            return None
+        expr = expr.replace("^", "**")
+        expr = re.sub(r"(\d+(?:\.\d+)?)\s*%", r"(\1/100)", expr)
+        try:
+            return round(_seval(ast.parse(expr, mode="eval").body), 6)
+        except Exception:
+            return None
+
     def resolve(cur_sheet, coord):
         ws = wb[cur_sheet] if cur_sheet in wb.sheetnames else None
         if ws is None:
@@ -191,7 +270,7 @@ def build_formula_resolver(schema):
         try:
             toks = Tokenizer(raw).items
         except Exception:
-            return {"formula": raw}
+            return {"formula": raw, "value": compute(cur_sheet, coord)}
         inputs, seen, words = [], set(), []
         for t in toks:
             if t.type == "OPERAND" and t.subtype == "RANGE":
@@ -226,6 +305,9 @@ def build_formula_resolver(schema):
             info["inputs"] = inputs
         if calc:
             info["calc"] = calc
+        value = compute(cur_sheet, coord)
+        if value is not None:
+            info["value"] = value
         return info
 
     return resolve
@@ -237,7 +319,7 @@ def main() -> None:
     held = load(HELD_BACK, {"data": []}).get("data", [])
     filings = load(FILINGS, {"data": []}).get("data", [])
 
-    resolve_formula = build_formula_resolver(schema)
+    resolve_formula = build_formula_resolver(schema, store)
 
     # --- Sheets -> trimmed audit cells -----------------------------------
     sheets = []
@@ -265,6 +347,8 @@ def main() -> None:
                             cell["calc"] = info["calc"]
                         if info.get("inputs"):
                             cell["inputs"] = info["inputs"]
+                        if info.get("value") is not None:
+                            cell["calculated_value"] = info["value"]
                         formula_resolved += 1
             cells.append(cell)
         if not cells and not computed:
