@@ -56,6 +56,13 @@ PREFERRED_RATIO_BASIS = "statutory_1n"
 # disclosures are the statutory 1/n source.
 RATIO_BASIS_METRICS = {"combined_ratio_igaap", "claims_ratio_igaap",
                        "expense_ratio_igaap", "commission_ratio_igaap"}
+# Durable decision (Neha, 2026-06-08): for statutory premium AMOUNTS, the rank-1
+# company-filing value (the most recent statutory NL-1 figure, including a restated
+# prior-year comparative) supersedes a differing lower-priority snapshot value. The
+# superseded figure is recorded as an alternate (as-originally-reported), NOT a
+# blocking conflict - so e.g. Niva FY23 NEP fills with the restated 2,662.75 while
+# the as-first-reported 2,841 is kept on Blocked Data.
+PREMIUM_STATUTORY_SUPERSEDE = {"nep"}
 
 REPO = Path(__file__).resolve().parents[2]
 SNAP = REPO / "src" / "data" / "snapshots"
@@ -332,6 +339,10 @@ def resolve():
         # ratio, a differing lower-priority value is an alternate BASIS (ex-1/n /
         # adjusted), not a conflict - the statutory value still fills the cell.
         winner_statutory = winner["metric"] in RATIO_BASIS_METRICS and winner.get("ratio_basis") == PREFERRED_RATIO_BASIS
+        # A rank-1 statutory premium amount supersedes a differing lower-priority
+        # value as an alternate (as-originally-reported), not a blocking conflict.
+        winner_premium_statutory = (winner.get("source_layer") == "company_filing"
+                                    and winner["metric"] in PREMIUM_STATUTORY_SUPERSEDE)
         conflict_status, competing = "none", []
         for c in cands[1:]:
             if c["priority_rank"] <= RANK_EXISTING and c["normalized_value"] is not None and winner["normalized_value"] is not None:
@@ -348,6 +359,18 @@ def resolve():
                             "confidence": c.get("confidence"), "hold_reason": "basis_mismatch_ex_1n_adjusted",
                             "source_description": c.get("source_name"),
                             "note": "Annual report adjusted ex-1/n ratio; not comparable to statutory 1/n cell",
+                        })
+                    elif winner_premium_statutory and c.get("source_layer") != "company_filing":
+                        alternates.append({
+                            "company_id": winner["entity"], "metric": winner["metric"],
+                            "filing_period": winner["period"], "raw_value": c.get("raw_value"),
+                            "normalized_value": b, "unit": c.get("unit"),
+                            "document_type": c.get("document_type"), "filing_date": c.get("filing_date"),
+                            "source_url": c.get("source_url") or c.get("source_file"),
+                            "confidence": c.get("confidence"), "hold_reason": "superseded_by_statutory_filing",
+                            "source_description": c.get("source_name"),
+                            "note": "As-originally-reported figure superseded by the statutory NL-1 filing "
+                                    "(restated comparative); the statutory value fills the cell",
                         })
                     else:
                         conflict_status = "conflict_needs_review"
@@ -387,7 +410,9 @@ def main():
             "preferred_ratio_basis_rule": "For combined/claims/expense/commission ratios, when both the statutory IRDAI 1/n basis and a company-adjusted ex-1/n basis exist, the Excel cell uses the statutory 1/n value; the adjusted value is recorded here as basis_mismatch_ex_1n_adjusted. If a source's basis is unclear, it is held basis_unclear and not auto-filled.",
             "reasons": {"basis_unclear": "non-statutory / adjusted basis vs the statutory IGAAP cell; basis (1/n vs ex-1/n) not clearly stated",
                         "scope_unclear": "company-wide vs health-only / GDPI vs total GWP",
-                        "basis_mismatch_ex_1n_adjusted": "ex-1/n / management-adjusted ratio superseded by the statutory 1/n value for the Excel cell"},
+                        "basis_mismatch_ex_1n_adjusted": "ex-1/n / management-adjusted ratio superseded by the statutory 1/n value for the Excel cell",
+                        "superseded_by_statutory_filing": "as-originally-reported premium superseded by the statutory NL-1 filing (restated comparative); statutory value fills the cell",
+                        "period_unclear": "premium amount whose NL-form column basis does not match the cell's period (quarter vs full-period); withheld so it is not promoted into the wrong cell"},
         },
         "data": held,
     }, indent=2, ensure_ascii=False))

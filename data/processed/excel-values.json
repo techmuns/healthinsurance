@@ -455,15 +455,8 @@
     "column_basis": "year_to_date",
     "ratio_basis": null,
     "eligible_for_excel": true,
-    "conflict_status": "conflict_needs_review",
-    "competing_values": [
-      {
-        "normalized_value": 2841,
-        "source_layer": "official_snapshot",
-        "source_name": "Niva Bupa FY2024-25 Annual Report — Note 29 'Summary of Financial Statements' (5-year): Net Premium Income FY23 = 3,18,311 Lakhs → NWP 3,183.11 Cr (GWP 4,07,303 Lakhs). NEP 2,841 retained from prior FY2022-23 disclosure (not restated in this report).",
-        "priority_rank": 3
-      }
-    ]
+    "conflict_status": "none",
+    "competing_values": []
   },
   "niva-bupa::combined_ratio_igaap::FY23": {
     "entity": "niva-bupa",
