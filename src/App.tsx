@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType } from 'react'
-import { FilterProvider, useFilters } from '@/state/filters'
+import { Radar } from 'lucide-react'
+import { FilterProvider, useFilters, useActiveCompany } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
@@ -14,8 +15,39 @@ import { ProfitabilityReview } from '@/sections/ProfitabilityReview'
 import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
+import { SourceAutomationPanel } from '@/components/SourceAutomationPanel'
+import { STATE_META, MOCK_CELL_STATUS } from '@/data/sourceAutomation'
 
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
+
+/**
+ * Header entry to the Source Automation & Fallback cockpit. Lives inside the
+ * FilterProvider so it can default-scope to the active insurer. Understated by
+ * design — official-first acquisition is the norm; the small count flags how
+ * many cells currently need a manual upload fallback.
+ */
+function SourceStatusButton() {
+  const [open, setOpen] = useState(false)
+  const active = useActiveCompany()
+  const blocked = MOCK_CELL_STATUS.filter((r) => STATE_META[r.state].fallback).length
+  return (
+    <div className="ml-auto shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary"
+        title="Source automation & fallback — official-first acquisition status"
+      >
+        <Radar className="h-3.5 w-3.5" />
+        Source Status
+        {blocked > 0 && (
+          <span className="grid h-4 min-w-4 place-items-center rounded-full bg-gold-soft px-1 text-[10px] font-bold text-gold">{blocked}</span>
+        )}
+      </button>
+      <SourceAutomationPanel open={open} onClose={() => setOpen(false)} focusCompanyId={active?.id} />
+    </div>
+  )
+}
 
 // ── SAHI Analysis sub-navigation ────────────────────────────────────────────
 // The detailed SAHI workspace starts directly at Companies (Overview has moved
@@ -168,6 +200,7 @@ export default function App() {
                   <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
                 </div>
               )}
+              <SourceStatusButton />
             </div>
           </header>
 
