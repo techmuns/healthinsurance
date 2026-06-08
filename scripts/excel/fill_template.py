@@ -150,9 +150,11 @@ def main(template_path: Path, out_path: Path) -> None:
                     entry.get("sanity_status"), entry.get("conflict_status", "none"),
                     # --- which NL-form column the value came from (Chunk 2C-A) ---
                     entry.get("column_basis"),
-                    # --- statutory-vs-adjusted basis note ---
-                    "Selected statutory 1/n basis for comparability"
-                    if (b["entity"], b["metric"], b["period"]) in basis_selected else "",
+                    # --- basis note: explicit per-value note (deck/annual-report
+                    # basis), else the statutory-1/n selection marker ---
+                    entry.get("basis_note")
+                    or ("Selected statutory 1/n basis for comparability"
+                        if (b["entity"], b["metric"], b["period"]) in basis_selected else ""),
                 ])
             elif has_value and is_conflict:
                 # Source-conflicting: keep in store, do NOT fill (charter rule).

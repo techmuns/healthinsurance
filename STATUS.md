@@ -7,8 +7,16 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **101 / 2155 fillable cells filled (4.7%). QA passes (no hard violations).**
+- **113 / 2155 fillable cells filled (5.2%). QA passes (no hard violations).**
 - Full pipeline working: **extract → bridge → fill → QA**.
+- **Star Health statutory cells from its FY25 Annual Report** (Neha, 2026-06-08):
+  GWP / NWP / NEP / claims+combined+expense ratios / solvency for FY25 (+FY24, +FY23
+  where the 5-yr summary prints them) hand-transcribed from Annexure 2 (p238) &
+  Annexure 3 (p239), statutory IGAAP. Corrected the mangled NEP FY25 (14822.2012→
+  14822.20), non-statutory PAT FY25 (787→645.86), and expense FY25 (30.4%→30.8%);
+  old values on Blocked Data as `superseded_by_annual_report`. GDPI recorded
+  separately from GWP. Star quarterly/H1/9M/FY26 stay blank (public disclosures are
+  403-blocked, not in repo).
 - Niva Bupa **FY25 + FY26 headline ratios** (claims, combined, solvency) now fill
   from the year-end public disclosures, cross-validated across two filings.
 - **Statutory NEP wired** (Neha, 2026-06-08): Niva FY26 / H1FY25 / Q4FY25 / H1FY26 /
@@ -49,6 +57,15 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
   from official investor decks, wired for IFRS cells only — `collect_deck_sourced()`
   reads `data/source-map/deck-sourced-values.json`. Each audit row carries the
   "special-purpose IFRS, not statutory" caveat.
+- **Annual-report layer** (`annual_report`, rank 2): hand-transcribed, page-cited
+  statutory IGAAP values from official annual reports — `collect_annual_report()`
+  reads `data/source-map/annual-report-values.json`. A rank-2 annual-report value
+  supersedes a differing lower-priority snapshot/non-statutory value (recorded
+  `superseded_by_annual_report`); scoped to the `annual_report` layer + the statutory
+  metric set, so company-filing (Niva/Care) behaviour is unchanged. Read with
+  `pypdfium2` (the generic parser mangles annual-report fused columns). Used for Star.
+- **Visible basis notes**: value records carry an optional `basis_note` surfaced in the
+  Source Audit "Basis note" column (exact label, page, basis, GWP-vs-GDPI, supersede).
 - **Filler + QA**: `scripts/excel/fill_template.py`, `scripts/excel/qa_checks.py`.
 - **Manual-download worklist** (source-blocked frontier): `data/source-map/coverage-worklist.json`.
 
@@ -64,6 +81,9 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
   *Exception (Neha, 2026-06-08): the `no PPT` rule is overridden for **IFRS cells
   only** — deck figures are wired via the `company_deck` layer, hand-transcribed with
   page-level provenance and labelled "special-purpose IFRS, not the statutory filing".*
+  *The `no annual-report fused tables` rule bans the **mangled auto-parse**, not the
+  report itself: clean, hand-transcribed, page-cited statutory figures (Annexure 2/3)
+  via the `annual_report` layer are allowed and authoritative (Neha, 2026-06-08).*
 
 ---
 
@@ -86,9 +106,14 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
    supply the decks.
 
 ## PENDING — manual download (this sandbox is 403-blocked on insurer sites)
-5. **Star Health public disclosures** — biggest single gap (~19+ core ratio cells).
-   Exact steps + links in `data/source-map/coverage-worklist.json`. Parser already
-   handles Star's layout — drop files in and they fill automatically.
+5. **Star Health — FY annuals DONE from the annual report; quarters/FY26 pending.**
+   FY25/FY24/FY23 statutory cells now filled from the FY25 AR (see "Where it stands").
+   Still missing (no source in repo): **H1/9M/Q4 FY25–FY26 and full-year FY26** ratios
+   & premiums — these live in Star's quarterly **public disclosures (NL-20/NL-1)**,
+   which are 403-blocked. Steps/links in `coverage-worklist.json`; the NL-form parser
+   handles Star's layout — drop files in and they fill automatically. (FY23 NEP and
+   the FY23 claims/combined/expense ratios aren't printed in the FY25 AR → also pending
+   the FY24/FY23 annual reports or public disclosures.)
 6. **Care FY23** — the 31-Mar-2023 disclosure (3 cells). Same worklist.
 
 ## PENDING — future build chunks

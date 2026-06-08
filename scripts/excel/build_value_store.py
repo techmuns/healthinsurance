@@ -63,16 +63,24 @@ RATIO_BASIS_METRICS = {"combined_ratio_igaap", "claims_ratio_igaap",
 # blocking conflict - so e.g. Niva FY23 NEP fills with the restated 2,662.75 while
 # the as-first-reported 2,841 is kept on Blocked Data.
 PREMIUM_STATUTORY_SUPERSEDE = {"nep"}
+# Statutory metrics where an audited ANNUAL-REPORT value (rank 2) supersedes a
+# differing lower-priority snapshot / non-statutory value, recording the old value
+# as an alternate (superseded_by_annual_report), not a blocking conflict. Scoped to
+# the annual_report layer only, so company_filing (Niva/Care) behaviour is unchanged.
+AR_STATUTORY_SUPERSEDE = {"total_gwp", "nwp", "nep", "pat_igaap", "claims_ratio_igaap",
+                         "combined_ratio_igaap", "expense_ratio_igaap", "solvency_ratio"}
 
 REPO = Path(__file__).resolve().parents[2]
 SNAP = REPO / "src" / "data" / "snapshots"
 OUT = REPO / "data" / "processed" / "excel-values.json"
 OUT_HELD = REPO / "data" / "processed" / "excel-held-back.json"
 DECK = REPO / "data" / "source-map" / "deck-sourced-values.json"
+ANNUAL_REPORT = REPO / "data" / "source-map" / "annual-report-values.json"
 
 CONF_ORDER = {"high": 0, "medium": 1, "low": 2, "pending": 3, None: 4}
 RANK_CF_DISCLOSURE = 1
 RANK_DECK = 2
+RANK_AR = 2
 RANK_EXISTING = 3
 RANK_BACKUP = 9
 
@@ -111,7 +119,7 @@ def add_candidate(entity, metric, period, raw_value, normalized_value, transform
         "document_type": extra.get("document_type"), "document_title": extra.get("document_title"),
         "filing_date": extra.get("filing_date"), "extraction_status": extra.get("extraction_status"),
         "sanity_status": extra.get("sanity_status"), "column_basis": extra.get("column_basis"),
-        "ratio_basis": extra.get("ratio_basis"),
+        "ratio_basis": extra.get("ratio_basis"), "basis_note": extra.get("basis_note"),
     })
 
 
@@ -363,6 +371,36 @@ def collect_deck_sourced():
     return n
 
 
+def collect_annual_report():
+    """Statutory IGAAP values hand-transcribed from official ANNUAL REPORTS, with
+    page-level provenance (data/source-map/annual-report-values.json). Read directly
+    from the cited PDF pages because the generic NL-form parser mangles annual-report
+    layouts (fused columns). These are the audited financial statements - the
+    authoritative statutory source. Rank 2: below an NL-form public disclosure, above
+    generic snapshots. A rank-2 annual_report value supersedes a differing lower-
+    priority value for statutory metrics (see resolve / AR_STATUTORY_SUPERSEDE)."""
+    n = 0
+    if not ANNUAL_REPORT.exists():
+        return n
+    for r in json.loads(ANNUAL_REPORT.read_text()).get("data", []):
+        if r.get("raw_value") is None:
+            continue
+        fn, label = TRANSFORMS[r.get("transform", "identity")]
+        src = f"{r.get('source_title')} p.{r.get('source_page')} - {r.get('exact_label')} [statutory IGAAP]"
+        prov = {"source_name": src, "source_url": r.get("source_url"),
+                "source_file": r.get("source_file"), "fetched_at": None,
+                "confidence": r.get("confidence", "high")}
+        extra = {"document_type": "annual_report", "document_title": r.get("source_title"),
+                 "filing_date": None, "extraction_status": "annual_report_transcribed",
+                 "sanity_status": "ok", "column_basis": None, "ratio_basis": None,
+                 "basis_note": r.get("basis_note")}
+        add_candidate(r["company_id"], r["metric"], r["period"], r.get("raw_value"),
+                      fn(r["raw_value"]), label, r.get("unit"), prov,
+                      RANK_AR, "annual_report", "available", extra)
+        n += 1
+    return n
+
+
 def resolve():
     store = {}
     conflicts = 0
@@ -378,6 +416,10 @@ def resolve():
         # value as an alternate (as-originally-reported), not a blocking conflict.
         winner_premium_statutory = (winner.get("source_layer") == "company_filing"
                                     and winner["metric"] in PREMIUM_STATUTORY_SUPERSEDE)
+        # An audited annual-report statutory value supersedes a differing lower-priority
+        # snapshot / non-statutory value (scoped to the annual_report layer only).
+        winner_ar_statutory = (winner.get("source_layer") == "annual_report"
+                               and winner["metric"] in AR_STATUTORY_SUPERSEDE)
         conflict_status, competing = "none", []
         for c in cands[1:]:
             if c["priority_rank"] <= RANK_EXISTING and c["normalized_value"] is not None and winner["normalized_value"] is not None:
@@ -407,6 +449,18 @@ def resolve():
                             "note": "As-originally-reported figure superseded by the statutory NL-1 filing "
                                     "(restated comparative); the statutory value fills the cell",
                         })
+                    elif winner_ar_statutory and c.get("source_layer") != "annual_report":
+                        alternates.append({
+                            "company_id": winner["entity"], "metric": winner["metric"],
+                            "filing_period": winner["period"], "raw_value": c.get("raw_value"),
+                            "normalized_value": b, "unit": c.get("unit"),
+                            "document_type": c.get("document_type"), "filing_date": c.get("filing_date"),
+                            "source_url": c.get("source_url") or c.get("source_file"),
+                            "confidence": c.get("confidence"), "hold_reason": "superseded_by_annual_report",
+                            "source_description": c.get("source_name"),
+                            "note": "Lower-priority / non-statutory value superseded by the audited "
+                                    "annual-report statutory IGAAP figure; the annual-report value fills the cell",
+                        })
                     else:
                         conflict_status = "conflict_needs_review"
                         competing.append({"normalized_value": b, "source_layer": c["source_layer"],
@@ -421,6 +475,7 @@ def resolve():
                 "document_type", "document_title", "filing_date", "extraction_status", "sanity_status",
                 "column_basis")},
             "ratio_basis": winner.get("ratio_basis"),
+            "basis_note": winner.get("basis_note"),
             "eligible_for_excel": True,
             "conflict_status": conflict_status,
             "competing_values": competing,
@@ -432,6 +487,7 @@ def main():
     collect_existing()
     wired, held = collect_company_filings()
     deck = collect_deck_sourced()
+    ar = collect_annual_report()
     store, conflicts, alternates = resolve()
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
@@ -457,6 +513,7 @@ def main():
     print(f"excel-values.json written -> {OUT}")
     print(f"  {len(store)} resolved values  |  company-filing-sourced: {by_layer.get('company_filing', 0)}"
           f"  |  deck-sourced: {by_layer.get('company_deck', 0)}"
+          f"  |  annual-report-sourced: {by_layer.get('annual_report', 0)}"
           f"  |  conflicts flagged: {conflicts}  |  CF ratio candidates wired: {wired}  |  held-back: {len(held)}")
     by_metric = Counter(v["metric"].split("::")[0] for v in store.values())
     for metric, n in by_metric.most_common():

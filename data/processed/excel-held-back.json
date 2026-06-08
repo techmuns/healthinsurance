@@ -195,6 +195,36 @@
       "hold_reason": "superseded_by_statutory_filing",
       "source_description": "Niva Bupa FY2024-25 Annual Report — Note 29 'Summary of Financial Statements' (5-year): Net Premium Income FY23 = 3,18,311 Lakhs → NWP 3,183.11 Cr (GWP 4,07,303 Lakhs). NEP 2,841 retained from prior FY2022-23 disclosure (not restated in this report).",
       "note": "As-originally-reported figure superseded by the statutory NL-1 filing (restated comparative); the statutory value fills the cell"
+    },
+    {
+      "company_id": "star-health",
+      "metric": "pat_igaap",
+      "filing_period": "FY25",
+      "raw_value": 787,
+      "normalized_value": 787,
+      "unit": "INR_cr",
+      "document_type": null,
+      "filing_date": null,
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "confidence": "high",
+      "hold_reason": "superseded_by_annual_report",
+      "source_description": "star-health FY25 annual disclosure",
+      "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
+    },
+    {
+      "company_id": "star-health",
+      "metric": "expense_ratio_igaap",
+      "filing_period": "FY25",
+      "raw_value": 30.4,
+      "normalized_value": 0.304,
+      "unit": "ratio",
+      "document_type": null,
+      "filing_date": null,
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "confidence": "high",
+      "hold_reason": "superseded_by_annual_report",
+      "source_description": "star-health FY25 annual disclosure",
+      "note": "Lower-priority / non-statutory value superseded by the audited annual-report statutory IGAAP figure; the annual-report value fills the cell"
     }
   ]
 }
