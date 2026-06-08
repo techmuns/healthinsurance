@@ -7,7 +7,14 @@ name: monthly ingestion
 # are skipped (deduped via non-life-monthly/manifest.json); revised sheets get
 # a fresh URL from IRDAI and are saved as new files.
 #
-# The access token lives in the repo secret MUNS_API_TOKEN — never in code.
+# Downloads reuse the repo's fetchBuffer() (browser-headered fetch -> headless
+# Chromium -> optional fetch proxy), because IRDAI returns 403 to plain requests
+# from GitHub's datacenter IPs.
+#
+# Secrets used:
+#   MUNS_API_TOKEN      (required) bearer token for the chat agent.
+#   INGEST_FETCH_PROXY  (optional) proxy URL template with a {url} placeholder,
+#                       needed when IRDAI 403s the runner even via headless Chrome.
 
 on:
   schedule:
@@ -25,20 +32,38 @@ concurrency:
 jobs:
   ingest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Chromium (headless browser to get past IRDAI's WAF)
+        # Non-fatal: if the browser install hiccups, the run still tries the
+        # plain-fetch and proxy tiers.
+        continue-on-error: true
+        run: npx playwright install --with-deps chromium
 
       - name: Run monthly ingestion
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
-        run: python scripts/monthly_ingestion.py
+          # Enable the headless-browser + proxy download fallbacks.
+          INGEST_OFFLINE: '0'
+          # Optional: lets downloads leave from a non-blocked IP when IRDAI
+          # 403s the runner even through headless Chrome. Unset = those tiers
+          # simply no-op.
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+        run: npx tsx scripts/monthly-ingestion.ts
 
       - name: Commit new files
         run: |
