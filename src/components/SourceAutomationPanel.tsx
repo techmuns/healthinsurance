@@ -8,7 +8,7 @@ import { SignalBadge } from './SignalBadge'
 import { OrganicIconBlob } from './OrganicIconBlob'
 import {
   STATE_META, BASIS_META, METRIC_LABEL, SOURCE_PRIORITY_LADDER, SUPPORTED_DOC_TYPES,
-  MOCK_CELL_STATUS, MOCK_EXTRACTION, MOCK_AUDIT, allowedForStatutory,
+  MOCK_CELL_STATUS, MOCK_EXTRACTION, MOCK_AUDIT, SCREENER_POLICY, allowedForStatutory,
   type SourceCellStatus, type SourceBasis,
 } from '@/data/sourceAutomation'
 
@@ -19,8 +19,8 @@ export interface SourceAutomationPanelProps {
   focusCompanyId?: string
 }
 
-const basisTone: Record<SourceBasis, 'teal' | 'navy' | 'negative' | 'neutral'> = {
-  statutory: 'teal', ifrs: 'navy', broker: 'negative', market_data: 'neutral',
+const basisTone: Record<SourceBasis, 'teal' | 'navy' | 'negative' | 'neutral' | 'warning'> = {
+  statutory: 'teal', ifrs: 'navy', broker: 'negative', market_data: 'neutral', screener_fallback: 'warning',
 }
 
 /** Heuristic auto-detect from an uploaded file name (Phase 1 — mock extraction). */
@@ -112,6 +112,15 @@ export function SourceAutomationPanel({ open, onClose, focusCompanyId }: SourceA
           ))}
         </ol>
       </Card>
+
+      {/* Screener fallback policy (Neha, 2026-06-08) */}
+      <div className="mt-3 flex items-start gap-3 rounded-xl2 border border-[#F0E1BE] bg-gold-soft/50 p-3.5">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+        <p className="text-[12.5px] text-ink-primary">
+          <span className="font-semibold">{SCREENER_POLICY.label}</span> ·{' '}
+          <span className="font-semibold text-gold">{SCREENER_POLICY.badge}</span>. <span className="text-ink-secondary">{SCREENER_POLICY.rule}</span>
+        </p>
+      </div>
 
       {/* Company filter */}
       <div className="my-4 flex flex-wrap items-center gap-2">
@@ -289,7 +298,7 @@ export function SourceAutomationPanel({ open, onClose, focusCompanyId }: SourceA
 
       {/* Audit trail */}
       <div className="mt-4">
-        <Card title="Audit trail · approved into source-map" icon={<CheckCircle2 className="h-4 w-4" />}>
+        <Card title="Source-layer audit · verification status" icon={<CheckCircle2 className="h-4 w-4" />}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[12px]">
               <thead className="bg-ice text-[10px] uppercase tracking-wide text-ink-secondary">
@@ -298,17 +307,26 @@ export function SourceAutomationPanel({ open, onClose, focusCompanyId }: SourceA
                   <th className="px-2 py-2 font-semibold">Value</th>
                   <th className="px-2 py-2 font-semibold">Source · Page · Label</th>
                   <th className="px-2 py-2 font-semibold">Layer</th>
+                  <th className="px-2 py-2 font-semibold">Verification</th>
                 </tr>
               </thead>
               <tbody>
-                {MOCK_AUDIT.map((a, i) => (
-                  <tr key={i} className={i % 2 ? 'bg-ice/30' : ''}>
-                    <td className="px-2 py-2 font-medium text-ink-primary">{a.company} · {METRIC_LABEL[a.metric] ?? a.metric} · {a.period}</td>
-                    <td className="px-2 py-2 text-ink-primary">{a.value.toLocaleString('en-IN')}</td>
-                    <td className="px-2 py-2 text-ink-secondary">{a.sourceFile} · p.{a.page} · “{a.exactLabel}”</td>
-                    <td className="px-2 py-2"><SignalBadge label={a.layer} tone="navy" size="sm" /></td>
-                  </tr>
-                ))}
+                {MOCK_AUDIT.map((a, i) => {
+                  const screener = a.layer === 'screener_fallback'
+                  return (
+                    <tr key={i} className={screener ? 'bg-gold-soft/30' : i % 2 ? 'bg-ice/30' : ''}>
+                      <td className="px-2 py-2 font-medium text-ink-primary">{a.company} · {METRIC_LABEL[a.metric] ?? a.metric} · {a.period}</td>
+                      <td className="px-2 py-2 text-ink-primary">{a.value == null ? '—' : a.value.toLocaleString('en-IN')}</td>
+                      <td className="px-2 py-2 text-ink-secondary">{a.sourceFile}{a.page ? ` · p.${a.page}` : ''} · “{a.exactLabel}”</td>
+                      <td className="px-2 py-2"><SignalBadge label={a.layer} tone={screener ? 'warning' : 'navy'} size="sm" /></td>
+                      <td className="px-2 py-2">
+                        {screener
+                          ? <span className="text-[11px] font-medium text-gold">{a.verification}{a.fetchedAt ? ` · ${a.fetchedAt}` : ''}</span>
+                          : <span className="inline-flex items-center gap-1 text-[11px] text-emerald"><ShieldCheck className="h-3 w-3" /> {a.verification ?? 'official'}</span>}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

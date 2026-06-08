@@ -84,6 +84,17 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
   *The `no annual-report fused tables` rule bans the **mangled auto-parse**, not the
   report itself: clean, hand-transcribed, page-cited statutory figures (Annexure 2/3)
   via the `annual_report` layer are allowed and authoritative (Neha, 2026-06-08).*
+- **Screener fallback (Neha, 2026-06-08)** — Screener.in is allowed ONLY as a
+  clearly-labelled, **lowest-rank (9)** fallback: after official fetch/staging fails,
+  and ONLY for metrics it directly provides (`pe_ttm` / `price_to_book` / `roe` —
+  none statutory). Tagged `source_layer=screener_fallback` + basis_note "pending
+  official filing verification"; **superseded by any official value (rank 1–3), never
+  silently mixed, and it can never fill a statutory cell** (Screener has no statutory
+  metric). `collect_screener()` + `SCREENER_MAP` in `build_value_store.py` — the map
+  is currently empty (pe_ttm ≠ pe_3yr_avg; no P/B / ROE cells) AND the Screener
+  snapshot is empty, so it wires **0** values today; the mechanism is in place for
+  when a provided metric has data and a cell. Surfaced in the dashboard's
+  **Source Automation & Fallback** module (warning badge + verification status).
 
 ---
 

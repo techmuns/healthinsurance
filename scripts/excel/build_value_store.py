@@ -11,9 +11,16 @@ Two-pass collect-then-resolve:
 
 Sources & priority (lower rank wins):
   1  company filings - public disclosure (IRDAI NL-form, statutory IGAAP ratios)
+  2  curated source-map: annual_report (hand-transcribed statutory) + company_deck (IFRS)
   3  existing official snapshots (insurer annual/quarterly, peer, industry, channel,
      price, valuation - produced by the TS pipeline)
-  9  third-party backup (screener/trendlyne; only used when nothing official exists)
+  9  Screener fallback (Neha, 2026-06-08): a clearly-labelled, LOWEST-rank fallback,
+     used ONLY after official fetch/staging fails and ONLY for metrics Screener
+     DIRECTLY provides (pe_ttm / price_to_book / roe - none statutory). Tagged
+     source_layer=screener_fallback + basis_note "pending official filing
+     verification"; an official value (rank 1-3) always supersedes it, never silently
+     mixed. It cannot fill a statutory cell (Screener has no statutory metric).
+     Trendlyne / broker remain non-statutory analyst-only and are not wired here.
 
 STRICTNESS (accuracy > coverage, per the governing charter):
   * Only company-filings records with eligible_for_excel=true are read.
@@ -76,6 +83,7 @@ OUT = REPO / "data" / "processed" / "excel-values.json"
 OUT_HELD = REPO / "data" / "processed" / "excel-held-back.json"
 DECK = REPO / "data" / "source-map" / "deck-sourced-values.json"
 ANNUAL_REPORT = REPO / "data" / "source-map" / "annual-report-values.json"
+SCREENER = SNAP / "screener-crosscheck-snapshot.json"
 
 CONF_ORDER = {"high": 0, "medium": 1, "low": 2, "pending": 3, None: 4}
 RANK_CF_DISCLOSURE = 1
@@ -83,6 +91,15 @@ RANK_DECK = 2
 RANK_AR = 2
 RANK_EXISTING = 3
 RANK_BACKUP = 9
+
+# Screener fallback (Neha, 2026-06-08): map a Screener metric -> schema metric ONLY
+# when Screener directly provides it AND it maps cleanly to a cell. Screener's
+# adapter yields pe_ttm / price_to_book / roe (valuation); none are statutory, and
+# none map cleanly to a current cell (pe_ttm != pe_3yr_avg; no P/B or ROE cells), so
+# this map is intentionally EMPTY today -> Screener wires nothing. The labelled,
+# lowest-rank, supersedable mechanism is in place for when a provided metric both
+# has data and maps to a cell. Statutory metrics are never added here.
+SCREENER_MAP: dict[str, str] = {}
 
 
 def pct_to_fraction(v):
@@ -401,6 +418,36 @@ def collect_annual_report():
     return n
 
 
+def collect_screener():
+    """Screener.in cross-check as a clearly-labelled, LOWEST-rank fallback (rank 9).
+    Reads screener-crosscheck-snapshot.json and wires ONLY metrics in SCREENER_MAP
+    (those Screener directly provides AND that map to a cell). Each value is tagged
+    source_layer=screener_fallback, source_status=backup, low confidence, and a
+    basis_note 'Screener fallback - pending official filing verification'. Any
+    official value (rank 1-3) supersedes it and it is never silently mixed; it can
+    never fill a statutory cell (Screener has no statutory metric)."""
+    n = 0
+    if not SCREENER.exists() or not SCREENER_MAP:
+        return n
+    for r in json.loads(SCREENER.read_text()).get("data", []) or []:
+        target = SCREENER_MAP.get(r.get("metric"))
+        if not target or r.get("value") is None:
+            continue
+        p = r.get("provenance", {}) or {}
+        prov = {"source_name": f"Screener.in cross-check ({r.get('metric')}) - fallback, pending official verification",
+                "source_url": p.get("source_url"), "source_file": None,
+                "fetched_at": p.get("fetched_at"), "confidence": "low"}
+        extra = {"document_type": "screener_fallback", "document_title": "Screener.in (backup aggregator)",
+                 "filing_date": p.get("fetched_at"), "extraction_status": "screener_crosscheck",
+                 "sanity_status": "ok", "column_basis": None, "ratio_basis": None,
+                 "basis_note": "Screener fallback - pending official filing verification"}
+        add_candidate(r["company_id"], target, r.get("period") or "TTM", r.get("value"),
+                      r.get("value"), "identity (Screener fallback)", r.get("unit") or "",
+                      prov, RANK_BACKUP, "screener_fallback", "backup", extra)
+        n += 1
+    return n
+
+
 def resolve():
     store = {}
     conflicts = 0
@@ -488,6 +535,7 @@ def main():
     wired, held = collect_company_filings()
     deck = collect_deck_sourced()
     ar = collect_annual_report()
+    screener = collect_screener()
     store, conflicts, alternates = resolve()
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
@@ -514,6 +562,7 @@ def main():
     print(f"  {len(store)} resolved values  |  company-filing-sourced: {by_layer.get('company_filing', 0)}"
           f"  |  deck-sourced: {by_layer.get('company_deck', 0)}"
           f"  |  annual-report-sourced: {by_layer.get('annual_report', 0)}"
+          f"  |  screener-fallback: {by_layer.get('screener_fallback', 0)} (wired {screener})"
           f"  |  conflicts flagged: {conflicts}  |  CF ratio candidates wired: {wired}  |  held-back: {len(held)}")
     by_metric = Counter(v["metric"].split("::")[0] for v in store.values())
     for metric, n in by_metric.most_common():
