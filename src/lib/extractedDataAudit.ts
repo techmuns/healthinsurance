@@ -165,7 +165,7 @@ export interface StatusMeta {
 
 export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   fetched: { key: 'fetched', label: 'Fetched', color: 'green' },
-  transformed: { key: 'transformed', label: 'Fetched (adjusted)', color: 'yellow' },
+  transformed: { key: 'transformed', label: 'Fetched (unit adjusted)', color: 'yellow' },
   manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'yellow' },
   missing: { key: 'missing', label: 'Missing', color: 'red' },
   parser_issue: { key: 'parser_issue', label: "Couldn't read it", color: 'red' },

@@ -227,7 +227,7 @@ export function ExtractedDataAudit() {
             {(['green', 'yellow', 'red', 'info', 'grey'] as QaColor[]).map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
-                {c === 'green' ? 'fetched' : c === 'yellow' ? 'fetched (adjusted)' : c === 'red' ? 'missing' : c === 'info' ? 'calculated / extra' : 'not needed'}
+                {c === 'green' ? 'fetched' : c === 'yellow' ? 'fetched (unit adjusted)' : c === 'red' ? 'missing' : c === 'info' ? 'calculated / extra' : 'not needed'}
               </span>
             ))}
           </span>
