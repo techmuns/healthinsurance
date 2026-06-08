@@ -20,8 +20,8 @@ name: monthly ingestion
 
 on:
   schedule:
-    # 06:00 UTC on the 1st of every month.
-    - cron: '0 6 1 * *'
+    # ~Every 15 days: 06:00 UTC on the 1st and 15th of every month.
+    - cron: '0 6 1,15 * *'
   workflow_dispatch:
 
 permissions:
