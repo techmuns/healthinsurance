@@ -1,17 +1,22 @@
 # Project Status — Official Filings → Excel Pipeline
 
-_Last updated: 2026-06-05. Branch: `main`._
+_Last updated: 2026-06-08. Branch: `main`._
 
 This is the handoff/status doc for the official-filings → Excel-fill work. The
 container is ephemeral, so this lives in the repo so the next session can pick up
 without re-deriving state.
 
 ## Where it stands
-- **80 / 2155 fillable cells filled (3.7%). QA passes (no hard violations).**
+- **84 / 2155 fillable cells filled (3.9%). QA passes (no hard violations).**
 - Full pipeline working: **extract → bridge → fill → QA**.
 - Niva Bupa **FY25 + FY26 headline ratios** (claims, combined, solvency) now fill
   from the year-end public disclosures, cross-validated across two filings.
+- **Statutory NEP now wired** (Neha, 2026-06-08): Niva FY26 / H1FY25 / Q4FY25 /
+  H1FY26 / Q4FY26 newly fill from the NL-1 revenue account; FY24/FY25 upgraded to
+  the statutory source. FY23 held — see the restatement decision below.
 - Workbook (gitignored build artifact): `output/Niva_Bupa_portfolio_review__filled.xlsx`.
+- **Setup note:** the fill/QA steps need `openpyxl` (`pip3 install openpyxl`); a
+  fresh container won't have it.
 
 ## Regenerate the workbook
 ```bash
@@ -46,17 +51,24 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
 
 ---
 
-## PENDING — your decision (data ready, just needs a yes/no)
-1. **Wire NEP into Excel?** Niva statutory NEP is extracted & validated (FY25 =
-   4,894.46 cr, matches official to the rupee) but **held** (premiums-from-filings
-   policy + not on the target list). Yes → fills `nep` cells (H1FY25, H1FY26, FY25,
-   FY26…) immediately. *Explicitly parked for a separate decision.*
-2. **GWP basis.** Niva FY25/FY26 GWP empty. Disclosures give **GDPI** (direct
-   premium), which differs from `total_gwp` by scope → held. Decide: accept GDPI as
-   GWP for health insurers, or wait for a cleaner source.
-3. **IFRS cells (63).** `pat_ifrs`, `claims_ratio_ifrs`, etc. — Indian insurers file
-   IGAAP, not IFRS; no public source. Recommend reclassifying "available" →
-   "unavailable" so the Missing sheet stops implying they're fetchable.
+## PENDING — your decision
+1. ~~Wire NEP into Excel?~~ **DONE** (Neha, 2026-06-08) — statutory NL-1 NEP wired
+   with the flow/column rule. See "Where it stands".
+2. ~~GWP basis.~~ **RESOLVED** — the annual snapshot already supplies Niva GWP on
+   the **direct-premium (GDPI)** basis (FY25 = 6,762.23 cr); the ex-1/n headline
+   (7,407) stays held. Neha chose "use direct premium" → already in effect for the
+   filled cells. Gap remaining: FY26 / H1 / 9M GWP have no direct-premium source.
+3. **FY23 NEP restatement (NEW).** Wiring NEP surfaced a genuine conflict: Niva
+   FY23 NEP is **2,841** as first reported but **2,662.75** as restated in the FY24
+   filing. Held on Blocked Data (`source_conflict`). Decide which basis the FY23
+   cell shows (restated 2,662.75 recommended for cross-year comparability).
+4. **IFRS cells (63)** — `pat_ifrs` (27), `claims_ratio_ifrs` (18),
+   `expense_ratio_ifrs` (15), `net_worth_ifrs` (3). Indian insurers file **IGAAP,
+   not IFRS**. Neha says the figures live in each company's **PPT** — but the
+   `no PPT values` rule is in force, and a deck figure may be IGAAP/adjusted, not
+   IFRS. Blocked on: (a) getting a deck (sandbox is 403-blocked on insurer sites),
+   (b) verifying the basis is genuinely IFRS before wiring. Awaiting Neha's deck
+   or a decision to mark them unavailable.
 
 ## PENDING — manual download (this sandbox is 403-blocked on insurer sites)
 4. **Star Health public disclosures** — biggest single gap (~19+ core ratio cells).
