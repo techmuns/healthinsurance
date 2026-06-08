@@ -1,95 +1,129 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   Download, Search, ChevronRight, ExternalLink, FileSpreadsheet,
-  RotateCcw, Layers, Table2, AlertTriangle, Link2, Target,
+  RotateCcw, Layers, Table2, AlertTriangle, Link2, Users, Star,
 } from 'lucide-react'
 import {
-  buildAudit, STATUS_META, formatValue, formatRaw,
-  type AuditCell, type AuditStatus, type QaColor,
+  buildAudit, STATUS_META, formatValue, formatRaw, stripFor, periodSort,
+  companyRank, FOCAL_COMPANY,
+  type AuditCell, type AuditStatus, type QaColor, type StripCounts,
 } from '@/lib/extractedDataAudit'
 
 // ---------------------------------------------------------------------------
 //  Extracted Data Audit — a QA tab (not analysis). It mirrors the Excel/source
 //  template cell-by-cell so a reviewer can confirm every value is fetched,
-//  normalized, source-linked and routed into the dashboard correctly. It reads
-//  the SAME normalized pipeline as the dashboard (src/lib/extractedDataAudit.ts)
-//  — no duplicate data logic.
+//  normalized, source-linked and routed into the dashboard correctly.
+//
+//  Scoped to what matters: the SAHI deep-dive (per-insurer financials, Niva
+//  Bupa first) leads; the all-company / market data the dashboard only needs at
+//  industry level is kept in a separate, secondary scope.
 // ---------------------------------------------------------------------------
 
-const QA_STYLE: Record<QaColor, { dot: string; pill: string; tint: string; bar: string }> = {
-  green: { dot: '#2F855A', pill: 'bg-emerald-soft text-emerald', tint: 'bg-emerald-soft/30', bar: 'bg-emerald' },
-  yellow: { dot: '#B7791F', pill: 'bg-gold-soft text-gold', tint: 'bg-gold-soft/40', bar: 'bg-gold' },
-  red: { dot: '#C75D54', pill: 'bg-coral-soft text-coral', tint: 'bg-coral-soft/30', bar: 'bg-coral' },
-  grey: { dot: '#94A3B8', pill: 'bg-slate-100 text-slate-500', tint: '', bar: 'bg-slate-300' },
-  info: { dot: '#6E7BD6', pill: 'bg-lavender-soft text-lavender', tint: 'bg-lavender-soft/30', bar: 'bg-lavender' },
+const QA_STYLE: Record<QaColor, { dot: string; pill: string; tint: string }> = {
+  green: { dot: '#2F855A', pill: 'bg-emerald-soft text-emerald', tint: 'bg-emerald-soft/30' },
+  yellow: { dot: '#B7791F', pill: 'bg-gold-soft text-gold', tint: 'bg-gold-soft/40' },
+  red: { dot: '#C75D54', pill: 'bg-coral-soft text-coral', tint: 'bg-coral-soft/30' },
+  grey: { dot: '#94A3B8', pill: 'bg-slate-100 text-slate-500', tint: '' },
+  info: { dot: '#6E7BD6', pill: 'bg-lavender-soft text-lavender', tint: 'bg-lavender-soft/30' },
 }
 
-type GroupMode = 'sheet' | 'section'
+type Scope = 'sahi' | 'industry'
+type GroupMode = 'company' | 'sheet' | 'section'
 
 interface Filters {
   company: string
   period: string
   sourceRole: string
-  section: string
-  statuses: Set<AuditStatus>
+  status: AuditStatus | 'all'
   search: string
 }
-
-const EMPTY_FILTERS: Filters = {
-  company: 'all', period: 'all', sourceRole: 'all', section: 'all', statuses: new Set(), search: '',
-}
+const EMPTY_FILTERS: Filters = { company: 'all', period: 'all', sourceRole: 'all', status: 'all', search: '' }
 
 export function ExtractedDataAudit() {
   const model = useMemo(() => buildAudit(), [])
-  const [groupMode, setGroupMode] = useState<GroupMode>('sheet')
+  const [scope, setScope] = useState<Scope>('sahi')
+  const [groupMode, setGroupMode] = useState<GroupMode>('company')
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [exporting, setExporting] = useState(false)
 
   const allCells = useMemo(() => model.groups.flatMap((g) => g.cells), [model])
+  const scopeCounts = useMemo(() => ({
+    sahi: allCells.filter((c) => c.scope === 'sahi').length,
+    industry: allCells.filter((c) => c.scope === 'industry').length,
+  }), [allCells])
 
-  // Per-sheet metadata for the sheet grouping header.
-  const sheetMeta = useMemo(() => {
-    const m = new Map<string, { role: string; section: string; computed: number; dims: string | null }>()
-    for (const g of model.groups) m.set(g.sheet, { role: g.role, section: g.dashboardSection, computed: g.computedCells, dims: g.dimensions })
-    return m
-  }, [model])
+  const switchScope = (s: Scope) => {
+    setScope(s)
+    setGroupMode(s === 'sahi' ? 'company' : 'sheet')
+    setFilters(EMPTY_FILTERS)
+    setOpen({})
+  }
+
+  const scopedCells = useMemo(() => allCells.filter((c) => c.scope === scope), [allCells, scope])
+  const computedForScope = useMemo(
+    () => model.groups.filter((g) => g.scope === scope).reduce((n, g) => n + g.computedCells, 0),
+    [model, scope],
+  )
+  const strip = useMemo(() => stripFor(scopedCells, computedForScope), [scopedCells, computedForScope])
+
+  // Filter options come from the active scope so the dropdowns only show what's relevant.
+  const options = useMemo(() => {
+    const companies = new Map<string, string>()
+    const periods = new Set<string>()
+    const sources = new Map<string, string>()
+    const statuses = new Set<AuditStatus>()
+    for (const c of scopedCells) {
+      if (c.entityId) companies.set(c.entityId, c.entityLabel)
+      if (c.period) periods.add(c.period)
+      sources.set(c.role, sourceTypeOf(c.role, model))
+      statuses.add(c.status)
+    }
+    return {
+      companies: [...companies.entries()].sort((a, b) => companyRank(a[0]) - companyRank(b[0]) || a[1].localeCompare(b[1])),
+      periods: [...periods].sort(periodSort),
+      sources: [...sources.entries()].sort((a, b) => a[1].localeCompare(b[1])),
+      statuses: [...statuses].sort((a, b) => STATUS_META[a].label.localeCompare(STATUS_META[b].label)),
+    }
+  }, [scopedCells, model])
 
   const filterActive =
     filters.company !== 'all' || filters.period !== 'all' || filters.sourceRole !== 'all' ||
-    filters.section !== 'all' || filters.statuses.size > 0 || filters.search.trim() !== ''
+    filters.status !== 'all' || filters.search.trim() !== ''
 
   const filtered = useMemo(() => {
     const q = filters.search.trim().toLowerCase()
-    return allCells.filter((c) => {
+    return scopedCells.filter((c) => {
       if (filters.company !== 'all' && c.entityId !== filters.company) return false
       if (filters.period !== 'all' && c.period !== filters.period) return false
       if (filters.sourceRole !== 'all' && c.role !== filters.sourceRole) return false
-      if (filters.section !== 'all' && c.dashboardField !== filters.section) return false
-      if (filters.statuses.size > 0 && !filters.statuses.has(c.status)) return false
-      if (q) {
-        const hay = `${c.metricLabel} ${c.metricId} ${c.section} ${c.entityLabel} ${c.cellRef} ${c.period}`.toLowerCase()
-        if (!hay.includes(q)) return false
-      }
+      if (filters.status !== 'all' && c.status !== filters.status) return false
+      if (q && !`${c.metricLabel} ${c.metricId} ${c.section} ${c.entityLabel} ${c.cellRef} ${c.period}`.toLowerCase().includes(q)) return false
       return true
     })
-  }, [allCells, filters])
+  }, [scopedCells, filters])
 
-  // Sheet display order = the original template order (so the tab mirrors the
-  // Excel structure); section order = the dashboard reading order.
   const sheetOrder = useMemo(() => new Map(model.groups.map((g, i) => [g.sheet, i])), [model])
 
-  // Group the filtered cells by the chosen dimension.
   const view = useMemo(() => {
     const map = new Map<string, AuditCell[]>()
+    const keyOf = (c: AuditCell) => (groupMode === 'company' ? c.entityId : groupMode === 'sheet' ? c.sheet : c.dashboardField)
     for (const c of filtered) {
-      const k = groupMode === 'sheet' ? c.sheet : c.dashboardField
+      const k = keyOf(c)
       const arr = map.get(k)
       if (arr) arr.push(c)
       else map.set(k, [c])
     }
-    const groups = [...map.entries()].map(([key, cells]) => ({ key, cells, stats: tally(cells) }))
-    if (groupMode === 'sheet') {
+    const groups = [...map.entries()].map(([key, cells]) => ({
+      key,
+      title: groupMode === 'company' ? cells[0].entityLabel : key,
+      focus: groupMode === 'company' && key === FOCAL_COMPANY,
+      cells,
+      stats: tally(cells),
+    }))
+    if (groupMode === 'company') {
+      groups.sort((a, b) => companyRank(a.key) - companyRank(b.key) || a.title.localeCompare(b.title))
+    } else if (groupMode === 'sheet') {
       groups.sort((a, b) => (sheetOrder.get(a.key) ?? 99) - (sheetOrder.get(b.key) ?? 99))
     } else {
       groups.sort((a, b) => b.cells.length - a.cells.length)
@@ -97,23 +131,13 @@ export function ExtractedDataAudit() {
     return groups
   }, [filtered, groupMode, sheetOrder])
 
-  const isOpen = (k: string) => open[k] ?? (filterActive && filtered.length < 400)
+  const isOpen = (k: string) => open[k] ?? (scope === 'sahi' || filterActive)
   const toggle = (k: string) => setOpen((o) => ({ ...o, [k]: !isOpen(k) }))
-  const toggleStatus = (s: AuditStatus) =>
-    setFilters((f) => {
-      const next = new Set(f.statuses)
-      if (next.has(s)) next.delete(s)
-      else next.add(s)
-      return { ...f, statuses: next }
-    })
 
   async function handleExport() {
     setExporting(true)
-    try {
-      await exportToExcel(view, model, groupMode)
-    } finally {
-      setExporting(false)
-    }
+    try { await exportToExcel(view, model, scope, groupMode) }
+    finally { setExporting(false) }
   }
 
   return (
@@ -131,14 +155,11 @@ export function ExtractedDataAudit() {
             <p className="mt-1 text-[10.5px] text-ink-secondary/80">
               Template: <span className="font-medium text-ink-primary">{model.meta.template_file ?? 'niva-bupa-portfolio-review.xlsx'}</span>
               {model.meta.last_updated && <> · Pipeline updated {model.meta.last_updated.slice(0, 10)}</>}
-              {model.meta.template_sha256 && <> · sha {model.meta.template_sha256.slice(0, 8)}</>}
             </p>
           </div>
         </div>
         <button
-          type="button"
-          onClick={handleExport}
-          disabled={exporting}
+          type="button" onClick={handleExport} disabled={exporting}
           className="inline-flex items-center gap-1.5 rounded-lg border border-navy-primary/20 bg-navy-primary px-3 py-2 text-[12px] font-semibold text-white shadow-soft transition-colors hover:bg-navy-deep disabled:opacity-60"
         >
           {exporting ? <FileSpreadsheet className="h-4 w-4 animate-pulse" /> : <Download className="h-4 w-4" />}
@@ -146,80 +167,69 @@ export function ExtractedDataAudit() {
         </button>
       </div>
 
-      {/* ── Summary strip ──────────────────────────────────────────────── */}
-      <SummaryStrip model={model} />
-
-      {/* ── Legend + reconciliation ────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-soft-border bg-card/70 px-3 py-2 shadow-soft">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-1 text-[10.5px] font-semibold uppercase tracking-wide text-ink-secondary">Status — click to filter</span>
-          {model.filterOptions.statuses.map((s) => {
-            const meta = STATUS_META[s]
-            const on = filters.statuses.has(s)
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => toggleStatus(s)}
-                className={[
-                  'inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[10.5px] font-medium transition-all',
-                  on ? 'border-navy-primary/40 ring-1 ring-navy-primary/20' : 'border-soft-border hover:border-navy-primary/30',
-                  QA_STYLE[meta.color].pill,
-                ].join(' ')}
-              >
-                <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[meta.color].dot }} />
-                {meta.label}
-              </button>
-            )
-          })}
-        </div>
+      {/* ── Scope switch — SAHI deep-dive (priority) vs Industry context ── */}
+      <div className="flex flex-wrap gap-2.5">
+        <ScopeCard
+          active={scope === 'sahi'} onClick={() => switchScope('sahi')}
+          icon={<Star className="h-4 w-4" />}
+          title="SAHI deep-dive" sub="Per-insurer financials · Niva Bupa first" count={scopeCounts.sahi}
+        />
+        <ScopeCard
+          active={scope === 'industry'} onClick={() => switchScope('industry')}
+          icon={<Layers className="h-4 w-4" />}
+          title="Industry & market context" sub="All-company premium, prices, channels — secondary" count={scopeCounts.industry}
+        />
       </div>
 
-      <ReconStrip model={model} />
+      {/* ── Scoped summary strip ───────────────────────────────────────── */}
+      <SummaryStrip strip={strip} scope={scope} />
 
       {/* ── Filter bar (sticky) ────────────────────────────────────────── */}
       <div className="sticky top-0 z-20 -mx-1 rounded-xl border border-soft-border bg-surface/95 px-3 py-2.5 shadow-soft backdrop-blur">
         <div className="flex flex-wrap items-end gap-2.5">
-          <div className="relative min-w-[200px] flex-1">
+          <div className="relative min-w-[190px] flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-secondary" />
             <input
               value={filters.search}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
-              placeholder="Search metric, section, company, cell…"
+              placeholder="Search metric, company, cell…"
               className="w-full rounded-lg border border-soft-border bg-white py-1.5 pl-8 pr-3 text-[12px] text-ink-primary outline-none placeholder:text-ink-secondary/70 focus:border-navy-primary/40"
             />
           </div>
           <Select label="Company" value={filters.company} onChange={(v) => setFilters((f) => ({ ...f, company: v }))}
-            options={[{ value: 'all', label: 'All companies' }, ...model.filterOptions.companies.map((c) => ({ value: c.id, label: c.label }))]} />
+            options={[{ value: 'all', label: 'All companies' }, ...options.companies.map(([id, label]) => ({ value: id, label: id === FOCAL_COMPANY ? `★ ${label}` : label }))]} />
           <Select label="Period" value={filters.period} onChange={(v) => setFilters((f) => ({ ...f, period: v }))}
-            options={[{ value: 'all', label: 'All periods' }, ...model.filterOptions.periods.map((p) => ({ value: p, label: p }))]} />
+            options={[{ value: 'all', label: 'All periods' }, ...options.periods.map((p) => ({ value: p, label: p }))]} />
           <Select label="Source type" value={filters.sourceRole} onChange={(v) => setFilters((f) => ({ ...f, sourceRole: v }))}
-            options={[{ value: 'all', label: 'All sources' }, ...model.filterOptions.sourceTypes.map((s) => ({ value: s.id, label: s.label }))]} />
-          <Select label="Dashboard section" value={filters.section} onChange={(v) => setFilters((f) => ({ ...f, section: v }))}
-            options={[{ value: 'all', label: 'All sections' }, ...model.filterOptions.sections.map((s) => ({ value: s, label: s }))]} />
+            options={[{ value: 'all', label: 'All sources' }, ...options.sources.map(([id, label]) => ({ value: id, label }))]} />
+          <Select label="Status" value={filters.status} onChange={(v) => setFilters((f) => ({ ...f, status: v as AuditStatus | 'all' }))}
+            options={[{ value: 'all', label: 'All statuses' }, ...options.statuses.map((s) => ({ value: s, label: STATUS_META[s].label }))]} />
 
           <div className="ml-auto flex items-center gap-1.5">
             <div className="flex items-center rounded-lg border border-soft-border bg-white p-0.5">
-              <GroupToggle active={groupMode === 'sheet'} onClick={() => setGroupMode('sheet')} icon={<Table2 className="h-3.5 w-3.5" />} label="Excel sheet" />
+              {scope === 'sahi' && <GroupToggle active={groupMode === 'company'} onClick={() => setGroupMode('company')} icon={<Users className="h-3.5 w-3.5" />} label="Company" />}
+              <GroupToggle active={groupMode === 'sheet'} onClick={() => setGroupMode('sheet')} icon={<Table2 className="h-3.5 w-3.5" />} label="Sheet" />
               <GroupToggle active={groupMode === 'section'} onClick={() => setGroupMode('section')} icon={<Layers className="h-3.5 w-3.5" />} label="Dashboard" />
             </div>
             {filterActive && (
-              <button
-                type="button"
-                onClick={() => setFilters(EMPTY_FILTERS)}
-                className="inline-flex items-center gap-1 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-coral/40 hover:text-coral"
-              >
+              <button type="button" onClick={() => setFilters(EMPTY_FILTERS)}
+                className="inline-flex items-center gap-1 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-coral/40 hover:text-coral">
                 <RotateCcw className="h-3.5 w-3.5" /> Reset
               </button>
             )}
           </div>
         </div>
-        {filterActive && (
-          <p className="mt-1.5 text-[10.5px] text-ink-secondary">
-            Showing <span className="font-semibold text-ink-primary">{filtered.length.toLocaleString('en-IN')}</span> of{' '}
-            {allCells.length.toLocaleString('en-IN')} cells across {view.length} {groupMode === 'sheet' ? 'sheet(s)' : 'section(s)'}.
-          </p>
-        )}
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
+          {filterActive && <span>Showing <span className="font-semibold text-ink-primary">{filtered.length.toLocaleString('en-IN')}</span> of {scopedCells.length.toLocaleString('en-IN')} cells.</span>}
+          <span className="flex items-center gap-2">Legend:
+            {(['green', 'yellow', 'red', 'grey'] as QaColor[]).map((c) => (
+              <span key={c} className="inline-flex items-center gap-1">
+                <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
+                {c === 'green' ? 'fetched' : c === 'yellow' ? 'adjusted / override' : c === 'red' ? 'missing / issue' : 'n/a'}
+              </span>
+            ))}
+          </span>
+        </div>
       </div>
 
       {/* ── Grouped tables ─────────────────────────────────────────────── */}
@@ -229,55 +239,83 @@ export function ExtractedDataAudit() {
             No cells match these filters.
           </div>
         )}
-        {view.map((g) => {
-          const meta = groupMode === 'sheet' ? sheetMeta.get(g.key) : undefined
-          return (
-            <GroupCard
-              key={g.key}
-              title={g.key}
-              subtitle={groupMode === 'sheet' ? meta?.section ?? '' : `${new Set(g.cells.map((c) => c.sheet)).size} source sheet(s)`}
-              dims={groupMode === 'sheet' ? meta?.dims ?? null : null}
-              computed={groupMode === 'sheet' ? meta?.computed ?? 0 : 0}
-              cells={g.cells}
-              stats={g.stats}
-              open={isOpen(g.key)}
-              onToggle={() => toggle(g.key)}
-            />
-          )
-        })}
+        {view.map((g) => (
+          <GroupCard
+            key={g.key}
+            title={g.title}
+            focus={g.focus}
+            subtitle={groupMode === 'company' ? (g.focus ? 'Focal insurer (the portfolio-review subject)' : 'SAHI peer') : groupMode === 'sheet' ? sheetSub(g.key, model) : `${new Set(g.cells.map((c) => c.sheet)).size} source sheet(s)`}
+            cells={g.cells}
+            stats={g.stats}
+            open={isOpen(g.key)}
+            onToggle={() => toggle(g.key)}
+          />
+        ))}
       </div>
 
-      {/* ── Reconciliation tables ──────────────────────────────────────── */}
-      <UnusedTable model={model} />
-      <MappingIssuesTable model={model} />
+      {/* ── Reconciliation (SAHI scope only — these are about SAHI values) ─ */}
+      {scope === 'sahi' && (
+        <>
+          <MappingIssuesTable model={model} />
+          <UnusedTable rows={model.unused.filter((r) => companyRank(r.entityId) < 2)} />
+        </>
+      )}
 
       <p className="pt-1 text-center text-[10.5px] text-ink-secondary/80">
-        Read-only QA view · values join the template cell contract to the normalized value store ·
+        Read-only QA · values join the template cell contract to the normalized value store ·
         missing ≠ zero · official sources first · the template is treated as layout only.
       </p>
     </div>
   )
 }
 
+// ─── Scope card ─────────────────────────────────────────────────────────────
+
+function ScopeCard({ active, onClick, icon, title, sub, count }: {
+  active: boolean; onClick: () => void; icon: ReactNode; title: string; sub: string; count: number
+}) {
+  return (
+    <button
+      type="button" onClick={onClick}
+      className={[
+        'group relative flex flex-1 items-center gap-3 overflow-hidden rounded-xl border px-3.5 py-2.5 text-left transition-all',
+        active
+          ? 'border-transparent bg-gradient-to-br from-[#1E4079] to-[#143058] text-white shadow-[0_6px_18px_rgba(20,48,88,0.22)]'
+          : 'border-soft-border bg-white/80 text-navy-deep hover:border-navy-primary/30 hover:bg-white',
+      ].join(' ')}
+    >
+      <span className={['flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', active ? 'bg-white/12 text-champagne' : 'bg-champagne-soft text-champagne-deep'].join(' ')}>
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block text-[13.5px] font-semibold">{title}</span>
+        <span className={['block text-[10px]', active ? 'text-white/65' : 'text-ink-secondary'].join(' ')}>{sub}</span>
+      </span>
+      <span className={['shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums', active ? 'bg-white/15 text-white' : 'bg-surface text-ink-secondary'].join(' ')}>
+        {count.toLocaleString('en-IN')}
+      </span>
+    </button>
+  )
+}
+
 // ─── Summary strip ──────────────────────────────────────────────────────────
 
-function SummaryStrip({ model }: { model: ReturnType<typeof buildAudit> }) {
-  const s = model.summary
-  const pct = s.totalExpected ? Math.round((s.dashboardMapped / s.totalExpected) * 100) : 0
-  const tiles: { label: string; value: number; color: QaColor; hint?: string }[] = [
-    { label: 'Cells expected', value: s.totalExpected, color: 'grey', hint: 'Fillable input cells in the template' },
-    { label: 'Fetched', value: s.fetched, color: 'green', hint: 'Have a normalized value' },
-    { label: 'Missing', value: s.missing, color: 'red', hint: 'No source value yet (pending fetch)' },
-    { label: 'Parser issues', value: s.parserIssues, color: 'red', hint: 'Extraction / sanity gate failed' },
-    { label: 'Manual override', value: s.manualOverride, color: 'yellow', hint: 'Hand-transcribed / curated' },
-    { label: 'Source-linked', value: s.sourceLinked, color: 'info', hint: 'Cell carries a clickable source' },
-    { label: 'Dashboard-mapped', value: s.dashboardMapped, color: 'green', hint: 'Value routed to a dashboard field' },
+function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
+  const pct = strip.totalExpected ? Math.round((strip.dashboardMapped / strip.totalExpected) * 100) : 0
+  const tiles: { label: string; value: number; color: QaColor }[] = [
+    { label: 'Cells expected', value: strip.totalExpected, color: 'grey' },
+    { label: 'Fetched', value: strip.fetched, color: 'green' },
+    { label: 'Missing', value: strip.missing, color: 'red' },
+    { label: 'Parser issues', value: strip.parserIssues, color: 'red' },
+    { label: 'Manual override', value: strip.manualOverride, color: 'yellow' },
+    { label: 'Source-linked', value: strip.sourceLinked, color: 'info' },
+    { label: 'Dashboard-mapped', value: strip.dashboardMapped, color: 'green' },
   ]
   return (
     <div className="rounded-xl border border-soft-border bg-card p-4 shadow-soft">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {tiles.map((t) => (
-          <div key={t.label} className="relative rounded-lg border border-soft-border/70 bg-surface/60 p-3" title={t.hint}>
+          <div key={t.label} className="relative rounded-lg border border-soft-border/70 bg-surface/60 p-3">
             <span className="absolute left-0 top-2.5 h-[calc(100%-1.25rem)] w-[3px] rounded-full" style={{ background: QA_STYLE[t.color].dot }} />
             <p className="pl-2 text-[20px] font-semibold leading-none text-navy-deep tabular-nums">{t.value.toLocaleString('en-IN')}</p>
             <p className="mt-1 pl-2 text-[10.5px] font-medium leading-tight text-ink-secondary">{t.label}</p>
@@ -289,33 +327,9 @@ function SummaryStrip({ model }: { model: ReturnType<typeof buildAudit> }) {
           <div className="h-full rounded-full bg-gradient-to-r from-emerald to-teal transition-all" style={{ width: `${pct}%` }} />
         </div>
         <span className="shrink-0 text-[11px] font-medium text-ink-secondary">
-          {pct}% of expected cells mapped to the dashboard
+          {pct}% of {scope === 'sahi' ? 'SAHI' : 'industry'} cells fetched &amp; mapped
+          {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} computed in Excel</>}
         </span>
-      </div>
-    </div>
-  )
-}
-
-function ReconStrip({ model }: { model: ReturnType<typeof buildAudit> }) {
-  const { summary } = model
-  return (
-    <div className="flex flex-wrap gap-3">
-      <div className="flex items-center gap-2 rounded-lg border border-lavender/30 bg-lavender-soft/40 px-3 py-1.5 text-[11.5px]">
-        <Link2 className="h-3.5 w-3.5 text-lavender" />
-        <span className="font-semibold text-navy-deep">{summary.unusedExtracted}</span>
-        <span className="text-ink-secondary">extracted values with no template cell (unused)</span>
-      </div>
-      <div className={[
-        'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11.5px]',
-        summary.mappingIssues > 0 ? 'border-coral/40 bg-coral-soft/40' : 'border-emerald/30 bg-emerald-soft/40',
-      ].join(' ')}>
-        <Target className={`h-3.5 w-3.5 ${summary.mappingIssues > 0 ? 'text-coral' : 'text-emerald'}`} />
-        <span className="font-semibold text-navy-deep">{summary.mappingIssues}</span>
-        <span className="text-ink-secondary">dashboard values not traced here (mapping issues)</span>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg border border-soft-border bg-card/60 px-3 py-1.5 text-[11.5px]">
-        <span className="font-semibold text-navy-deep">{summary.computed.toLocaleString('en-IN')}</span>
-        <span className="text-ink-secondary">computed-in-Excel cells (recomputed by the dashboard — not fetched)</span>
       </div>
     </div>
   )
@@ -325,31 +339,22 @@ function ReconStrip({ model }: { model: ReturnType<typeof buildAudit> }) {
 
 const ROW_CAP = 250
 
-function GroupCard({
-  title, subtitle, dims, computed, cells, stats, open, onToggle,
-}: {
-  title: string; subtitle: string; dims: string | null; computed: number
+function GroupCard({ title, subtitle, focus, cells, stats, open, onToggle }: {
+  title: string; subtitle: string; focus?: boolean
   cells: AuditCell[]; stats: SheetTally; open: boolean; onToggle: () => void
 }) {
   const [showAll, setShowAll] = useState(false)
   const shown = showAll ? cells : cells.slice(0, ROW_CAP)
   return (
-    <div className="overflow-hidden rounded-xl border border-soft-border bg-card shadow-soft">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-surface/60"
-      >
+    <div className={`overflow-hidden rounded-xl border bg-card shadow-soft ${focus ? 'border-champagne/50 ring-1 ring-champagne/20' : 'border-soft-border'}`}>
+      <button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-surface/60">
         <ChevronRight className={`h-4 w-4 shrink-0 text-ink-secondary transition-transform ${open ? 'rotate-90' : ''}`} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate font-display text-[14px] text-navy-deep">{title}</span>
-            {dims && <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">{dims}</span>}
+            {focus && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-champagne-deep"><Star className="h-2.5 w-2.5" />Focus</span>}
           </div>
-          <p className="truncate text-[10.5px] text-ink-secondary">
-            {subtitle}
-            {computed > 0 && <> · {computed} computed cell(s)</>}
-          </p>
+          <p className="truncate text-[10.5px] text-ink-secondary">{subtitle}</p>
         </div>
         <MiniStat n={stats.valuePresent} color="green" label="fetched" />
         <MiniStat n={stats.missing} color="red" label="missing" />
@@ -369,27 +374,21 @@ function GroupCard({
                   <Th className="min-w-[170px]">Metric (row)</Th>
                   <Th className="min-w-[120px]">Company</Th>
                   <Th className="w-[78px]">Period</Th>
-                  <Th className="w-[96px] text-right">Raw</Th>
+                  <Th className="w-[92px] text-right">Raw</Th>
                   <Th className="w-[110px] text-right">Normalized</Th>
-                  <Th className="w-[60px]">Unit</Th>
+                  <Th className="w-[58px]">Unit</Th>
                   <Th className="min-w-[180px]">Source</Th>
-                  <Th className="w-[92px]">Fetched</Th>
-                  <Th className="min-w-[170px]">Dashboard field</Th>
-                  <Th className="min-w-[220px]">Notes</Th>
+                  <Th className="w-[88px]">Fetched</Th>
+                  <Th className="min-w-[160px]">Dashboard field</Th>
+                  <Th className="min-w-[210px]">Notes</Th>
                 </tr>
               </thead>
-              <tbody>
-                {shown.map((c) => <CellRow key={c.id} c={c} />)}
-              </tbody>
+              <tbody>{shown.map((c) => <CellRow key={c.id} c={c} />)}</tbody>
             </table>
           </div>
           {cells.length > ROW_CAP && (
             <div className="border-t border-soft-border bg-surface/50 px-3 py-2 text-center">
-              <button
-                type="button"
-                onClick={() => setShowAll((v) => !v)}
-                className="text-[11px] font-medium text-navy-primary hover:underline"
-              >
+              <button type="button" onClick={() => setShowAll((v) => !v)} className="text-[11px] font-medium text-navy-primary hover:underline">
                 {showAll ? `Show first ${ROW_CAP}` : `Show all ${cells.length.toLocaleString('en-IN')} rows`}
               </button>
             </div>
@@ -414,9 +413,7 @@ function CellRow({ c }: { c: AuditCell }) {
       <Td className="text-ink-secondary">{c.section}</Td>
       <Td>
         <span className="font-medium text-ink-primary">{c.metricLabel}</span>
-        {c.metricId && c.metricId !== c.metricLabel && (
-          <span className="block font-mono text-[9px] text-ink-secondary/70">{c.metricId}</span>
-        )}
+        {c.metricId && c.metricId !== c.metricLabel && <span className="block font-mono text-[9px] text-ink-secondary/70">{c.metricId}</span>}
       </Td>
       <Td className="text-ink-primary">{c.entityLabel}</Td>
       <Td className="whitespace-nowrap text-ink-secondary">{c.period}</Td>
@@ -425,15 +422,12 @@ function CellRow({ c }: { c: AuditCell }) {
       <Td className="text-[9.5px] uppercase text-ink-secondary/80">{c.unit || '—'}</Td>
       <Td>
         {c.sourceUrl ? (
-          <a href={c.sourceUrl} target="_blank" rel="noreferrer"
-            title={c.sourceName ?? c.sourceUrl}
+          <a href={c.sourceUrl} target="_blank" rel="noreferrer" title={c.sourceName ?? c.sourceUrl}
             className="group inline-flex items-start gap-1 text-muted-blue hover:text-navy-primary hover:underline">
             <span className="line-clamp-2 max-w-[200px] leading-snug">{shortSource(c.sourceName) ?? 'Source link'}</span>
             <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 opacity-70 group-hover:opacity-100" />
           </a>
-        ) : (
-          <span className="line-clamp-2 max-w-[200px] leading-snug text-ink-secondary/80">{shortSource(c.sourceName) ?? '—'}</span>
-        )}
+        ) : <span className="line-clamp-2 max-w-[200px] leading-snug text-ink-secondary/80">{shortSource(c.sourceName) ?? '—'}</span>}
         {c.sourceDate && <span className="mt-0.5 block text-[9px] text-ink-secondary/70">as of {String(c.sourceDate).slice(0, 10)}</span>}
       </Td>
       <Td className="whitespace-nowrap text-[10px] text-ink-secondary">{c.fetchedAt ? c.fetchedAt.slice(0, 10) : '—'}</Td>
@@ -445,26 +439,18 @@ function CellRow({ c }: { c: AuditCell }) {
 
 // ─── Reconciliation tables ──────────────────────────────────────────────────
 
-function UnusedTable({ model }: { model: ReturnType<typeof buildAudit> }) {
+function UnusedTable({ rows }: { rows: ReturnType<typeof buildAudit>['unused'] }) {
   const [open, setOpen] = useState(false)
-  const rows = model.unused
   if (rows.length === 0) return null
   return (
-    <CollapsiblePanel
-      open={open} onToggle={() => setOpen((v) => !v)}
-      icon={<Link2 className="h-4 w-4 text-lavender" />}
-      title="Unused extracted fields"
-      subtitle={`${rows.length} values were extracted & normalized but aren't placed in any template cell`}
-    >
+    <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)} icon={<Link2 className="h-4 w-4 text-lavender" />}
+      title="Unused extracted fields (SAHI)"
+      subtitle={`${rows.length} SAHI values were extracted & normalized but aren't placed in any template cell`}>
       <table className="w-full border-collapse text-[11px]">
         <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
           <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
-            <Th className="min-w-[140px]">Company</Th>
-            <Th className="min-w-[170px]">Metric</Th>
-            <Th className="w-[80px]">Period</Th>
-            <Th className="w-[120px] text-right">Value</Th>
-            <Th className="min-w-[200px]">Source</Th>
-            <Th className="w-[92px]">Fetched</Th>
+            <Th className="min-w-[140px]">Company</Th><Th className="min-w-[170px]">Metric</Th><Th className="w-[80px]">Period</Th>
+            <Th className="w-[120px] text-right">Value</Th><Th className="min-w-[200px]">Source</Th><Th className="w-[92px]">Fetched</Th>
           </tr>
         </thead>
         <tbody>
@@ -474,13 +460,7 @@ function UnusedTable({ model }: { model: ReturnType<typeof buildAudit> }) {
               <Td><span className="font-medium text-ink-primary">{r.metricLabel}</span><span className="block font-mono text-[9px] text-ink-secondary/70">{r.metricId}</span></Td>
               <Td className="text-ink-secondary">{r.period}</Td>
               <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">{formatValue(r.normalizedValue, r.unit)}</Td>
-              <Td>
-                {r.sourceUrl ? (
-                  <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-muted-blue hover:underline">
-                    <span className="line-clamp-2 max-w-[220px]">{shortSource(r.sourceName) ?? 'Source'}</span><ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
-                ) : <span className="line-clamp-2 max-w-[220px] text-ink-secondary/80">{shortSource(r.sourceName) ?? '—'}</span>}
-              </Td>
+              <Td>{r.sourceUrl ? <a href={r.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-muted-blue hover:underline"><span className="line-clamp-2 max-w-[220px]">{shortSource(r.sourceName) ?? 'Source'}</span><ExternalLink className="h-3 w-3 shrink-0" /></a> : <span className="line-clamp-2 max-w-[220px] text-ink-secondary/80">{shortSource(r.sourceName) ?? '—'}</span>}</Td>
               <Td className="text-[10px] text-ink-secondary">{r.fetchedAt ? r.fetchedAt.slice(0, 10) : '—'}</Td>
             </tr>
           ))}
@@ -494,28 +474,18 @@ function MappingIssuesTable({ model }: { model: ReturnType<typeof buildAudit> })
   const [open, setOpen] = useState(false)
   const rows = model.mappingIssues
   return (
-    <CollapsiblePanel
-      open={open} onToggle={() => setOpen((v) => !v)}
+    <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)}
       icon={<AlertTriangle className={`h-4 w-4 ${rows.length > 0 ? 'text-coral' : 'text-emerald'}`} />}
-      title="Mapping issues"
-      subtitle={rows.length === 0
-        ? 'None — every canonical dashboard value is traceable here'
-        : `${rows.length} dashboard values can't be traced to a source-backed cell`}
-      tone={rows.length > 0 ? 'warn' : 'ok'}
-    >
+      title="Mapping issues" tone={rows.length > 0 ? 'warn' : 'ok'}
+      subtitle={rows.length === 0 ? 'None — every canonical dashboard value is traceable here' : `${rows.length} dashboard values can't be traced to a source-backed cell`}>
       {rows.length === 0 ? (
-        <p className="px-3.5 py-4 text-[12px] text-ink-secondary">
-          Every canonical financial value the dashboard renders (annual snapshot) is backed by a traced value in this audit. ✓
-        </p>
+        <p className="px-3.5 py-4 text-[12px] text-ink-secondary">Every canonical financial value the dashboard renders is backed by a traced value in this audit. ✓</p>
       ) : (
         <table className="w-full border-collapse text-[11px]">
           <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
             <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
-              <Th className="min-w-[140px]">Company</Th>
-              <Th className="min-w-[170px]">Metric</Th>
-              <Th className="w-[80px]">Period</Th>
-              <Th className="w-[120px] text-right">On dashboard</Th>
-              <Th className="min-w-[280px]">Why it's flagged</Th>
+              <Th className="min-w-[140px]">Company</Th><Th className="min-w-[170px]">Metric</Th><Th className="w-[80px]">Period</Th>
+              <Th className="w-[120px] text-right">On dashboard</Th><Th className="min-w-[280px]">Why it's flagged</Th>
             </tr>
           </thead>
           <tbody>
@@ -559,11 +529,8 @@ function Select({ label, value, onChange, options }: {
   return (
     <label className="flex flex-col gap-0.5">
       <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="max-w-[180px] rounded-lg border border-soft-border bg-white py-1.5 pl-2 pr-6 text-[11.5px] text-ink-primary outline-none focus:border-navy-primary/40"
-      >
+      <select value={value} onChange={(e) => onChange(e.target.value)}
+        className="max-w-[180px] rounded-lg border border-soft-border bg-white py-1.5 pl-2 pr-6 text-[11.5px] text-ink-primary outline-none focus:border-navy-primary/40">
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </label>
@@ -572,14 +539,8 @@ function Select({ label, value, onChange, options }: {
 
 function GroupToggle({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors',
-        active ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary',
-      ].join(' ')}
-    >
+    <button type="button" onClick={onClick}
+      className={['inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors', active ? 'bg-navy-primary text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}>
       {icon}{label}
     </button>
   )
@@ -607,9 +568,7 @@ function CollapsiblePanel({ open, onToggle, icon, title, subtitle, tone = 'neutr
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-interface SheetTally {
-  total: number; valuePresent: number; missing: number; parserIssue: number; blocked: number
-}
+interface SheetTally { total: number; valuePresent: number; missing: number; parserIssue: number; blocked: number }
 function tally(cells: AuditCell[]): SheetTally {
   const s: SheetTally = { total: cells.length, valuePresent: 0, missing: 0, parserIssue: 0, blocked: 0 }
   for (const c of cells) {
@@ -621,91 +580,85 @@ function tally(cells: AuditCell[]): SheetTally {
   return s
 }
 
-/** Trim a long provenance string to a readable lead (the table tooltips keep the full text). */
+function sourceTypeOf(role: string, model: ReturnType<typeof buildAudit>): string {
+  const labels: Record<string, string> = {
+    industry_premium: 'IRDAI / GI Council',
+    company_premium_quarterly: 'IRDAI / company disclosures',
+    company_premium_monthly: 'IRDAI / company disclosures',
+    company_financials: 'Company disclosures / annual reports',
+    valuation: 'Exchange / market data',
+    market_quote: 'Exchange (NSE/BSE)',
+    shareholding: 'Exchange shareholding filings',
+    analyst_coverage: 'Analyst aggregators (backup)',
+    distribution: 'Company reports / IRDAI NL forms',
+  }
+  return labels[role] ?? model.meta.template_file ?? role
+}
+
+function sheetSub(sheet: string, model: ReturnType<typeof buildAudit>): string {
+  const g = model.groups.find((x) => x.sheet === sheet)
+  return g ? `${g.dashboardSection}${g.computedCells ? ` · ${g.computedCells} computed` : ''}` : ''
+}
+
 function shortSource(name: string | null): string | null {
   if (!name) return null
   const lead = name.split(/[—–-]\s|\. /)[0].trim()
   return lead.length > 64 ? `${lead.slice(0, 61)}…` : lead
 }
 
-// ─── Excel export (reuses the in-repo `xlsx` dep; dynamic import keeps it out of
-//     the initial bundle) ─────────────────────────────────────────────────────
+// ─── Excel export (reuses the in-repo `xlsx` dep; dynamic import) ────────────
 
 async function exportToExcel(
-  view: { key: string; cells: AuditCell[] }[],
-  model: ReturnType<typeof buildAudit>,
-  groupMode: GroupMode,
+  view: { key: string; title: string; cells: AuditCell[] }[],
+  model: ReturnType<typeof buildAudit>, scope: Scope, groupMode: GroupMode,
 ) {
   const XLSX = await import('xlsx')
   const wb = XLSX.utils.book_new()
-  const usedNames = new Set<string>() // unique, ≤31-char worksheet names per export
+  const used = new Set<string>()
 
-  // Summary sheet.
-  const s = model.summary
-  const summaryAoa = [
+  const scopedCells = model.groups.filter((g) => g.scope === scope).flatMap((g) => g.cells)
+  const computed = model.groups.filter((g) => g.scope === scope).reduce((n, g) => n + g.computedCells, 0)
+  const s = stripFor(scopedCells, computed)
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     ['Extracted Data Audit — summary'],
+    ['Scope', scope === 'sahi' ? 'SAHI deep-dive' : 'Industry & market context'],
     ['Generated', new Date().toISOString()],
     ['Template', model.meta.template_file ?? ''],
-    ['Pipeline updated', model.meta.last_updated ?? ''],
     [],
     ['Cells expected', s.totalExpected],
-    ['Fetched (value present)', s.fetched],
+    ['Fetched', s.fetched],
     ['Missing', s.missing],
     ['Parser issues', s.parserIssues],
-    ['Source unavailable', s.sourceUnavailable],
     ['Manual override', s.manualOverride],
-    ['Transformed / adjusted', s.transformed],
-    ['Blocked / withheld', s.blocked],
     ['Source-linked', s.sourceLinked],
     ['Dashboard-mapped', s.dashboardMapped],
-    ['Computed in Excel (not fetched)', s.computed],
-    ['Unused extracted fields', s.unusedExtracted],
-    ['Mapping issues', s.mappingIssues],
-  ]
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryAoa), 'Summary')
+    ['Computed in Excel', s.computed],
+    ['Unused extracted fields', model.unused.length],
+    ['Mapping issues', model.mappingIssues.length],
+  ]), 'Summary')
 
-  const header = [
-    'Sheet', 'Cell', 'Section', 'Metric', 'Metric id', 'Company', 'Period',
-    'Raw value', 'Normalized value', 'Unit', 'Status', 'Source name', 'Source URL',
-    'Source date', 'Fetched at', 'Dashboard field', 'Notes',
-  ]
-  const rowOf = (c: AuditCell) => [
-    c.sheet, c.cellRef, c.section, c.metricLabel, c.metricId, c.entityLabel, c.period,
-    c.rawValue ?? '', c.normalizedValue ?? '', c.unit, STATUS_META[c.status].label,
-    c.sourceName ?? '', c.sourceUrl ?? '', c.sourceDate ?? '', c.fetchedAt ?? '', c.dashboardField, c.note,
-  ]
-
+  const header = ['Sheet', 'Cell', 'Section', 'Metric', 'Metric id', 'Company', 'Period', 'Raw value', 'Normalized value', 'Unit', 'Status', 'Source name', 'Source URL', 'Source date', 'Fetched at', 'Dashboard field', 'Notes']
+  const rowOf = (c: AuditCell) => [c.sheet, c.cellRef, c.section, c.metricLabel, c.metricId, c.entityLabel, c.period, c.rawValue ?? '', c.normalizedValue ?? '', c.unit, STATUS_META[c.status].label, c.sourceName ?? '', c.sourceUrl ?? '', c.sourceDate ?? '', c.fetchedAt ?? '', c.dashboardField, c.note]
   for (const g of view) {
-    const aoa = [header, ...g.cells.map(rowOf)]
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), sanitizeSheetName(g.key, usedNames))
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header, ...g.cells.map(rowOf)]), sanitizeSheetName(g.title, used))
   }
-
-  if (model.unused.length) {
-    const aoa = [
-      ['Company', 'Metric', 'Metric id', 'Period', 'Value', 'Unit', 'Source name', 'Source URL', 'Fetched at'],
-      ...model.unused.map((r) => [r.entityLabel, r.metricLabel, r.metricId, r.period, r.normalizedValue ?? '', r.unit, r.sourceName ?? '', r.sourceUrl ?? '', r.fetchedAt ?? '']),
-    ]
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Unused extracted')
+  if (scope === 'sahi') {
+    if (model.mappingIssues.length) {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Company', 'Metric', 'Period', 'On dashboard', 'Reason'], ...model.mappingIssues.map((r) => [r.entityLabel, r.metricLabel, r.period, r.dashboardValue ?? '', r.reason])]), 'Mapping issues')
+    }
+    if (model.unused.length) {
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Company', 'Metric', 'Metric id', 'Period', 'Value', 'Unit', 'Source name', 'Source URL', 'Fetched at'], ...model.unused.map((r) => [r.entityLabel, r.metricLabel, r.metricId, r.period, r.normalizedValue ?? '', r.unit, r.sourceName ?? '', r.sourceUrl ?? '', r.fetchedAt ?? ''])]), 'Unused extracted')
+    }
   }
-  if (model.mappingIssues.length) {
-    const aoa = [
-      ['Company', 'Metric', 'Period', 'On dashboard', 'Reason'],
-      ...model.mappingIssues.map((r) => [r.entityLabel, r.metricLabel, r.period, r.dashboardValue ?? '', r.reason]),
-    ]
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'Mapping issues')
-  }
-
-  const stamp = new Date().toISOString().slice(0, 10)
-  XLSX.writeFile(wb, `extracted-data-audit_${groupMode}_${stamp}.xlsx`)
+  void groupMode
+  XLSX.writeFile(wb, `extracted-data-audit_${scope}_${new Date().toISOString().slice(0, 10)}.xlsx`)
 }
 
 function sanitizeSheetName(name: string, used: Set<string>): string {
   const base = name.replace(/[\\/?*[\]:]/g, ' ').slice(0, 28).trim() || 'Sheet'
   let candidate = base
   let i = 2
-  while (used.has(candidate.toLowerCase())) {
-    candidate = `${base.slice(0, 26)} ${i++}`
-  }
+  while (used.has(candidate.toLowerCase())) candidate = `${base.slice(0, 26)} ${i++}`
   used.add(candidate.toLowerCase())
   return candidate
 }

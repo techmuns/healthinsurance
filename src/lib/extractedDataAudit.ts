@@ -165,6 +165,11 @@ export interface AuditCell {
   id: string
   sheet: string
   role: string
+  /** 'sahi' = the standalone-health deep-dive (the priority); 'industry' = the
+   *  all-company / market context that the dashboard only needs at industry level. */
+  scope: 'sahi' | 'industry'
+  /** 0 = Niva Bupa (focus), 1 = other SAHI peer, 2 = non-SAHI / segment. */
+  companyRank: number
   section: string
   entityId: string
   entityLabel: string
@@ -210,6 +215,7 @@ export interface AuditGroup {
   key: string
   sheet: string
   role: string
+  scope: 'sahi' | 'industry'
   dimensions: string | null
   dashboardSection: string
   computedCells: number
@@ -278,12 +284,27 @@ export interface AuditModel {
 
 // ─── Label helpers ──────────────────────────────────────────────────────────
 
-const COMPANY_NAME: Record<string, string> = Object.fromEntries(
-  (companyMaster as { data: { company_id: string; display_name: string }[] }).data.map((c) => [
-    c.company_id,
-    c.display_name,
-  ]),
-)
+const MASTER = (companyMaster as { data: { company_id: string; display_name: string; peer_group?: string }[] }).data
+const COMPANY_NAME: Record<string, string> = Object.fromEntries(MASTER.map((c) => [c.company_id, c.display_name]))
+const SAHI_SET = new Set(MASTER.filter((c) => c.peer_group === 'SAHI').map((c) => c.company_id))
+
+/** The focal insurer — the template is the Niva Bupa portfolio review. */
+export const FOCAL_COMPANY = 'niva-bupa'
+
+/** Sort priority: Niva Bupa first, then other SAHI peers, then everyone else. */
+export function companyRank(id: string): number {
+  if (id === FOCAL_COMPANY) return 0
+  if (SAHI_SET.has(id)) return 1
+  return 2
+}
+
+// Scope split (kept as a small set so it's trivial to re-tune). The SAHI
+// deep-dive is the per-insurer financial comparison; everything else is the
+// all-company / market context the dashboard only needs at industry level.
+const SAHI_ROLES = new Set(['company_financials'])
+export function roleScope(role: string): 'sahi' | 'industry' {
+  return SAHI_ROLES.has(role) ? 'sahi' : 'industry'
+}
 
 function titleCase(s: string): string {
   return s
@@ -588,6 +609,8 @@ export function buildAudit(): AuditModel {
         id: `${sheet.sheet}!${b.cell}`,
         sheet: sheet.sheet,
         role: sheet.role,
+        scope: roleScope(sheet.role),
+        companyRank: companyRank(entity),
         section: b.section ?? '—',
         entityId: entity,
         entityLabel: entityLabel(entity),
@@ -619,6 +642,7 @@ export function buildAudit(): AuditModel {
       key: sheet.sheet,
       sheet: sheet.sheet,
       role: sheet.role,
+      scope: roleScope(sheet.role),
       dimensions: sheet.dimensions ?? null,
       dashboardSection: ROLE_SECTION[sheet.role] ?? 'SAHI Analysis',
       computedCells: sheet.computed_cells ?? 0,
@@ -748,6 +772,32 @@ function tally(cells: AuditCell[]): SheetStats {
     }
   }
   return s
+}
+
+export interface StripCounts {
+  totalExpected: number
+  fetched: number
+  missing: number
+  parserIssues: number
+  manualOverride: number
+  sourceLinked: number
+  dashboardMapped: number
+  computed: number
+}
+
+/** Summary-strip counts for an arbitrary slice of cells (e.g. one scope). */
+export function stripFor(cells: AuditCell[], computed: number): StripCounts {
+  const expected = (c: AuditCell) => c.cellKind === 'input' || c.cellKind === 'input_date'
+  return {
+    totalExpected: cells.filter(expected).length,
+    fetched: cells.filter((c) => c.status === 'fetched' || c.status === 'transformed' || c.status === 'manual_override').length,
+    missing: cells.filter((c) => c.status === 'missing').length,
+    parserIssues: cells.filter((c) => c.status === 'parser_issue').length,
+    manualOverride: cells.filter((c) => c.status === 'manual_override').length,
+    sourceLinked: cells.filter((c) => !!c.sourceUrl).length,
+    dashboardMapped: cells.filter((c) => expected(c) && c.normalizedValue !== null).length,
+    computed,
+  }
 }
 
 /** Sort period labels: fiscal years, then quarters, then dates, then the rest. */
