@@ -7,7 +7,7 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **94 / 2155 fillable cells filled (4.4%). QA passes (no hard violations).**
+- **101 / 2155 fillable cells filled (4.7%). QA passes (no hard violations).**
 - Full pipeline working: **extract → bridge → fill → QA**.
 - Niva Bupa **FY25 + FY26 headline ratios** (claims, combined, solvency) now fill
   from the year-end public disclosures, cross-validated across two filings.
@@ -15,10 +15,12 @@ without re-deriving state.
   Q4FY26 fill from the NL-1 revenue account; FY24/FY25 upgraded to the statutory
   source; FY23 fills the **restated** 2,662.75 (as-first-reported 2,841 kept on
   Blocked Data). All 8 Niva NEP cells now filled.
-- **IFRS cells via company deck** (Neha, 2026-06-08 — `no PPT` rule overridden for
-  IFRS only): 9 Niva cells filled from the Q4 FY26 Earnings Presentation — `pat_ifrs`
-  FY24/FY25/FY26/Q4FY25/Q4FY26, `claims_ratio_ifrs` FY24/FY25/FY26, `net_worth_ifrs`
-  (Mar-26). Transcribed by hand with page-level provenance; every audit row states
+- **IFRS cells via company decks** (Neha, 2026-06-08 — `no PPT` rule overridden for
+  IFRS only): **16 of Niva's 20 IFRS cells** filled from its Q4FY26 / H1FY26 / Q3FY26 /
+  Q4FY25 decks — all 8 `pat_ifrs`, `claims_ratio_ifrs` + `expense_ratio_ifrs` for the
+  cumulative periods (FY/H1/9M), and `net_worth_ifrs`. The 4 standalone-quarter ratios
+  (Q4FY25/Q4FY26 claims+expense) aren't printed in any deck → honestly empty.
+  Transcribed by hand with page-level provenance; every audit row states
   "special-purpose IFRS, not the statutory filing".
 - Workbook (gitignored build artifact): `output/Niva_Bupa_portfolio_review__filled.xlsx`.
 - **Setup note:** fill/QA need `openpyxl` (`pip3 install openpyxl`). Re-extracting
@@ -75,14 +77,13 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
 3. ~~FY23 NEP restatement.~~ **DONE** (Neha, 2026-06-08) — FY23 fills the restated
    2,662.75; as-first-reported 2,841 documented on Blocked Data
    (`superseded_by_statutory_filing`).
-4. **IFRS cells (63) — PARTIAL.** Niva's 9 cells filled from its Q4 FY26 deck
-   (PAT FY24–FY26 + Q4s, claims-ratio FY24–FY26, net worth). **Remaining 54 cells:**
-   - Other 6 companies (Star/Care/ManipalCigna/Aditya-Birla/ICICI/GoDigit) have **no
-     decks staged** → need their investor decks (sandbox is 403-blocked; Neha or an
-     enabled fetch must supply them). Same `deck-sourced-values.json` mechanism then
-     fills them.
-   - Niva sub-annual IFRS (H1FY25/H1FY26 PAT, quarterly claims/expense ratios) are in
-     the **H1 FY26 / Q4 FY25 decks** (also staged) — a next pass can mine those.
+4. **IFRS cells (63) — Niva DONE, 6 companies pending.** Niva: 16/20 filled from its
+   four decks; the 4 unfilled are standalone-quarter claims/expense ratios that no deck
+   prints. **Remaining ~47 cells = the other 6 companies** (Star/Care/ManipalCigna/
+   Aditya-Birla/ICICI/GoDigit) — **no decks staged**. Drop their investor decks into
+   `data/raw/companies/<id>/`, add page-cited rows to `deck-sourced-values.json`, rerun
+   the bridge. Sandbox is 403-blocked on insurer sites, so Neha/an enabled fetch must
+   supply the decks.
 
 ## PENDING — manual download (this sandbox is 403-blocked on insurer sites)
 5. **Star Health public disclosures** — biggest single gap (~19+ core ratio cells).
@@ -108,6 +109,6 @@ run `python3 scripts/excel/build_filings_inventory.py` first to stage them.
 
 ## Highest-leverage next step
 **Get the other six insurers' investor decks** (Star/Care/ManipalCigna/Aditya-Birla/
-ICICI/GoDigit) — that unlocks the remaining 54 IFRS cells through the same page-cited
-deck mechanism — and **download Star's public disclosures** (biggest statutory-ratio
-gap). A quick second pass on Niva's H1/Q4 decks fills its remaining sub-annual IFRS cells.
+ICICI/GoDigit) — that unlocks ~47 IFRS cells through the same page-cited deck mechanism —
+and **download Star's public disclosures** (biggest statutory-ratio gap). Niva's deck
+mining is complete (16/20; the rest aren't printed anywhere).
