@@ -313,6 +313,45 @@ def build_formula_resolver(schema, store):
     return resolve
 
 
+def _add_full_grid(sheets) -> int:
+    """Add every (entity x metric x period) cell of the SAHIs comparison grid
+    that the schema map dropped for being blank, as a fillable input cell.
+    Returns how many cells were added. Safe no-op if the grid defs can't load."""
+    try:
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from build_schema_map import SAHI_CMP_BLOCKS, SAHI_CMP_ROWS
+    except Exception:
+        return 0
+    sheet = next((s for s in sheets if s["sheet"] == "SAHIs comparison"), None)
+    if not sheet:
+        return 0
+    have = {c["cell"] for c in sheet["cells"]}
+    added = 0
+    for entity, axis in SAHI_CMP_BLOCKS:
+        for row, (metric, unit, source_key) in SAHI_CMP_ROWS.items():
+            for col, period in axis.items():
+                ref = f"{col}{row}"
+                if ref in have:
+                    continue
+                sheet["cells"].append({
+                    "cell": ref,
+                    "section": "SAHI detailed comparison",
+                    "entity": entity,
+                    "metric": metric,
+                    "period": period,
+                    "period_type": "annual" if period.startswith("FY") else "quarterly",
+                    "unit": unit,
+                    "cell_kind": "input",
+                    "fillable": True,
+                    "source_key": source_key,
+                    "source_status": "available",
+                })
+                have.add(ref)
+                added += 1
+    return added
+
+
 def main() -> None:
     schema = load(SCHEMA, {"sheets": [], "_meta": {}, "sources": {}})
     store = load(VALUES, {})
@@ -364,6 +403,13 @@ def main() -> None:
             "computed_cells": computed,
             "cells": cells,
         })
+
+    # --- Full-grid coverage for the SAHIs comparison sheet ----------------
+    # The schema builder DROPS cells that are blank in the template, so a blank
+    # grid cell never reaches coverage. A coverage check needs every cell in the
+    # grid (entity x metric x period) — blanks included, so a reviewer can see
+    # "we don't have this yet" and our extracted values land in their real cell.
+    total_cells += _add_full_grid(sheets)
 
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
