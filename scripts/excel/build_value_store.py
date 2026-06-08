@@ -68,9 +68,11 @@ REPO = Path(__file__).resolve().parents[2]
 SNAP = REPO / "src" / "data" / "snapshots"
 OUT = REPO / "data" / "processed" / "excel-values.json"
 OUT_HELD = REPO / "data" / "processed" / "excel-held-back.json"
+DECK = REPO / "data" / "source-map" / "deck-sourced-values.json"
 
 CONF_ORDER = {"high": 0, "medium": 1, "low": 2, "pending": 3, None: 4}
 RANK_CF_DISCLOSURE = 1
+RANK_DECK = 2
 RANK_EXISTING = 3
 RANK_BACKUP = 9
 
@@ -328,6 +330,39 @@ def collect_company_filings():
     return wired, held
 
 
+def collect_deck_sourced():
+    """Values transcribed by hand from official company investor decks, with
+    page-level provenance (data/source-map/deck-sourced-values.json). Wired per
+    Neha's 2026-06-08 decision to use deck figures for the IFRS cells - this
+    OVERRIDES the default 'no PPT values' rule for IFRS metrics only.
+
+    IFRS here is the company's SPECIAL-PURPOSE IFRS statement (audited annually,
+    not the statutory IRDAI/IGAAP filing); the basis caveat is carried on the
+    source name so every audit row states it plainly. Rank 2: below the statutory
+    filing, above generic snapshots - though IFRS cells have no other source."""
+    n = 0
+    if not DECK.exists():
+        return n
+    for r in json.loads(DECK.read_text()).get("data", []):
+        if r.get("raw_value") is None:
+            continue
+        fn, label = TRANSFORMS[r.get("transform", "identity")]
+        caveat = ("IFRS special-purpose financials (company investor deck; audited annually, "
+                  "NOT the statutory IRDAI/IGAAP filing)")
+        src = f"{r.get('source_title')} p.{r.get('source_page')} - {caveat}"
+        prov = {"source_name": src, "source_url": r.get("source_url"),
+                "source_file": r.get("source_file"), "fetched_at": r.get("as_of"),
+                "confidence": r.get("confidence", "high")}
+        extra = {"document_type": "investor_presentation", "document_title": r.get("source_title"),
+                 "filing_date": r.get("as_of"), "extraction_status": "deck_transcribed",
+                 "sanity_status": "ok", "column_basis": None, "ratio_basis": None}
+        add_candidate(r["company_id"], r["metric"], r["period"], r.get("raw_value"),
+                      fn(r["raw_value"]), label, r.get("unit"), prov,
+                      RANK_DECK, "company_deck", "deck", extra)
+        n += 1
+    return n
+
+
 def resolve():
     store = {}
     conflicts = 0
@@ -396,6 +431,7 @@ def resolve():
 def main():
     collect_existing()
     wired, held = collect_company_filings()
+    deck = collect_deck_sourced()
     store, conflicts, alternates = resolve()
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
@@ -420,6 +456,7 @@ def main():
     by_layer = Counter(v["source_layer"] for v in store.values())
     print(f"excel-values.json written -> {OUT}")
     print(f"  {len(store)} resolved values  |  company-filing-sourced: {by_layer.get('company_filing', 0)}"
+          f"  |  deck-sourced: {by_layer.get('company_deck', 0)}"
           f"  |  conflicts flagged: {conflicts}  |  CF ratio candidates wired: {wired}  |  held-back: {len(held)}")
     by_metric = Counter(v["metric"].split("::")[0] for v in store.values())
     for metric, n in by_metric.most_common():
