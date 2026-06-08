@@ -8,9 +8,10 @@ name: fetch company PDFs (manual)
 # transcribe) or the NL-form parser. Curated, official, direct PDF URLs only.
 #
 # Secrets:
-#   SCRAPERAPI_KEY      (recommended) free scraperapi.com key. With it, downloads
-#                       route through ScraperAPI's India IP and get past the
-#                       insurer WAFs that 403 GitHub datacenter IPs.
+#   SCRAPER_KEY         (already set) free scraperapi.com key — the repo secret is
+#                       named SCRAPER_KEY (same one the monthly-ingestion job uses).
+#                       With it, downloads route through ScraperAPI's India IP and
+#                       get past the insurer WAFs that 403 GitHub datacenter IPs.
 #   INGEST_FETCH_PROXY  (optional) alternative relay URL template with a {url}
 #                       placeholder, used instead of / in addition to the key.
 
@@ -50,7 +51,9 @@ jobs:
 
       - name: Fetch official company PDFs
         env:
-          SCRAPERAPI_KEY: ${{ secrets.SCRAPERAPI_KEY }}
+          # The repo secret is named SCRAPER_KEY (the monthly-ingestion job maps it
+          # the same way) -> exposed to the script as the SCRAPERAPI_KEY env var.
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
           # Passed via env (not interpolated into the shell) to avoid injection.
           COMPANY: ${{ github.event.inputs.company }}
