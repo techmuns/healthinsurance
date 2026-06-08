@@ -44,6 +44,7 @@ QUARTER_RE = re.compile(r"^Q[1-4]FY\d{2}$")
 # YTD columns, so it is safe at any period.
 FLOW_RATIOS = {"combined_ratio", "claims_ratio", "expense_ratio", "commission_ratio"}
 YTD_BASIS = "year_to_date"
+STANDALONE_BASIS = "standalone_quarter"
 
 # Durable basis rule (Neha, 2026-06-05): insurance ratios can be reported on the
 # statutory IRDAI 1/n basis OR a company-adjusted ex-1/n basis. When both exist,
@@ -157,6 +158,14 @@ CF_RATIO_MAP = {
     "expense_ratio": "expense_ratio_igaap", "commission_ratio": "commission_ratio_igaap",
     "solvency_ratio": "solvency_ratio",
 }
+# Company-filings premium AMOUNT -> schema target, wired from the statutory NL-1
+# revenue account (public disclosure only). Per Neha (2026-06-08): Net Earned
+# Premium is filled from the statutory filing (cross-validated to the rupee).
+# GWP/NWP are deliberately NOT wired from company filings here - the annual
+# snapshot already supplies GWP on the direct-premium (GDPI) basis, and the only
+# company-filing GWP figure is the ex-1/n headline (held; not comparable to the
+# statutory cell). Premium is a premium measure, never a profit measure.
+CF_PREMIUM_MAP = {"nep": "nep"}
 
 
 def collect_existing():
@@ -253,6 +262,44 @@ def collect_company_filings():
                      "sanity_status": r.get("sanity_status"), "column_basis": column_basis,
                      "ratio_basis": PREFERRED_RATIO_BASIS if CF_RATIO_MAP[metric] in RATIO_BASIS_METRICS else None}
             add_candidate(r["company_id"], CF_RATIO_MAP[metric], r.get("filing_period"), r.get("raw_value"),
+                          r.get("normalized_value"), r.get("transformation_used"), r.get("unit"),
+                          prov, RANK_CF_DISCLOSURE, "company_filing", "available", extra)
+            wired += 1
+            continue
+        # Wire: statutory premium AMOUNTS from public disclosures (NL-1 revenue
+        # account). These are FLOW amounts that accumulate over the year, so the
+        # column rule applies exactly as for flow ratios: a full-period cell
+        # (FY/H1/9M) takes the YTD ("Upto the Quarter ended") column, a quarter
+        # cell takes the standalone-quarter column. A value whose column does not
+        # match its period is HELD (period_unclear) so a quarter value is never
+        # promoted into a full-period cell, or vice-versa.
+        if r.get("document_type") == "public_disclosure" and metric in CF_PREMIUM_MAP:
+            period = r.get("filing_period") or ""
+            column_basis = r.get("column_basis")
+            want_col = STANDALONE_BASIS if QUARTER_RE.match(period) else YTD_BASIS
+            if column_basis != want_col:
+                held.append({
+                    "company_id": r["company_id"], "metric": metric, "raw_value": r.get("raw_value"),
+                    "normalized_value": r.get("normalized_value"), "unit": r.get("unit"),
+                    "filing_period": period, "document_type": r.get("document_type"),
+                    "document_title": r.get("document_title"), "filing_date": r.get("filing_date"),
+                    "source_url": r.get("source_url"), "source_file": r.get("source_file"),
+                    "confidence": r.get("provenance", {}).get("confidence"),
+                    "hold_reason": "period_unclear", "source_description": r.get("source_description"),
+                    "note": f"{metric} column basis ({column_basis}) does not match the {period} cell "
+                            f"(expected {want_col}); withheld so a quarter value is not promoted to a "
+                            "full-period cell or vice-versa",
+                })
+                continue
+            p = r.get("provenance", {})
+            prov = {"source_name": p.get("source_name") or r.get("source_description"),
+                    "source_url": r.get("source_url"), "source_file": r.get("source_file"),
+                    "fetched_at": p.get("parsed_at"), "confidence": p.get("confidence", "high")}
+            extra = {"document_type": r.get("document_type"), "document_title": r.get("document_title"),
+                     "filing_date": r.get("filing_date"), "extraction_status": r.get("extraction_status"),
+                     "sanity_status": r.get("sanity_status"), "column_basis": column_basis,
+                     "ratio_basis": None}
+            add_candidate(r["company_id"], CF_PREMIUM_MAP[metric], period, r.get("raw_value"),
                           r.get("normalized_value"), r.get("transformation_used"), r.get("unit"),
                           prov, RANK_CF_DISCLOSURE, "company_filing", "available", extra)
             wired += 1
