@@ -794,7 +794,7 @@ export function buildAudit(): AuditModel {
       role: g.role,
       scope: g.scope,
       companyRank: companyRank(ent),
-      section: 'Data we have (no fixed template cell yet)',
+      section: 'Data we have (not in the Excel template)',
       entityId: ent,
       entityLabel: entityLabel(ent),
       metricId: entry.metric ?? '',
@@ -817,8 +817,8 @@ export function buildAudit(): AuditModel {
       qaColor: STATUS_META[status].color,
       confidence: entry.confidence ?? null,
       note: note
-        ? `${note} (The template has no cell for this exact period/metric yet.)`
-        : 'Data we have — the template has no cell for this exact period/metric yet.',
+        ? `${note} (This company/period/metric isn't in the Excel template's layout.)`
+        : "Data we have — this company/period/metric isn't in the Excel template's layout.",
       calculatedValue: null,
     })
     touched.add(g)
