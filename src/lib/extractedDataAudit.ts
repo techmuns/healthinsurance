@@ -670,10 +670,12 @@ export function buildAudit(): AuditModel {
         if (b.calculated_value != null) {
           note = "Calculated from the cells below — we have all of them, so the number is shown."
         } else {
-          const missingLabels = [...new Set((inputs ?? []).filter((i) => i.value === null).map((i) => i.label))]
+          const missingLabels = [...new Set(
+            (inputs ?? []).filter((i) => i.value === null).map((i) => `${i.label}${i.period ? ` (${i.period})` : ''}`),
+          )]
           note = missingLabels.length
-            ? `Calculated from the cells below, but we can't show a number yet — still missing: ${missingLabels.join(', ')}.`
-            : 'Calculated from other cells. Some of the inputs aren\'t available yet.'
+            ? `Can't calculate this yet — it needs ${missingLabels.join(' and ')}, which we don't have.`
+            : "Calculated from other cells, but some of those aren't available yet."
         }
       }
 

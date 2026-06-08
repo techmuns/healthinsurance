@@ -431,6 +431,7 @@ function CellRow({ c }: { c: AuditCell }) {
         <Td className="text-right font-mono tabular-nums font-medium text-ink-primary">
           {formatValue(shownValue, c.unit)}
           {isCalc && shownValue !== null && <span className="ml-0.5 align-top text-[8px] font-normal text-lavender" title="Worked out from the cells below">calc</span>}
+          {isCalc && shownValue === null && <span className="block text-[8.5px] font-normal text-ink-secondary/70">needs inputs</span>}
         </Td>
         <Td className="text-[9.5px] uppercase text-ink-secondary/80">{c.unit || '—'}</Td>
         <Td>
