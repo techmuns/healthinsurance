@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   Download, Search, ChevronRight, ExternalLink, FileSpreadsheet,
-  RotateCcw, Layers, Table2, AlertTriangle, Link2, Users, Star,
+  RotateCcw, Layers, Table2, AlertTriangle, Link2, Users, Star, LayoutGrid,
 } from 'lucide-react'
 import {
   buildAudit, STATUS_META, formatValue, formatRaw, stripFor, periodSort,
@@ -27,7 +27,7 @@ const QA_STYLE: Record<QaColor, { dot: string; pill: string; tint: string }> = {
   info: { dot: '#6E7BD6', pill: 'bg-lavender-soft text-lavender', tint: 'bg-lavender-soft/30' },
 }
 
-type Scope = 'sahi' | 'industry'
+type Scope = 'all' | 'sahi' | 'industry'
 type GroupMode = 'company' | 'sheet' | 'section'
 
 interface Filters {
@@ -41,14 +41,15 @@ const EMPTY_FILTERS: Filters = { company: 'all', period: 'all', sourceRole: 'all
 
 export function ExtractedDataAudit() {
   const model = useMemo(() => buildAudit(), [])
-  const [scope, setScope] = useState<Scope>('sahi')
-  const [groupMode, setGroupMode] = useState<GroupMode>('company')
+  const [scope, setScope] = useState<Scope>('all')
+  const [groupMode, setGroupMode] = useState<GroupMode>('sheet')
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [exporting, setExporting] = useState(false)
 
   const allCells = useMemo(() => model.groups.flatMap((g) => g.cells), [model])
   const scopeCounts = useMemo(() => ({
+    all: allCells.length,
     sahi: allCells.filter((c) => c.scope === 'sahi').length,
     industry: allCells.filter((c) => c.scope === 'industry').length,
   }), [allCells])
@@ -60,12 +61,8 @@ export function ExtractedDataAudit() {
     setOpen({})
   }
 
-  const scopedCells = useMemo(() => allCells.filter((c) => c.scope === scope), [allCells, scope])
-  const computedForScope = useMemo(
-    () => model.groups.filter((g) => g.scope === scope).reduce((n, g) => n + g.computedCells, 0),
-    [model, scope],
-  )
-  const strip = useMemo(() => stripFor(scopedCells, computedForScope), [scopedCells, computedForScope])
+  const scopedCells = useMemo(() => (scope === 'all' ? allCells : allCells.filter((c) => c.scope === scope)), [allCells, scope])
+  const strip = useMemo(() => stripFor(scopedCells), [scopedCells])
 
   // Filter options come from the active scope so the dropdowns only show what's relevant.
   const options = useMemo(() => {
@@ -167,8 +164,13 @@ export function ExtractedDataAudit() {
         </button>
       </div>
 
-      {/* ── Scope switch — SAHI deep-dive (priority) vs Industry context ── */}
+      {/* ── Scope switch — full coverage (default), or a focused lens ────── */}
       <div className="flex flex-wrap gap-2.5">
+        <ScopeCard
+          active={scope === 'all'} onClick={() => switchScope('all')}
+          icon={<LayoutGrid className="h-4 w-4" />}
+          title="All · full coverage" sub="Every cell the template defines — nothing excluded" count={scopeCounts.all}
+        />
         <ScopeCard
           active={scope === 'sahi'} onClick={() => switchScope('sahi')}
           icon={<Star className="h-4 w-4" />}
@@ -177,7 +179,7 @@ export function ExtractedDataAudit() {
         <ScopeCard
           active={scope === 'industry'} onClick={() => switchScope('industry')}
           icon={<Layers className="h-4 w-4" />}
-          title="Industry & market context" sub="All-company premium, prices, channels — secondary" count={scopeCounts.industry}
+          title="Industry & market" sub="All-company premium, prices, channels" count={scopeCounts.industry}
         />
       </div>
 
@@ -207,8 +209,8 @@ export function ExtractedDataAudit() {
 
           <div className="ml-auto flex items-center gap-1.5">
             <div className="flex items-center rounded-lg border border-soft-border bg-white p-0.5">
-              {scope === 'sahi' && <GroupToggle active={groupMode === 'company'} onClick={() => setGroupMode('company')} icon={<Users className="h-3.5 w-3.5" />} label="Company" />}
               <GroupToggle active={groupMode === 'sheet'} onClick={() => setGroupMode('sheet')} icon={<Table2 className="h-3.5 w-3.5" />} label="Sheet" />
+              <GroupToggle active={groupMode === 'company'} onClick={() => setGroupMode('company')} icon={<Users className="h-3.5 w-3.5" />} label="Company" />
               <GroupToggle active={groupMode === 'section'} onClick={() => setGroupMode('section')} icon={<Layers className="h-3.5 w-3.5" />} label="Dashboard" />
             </div>
             {filterActive && (
@@ -221,11 +223,11 @@ export function ExtractedDataAudit() {
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-ink-secondary">
           {filterActive && <span>Showing <span className="font-semibold text-ink-primary">{filtered.length.toLocaleString('en-IN')}</span> of {scopedCells.length.toLocaleString('en-IN')} cells.</span>}
-          <span className="flex items-center gap-2">Legend:
-            {(['green', 'yellow', 'red', 'grey'] as QaColor[]).map((c) => (
+          <span className="flex flex-wrap items-center gap-2">Legend:
+            {(['green', 'yellow', 'red', 'info', 'grey'] as QaColor[]).map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full" style={{ background: QA_STYLE[c].dot }} />
-                {c === 'green' ? 'fetched' : c === 'yellow' ? 'adjusted / override' : c === 'red' ? 'missing / issue' : 'n/a'}
+                {c === 'green' ? 'fetched' : c === 'yellow' ? 'adjusted / override' : c === 'red' ? 'missing / issue' : c === 'info' ? 'computed / unused' : 'n/a'}
               </span>
             ))}
           </span>
@@ -253,11 +255,11 @@ export function ExtractedDataAudit() {
         ))}
       </div>
 
-      {/* ── Reconciliation (SAHI scope only — these are about SAHI values) ─ */}
-      {scope === 'sahi' && (
+      {/* ── Reconciliation — hidden only in the industry-only lens ───────── */}
+      {scope !== 'industry' && (
         <>
           <MappingIssuesTable model={model} />
-          <UnusedTable rows={model.unused.filter((r) => companyRank(r.entityId) < 2)} />
+          <UnusedTable rows={scope === 'sahi' ? model.unused.filter((r) => companyRank(r.entityId) < 2) : model.unused} />
         </>
       )}
 
@@ -302,18 +304,20 @@ function ScopeCard({ active, onClick, icon, title, sub, count }: {
 
 function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
   const pct = strip.totalExpected ? Math.round((strip.dashboardMapped / strip.totalExpected) * 100) : 0
+  const scopeWord = scope === 'all' ? 'template' : scope === 'sahi' ? 'SAHI' : 'industry'
   const tiles: { label: string; value: number; color: QaColor }[] = [
     { label: 'Cells expected', value: strip.totalExpected, color: 'grey' },
     { label: 'Fetched', value: strip.fetched, color: 'green' },
     { label: 'Missing', value: strip.missing, color: 'red' },
     { label: 'Parser issues', value: strip.parserIssues, color: 'red' },
     { label: 'Manual override', value: strip.manualOverride, color: 'yellow' },
+    { label: 'Computed in Excel', value: strip.computed, color: 'info' },
     { label: 'Source-linked', value: strip.sourceLinked, color: 'info' },
     { label: 'Dashboard-mapped', value: strip.dashboardMapped, color: 'green' },
   ]
   return (
     <div className="rounded-xl border border-soft-border bg-card p-4 shadow-soft">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
         {tiles.map((t) => (
           <div key={t.label} className="relative rounded-lg border border-soft-border/70 bg-surface/60 p-3">
             <span className="absolute left-0 top-2.5 h-[calc(100%-1.25rem)] w-[3px] rounded-full" style={{ background: QA_STYLE[t.color].dot }} />
@@ -327,7 +331,7 @@ function SummaryStrip({ strip, scope }: { strip: StripCounts; scope: Scope }) {
           <div className="h-full rounded-full bg-gradient-to-r from-emerald to-teal transition-all" style={{ width: `${pct}%` }} />
         </div>
         <span className="shrink-0 text-[11px] font-medium text-ink-secondary">
-          {pct}% of {scope === 'sahi' ? 'SAHI' : 'industry'} cells fetched &amp; mapped
+          {pct}% of fetchable {scopeWord} cells have a value
           {strip.computed > 0 && <> · {strip.computed.toLocaleString('en-IN')} computed in Excel</>}
         </span>
       </div>
@@ -444,8 +448,8 @@ function UnusedTable({ rows }: { rows: ReturnType<typeof buildAudit>['unused'] }
   if (rows.length === 0) return null
   return (
     <CollapsiblePanel open={open} onToggle={() => setOpen((v) => !v)} icon={<Link2 className="h-4 w-4 text-lavender" />}
-      title="Unused extracted fields (SAHI)"
-      subtitle={`${rows.length} SAHI values were extracted & normalized but aren't placed in any template cell`}>
+      title="Unused extracted fields"
+      subtitle={`${rows.length} values were extracted & normalized but aren't placed in any template cell`}>
       <table className="w-full border-collapse text-[11px]">
         <thead className="sticky top-0 z-10 bg-surface shadow-[0_1px_0_rgba(23,43,77,0.08)]">
           <tr className="text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
@@ -616,12 +620,11 @@ async function exportToExcel(
   const wb = XLSX.utils.book_new()
   const used = new Set<string>()
 
-  const scopedCells = model.groups.filter((g) => g.scope === scope).flatMap((g) => g.cells)
-  const computed = model.groups.filter((g) => g.scope === scope).reduce((n, g) => n + g.computedCells, 0)
-  const s = stripFor(scopedCells, computed)
+  const scopedCells = scope === 'all' ? model.groups.flatMap((g) => g.cells) : model.groups.filter((g) => g.scope === scope).flatMap((g) => g.cells)
+  const s = stripFor(scopedCells)
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
     ['Extracted Data Audit — summary'],
-    ['Scope', scope === 'sahi' ? 'SAHI deep-dive' : 'Industry & market context'],
+    ['Scope', scope === 'all' ? 'All — full coverage' : scope === 'sahi' ? 'SAHI deep-dive' : 'Industry & market context'],
     ['Generated', new Date().toISOString()],
     ['Template', model.meta.template_file ?? ''],
     [],
@@ -642,7 +645,7 @@ async function exportToExcel(
   for (const g of view) {
     XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([header, ...g.cells.map(rowOf)]), sanitizeSheetName(g.title, used))
   }
-  if (scope === 'sahi') {
+  if (scope !== 'industry') {
     if (model.mappingIssues.length) {
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Company', 'Metric', 'Period', 'On dashboard', 'Reason'], ...model.mappingIssues.map((r) => [r.entityLabel, r.metricLabel, r.period, r.dashboardValue ?? '', r.reason])]), 'Mapping issues')
     }

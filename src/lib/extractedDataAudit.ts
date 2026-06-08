@@ -137,6 +137,7 @@ export type AuditStatus =
   | 'parser_issue'
   | 'source_unavailable'
   | 'blocked'
+  | 'computed'
   | 'not_applicable'
   | 'unused'
 
@@ -157,6 +158,7 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   parser_issue: { key: 'parser_issue', label: 'Parser issue', color: 'red' },
   source_unavailable: { key: 'source_unavailable', label: 'Source unavailable', color: 'red' },
   blocked: { key: 'blocked', label: 'Blocked / withheld', color: 'yellow' },
+  computed: { key: 'computed', label: 'Computed in Excel', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not applicable', color: 'grey' },
   unused: { key: 'unused', label: 'Unused extracted field', color: 'info' },
 }
@@ -578,6 +580,12 @@ export function buildAudit(): AuditModel {
           status = 'fetched'
           note = transformation && transformation !== 'identity (value used as-is)' ? `Normalized: ${transformation}.` : ''
         }
+        if (b.cell_kind === 'formula') {
+          note = note ? `${note} Also computed in Excel.` : 'We hold a source value; the template also computes this cell in Excel.'
+        }
+      } else if (b.cell_kind === 'formula') {
+        status = 'computed'
+        note = 'Computed in Excel from its input cells (e.g. claims + expense) — the dashboard recomputes it; no separate fetch needed.'
       } else if (blocked) {
         status = 'parser_issue'
         sourceUrl = blocked.source_url ?? null
@@ -786,7 +794,7 @@ export interface StripCounts {
 }
 
 /** Summary-strip counts for an arbitrary slice of cells (e.g. one scope). */
-export function stripFor(cells: AuditCell[], computed: number): StripCounts {
+export function stripFor(cells: AuditCell[]): StripCounts {
   const expected = (c: AuditCell) => c.cellKind === 'input' || c.cellKind === 'input_date'
   return {
     totalExpected: cells.filter(expected).length,
@@ -796,7 +804,7 @@ export function stripFor(cells: AuditCell[], computed: number): StripCounts {
     manualOverride: cells.filter((c) => c.status === 'manual_override').length,
     sourceLinked: cells.filter((c) => !!c.sourceUrl).length,
     dashboardMapped: cells.filter((c) => expected(c) && c.normalizedValue !== null).length,
-    computed,
+    computed: cells.filter((c) => c.status === 'computed').length,
   }
 }
 

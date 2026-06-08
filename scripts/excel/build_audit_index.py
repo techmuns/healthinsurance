@@ -41,11 +41,12 @@ FILINGS = REPO / "src" / "data" / "snapshots" / "company-filings-snapshot.json"
 OUT = REPO / "src" / "data" / "snapshots" / "extracted-data-audit.json"
 
 # Cell kinds we surface as audit rows. `text` / `empty` are pure layout labels
-# (no value contract) and are skipped. `formula` cells are computed in-sheet -
-# the dashboard recomputes its own, so they are reported as a per-sheet
-# "computed cells" count (a grey "not applicable" note) rather than thousands of
-# individual rows, keeping the browser payload lean.
-AUDIT_CELL_KINDS = {"input", "input_date", "input_na"}
+# (no value contract) and are skipped. Everything else is shown — including
+# `formula` cells (computed in-sheet) so the coverage check sees EVERY cell the
+# template defines (e.g. the combined-ratio cells some sheets derive rather than
+# fetch). Formula cells are tagged `computed` at read time; several already carry
+# a directly-fetched value in the store, which the tab surfaces.
+AUDIT_CELL_KINDS = {"input", "input_date", "input_na", "formula"}
 
 # Roles that are not part of the data contract (the S&P Capital IQ plugin cache).
 SKIP_ROLES = {"ignore_plugin_cache"}
@@ -114,11 +115,10 @@ def main() -> None:
         computed = 0
         for b in sh.get("bindings", []) or []:
             kind = b.get("cell_kind")
-            if kind == "formula":
-                computed += 1
-                continue
             if kind not in AUDIT_CELL_KINDS:
                 continue
+            if kind == "formula":
+                computed += 1
             cells.append(pick(b, BINDING_FIELDS))
         if not cells and not computed:
             continue
@@ -128,8 +128,8 @@ def main() -> None:
             "sheet": sh.get("sheet"),
             "role": role,
             "dimensions": sh.get("dimensions"),
-            # Computed-in-Excel cells are recomputed by the dashboard itself;
-            # surfaced as a count (grey "not applicable"), not as rows.
+            # How many of this sheet's cells are computed-in-Excel formulas (also
+            # included in `cells`, tagged `computed` by the reader).
             "computed_cells": computed,
             "cells": cells,
         })
