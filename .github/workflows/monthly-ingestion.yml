@@ -7,14 +7,13 @@ name: monthly ingestion
 # are skipped (deduped via non-life-monthly/manifest.json); revised sheets get
 # a fresh URL from IRDAI and are saved as new files.
 #
-# Downloads reuse the repo's fetchBuffer() (browser-headered fetch -> headless
-# Chromium -> optional fetch proxy), because IRDAI returns 403 to plain requests
-# from GitHub's datacenter IPs.
+# IRDAI returns 403 to GitHub's datacenter IPs, so files are pulled through a
+# chain of public fetch-relays (each download is validated as a real .xlsx).
 #
 # Secrets used:
 #   MUNS_API_TOKEN      (required) bearer token for the chat agent.
-#   INGEST_FETCH_PROXY  (optional) proxy URL template with a {url} placeholder,
-#                       needed when IRDAI 403s the runner even via headless Chrome.
+#   INGEST_FETCH_PROXY  (optional) a preferred relay URL template with a {url}
+#                       placeholder, tried before the built-in public relays.
 
 on:
   schedule:
@@ -48,20 +47,11 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Install Chromium (headless browser to get past IRDAI's WAF)
-        # Non-fatal: if the browser install hiccups, the run still tries the
-        # plain-fetch and proxy tiers.
-        continue-on-error: true
-        run: npx playwright install --with-deps chromium
-
       - name: Run monthly ingestion
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
-          # Enable the headless-browser + proxy download fallbacks.
-          INGEST_OFFLINE: '0'
-          # Optional: lets downloads leave from a non-blocked IP when IRDAI
-          # 403s the runner even through headless Chrome. Unset = those tiers
-          # simply no-op.
+          # Optional: a preferred relay URL template (with a {url} placeholder),
+          # tried before the built-in public relays. Unset = built-ins only.
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
         run: npx tsx scripts/monthly-ingestion.ts
 

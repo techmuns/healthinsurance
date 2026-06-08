@@ -7,11 +7,15 @@
 //  3. Download only the links we have NOT already saved (deduped via a
 //     manifest), into the repo-root folder `non-life-monthly/`.
 //
-//  Downloads go through the repo's shared fetchBuffer(), which chains three
-//  tiers to get past IRDAI's WAF: browser-headered fetch -> headless Chromium
-//  -> an optional fetch proxy (INGEST_FETCH_PROXY). IRDAI returns 403 to plain
-//  requests from GitHub's datacenter IPs, so those fallbacks are what make the
-//  download actually land.
+//  Getting the file bytes is the hard part: IRDAI returns 403 to requests from
+//  GitHub's datacenter IPs (and to plain Node/headless-Chrome from the same
+//  range), so a direct download cannot work from a GitHub runner. We therefore
+//  fetch each file through a chain of public fetch-relays — each runs on its
+//  own (non-blocked) IP, grabs the file from IRDAI, and hands us the bytes.
+//  Every download is validated as a real .xlsx (ZIP "PK" magic) before saving,
+//  so a relay's HTML error page is never written out as if it were data.
+//  A custom relay can be supplied via INGEST_FETCH_PROXY (a URL template with a
+//  {url} placeholder); it is tried first.
 //
 //  Dedup rule: we key on the full download URL. IRDAI bumps the version/
 //  timestamp in the URL whenever a sheet is revised, so a revised sheet reads
@@ -23,7 +27,6 @@
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises'
 import { dirname, resolve, extname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fetchBuffer } from './ingest/parsers'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..')
@@ -33,6 +36,21 @@ const MANIFEST_PATH = resolve(OUT_DIR, 'manifest.json')
 const API_URL = 'https://devde.muns.io/chat/chat-muns'
 const TARGET_PAGE = 'https://irdai.gov.in/non-life'
 const API_TIMEOUT_MS = 600_000 // the agent scrapes the page live; give it room.
+const DOWNLOAD_TIMEOUT_MS = 60_000 // per relay attempt.
+
+const BROWSER_UA =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
+  '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+
+// Public fetch-relays, tried in order. Each is a template with a {url}
+// placeholder. {url} = URL-encoded target, {raw} = raw target (some relays want
+// the URL appended unencoded). A custom INGEST_FETCH_PROXY is prepended at runtime.
+const RELAYS: string[] = [
+  'https://api.allorigins.win/raw?url={url}',
+  'https://corsproxy.io/?url={url}',
+  'https://thingproxy.freeboard.io/fetch/{raw}',
+  'https://api.codetabs.com/v1/proxy/?quest={url}',
+]
 
 // Any IRDAI document download URL, stopping at whitespace / markdown pipes /
 // quotes / angle brackets / closing parens.
@@ -231,6 +249,57 @@ async function saveManifest(manifest: Manifest): Promise<void> {
   await writeFile(MANIFEST_PATH, JSON.stringify(ordered, null, 2) + '\n', 'utf8')
 }
 
+/** True when the bytes look like a real .xlsx (ZIP container, "PK\x03\x04"). */
+function looksLikeXlsx(buf: Buffer): boolean {
+  return buf.length > 200 && buf[0] === 0x50 && buf[1] === 0x4b
+}
+
+async function fetchOnce(target: string): Promise<Buffer | null> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), DOWNLOAD_TIMEOUT_MS)
+  try {
+    const res = await fetch(target, {
+      redirect: 'follow',
+      headers: { 'User-Agent': BROWSER_UA, Accept: '*/*' },
+      signal: ctrl.signal,
+    })
+    if (!res.ok) return null
+    return Buffer.from(await res.arrayBuffer())
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/**
+ * Download an IRDAI .xlsx. Tries a direct fetch first (works from any IP IRDAI
+ * doesn't block), then each relay in turn. Returns the validated bytes, or null
+ * if every route failed / returned something that isn't a real spreadsheet.
+ */
+async function downloadXlsx(url: string): Promise<Buffer | null> {
+  const enc = encodeURIComponent(url)
+  const custom = process.env.INGEST_FETCH_PROXY
+  const templates: string[] = []
+  if (custom && (custom.includes('{url}') || custom.includes('{raw}'))) templates.push(custom)
+  templates.push(...RELAYS)
+
+  // Direct attempt first.
+  const direct = await fetchOnce(url)
+  if (direct && looksLikeXlsx(direct)) return direct
+
+  for (const tmpl of templates) {
+    const target = tmpl.replace('{url}', enc).replace('{raw}', url)
+    const buf = await fetchOnce(target)
+    if (buf && looksLikeXlsx(buf)) {
+      const via = new URL(tmpl.replace('{url}', '').replace('{raw}', '')).host
+      console.log(`    (via ${via})`)
+      return buf
+    }
+  }
+  return null
+}
+
 async function main(): Promise<number> {
   const token = (process.env.MUNS_API_TOKEN || '').trim()
   if (!token) {
@@ -271,8 +340,8 @@ async function main(): Promise<number> {
     const name = await uniqueName(deriveFilename(url), usedNames)
     const dest = resolve(OUT_DIR, name)
     try {
-      const { buffer } = await fetchBuffer(url)
-      if (!buffer || buffer.length === 0) throw new Error('empty body')
+      const buffer = await downloadXlsx(url)
+      if (!buffer) throw new Error('all routes blocked or returned non-xlsx')
       await writeFile(dest, buffer)
       known[url] = {
         filename: name,
@@ -295,15 +364,15 @@ async function main(): Promise<number> {
       `Total tracked: ${Object.keys(known).length}.`,
   )
 
-  // Loud failure: links were found but NONE could be downloaded (typically
-  // IRDAI's 403 to GitHub IPs). Fail the run so it doesn't look green while
-  // doing nothing — the fix is to set the INGEST_FETCH_PROXY secret.
+  // Loud failure: links were found but NONE could be downloaded — every direct
+  // attempt + every public relay was blocked or returned a non-xlsx. Fail the
+  // run so it doesn't look green while doing nothing. The fix is a working
+  // relay: set INGEST_FETCH_PROXY to a relay URL template with a {url} placeholder.
   if (newCount === 0 && failures > 0) {
     console.error(
-      '\nERROR: found links but downloaded nothing — every file was blocked ' +
-        '(IRDAI returns 403 to GitHub runner IPs). Set the INGEST_FETCH_PROXY ' +
-        'repo secret (a proxy URL template with a {url} placeholder) so downloads ' +
-        'leave from a non-blocked IP.',
+      '\nERROR: found links but downloaded nothing — every route (direct + all ' +
+        'public relays) was blocked or returned a non-xlsx. Set INGEST_FETCH_PROXY ' +
+        'to a working relay URL template (with a {url} placeholder).',
     )
     return 1
   }
