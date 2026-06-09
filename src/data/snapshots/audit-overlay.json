@@ -1350,7 +1350,7 @@
     "star-health::total_gwp::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 1/n premium line not yet available",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1358,13 +1358,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
+      "display_tag": "FY26 premium pending"
     },
     "star-health::gross_direct_premium::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 1/n premium line not yet available",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1372,13 +1372,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
+      "display_tag": "FY26 premium pending"
     },
     "star-health::nwp::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 1/n premium line not yet available",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1386,13 +1386,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
+      "display_tag": "FY26 premium pending"
     },
     "star-health::nep::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 1/n premium line not yet available",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1400,8 +1400,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
+      "display_tag": "FY26 premium pending"
     },
     "star-health::pat_igaap::FY26": {
       "value": 557,
@@ -1445,7 +1445,7 @@
     "star-health::commission_ratio_igaap::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 commission ratio not in the deck",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1453,8 +1453,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "Star’s commission is folded into the expense ratio; a standalone FY26 commission ratio is not in the Q4 FY26 deck and needs the FY26 statutory filing.",
+      "display_tag": "FY26 pending"
     },
     "star-health::combined_ratio_igaap::FY26": {
       "value": 100.4,
@@ -1485,7 +1485,7 @@
     "star-health::net_worth_ifrs::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "IGAAP statutory FY26 not yet filed",
+      "source_name": "FY26 1/n premium line not yet available",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1493,8 +1493,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The fetched Q4 FY26 earnings deck reports IND AS / ‘n’-basis figures (not the IGAAP 1/n statutory basis this row uses). The IGAAP FY26 numbers need Star’s FY26 IRDAI public disclosure / statutory annual report, not yet published.",
-      "display_tag": "IGAAP filing pending"
+      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
+      "display_tag": "FY26 premium pending"
     },
     "star-health::settlement_ratio::FY26": {
       "value": null,
