@@ -185,7 +185,9 @@ async function main(): Promise<number> {
   await writeFile(answerPath, toWrite, 'utf8')
   console.log(`Saved answer: ${answerPath}`)
 
-  const urls = extractUrls(raw)
+  // Always download the explicit DOC_URL (if given) so we have the source PDF to
+  // parse locally, independent of whether the agent extracted from it.
+  const urls = [...(DOC_URL ? [DOC_URL] : []), ...extractUrls(raw)]
   console.log(`Found ${urls.length} source URL(s).`)
   const manifest = await loadManifest()
   const known = manifest.files
