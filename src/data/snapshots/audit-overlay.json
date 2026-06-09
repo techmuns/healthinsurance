@@ -2248,18 +2248,17 @@
       "display_tag": "Premium parse pending"
     },
     "care-health::net_worth_ifrs::FY24": {
-      "value": null,
-      "unit": "",
-      "source_name": "Net worth absolute not disclosed",
+      "value": 2169.82,
+      "unit": "INR_cr",
+      "source_name": "Care Health FY2023-24 Annual Report — \"Net worth of the Company at the end of FY March 31, 2024 is Rs. 2,169.82 Crores\"",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/Noticeof17thAGMndAnnualReportforFY2023-24_1725723132.pdf",
+      "source_page": "Directors’ Report — net worth",
       "fetched_at": "2026-06-09",
-      "confidence": null,
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "The IRDAI disclosure gives net-worth ratios and reserves, not a clean absolute net worth; needs the annual report balance sheet.",
-      "display_tag": "Not in disclosure"
+      "layer": "official_filing",
+      "note": "Net worth stated directly in the FY2023-24 annual report."
     },
     "care-health::gross_direct_premium::FY25": {
       "value": null,
