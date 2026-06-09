@@ -1,0 +1,26 @@
+{
+  "files": {
+    "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx": {
+      "filename": "segment_march_2024-16.xlsx",
+      "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "bytes": 45972,
+      "sha256": "730552933ce2d67b92730f91063ad02568b8df558470e3271e598467a348f31d",
+      "fetched_at": "2026-06-09T12:25:05.911Z"
+    },
+    "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx": {
+      "filename": "final-segment-24-25.xlsx",
+      "url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "bytes": 45778,
+      "sha256": "b43d761797372644d451a58b4939df5abb88b6cd1e20941dd3b869943af8385a",
+      "fetched_at": "2026-06-09T12:25:11.485Z"
+    },
+    "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx": {
+      "filename": "segment_july_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
+      "bytes": 43772,
+      "sha256": "ad5a701282adb476e5a923f76f8f742d12c9fc69c2f22b6d703b76cd2ac133b1",
+      "fetched_at": "2026-06-09T12:25:19.871Z"
+    }
+  },
+  "updated_at": "2026-06-09T12:25:19.871Z"
+}
