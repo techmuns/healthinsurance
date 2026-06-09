@@ -343,7 +343,11 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
     .sort((a, b) => a.priority - b.priority)
 
   if (!storeHas && others.length === 0) {
-    return { ...base, status: 'missing_in_source', value: null, chosen: null, competing: [], notes: 'Not found in currently fetched public source.' }
+    // A value-less overlay entry can annotate WHY a cell is unavailable (e.g.
+    // "IFRS accounting not available" for years before the IFRS series begins),
+    // surfaced as the cell's source + note instead of the generic fallback.
+    const annotated = overlayRef && overlayRef.value == null && overlayRef.note ? overlayRef : null
+    return { ...base, status: 'missing_in_source', value: null, chosen: annotated, competing: [], notes: annotated?.note ?? 'Not found in currently fetched public source.' }
   }
 
   let chosen: SourceRef

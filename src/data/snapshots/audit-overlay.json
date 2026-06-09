@@ -830,6 +830,45 @@
       "priority": 1,
       "layer": "company_filing",
       "note": "Net worth from the deck KPI line (FY23/FY24/FY25 = 831.1 / 2,049.6 / 3,058.3; FY26 = 3,219.0) — same basis as the stored FY25 ₹3,058.3 Cr."
+    },
+    "niva-bupa::pat_ifrs::FY22": {
+      "value": null,
+      "unit": "",
+      "source_name": "IFRS accounting not available",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09",
+      "confidence": null,
+      "priority": 1,
+      "layer": "annotation",
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
+    },
+    "niva-bupa::claims_ratio_ifrs::FY22": {
+      "value": null,
+      "unit": "",
+      "source_name": "IFRS accounting not available",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09",
+      "confidence": null,
+      "priority": 1,
+      "layer": "annotation",
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
+    },
+    "niva-bupa::net_worth_ifrs::FY22": {
+      "value": null,
+      "unit": "",
+      "source_name": "IFRS accounting not available",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09",
+      "confidence": null,
+      "priority": 1,
+      "layer": "annotation",
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
     }
   },
   "meta": {}
