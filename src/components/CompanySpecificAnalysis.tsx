@@ -245,7 +245,7 @@ function MarketShareTrend() {
               >
                 <LabelList
                   dataKey={c.id}
-                  content={(p: { x?: number; y?: number; index?: number; value?: number | null }) => {
+                  content={(p: { x?: number | string; y?: number | string; index?: number; value?: number | string | null }) => {
                     if (p.index !== lastIdx || p.value == null) return null
                     const x = Number(p.x)
                     const y = Number(p.y)
