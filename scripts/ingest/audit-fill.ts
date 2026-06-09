@@ -36,6 +36,15 @@ const SHARE_PATH = resolve(REPO, 'src/data/snapshots/sahi-share-history.json')
 const ANNUAL_PATH = resolve(REPO, 'src/data/snapshots/insurer-annual-snapshot.json')
 
 const COMPANIES = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
+// Accept user-facing display names (e.g. "Niva Bupa") and map to the internal slug.
+const NAME_TO_SLUG: Record<string, string> = {
+  'niva bupa': 'niva-bupa', 'star health': 'star-health', 'care health': 'care-health',
+  'aditya birla': 'aditya-birla', 'aditya birla health': 'aditya-birla', manipalcigna: 'manipalcigna', 'manipal cigna': 'manipalcigna',
+}
+function normCompany(c: string | undefined): string | undefined {
+  if (!c) return c
+  return NAME_TO_SLUG[c.trim().toLowerCase()] ?? c
+}
 const YEARS = ['FY22', 'FY23', 'FY24', 'FY25', 'FY26']
 
 // Compact mirror of src/lib/auditGrid.ts AUDIT_METRICS (key → sources + unit).
@@ -237,6 +246,7 @@ function cmdConflicts() {
 }
 
 const { cmd, flags } = parseArgs(process.argv.slice(2))
+if (flags.company) flags.company = normCompany(flags.company) as string
 if (cmd === 'fill') cmdFill(flags)
 else if (cmd === 'missing') cmdMissing(flags)
 else if (cmd === 'conflicts') cmdConflicts()

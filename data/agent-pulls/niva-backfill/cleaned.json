@@ -1,0 +1,16 @@
+[
+  {
+    "company": "niva-bupa",
+    "year": "FY23",
+    "metric": "solvency_ratio",
+    "value": 1.671,
+    "unit": "x",
+    "priority": 2,
+    "confidence": "high",
+    "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 23) — Solvency Margin Ratio",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf",
+    "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+    "source_page": "Solvency Margin Ratio",
+    "note": "Year-end solvency margin (point value) from the IRDAI disclosure — basis matches the FY25 solvency cell."
+  }
+]

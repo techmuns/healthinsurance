@@ -1,15 +1,15 @@
 {
   "_meta": {
     "artifact": "audit-overlay",
-    "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default \u2014 the value store remains the authoritative source.",
+    "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-09T13:25:13.049Z"
+    "updated_at": "2026-06-09T13:56:34.088Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
       "value": 9.37,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -22,7 +22,7 @@
     "star-health::sahi_segment_share::FY24": {
       "value": 59.02,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -35,7 +35,7 @@
     "star-health::retail_health_market_share::FY24": {
       "value": 33.06,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -48,7 +48,7 @@
     "star-health::overall_health_market_share::FY24": {
       "value": 13.8,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -61,7 +61,7 @@
     "care-health::sahi_segment_share::FY24": {
       "value": 16.81,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -74,7 +74,7 @@
     "care-health::retail_health_market_share::FY24": {
       "value": 9.42,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -87,7 +87,7 @@
     "care-health::overall_health_market_share::FY24": {
       "value": 6.11,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -100,7 +100,7 @@
     "aditya-birla::sahi_segment_share::FY24": {
       "value": 4.77,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -113,7 +113,7 @@
     "aditya-birla::retail_health_market_share::FY24": {
       "value": 2.67,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -126,7 +126,7 @@
     "aditya-birla::overall_health_market_share::FY24": {
       "value": 3.19,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -139,7 +139,7 @@
     "manipalcigna::sahi_segment_share::FY24": {
       "value": 3.16,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -152,7 +152,7 @@
     "manipalcigna::retail_health_market_share::FY24": {
       "value": 1.77,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -165,7 +165,7 @@
     "manipalcigna::overall_health_market_share::FY24": {
       "value": 1.52,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -178,7 +178,7 @@
     "niva-bupa::sahi_segment_share::FY25": {
       "value": 16.27,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -191,7 +191,7 @@
     "niva-bupa::overall_health_market_share::FY25": {
       "value": 5.59,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -204,7 +204,7 @@
     "star-health::sahi_segment_share::FY25": {
       "value": 56.59,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -217,7 +217,7 @@
     "star-health::retail_health_market_share::FY25": {
       "value": 32.59,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -230,7 +230,7 @@
     "star-health::overall_health_market_share::FY25": {
       "value": 13.92,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -243,7 +243,7 @@
     "care-health::sahi_segment_share::FY25": {
       "value": 18.77,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -256,7 +256,7 @@
     "care-health::retail_health_market_share::FY25": {
       "value": 10.81,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -269,7 +269,7 @@
     "care-health::overall_health_market_share::FY25": {
       "value": 6.85,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -282,7 +282,7 @@
     "aditya-birla::sahi_segment_share::FY25": {
       "value": 5.29,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -295,7 +295,7 @@
     "aditya-birla::retail_health_market_share::FY25": {
       "value": 3.05,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -308,7 +308,7 @@
     "aditya-birla::overall_health_market_share::FY25": {
       "value": 3.75,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -321,7 +321,7 @@
     "manipalcigna::sahi_segment_share::FY25": {
       "value": 3.09,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -334,7 +334,7 @@
     "manipalcigna::retail_health_market_share::FY25": {
       "value": 1.78,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -347,7 +347,7 @@
     "manipalcigna::overall_health_market_share::FY25": {
       "value": 1.49,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, provisional)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -360,7 +360,7 @@
     "niva-bupa::sahi_segment_share::FY26": {
       "value": 17.23,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -368,12 +368,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "niva-bupa::retail_health_market_share::FY26": {
       "value": 9.88,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -381,12 +381,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "niva-bupa::overall_health_market_share::FY26": {
       "value": 5.05,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -394,12 +394,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "star-health::sahi_segment_share::FY26": {
       "value": 54.23,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -407,12 +407,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "star-health::retail_health_market_share::FY26": {
       "value": 31.1,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -420,12 +420,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "star-health::overall_health_market_share::FY26": {
       "value": 11.44,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -433,12 +433,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "care-health::sahi_segment_share::FY26": {
       "value": 19.47,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -446,12 +446,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "care-health::retail_health_market_share::FY26": {
       "value": 11.17,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -459,12 +459,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "care-health::overall_health_market_share::FY26": {
       "value": 6.39,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -472,12 +472,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "aditya-birla::sahi_segment_share::FY26": {
       "value": 5.84,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -485,12 +485,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "aditya-birla::retail_health_market_share::FY26": {
       "value": 3.35,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -498,12 +498,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "aditya-birla::overall_health_market_share::FY26": {
       "value": 3.89,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -511,12 +511,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "manipalcigna::sahi_segment_share::FY26": {
       "value": 3.23,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 SAHI retail-health share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — SAHI retail-health share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -524,12 +524,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "manipalcigna::retail_health_market_share::FY26": {
       "value": 1.85,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 retail-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — retail-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -537,12 +537,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "manipalcigna::overall_health_market_share::FY26": {
       "value": 1.52,
       "unit": "%",
-      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) \u2014 overall-health market share",
+      "source_name": "GI Council Segment-wise Report (upto July 2025 (FY26 cumulative, 4 months)) — overall-health market share",
       "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "source_file": null,
       "source_page": "Health Portfolio sheet",
@@ -550,12 +550,12 @@
       "confidence": "medium",
       "priority": 1,
       "layer": "official_filing",
-      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 \u2014 cumulative Apr\u2013Jul 2025."
+      "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
     },
     "niva-bupa::net_worth_ifrs::FY25": {
       "value": 3058.3,
       "unit": "INR_cr",
-      "source_name": "Niva Bupa Investor Presentation Q4 FY2025 \u2014 Net worth (shareholders' equity)",
+      "source_name": "Niva Bupa Investor Presentation Q4 FY2025 — Net worth (shareholders' equity)",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
       "source_file": null,
       "source_page": "Key Performance Indicators",
@@ -694,6 +694,19 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
+    },
+    "niva-bupa::solvency_ratio::FY23": {
+      "value": 1.671,
+      "unit": "x",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 23) — Solvency Margin Ratio",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "Solvency Margin Ratio",
+      "fetched_at": "2026-06-09T13:56:34.088Z",
+      "confidence": "high",
+      "priority": 2,
+      "layer": "staging",
+      "note": "Year-end solvency margin (point value) from the IRDAI disclosure — basis matches the FY25 solvency cell."
     }
   }
 }
