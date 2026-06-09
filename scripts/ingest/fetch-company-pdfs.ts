@@ -61,6 +61,19 @@ const TARGETS: Target[] = [
     label: 'ManipalCigna Annual Report 2023 (FY23 comparatives) — confirmed URL',
     speculative: true,
   },
+  {
+    company_id: 'star-health',
+    url: 'https://www.bseindia.com/xml-data/corpfiling/AttachLive/ec299a76-ffb8-4801-948f-943f8a50f83b.pdf',
+    dest: 'data/raw/companies/star-health/star-health-FY26-Financial-Results-BSE.pdf',
+    label: 'Star Health FY26 audited financial results (BSE filing, year ended Mar 2026) — IGAAP statutory',
+  },
+  {
+    company_id: 'star-health',
+    url: 'https://www.bseindia.com/xml-data/corpfiling/AttachLive/a8114df0-5800-4af2-a11c-24d183ab709f.pdf',
+    dest: 'data/raw/companies/star-health/star-health-FY26-BSE-filing-alt.pdf',
+    label: 'Star Health FY26 BSE filing (alternate attachment)',
+    speculative: true,
+  },
 ]
 // NOTE: manipalcigna.com may 403 GitHub IPs (unlike grasim, which served directly).
 // If the FY25 fetch returns no PDF, set the SCRAPERAPI_KEY repo secret — the relay
