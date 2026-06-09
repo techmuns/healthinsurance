@@ -8,14 +8,15 @@
     "source": "Moneycontrol",
     "source_url": "https://www.moneycontrol.com/india/stockpricequote/insurance/nivabupahealthinsurance/NBH",
     "upstream_sources": [
+      "Moneycontrol Broker Research",
       "Moneycontrol Price"
     ],
     "dataset": "official",
     "last_updated": "2026-06-09",
-    "last_successful_run": "2026-06-09T14:00:18.392Z",
-    "last_fetched_at": "2026-06-09T14:00:18.392Z",
+    "last_successful_run": "2026-06-09T14:27:09.370Z",
+    "last_fetched_at": "2026-06-09T14:27:09.370Z",
     "parser_status": "ready",
-    "notes": "Live Moneycontrol pull from: Moneycontrol Price. Missing fields stay null (never fabricated)."
+    "notes": "Live Moneycontrol pull from: Moneycontrol Broker Research, Moneycontrol Price. Missing fields stay null (never fabricated)."
   },
   "consensus": {
     "current_price": 83.27,
