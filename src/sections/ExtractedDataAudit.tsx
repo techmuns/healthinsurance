@@ -8,6 +8,26 @@ import {
   companyRank, FOCAL_COMPANY,
   type AuditCell, type AuditStatus, type QaColor, type StripCounts,
 } from '@/lib/extractedDataAudit'
+import { AuditDataGrid } from '@/sections/AuditDataGrid'
+
+// Top-level switch between the new dashboard-shaped Data Grid (Company × Year ×
+// Metric) and the original Excel-cell-by-cell audit.
+function AuditWorkflowToggle({ view, onChange }: { view: 'grid' | 'cells'; onChange: (v: 'grid' | 'cells') => void }) {
+  return (
+    <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-ice/60 p-0.5">
+      {([['grid', 'Data Grid'], ['cells', 'Cell Audit']] as const).map(([v, label]) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          className={`rounded-full px-3 py-1 text-[11.5px] font-medium transition-all ${view === v ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 //  Extracted Data Audit — a QA tab (not analysis). It mirrors the Excel/source
@@ -46,6 +66,7 @@ export function ExtractedDataAudit() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [exporting, setExporting] = useState(false)
+  const [topView, setTopView] = useState<'grid' | 'cells'>('grid')
 
   const allCells = useMemo(() => model.groups.flatMap((g) => g.cells), [model])
   const scopeCounts = useMemo(() => ({
@@ -137,6 +158,26 @@ export function ExtractedDataAudit() {
     finally { setExporting(false) }
   }
 
+  if (topView === 'grid') {
+    return (
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+            <div className="leading-tight">
+              <h1 className="font-display text-[20px] text-navy-deep">Extracted Data Audit</h1>
+              <p className="mt-0.5 max-w-2xl text-[12px] text-ink-secondary">
+                Year-by-year, cell-by-cell extraction — every value real and source-linked. Click any cell for its source &amp; dashboard usage.
+              </p>
+            </div>
+          </div>
+          <AuditWorkflowToggle view={topView} onChange={setTopView} />
+        </div>
+        <AuditDataGrid />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5">
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -144,6 +185,7 @@ export function ExtractedDataAudit() {
         <div className="flex items-start gap-2.5">
           <span className="mt-0.5 h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
           <div className="leading-tight">
+            <div className="mb-1.5"><AuditWorkflowToggle view={topView} onChange={setTopView} /></div>
             <h1 className="font-display text-[20px] text-navy-deep">Extracted Data Audit</h1>
             <p className="mt-0.5 max-w-2xl text-[12px] text-ink-secondary">
               A simple check of our numbers. For every figure the template needs, see if we have it,

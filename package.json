@@ -15,7 +15,11 @@
     "ingest:quarterly": "CADENCE=quarterly tsx scripts/ingest/ingest-all.ts",
     "ingest:annual": "CADENCE=annual tsx scripts/ingest/ingest-all.ts",
     "ingest:filings": "tsx scripts/ingest/fetch-company-filings.ts",
-    "audit:index": "python3 scripts/excel/build_audit_index.py"
+    "ingest:audit": "tsx scripts/ingest/audit-fill.ts fill",
+    "audit:index": "python3 scripts/excel/build_audit_index.py",
+    "audit:build": "python3 scripts/excel/build_audit_index.py",
+    "audit:missing": "tsx scripts/ingest/audit-fill.ts missing",
+    "audit:conflicts": "tsx scripts/ingest/audit-fill.ts conflicts"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",
