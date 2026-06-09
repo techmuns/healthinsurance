@@ -26,6 +26,10 @@ const COMPANIES: Record<string, string> = {
 
 const COMPANY_ID = (process.env.FETCH_COMPANY_ID || '').trim()
 const PERIOD = (process.env.FETCH_PERIOD || 'FY25').trim()
+// The period is free-text (it can carry steering hints), so it must NEVER reach a
+// filesystem path verbatim — a '/' or '&' in it previously crashed the run with
+// ENOENT. Slugify for any path use; the human-readable PERIOD stays for the query.
+const PERIOD_SLUG = (PERIOD.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'period').slice(0, 60)
 const COMPANY_NAME = COMPANIES[COMPANY_ID]
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -180,10 +184,16 @@ async function main(): Promise<number> {
   try { raw = await callAgent(token) } catch (e) { console.error(`ERROR: ${e instanceof Error ? e.message : String(e)}`); return 1 }
 
   const stamp = new Date().toISOString().slice(0, 10)
-  const answerPath = resolve(OUT_DIR, `${COMPANY_ID}-${PERIOD}-${stamp}.json`)
-  let toWrite = raw; try { toWrite = JSON.stringify(JSON.parse(raw), null, 2) + '\n' } catch { /* not JSON */ }
-  await writeFile(answerPath, toWrite, 'utf8')
-  console.log(`Saved answer: ${answerPath}`)
+  const answerPath = resolve(OUT_DIR, `${COMPANY_ID}-${PERIOD_SLUG}-${stamp}.json`)
+  // Guard: an empty / blank agent reply must NOT be written — a 0-byte file would
+  // clobber a prior good pull and commit an empty artifact. Keep what we have.
+  if (!raw || !raw.trim()) {
+    console.error('WARNING: agent returned an empty answer — not writing (any prior pull is preserved).')
+  } else {
+    let toWrite = raw; try { toWrite = JSON.stringify(JSON.parse(raw), null, 2) + '\n' } catch { /* not JSON */ }
+    await writeFile(answerPath, toWrite, 'utf8')
+    console.log(`Saved answer: ${answerPath}`)
+  }
 
   // Always download the explicit DOC_URL (if given) so we have the source PDF to
   // parse locally, independent of whether the agent extracted from it.
