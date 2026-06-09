@@ -15,7 +15,7 @@ on:
     - cron: '30 6 1 * *'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: niva-fy25-financials-fetch
@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Call chat-muns agent
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
@@ -61,10 +64,27 @@ jobs:
             exit 1
           fi
 
-      - name: Upload response
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: niva-fy25-financials-response
-          path: response.json
-          if-no-files-found: ignore
+          mkdir -p data/agent-pulls/niva-fy25-financials
+          stamp=$(date -u +%Y-%m-%d)
+          out="data/agent-pulls/niva-fy25-financials/niva-fy25-financials-${stamp}.json"
+          mv response.json "$out"
+          echo "Saved response to $out"
+
+      - name: Commit response
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/agent-pulls/niva-fy25-financials
+          if git diff --staged --quiet; then
+            echo "No change in response — nothing to commit."
+            exit 0
+          fi
+          git commit -m "niva-fy25-financials: agent pull @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Rebase onto latest main and retry so a concurrent push never drops our commit.
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then
+              echo "pushed on attempt $i"; exit 0
+            fi
+            echo "push attempt $i failed; retrying..."; sleep 3
+          done
+          echo "ERROR: push failed after retries"; exit 1
