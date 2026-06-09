@@ -6,7 +6,7 @@
     "dataset": "pending",
     "source_policy": "official-first; Screener used only where no official equivalent exists. All values confidence:low.",
     "last_successful_run": null,
-    "parser_status": "pending"
+    "parser_status": "blocked"
   },
   "data": []
 }
