@@ -1,0 +1,75 @@
+{
+  "files": {
+    "https://cms.careinsurance.com/cms/public/other_disclosure": {
+      "filename": "other_disclosure",
+      "url": "https://cms.careinsurance.com/cms/public/other_disclosure",
+      "bytes": 114213,
+      "sha256": "03a6a237acca3757dd9458d30478f971bca7d8b5603ce5c3823e621b63481470",
+      "fetched_at": "2026-06-09T12:42:23.427Z"
+    },
+    "https://cms.careinsurance.com/cms/public/public_disclosure": {
+      "filename": "public_disclosure",
+      "url": "https://cms.careinsurance.com/cms/public/public_disclosure",
+      "bytes": 462135,
+      "sha256": "f072a9ac96e99f0beb8dd6b1b287d8cc61bfc9d1dfd4f2aef25367173f20d483",
+      "fetched_at": "2026-06-09T12:42:20.360Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/AnnualReport20202021_1647433216.pdf": {
+      "filename": "AnnualReport20202021_1647433216.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/AnnualReport20202021_1647433216.pdf",
+      "bytes": 6360220,
+      "sha256": "4627743c8cbe05aa70df5b2bf07d3ed3dbf92df2ae0a97e1e3e46da0dab6b348",
+      "fetched_at": "2026-06-09T12:43:12.139Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/Noticeof17thAGMndAnnualReportforFY2023-24_1725723132.pdf": {
+      "filename": "Noticeof17thAGMndAnnualReportforFY2023-24_1725723132.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/Noticeof17thAGMndAnnualReportforFY2023-24_1725723132.pdf",
+      "bytes": 9278740,
+      "sha256": "b54145ea3001a76edd773d8c6f158558d4a721f7fa3c76799b511d7e0bc0890a",
+      "fetched_at": "2026-06-09T12:42:29.250Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2022-23/Qtr%204%2022-23/Public_Disclosure_Mar_23_1686228232.pdf": {
+      "filename": "Public_Disclosure_Mar_23_1686228232.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2022-23/Qtr%204%2022-23/Public_Disclosure_Mar_23_1686228232.pdf",
+      "bytes": 2063538,
+      "sha256": "27eb25489ebce78c14c3576016d78d6a11baa525035c9b0578d6fe6bf75739e9",
+      "fetched_at": "2026-06-09T12:43:21.218Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%201%2023-24/PublicDisclosures_1691493096.pdf": {
+      "filename": "PublicDisclosures_1691493096.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%201%2023-24/PublicDisclosures_1691493096.pdf",
+      "bytes": 1991527,
+      "sha256": "909866a27e4733c3ec29640177066ab5a27971bc0f09d00da046ae150d8b2b90",
+      "fetched_at": "2026-06-09T12:43:12.397Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%203%2023-24/PublicDisclosure_1707305786.pdf": {
+      "filename": "PublicDisclosure_1707305786.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%203%2023-24/PublicDisclosure_1707305786.pdf",
+      "bytes": 2321555,
+      "sha256": "47b1e8b7bd833f1ecc8aa0b19362f50bcb17f2aa79e95b3453c1ea4e85b8d5d9",
+      "fetched_at": "2026-06-09T12:43:00.256Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%204%2023-24/Public-Disclosures-March-2024_1716378521.pdf": {
+      "filename": "Public-Disclosures-March-2024_1716378521.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2023-24/Qtr%204%2023-24/Public-Disclosures-March-2024_1716378521.pdf",
+      "bytes": 3985904,
+      "sha256": "21d08abb13944c0b58045d4d7519e6bb2dd16c52d8fbb9b748a53712cd39bafa",
+      "fetched_at": "2026-06-09T12:42:44.283Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf": {
+      "filename": "Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf",
+      "bytes": 3700391,
+      "sha256": "27ad9dcedadcf5cf946906de71eb4bc7760a1feede097b9530b1b39455582b61",
+      "fetched_at": "2026-06-09T12:42:47.964Z"
+    },
+    "https://wwipl.com/data/company/report/CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf": {
+      "filename": "CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf",
+      "url": "https://wwipl.com/data/company/report/CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf",
+      "bytes": 1892097,
+      "sha256": "ac5c070c2996c016b02314a241f31eca560968b8ea13ce2f1aebce470e274781",
+      "fetched_at": "2026-06-09T12:42:18.014Z"
+    }
+  },
+  "updated_at": "2026-06-09T12:44:43.042Z"
+}
