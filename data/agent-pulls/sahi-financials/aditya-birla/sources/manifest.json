@@ -1,4 +1,40 @@
 {
-  "files": {},
-  "updated_at": "2026-06-09T19:04:28.763Z"
+  "files": {
+    "https://dsijpub.s3.ap-south-1.amazonaws.com/productAttachment/BrokerRecommendation/20260505044125_Aditya-Birla-Capital-0505026-moti.pdf": {
+      "filename": "20260505044125_Aditya-Birla-Capital-0505026-moti.pdf",
+      "url": "https://dsijpub.s3.ap-south-1.amazonaws.com/productAttachment/BrokerRecommendation/20260505044125_Aditya-Birla-Capital-0505026-moti.pdf",
+      "bytes": 508753,
+      "sha256": "c4fa47d55c4b2e7f3259f14fee41b62c62677146c9a479c7b96e0d2495120936",
+      "fetched_at": "2026-06-09T19:16:53.159Z"
+    },
+    "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx": {
+      "filename": "301025_Q2-FY26-Investor-Presentation.ashx",
+      "url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx",
+      "bytes": 2448676,
+      "sha256": "943839a51499e1ca0857eedfa50681e24f27f246d92c8fe407170ce265e1b138",
+      "fetched_at": "2026-06-09T19:17:04.897Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/69b2a3f3-6025-420e-aba0-87c0315cf794.pdf": {
+      "filename": "69b2a3f3-6025-420e-aba0-87c0315cf794.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/69b2a3f3-6025-420e-aba0-87c0315cf794.pdf",
+      "bytes": 2319517,
+      "sha256": "74cc0331f535cabee92db3a2fdf338ec39eef28758ed4444633213ec7d683b2d",
+      "fetched_at": "2026-06-09T19:17:10.011Z"
+    },
+    "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/abhi-investor-presentation.pdf": {
+      "filename": "abhi-investor-presentation.pdf",
+      "url": "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/abhi-investor-presentation.pdf",
+      "bytes": 1625989,
+      "sha256": "9243617936c65c23eef176eebbab900db35b789a6262c2fd583b265f8da553c5",
+      "fetched_at": "2026-06-09T19:17:10.671Z"
+    },
+    "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/investor-conference/aditya-birla-health-insurance.pdf": {
+      "filename": "aditya-birla-health-insurance.pdf",
+      "url": "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/investor-conference/aditya-birla-health-insurance.pdf",
+      "bytes": 2222490,
+      "sha256": "f1889ebb17aba4c5ac31a7d0a76ad8f2e61ffcac8b3dc1d1e0f535dbeacc0e62",
+      "fetched_at": "2026-06-09T19:17:20.162Z"
+    }
+  },
+  "updated_at": "2026-06-09T19:18:31.373Z"
 }
