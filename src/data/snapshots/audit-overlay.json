@@ -746,6 +746,91 @@
       "priority": 2,
       "layer": "staging",
       "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
+    },
+    "niva-bupa::gross_direct_premium::FY26": {
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+      "value": 8464.9,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2026) — Gross Direct Premium 8,46,490 Lakhs = ₹8,464.90 Cr (full-year FY26, 1/n basis)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf",
+      "source_page": "Gross Direct Premium (YTD)",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Full-year FY26 gross direct premium (IRDAI 1/n basis); Grand Total confirms 8,46,490 Lakhs."
+    },
+    "niva-bupa::total_gwp::FY26": {
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+      "value": 8464.9,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2026) — Gross Direct Premium ₹8,464.90 Cr (full-year FY26, 1/n basis; same basis as FY25 ₹6,762.23 Cr)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf",
+      "source_page": "Gross Direct Premium (YTD)",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total GWP on the 1/n basis = gross direct premium ₹8,464.90 Cr (the ex-1/n headline is ₹9,432.9 Cr)."
+    },
+    "niva-bupa::nwp::FY26": {
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Earnings-Presentation-Q4-FY26.pdf",
+      "value": 6806.3,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY26 Earnings Presentation — Key Performance Indicators: Net Written Premium FY2026 = ₹6,806.3 Cr",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Earnings-Presentation-Q4-FY26.pdf",
+      "source_page": "Key Performance Indicators",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "FY26 NWP from the audited Q4 FY26 KPI table (FY24/FY25/FY26 = 4,421.0 / 5,369.4 / 6,806.3)."
+    },
+    "niva-bupa::solvency_ratio::FY22": {
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Mar-2022.pdf",
+      "value": 1.72,
+      "unit": "x",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2022) — Solvency Ratio (Total ASM / Total RSM) = 1.72",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Mar-2022.pdf",
+      "source_page": "Solvency Ratio",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Year-end FY22 solvency margin ratio from the IRDAI disclosure."
+    },
+    "niva-bupa::net_worth_ifrs::FY23": {
+      "value": 831.1,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY25 Investor Presentation — Net Worth (₹ in Crores) FY23 = ₹831.1 Cr",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Net Worth (₹ in Crores)",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Net worth from the deck KPI line (FY23/FY24/FY25 = 831.1 / 2,049.6 / 3,058.3; FY26 = 3,219.0) — same basis as the stored FY25 ₹3,058.3 Cr."
+    },
+    "niva-bupa::net_worth_ifrs::FY24": {
+      "value": 2049.6,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY25 Investor Presentation — Net Worth (₹ in Crores) FY24 = ₹2,049.6 Cr",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Net Worth (₹ in Crores)",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Net worth from the deck KPI line (FY23/FY24/FY25 = 831.1 / 2,049.6 / 3,058.3; FY26 = 3,219.0) — same basis as the stored FY25 ₹3,058.3 Cr."
+    },
+    "niva-bupa::net_worth_ifrs::FY26": {
+      "value": 3219,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY26 Earnings Presentation — Net Worth (₹ in Crores) FY26 = ₹3,219 Cr",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Earnings-Presentation-Q4-FY26.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Earnings-Presentation-Q4-FY26.pdf",
+      "source_page": "Net Worth (₹ in Crores)",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Net worth from the deck KPI line (FY23/FY24/FY25 = 831.1 / 2,049.6 / 3,058.3; FY26 = 3,219.0) — same basis as the stored FY25 ₹3,058.3 Cr."
     }
-  }
+  },
+  "meta": {}
 }
