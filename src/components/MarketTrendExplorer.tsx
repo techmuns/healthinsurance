@@ -24,6 +24,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   CartesianGrid,
+  LabelList,
   Line,
   LineChart,
   ReferenceLine,
@@ -70,6 +71,12 @@ const VIEW_MODES: { id: ViewMode; label: string }[] = [
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 const round1 = (n: number) => Math.round(n * 10) / 10
+
+// The story spans FY22–FY25. The SAHI share/premium source currently lands
+// only through FY24, so FY25 is carried as an honest, visible gap (the axis
+// shows it, the lines stop at FY24, and the tick is marked "not yet reported")
+// rather than fabricated. It fills in automatically the moment FY25 ingests.
+const GAP_YEAR = 'FY25'
 
 // ── A single (company × metric) line, with its absolute series + index base. ──
 interface Combo {
@@ -177,20 +184,24 @@ function SummaryCard({ metric }: { metric: MetricDef }) {
   const map = absLookup(FOCAL_COMPANY_ID, metric)
   const values = years.map((y) => map.get(y) ?? null)
   const unit = metric.unit === '%' ? '% share' : metric.unit
+  // Honest latest period: the most recent year that actually carries a value
+  // (FY24 today; becomes FY25 the moment that data lands).
+  const latestYear = [...years].reverse().find((y) => map.get(y) != null) ?? years[years.length - 1] ?? '—'
+  const firstYear = years.find((y) => map.get(y) != null) ?? years[0] ?? '—'
 
   return (
     <div className="surface-soft flex h-full flex-col justify-between rounded-xl p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate font-display text-[12px] leading-tight text-navy-deep">{metric.chip}</p>
-          <p className="text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit} · FY22–FY24</p>
+          <p className="text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit} · {firstYear}–{latestYear}</p>
         </div>
         <Sparkline values={values} color={FOCAL.color} />
       </div>
       <div className="mt-2 flex items-end justify-between gap-2">
         <div>
           <p className="text-[8px] font-semibold uppercase tracking-wide" style={{ color: FOCAL.color }}>
-            {FOCAL.name} · FY24
+            {FOCAL.name} · {latestYear}
           </p>
           <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: FOCAL.color }}>
             {last != null ? metric.format(last) : 'n/a'}
@@ -239,6 +250,11 @@ export function MarketTrendExplorer() {
     [selMetrics],
   )
 
+  // Axis years = the real data years, plus FY25 as a trailing gap if the source
+  // hasn't reached it yet (so the chart reads FY22–FY25 honestly).
+  const showGap = years.length > 0 && !years.includes(GAP_YEAR)
+  const axisYears = useMemo(() => (showGap ? [...years, GAP_YEAR] : years), [years, showGap])
+
   const combos: Combo[] = useMemo(() => {
     const out: Combo[] = []
     for (const c of selCompanies) {
@@ -252,10 +268,11 @@ export function MarketTrendExplorer() {
     // selCompanies/selMetrics are derived fresh each render; gate on the sets.
   }, [companySet, metricSet, years])
 
-  // Build the chart rows: one per year carrying every combo's value in the
-  // active view (null stays null — never coerced, never indexed off a gap).
+  // Build the chart rows: one per axis year carrying every combo's value in the
+  // active view (null stays null — never coerced, never indexed off a gap; the
+  // FY25 gap row is all-null so every line simply stops at FY24).
   const data = useMemo(() => {
-    return years.map((y, i) => {
+    return axisYears.map((y, i) => {
       const row: Record<string, number | string | null> = { year: y }
       for (const cb of combos) {
         const v = cb.abs.get(y) ?? null
@@ -264,7 +281,7 @@ export function MarketTrendExplorer() {
           if (mode === 'absolute') out = v
           else if (mode === 'indexed') out = cb.base ? round1((v / cb.base) * 100) : null
           else if (mode === 'yoy' && i > 0) {
-            const prev = cb.abs.get(years[i - 1]) ?? null
+            const prev = cb.abs.get(axisYears[i - 1]) ?? null
             out = prev != null && prev !== 0 ? round1(((v - prev) / prev) * 100) : null
           }
         }
@@ -272,7 +289,21 @@ export function MarketTrendExplorer() {
       }
       return row
     })
-  }, [combos, years, mode])
+  }, [combos, axisYears, mode])
+
+  // Index of each line's last real point, so we can give it a stronger marker
+  // and a value label at the right end.
+  const lastIdxByKey = useMemo(() => {
+    const m: Record<string, number> = {}
+    for (const cb of combos) {
+      let idx = -1
+      data.forEach((row, i) => {
+        if (row[cb.key] != null) idx = i
+      })
+      m[cb.key] = idx
+    }
+    return m
+  }, [combos, data])
 
   const anyHover = hoverCombo != null || hoverCompany != null
   const isActive = (cb: Combo) =>
@@ -300,6 +331,27 @@ export function MarketTrendExplorer() {
   const yTick = (v: number) =>
     mode === 'indexed' ? `${v}` : mode === 'yoy' ? `${v}%` : absUnit === '%' ? `${v}%` : `₹${v}`
 
+  // X tick — FY25 (the gap year) reads soft-grey with a quiet "not yet reported"
+  // sub-label so the missing year is honest, never blank or fabricated.
+  const renderXTick = (props: { x?: number; y?: number; payload?: { value?: string } }) => {
+    const x = Number(props.x)
+    const y = Number(props.y)
+    const val = props.payload?.value ?? ''
+    const isGap = val === GAP_YEAR && showGap
+    return (
+      <g>
+        <text x={x} y={y + 11} textAnchor="middle" fontSize={10} fill={isGap ? '#B6BECB' : AXIS}>
+          {val}
+        </text>
+        {isGap && (
+          <text x={x} y={y + 21} textAnchor="middle" fontSize={7.5} fontStyle="italic" fill="#C0C7D2">
+            not yet reported
+          </text>
+        )}
+      </g>
+    )
+  }
+
   return (
     <div className="card-surface flex h-full min-w-0 flex-col p-5 sm:p-6">
       {/* Header — mirrors the GI Pool Shift card so the pair reads as one block. */}
@@ -312,8 +364,8 @@ export function MarketTrendExplorer() {
           </span>
         </div>
         <p className="mt-1 text-[12px] text-ink-secondary">
-          Five standalone health insurers · four lenses · FY22–FY24 ·{' '}
-          <span className="text-ink-secondary/80">premium basis (not profit)</span>
+          Five standalone health insurers · four lenses · FY22–FY25 ·{' '}
+          <span className="text-ink-secondary/80">premium basis, not profit</span>
         </p>
       </header>
 
@@ -412,24 +464,26 @@ export function MarketTrendExplorer() {
             })}
           </div>
           {mode === 'indexed' && (
-            <span className="text-[9.5px] italic text-ink-secondary">Indexed to FY22 = 100 for cross-metric comparison.</span>
+            <span className="text-[9.5px] italic text-ink-secondary">
+              Indexed to FY22 = 100 so share and premium growth can be compared on one scale.
+            </span>
           )}
         </div>
       </div>
 
       {/* ── Large comparison line chart ── */}
-      <div className="h-[244px] w-full">
+      <div className="h-[256px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 8, right: 10, left: 4, bottom: 0 }} onMouseLeave={() => setHoverCombo(null)}>
+          <LineChart data={data} margin={{ top: 10, right: 54, left: 4, bottom: 8 }} onMouseLeave={() => setHoverCombo(null)}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-            <XAxis dataKey="year" tick={{ fontSize: 10, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
+            <XAxis dataKey="year" tick={renderXTick} tickLine={false} axisLine={{ stroke: GRID }} height={30} interval={0} />
             <YAxis
               width={34}
               tick={{ fontSize: 9, fill: AXIS }}
               tickLine={false}
               axisLine={false}
               tickFormatter={yTick}
-              domain={mode === 'yoy' ? ['auto', 'auto'] : ['auto', 'auto']}
+              domain={['auto', 'auto']}
             />
             <Tooltip
               cursor={{ stroke: '#C9D2E0', strokeWidth: 1, strokeDasharray: '3 3' }}
@@ -458,12 +512,15 @@ export function MarketTrendExplorer() {
             ))}
 
             {/* Visible lines — Niva Bupa solid & strong, others softly dimmed;
-                colour = company, dash = metric. */}
+                colour = company, dash = metric. Clearly-visible dots, a stronger
+                marker on the latest point, and a value label at the right end. */}
             {combos.map((cb) => {
               const focal = cb.company.id === FOCAL_COMPANY_ID
               const active = isActive(cb)
               const opacity = anyHover ? (active ? 1 : 0.1) : focal ? 1 : 0.5
               const width = anyHover && active ? 2.6 : focal ? 2.2 : 1.5
+              const lastIdx = lastIdxByKey[cb.key]
+              const dimmed = anyHover && !active
               return (
                 <Line
                   key={`l-${cb.key}`}
@@ -473,12 +530,61 @@ export function MarketTrendExplorer() {
                   strokeWidth={width}
                   strokeOpacity={opacity}
                   strokeDasharray={DASH_BY_METRIC[cb.metric.id] || undefined}
-                  dot={false}
-                  activeDot={anyHover && !active ? false : { r: 3, fill: cb.company.color, stroke: '#fff', strokeWidth: 1.2 }}
+                  dot={(p: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
+                    const cx = Number(p.cx)
+                    const cy = Number(p.cy)
+                    if (p.value == null || Number.isNaN(cx) || Number.isNaN(cy)) return <g key={`d-${cb.key}-${p.index}`} />
+                    const isLast = p.index === lastIdx
+                    return (
+                      <circle
+                        key={`d-${cb.key}-${p.index}`}
+                        cx={cx}
+                        cy={cy}
+                        r={isLast ? 4.6 : 3.4}
+                        fill={isLast ? cb.company.color : '#fff'}
+                        stroke={cb.company.color}
+                        strokeWidth={isLast ? 1.6 : 1.6}
+                        opacity={opacity}
+                      />
+                    )
+                  }}
+                  activeDot={dimmed ? false : { r: 5.5, fill: cb.company.color, stroke: '#fff', strokeWidth: 1.4 }}
                   connectNulls={false}
                   isAnimationActive={false}
                   onMouseEnter={() => setHoverCombo(cb.key)}
-                />
+                >
+                  {!dimmed && (
+                    <LabelList
+                      dataKey={cb.key}
+                      content={(p: { x?: number; y?: number; index?: number; value?: number | null }) => {
+                        if (p.index !== lastIdx || p.value == null) return null
+                        const x = Number(p.x)
+                        const y = Number(p.y)
+                        if (Number.isNaN(x) || Number.isNaN(y)) return null
+                        const v = Number(p.value)
+                        const txt =
+                          mode === 'yoy'
+                            ? `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
+                            : mode === 'indexed'
+                              ? `${Math.round(v)}`
+                              : cb.metric.format(v)
+                        return (
+                          <text
+                            x={x + 8}
+                            y={y + 3.5}
+                            fontSize={10}
+                            fontWeight={focal ? 700 : 600}
+                            fill={cb.company.color}
+                            textAnchor="start"
+                            style={{ fontVariantNumeric: 'tabular-nums' }}
+                          >
+                            {txt}
+                          </text>
+                        )
+                      }}
+                    />
+                  )}
+                </Line>
               )
             })}
           </LineChart>
@@ -492,13 +598,26 @@ export function MarketTrendExplorer() {
         ))}
       </div>
 
+      {/* ── Understanding the lenses — a soft teal/blue help box. ── */}
+      <div className="mt-3 rounded-xl border border-[#CFE7E4] bg-gradient-to-br from-[#F2FAF8] to-[#F4F8FD] p-3.5">
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-teal" />
+          <p className="font-display text-[12.5px] text-navy-deep">Understanding the lenses</p>
+        </div>
+        <ul className="grid gap-1 text-[11px] leading-relaxed text-ink-secondary sm:grid-cols-3">
+          <li><span className="font-semibold text-navy-deep">Share metrics</span> show an insurer&rsquo;s proportion of health premium in the relevant base.</li>
+          <li><span className="font-semibold text-navy-deep">GDPI Premium</span> shows premium scale and growth — not profit.</li>
+          <li>Higher is generally better, but mix and profitability still need separate analysis.</li>
+        </ul>
+      </div>
+
       {/* Footer — one-line read + a single shared source (all from the DRHP). */}
-      <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pt-4">
-        <p className="max-w-md text-[11px] leading-relaxed text-ink-secondary">
+      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pt-1">
+        <p className="max-w-lg text-[11px] leading-relaxed text-ink-secondary">
           <span className="font-semibold text-navy-deep">Read it — </span>
-          pick insurers and metrics, then choose a view. Indexed rebases every line to FY22 = 100 so share and premium move on one scale; hover a line to isolate it.
+          pick insurers and metrics, then choose a view. Indexed mode rebases every line to FY22 = 100, so share and premium growth can be compared on one scale.
         </p>
-        <SourceTag source="Company filing" period="FY22–FY24" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
+        <SourceTag source="Company filing" period="FY22–FY25" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
       </div>
     </div>
   )
