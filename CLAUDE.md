@@ -36,6 +36,7 @@ Project guidance for Claude Code sessions on this repository.
 - **No real data? Ask — every time.** If real, source-backed data for a requested chart / metric / period / year is not available (source blocked, snapshot empty, only a partial basis exists), **STOP and ask Neha how to proceed** — provide a source file, paste figures, re-scope, enable a fetch, or wait for ingestion. Never fabricate, never silently substitute, and never derive a number from an incomplete basis that would mislead. (Standing instruction, Neha, 2026-06-04.)
 - **Missing ≠ zero** — render an honest "not available" marker, never a fake 0.
 - **Honest period + basis labels** (FY25 vs Q3 FY25 vs TTM; premium ≠ profit).
+- **Prefer the investor presentation (PPT) on any source mismatch** — for every company. When sources disagree on a value, the investor-presentation / earnings-deck figure is authoritative and becomes the shown value; the disagreeing source is kept for the record but does not flag the cell. This is wired into the audit grid's conflict policy (`classifyCell` in `src/lib/auditGrid.ts`, `isInvestorPresentation`). It does **not** override basis discipline — a number on a different accounting basis (e.g. IND AS vs IGAAP, 1/n vs ex-1/n) is not a "mismatch" and must not be cross-filled. (Standing instruction, Neha.)
 - Respect **protected charts** and **default states** (see below) — announce before changing.
 
 ## Protected charts

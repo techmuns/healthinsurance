@@ -315,6 +315,11 @@ function fromAnnual(company: string, m: GridMetricDef, year: string): SourceRef 
   }
 }
 
+/** A source is an investor presentation / earnings deck (preferred on mismatch). */
+function isInvestorPresentation(r: SourceRef): boolean {
+  return /presentation|investor deck|earnings call/i.test(`${r.sourceName ?? ''} ${r.sourceUrl ?? ''}`)
+}
+
 /** Two non-null values disagree materially (ratios: >0.1 abs; else >1% rel). */
 function materiallyDifferent(a: number, b: number, unit: string): boolean {
   if (unit === '%' || unit === 'x') return Math.abs(a - b) > 0.1
@@ -338,11 +343,12 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
   // An overlay entry can explicitly mark a value superseded (kept for the record).
   const overlaySuperseded = OVERLAY[`${company}::${m.key}::${year}`]?.superseded === true
 
-  // Conflict policy: PREFER THE STORE. The Python value store is the stable,
-  // pipeline-extracted source of truth — when it carries a value, it is shown as
-  // primary and any disagreeing source (overlay/agent pull, DRHP series, annual
-  // snapshot) is KEPT as a flagged alternative rather than overriding it. Other
-  // sources only become primary where the store has no value (they fill gaps).
+  // Conflict policy: PREFER THE INVESTOR PRESENTATION (PPT) on any mismatch
+  // (standing instruction — applies to every company). When a PPT / earnings-deck
+  // source carries a value it is primary, and a disagreeing non-PPT source
+  // (store / overlay / DRHP / annual snapshot) is auto-resolved to it rather than
+  // flagged. With no PPT in play, the stable Python value store is preferred and a
+  // remaining disagreement is flagged "needs review".
   const storeRef = fromStore(company, m, year)
   const storeHas = storeRef != null && storeRef.value != null
   const others = [overlayRef, fromShare(company, m, year), fromAnnual(company, m, year)]
@@ -362,15 +368,19 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
     return { ...base, status: 'missing_in_source', value: null, chosen: null, competing: [], notes: 'Not found in currently fetched public source.' }
   }
 
+  const candidates = storeHas ? [storeRef as SourceRef, ...others] : others
+  const pptRef = candidates.find(isInvestorPresentation)
   let chosen: SourceRef
-  let competing: SourceRef[]
-  if (storeHas) {
+  let pptPreferred = false
+  if (pptRef) {
+    chosen = pptRef
+    pptPreferred = candidates.some((c) => c !== pptRef && materiallyDifferent(c.value as number, pptRef.value as number, m.unit))
+  } else if (storeHas) {
     chosen = storeRef as SourceRef
-    competing = others.filter((c) => materiallyDifferent(c.value as number, (storeRef as SourceRef).value as number, m.unit))
   } else {
     chosen = others[0]
-    competing = others.slice(1).filter((c) => materiallyDifferent(c.value as number, chosen.value as number, m.unit))
   }
+  const competing = candidates.filter((c) => c !== chosen && materiallyDifferent(c.value as number, (chosen as SourceRef).value as number, m.unit))
 
   let status: GridStatus = 'filled'
   let notes = chosen.note ?? ''
@@ -380,8 +390,13 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
   } else if (chosen.note && /basis[_ ]?mismatch/i.test(chosen.note)) {
     status = 'basis_mismatch'
   } else if (competing.length > 0) {
-    status = 'needs_review'
-    notes = `Sources disagree — ${chosen.value} vs ${competing.map((c) => c.value).join(', ')}. Both kept for review.`
+    if (pptPreferred) {
+      // Auto-resolved to the investor presentation per the PPT-first policy.
+      notes = `Investor-presentation value preferred over ${competing.map((c) => c.value).join(', ')} (PPT-first policy).`
+    } else {
+      status = 'needs_review'
+      notes = `Sources disagree — ${chosen.value} vs ${competing.map((c) => c.value).join(', ')}. Both kept for review.`
+    }
   }
 
   return { ...base, status, value: chosen.value, chosen, competing, notes }
