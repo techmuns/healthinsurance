@@ -6,7 +6,14 @@
       "bytes": 9557588,
       "sha256": "ec64a2507d86b62402321916f2132197a1593e5019fff8d2511483e013b4961b",
       "fetched_at": "2026-06-09T12:37:25.012Z"
+    },
+    "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf": {
+      "filename": "STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "bytes": 894504,
+      "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
+      "fetched_at": "2026-06-09T16:51:20.831Z"
     }
   },
-  "updated_at": "2026-06-09T12:37:25.024Z"
+  "updated_at": "2026-06-09T16:51:24.688Z"
 }
