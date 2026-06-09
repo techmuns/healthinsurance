@@ -1,9 +1,9 @@
 {
   "last_successful_run": "2026-06-04T07:11:34.420Z",
   "last_failed_run": "2026-06-08T12:22:48.242Z",
-  "sources_checked": 7,
+  "sources_checked": 3,
   "sources_success": 1,
-  "sources_failed": 1,
+  "sources_failed": 0,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
     "company.pat::niva-bupa::Annual",
@@ -221,21 +221,6 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
-    "[irdai_monthly_business] To populate Monthly: download the IRDAI \"Monthly Business Figures – Non-Life Insurers\" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.",
-    "[irdai_nonlife_flash] IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated.",
-    "[gicouncil_flash_sahi] 2026-04: HTTP 403 for https://www.gicouncil.in/media/4642/flash-report-april-pdf.pdf",
-    "[gicouncil_flash_sahi] 2026-03: HTTP 403 for https://www.gicouncil.in/media/4629/flsh-report-march-2026.pdf",
-    "[gicouncil_flash_sahi] 2026-02: HTTP 403 for https://www.gicouncil.in/media/4603/flash_feb_2026.pdf",
-    "[gicouncil_flash_sahi] 2026-01: HTTP 403 for https://www.gicouncil.in/media/4594/jan-2026-flash-report-1.pdf",
-    "[gicouncil_flash_sahi] 2025-12: HTTP 403 for https://www.gicouncil.in/media/4588/flash_december_2025.pdf",
-    "[gicouncil_flash_sahi] 2025-11: HTTP 403 for https://www.gicouncil.in/media/4579/flash-report-nov-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-10: HTTP 403 for https://www.gicouncil.in/media/4576/flash-report-october-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-09: HTTP 403 for https://www.gicouncil.in/media/4568/month-of-september-flash-report.pdf",
-    "[gicouncil_flash_sahi] 2025-08: HTTP 403 for https://www.gicouncil.in/media/4563/flash-report-august-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-07: HTTP 403 for https://www.gicouncil.in/media/4557/flash-report-july-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-06: HTTP 403 for https://www.gicouncil.in/media/4544/flash-reportt-june-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-05: HTTP 403 for https://www.gicouncil.in/media/4537/flash-report-may-2025.pdf",
-    "[gicouncil_flash_sahi] 2025-04: HTTP 403 for https://www.gicouncil.in/media/4523/flash_april_2025.pdf",
     "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
     "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
     "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
@@ -409,7 +394,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-08T12:22:20.506Z",
+      "last_attempt_at": "2026-06-09T07:03:43.669Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -444,14 +429,14 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-08T12:22:21.158Z",
-      "last_success_at": "2026-06-08T12:22:21.158Z",
+      "last_attempt_at": "2026-06-09T07:03:45.660Z",
+      "last_success_at": "2026-06-09T07:03:45.660Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-08T12:22:46.612Z",
+      "last_attempt_at": "2026-06-09T07:03:59.385Z",
       "last_success_at": null,
       "records_fetched": 0
     }
