@@ -33,6 +33,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Check } from 'lucide-react'
 import { SourceTag } from './SourceTag'
 import {
   COMPANY_BY_ID,
@@ -50,14 +51,27 @@ const FOCAL = COMPANY_BY_ID[FOCAL_COMPANY_ID]
 // lens out to the rupee premium scale.
 const PRIMARY: MetricId[] = ['sahi_share', 'retail_share', 'overall_share', 'gdpi']
 
-// One soft dash signature per metric (colour stays the company's, so within a
-// single company several metrics read apart without a second colour scale).
+// One soft dash signature per metric — used only when MORE than one insurer is
+// on the canvas (then colour encodes the company and the dash encodes the
+// metric, so companies stay distinguishable).
 const DASH_BY_METRIC: Record<MetricId, string> = {
   sahi_share: '',
   retail_share: '5 3',
   overall_share: '2 3',
   gdpi: '7 3 1 3',
   premium_growth: '1 4',
+}
+
+// One tone-coded colour per metric (teal · soft blue · gold · soft violet) on
+// the dashboard's palette. When a SINGLE insurer is selected, each metric line
+// takes its own colour here — and the pills and summary cards echo it — so the
+// four lenses read apart at a glance, exactly like the reference.
+const METRIC_COLOR: Record<MetricId, string> = {
+  sahi_share: '#168E8E', // teal
+  retail_share: '#3D6DB5', // soft blue
+  overall_share: '#B68B3A', // gold
+  gdpi: '#7A6CC4', // soft violet — the premium-scale lens
+  premium_growth: '#8C97A8',
 }
 
 type ViewMode = 'absolute' | 'indexed' | 'yoy'
@@ -111,8 +125,9 @@ interface TipProps {
   label?: string | number
   combos: Combo[]
   mode: ViewMode
+  colorByKey: Record<string, string>
 }
-function ComparisonTooltip({ active, payload, label, combos, mode }: TipProps) {
+function ComparisonTooltip({ active, payload, label, combos, mode, colorByKey }: TipProps) {
   if (!active || !payload?.length) return null
   const byKey = new Map(combos.map((c) => [c.key, c]))
   const year = String(label)
@@ -131,7 +146,7 @@ function ComparisonTooltip({ active, payload, label, combos, mode }: TipProps) {
         {rows.map(({ cb, plotted, abs }) => (
           <div key={cb.key} className="flex items-center justify-between gap-4 text-[10.5px]">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cb.company.color }} />
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: colorByKey[cb.key] ?? cb.company.color }} />
               <span className="truncate text-ink-primary">
                 <span className="font-semibold">{cb.company.name}</span>
                 <span className="text-ink-secondary"> · {cb.metric.chip}</span>
@@ -183,35 +198,41 @@ function SummaryCard({ metric }: { metric: MetricDef }) {
   const years = sortYears(metric.points.map((p) => p.year))
   const map = absLookup(FOCAL_COMPANY_ID, metric)
   const values = years.map((y) => map.get(y) ?? null)
-  const unit = metric.unit === '%' ? '% share' : metric.unit
+  const unit = metric.unit === '%' ? '% share' : `${metric.unit} · premium`
+  const color = METRIC_COLOR[metric.id]
   // Honest latest period: the most recent year that actually carries a value
   // (FY24 today; becomes FY25 the moment that data lands).
   const latestYear = [...years].reverse().find((y) => map.get(y) != null) ?? years[years.length - 1] ?? '—'
   const firstYear = years.find((y) => map.get(y) != null) ?? years[0] ?? '—'
 
   return (
-    <div className="surface-soft flex h-full flex-col justify-between rounded-xl p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
+    <div
+      className="surface-soft relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-3"
+      style={{ background: `linear-gradient(135deg, ${color}0A 0%, transparent 60%)` }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: color }} />
+      <div className="pl-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
           <p className="truncate font-display text-[12px] leading-tight text-navy-deep">{metric.chip}</p>
-          <p className="text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit} · {firstYear}–{latestYear}</p>
         </div>
-        <Sparkline values={values} color={FOCAL.color} />
+        <p className="mt-0.5 text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit}</p>
       </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <div>
-          <p className="text-[8px] font-semibold uppercase tracking-wide" style={{ color: FOCAL.color }}>
-            {FOCAL.name} · {latestYear}
-          </p>
-          <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: FOCAL.color }}>
+      <div className="mt-2 flex items-end justify-between gap-2 pl-1.5">
+        <div className="min-w-0">
+          <p className="text-[16px] font-semibold leading-none tabular-nums" style={{ color }}>
             {last != null ? metric.format(last) : 'n/a'}
           </p>
-        </div>
-        {delta != null && (
-          <p className={`text-[10px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
-            {metric.formatDelta(delta)}
+          {delta != null && (
+            <p className={`mt-1 text-[10px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
+              {metric.formatDelta(delta)}
+            </p>
+          )}
+          <p className="mt-0.5 text-[8px] uppercase tracking-wide text-ink-secondary/80">
+            {FOCAL.name} · {firstYear} → {latestYear}
           </p>
-        )}
+        </div>
+        <Sparkline values={values} color={color} />
       </div>
     </div>
   )
@@ -305,6 +326,16 @@ export function MarketTrendExplorer() {
     return m
   }, [combos, data])
 
+  // With one insurer on the canvas, colour encodes the METRIC (teal/blue/gold/
+  // violet, lines drawn solid) — the reference look. With several insurers,
+  // colour encodes the COMPANY and a subtle dash encodes the metric.
+  const singleCompany = selCompanies.length === 1
+  const colorByKey = useMemo(() => {
+    const m: Record<string, string> = {}
+    for (const cb of combos) m[cb.key] = singleCompany ? METRIC_COLOR[cb.metric.id] : cb.company.color
+    return m
+  }, [combos, singleCompany])
+
   const anyHover = hoverCombo != null || hoverCompany != null
   const isActive = (cb: Combo) =>
     hoverCombo ? cb.key === hoverCombo : hoverCompany ? cb.company.id === hoverCompany : true
@@ -371,25 +402,32 @@ export function MarketTrendExplorer() {
 
       {/* ── Control bar — metrics, companies (legend = selector), view mode. ── */}
       <div className="mb-3 space-y-2.5 rounded-xl border border-soft-border bg-ice/40 p-3">
-        {/* Metric pills */}
+        {/* Metric pills — checkbox-style, each in its own lens colour. */}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Metric</span>
           {PRIMARY.map((id) => {
             const m = METRICS[id]
             const on = metricSet.has(id)
+            const color = METRIC_COLOR[id]
             return (
               <button
                 key={id}
                 type="button"
                 onClick={() => toggleMetric(id)}
                 aria-pressed={on}
+                style={on ? { background: `${color}14`, borderColor: `${color}59`, color } : undefined}
                 className={[
-                  'rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
+                  'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
                   on
-                    ? 'border-muted-blue bg-white text-navy-deep shadow-soft'
+                    ? 'shadow-soft'
                     : 'border-soft-border bg-white/40 text-ink-secondary hover:bg-white/70',
                 ].join(' ')}
               >
+                {on ? (
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                ) : (
+                  <span className="h-2 w-2 rounded-full" style={{ background: color, opacity: 0.4 }} />
+                )}
                 {m.chip}
               </button>
             )
@@ -428,7 +466,7 @@ export function MarketTrendExplorer() {
                 <span
                   className={[
                     focal ? 'font-semibold' : 'font-medium',
-                    on ? 'text-navy-deep' : 'text-ink-secondary line-through decoration-1',
+                    on ? 'text-navy-deep' : 'text-ink-secondary/70',
                   ].join(' ')}
                 >
                   {c.name}
@@ -487,7 +525,7 @@ export function MarketTrendExplorer() {
             />
             <Tooltip
               cursor={{ stroke: '#C9D2E0', strokeWidth: 1, strokeDasharray: '3 3' }}
-              content={<ComparisonTooltip combos={combos} mode={mode} />}
+              content={<ComparisonTooltip combos={combos} mode={mode} colorByKey={colorByKey} />}
             />
             {mode === 'indexed' && <ReferenceLine y={100} stroke="#C9D2E0" strokeDasharray="4 4" />}
             {mode === 'yoy' && <ReferenceLine y={0} stroke="#C9D2E0" strokeDasharray="4 4" />}
@@ -517,19 +555,21 @@ export function MarketTrendExplorer() {
             {combos.map((cb) => {
               const focal = cb.company.id === FOCAL_COMPANY_ID
               const active = isActive(cb)
-              const opacity = anyHover ? (active ? 1 : 0.1) : focal ? 1 : 0.5
-              const width = anyHover && active ? 2.6 : focal ? 2.2 : 1.5
+              const opacity = anyHover ? (active ? 1 : 0.1) : singleCompany ? 1 : focal ? 1 : 0.5
+              const width = anyHover && active ? 2.8 : singleCompany ? 2.2 : focal ? 2.2 : 1.5
               const lastIdx = lastIdxByKey[cb.key]
               const dimmed = anyHover && !active
+              const color = colorByKey[cb.key]
+              const dash = singleCompany ? undefined : DASH_BY_METRIC[cb.metric.id] || undefined
               return (
                 <Line
                   key={`l-${cb.key}`}
                   type="monotone"
                   dataKey={cb.key}
-                  stroke={cb.company.color}
+                  stroke={color}
                   strokeWidth={width}
                   strokeOpacity={opacity}
-                  strokeDasharray={DASH_BY_METRIC[cb.metric.id] || undefined}
+                  strokeDasharray={dash}
                   dot={(p: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
                     const cx = Number(p.cx)
                     const cy = Number(p.cy)
@@ -541,14 +581,14 @@ export function MarketTrendExplorer() {
                         cx={cx}
                         cy={cy}
                         r={isLast ? 4.6 : 3.4}
-                        fill={isLast ? cb.company.color : '#fff'}
-                        stroke={cb.company.color}
-                        strokeWidth={isLast ? 1.6 : 1.6}
+                        fill={isLast ? color : '#fff'}
+                        stroke={color}
+                        strokeWidth={1.6}
                         opacity={opacity}
                       />
                     )
                   }}
-                  activeDot={dimmed ? false : { r: 5.5, fill: cb.company.color, stroke: '#fff', strokeWidth: 1.4 }}
+                  activeDot={dimmed ? false : { r: 5.5, fill: color, stroke: '#fff', strokeWidth: 1.4 }}
                   connectNulls={false}
                   isAnimationActive={false}
                   onMouseEnter={() => setHoverCombo(cb.key)}
@@ -573,8 +613,8 @@ export function MarketTrendExplorer() {
                             x={x + 8}
                             y={y + 3.5}
                             fontSize={10}
-                            fontWeight={focal ? 700 : 600}
-                            fill={cb.company.color}
+                            fontWeight={singleCompany || focal ? 700 : 600}
+                            fill={color}
                             textAnchor="start"
                             style={{ fontVariantNumeric: 'tabular-nums' }}
                           >
@@ -598,17 +638,34 @@ export function MarketTrendExplorer() {
         ))}
       </div>
 
-      {/* ── Understanding the lenses — a soft teal/blue help box. ── */}
+      {/* ── Understanding the lenses — a soft teal/blue help box, two columns
+          that separate the share lenses from the premium lens. ── */}
       <div className="mt-3 rounded-xl border border-[#CFE7E4] bg-gradient-to-br from-[#F2FAF8] to-[#F4F8FD] p-3.5">
-        <div className="mb-1.5 flex items-center gap-1.5">
+        <div className="mb-2 flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-teal" />
           <p className="font-display text-[12.5px] text-navy-deep">Understanding the lenses</p>
         </div>
-        <ul className="grid gap-1 text-[11px] leading-relaxed text-ink-secondary sm:grid-cols-3">
-          <li><span className="font-semibold text-navy-deep">Share metrics</span> show an insurer&rsquo;s proportion of health premium in the relevant base.</li>
-          <li><span className="font-semibold text-navy-deep">GDPI Premium</span> shows premium scale and growth — not profit.</li>
-          <li>Higher is generally better, but mix and profitability still need separate analysis.</li>
-        </ul>
+        <div className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+          <div>
+            <p className="text-[11px] leading-relaxed text-ink-secondary">
+              <span className="font-semibold text-navy-deep">Share metrics</span> (SAHI Share, Retail Health Share, Overall Health Share) show an insurer&rsquo;s proportion of health premium in the relevant base.
+            </p>
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-teal-soft px-1.5 py-0.5 text-[9px] font-semibold text-teal ring-1 ring-[#BFE3E1]">
+              Higher is better
+            </span>
+          </div>
+          <div>
+            <p className="text-[11px] leading-relaxed text-ink-secondary">
+              <span className="font-semibold text-navy-deep">Premium metric</span> (GDPI Premium) shows total health premium written — premium scale and growth, not profit.
+            </p>
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ring-1" style={{ background: '#7A6CC41A', color: '#5A4EA0', borderColor: '#CFC8EC' }}>
+              Higher is better
+            </span>
+          </div>
+        </div>
+        <p className="mt-2 text-[10px] italic text-ink-secondary/80">
+          Higher is generally better, but mix and profitability still need separate analysis.
+        </p>
       </div>
 
       {/* Footer — one-line read + a single shared source (all from the DRHP). */}
