@@ -331,16 +331,30 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
   // An overlay entry can explicitly mark a value superseded (kept for the record).
   const overlaySuperseded = OVERLAY[`${company}::${m.key}::${year}`]?.superseded === true
 
-  const candidates = [overlayRef, fromStore(company, m, year), fromShare(company, m, year), fromAnnual(company, m, year)]
+  // Conflict policy: PREFER THE STORE. The Python value store is the stable,
+  // pipeline-extracted source of truth — when it carries a value, it is shown as
+  // primary and any disagreeing source (overlay/agent pull, DRHP series, annual
+  // snapshot) is KEPT as a flagged alternative rather than overriding it. Other
+  // sources only become primary where the store has no value (they fill gaps).
+  const storeRef = fromStore(company, m, year)
+  const storeHas = storeRef != null && storeRef.value != null
+  const others = [overlayRef, fromShare(company, m, year), fromAnnual(company, m, year)]
     .filter((c): c is SourceRef => c != null && c.value != null)
     .sort((a, b) => a.priority - b.priority)
 
-  if (candidates.length === 0) {
+  if (!storeHas && others.length === 0) {
     return { ...base, status: 'missing_in_source', value: null, chosen: null, competing: [], notes: 'Not found in currently fetched public source.' }
   }
 
-  const chosen = candidates[0]
-  const competing = candidates.slice(1).filter((c) => c.value != null && materiallyDifferent(c.value, chosen.value as number, m.unit))
+  let chosen: SourceRef
+  let competing: SourceRef[]
+  if (storeHas) {
+    chosen = storeRef as SourceRef
+    competing = others.filter((c) => materiallyDifferent(c.value as number, (storeRef as SourceRef).value as number, m.unit))
+  } else {
+    chosen = others[0]
+    competing = others.slice(1).filter((c) => materiallyDifferent(c.value as number, chosen.value as number, m.unit))
+  }
 
   let status: GridStatus = 'filled'
   let notes = chosen.note ?? ''
