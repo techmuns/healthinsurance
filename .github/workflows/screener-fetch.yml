@@ -30,6 +30,8 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - name: Run Screener backup fetch (India-IP proxy)
         env:
+          # Live network fetch (default is offline = staged-file only).
+          INGEST_OFFLINE: '0'
           # Build the scraperapi India-IP proxy template from the SCRAPER_KEY
           # secret — fetchBuffer() routes blocked hosts through {url}.
           INGEST_FETCH_PROXY: https://api.scraperapi.com/?api_key=${{ secrets.SCRAPER_KEY }}&country_code=in&url={url}
