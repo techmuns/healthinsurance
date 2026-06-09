@@ -1,12 +1,26 @@
 {
   "files": {
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf": {
+      "filename": "Investors-Presentation-Q4-FY2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "bytes": 3149256,
+      "sha256": "b0d733920dc90f83c65b5b8192ca9f74c80f34528dc2427cf8d0b742ae841cfe",
+      "fetched_at": "2026-06-09T13:22:25.228Z"
+    },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0": {
       "filename": "Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
       "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
       "bytes": 2048365,
       "sha256": "7b9136a33fa176aa93cdeb54cd3f0f72c65900ef7c142e7b141b7866bb1082ad",
       "fetched_at": "2026-06-09T12:47:48.662Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2023-24.pdf": {
+      "filename": "Annual-Report-FY-2023-24.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2023-24.pdf",
+      "bytes": 12482947,
+      "sha256": "a044d040e01bb00e0109a93bf87a3d2701ec283699f51be91466412a9d526249",
+      "fetched_at": "2026-06-09T13:22:20.256Z"
     }
   },
-  "updated_at": "2026-06-09T13:16:06.993Z"
+  "updated_at": "2026-06-09T13:22:25.229Z"
 }
