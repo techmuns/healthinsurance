@@ -6,7 +6,7 @@
     "dataset": "pending",
     "source_policy": "official-first (NSE). Investing.com is login-free backup only, tagged low-confidence.",
     "last_successful_run": null,
-    "parser_status": "blocked",
+    "parser_status": "pending",
     "notes": "WAF/IP blocks are expected from datacenter IPs; stage the official NSE price-volume CSV under data/raw/exchanges/<id>/ as a fallback."
   },
   "data": []
