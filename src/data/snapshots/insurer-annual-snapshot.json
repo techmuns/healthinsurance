@@ -101,7 +101,7 @@
       "gwp": 4073,
       "gross_direct_premium": 4073.03,
       "nwp": 3183.11,
-      "nep": 2841,
+      "nep": 2662.8,
       "pat": null,
       "revenue": null,
       "combined_ratio": 97,
@@ -120,7 +120,7 @@
       "employee_count": null,
       "distribution_summary": null,
       "provenance": {
-        "source_name": "Niva Bupa FY2024-25 Annual Report — Note 29 'Summary of Financial Statements' (5-year): Net Premium Income FY23 = 3,18,311 Lakhs → NWP 3,183.11 Cr (GWP 4,07,303 Lakhs). NEP 2,841 retained from prior FY2022-23 disclosure (not restated in this report). Claim settlement ratio 90.5% from the FY23→FY25 disclosed trend (90.5% / 91.9% / 92.4%).",
+        "source_name": "Niva Bupa FY2024-25 Annual Report — Note 29 'Summary of Financial Statements' (5-year): Net Premium Income FY23 = 3,18,311 Lakhs → NWP 3,183.11 Cr (GWP 4,07,303 Lakhs). NEP corrected to 2,662.8 Cr — the audited figure shown in the Q4 FY25 Investor Presentation KPI table and the IRDAI Mar-2024 disclosure (a prior 2,841 was a non-Revenue-Account basis). Claim settlement ratio 90.5% from the FY23→FY25 disclosed trend (90.5% / 91.9% / 92.4%).",
         "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/niva-bupa/niva-bupa-Annual-Report-FY-2024-25.pdf",
         "source_period": "FY23",
