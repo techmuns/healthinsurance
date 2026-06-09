@@ -1,6 +1,6 @@
 {
   "last_successful_run": "2026-06-04T07:11:34.420Z",
-  "last_failed_run": "2026-06-09T13:08:11.746Z",
+  "last_failed_run": "2026-06-09T13:12:05.411Z",
   "sources_checked": 7,
   "sources_success": 1,
   "sources_failed": 1,
@@ -244,7 +244,6 @@
     "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
     "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
     "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
-    "[moneycontrol_analyst] Broker Research page fetched but no broker cards matched (DOM may have changed).",
     "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W"
@@ -262,7 +261,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-09T13:07:34.687Z",
+      "last_attempt_at": "2026-06-09T13:11:25.925Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 403 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -410,28 +409,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-09T13:07:54.835Z",
+      "last_attempt_at": "2026-06-09T13:11:44.717Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-09T13:07:38.188Z",
+      "last_attempt_at": "2026-06-09T13:11:29.445Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "pending",
-      "last_attempt_at": "2026-06-09T13:07:48.090Z",
+      "last_attempt_at": "2026-06-09T13:11:38.815Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "blocked",
-      "last_attempt_at": "2026-06-09T13:07:38.090Z",
+      "last_attempt_at": "2026-06-09T13:11:29.362Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -445,14 +444,14 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-09T13:07:55.584Z",
-      "last_success_at": "2026-06-09T13:07:55.584Z",
-      "records_fetched": 0
+      "last_attempt_at": "2026-06-09T13:11:46.159Z",
+      "last_success_at": "2026-06-09T13:11:46.159Z",
+      "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-09T13:08:08.477Z",
+      "last_attempt_at": "2026-06-09T13:11:58.829Z",
       "last_success_at": null,
       "records_fetched": 0
     }
