@@ -13,8 +13,8 @@
     ],
     "dataset": "official",
     "last_updated": "2026-06-09",
-    "last_successful_run": "2026-06-09T12:36:27.339Z",
-    "last_fetched_at": "2026-06-09T12:36:27.339Z",
+    "last_successful_run": "2026-06-09T12:42:10.028Z",
+    "last_fetched_at": "2026-06-09T12:42:10.028Z",
     "parser_status": "ready",
     "notes": "Live Moneycontrol pull from: Moneycontrol Broker Research, Moneycontrol Price. Missing fields stay null (never fabricated)."
   },
