@@ -96,7 +96,10 @@ function currentBest(company: string, m: MetricDef, year: string): Candidate | n
   if (ov && num(ov.value) != null) out.push({ value: num(ov.value), priority: (ov.priority as number) ?? 1, source: 'overlay' })
   if (m.store) {
     const e = store[`${company}::${m.store}::${year}`]
-    if (e && num(e.normalized_value ?? e.raw_value) != null) out.push({ value: num(e.normalized_value ?? e.raw_value), priority: 1, source: 'value-store' })
+    let sv = e ? num(e.normalized_value ?? e.raw_value) : null
+    const su = ((e?.unit as string) ?? '').toLowerCase()
+    if (sv != null && m.unit === '%' && (su === 'fraction' || su === 'ratio')) sv = Math.round(sv * 1000) / 10
+    if (sv != null) out.push({ value: sv, priority: 1, source: 'value-store' })
   }
   if (m.share) {
     const row = shareRows.find((r) => r.company_id === company) as AnyEntry | undefined

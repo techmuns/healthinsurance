@@ -3,21 +3,21 @@
     "artifact": "audit-overlay",
     "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-09T11:57:20.637Z"
+    "updated_at": "2026-06-09T12:08:56.716Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
       "value": 9.4,
       "unit": "%",
-      "source_name": "Niva Bupa FY2024-25 Annual Report — Strategic Overview (retail health market share)",
-      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
-      "source_file": null,
-      "source_page": "Strategic Overview",
-      "fetched_at": "2026-06-09T11:57:20.637Z",
-      "confidence": "medium",
-      "priority": 2,
-      "layer": "staging",
-      "note": "Captured via the niva-fy25-financials agent pull (2026-06-09); stated in the FY24-25 annual report. Verify against the final report page."
+      "source_name": "Niva Bupa Investor Presentation Q4 FY2025 — Key Performance Indicators (2/3), retail health market share",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/agent-pulls/niva-fy25-financials/sources/Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Key Performance Indicators (2/3)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Official earnings presentation (filing date 2025-05-07), fetched via niva-fy25-financials GitHub Action."
     }
   }
 }

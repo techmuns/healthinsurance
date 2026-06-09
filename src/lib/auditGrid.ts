@@ -248,9 +248,14 @@ function fromStore(company: string, m: GridMetricDef, year: string): SourceRef |
   const e = STORE[`${company}::${m.store}::${year}`]
   if (!e) return null
   const conflicted = (e.conflict_status && e.conflict_status !== 'none') || (Array.isArray(e.competing_values) && e.competing_values.length > 0)
+  // The value store keeps ratios as fractions (0.61) / ratios (1.01); the grid
+  // displays percents, so scale ×100 when the target metric is a percent.
+  let value = num(e.normalized_value ?? e.raw_value)
+  const su = (e.unit ?? '').toLowerCase()
+  if (value != null && m.unit === '%' && (su === 'fraction' || su === 'ratio')) value = Math.round(value * 1000) / 10
   return {
-    value: num(e.normalized_value ?? e.raw_value),
-    unit: e.unit ?? m.unit,
+    value,
+    unit: m.unit,
     sourceName: e.source_name ?? null,
     sourceUrl: e.source_url ?? null,
     sourceFile: e.source_file ?? null,
