@@ -1,0 +1,66 @@
+name: sahi financials fetch
+
+# One standalone-health-insurer's financials at a time, via the muns chat agent.
+# Pick the company (and optionally the fiscal year) when dispatching. The raw
+# answer + source files land in data/agent-pulls/sahi-financials/<company>/.
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'SAHI to fetch'
+        required: true
+        default: 'star-health'
+        type: choice
+        options:
+          - star-health
+          - care-health
+          - aditya-birla
+          - manipalcigna
+          - niva-bupa
+      period:
+        description: 'Fiscal year (e.g. FY25)'
+        required: false
+        default: 'FY25'
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sahi-financials-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Pull SAHI financials + download sources
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+          FETCH_COMPANY_ID: ${{ inputs.company }}
+          FETCH_PERIOD: ${{ inputs.period }}
+        run: npx tsx scripts/ingest/sahi-financials-agent.ts
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/agent-pulls/sahi-financials
+          if git diff --staged --quiet; then echo "No change."; exit 0; fi
+          git commit -m "sahi-financials(${{ inputs.company }} ${{ inputs.period }}): agent pull @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1
