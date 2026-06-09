@@ -1,0 +1,48 @@
+name: screener fetch
+
+# Downloads the public Screener.in company pages (listed insurers: Niva Bupa,
+# Star Health, ...) via an India-IP scraper proxy, so the raw HTML can be parsed
+# locally for focused, one-cell-at-a-time backup values. Screener is BACKUP-tier
+# (confidence low) — only fills cells with no official equivalent.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screener-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Run Screener backup fetch (India-IP proxy)
+        env:
+          # Build the scraperapi India-IP proxy template from the SCRAPER_KEY
+          # secret — fetchBuffer() routes blocked hosts through {url}.
+          INGEST_FETCH_PROXY: https://api.scraperapi.com/?api_key=${{ secrets.SCRAPER_KEY }}&country_code=in&url={url}
+        run: npx tsx scripts/ingest/run-screener.ts
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/screener src/data/snapshots/screener-crosscheck-snapshot.json
+          if git diff --staged --quiet; then echo "No change."; exit 0; fi
+          git commit -m "screener: backup page fetch @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1
