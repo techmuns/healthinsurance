@@ -226,7 +226,7 @@ function cmdConflicts() {
     const best = currentBest(c, m, y)
     // compare overlay vs the best NON-overlay candidate
     const others: number[] = []
-    if (m.store) { const e = store[`${c}::${m.store}::${y}`]; const v = e ? num(e.normalized_value ?? e.raw_value) : null; if (v != null) others.push(v) }
+    if (m.store) { const e = store[`${c}::${m.store}::${y}`]; let v = e ? num(e.normalized_value ?? e.raw_value) : null; const su = ((e?.unit as string) ?? '').toLowerCase(); if (v != null && m.unit === '%' && (su === 'fraction' || su === 'ratio')) v = Math.round(v * 1000) / 10; if (v != null) others.push(v) }
     if (m.share) { const row = shareRows.find((r) => r.company_id === c) as AnyEntry | undefined; const v = num((row?.[m.share] as AnyEntry | undefined)?.[y]); if (v != null) others.push(v) }
     if (m.annual) { const row = annualRows.find((r) => r.company_id === c && r.fiscal_year === y) as AnyEntry | undefined; const v = num(row?.[m.annual]); if (v != null) others.push(v) }
     const tol = m.unit === '%' || m.unit === 'x' ? 0.1 : Math.max(Math.abs(ovVal), 1) * 0.01
