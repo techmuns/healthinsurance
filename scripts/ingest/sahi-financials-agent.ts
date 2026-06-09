@@ -51,18 +51,21 @@ interface ManifestEntry { filename: string; url: string; bytes: number; sha256: 
 interface Manifest { files: Record<string, ManifestEntry>; updated_at?: string }
 
 function buildPayload() {
+  const fyEndYear = 2000 + Number((PERIOD.match(/\d+/) || ['0'])[0]) // FY26 -> 2026
   const task =
-    `Pull the following financial data for ${COMPANY_NAME}, for ${PERIOD} (the financial year ended 31 March).\n\n` +
+    `Pull the following FULL-YEAR financial data for ${COMPANY_NAME}, for the financial year ${PERIOD} (the full year ended 31 March ${fyEndYear}).\n\n` +
     'Return it as a table with exactly these columns, in this order:\n\n' +
     'company | period | line_item | basis | value | unit | source_name | source_url | filing_date\n\n' +
     'Rules\n\nOne row per line item.\n' +
-    `period = ${PERIOD} for all rows.\n` +
+    `period = ${PERIOD} for all rows. These MUST be FULL-YEAR (annual) figures for the year ended 31 March ${fyEndYear}.\n` +
     'basis = IGAAP, IFRS, or — (use the value shown for each line item below).\n' +
     'value = the number only (no commas, no unit inside the cell). If a line item is not published, leave value blank — do not put 0 or an estimate.\n' +
     'unit = exactly as specified per line below (INR_crore, %, or x).\n' +
-    'source_name = the exact document (e.g. "<Company> FY24-25 Annual Report, p.XX" or "Investor Presentation Q4 FY25").\n' +
+    'source_name = the exact document (e.g. "<Company> FY24-25 Annual Report, p.XX" or "Investor Presentation Q4 FY26").\n' +
     'source_url = direct link to that document. filing_date = date of the source document, YYYY-MM-DD.\n' +
-    'Use the company\'s OWN official disclosures (annual report, investor presentation, public disclosures). If a figure is genuinely not published, leave value blank.\n\n' +
+    `IMPORTANT: use the company's FULL-YEAR source for ${PERIOD} — the Q4 / annual earnings presentation (e.g. "Earnings Presentation Q4 ${PERIOD}") or the annual report for the year ended 31 March ${fyEndYear}. ` +
+    'Do NOT use interim H1 / 9M / Q1 / Q2 / Q3 presentations — those are part-year and must not be used as the full-year value. ' +
+    'Open the actual PDF and read the figures; if the full-year figure is genuinely not published yet, leave value blank.\n\n' +
     'The line items (line_item | basis | unit):\n\n' +
     'Total GWP | IGAAP | INR_crore\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\n' +
     'Profit After Tax (PAT) | IGAAP | INR_crore\nProfit After Tax (PAT) | IFRS | INR_crore\n' +
