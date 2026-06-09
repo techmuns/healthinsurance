@@ -19,7 +19,7 @@ on:
           - manipalcigna
           - niva-bupa
       period:
-        description: 'Fiscal year (e.g. FY25)'
+        description: 'Fiscal year, e.g. FY25 (may add a short steering hint; it is slugified for filenames — keep it brief)'
         required: false
         default: 'FY25'
         type: string
