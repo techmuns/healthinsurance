@@ -1900,30 +1900,30 @@
       "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
     },
     "care-health::expense_ratio_igaap::FY25": {
-      "value": 38,
+      "value": 38.3,
       "unit": "%",
-      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 25) — Expense of Management to NWP (= Combined − Claims)",
-      "source_url": null,
-      "source_file": "data/raw/companies/care-health/care-health-PublicDisclosure_1756111277.pdf",
-      "source_page": "NL ratios (full-year)",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Expense Ratio FY25 = 38.3%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "official_filing",
-      "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
+      "layer": "company_filing",
+      "note": "I-GAAP expense ratio from the Religare deck (PPT-precise; prior 38%)."
     },
     "care-health::expense_ratio_igaap::FY26": {
-      "value": 37,
+      "value": 37.1,
       "unit": "%",
-      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 26) — Expense of Management to NWP (= Combined − Claims)",
-      "source_url": null,
-      "source_file": "data/raw/companies/care-health/care-health-Public_Disclosure_Website_Upload_1779524879.pdf",
-      "source_page": "NL ratios (full-year)",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Expense Ratio FY26 = 37.1%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "official_filing",
-      "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
+      "layer": "company_filing",
+      "note": "I-GAAP expense ratio from the Religare deck."
     },
     "care-health::commission_ratio_igaap::FY22": {
       "value": null,
@@ -2122,18 +2122,17 @@
       "display_tag": "Premium parse pending"
     },
     "care-health::total_gwp::FY26": {
-      "value": null,
-      "unit": "",
-      "source_name": "GWP YTD not cleanly parseable",
-      "source_url": null,
-      "source_file": null,
-      "source_page": null,
+      "value": 10416,
+      "unit": "INR_cr",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — GWP (1/n) FY26 = ₹10,416 Cr",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
       "fetched_at": "2026-06-09",
-      "confidence": null,
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "The NL-4 annual GWP total is spatially separated from its label in the disclosure text; extraction did not cross-validate for this year, so it is left unfilled rather than risk a wrong figure. FY24/FY25 are filled from the annual snapshot.",
-      "display_tag": "Premium parse pending"
+      "layer": "company_filing",
+      "note": "Gross Written Premium on the I-GAAP 1/n basis from the Religare investor presentation (n-basis is ₹11,417 Cr)."
     },
     "care-health::gross_direct_premium::FY22": {
       "value": null,
@@ -2387,18 +2386,17 @@
       "display_tag": "Prior-yr AR needed"
     },
     "care-health::settlement_ratio::FY26": {
-      "value": null,
-      "unit": "",
-      "source_name": "FY26 settlement not yet published",
-      "source_url": null,
-      "source_file": null,
-      "source_page": null,
+      "value": 97,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Claim Settlement Ratio FY26 ≈ 97%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
       "fetched_at": "2026-06-09",
-      "confidence": null,
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "Care’s FY26 settlement ratio is not in the available disclosure.",
-      "display_tag": "FY26 AR pending"
+      "layer": "company_filing",
+      "note": "Religare deck states a claim settlement ratio of >97% for Care Health in FY26 (rounded to 97%)."
     },
     "care-health::renewal_rate::FY22": {
       "value": null,
@@ -4026,6 +4024,71 @@
       "layer": "annotation",
       "note": "ManipalCigna disclosed customer retention only for FY25.",
       "display_tag": "FY25 only"
+    },
+    "care-health::total_gwp::FY25": {
+      "value": 8562,
+      "unit": "INR_cr",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — GWP (1/n) FY25 = ₹8,562 Cr",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "1/n GWP per the Religare deck (PPT); preferred over the prior 8,318 per the prefer-PPT rule."
+    },
+    "care-health::claims_ratio_igaap::FY26": {
+      "value": 69.6,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Claims Ratio FY26 = 69.6%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "I-GAAP claims ratio from the Religare deck."
+    },
+    "care-health::claims_ratio_igaap::FY25": {
+      "value": 64.5,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Claims Ratio FY25 = 64.5%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "I-GAAP claims ratio from the Religare deck (PPT-precise; prior store 65%)."
+    },
+    "care-health::combined_ratio_igaap::FY26": {
+      "value": 106.7,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Combined Ratio FY26 = 106.7%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "I-GAAP combined ratio from the Religare deck."
+    },
+    "care-health::combined_ratio_igaap::FY25": {
+      "value": 102.8,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation, I-GAAP 1/n basis) — Combined Ratio FY25 = 102.8%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Care Health Insurance — Business Overview (I-GAAP 1/n basis)",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "I-GAAP combined ratio from the Religare deck (PPT-precise; prior 103%)."
     }
   },
   "meta": {}
