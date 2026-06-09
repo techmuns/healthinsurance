@@ -1,29 +1,32 @@
-// Health Industry Insights — a chart-first, glanceable 2×2 panel.
+// Health Opportunity — an interactive line-chart comparison workbench.
 //
-// Four mini metric cards shown together as a clean 2×2 grid: SAHI Share
-// (top-left), Retail Health Share (top-right), Overall Health Share
-// (bottom-left) and GDPI Premium (bottom-right). (Company Premium Growth is
-// intentionally dropped from the primary view — it is a year-on-year derivative
-// of the GDPI premium series already shown here, so a fifth card would just
-// restate that trend and add clutter.)
+// One premium module that lets the reader compare ANY metric against ANY
+// insurer on a single canvas, instead of four disconnected mini charts:
+//   • a compact control bar — metric pills, multi-select company chips
+//     (doubling as the legend) and a view-mode switch;
+//   • one large comparison line chart where each (company × metric) pair is a
+//     clean line — Niva Bupa solid & strong, the rest softly dimmed, every line
+//     in its company's theme colour, with line style varying subtly per metric;
+//   • four compact summary cards (SAHI · Retail · Overall · GDPI) carrying Niva
+//     Bupa's FY24 value, its FY22–FY24 move and a tiny sparkline — no full chart.
 //
-// Each card is a simple grouped bar chart over the reported years (FY22–FY24):
-//   • one slim, soft-tinted bar per insurer, theme-coloured, grouped by year so
-//     companies compare easily side-by-side and year-on-year. No trend lines or
-//     overlays sit on top of the bars.
-// Hovering any insurer — a bar or its legend chip — isolates it across ALL FOUR
-// cards at once: the rest softly fade, so a single company's health story reads
-// cleanly on every lens. An elegant tooltip gives the exact values.
+// View modes:
+//   • Absolute        — raw values; only metrics that share a unit can sit on
+//                        one axis, so a mixed selection auto-switches to Indexed.
+//   • Indexed FY22=100 — every line rebased to 100 at the first year, so share
+//                        and premium can be compared on one scale.
+//   • YoY change      — year-on-year % move; the first year has no prior base.
 //
 // Honesty: years come from the data (never hardcoded), a null value is omitted
-// (never drawn as 0), and a metric with no data renders a plain "not available"
-// note rather than fabricated numbers.
+// (never drawn as 0 or indexed off a missing base), GDPI stays labelled a
+// premium (not profit), and an indexed view is always flagged as rebased.
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -42,166 +45,163 @@ import {
 
 const FOCAL = COMPANY_BY_ID[FOCAL_COMPANY_ID]
 
-// The four primary health lenses, shown together — from the narrow SAHI segment
+// The four health lenses offered for comparison — from the narrow SAHI segment
 // lens out to the rupee premium scale.
 const PRIMARY: MetricId[] = ['sahi_share', 'retail_share', 'overall_share', 'gdpi']
 
+// One soft dash signature per metric (colour stays the company's, so within a
+// single company several metrics read apart without a second colour scale).
+const DASH_BY_METRIC: Record<MetricId, string> = {
+  sahi_share: '',
+  retail_share: '5 3',
+  overall_share: '2 3',
+  gdpi: '7 3 1 3',
+  premium_growth: '1 4',
+}
+
+type ViewMode = 'absolute' | 'indexed' | 'yoy'
+
+const VIEW_MODES: { id: ViewMode; label: string }[] = [
+  { id: 'absolute', label: 'Absolute' },
+  { id: 'indexed', label: 'Indexed FY22 = 100' },
+  { id: 'yoy', label: 'YoY change' },
+]
+
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
+const round1 = (n: number) => Math.round(n * 10) / 10
 
-interface ChartModel {
-  years: string[]
-  data: Record<string, number | string | null>[]
+// ── A single (company × metric) line, with its absolute series + index base. ──
+interface Combo {
+  key: string
+  company: { id: string; name: string; color: string }
+  metric: MetricDef
+  abs: Map<string, number | null>
+  base: number | null
 }
 
-/** Flatten a metric's point list into recharts rows: one row per year carrying
- *  every company's value (null where the source has none — never coerced to 0). */
-function useChartModel(metric: MetricDef): ChartModel {
-  return useMemo(() => {
-    const years = sortYears(metric.points.map((p) => p.year))
-    const byYear = new Map<string, Map<string, number | null>>()
-    for (const p of metric.points) {
-      if (!byYear.has(p.year)) byYear.set(p.year, new Map())
-      byYear.get(p.year)!.set(p.company, p.value)
-    }
-    const data = years.map((y) => {
-      const row: Record<string, number | string | null> = { year: y }
-      for (const c of TREND_COMPANIES) row[c.id] = byYear.get(y)?.get(c.id) ?? null
-      return row
-    })
-    return { years, data }
-  }, [metric])
+/** Map a company's values for one metric into a year→value lookup. */
+function absLookup(companyId: string, metric: MetricDef): Map<string, number | null> {
+  const map = new Map<string, number | null>()
+  for (const p of metric.points) if (p.company === companyId) map.set(p.year, p.value)
+  return map
 }
 
-/** First→latest move for one company (over the years that actually carry data). */
+/** First→latest move for one company on a metric (over years that carry data). */
 function seriesStat(metric: MetricDef, companyId: string): { last: number | null; delta: number | null } {
-  const pts = metric.points.filter((p) => p.company === companyId)
-  const years = sortYears(pts.map((p) => p.year))
-  const at = new Map(pts.map((p) => [p.year, p.value]))
-  const first = years.map((y) => at.get(y)).find((v) => v != null) ?? null
-  const last = [...years].reverse().map((y) => at.get(y)).find((v) => v != null) ?? null
+  const map = absLookup(companyId, metric)
+  const years = sortYears(map.keys())
+  const first = years.map((y) => map.get(y)).find((v) => v != null) ?? null
+  const last = [...years].reverse().map((y) => map.get(y)).find((v) => v != null) ?? null
   const delta = first != null && last != null ? last - first : null
   return { last, delta }
 }
 
-// ── Elegant, de-duped tooltip — narrows to the hovered insurer when one is set. ──
+// ── Tooltip — company · metric · year · value (+ indexed value when rebased). ──
 interface TipProps {
   active?: boolean
   payload?: Array<{ dataKey?: string | number; value?: number | null }>
   label?: string | number
-  metric: MetricDef
-  hoverId: string | null
+  combos: Combo[]
+  mode: ViewMode
 }
-function MiniTooltip({ active, payload, label, metric, hoverId }: TipProps) {
+function ComparisonTooltip({ active, payload, label, combos, mode }: TipProps) {
   if (!active || !payload?.length) return null
-  const seen = new Set<string>()
-  let rows = payload
-    .filter((p) => p.value != null && p.dataKey != null)
-    .map((p) => ({ id: String(p.dataKey), value: p.value as number }))
-    .filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
-  if (hoverId) rows = rows.filter((r) => r.id === hoverId)
-  rows.sort((a, b) => b.value - a.value)
+  const byKey = new Map(combos.map((c) => [c.key, c]))
+  const year = String(label)
+  const rows = payload
+    .filter((p) => p.value != null && p.dataKey != null && byKey.has(String(p.dataKey)))
+    .map((p) => {
+      const cb = byKey.get(String(p.dataKey))!
+      return { cb, plotted: p.value as number, abs: cb.abs.get(year) ?? null }
+    })
+    .sort((a, b) => b.plotted - a.plotted)
   if (!rows.length) return null
   return (
     <div className="rounded-lg border border-soft-border bg-card/95 px-2.5 py-1.5 shadow-card backdrop-blur-sm">
-      <div className="mb-1 text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</div>
-      <div className="space-y-0.5">
-        {rows.map((r) => {
-          const c = COMPANY_BY_ID[r.id]
-          return (
-            <div key={r.id} className="flex items-center justify-between gap-3 text-[10.5px]">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full" style={{ background: c?.color }} />
-                <span className="text-ink-primary">{c?.name ?? r.id}</span>
+      <div className="mb-1 text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{year}</div>
+      <div className="space-y-1">
+        {rows.map(({ cb, plotted, abs }) => (
+          <div key={cb.key} className="flex items-center justify-between gap-4 text-[10.5px]">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cb.company.color }} />
+              <span className="truncate text-ink-primary">
+                <span className="font-semibold">{cb.company.name}</span>
+                <span className="text-ink-secondary"> · {cb.metric.chip}</span>
               </span>
-              <span className="font-semibold tabular-nums text-navy-deep">{metric.format(r.value)}</span>
-            </div>
-          )
-        })}
+            </span>
+            <span className="shrink-0 font-semibold tabular-nums text-navy-deep">
+              {mode === 'yoy'
+                ? `${plotted >= 0 ? '+' : ''}${plotted.toFixed(1)}%`
+                : abs != null
+                  ? cb.metric.format(abs)
+                  : '—'}
+              {mode === 'indexed' && (
+                <span className="ml-1 font-medium text-ink-secondary">· {plotted.toFixed(0)} idx</span>
+              )}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-function MiniMetricCard({
-  metric,
-  hoverId,
-  setHover,
-}: {
-  metric: MetricDef
-  hoverId: string | null
-  setHover: (id: string | null) => void
-}) {
-  const { data } = useChartModel(metric)
+// ── Tiny inline sparkline (Niva Bupa's trend) for the summary cards. ──
+function Sparkline({ values, color }: { values: (number | null)[]; color: string }) {
+  const pts = values.map((v, i) => ({ v, i })).filter((p): p is { v: number; i: number } => p.v != null)
+  if (pts.length < 2) return null
+  const w = 56
+  const h = 20
+  const xs = values.length - 1 || 1
+  const min = Math.min(...pts.map((p) => p.v))
+  const max = Math.max(...pts.map((p) => p.v))
+  const span = max - min || 1
+  const xy = (p: { v: number; i: number }) => ({
+    x: (p.i / xs) * w,
+    y: h - ((p.v - min) / span) * h,
+  })
+  const d = pts.map((p, k) => `${k ? 'L' : 'M'}${xy(p).x.toFixed(1)} ${xy(p).y.toFixed(1)}`).join(' ')
+  const end = xy(pts[pts.length - 1])
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="overflow-visible" aria-hidden>
+      <path d={d} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" opacity={0.85} />
+      <circle cx={end.x} cy={end.y} r={1.9} fill={color} />
+    </svg>
+  )
+}
+
+function SummaryCard({ metric }: { metric: MetricDef }) {
   const { last, delta } = seriesStat(metric, FOCAL_COMPANY_ID)
-  const basis = metric.unit === '%' ? '% share' : `${metric.unit} · premium`
+  const years = sortYears(metric.points.map((p) => p.year))
+  const map = absLookup(FOCAL_COMPANY_ID, metric)
+  const values = years.map((y) => map.get(y) ?? null)
+  const unit = metric.unit === '%' ? '% share' : metric.unit
 
   return (
-    <div className="surface-soft flex h-full flex-col rounded-xl p-3">
-      {/* Card header — metric name + the focal insurer's latest value & move. */}
-      <div className="mb-1.5 flex items-start justify-between gap-2">
+    <div className="surface-soft flex h-full flex-col justify-between rounded-xl p-3">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-display text-[12.5px] leading-tight text-navy-deep">{metric.chip}</p>
-          <p className="text-[9px] uppercase tracking-wide text-ink-secondary">{basis} · FY22–FY24</p>
+          <p className="truncate font-display text-[12px] leading-tight text-navy-deep">{metric.chip}</p>
+          <p className="text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit} · FY22–FY24</p>
         </div>
-        {last != null && (
-          <div className="shrink-0 text-right leading-none">
-            <p className="text-[8px] font-semibold uppercase tracking-wide" style={{ color: FOCAL.color }}>
-              {FOCAL.name}
-            </p>
-            <p className="mt-0.5 text-[13px] font-semibold tabular-nums" style={{ color: FOCAL.color }}>
-              {metric.format(last)}
-            </p>
-            {delta != null && (
-              <p className={`mt-0.5 text-[9px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
-                {metric.formatDelta(delta)}
-              </p>
-            )}
-          </div>
+        <Sparkline values={values} color={FOCAL.color} />
+      </div>
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <div>
+          <p className="text-[8px] font-semibold uppercase tracking-wide" style={{ color: FOCAL.color }}>
+            {FOCAL.name} · FY24
+          </p>
+          <p className="mt-0.5 text-[15px] font-semibold tabular-nums" style={{ color: FOCAL.color }}>
+            {last != null ? metric.format(last) : 'n/a'}
+          </p>
+        </div>
+        {delta != null && (
+          <p className={`text-[10px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
+            {metric.formatDelta(delta)}
+          </p>
         )}
       </div>
-
-      {metric.available ? (
-        <div className="h-[150px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 6, right: 6, left: 6, bottom: 0 }}
-              barCategoryGap="26%"
-              barGap={1.5}
-              onMouseLeave={() => setHover(null)}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
-              <XAxis dataKey="year" tick={{ fontSize: 9.5, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
-              <YAxis hide domain={[0, 'auto']} />
-              <Tooltip cursor={{ fill: 'rgba(23,43,77,0.045)' }} content={<MiniTooltip metric={metric} hoverId={hoverId} />} />
-
-              {/* company-wise grouped bars — soft, tinted magnitude layer (the
-                  focal insurer reads a touch stronger so the eye lands there
-                  first). No lines or overlays sit on top of the bars. */}
-              {TREND_COMPANIES.map((c) => {
-                const isFocal = c.id === FOCAL_COMPANY_ID
-                return (
-                  <Bar
-                    key={`b-${c.id}`}
-                    dataKey={c.id}
-                    fill={c.color}
-                    fillOpacity={hoverId ? (hoverId === c.id ? 0.9 : 0.1) : isFocal ? 0.62 : 0.4}
-                    radius={[2, 2, 0, 0]}
-                    maxBarSize={13}
-                    isAnimationActive={false}
-                    onMouseEnter={() => setHover(c.id)}
-                  />
-                )
-              })}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-        <div className="flex h-[140px] items-center justify-center rounded-lg border border-dashed border-soft-border bg-ice/50 text-center text-[10.5px] text-ink-secondary">
-          Data not publicly available
-        </div>
-      )}
     </div>
   )
 }
@@ -214,8 +214,91 @@ const PANEL_SOURCE = {
 }
 
 export function MarketTrendExplorer() {
-  const [hoverId, setHover] = useState<string | null>(null)
-  const metrics = PRIMARY.map((id) => METRICS[id])
+  const [companySet, setCompanySet] = useState<Set<string>>(() => new Set([FOCAL_COMPANY_ID]))
+  const [metricSet, setMetricSet] = useState<Set<MetricId>>(() => new Set(PRIMARY))
+  const [mode, setMode] = useState<ViewMode>('indexed')
+  // Hover isolation: a specific line (combo key) or a whole company (legend chip).
+  const [hoverCombo, setHoverCombo] = useState<string | null>(null)
+  const [hoverCompany, setHoverCompany] = useState<string | null>(null)
+
+  // Ordered, de-duped selections (stable colours/dashes regardless of click order).
+  const selCompanies = TREND_COMPANIES.filter((c) => companySet.has(c.id))
+  const selMetrics = PRIMARY.filter((m) => metricSet.has(m)).map((id) => METRICS[id])
+
+  // Absolute can only stack metrics that share a unit — a mixed selection (e.g.
+  // a % share alongside ₹ Bn GDPI) auto-switches to Indexed so the lines stay
+  // honestly comparable on one axis.
+  const units = new Set(selMetrics.map((m) => m.unit))
+  const mixedUnits = units.size > 1
+  useEffect(() => {
+    if (mode === 'absolute' && mixedUnits) setMode('indexed')
+  }, [mode, mixedUnits])
+
+  const years = useMemo(
+    () => sortYears(selMetrics.flatMap((m) => m.points.map((p) => p.year))),
+    [selMetrics],
+  )
+
+  const combos: Combo[] = useMemo(() => {
+    const out: Combo[] = []
+    for (const c of selCompanies) {
+      for (const m of selMetrics) {
+        const abs = absLookup(c.id, m)
+        const base = years.map((y) => abs.get(y)).find((v) => v != null) ?? null
+        out.push({ key: `${c.id}__${m.id}`, company: c, metric: m, abs, base })
+      }
+    }
+    return out
+    // selCompanies/selMetrics are derived fresh each render; gate on the sets.
+  }, [companySet, metricSet, years])
+
+  // Build the chart rows: one per year carrying every combo's value in the
+  // active view (null stays null — never coerced, never indexed off a gap).
+  const data = useMemo(() => {
+    return years.map((y, i) => {
+      const row: Record<string, number | string | null> = { year: y }
+      for (const cb of combos) {
+        const v = cb.abs.get(y) ?? null
+        let out: number | null = null
+        if (v != null) {
+          if (mode === 'absolute') out = v
+          else if (mode === 'indexed') out = cb.base ? round1((v / cb.base) * 100) : null
+          else if (mode === 'yoy' && i > 0) {
+            const prev = cb.abs.get(years[i - 1]) ?? null
+            out = prev != null && prev !== 0 ? round1(((v - prev) / prev) * 100) : null
+          }
+        }
+        row[cb.key] = out
+      }
+      return row
+    })
+  }, [combos, years, mode])
+
+  const anyHover = hoverCombo != null || hoverCompany != null
+  const isActive = (cb: Combo) =>
+    hoverCombo ? cb.key === hoverCombo : hoverCompany ? cb.company.id === hoverCompany : true
+
+  // Toggle helpers — never let the canvas go fully blank (keep ≥1 each).
+  const toggleCompany = (id: string) =>
+    setCompanySet((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        if (next.size > 1) next.delete(id)
+      } else next.add(id)
+      return next
+    })
+  const toggleMetric = (id: MetricId) =>
+    setMetricSet((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        if (next.size > 1) next.delete(id)
+      } else next.add(id)
+      return next
+    })
+
+  const absUnit = selMetrics[0]?.unit ?? '%'
+  const yTick = (v: number) =>
+    mode === 'indexed' ? `${v}` : mode === 'yoy' ? `${v}%` : absUnit === '%' ? `${v}%` : `₹${v}`
 
   return (
     <div className="card-surface flex h-full min-w-0 flex-col p-5 sm:p-6">
@@ -234,48 +317,186 @@ export function MarketTrendExplorer() {
         </p>
       </header>
 
-      {/* Shared legend — hover an insurer to isolate it across all four cards. */}
-      <div className="mb-3 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-        {TREND_COMPANIES.map((c) => {
-          const on = hoverId === c.id
-          const dim = hoverId != null && !on
-          const focal = c.id === FOCAL_COMPANY_ID
-          return (
-            <button
-              key={c.id}
-              type="button"
-              onMouseEnter={() => setHover(c.id)}
-              onMouseLeave={() => setHover(null)}
-              onFocus={() => setHover(c.id)}
-              onBlur={() => setHover(null)}
-              className={[
-                'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] transition-all duration-200',
-                on ? 'border-muted-blue bg-white shadow-soft' : 'border-soft-border bg-white/60',
-                dim ? 'opacity-45' : 'opacity-100',
-              ].join(' ')}
-              aria-pressed={on}
-            >
-              <span className="h-2 w-2 rounded-full" style={{ background: c.color }} />
-              <span className={focal ? 'font-semibold text-navy-deep' : 'font-medium text-ink-secondary'}>{c.name}</span>
-            </button>
-          )
-        })}
+      {/* ── Control bar — metrics, companies (legend = selector), view mode. ── */}
+      <div className="mb-3 space-y-2.5 rounded-xl border border-soft-border bg-ice/40 p-3">
+        {/* Metric pills */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Metric</span>
+          {PRIMARY.map((id) => {
+            const m = METRICS[id]
+            const on = metricSet.has(id)
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => toggleMetric(id)}
+                aria-pressed={on}
+                className={[
+                  'rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
+                  on
+                    ? 'border-muted-blue bg-white text-navy-deep shadow-soft'
+                    : 'border-soft-border bg-white/40 text-ink-secondary hover:bg-white/70',
+                ].join(' ')}
+              >
+                {m.chip}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Company chips — the legend, now a multi-select. Click toggles; hover
+            isolates that insurer across the chart. */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Insurer</span>
+          {TREND_COMPANIES.map((c) => {
+            const on = companySet.has(c.id)
+            const hot = hoverCompany === c.id
+            const dim = hoverCompany != null && !hot
+            const focal = c.id === FOCAL_COMPANY_ID
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => toggleCompany(c.id)}
+                onMouseEnter={() => setHoverCompany(c.id)}
+                onMouseLeave={() => setHoverCompany(null)}
+                onFocus={() => setHoverCompany(c.id)}
+                onBlur={() => setHoverCompany(null)}
+                aria-pressed={on}
+                className={[
+                  'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] transition-all duration-200',
+                  on ? 'border-muted-blue bg-white shadow-soft' : 'border-soft-border bg-white/40',
+                  dim ? 'opacity-45' : 'opacity-100',
+                ].join(' ')}
+              >
+                <span
+                  className="h-2 w-2 rounded-full transition-all"
+                  style={{ background: c.color, opacity: on ? 1 : 0.3 }}
+                />
+                <span
+                  className={[
+                    focal ? 'font-semibold' : 'font-medium',
+                    on ? 'text-navy-deep' : 'text-ink-secondary line-through decoration-1',
+                  ].join(' ')}
+                >
+                  {c.name}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* View mode */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">View</span>
+          <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-white/60">
+            {VIEW_MODES.map((vm) => {
+              const on = mode === vm.id
+              const disabled = vm.id === 'absolute' && mixedUnits
+              return (
+                <button
+                  key={vm.id}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => setMode(vm.id)}
+                  title={disabled ? 'Select metrics that share a unit to compare absolute values' : undefined}
+                  className={[
+                    'px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
+                    on ? 'bg-navy-deep text-white' : 'text-ink-secondary hover:bg-white',
+                    disabled ? 'cursor-not-allowed opacity-40' : '',
+                  ].join(' ')}
+                >
+                  {vm.label}
+                </button>
+              )
+            })}
+          </div>
+          {mode === 'indexed' && (
+            <span className="text-[9.5px] italic text-ink-secondary">Indexed to FY22 = 100 for cross-metric comparison.</span>
+          )}
+        </div>
       </div>
 
-      {/* Mini metric cards — a clean, equal-height 2×2 grid on tablet/desktop
-          (SAHI · Retail · Overall · GDPI), stacked on mobile. All four health
-          lenses sit in view at a glance, with no horizontal crowding. */}
-      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2">
-        {metrics.map((m) => (
-          <MiniMetricCard key={m.id} metric={m} hoverId={hoverId} setHover={setHover} />
+      {/* ── Large comparison line chart ── */}
+      <div className="h-[244px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 8, right: 10, left: 4, bottom: 0 }} onMouseLeave={() => setHoverCombo(null)}>
+            <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
+            <XAxis dataKey="year" tick={{ fontSize: 10, fill: AXIS }} tickLine={false} axisLine={{ stroke: GRID }} />
+            <YAxis
+              width={34}
+              tick={{ fontSize: 9, fill: AXIS }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={yTick}
+              domain={mode === 'yoy' ? ['auto', 'auto'] : ['auto', 'auto']}
+            />
+            <Tooltip
+              cursor={{ stroke: '#C9D2E0', strokeWidth: 1, strokeDasharray: '3 3' }}
+              content={<ComparisonTooltip combos={combos} mode={mode} />}
+            />
+            {mode === 'indexed' && <ReferenceLine y={100} stroke="#C9D2E0" strokeDasharray="4 4" />}
+            {mode === 'yoy' && <ReferenceLine y={0} stroke="#C9D2E0" strokeDasharray="4 4" />}
+
+            {/* Transparent thick hit-lines so a thin line is easy to hover/isolate. */}
+            {combos.map((cb) => (
+              <Line
+                key={`hit-${cb.key}`}
+                type="monotone"
+                dataKey={cb.key}
+                stroke="transparent"
+                strokeWidth={14}
+                dot={false}
+                activeDot={false}
+                connectNulls
+                isAnimationActive={false}
+                tooltipType="none"
+                legendType="none"
+                onMouseEnter={() => setHoverCombo(cb.key)}
+                onMouseLeave={() => setHoverCombo(null)}
+              />
+            ))}
+
+            {/* Visible lines — Niva Bupa solid & strong, others softly dimmed;
+                colour = company, dash = metric. */}
+            {combos.map((cb) => {
+              const focal = cb.company.id === FOCAL_COMPANY_ID
+              const active = isActive(cb)
+              const opacity = anyHover ? (active ? 1 : 0.1) : focal ? 1 : 0.5
+              const width = anyHover && active ? 2.6 : focal ? 2.2 : 1.5
+              return (
+                <Line
+                  key={`l-${cb.key}`}
+                  type="monotone"
+                  dataKey={cb.key}
+                  stroke={cb.company.color}
+                  strokeWidth={width}
+                  strokeOpacity={opacity}
+                  strokeDasharray={DASH_BY_METRIC[cb.metric.id] || undefined}
+                  dot={false}
+                  activeDot={anyHover && !active ? false : { r: 3, fill: cb.company.color, stroke: '#fff', strokeWidth: 1.2 }}
+                  connectNulls={false}
+                  isAnimationActive={false}
+                  onMouseEnter={() => setHoverCombo(cb.key)}
+                />
+              )
+            })}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ── Four compact summary cards — Niva Bupa at a glance, no full chart. ── */}
+      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {PRIMARY.map((id) => (
+          <SummaryCard key={id} metric={METRICS[id]} />
         ))}
       </div>
 
       {/* Footer — one-line read + a single shared source (all from the DRHP). */}
       <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pt-4">
-        <p className="max-w-sm text-[11px] leading-relaxed text-ink-secondary">
+        <p className="max-w-md text-[11px] leading-relaxed text-ink-secondary">
           <span className="font-semibold text-navy-deep">Read it — </span>
-          bars compare insurers within each year and across FY22–FY24. Hover one to isolate it across all four lenses.
+          pick insurers and metrics, then choose a view. Indexed rebases every line to FY22 = 100 so share and premium move on one scale; hover a line to isolate it.
         </p>
         <SourceTag source="Company filing" period="FY22–FY24" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
       </div>
