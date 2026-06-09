@@ -64,7 +64,15 @@ const overlay = (JSON.parse(readFileSync(resolve(REPO, 'src/data/snapshots/audit
 const shareRows = (JSON.parse(readFileSync(resolve(REPO, 'src/data/snapshots/sahi-share-history.json'), 'utf8')).data as Array<Record<string, unknown>>)
 const annualRows = (JSON.parse(readFileSync(resolve(REPO, 'src/data/snapshots/insurer-annual-snapshot.json'), 'utf8')).data as Array<Record<string, unknown>>)
 const SHARE_FIELD: Record<string, string> = { sahi_segment_share: 'segment_share_pct', retail_health_market_share: 'retail_share_pct', overall_health_market_share: 'overall_share_pct' }
-const ANNUAL_FIELD: Record<string, string> = { settlement_ratio: 'claims_settlement_ratio', renewal_rate: 'renewal_rate', customer_retention: 'customer_retention' }
+// Annual-snapshot fields the grid already reads — including the premium lines.
+// gross_direct_premium / nwp / nep here are the audited annual-report (IRDAI
+// 1/n) figures and are authoritative; the backfill must treat these cells as
+// already filled and never overwrite them with a weaker disclosure pull.
+const ANNUAL_FIELD: Record<string, string> = {
+  settlement_ratio: 'claims_settlement_ratio', renewal_rate: 'renewal_rate', customer_retention: 'customer_retention',
+  total_gwp: 'gwp', gross_direct_premium: 'gross_direct_premium', nwp: 'nwp', nep: 'nep',
+  pat_igaap: 'pat', combined_ratio_igaap: 'combined_ratio', expense_ratio_igaap: 'expense_ratio', solvency_ratio: 'solvency_ratio',
+}
 
 function alreadyFilled(metric: string, year: string): boolean {
   const s = storeIdx[`${SLUG}::${metric}::${year}`]
@@ -162,6 +170,11 @@ async function main() {
       const nums = readLakhs(text.slice(pi + 28, pi + 220), 4)
       if (nums.length >= 2 && Math.abs(nums[1] * 0.01) < 5000) patByYear[fy] = { value: +(nums[1] * 0.01).toFixed(2), file: DISCLOSURE[fy] }
     }
+    // NOTE: a disclosure "Gross Direct Premium" extractor was trialled here but
+    // read systematically ~2% below the audited annual-report 1/n figures
+    // (e.g. FY25 6,616 vs the authoritative 6,762) — wrong column/sub-line — so
+    // it was removed. gross_direct_premium / NWP are already carried on the
+    // correct 1/n basis by the annual snapshot; the backfill leaves them alone.
   }
   // Self-validation gate: only trust the PAT column if FY25 reconciles to ~214.
   const patReliable = patByYear.FY25 != null && Math.abs(patByYear.FY25.value - 214) <= 6
@@ -225,7 +238,7 @@ async function main() {
       if (['claims_ratio_igaap', 'combined_ratio_igaap', 'commission_ratio_igaap', 'expense_ratio_igaap'].includes(metric)) {
         record(metric, year, { extraction_status: hasDisc ? 'basis_mismatch' : 'source_not_fetched', attempted_sources: ['irdai_public_disclosure'],
           reason_if_not_filled: hasDisc ? 'Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.' : 'No annual-report / full-year-ratio source for this year in the repo.' })
-      } else if (['total_gwp', 'gross_direct_premium', 'nwp', 'pat_igaap', 'pat_ifrs', 'net_worth_ifrs'].includes(metric)) {
+      } else if (['total_gwp', 'gross_direct_premium', 'nwp', 'pat_ifrs', 'net_worth_ifrs'].includes(metric)) {
         record(metric, year, { extraction_status: hasDisc ? 'missing_in_source' : 'source_not_fetched', attempted_sources: ['irdai_public_disclosure', 'annual_report'],
           reason_if_not_filled: hasDisc ? 'Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.' : 'Annual report / disclosure for this year not downloaded in the repo.' })
       } else {

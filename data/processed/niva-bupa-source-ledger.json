@@ -1,7 +1,7 @@
 {
   "_meta": {
     "company": "Niva Bupa",
-    "generated_at": "2026-06-09T14:24:39.324Z",
+    "generated_at": "2026-06-09T14:41:01.971Z",
     "note": "Per-cell backfill evidence for Niva Bupa. Real data only; honest status per cell."
   },
   "data": [
@@ -19,7 +19,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -35,7 +35,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -51,26 +51,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY22",
       "metric_key": "gross_direct_premium",
       "metric_name": "Gross direct premium",
-      "attempted_sources": [
-        "irdai_public_disclosure",
-        "annual_report"
-      ],
-      "selected_source": null,
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -86,25 +83,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY22",
       "metric_key": "pat_igaap",
       "metric_name": "PAT (IGAAP)",
-      "attempted_sources": [
-        "irdai_public_disclosure"
-      ],
-      "selected_source": "IRDAI public disclosure — P&L Profit/(Loss) after tax (full-year, 1/n basis)",
-      "selected_value": -196.53,
-      "unit": "INR_cr",
-      "source_url_or_file": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Mar-2022.pdf",
-      "page_or_section": "Profit & Loss · Profit/(Loss) after tax (YTD column)",
-      "extracted_snippet": "Profit/(Loss) after tax, full-year FY22 = -196.53 Cr",
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
+      "selected_value": null,
+      "unit": "",
+      "source_url_or_file": null,
+      "page_or_section": null,
+      "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -123,7 +118,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -141,7 +136,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -157,7 +152,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -175,7 +170,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -193,7 +188,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -209,7 +204,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -228,7 +223,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -244,7 +239,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -260,7 +255,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -276,7 +271,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -292,7 +287,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -308,7 +303,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -324,7 +319,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -340,7 +335,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -356,7 +351,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -372,26 +367,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY23",
       "metric_key": "gross_direct_premium",
       "metric_name": "Gross direct premium",
-      "attempted_sources": [
-        "irdai_public_disclosure",
-        "annual_report"
-      ],
-      "selected_source": null,
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -407,25 +399,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY23",
       "metric_key": "pat_igaap",
       "metric_name": "PAT (IGAAP)",
-      "attempted_sources": [
-        "irdai_public_disclosure"
-      ],
-      "selected_source": "IRDAI public disclosure — P&L Profit/(Loss) after tax (full-year, 1/n basis)",
-      "selected_value": 12.54,
-      "unit": "INR_cr",
-      "source_url_or_file": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf",
-      "page_or_section": "Profit & Loss · Profit/(Loss) after tax (YTD column)",
-      "extracted_snippet": "Profit/(Loss) after tax, full-year FY23 = 12.54 Cr",
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
+      "selected_value": null,
+      "unit": "",
+      "source_url_or_file": null,
+      "page_or_section": null,
+      "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -441,7 +431,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -459,7 +449,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -475,7 +465,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -493,7 +483,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -511,7 +501,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -527,7 +517,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -546,7 +536,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -562,7 +552,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -578,7 +568,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -594,7 +584,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -602,15 +592,15 @@
       "metric_key": "settlement_ratio",
       "metric_name": "Claim settlement ratio",
       "attempted_sources": [],
-      "selected_source": null,
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -626,7 +616,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -642,7 +632,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -658,7 +648,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -674,7 +664,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -690,26 +680,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY24",
       "metric_key": "gross_direct_premium",
       "metric_name": "Gross direct premium",
-      "attempted_sources": [
-        "irdai_public_disclosure",
-        "annual_report"
-      ],
-      "selected_source": null,
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -725,7 +712,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -741,7 +728,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -757,7 +744,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -773,7 +760,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -789,7 +776,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -805,7 +792,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -821,7 +808,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -837,7 +824,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -856,7 +843,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -872,7 +859,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -888,7 +875,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -904,7 +891,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -912,15 +899,15 @@
       "metric_key": "settlement_ratio",
       "metric_name": "Claim settlement ratio",
       "attempted_sources": [],
-      "selected_source": null,
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -936,7 +923,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -952,7 +939,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -968,7 +955,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -984,7 +971,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1000,26 +987,23 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY25",
       "metric_key": "gross_direct_premium",
       "metric_name": "Gross direct premium",
-      "attempted_sources": [
-        "irdai_public_disclosure",
-        "annual_report"
-      ],
-      "selected_source": null,
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
       "selected_value": null,
       "unit": "",
       "source_url_or_file": null,
       "page_or_section": null,
       "extracted_snippet": null,
-      "extraction_status": "missing_in_source",
-      "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "extraction_status": "filled",
+      "reason_if_not_filled": null,
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1035,7 +1019,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1051,7 +1035,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1067,7 +1051,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1083,7 +1067,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1099,7 +1083,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1115,7 +1099,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1131,7 +1115,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1147,7 +1131,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1163,7 +1147,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1179,7 +1163,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1195,7 +1179,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1211,7 +1195,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1227,7 +1211,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1243,7 +1227,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1259,7 +1243,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1275,7 +1259,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1291,7 +1275,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1310,7 +1294,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1329,7 +1313,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1348,25 +1332,23 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
       "fiscal_year": "FY26",
       "metric_key": "pat_igaap",
       "metric_name": "PAT (IGAAP)",
-      "attempted_sources": [
-        "irdai_public_disclosure"
-      ],
-      "selected_source": "IRDAI public disclosure — P&L Profit/(Loss) after tax (full-year, 1/n basis)",
-      "selected_value": 130.78,
-      "unit": "INR_cr",
-      "source_url_or_file": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf",
-      "page_or_section": "Profit & Loss · Profit/(Loss) after tax (YTD column)",
-      "extracted_snippet": "Profit/(Loss) after tax, full-year FY26 = 130.78 Cr",
+      "attempted_sources": [],
+      "selected_source": "existing (value store / GI Council / DRHP)",
+      "selected_value": null,
+      "unit": "",
+      "source_url_or_file": null,
+      "page_or_section": null,
+      "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1382,7 +1364,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1398,7 +1380,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1414,7 +1396,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1432,7 +1414,7 @@
       "extracted_snippet": null,
       "extraction_status": "basis_mismatch",
       "reason_if_not_filled": "Disclosure carries the standalone-quarter ratio, not the full-year ratio that the FY25 cell uses — basis would mismatch; needs the annual report full-year ratio.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1448,7 +1430,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1464,7 +1446,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1483,7 +1465,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "Source present but the available NL-1/disclosure parser does not emit this line on a full-year basis; needs an annual-report table parse.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1499,7 +1481,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1515,7 +1497,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1531,7 +1513,7 @@
       "extracted_snippet": null,
       "extraction_status": "filled",
       "reason_if_not_filled": null,
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1547,7 +1529,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1563,7 +1545,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     },
     {
       "company": "Niva Bupa",
@@ -1579,7 +1561,7 @@
       "extracted_snippet": null,
       "extraction_status": "missing_in_source",
       "reason_if_not_filled": "No traceable source for this metric/year among the downloaded files.",
-      "last_attempted_at": "2026-06-09T14:24:39.324Z"
+      "last_attempted_at": "2026-06-09T14:41:01.971Z"
     }
   ]
 }
