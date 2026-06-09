@@ -119,25 +119,23 @@ function IndustryInsightsPage() {
   return (
     <div className="space-y-6">
       {/* A · Overall Industry View — hero + market-structure snapshot + GI pool. */}
-      <ExecutiveOverview view="industry" />
+      <ExecutiveOverview />
 
-      {/* B · SAHI Analysis — the health drilldown, one connected block:
-            1) health-share charts (share within SAHI, retail, overall, GDPI),
-            2) the company-specific insurer comparison.
-            (A company read / investor interpretation is a planned third layer.) */}
+      {/* B · SAHI Analysis — the health drilldown: the health-share & premium
+            workbench. (Insurer-by-insurer peer analysis now lives in
+            SAHI Analysis › Peer Positioning.) */}
       <section>
         <div className="mb-4 mt-1 flex items-center gap-2.5 border-t border-soft-border pt-5">
           <span className="h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
           <div className="leading-tight">
             <p className="font-display text-[17px] text-navy-deep">SAHI Analysis</p>
             <p className="text-[11.5px] text-ink-secondary">
-              Inside health — share &amp; premium trends across the standalone insurers (SAHI), then insurer by insurer
+              Inside health — share &amp; premium trends across the standalone insurers (SAHI)
             </p>
           </div>
         </div>
         <div className="space-y-6">
           <MarketTrendExplorer />
-          <ExecutiveOverview view="sahi" />
         </div>
       </section>
     </div>

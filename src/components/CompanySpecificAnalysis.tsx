@@ -14,9 +14,10 @@
 import { useMemo, useState } from 'react'
 import {
   CartesianGrid,
+  Area,
+  ComposedChart,
   LabelList,
   Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -193,10 +194,18 @@ function MarketShareTrend() {
     )
   }
 
+  const focalColor = TREND_COMPANIES.find((c) => c.id === FOCAL_COMPANY_ID)?.color ?? '#27457E'
+
   return (
     <div className="h-[330px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 10, right: 58, left: 0, bottom: 8 }}>
+        <ComposedChart data={data} margin={{ top: 10, right: 58, left: 0, bottom: 8 }}>
+          <defs>
+            <linearGradient id="msTrendFocal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={focalColor} stopOpacity={0.18} />
+              <stop offset="95%" stopColor={focalColor} stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
           <XAxis dataKey="year" tick={renderXTick} tickLine={false} axisLine={{ stroke: GRID }} height={30} interval={0} />
           <YAxis
@@ -209,6 +218,8 @@ function MarketShareTrend() {
           />
           <Tooltip cursor={{ stroke: '#C9D2E0', strokeWidth: 1, strokeDasharray: '3 3' }} content={<TrendTooltip />} />
           <ReferenceLine y={0} stroke={GRID} />
+          {/* Soft shadow area beneath the focal insurer's line. */}
+          <Area type="monotone" dataKey={FOCAL_COMPANY_ID} stroke="none" fill="url(#msTrendFocal)" connectNulls={false} isAnimationActive={false} legendType="none" tooltipType="none" />
           {TREND_COMPANIES.map((c) => {
             const focal = c.id === FOCAL_COMPANY_ID
             const lastIdx = lastIdxByCo[c.id]
@@ -268,7 +279,7 @@ function MarketShareTrend() {
               </Line>
             )
           })}
-        </LineChart>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )

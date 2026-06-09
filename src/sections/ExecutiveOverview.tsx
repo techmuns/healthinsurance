@@ -1,7 +1,6 @@
 import { BadgeCheck, Clock, ShieldCheck } from 'lucide-react'
 import { IndustrySnapshotBand } from '@/components/IndustrySnapshotBand'
 import { PoolShiftCard } from '@/sections/MarketDistribution'
-import { CompanySpecificAnalysis } from '@/components/CompanySpecificAnalysis'
 import { AboutView } from '@/components/AboutView'
 import { SignalBadge } from '@/components/SignalBadge'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
@@ -10,29 +9,21 @@ import { DATA_FRESHNESS } from '@/data/mockData'
 
 const FY = 'FY25'
 
-export function ExecutiveOverview({ view = 'industry' }: { view?: 'industry' | 'sahi' }) {
+// Industry Insights homepage layer: hero + market-structure snapshot + the
+// premium-pool shift. No peer/company cards, no selectors — the company-specific
+// peer analysis now lives in SAHI Analysis › Peer Positioning.
+export function ExecutiveOverview() {
   const filters = useFilters()
   const { period } = filters
   const annualBasisNote = period !== 'Annual'
 
-  // ── Industry Insights — the clean industry homepage: hero + market-structure
-  //    snapshot + premium-pool shift. No peer/company cards, no selectors. ────
-  if (view === 'industry') {
-    return (
-      <div className="space-y-4">
-        <HeroHeader period={period} annualBasisNote={annualBasisNote} />
-        <IndustrySnapshotBand />
-        {/* GI pool-shift trend — full width on its own row. The health-share
-            charts that used to sit beside it now lead the SAHI Analysis block
-            below (composed in IndustryInsightsPage). */}
-        <PoolShiftCard />
-      </div>
-    )
-  }
-
-  // ── SAHI · Company-Specific Analysis — trend-first market-share map + the
-  //    peer metrics table (its own self-contained module). ───────────────────
-  return <CompanySpecificAnalysis />
+  return (
+    <div className="space-y-4">
+      <HeroHeader period={period} annualBasisNote={annualBasisNote} />
+      <IndustrySnapshotBand />
+      <PoolShiftCard />
+    </div>
+  )
 }
 
 // Compact, filter-aware hero — layered navy → champagne backdrop with the

@@ -1,4 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
+import { CompanySpecificAnalysis } from '@/components/CompanySpecificAnalysis'
 import { useFilters } from '@/state/filters'
 import { formatRange } from '@/lib/dateRange'
 import {
@@ -423,6 +424,12 @@ export function CompetitivePositioning() {
       )}
 
       {tab === 'Table' && <TableView rows={card.rows} metrics={card.metrics} />}
+
+      {/* Company-specific peer metrics — SAHI / retail share, GDPI premium and
+          the claims & solvency ratios, plus the market-share trend / bubble. */}
+      <div className="border-t border-soft-border pt-5">
+        <CompanySpecificAnalysis />
+      </div>
 
       {/* Source row */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-soft-border pt-3 text-[10.5px] text-ink-secondary">
