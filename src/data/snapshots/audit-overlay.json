@@ -3,7 +3,7 @@
     "artifact": "audit-overlay",
     "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-09T12:29:10.949Z"
+    "updated_at": "2026-06-09T12:39:52.523Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
@@ -590,6 +590,149 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "GI Council segment-wise report (upto July 2025 (FY26 cumulative, 4 months)), via munschat fetch. Partial FY26 — cumulative Apr–Jul 2025."
+    },
+    "niva-bupa::net_worth_ifrs::FY25": {
+      "value": 3058.3,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation Q4 FY2025 — Net worth (shareholders' equity)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": null,
+      "source_page": "Key Performance Indicators",
+      "fetched_at": "2026-06-09T12:38:22.409Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "IGAAP/statutory shareholders' equity (basis: IGAAP). From the Q4 FY25 investor presentation."
+    },
+    "star-health::total_gwp::FY25": {
+      "value": 17080,
+      "unit": "INR_cr",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::nwp::FY25": {
+      "value": 14449,
+      "unit": "INR_cr",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::nep::FY25": {
+      "value": 13203,
+      "unit": "INR_cr",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::pat_igaap::FY25": {
+      "value": 910,
+      "unit": "INR_cr",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::claims_ratio_igaap::FY25": {
+      "value": 66.5,
+      "unit": "%",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::expense_ratio_igaap::FY25": {
+      "value": 24.4,
+      "unit": "%",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::commission_ratio_igaap::FY25": {
+      "value": 6.6,
+      "unit": "%",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::combined_ratio_igaap::FY25": {
+      "value": 97.5,
+      "unit": "%",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::solvency_ratio::FY25": {
+      "value": 2.24,
+      "unit": "x",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
+    },
+    "star-health::net_worth_ifrs::FY25": {
+      "value": 6465,
+      "unit": "INR_cr",
+      "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
+      "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-09T12:39:52.523Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
     }
   }
 }

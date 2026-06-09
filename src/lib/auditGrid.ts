@@ -79,7 +79,7 @@ export const AUDIT_METRICS: GridMetricDef[] = [
   { key: 'commission_ratio_igaap', label: 'Commission ratio', category: 'Ratios', unit: '%', usage: ['SAHI Analysis'], store: 'commission_ratio_igaap', annual: 'commission_ratio' },
   { key: 'combined_ratio_igaap', label: 'Combined ratio', category: 'Ratios', unit: '%', usage: ['SAHI Analysis', 'Company-Specific Analysis'], store: 'combined_ratio_igaap', annual: 'combined_ratio' },
   { key: 'solvency_ratio', label: 'Solvency ratio', category: 'Capital', unit: 'x', usage: ['SAHI Analysis', 'Company-Specific Analysis'], store: 'solvency_ratio', annual: 'solvency_ratio' },
-  { key: 'net_worth_ifrs', label: 'Net worth (IFRS)', category: 'Capital', unit: 'INR_cr', usage: ['SAHI Analysis'], store: 'net_worth_ifrs' },
+  { key: 'net_worth_ifrs', label: 'Net worth', category: 'Capital', unit: 'INR_cr', usage: ['SAHI Analysis'], store: 'net_worth_ifrs' },
   { key: 'sahi_segment_share', label: 'SAHI segment share', category: 'Market share', unit: '%', usage: ['SAHI Analysis', 'Company-Specific Analysis'], share: 'segment_share_pct' },
   { key: 'retail_health_market_share', label: 'Retail health share', category: 'Market share', unit: '%', usage: ['Industry Insights', 'SAHI Analysis', 'Company-Specific Analysis'], store: 'retail_health_market_share', share: 'retail_share_pct' },
   { key: 'overall_health_market_share', label: 'Overall health share', category: 'Market share', unit: '%', usage: ['Industry Insights', 'SAHI Analysis', 'Company-Specific Analysis'], store: 'overall_health_market_share', share: 'overall_share_pct' },
