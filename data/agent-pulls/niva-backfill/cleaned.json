@@ -1,16 +1,44 @@
 [
   {
     "company": "niva-bupa",
-    "year": "FY23",
-    "metric": "solvency_ratio",
-    "value": 1.671,
-    "unit": "x",
+    "year": "FY22",
+    "metric": "pat_igaap",
+    "value": -196.53,
+    "unit": "INR_cr",
     "priority": 2,
     "confidence": "high",
-    "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 23) — Solvency Margin Ratio",
+    "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 22) — Profit/(Loss) after tax, full year (1/n basis)",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Mar-2022.pdf",
+    "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Mar-2022.pdf",
+    "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+    "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "FY23",
+    "metric": "pat_igaap",
+    "value": 12.54,
+    "unit": "INR_cr",
+    "priority": 2,
+    "confidence": "high",
+    "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 23) — Profit/(Loss) after tax, full year (1/n basis)",
     "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf",
     "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
-    "source_page": "Solvency Margin Ratio",
-    "note": "Year-end solvency margin (point value) from the IRDAI disclosure — basis matches the FY25 solvency cell."
+    "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+    "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "FY26",
+    "metric": "pat_igaap",
+    "value": 130.78,
+    "unit": "INR_cr",
+    "priority": 2,
+    "confidence": "high",
+    "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 26) — Profit/(Loss) after tax, full year (1/n basis)",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf",
+    "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+    "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+    "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
   }
 ]

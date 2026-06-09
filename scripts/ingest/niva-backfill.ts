@@ -130,6 +130,16 @@ async function main() {
   // ── Extract basis-tagged full-year NEP + year-end solvency from each file ──
   const nepByYear: Record<string, { value: number; file: string; fy: string; basis: string }> = {}
   const solvByYear: Record<string, { value: number; file: string }> = {}
+  // Full-year PAT (1/n IRDAI revenue-account basis) from the P&L "Profit/(Loss)
+  // after tax" row. Columns are [Q4 standalone, YTD full-year, prior Q4, prior
+  // YTD]; we take the YTD (full-year) column. Self-validated against the known
+  // FY25 store PAT (≈214) — if FY25 doesn't reconcile we trust NONE of it.
+  const patByYear: Record<string, { value: number; file: string }> = {}
+  const readLakhs = (s: string, n: number): number[] =>
+    [...s.matchAll(/\(?\d[\d,]*(?:\.\d+)?\)?/g)]
+      .map((m) => { const neg = m[0].includes('('); const v = parseFloat(m[0].replace(/[(),]/g, '')); return Number.isNaN(v) ? null : (neg ? -v : v) })
+      .filter((v): v is number => v != null)
+      .slice(0, n)
   for (const fy of YEARS) {
     const text = await pdfText(DISCLOSURE[fy])
     if (!text) continue
@@ -146,7 +156,16 @@ async function main() {
     }
     const disc = extractDisclosure(text)
     if (disc && disc.solvency_ratio != null) solvByYear[fy] = { value: disc.solvency_ratio, file: DISCLOSURE[fy] }
+    // PAT: full-year YTD = 2nd column after the P&L label (Rs. Lakhs → Cr ÷100).
+    const pi = text.search(/Profit\s*\/?\s*\(Loss\)\s*after\s*tax/i)
+    if (pi >= 0) {
+      const nums = readLakhs(text.slice(pi + 28, pi + 220), 4)
+      if (nums.length >= 2 && Math.abs(nums[1] * 0.01) < 5000) patByYear[fy] = { value: +(nums[1] * 0.01).toFixed(2), file: DISCLOSURE[fy] }
+    }
   }
+  // Self-validation gate: only trust the PAT column if FY25 reconciles to ~214.
+  const patReliable = patByYear.FY25 != null && Math.abs(patByYear.FY25.value - 214) <= 6
+  if (!patReliable) for (const k of Object.keys(patByYear)) delete patByYear[k]
 
   function record(metric: string, year: string, opts: Partial<LedgerEntry> & { extraction_status: string }) {
     ledger.push({
@@ -186,6 +205,18 @@ async function main() {
           source_name: `Niva Bupa IRDAI Public Disclosure (year ended Mar ${year.slice(2)}) — Solvency Margin Ratio`,
           source_url: DISCLOSURE_URL[year], source_file: `data/raw/companies/niva-bupa/${c.file}`, source_page: 'Solvency Margin Ratio',
           note: 'Year-end solvency margin (point value) from the IRDAI disclosure — basis matches the FY25 solvency cell.' })
+        newFills++; continue
+      }
+
+      if (metric === 'pat_igaap' && patByYear[year]) {
+        const c = patByYear[year]
+        record(metric, year, { extraction_status: 'filled', selected_source: 'IRDAI public disclosure — P&L Profit/(Loss) after tax (full-year, 1/n basis)',
+          selected_value: c.value, unit: 'INR_cr', source_url_or_file: DISCLOSURE_URL[year], page_or_section: 'Profit & Loss · Profit/(Loss) after tax (YTD column)',
+          extracted_snippet: `Profit/(Loss) after tax, full-year ${year} = ${c.value} Cr`, attempted_sources: ['irdai_public_disclosure'] })
+        fills.push({ company: SLUG, year, metric, value: c.value, unit: 'INR_cr', priority: 2, confidence: 'high',
+          source_name: `Niva Bupa IRDAI Public Disclosure (year ended Mar ${year.slice(2)}) — Profit/(Loss) after tax, full year (1/n basis)`,
+          source_url: DISCLOSURE_URL[year], source_file: `data/raw/companies/niva-bupa/${c.file}`, source_page: 'P&L · Profit/(Loss) after tax (YTD)',
+          note: 'Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214).' })
         newFills++; continue
       }
 

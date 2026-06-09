@@ -3,7 +3,7 @@
     "artifact": "audit-overlay",
     "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-09T13:56:34.088Z"
+    "updated_at": "2026-06-09T14:25:12.683Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
@@ -707,6 +707,45 @@
       "priority": 2,
       "layer": "staging",
       "note": "Year-end solvency margin (point value) from the IRDAI disclosure — basis matches the FY25 solvency cell."
+    },
+    "niva-bupa::pat_igaap::FY22": {
+      "value": -196.53,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 22) — Profit/(Loss) after tax, full year (1/n basis)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosure-Mar-2022.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosure-Mar-2022.pdf",
+      "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+      "fetched_at": "2026-06-09T14:25:12.683Z",
+      "confidence": "high",
+      "priority": 2,
+      "layer": "staging",
+      "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
+    },
+    "niva-bupa::pat_igaap::FY23": {
+      "value": 12.54,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 23) — Profit/(Loss) after tax, full year (1/n basis)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Public-Disclosure-Reports-March-2023.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+      "fetched_at": "2026-06-09T14:25:12.683Z",
+      "confidence": "high",
+      "priority": 2,
+      "layer": "staging",
+      "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
+    },
+    "niva-bupa::pat_igaap::FY26": {
+      "value": 130.78,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 26) — Profit/(Loss) after tax, full year (1/n basis)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Mar-2026.pdf",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+      "source_page": "P&L · Profit/(Loss) after tax (YTD)",
+      "fetched_at": "2026-06-09T14:25:12.683Z",
+      "confidence": "high",
+      "priority": 2,
+      "layer": "staging",
+      "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
     }
   }
 }
