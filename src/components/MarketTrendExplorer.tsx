@@ -24,7 +24,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CartesianGrid,
-  LabelList,
+  Customized,
   Line,
   LineChart,
   ReferenceLine,
@@ -452,6 +452,80 @@ export function MarketTrendExplorer() {
   const yTick = (v: number) =>
     mode === 'indexed' ? `${v}` : mode === 'yoy' ? `${v}%` : absUnit === '%' ? `${v}%` : `₹${v}`
 
+  // Single end-label layer — knows every label's pixel position, so it can nudge
+  // them apart vertically when several lines finish at similar values (e.g. the
+  // YoY view), keeping each value readable without overlapping or connectors.
+  type ScaleFn = ((v: number | string) => number) & { bandwidth?: () => number }
+  interface CustomLayerProps {
+    yAxisMap?: Record<string, { scale: ScaleFn }>
+    xAxisMap?: Record<string, { scale: ScaleFn }>
+    offset?: { top: number; height: number }
+  }
+  const renderEndLabels = (p: CustomLayerProps) => {
+    const yEntry = p.yAxisMap && Object.values(p.yAxisMap)[0]
+    const xEntry = p.xAxisMap && Object.values(p.xAxisMap)[0]
+    if (!yEntry || !xEntry) return <g />
+    const yScale = yEntry.scale
+    const xScale = xEntry.scale
+    const bw = xScale.bandwidth ? xScale.bandwidth() : 0
+
+    const items = combos
+      .map((cb) => {
+        const idx = lastIdxByKey[cb.key]
+        if (idx < 0) return null
+        if (anyHover && !isActive(cb)) return null
+        const v = data[idx]?.[cb.key]
+        if (v == null || typeof v !== 'number') return null
+        const txt =
+          mode === 'yoy'
+            ? `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
+            : mode === 'indexed'
+              ? `${Math.round(v)}`
+              : cb.metric.format(v)
+        return {
+          key: cb.key,
+          x: xScale(axisYears[idx]) + bw / 2,
+          y: yScale(v),
+          txt,
+          color: colorByKey[cb.key],
+          bold: singleCompany || cb.company.id === FOCAL_COMPANY_ID,
+        }
+      })
+      .filter((it): it is NonNullable<typeof it> => it != null)
+      .sort((a, b) => a.y - b.y)
+
+    // Push labels down so adjacent ones keep a minimum gap, then shift the whole
+    // group up if it overflows the plot, so it stays vertically centred.
+    const gap = 13
+    for (let i = 1; i < items.length; i++) {
+      if (items[i].y - items[i - 1].y < gap) items[i].y = items[i - 1].y + gap
+    }
+    if (p.offset && items.length) {
+      const bottom = p.offset.top + p.offset.height
+      const overflow = items[items.length - 1].y - bottom
+      if (overflow > 0) for (const it of items) it.y = Math.max(p.offset.top + 4, it.y - overflow)
+    }
+
+    return (
+      <g>
+        {items.map((it) => (
+          <text
+            key={it.key}
+            x={it.x + 9}
+            y={it.y + 3.5}
+            fontSize={10}
+            fontWeight={it.bold ? 700 : 600}
+            fill={it.color}
+            textAnchor="start"
+            style={{ fontVariantNumeric: 'tabular-nums' }}
+          >
+            {it.txt}
+          </text>
+        ))}
+      </g>
+    )
+  }
+
   // X tick — FY25 (the gap year) reads soft-grey with a quiet "not yet reported"
   // sub-label so the missing year is honest, never blank or fabricated.
   const renderXTick = (props: { x?: number; y?: number; payload?: { value?: string } }) => {
@@ -645,41 +719,13 @@ export function MarketTrendExplorer() {
                   connectNulls={false}
                   isAnimationActive={false}
                   onMouseEnter={() => setHoverCombo(cb.key)}
-                >
-                  {!dimmed && (
-                    <LabelList
-                      dataKey={cb.key}
-                      content={(p: { x?: number | string; y?: number | string; index?: number; value?: number | string | null }) => {
-                        if (p.index !== lastIdx || p.value == null) return null
-                        const x = Number(p.x)
-                        const y = Number(p.y)
-                        if (Number.isNaN(x) || Number.isNaN(y)) return null
-                        const v = Number(p.value)
-                        const txt =
-                          mode === 'yoy'
-                            ? `${v >= 0 ? '+' : ''}${v.toFixed(0)}%`
-                            : mode === 'indexed'
-                              ? `${Math.round(v)}`
-                              : cb.metric.format(v)
-                        return (
-                          <text
-                            x={x + 8}
-                            y={y + 3.5}
-                            fontSize={10}
-                            fontWeight={singleCompany || focal ? 700 : 600}
-                            fill={color}
-                            textAnchor="start"
-                            style={{ fontVariantNumeric: 'tabular-nums' }}
-                          >
-                            {txt}
-                          </text>
-                        )
-                      }}
-                    />
-                  )}
-                </Line>
+                />
               )
             })}
+
+            {/* Right-end value labels — rendered as one layer so they can be
+                spread vertically and never overlap (no connector lines). */}
+            <Customized component={renderEndLabels} />
           </LineChart>
         </ResponsiveContainer>
       </div>
