@@ -1,5 +1,12 @@
 {
   "files": {
+    "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf": {
+      "filename": "6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "bytes": 2137258,
+      "sha256": "7cc707a356ea54a2608ef4b854c407c6910264fb1b3927e1333bec37c1809b3b",
+      "fetched_at": "2026-06-09T19:11:10.626Z"
+    },
     "https://cms.careinsurance.com/cms/public/other_disclosure": {
       "filename": "other_disclosure",
       "url": "https://cms.careinsurance.com/cms/public/other_disclosure",
@@ -71,5 +78,5 @@
       "fetched_at": "2026-06-09T12:42:18.014Z"
     }
   },
-  "updated_at": "2026-06-09T18:48:57.052Z"
+  "updated_at": "2026-06-09T19:11:10.639Z"
 }
