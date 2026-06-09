@@ -842,7 +842,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists.",
+      "display_tag": "IFRS not available"
     },
     "niva-bupa::claims_ratio_ifrs::FY22": {
       "value": null,
@@ -855,7 +856,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists.",
+      "display_tag": "IFRS not available"
     },
     "niva-bupa::net_worth_ifrs::FY22": {
       "value": null,
@@ -868,7 +870,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists."
+      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists.",
+      "display_tag": "IFRS not available"
     },
     "niva-bupa::claims_ratio_igaap::FY23": {
       "value": 54,
@@ -907,7 +910,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly."
+      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
+      "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::commission_ratio_igaap::FY23": {
       "value": null,
@@ -920,7 +924,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly."
+      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
+      "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::expense_ratio_igaap::FY22": {
       "value": null,
@@ -933,7 +938,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly."
+      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
+      "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::expense_ratio_igaap::FY23": {
       "value": null,
@@ -946,7 +952,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly."
+      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
+      "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::settlement_ratio::FY22": {
       "value": null,
@@ -959,7 +966,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa began reporting the claim settlement ratio from FY23 (90.5% / 91.9% / 92.4%); no FY22 figure was published."
+      "note": "Niva Bupa began reporting the claim settlement ratio from FY23 (90.5% / 91.9% / 92.4%); no FY22 figure was published.",
+      "display_tag": "Not disclosed"
     },
     "niva-bupa::settlement_ratio::FY26": {
       "value": null,
@@ -972,7 +980,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The audited FY26 annual report is not out yet. The Q4 FY26 deck shows a settlement figure on a different basis (by rupee value, not by number of claims), so it is not comparable to the FY23–FY25 by-number series — held rather than mixing bases."
+      "note": "The audited FY26 annual report is not out yet. The Q4 FY26 deck shows a settlement figure on a different basis (by rupee value, not by number of claims), so it is not comparable to the FY23–FY25 by-number series — held rather than mixing bases.",
+      "display_tag": "FY26 report awaited"
     },
     "niva-bupa::renewal_rate::FY22": {
       "value": null,
@@ -985,7 +994,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::customer_retention::FY22": {
       "value": null,
@@ -998,7 +1008,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::renewal_rate::FY23": {
       "value": null,
@@ -1011,7 +1022,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::customer_retention::FY23": {
       "value": null,
@@ -1024,7 +1036,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::renewal_rate::FY24": {
       "value": null,
@@ -1037,7 +1050,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::customer_retention::FY24": {
       "value": null,
@@ -1050,7 +1064,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::renewal_rate::FY26": {
       "value": null,
@@ -1063,7 +1078,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed the renewal rate only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::customer_retention::FY26": {
       "value": null,
@@ -1076,7 +1092,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years."
+      "note": "Niva Bupa disclosed customer retention only for FY25; it does not appear in any earlier or later filing, so there is no source for the other years.",
+      "display_tag": "FY25 only"
     },
     "niva-bupa::claims_ratio_ifrs::FY23": {
       "value": null,
@@ -1089,7 +1106,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The IFRS (Ind-AS) special-purpose series begins FY23, but the IFRS claims-ratio breakdown is only shown from FY24 onward, so FY23 has no published value."
+      "note": "The IFRS (Ind-AS) special-purpose series begins FY23, but the IFRS claims-ratio breakdown is only shown from FY24 onward, so FY23 has no published value.",
+      "display_tag": "Not split out"
     }
   },
   "meta": {}

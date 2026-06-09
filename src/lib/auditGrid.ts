@@ -95,6 +95,7 @@ export const METRIC_BY_KEY: Record<string, GridMetricDef> = Object.fromEntries(
 export type GridStatus =
   | 'filled'
   | 'missing_in_source'
+  | 'not_available'
   | 'source_not_fetched'
   | 'needs_review'
   | 'basis_mismatch'
@@ -108,6 +109,7 @@ export interface GridStatusMeta {
 export const GRID_STATUS_META: Record<GridStatus, GridStatusMeta> = {
   filled: { key: 'filled', label: 'Filled', tone: 'green' },
   missing_in_source: { key: 'missing_in_source', label: 'Missing in source', tone: 'red' },
+  not_available: { key: 'not_available', label: 'Not available', tone: 'grey' },
   source_not_fetched: { key: 'source_not_fetched', label: 'Source not fetched', tone: 'amber' },
   needs_review: { key: 'needs_review', label: 'Needs review', tone: 'amber' },
   basis_mismatch: { key: 'basis_mismatch', label: 'Basis mismatch', tone: 'navy' },
@@ -145,12 +147,15 @@ export interface GridCell {
   competing: SourceRef[]
   usage: DashboardArea[]
   notes: string
+  /** Compact reason shown in-cell for a deliberately-unavailable cell. */
+  displayTag?: string
 }
 
 export interface GridSummary {
   expected: number
   filled: number
   missing: number
+  notAvailable: number
   needsReview: number
   conflicts: number
   sourceNotFetched: number
@@ -195,6 +200,8 @@ interface OverlayEntry {
   layer?: string | null
   note?: string | null
   superseded?: boolean
+  /** Compact in-cell label for an intentionally-unavailable (value-less) cell. */
+  display_tag?: string | null
 }
 interface OverlayFile {
   _meta?: Record<string, unknown>
@@ -344,10 +351,15 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
 
   if (!storeHas && others.length === 0) {
     // A value-less overlay entry can annotate WHY a cell is unavailable (e.g.
-    // "IFRS accounting not available" for years before the IFRS series begins),
-    // surfaced as the cell's source + note instead of the generic fallback.
+    // "IFRS accounting not available" for years before the IFRS series begins).
+    // These render as a calm "Not available" with the reason on the surface —
+    // distinct from a genuine "Missing in source" gap.
+    const ov = OVERLAY[`${company}::${m.key}::${year}`]
     const annotated = overlayRef && overlayRef.value == null && overlayRef.note ? overlayRef : null
-    return { ...base, status: 'missing_in_source', value: null, chosen: annotated, competing: [], notes: annotated?.note ?? 'Not found in currently fetched public source.' }
+    if (annotated) {
+      return { ...base, status: 'not_available', value: null, chosen: annotated, competing: [], notes: annotated.note ?? '', displayTag: ov?.display_tag ?? 'Not available' }
+    }
+    return { ...base, status: 'missing_in_source', value: null, chosen: null, competing: [], notes: 'Not found in currently fetched public source.' }
   }
 
   let chosen: SourceRef
@@ -388,10 +400,12 @@ export function buildAuditGrid(): GridModel {
   const missing = cells.filter((c) => c.status === 'missing_in_source' || c.status === 'source_not_fetched').length
   const needsReview = cells.filter((c) => c.status === 'needs_review').length
   const conflicts = cells.filter((c) => c.competing.length > 0).length
+  const notAvailable = cells.filter((c) => c.status === 'not_available').length
   const summary: GridSummary = {
     expected: cells.length,
     filled,
     missing,
+    notAvailable,
     needsReview,
     conflicts,
     sourceNotFetched: cells.filter((c) => c.status === 'source_not_fetched').length,

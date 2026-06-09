@@ -200,10 +200,11 @@ export function AuditDataGrid() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
         <SummaryCard label="Expected cells" value={s.expected} tone="plain" />
         <SummaryCard label="Filled" value={s.filled} tone="green" />
         <SummaryCard label="Missing" value={s.missing} tone="red" />
+        <SummaryCard label="Not available" value={s.notAvailable} tone="grey" />
         <SummaryCard label="Needs review" value={s.needsReview} tone="amber" />
         <SummaryCard label="Source conflicts" value={s.conflicts} tone="navy" />
         <SummaryCard label="Coverage" value={`${(s.coverage * 100).toFixed(0)}%`} tone="plain" />
@@ -252,7 +253,7 @@ export function AuditDataGrid() {
                               {cell.value != null ? (
                                 <span className={`font-semibold tabular-nums ${tone.text}`}>{formatGridValue(cell.value, cell.unit)}</span>
                               ) : (
-                                <span className="text-[9.5px] font-medium text-ink-secondary">{GRID_STATUS_META[cell.status].label}</span>
+                                <span className={`text-[9.5px] font-medium ${tone.text}`}>{cell.displayTag ?? GRID_STATUS_META[cell.status].label}</span>
                               )}
                             </button>
                           </td>
