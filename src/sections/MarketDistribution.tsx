@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  Area,
   CartesianGrid,
-  LabelList,
+  ComposedChart,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
 import { giPremiumMix } from '@/data/mockData'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
@@ -111,43 +112,100 @@ const POOL_SERIES: { key: PoolKey; color: string; width: number; interior: boole
   { key: 'Health', color: '#168E8E', width: 3, interior: true },
 ]
 
-interface PoolLabelProps {
-  x?: number | string
-  y?: number | string
-  value?: number | string | null
-  index?: number
+// Soft area + line mini-sparkline of a segment's share across the shown years.
+function PoolSpark({ values, color }: { values: (number | null)[]; color: string }) {
+  const pts = values
+    .map((v, i) => ({ v, i }))
+    .filter((p): p is { v: number; i: number } => p.v != null)
+  if (pts.length < 2) return null
+  const w = 78
+  const h = 30
+  const xs = values.length - 1 || 1
+  const min = Math.min(...pts.map((p) => p.v))
+  const max = Math.max(...pts.map((p) => p.v))
+  const span = max - min || 1
+  const xy = (p: { v: number; i: number }) => ({ x: (p.i / xs) * w, y: h - 3 - ((p.v - min) / span) * (h - 8) })
+  const line = pts.map((p, k) => `${k ? 'L' : 'M'}${xy(p).x.toFixed(1)} ${xy(p).y.toFixed(1)}`).join(' ')
+  const last = xy(pts[pts.length - 1])
+  const area = `${line} L ${last.x.toFixed(1)} ${h} L ${xy(pts[0]).x.toFixed(1)} ${h} Z`
+  const id = `psk-${color.replace('#', '')}`
+  return (
+    <svg width={w} height={h} className="shrink-0 overflow-visible" aria-hidden>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${id})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={last.x} cy={last.y} r={2.1} fill={color} />
+    </svg>
+  )
 }
 
-/** Per-line label renderer: interior value dots + a clear FY-last endpoint
- *  label (share % over a colour-coded pp move). */
-function makePoolLabel(color: string, lastIdx: number, pp: number | null, interior: boolean) {
-  return function PoolLabel(props: PoolLabelProps): ReactNode {
-    const value = typeof props.value === 'number' ? props.value : null
-    const x = Number(props.x)
-    const y = Number(props.y)
-    if (value == null || Number.isNaN(x) || Number.isNaN(y)) return null
+// Key-metric card for one segment — latest share, the pp move over the span, a
+// direction tag (Gaining / Holding / Ceding) and a sparkline.
+function PoolMetricCard({
+  name,
+  color,
+  latest,
+  delta,
+  values,
+  spanLabel,
+}: {
+  name: string
+  color: string
+  latest: number | null
+  delta: number | null
+  values: (number | null)[]
+  spanLabel: string
+}) {
+  const tone = delta == null ? 'flat' : delta >= 2 ? 'up' : delta <= -2 ? 'down' : 'flat'
+  const Icon = tone === 'up' ? ArrowUpRight : tone === 'down' ? ArrowDownRight : ArrowRight
+  const tag = tone === 'up' ? 'Gaining' : tone === 'down' ? 'Ceding' : 'Holding'
+  const tagCls =
+    tone === 'up'
+      ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
+      : tone === 'down'
+        ? 'bg-[#FBEDEA] text-[#C0584F] ring-[#F0D2CC]'
+        : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
+  const deltaCls = tone === 'down' ? 'text-[#C0584F]' : tone === 'up' ? 'text-teal' : 'text-navy-primary'
 
-    if (props.index === lastIdx) {
-      const ppColor = pp == null ? '#6B7280' : pp >= 0 ? color : '#C0584F'
-      const ppTxt = pp == null ? 'n/a' : `${pp >= 0 ? '+' : '−'}${Math.abs(pp).toFixed(1)} pp`
-      return (
-        <g>
-          <text x={x + 9} y={y + 1} fontSize={12.5} fontWeight={800} fill={color} textAnchor="start" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {Math.round(value)}%
-          </text>
-          <text x={x + 9} y={y + 14} fontSize={10} fontWeight={700} fill={ppColor} textAnchor="start" style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {ppTxt}
-          </text>
-        </g>
-      )
-    }
-    if (!interior) return null
-    return (
-      <text x={x} y={y - 9} fontSize={10} fontWeight={600} fill={color} textAnchor="middle" style={{ fontVariantNumeric: 'tabular-nums' }}>
-        {value.toFixed(1)}%
-      </text>
-    )
-  }
+  return (
+    <div
+      className="surface-soft relative flex flex-col justify-between overflow-hidden rounded-xl p-3 lg:flex-1"
+      style={{ background: `linear-gradient(135deg, ${color}0F 0%, transparent 62%)` }}
+    >
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: color }} />
+      <div className="flex items-center justify-between gap-2 pl-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full" style={{ background: color }} />
+          <p className="font-display text-[12.5px] leading-none text-navy-deep">{name}</p>
+        </div>
+        <span className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-semibold ring-1 ${tagCls}`}>
+          <Icon className="h-2.5 w-2.5" strokeWidth={2.6} />
+          {tag}
+        </span>
+      </div>
+      <div className="mt-1.5 flex items-end justify-between gap-2 pl-1.5">
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[19px] font-semibold leading-none tabular-nums text-navy-deep">
+              {latest != null ? `${latest.toFixed(1)}%` : 'n/a'}
+            </span>
+            {delta != null && (
+              <span className={`text-[11px] font-semibold tabular-nums ${deltaCls}`}>
+                {`${delta >= 0 ? '+' : '−'}${Math.abs(delta).toFixed(1)} pp`}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-[8px] uppercase tracking-wide text-ink-secondary/80">{spanLabel}</p>
+        </div>
+        <PoolSpark values={values} color={color} />
+      </div>
+    </div>
+  )
 }
 
 function PoolTooltip({
@@ -203,6 +261,25 @@ export function PoolShiftCard() {
     .map((k) => ({ k, pp: ppOf(k) ?? 0 }))
     .sort((a, b) => a.pp - b.pp)[0]?.k
 
+  // Clean markers — hollow mid-points, a stronger filled dot on the latest year.
+  const makeDot = (color: string) => (p: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
+    const cx = Number(p.cx)
+    const cy = Number(p.cy)
+    if (p.value == null || Number.isNaN(cx) || Number.isNaN(cy)) return <g key={p.index} />
+    const isLast = p.index === lastIdx
+    return (
+      <circle
+        key={p.index}
+        cx={cx}
+        cy={cy}
+        r={isLast ? 4.6 : 2.8}
+        fill={isLast ? color : '#fff'}
+        stroke={color}
+        strokeWidth={1.6}
+      />
+    )
+  }
+
   return (
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
       <header className="mb-4 border-b border-[#EEF1F7] pb-4">
@@ -231,39 +308,52 @@ export function PoolShiftCard() {
           height={264}
         />
       ) : (
-        <div className="shrink-0" style={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rows} margin={{ top: 14, right: 64, left: 4, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#EEF1F7' }} />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#6B7280' }}
-                tickLine={false}
-                axisLine={{ stroke: '#EEF1F7' }}
-                width={50}
-                domain={[lo, hi]}
-                unit="%"
-                label={{ value: 'Share of GI Premium (%)', angle: -90, position: 'insideLeft', style: { fontSize: 10, fill: '#9AA3B2', textAnchor: 'middle' }, dy: 70 }}
-              />
-              <Tooltip cursor={{ stroke: '#C4CCD6', strokeWidth: 1 }} content={<PoolTooltip />} />
-              {POOL_SERIES.map((s) => (
-                <Line
-                  key={s.key}
-                  type="monotone"
-                  dataKey={s.key}
-                  name={s.key}
-                  stroke={s.color}
-                  strokeWidth={s.width}
-                  dot={{ r: 3, fill: s.color, stroke: '#fff', strokeWidth: 1.2 }}
-                  activeDot={{ r: 5 }}
-                  connectNulls={false}
-                  isAnimationActive={false}
-                >
-                  <LabelList dataKey={s.key} content={makePoolLabel(s.color, lastIdx, ppOf(s.key), s.interior)} />
-                </Line>
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-stretch">
+          {/* Enhanced trend — soft teal area under the rising Health line. */}
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={rows} margin={{ top: 14, right: 16, left: 0, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="poolHealthArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#168E8E" stopOpacity={0.16} />
+                    <stop offset="95%" stopColor="#168E8E" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#EEF1F7' }} />
+                <YAxis
+                  tick={{ fontSize: 10.5, fill: '#9AA3B2' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={40}
+                  domain={[lo, hi]}
+                  unit="%"
+                />
+                <Tooltip cursor={{ stroke: '#C4CCD6', strokeWidth: 1 }} content={<PoolTooltip />} />
+                <Line type="monotone" dataKey="Others" name="Others" stroke="#9AA6B4" strokeWidth={1.8} dot={makeDot('#9AA6B4')} activeDot={{ r: 5 }} connectNulls={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="Motor" name="Motor" stroke="#27457E" strokeWidth={2.2} dot={makeDot('#27457E')} activeDot={{ r: 5 }} connectNulls={false} isAnimationActive={false} />
+                <Area type="monotone" dataKey="Health" name="Health" stroke="#168E8E" strokeWidth={3} fill="url(#poolHealthArea)" dot={makeDot('#168E8E')} activeDot={{ r: 5.5 }} connectNulls={false} isAnimationActive={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Key-metric cards — Health gaining, Motor holding, Others ceding. */}
+          <div className="grid grid-cols-3 gap-2.5 lg:flex lg:flex-col">
+            {(['Health', 'Motor', 'Others'] as PoolKey[]).map((k) => {
+              const meta = POOL_SERIES.find((s) => s.key === k)!
+              return (
+                <PoolMetricCard
+                  key={k}
+                  name={k}
+                  color={meta.color}
+                  latest={numOrNull(last?.[k])}
+                  delta={ppOf(k)}
+                  values={rows.map((r) => numOrNull(r[k]))}
+                  spanLabel={span}
+                />
+              )
+            })}
+          </div>
         </div>
       )}
 
