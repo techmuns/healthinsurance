@@ -12,14 +12,14 @@
       "FY24"
     ],
     "segment_base_retail_gdpi_inr_bn": {
-      "FY22": 156.0,
+      "FY22": 156,
       "FY23": 190.62,
       "FY24": 236.38
     },
     "industry_total_retail_gdpi_inr_bn": {
       "FY22": 307.38,
       "FY23": 354.3,
-      "FY24": 422.0
+      "FY24": 422
     },
     "industry_total_overall_gdpi_inr_bn": {
       "FY22": 731.23,
@@ -72,7 +72,7 @@
       "overall_share_pct": {
         "FY22": 15.44,
         "FY23": 14.22,
-        "FY24": 13.95
+        "FY24": 13.8
       },
       "retail_gdpi_inr_bn": {
         "FY22": 101.29,
