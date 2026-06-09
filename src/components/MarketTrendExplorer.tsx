@@ -1,19 +1,19 @@
 // Health Industry Insights — a chart-first, glanceable 2×2 panel.
 //
-// Replaces the old metric-by-metric tab explorer with four mini metric cards
-// shown together: SAHI Share, Retail Health Share, Overall Health Share and
-// GDPI Premium. (Company Premium Growth is intentionally dropped from the
-// primary view — it is a year-on-year derivative of the GDPI premium series
-// already shown here, so a fifth card would just restate that trend and add
-// clutter.)
+// Four mini metric cards shown together as a clean 2×2 grid: SAHI Share
+// (top-left), Retail Health Share (top-right), Overall Health Share
+// (bottom-left) and GDPI Premium (bottom-right). (Company Premium Growth is
+// intentionally dropped from the primary view — it is a year-on-year derivative
+// of the GDPI premium series already shown here, so a fifth card would just
+// restate that trend and add clutter.)
 //
-// Each card is a small combo chart over the reported years (FY22–FY24):
-//   • company-wise grouped bars (one slim bar per insurer, theme-coloured) for
-//     the cross-company comparison, and
-//   • a smooth (monotone) line per insurer for that insurer's trend over time.
-// Hovering any insurer — a bar, a line, or its legend chip — isolates it across
-// ALL FOUR cards at once: the rest softly fade, so a single company's health
-// story reads cleanly on every lens. An elegant tooltip gives the exact values.
+// Each card is a simple grouped bar chart over the reported years (FY22–FY24):
+//   • one slim, soft-tinted bar per insurer, theme-coloured, grouped by year so
+//     companies compare easily side-by-side and year-on-year. No trend lines or
+//     overlays sit on top of the bars.
+// Hovering any insurer — a bar or its legend chip — isolates it across ALL FOUR
+// cards at once: the rest softly fade, so a single company's health story reads
+// cleanly on every lens. An elegant tooltip gives the exact values.
 //
 // Honesty: years come from the data (never hardcoded), a null value is omitted
 // (never drawn as 0), and a metric with no data renders a plain "not available"
@@ -22,9 +22,8 @@
 import { useMemo, useState } from 'react'
 import {
   Bar,
+  BarChart,
   CartesianGrid,
-  ComposedChart,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -138,7 +137,7 @@ function MiniMetricCard({
   const basis = metric.unit === '%' ? '% share' : `${metric.unit} · premium`
 
   return (
-    <div className="surface-soft flex flex-col rounded-xl p-3">
+    <div className="surface-soft flex h-full flex-col rounded-xl p-3">
       {/* Card header — metric name + the focal insurer's latest value & move. */}
       <div className="mb-1.5 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -165,11 +164,11 @@ function MiniMetricCard({
       {metric.available ? (
         <div className="h-[150px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart
+            <BarChart
               data={data}
               margin={{ top: 6, right: 6, left: 6, bottom: 0 }}
-              barCategoryGap="22%"
-              barGap={1}
+              barCategoryGap="26%"
+              barGap={1.5}
               onMouseLeave={() => setHover(null)}
             >
               <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -177,28 +176,9 @@ function MiniMetricCard({
               <YAxis hide domain={[0, 'auto']} />
               <Tooltip cursor={{ fill: 'rgba(23,43,77,0.045)' }} content={<MiniTooltip metric={metric} hoverId={hoverId} />} />
 
-              {/* transparent thick hit-lines (declared first → bars sit above them
-                  so a bar hover wins, while the open line path stays hoverable). */}
-              {TREND_COMPANIES.map((c) => (
-                <Line
-                  key={`h-${c.id}`}
-                  type="monotone"
-                  dataKey={c.id}
-                  stroke="transparent"
-                  strokeWidth={12}
-                  dot={false}
-                  activeDot={false}
-                  connectNulls
-                  isAnimationActive={false}
-                  tooltipType="none"
-                  legendType="none"
-                  onMouseEnter={() => setHover(c.id)}
-                  onMouseLeave={() => setHover(null)}
-                />
-              ))}
-
-              {/* company-wise grouped bars — soft magnitude layer (the focal
-                  insurer reads a touch stronger so the eye lands there first). */}
+              {/* company-wise grouped bars — soft, tinted magnitude layer (the
+                  focal insurer reads a touch stronger so the eye lands there
+                  first). No lines or overlays sit on top of the bars. */}
               {TREND_COMPANIES.map((c) => {
                 const isFocal = c.id === FOCAL_COMPANY_ID
                 return (
@@ -206,34 +186,15 @@ function MiniMetricCard({
                     key={`b-${c.id}`}
                     dataKey={c.id}
                     fill={c.color}
-                    fillOpacity={hoverId ? (hoverId === c.id ? 0.92 : 0.06) : isFocal ? 0.5 : 0.28}
+                    fillOpacity={hoverId ? (hoverId === c.id ? 0.9 : 0.1) : isFocal ? 0.62 : 0.4}
                     radius={[2, 2, 0, 0]}
-                    maxBarSize={8}
+                    maxBarSize={13}
                     isAnimationActive={false}
                     onMouseEnter={() => setHover(c.id)}
                   />
                 )
               })}
-
-              {/* smooth per-company trend lines — crisp foreground */}
-              {TREND_COMPANIES.map((c) => {
-                const isFocal = c.id === FOCAL_COMPANY_ID
-                return (
-                  <Line
-                    key={`l-${c.id}`}
-                    type="monotone"
-                    dataKey={c.id}
-                    stroke={c.color}
-                    strokeWidth={hoverId === c.id ? 2.6 : isFocal ? 2.2 : 1.6}
-                    strokeOpacity={hoverId ? (hoverId === c.id ? 1 : 0.08) : isFocal ? 1 : 0.78}
-                    dot={false}
-                    activeDot={hoverId && hoverId !== c.id ? false : { r: 3, fill: c.color, stroke: '#fff', strokeWidth: 1.2 }}
-                    connectNulls={false}
-                    isAnimationActive={false}
-                  />
-                )
-              })}
-            </ComposedChart>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       ) : (
@@ -301,10 +262,10 @@ export function MarketTrendExplorer() {
         })}
       </div>
 
-      {/* Mini metric cards — 2×2 by default; a single clean row of four on wide
-          desktop (the panel is now full-width), keeping the charts well-
-          proportioned and all four health lenses visible at a glance. */}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      {/* Mini metric cards — a clean, equal-height 2×2 grid on tablet/desktop
+          (SAHI · Retail · Overall · GDPI), stacked on mobile. All four health
+          lenses sit in view at a glance, with no horizontal crowding. */}
+      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2">
         {metrics.map((m) => (
           <MiniMetricCard key={m.id} metric={m} hoverId={hoverId} setHover={setHover} />
         ))}
@@ -314,7 +275,7 @@ export function MarketTrendExplorer() {
       <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pt-4">
         <p className="max-w-sm text-[11px] leading-relaxed text-ink-secondary">
           <span className="font-semibold text-navy-deep">Read it — </span>
-          bars compare insurers each year; the line traces each insurer&rsquo;s trend. Hover one to isolate it across all four lenses.
+          bars compare insurers within each year and across FY22–FY24. Hover one to isolate it across all four lenses.
         </p>
         <SourceTag source="Company filing" period="FY22–FY24" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
       </div>
