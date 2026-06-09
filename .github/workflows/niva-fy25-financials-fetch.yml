@@ -1,12 +1,17 @@
 name: niva fy25 financials fetch
 
 # Calls the muns chat agent to pull Niva Bupa Health Insurance Ltd FY25
-# financials (19 line items, IGAAP/IFRS) and returns them as a source-tagged
-# table. Run manually from the Actions tab, or on the monthly schedule.
+# financials (19 line items, IGAAP/IFRS) as a source-tagged table, then
+# downloads the source documents named in the answer (annual report PDFs, etc.)
+# into data/agent-pulls/niva-fy25-financials/sources/. Run manually from the
+# Actions tab, or on the monthly schedule.
 #
 # Secrets used:
-#   MUNS_API_TOKEN   (required) bearer token for the chat agent — the same
-#                    secret the "monthly ingestion" workflow uses.
+#   MUNS_API_TOKEN      (required) bearer token for the chat agent — the same
+#                       secret the "monthly ingestion" workflow uses.
+#   SCRAPERAPI_KEY      (optional) routes downloads past site WAFs (repo secret
+#                       SCRAPER_KEY), same as the monthly job.
+#   INGEST_FETCH_PROXY  (optional) alternative relay URL template ({url} placeholder).
 
 on:
   workflow_dispatch:
@@ -24,62 +29,39 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Call chat-muns agent
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Pull Niva FY25 financials + download sources
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
-        run: |
-          set -euo pipefail
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+        run: npx tsx scripts/ingest/niva-fy25-financials.ts
 
-          if [ -z "${MUNS_API_TOKEN:-}" ]; then
-            echo "ERROR: MUNS_API_TOKEN secret is not set." >&2
-            exit 1
-          fi
-
-          # Request body (kept verbatim in a quoted heredoc so nothing is shell-expanded).
-          cat > payload.json <<'PAYLOAD'
-          {"user_index":124, "tasks":["Pull the following financial data for Niva Bupa Health Insurance Ltd, for FY25 (the financial year ended 31 March 2025).\n\nReturn it as a table with exactly these columns, in this order:\n\ncompany | period | line_item | basis | value | unit | source_name | source_url | filing_date\n\nRules\n\nOne row per line item.\nperiod = FY25 for all rows.\nbasis = IGAAP, IFRS, or — (use the value shown for each line item below).\nvalue = the number only (no commas, no unit inside the cell). If a line item is not published, leave value blank — do not put 0 or an estimate.\nunit = exactly as specified per line below (INR_crore, %, or x).\nsource_name = the exact document (e.g. \"Niva Bupa FY2024-25 Annual Report, p.XX\").\nsource_url = direct link to that document.\nfiling_date = date of the source document, YYYY-MM-DD.\nThe 19 line items (line_item | basis | unit):\n\nRetail health GWP | IGAAP | INR_crore\nGroup + others GWP | IGAAP | INR_crore\nTotal GWP | IGAAP | INR_crore\nRetail market share (health) | IGAAP | %\nOverall health market share | IGAAP | %\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\nProfit After Tax (PAT) | IGAAP | INR_crore\nClaims ratio | IGAAP | %\nExpense ratio | IGAAP | %\nCombined ratio | IGAAP | %\nEOM – expense of management | IGAAP | %\nProfit After Tax (PAT) | IFRS | INR_crore\nClaims ratio | IFRS | %\nExpense ratio | IFRS | %\nSolvency ratio | — | x\nNet worth (shareholders' equity) | IGAAP | INR_crore\nInvestment AUM (total investments) | IGAAP | INR_crore\nInvestment yield (annualised) | IGAAP | %\nExample of the expected output (format only):\n\ncompany\tperiod\tline_item\tbasis\tvalue\tunit\tsource_name\tsource_url\tfiling_date\nNiva Bupa Health Insurance Ltd\tFY25\tTotal GWP\tIGAAP\t6762.23\tINR_crore\tNiva Bupa FY2024-25 Annual Report, p.XX\thttps://…\t2025-05-XX\nNiva Bupa Health Insurance Ltd\tFY25\tNet worth\tIGAAP\t\tINR_crore\t\t\t\nPeriod conventions for later requests: FY = year ended 31 March; Q4FY25 = Jan–Mar 2025; 9MFY25 = Apr–Dec 2024; H1FY25 = Apr–Sep 2024."],"query_context":{"TICKER_SYMBOL":[],"FROM_DATE":"2024-06-09","TO_DATE":"2026-06-09","ANNOUNCEMENT_FORM_TYPE":"all","DOCUMENT_IDS":[],"CATEGORIES":[],"WEB_SEARCH_ENABLED":true,"COUNTRY":[],"CONTEXT_EMAIL":"nadamsaluja@gmail.com","CONTEXT_COMPANY_NAME":[],"GET_ANNOUNCEMENTS_ENABLED":false,"chatHistory":[],"mode":"fast"},"autoAddUpcoming":false,"urls":[]}
-          PAYLOAD
-
-          http_code=$(curl -sS -w '%{http_code}' -o response.json \
-            -X 'POST' \
-            'https://devde.muns.io/chat/chat-muns' \
-            -H 'accept: */*' \
-            -H "Authorization: Bearer ${MUNS_API_TOKEN}" \
-            -H 'Content-Type: application/json' \
-            -d @payload.json)
-
-          echo "HTTP $http_code"
-          echo "----- response -----"
-          cat response.json || true
-          echo
-          echo "--------------------"
-
-          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
-            echo "ERROR: chat-muns returned HTTP $http_code" >&2
-            exit 1
-          fi
-
-          mkdir -p data/agent-pulls/niva-fy25-financials
-          stamp=$(date -u +%Y-%m-%d)
-          out="data/agent-pulls/niva-fy25-financials/niva-fy25-financials-${stamp}.json"
-          mv response.json "$out"
-          echo "Saved response to $out"
-
-      - name: Commit response
+      - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/agent-pulls/niva-fy25-financials
           if git diff --staged --quiet; then
-            echo "No change in response — nothing to commit."
+            echo "No change — nothing to commit."
             exit 0
           fi
-          git commit -m "niva-fy25-financials: agent pull @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          git commit -m "niva-fy25-financials: agent pull + sources @ $(date -u +%Y-%m-%dT%H:%MZ)"
           # Rebase onto latest main and retry so a concurrent push never drops our commit.
           for i in 1 2 3 4 5; do
             if git pull --rebase --autostash origin main && git push; then
