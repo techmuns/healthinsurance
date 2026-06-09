@@ -1,0 +1,15 @@
+[
+  {
+    "company": "niva-bupa",
+    "year": "FY25",
+    "metric": "retail_health_market_share",
+    "value": 9.4,
+    "unit": "%",
+    "source_name": "Niva Bupa FY2024-25 Annual Report — Strategic Overview (retail health market share)",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf",
+    "source_page": "Strategic Overview",
+    "confidence": "medium",
+    "priority": 2,
+    "note": "Captured via the niva-fy25-financials agent pull (2026-06-09); stated in the FY24-25 annual report. Verify against the final report page."
+  }
+]

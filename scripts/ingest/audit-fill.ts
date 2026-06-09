@@ -36,7 +36,7 @@ const SHARE_PATH = resolve(REPO, 'src/data/snapshots/sahi-share-history.json')
 const ANNUAL_PATH = resolve(REPO, 'src/data/snapshots/insurer-annual-snapshot.json')
 
 const COMPANIES = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna']
-const YEARS = ['FY22', 'FY23', 'FY24', 'FY25']
+const YEARS = ['FY22', 'FY23', 'FY24', 'FY25', 'FY26']
 
 // Compact mirror of src/lib/auditGrid.ts AUDIT_METRICS (key → sources + unit).
 interface MetricDef {

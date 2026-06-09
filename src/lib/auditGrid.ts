@@ -41,7 +41,7 @@ export const COMPANY_LABEL: Record<string, string> = Object.fromEntries(
   AUDIT_COMPANIES.map((c) => [c.id, c.label]),
 )
 
-export const AUDIT_YEARS = ['FY22', 'FY23', 'FY24', 'FY25'] as const
+export const AUDIT_YEARS = ['FY22', 'FY23', 'FY24', 'FY25', 'FY26'] as const
 export type AuditYear = (typeof AUDIT_YEARS)[number]
 
 export type MetricCategory = 'Premium' | 'Profitability' | 'Ratios' | 'Capital' | 'Market share' | 'Quality'
@@ -184,16 +184,16 @@ type Store = Record<string, StoreEntry>
 
 interface OverlayEntry {
   value: number | null
-  unit?: string
-  source_name?: string
-  source_url?: string
-  source_file?: string
-  source_page?: string
-  fetched_at?: string
-  confidence?: string
-  priority?: number
-  layer?: string
-  note?: string
+  unit?: string | null
+  source_name?: string | null
+  source_url?: string | null
+  source_file?: string | null
+  source_page?: string | null
+  fetched_at?: string | null
+  confidence?: string | null
+  priority?: number | null
+  layer?: string | null
+  note?: string | null
   superseded?: boolean
 }
 interface OverlayFile {
