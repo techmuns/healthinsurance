@@ -128,8 +128,17 @@ function ComparisonTooltip({ active, payload, label, combos, mode, colorByKey }:
   if (!active || !payload?.length) return null
   const byKey = new Map(combos.map((c) => [c.key, c]))
   const year = String(label)
+  // Each line is drawn twice (a visible line + a transparent hover hit-line that
+  // shares its dataKey), so de-dupe by key to avoid listing a series twice.
+  const seen = new Set<string>()
   const rows = payload
     .filter((p) => p.value != null && p.dataKey != null && byKey.has(String(p.dataKey)))
+    .filter((p) => {
+      const k = String(p.dataKey)
+      if (seen.has(k)) return false
+      seen.add(k)
+      return true
+    })
     .map((p) => {
       const cb = byKey.get(String(p.dataKey))!
       return { cb, plotted: p.value as number, abs: cb.abs.get(year) ?? null }
