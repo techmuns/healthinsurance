@@ -21,7 +21,7 @@
 // (never drawn as 0 or indexed off a missing base), GDPI stays labelled a
 // premium (not profit), and an indexed view is always flagged as rebased.
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   CartesianGrid,
   LabelList,
@@ -33,10 +33,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Check } from 'lucide-react'
+import { Check, ChevronDown } from 'lucide-react'
 import { SourceTag } from './SourceTag'
 import {
-  COMPANY_BY_ID,
   FOCAL_COMPANY_ID,
   METRICS,
   sortYears,
@@ -44,8 +43,6 @@ import {
   type MetricDef,
   type MetricId,
 } from '@/lib/marketTrends'
-
-const FOCAL = COMPANY_BY_ID[FOCAL_COMPANY_ID]
 
 // The four health lenses offered for comparison — from the narrow SAHI segment
 // lens out to the rupee premium scale.
@@ -193,47 +190,125 @@ function Sparkline({ values, color }: { values: (number | null)[]; color: string
   )
 }
 
-function SummaryCard({ metric }: { metric: MetricDef }) {
+// A compact, clickable lens card. Clicking it focuses that single metric across
+// ALL insurers (handled by the parent), so "click SAHI Share → every insurer's
+// SAHI share". `active` ties the card to the current metric selection.
+function SummaryCard({ metric, active, onClick }: { metric: MetricDef; active: boolean; onClick: () => void }) {
   const { last, delta } = seriesStat(metric, FOCAL_COMPANY_ID)
   const years = sortYears(metric.points.map((p) => p.year))
   const map = absLookup(FOCAL_COMPANY_ID, metric)
   const values = years.map((y) => map.get(y) ?? null)
-  const unit = metric.unit === '%' ? '% share' : `${metric.unit} · premium`
   const color = METRIC_COLOR[metric.id]
-  // Honest latest period: the most recent year that actually carries a value
-  // (FY24 today; becomes FY25 the moment that data lands).
   const latestYear = [...years].reverse().find((y) => map.get(y) != null) ?? years[years.length - 1] ?? '—'
-  const firstYear = years.find((y) => map.get(y) != null) ?? years[0] ?? '—'
 
   return (
-    <div
-      className="surface-soft relative flex h-full flex-col justify-between overflow-hidden rounded-xl p-3"
-      style={{ background: `linear-gradient(135deg, ${color}0A 0%, transparent 60%)` }}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className="surface-soft group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-xl p-2.5 text-left transition-all duration-200 hover:-translate-y-px lg:flex-1"
+      style={{
+        background: `linear-gradient(135deg, ${color}${active ? '16' : '0A'} 0%, transparent 65%)`,
+        boxShadow: active ? `0 0 0 1.5px ${color}66, 0 6px 16px rgba(23,43,77,0.06)` : undefined,
+      }}
     >
-      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: color }} />
-      <div className="pl-1.5">
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: color, opacity: active ? 1 : 0.5 }} />
+      <div className="min-w-0 pl-1.5">
         <div className="flex items-center gap-1.5">
           <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
           <p className="truncate font-display text-[12px] leading-tight text-navy-deep">{metric.chip}</p>
         </div>
-        <p className="mt-0.5 text-[8.5px] uppercase tracking-wide text-ink-secondary">{unit}</p>
-      </div>
-      <div className="mt-2 flex items-end justify-between gap-2 pl-1.5">
-        <div className="min-w-0">
-          <p className="text-[16px] font-semibold leading-none tabular-nums" style={{ color }}>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-[16px] font-semibold leading-none tabular-nums" style={{ color }}>
             {last != null ? metric.format(last) : 'n/a'}
-          </p>
-          {delta != null && (
-            <p className={`mt-1 text-[10px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
-              {metric.formatDelta(delta)}
-            </p>
-          )}
-          <p className="mt-0.5 text-[8px] uppercase tracking-wide text-ink-secondary/80">
-            {FOCAL.name} · {firstYear} → {latestYear}
-          </p>
+          </span>
+          <span className="text-[8px] uppercase tracking-wide text-ink-secondary/70">{latestYear}</span>
         </div>
-        <Sparkline values={values} color={color} />
+        {delta != null && (
+          <p className={`mt-1 text-[10px] font-semibold tabular-nums ${delta >= 0 ? 'text-emerald' : 'text-coral'}`}>
+            {metric.formatDelta(delta)}
+          </p>
+        )}
       </div>
+      <Sparkline values={values} color={color} />
+    </button>
+  )
+}
+
+// Compact insurer multi-select dropdown — replaces the chip row so the control
+// bar stays tidy. Each row toggles a company; hovering a row isolates it on the
+// chart (same as the old chips). Closes on outside click.
+function InsurerDropdown({
+  selected,
+  onToggle,
+  onHover,
+}: {
+  selected: Set<string>
+  onToggle: (id: string) => void
+  onHover: (id: string | null) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !(ref.current as Node).contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
+
+  const count = selected.size
+  const label =
+    count === TREND_COMPANIES.length
+      ? 'All insurers'
+      : count === 1
+        ? TREND_COMPANIES.find((c) => selected.has(c.id))?.name ?? '1 insurer'
+        : `${count} insurers`
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-0.5 text-[10.5px] font-medium text-navy-deep shadow-soft transition-colors hover:bg-ice/60"
+      >
+        <span className="flex -space-x-1">
+          {TREND_COMPANIES.filter((c) => selected.has(c.id))
+            .slice(0, 5)
+            .map((c) => (
+              <span key={c.id} className="h-2.5 w-2.5 rounded-full ring-1 ring-white" style={{ background: c.color }} />
+            ))}
+        </span>
+        {label}
+        <ChevronDown className={`h-3 w-3 text-ink-secondary transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute left-0 z-30 mt-1 w-48 rounded-xl border border-soft-border bg-white p-1 shadow-card">
+          {TREND_COMPANIES.map((c) => {
+            const on = selected.has(c.id)
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onToggle(c.id)}
+                onMouseEnter={() => onHover(c.id)}
+                onMouseLeave={() => onHover(null)}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] transition-colors hover:bg-ice/70"
+              >
+                <span
+                  className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border"
+                  style={{ borderColor: on ? c.color : '#CBD2DC', background: on ? c.color : 'transparent' }}
+                >
+                  {on && <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
+                </span>
+                <span className="h-2 w-2 rounded-full" style={{ background: c.color }} />
+                <span className={on ? 'font-medium text-navy-deep' : 'text-ink-secondary'}>{c.name}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -357,6 +432,12 @@ export function MarketTrendExplorer() {
       } else next.add(id)
       return next
     })
+  // Click a lens card → focus that one metric across EVERY insurer (so e.g.
+  // "SAHI Share" instantly shows all five insurers' SAHI-pool share).
+  const focusLens = (id: MetricId) => {
+    setMetricSet(new Set([id]))
+    setCompanySet(new Set(TREND_COMPANIES.map((c) => c.id)))
+  }
 
   const absUnit = selMetrics[0]?.unit ?? '%'
   const yTick = (v: number) =>
@@ -434,50 +515,12 @@ export function MarketTrendExplorer() {
           })}
         </div>
 
-        {/* Company chips — the legend, now a multi-select. Click toggles; hover
-            isolates that insurer across the chart. */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Insurer</span>
-          {TREND_COMPANIES.map((c) => {
-            const on = companySet.has(c.id)
-            const hot = hoverCompany === c.id
-            const dim = hoverCompany != null && !hot
-            const focal = c.id === FOCAL_COMPANY_ID
-            return (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => toggleCompany(c.id)}
-                onMouseEnter={() => setHoverCompany(c.id)}
-                onMouseLeave={() => setHoverCompany(null)}
-                onFocus={() => setHoverCompany(c.id)}
-                onBlur={() => setHoverCompany(null)}
-                aria-pressed={on}
-                className={[
-                  'inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] transition-all duration-200',
-                  on ? 'border-muted-blue bg-white shadow-soft' : 'border-soft-border bg-white/40',
-                  dim ? 'opacity-45' : 'opacity-100',
-                ].join(' ')}
-              >
-                <span
-                  className="h-2 w-2 rounded-full transition-all"
-                  style={{ background: c.color, opacity: on ? 1 : 0.3 }}
-                />
-                <span
-                  className={[
-                    focal ? 'font-semibold' : 'font-medium',
-                    on ? 'text-navy-deep' : 'text-ink-secondary/70',
-                  ].join(' ')}
-                >
-                  {c.name}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* View mode */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* Insurer multi-select (dropdown) + View mode on one tidy row. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Insurer</span>
+            <InsurerDropdown selected={companySet} onToggle={toggleCompany} onHover={setHoverCompany} />
+          </div>
           <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">View</span>
           <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-white/60">
             {VIEW_MODES.map((vm) => {
@@ -509,8 +552,9 @@ export function MarketTrendExplorer() {
         </div>
       </div>
 
-      {/* ── Large comparison line chart ── */}
-      <div className="h-[256px] w-full">
+      {/* ── Chart (left) + clickable lens cards (right) ── */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)] lg:items-stretch">
+        <div className="h-[300px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 54, left: 4, bottom: 8 }} onMouseLeave={() => setHoverCombo(null)}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
@@ -631,49 +675,16 @@ export function MarketTrendExplorer() {
         </ResponsiveContainer>
       </div>
 
-      {/* ── Four compact summary cards — Niva Bupa at a glance, no full chart. ── */}
-      <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {PRIMARY.map((id) => (
-          <SummaryCard key={id} metric={METRICS[id]} />
-        ))}
+        {/* Lens cards — click one to focus that metric across every insurer. */}
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:flex lg:flex-col">
+          {PRIMARY.map((id) => (
+            <SummaryCard key={id} metric={METRICS[id]} active={metricSet.has(id)} onClick={() => focusLens(id)} />
+          ))}
+        </div>
       </div>
 
-      {/* ── Understanding the lenses — a soft teal/blue help box, two columns
-          that separate the share lenses from the premium lens. ── */}
-      <div className="mt-3 rounded-xl border border-[#CFE7E4] bg-gradient-to-br from-[#F2FAF8] to-[#F4F8FD] p-3.5">
-        <div className="mb-2 flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-teal" />
-          <p className="font-display text-[12.5px] text-navy-deep">Understanding the lenses</p>
-        </div>
-        <div className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
-          <div>
-            <p className="text-[11px] leading-relaxed text-ink-secondary">
-              <span className="font-semibold text-navy-deep">Share metrics</span> (SAHI Share, Retail Health Share, Overall Health Share) show an insurer&rsquo;s proportion of health premium in the relevant base.
-            </p>
-            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-teal-soft px-1.5 py-0.5 text-[9px] font-semibold text-teal ring-1 ring-[#BFE3E1]">
-              Higher is better
-            </span>
-          </div>
-          <div>
-            <p className="text-[11px] leading-relaxed text-ink-secondary">
-              <span className="font-semibold text-navy-deep">Premium metric</span> (GDPI Premium) shows total health premium written — premium scale and growth, not profit.
-            </p>
-            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ring-1" style={{ background: '#7A6CC41A', color: '#5A4EA0', borderColor: '#CFC8EC' }}>
-              Higher is better
-            </span>
-          </div>
-        </div>
-        <p className="mt-2 text-[10px] italic text-ink-secondary/80">
-          Higher is generally better, but mix and profitability still need separate analysis.
-        </p>
-      </div>
-
-      {/* Footer — one-line read + a single shared source (all from the DRHP). */}
-      <div className="mt-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-2 pt-1">
-        <p className="max-w-lg text-[11px] leading-relaxed text-ink-secondary">
-          <span className="font-semibold text-navy-deep">Read it — </span>
-          pick insurers and metrics, then choose a view. Indexed mode rebases every line to FY22 = 100, so share and premium growth can be compared on one scale.
-        </p>
+      {/* Footer — a single shared source (all from the DRHP). */}
+      <div className="mt-3 flex justify-end pt-1">
         <SourceTag source="Company filing" period="FY22–FY25" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
       </div>
     </div>
