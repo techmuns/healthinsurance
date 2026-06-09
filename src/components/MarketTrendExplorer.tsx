@@ -48,17 +48,6 @@ import {
 // lens out to the rupee premium scale.
 const PRIMARY: MetricId[] = ['sahi_share', 'retail_share', 'overall_share', 'gdpi']
 
-// One soft dash signature per metric — used only when MORE than one insurer is
-// on the canvas (then colour encodes the company and the dash encodes the
-// metric, so companies stay distinguishable).
-const DASH_BY_METRIC: Record<MetricId, string> = {
-  sahi_share: '',
-  retail_share: '5 3',
-  overall_share: '2 3',
-  gdpi: '7 3 1 3',
-  premium_growth: '1 4',
-}
-
 // One tone-coded colour per metric (teal · soft blue · gold · soft violet) on
 // the dashboard's palette. When a SINGLE insurer is selected, each metric line
 // takes its own colour here — and the pills and summary cards echo it — so the
@@ -411,8 +400,8 @@ export function MarketTrendExplorer() {
   }, [combos, data])
 
   // With one insurer on the canvas, colour encodes the METRIC (teal/blue/gold/
-  // violet, lines drawn solid) — the reference look. With several insurers,
-  // colour encodes the COMPANY and a subtle dash encodes the metric.
+  // violet) — the reference look. With several insurers, colour encodes the
+  // COMPANY. Lines are always solid; hover isolation keeps a busy chart readable.
   const singleCompany = selCompanies.length === 1
   const colorByKey = useMemo(() => {
     const m: Record<string, string> = {}
@@ -687,7 +676,6 @@ export function MarketTrendExplorer() {
               const lastIdx = lastIdxByKey[cb.key]
               const dimmed = anyHover && !active
               const color = colorByKey[cb.key]
-              const dash = singleCompany ? undefined : DASH_BY_METRIC[cb.metric.id] || undefined
               return (
                 <Line
                   key={`l-${cb.key}`}
@@ -696,7 +684,6 @@ export function MarketTrendExplorer() {
                   stroke={color}
                   strokeWidth={width}
                   strokeOpacity={opacity}
-                  strokeDasharray={dash}
                   dot={(p: { cx?: number; cy?: number; index?: number; value?: number | null }) => {
                     const cx = Number(p.cx)
                     const cy = Number(p.cy)
