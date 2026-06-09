@@ -50,9 +50,16 @@ const URL_RE = /https?:\/\/[^\s)|"'<>\]]+/g
 interface ManifestEntry { filename: string; url: string; bytes: number; sha256: string; fetched_at: string }
 interface Manifest { files: Record<string, ManifestEntry>; updated_at?: string }
 
+const DOC_URL = (process.env.FETCH_DOC_URL || '').trim()
+
 function buildPayload() {
   const fyEndYear = 2000 + Number((PERIOD.match(/\d+/) || ['0'])[0]) // FY26 -> 2026
+  const docLine = DOC_URL
+    ? `PRIMARY SOURCE — open and READ this exact document, and take the values from it: ${DOC_URL}\n` +
+      'It is the full-year statutory / financial-results document for this fiscal year. Extract the figures from this PDF.\n\n'
+    : ''
   const task =
+    docLine +
     `Pull the following FULL-YEAR financial data for ${COMPANY_NAME}, for the financial year ${PERIOD} (the full year ended 31 March ${fyEndYear}).\n\n` +
     'Return it as a table with exactly these columns, in this order:\n\n' +
     'company | period | line_item | basis | value | unit | source_name | source_url | filing_date\n\n' +
@@ -81,7 +88,7 @@ function buildPayload() {
       CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [], GET_ANNOUNCEMENTS_ENABLED: false,
       chatHistory: [], mode: 'fast',
     },
-    autoAddUpcoming: false, urls: [],
+    autoAddUpcoming: false, urls: DOC_URL ? [DOC_URL] : [],
   }
 }
 

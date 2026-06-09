@@ -23,6 +23,11 @@ on:
         required: false
         default: 'FY25'
         type: string
+      doc_url:
+        description: 'Optional exact source document URL for the agent to read'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
@@ -51,6 +56,7 @@ jobs:
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
           FETCH_COMPANY_ID: ${{ inputs.company }}
           FETCH_PERIOD: ${{ inputs.period }}
+          FETCH_DOC_URL: ${{ inputs.doc_url }}
         run: npx tsx scripts/ingest/sahi-financials-agent.ts
       - name: Commit results
         run: |
