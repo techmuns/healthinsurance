@@ -1,14 +1,62 @@
 {
   "_meta": {
     "snapshot_id": "ownership-snapshot",
-    "description": "Quarterly shareholding pattern for listed insurers. Drives Ownership section.",
+    "description": "Quarterly shareholding pattern for listed insurers (promoter / FII / DII / MF / public).",
     "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
-    "upstream_sources": ["company_ir", "nse_quotes"],
-    "parser_status": "pending",
-    "notes": "Unlisted insurers render an unavailable state — shareholding pattern is not publicly disclosed for unlisted entities."
+    "dataset": "mixed",
+    "last_updated": "2026-06-10",
+    "last_successful_run": "2026-06-10T14:46:15.395Z",
+    "upstream_sources": [
+      "muns_agent",
+      "nse_bse_shareholding"
+    ],
+    "parser_status": "ready",
+    "notes": "Listed SAHIs only (Star Health, Niva Bupa). Unlisted insurers do not disclose a shareholding pattern. Each leg null where the source does not split it out — never 0."
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "star-health",
+      "quarter": "Q4",
+      "fiscal_year": "FY26",
+      "promoter_share": 57.98,
+      "fii_share": 15.06,
+      "dii_share": 20.31,
+      "mf_share": 6.66,
+      "public_share": null,
+      "sponsor_share": null,
+      "top_holders": [],
+      "pledge_share": null,
+      "provenance": {
+        "source_name": "Quarterly shareholding pattern — Star Health Mar 2026 (via muns agent)",
+        "source_url": null,
+        "source_period": "Mar 2026",
+        "fetched_at": "2026-06-10T14:46:15.395Z",
+        "parsed_at": "2026-06-10T14:47:02.335Z",
+        "parser_name": "sahi-ownership-agent",
+        "confidence": "medium"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "quarter": "Q4",
+      "fiscal_year": "FY26",
+      "promoter_share": 55.36,
+      "fii_share": 10.6,
+      "dii_share": 16.49,
+      "mf_share": 17.56,
+      "public_share": null,
+      "sponsor_share": null,
+      "top_holders": [],
+      "pledge_share": null,
+      "provenance": {
+        "source_name": "Quarterly shareholding pattern — Niva Bupa Mar 2026 (via muns agent)",
+        "source_url": null,
+        "source_period": "Mar 2026",
+        "fetched_at": "2026-06-10T14:46:15.395Z",
+        "parsed_at": "2026-06-10T14:47:02.336Z",
+        "parser_name": "sahi-ownership-agent",
+        "confidence": "medium"
+      }
+    }
+  ]
 }
