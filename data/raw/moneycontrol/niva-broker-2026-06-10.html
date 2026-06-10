@@ -6216,7 +6216,7 @@ document.addEventListener("DOMContentLoaded", function() {
     var techPeriod = 'D';
     var showInfoPopup = "Y";
     var isIosRequest = "";
-    var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36";
+    var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36";
     var accountsDomain = "https://accounts.moneycontrol.com/";
     var imageDomain = "https://images.moneycontrol.com/";
     var strikePriceArr = [];
@@ -10995,7 +10995,7 @@ $('.graph_top_container .nav-tabs li').click(function() {
       priceVolume(pvSel); 
     }, 60000);
     function volumeGraph(volume_json) {
-      // var volume_json = '{"price":{"1 Week":0.35,"1 Month":3.73,"3 Months":18.44,"YTD":11.83,"1 Year":1.6,"3 Years":"--"},"volume":{"Today":{"delivery":0,"cvol":822323,"cvol_display_text":"8L","delivery_display_text":"","delivery_tooltip_text":"","cvol_tooltip_text":"NSE+BSE Traded Volume : 8L"},"Yesterday":{"delivery":466428,"cvol":971405,"cvol_display_text":"10L","delivery_display_text":"5L (48.02%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 10L","delivery_tooltip_text":"Combined Delivery Volume : 5L"},"1 Week Avg":{"delivery":339048,"cvol":770996,"cvol_display_text":"8L","delivery_display_text":"3L (43.98%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 8L","delivery_tooltip_text":"Combined Delivery Volume : 3L"},"1 Month Avg":{"delivery":1833952,"cvol":5070136,"cvol_display_text":"51L","delivery_display_text":"18L (36.17%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 51L","delivery_tooltip_text":"Combined Delivery Volume : 18L"}}}';    
+      // var volume_json = '{"price":{"1 Week":0.11,"1 Month":3.48,"3 Months":18.16,"YTD":11.56,"1 Year":1.36,"3 Years":"--"},"volume":{"Today":{"delivery":0,"cvol":798415,"cvol_display_text":"8L","delivery_display_text":"","delivery_tooltip_text":"","cvol_tooltip_text":"NSE+BSE Traded Volume : 8L"},"Yesterday":{"delivery":466428,"cvol":971405,"cvol_display_text":"10L","delivery_display_text":"5L (48.02%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 10L","delivery_tooltip_text":"Combined Delivery Volume : 5L"},"1 Week Avg":{"delivery":339048,"cvol":770996,"cvol_display_text":"8L","delivery_display_text":"3L (43.98%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 8L","delivery_tooltip_text":"Combined Delivery Volume : 3L"},"1 Month Avg":{"delivery":1833952,"cvol":5070136,"cvol_display_text":"51L","delivery_display_text":"18L (36.17%)","cvol_tooltip_text":"NSE+BSE Traded Volume : 51L","delivery_tooltip_text":"Combined Delivery Volume : 18L"}}}';    
       if (volume_json != '') {
         var volume_obj = JSON.parse(volume_json);
 
