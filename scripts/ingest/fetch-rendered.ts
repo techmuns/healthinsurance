@@ -76,7 +76,10 @@ async function loadManifest(p: string): Promise<Record<string, ManifestEntry>> {
 }
 
 interface Discovered { href: string; text: string }
-interface PageScan { title: string; bodyLen: number; allLinks: Discovered[] }
+interface PageScan { title: string; bodyLen: number; allLinks: Discovered[]; apiHits: string[] }
+// SPA data calls worth surfacing — the document list usually arrives via one of
+// these, with the real PDF URLs inside the JSON response.
+const API_RX = /\/(api|wp-json|graphql|getdocuments?|documentlist|disclosure|financial|filings?|attachments?)\b|\.json(\?|$)|\.ashx|\.pdf/i
 // A link looks like a document if its URL or text points at a file/download —
 // not just a ".pdf" suffix (many sites use /download?id=, .ashx, viewers, etc.).
 const DOC_RX = /\.(pdf|ashx|xlsx?)(\?|#|$)|\/(download|document|getfile|attachment|viewfile|filedownload)/i
@@ -84,18 +87,23 @@ const DOC_TEXT_RX = /\.pdf|download|financial statement|ind[\s-]?as|disclosure|a
 
 async function scanPage(ctx: BrowserContext, url: string): Promise<PageScan> {
   const page = await ctx.newPage()
+  const apiHits = new Set<string>()
+  // Watch the data calls the SPA makes — the document list (with real PDF URLs)
+  // usually arrives via one of these responses.
+  page.on('response', (resp) => { const u = resp.url(); if (API_RX.test(u) && !/\.(js|css|woff2?|png|jpg|svg|gif)(\?|$)/i.test(u)) apiHits.add(`${resp.status()} ${u}`) })
   try {
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS })
-    // Give the JS document list time to populate; try to wait for any anchor that
-    // looks like a document, but don't fail if none appears.
-    await page.waitForTimeout(7000)
-    await page.waitForSelector('a[href*=".pdf"], a[href*="download"], a[href*=".ashx"]', { timeout: 8000 }).catch(() => {})
+    await page.waitForTimeout(6000)
+    // SPAs often lazy-load the document table on scroll / after data arrives.
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)).catch(() => {})
+    await page.waitForTimeout(6000)
+    await page.waitForSelector('a[href*=".pdf"], a[href*="download"], a[href*=".ashx"]', { timeout: 6000 }).catch(() => {})
     const allLinks: Discovered[] = await page.$$eval('a[href]', (as) =>
       as.map((a) => ({ href: (a as HTMLAnchorElement).href, text: (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100) })),
     )
     const title = await page.title().catch(() => '')
     const bodyLen = (await page.evaluate(() => document.body?.innerText?.length ?? 0).catch(() => 0)) as number
-    return { title, bodyLen, allLinks }
+    return { title, bodyLen, allLinks, apiHits: [...apiHits] }
   } finally {
     await page.close().catch(() => {})
   }
@@ -127,6 +135,7 @@ async function main(): Promise<number> {
         try {
           const scan = await scanPage(ctx, url)
           console.log(`    page: "${scan.title}" | body ${scan.bodyLen} chars | ${scan.allLinks.length} total links — ${url}`)
+          if (scan.apiHits.length) { console.log('      [network] data calls the app made:'); for (const h of scan.apiHits.slice(0, 25)) console.log(`        ${h.slice(0, 150)}`) }
           allLinks.push(...scan.allLinks)
         } catch (e) { failures++; console.error(`  ! render failed: ${url} (${e instanceof Error ? e.message : String(e)})`) }
       }
