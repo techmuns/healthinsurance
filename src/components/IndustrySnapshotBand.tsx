@@ -34,7 +34,9 @@ interface RingCard {
   subtitle: string
   segments: Seg[]
   insight: string
-  tone: 'teal' | 'gold'
+  // Dominant tint per card (colour-psychology): Market Size = blue,
+  // SAHI vs Non-SAHI = teal, PSU vs Private = gold.
+  tone: 'blue' | 'teal' | 'gold'
 }
 
 // Ring fills
@@ -49,19 +51,19 @@ const CARDS: RingCard[] = [
     title: '1. Market Size by Segment (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Market Share (%)',
     segments: [
-      { name: 'Life Insurance', premium: 886000, share: 74.3, color: NAVY, labelColor: '#27457E' },
-      { name: 'General Insurance (Other than Health)', premium: 181000, share: 15.1, color: VIOLET, labelColor: '#6F54A6' },
-      { name: 'Health Insurance', premium: 126000, share: 10.6, color: TEAL, labelColor: '#147C7B' },
+      { name: 'Life Insurance', premium: 886000, share: 74.3, color: NAVY, labelColor: '#1E3A6B' },
+      { name: 'General Insurance (Other than Health)', premium: 181000, share: 15.1, color: VIOLET, labelColor: '#574089' },
+      { name: 'Health Insurance', premium: 126000, share: 10.6, color: TEAL, labelColor: '#0E6F6D' },
     ],
     insight: 'Life is the largest segment by far; health is the fastest-growing but still ~11% of total premium.',
-    tone: 'teal',
+    tone: 'blue',
   },
   {
     title: '2. SAHI vs Non-SAHI (Health Insurance) (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Share (%)',
     segments: [
-      { name: 'Non-SAHI (Health business of GI)', premium: 86000, share: 68.3, color: GREY, labelColor: '#6B7480' },
-      { name: 'SAHI (Standalone Health Insurers)', premium: 40000, share: 31.7, color: TEAL, labelColor: '#147C7B' },
+      { name: 'Non-SAHI (Health business of GI)', premium: 86000, share: 68.3, color: GREY, labelColor: '#535C68' },
+      { name: 'SAHI (Standalone Health Insurers)', premium: 40000, share: 31.7, color: TEAL, labelColor: '#0E6F6D' },
     ],
     insight: 'Standalone health insurers write about a third of health premium — general insurers write the rest.',
     tone: 'teal',
@@ -70,8 +72,8 @@ const CARDS: RingCard[] = [
     title: '3. PSU vs Private (Total Insurance) (FY25)',
     subtitle: 'Total Premium (₹ Cr) and Share (%)',
     segments: [
-      { name: 'Private Insurers', premium: 593000, share: 49.7, color: NAVY, labelColor: '#27457E' },
-      { name: 'PSU Insurers', premium: 600000, share: 50.3, color: GOLD, labelColor: '#9C7430' },
+      { name: 'Private Insurers', premium: 593000, share: 49.7, color: NAVY, labelColor: '#1E3A6B' },
+      { name: 'PSU Insurers', premium: 600000, share: 50.3, color: GOLD, labelColor: '#8A6516' },
     ],
     insight: 'On total premium, public and private are roughly level — LIC’s scale offsets private’s lead in general insurance.',
     tone: 'gold',
@@ -81,13 +83,13 @@ const CARDS: RingCard[] = [
 const inr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
 const RAD = Math.PI / 180
 
-// Ring geometry (px). Thin band; the box leaves room around it for the % labels
-// to sit just outside the ring without clipping.
-const BOX = 188
+// Ring geometry (px). Thin band; a roomier box + a larger label radius keep the
+// % chips clear of the ring band and the card edges so they never overlap.
+const BOX = 204
 const C = BOX / 2
 const INNER = 46
 const OUTER = 58
-const LABEL_R = OUTER + 12
+const LABEL_R = OUTER + 19
 
 /** Slim ring chart — thin stroke, rounded ends, clean center hole, with the %
  *  for each segment placed just outside the ring (kept off the thin band so it
@@ -141,7 +143,7 @@ function RingChart({ segments }: { segments: Seg[] }) {
         {labels.map((l) => (
           <span
             key={l.key}
-            className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-[11px] font-bold tabular-nums"
+            className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-px text-[11px] font-bold tabular-nums shadow-[0_1px_2px_rgba(23,43,77,0.10)] ring-1 ring-black/[0.04]"
             style={{ left: l.x, top: l.y, color: l.color }}
           >
             {l.share}%
@@ -152,14 +154,28 @@ function RingChart({ segments }: { segments: Seg[] }) {
   )
 }
 
-function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard) {
-  const insightClass = tone === 'gold' ? 'bg-champagne-soft text-champagne-deep' : 'bg-teal-soft text-teal'
-  return (
-    <div className="flex flex-col rounded-[20px] border border-[rgba(23,43,77,0.08)] bg-white p-5 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <h3 className="font-display text-[15px] leading-tight text-navy-deep">{title}</h3>
-      <p className="mt-0.5 text-[11px] text-ink-secondary">{subtitle}</p>
+// Dominant tint per card — a soft tonal wash + a slim top accent rib, by
+// colour-psychology: blue (market structure), teal (health/SAHI), gold (PSU).
+const TINT: Record<RingCard['tone'], { accent: string; wash: string; bloom: string; insight: string }> = {
+  blue: { accent: '#3D5F9F', wash: 'rgba(61,95,159,0.05)', bloom: 'rgba(61,95,159,0.10)', insight: 'bg-soft-blue text-navy-primary' },
+  teal: { accent: '#168E8E', wash: 'rgba(22,142,142,0.055)', bloom: 'rgba(22,142,142,0.11)', insight: 'bg-teal-soft text-teal' },
+  gold: { accent: '#C29A45', wash: 'rgba(194,154,69,0.07)', bloom: 'rgba(194,154,69,0.13)', insight: 'bg-champagne-soft text-champagne-deep' },
+}
 
-      <div className="mt-2 flex items-center gap-3">
+function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard) {
+  const t = TINT[tone]
+  return (
+    <div
+      className="group relative flex flex-col overflow-hidden rounded-[20px] border p-5 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_3px_8px_rgba(23,43,77,0.07),0_20px_42px_rgba(23,43,77,0.11)]"
+      style={{ background: `linear-gradient(160deg, #FFFFFF 0%, ${t.wash} 100%)`, borderColor: 'rgba(23,43,77,0.08)' }}
+    >
+      {/* slim top accent rib + faint corner bloom */}
+      <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: t.accent, opacity: 0.85 }} />
+      <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full opacity-60 blur-2xl transition-opacity duration-300 group-hover:opacity-100" style={{ background: t.bloom }} />
+      <h3 className="relative font-display text-[15px] leading-tight text-navy-deep">{title}</h3>
+      <p className="relative mt-0.5 text-[11px] text-ink-secondary">{subtitle}</p>
+
+      <div className="relative mt-2 flex items-center gap-3">
         <RingChart segments={segments} />
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
           {segments.map((s) => (
@@ -175,7 +191,7 @@ function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard)
         </div>
       </div>
 
-      <div className={`mt-auto flex items-center gap-2 rounded-xl px-3 py-2 ${insightClass}`}>
+      <div className={`relative mt-auto flex items-center gap-2 rounded-xl px-3 py-2 ${t.insight}`}>
         <TrendingUp className="h-3.5 w-3.5 shrink-0" />
         <span className="text-[11px] font-medium leading-snug">{insight}</span>
       </div>
