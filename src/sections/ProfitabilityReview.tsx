@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Landmark, ShieldCheck } from 'lucide-react'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
@@ -212,6 +212,84 @@ function FrameworkCharts({ theme, basis, companyId }: { theme: FrameworkTheme; b
   )
 }
 
+// ── Profit Trend & Quality — one combo band above the tables ─────────────────
+// Lines: IFRS PAT (navy) + IGAAP PAT (gold). Stacked columns per year compose
+// the profit DRIVER — Operating profit (statutory underwriting result, teal) +
+// Investment profit (investment income = AUM × yield, muted amber). Negatives
+// extend below zero so losses are never hidden. Display-only derivation from the
+// existing basis model — no pipeline / calculation change.
+const Q_COLORS = { ifrs: '#27457E', igaap: '#B68B3A', operating: '#168E8E', investment: '#E6C879' }
+
+function investmentIncome(id: string, p: BasisPeriod): number | null {
+  const inv = getInvestment(id, p)
+  if (!inv || inv.aum == null || inv.yield == null) return null
+  return Math.round((inv.aum * inv.yield) / 100)
+}
+
+function ProfitQualityBand({ companyId }: { companyId: string }) {
+  const data = useMemo(
+    () =>
+      YEARS.map((p) => ({
+        fy: p,
+        ifrsPat: getBasisProfit(companyId, 'ifrs', p)?.pat ?? null,
+        igaapPat: getBasisProfit(companyId, 'igaap', p)?.pat ?? null,
+        operating: uw(getBasisNep(companyId, p), getBasisProfit(companyId, 'igaap', p)?.combinedRatio ?? null),
+        investment: investmentIncome(companyId, p),
+      })),
+    [companyId],
+  )
+  const hasAny = data.some((d) => d.ifrsPat != null || d.igaapPat != null || d.operating != null || d.investment != null)
+  if (!hasAny) return null
+
+  return (
+    <div className="rounded-[18px] border border-soft-border bg-white p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Profit Trend &amp; Quality (₹ Cr)</p>
+        <p className="text-[10px] text-ink-secondary">Bars = profit driver (operating vs investment) · Lines = reported PAT</p>
+      </div>
+      <div style={{ width: '100%', height: 212 }}>
+        <ResponsiveContainer>
+          <ComposedChart data={data} margin={{ top: 6, right: 8, left: -10, bottom: 0 }} barCategoryGap="34%">
+            <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
+            <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#E5E8EF' }} />
+            <YAxis tick={{ fontSize: 10.5, fill: '#6B7280' }} tickLine={false} axisLine={false} width={44} />
+            <ReferenceLine y={0} stroke="#C7D0DE" />
+            <Tooltip content={<QualityTooltip />} cursor={{ fill: 'rgba(23,43,77,0.04)' }} />
+            <Legend verticalAlign="top" align="right" height={22} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10.5, paddingBottom: 6 }} />
+            <Bar name="Operating profit" dataKey="operating" stackId="drv" fill={Q_COLORS.operating} radius={[2, 2, 0, 0]} maxBarSize={34} isAnimationActive={false} />
+            <Bar name="Investment profit" dataKey="investment" stackId="drv" fill={Q_COLORS.investment} radius={[2, 2, 0, 0]} maxBarSize={34} isAnimationActive={false} />
+            <Line name="IFRS PAT" type="monotone" dataKey="ifrsPat" stroke={Q_COLORS.ifrs} strokeWidth={1.8} dot={{ r: 2.4, fill: Q_COLORS.ifrs }} connectNulls={false} isAnimationActive={false} />
+            <Line name="IGAAP PAT" type="monotone" dataKey="igaapPat" stroke={Q_COLORS.igaap} strokeWidth={1.8} dot={{ r: 2.4, fill: Q_COLORS.igaap }} connectNulls={false} isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
+function QualityTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number | null; color: string }>; label?: string }) {
+  if (!active || !payload?.length) return null
+  const order = ['IFRS PAT', 'IGAAP PAT', 'Operating profit', 'Investment profit']
+  const byName = new Map(payload.map((p) => [p.name, p]))
+  return (
+    <div className="rounded-lg border border-soft-border bg-white/95 px-3 py-2 text-[11px] shadow-soft">
+      <p className="mb-1 font-semibold text-navy-deep">{label}</p>
+      {order.map((n) => {
+        const p = byName.get(n)
+        if (!p || p.value == null) return null
+        return (
+          <div key={n} className="flex items-center justify-between gap-4">
+            <span className="inline-flex items-center gap-1.5 text-ink-secondary">
+              <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />{n}
+            </span>
+            <span className="tabular-nums font-medium text-ink-primary">₹{p.value.toLocaleString('en-IN')}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export function ProfitabilityReview() {
   const company = useActiveCompany()
   const [view, setView] = useState<'table' | 'chart'>('table')
@@ -277,9 +355,12 @@ export function ProfitabilityReview() {
       <ReviewHeader name={company.shortName} view={view} onView={setView} />
 
       {view === 'table' ? (
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start animate-fade-in">
-          <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} />
-          <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} />
+        <div className="space-y-5 animate-fade-in">
+          <ProfitQualityBand companyId={id} />
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
+            <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} />
+            <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start animate-fade-in">
