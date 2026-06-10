@@ -1,6 +1,8 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useFilters } from '@/state/filters'
 import { formatRange } from '@/lib/dateRange'
+import { AnalysisBuilder } from '@/components/AnalysisBuilder'
+import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import {
   getScorecard,
   fmtValue,
@@ -354,8 +356,8 @@ function TableView({ rows, metrics }: { rows: ScoreRow[]; metrics: MetricDef[] }
 }
 
 // ── Page ────────────────────────────────────────────────────────────────────
-type Tab = 'Scorecard' | 'Table'
-const TABS: Tab[] = ['Scorecard', 'Table']
+type Tab = 'Scorecard' | 'Table' | 'Analysis Builder'
+const TABS: Tab[] = ['Scorecard', 'Table', 'Analysis Builder']
 const PILLS = [
   { key: 'growth', label: 'GWP Growth' },
   { key: 'roe', label: 'ROE' },
@@ -469,6 +471,13 @@ export function CompetitivePositioning() {
       )}
 
       {tab === 'Table' && <TableView rows={card.rows} metrics={card.metrics} />}
+
+      {tab === 'Analysis Builder' && (
+        <AnalysisBuilder
+          rows={getFilteredInsurers({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany })}
+          focalId={getHighlightedInsurer({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany }).id}
+        />
+      )}
 
       {/* Source row */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-soft-border pt-3 text-[10.5px] text-ink-secondary">
