@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Landmark, ShieldCheck, Wallet } from 'lucide-react'
+import { Landmark, ShieldCheck } from 'lucide-react'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
@@ -119,13 +119,6 @@ const IGAAP_THEME: FrameworkTheme = {
   theadClass: 'bg-champagne-soft/70',
   fyClass: 'text-champagne-deep',
 }
-const CAPITAL_THEME: FrameworkTheme = {
-  label: 'Capital & Investments',
-  Icon: Wallet,
-  headerClass: 'bg-gradient-to-r from-[#1B8A8A] to-[#0E6A6A]',
-  theadClass: 'bg-[#E6F2F1]',
-  fyClass: 'text-[#0E6A6A]',
-}
 
 function FrameworkTable({ theme, metrics }: { theme: FrameworkTheme; metrics: MetricDef[] }) {
   const rows = metrics.map((m) => ({ ...m, values: YEARS.map((p) => m.get(p)) }))
@@ -226,10 +219,19 @@ export function ProfitabilityReview() {
   const id = company.id
 
   // Per-basis metric definitions, wired to the real model.
-  const { ifrsMetrics, igaapMetrics, capitalMetrics } = useMemo(() => {
+  const { ifrsMetrics, igaapMetrics } = useMemo(() => {
     const nep = (p: BasisPeriod) => getBasisNep(id, p)
     const igaapCr = (p: BasisPeriod) => getBasisProfit(id, 'igaap', p)?.combinedRatio ?? null
     const ifrsCr = (p: BasisPeriod) => getBasisProfit(id, 'ifrs', p)?.combinedRatio ?? null
+
+    // Balance-sheet & investment-book metrics — statutory basis, shown on both
+    // tables for reference. Investment leverage is the calculation-based row.
+    const capital: MetricDef[] = [
+      { label: 'Net Worth (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getNetWorth(id, p) },
+      { label: 'Investment AUM (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getInvestment(id, p)?.aum ?? null },
+      { label: 'Investment Yield (%)', kind: 'pct', goodWhenUp: true, get: (p) => getInvestment(id, p)?.yield ?? null },
+      { label: 'Investment Leverage (x)', kind: 'x', goodWhenUp: true, get: (p) => getInvestmentLeverage(id, p) },
+    ]
 
     const ifrs: MetricDef[] = [
       { label: 'Net Earned Premium (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => nep(p) },
@@ -239,6 +241,7 @@ export function ProfitabilityReview() {
       { label: 'PAT (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getBasisProfit(id, 'ifrs', p)?.pat ?? null },
       { label: 'RoE (%)', kind: 'pct', goodWhenUp: true, get: (p) => getStatutoryRoe(id, p) }, // statutory — no IFRS equity reported
       { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, get: (p) => getBasisSolvency(id, p) },
+      ...capital,
     ]
     const igaap: MetricDef[] = [
       { label: 'Gross Written Premium (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => gwpByFy[p] ?? null },
@@ -247,16 +250,9 @@ export function ProfitabilityReview() {
       { label: 'Underwriting Result (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => uw(nep(p), igaapCr(p)) },
       { label: 'PAT (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getBasisProfit(id, 'igaap', p)?.pat ?? null },
       { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, get: (p) => getBasisSolvency(id, p) },
+      ...capital,
     ]
-    // Balance-sheet & investment-book metrics — statutory basis, kept apart from
-    // the two P&L tables. Investment leverage is the calculation-based row.
-    const capital: MetricDef[] = [
-      { label: 'Net Worth (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getNetWorth(id, p) },
-      { label: 'Investment AUM (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getInvestment(id, p)?.aum ?? null },
-      { label: 'Investment Yield (%)', kind: 'pct', goodWhenUp: true, get: (p) => getInvestment(id, p)?.yield ?? null },
-      { label: 'Investment Leverage (x)', kind: 'x', goodWhenUp: true, get: (p) => getInvestmentLeverage(id, p) },
-    ]
-    return { ifrsMetrics: ifrs, igaapMetrics: igaap, capitalMetrics: capital }
+    return { ifrsMetrics: ifrs, igaapMetrics: igaap }
   }, [id, gwpByFy])
 
   // Honest, data-driven key takeaways (IGAAP/Statutory series).
@@ -281,12 +277,9 @@ export function ProfitabilityReview() {
       <ReviewHeader name={company.shortName} view={view} onView={setView} />
 
       {view === 'table' ? (
-        <div className="space-y-5 animate-fade-in">
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
-            <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} />
-            <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} />
-          </div>
-          <FrameworkTable theme={CAPITAL_THEME} metrics={capitalMetrics} />
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start animate-fade-in">
+          <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} />
+          <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start animate-fade-in">
