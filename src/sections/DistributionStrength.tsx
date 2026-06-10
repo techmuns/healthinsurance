@@ -644,7 +644,7 @@ function ReachReservedPreview({ companyName, tab }: { companyName: string; tab: 
     >
       <ReachBackdrop />
       <div className="relative flex items-center gap-2.5">
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-navy-primary shadow-soft ring-1 ring-[#D6E2FA]">
+        <span className="blob-a inline-flex h-8 w-8 shrink-0 items-center justify-center bg-white text-navy-primary shadow-soft ring-1 ring-[#D6E2FA]">
           <MapPin className="h-4 w-4" />
         </span>
         <div>
@@ -665,7 +665,7 @@ function ReachReservedPreview({ companyName, tab }: { companyName: string; tab: 
               className={`relative overflow-hidden rounded-lg border bg-white/75 px-2.5 py-2.5 backdrop-blur transition-all duration-300 ${active ? 'border-[#B9CCEC] shadow-soft ring-1 ring-[#D6E2FA]' : 'border-soft-border'}`}
             >
               <div className="flex items-center justify-between">
-                <span className={`inline-flex h-6 w-6 items-center justify-center rounded-md ${active ? 'bg-soft-blue text-navy-primary' : 'bg-ice text-ink-secondary'}`}>
+                <span className={`blob-d inline-flex h-6 w-6 items-center justify-center shadow-soft ${active ? 'bg-soft-blue text-navy-primary' : 'bg-ice text-ink-secondary'}`}>
                   <Icon className="h-3 w-3" />
                 </span>
                 <Lock className="h-3 w-3 text-ink-secondary/45" />

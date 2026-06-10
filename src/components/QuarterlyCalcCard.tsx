@@ -127,7 +127,7 @@ export function QuarterlyCalcCard({ company }: { company: Insurer }) {
         style={{ background: 'rgba(182,139,58,0.18)' }}
       />
       <div className="relative flex items-center gap-2">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white text-champagne-deep shadow-soft ring-1 ring-[#EAD9B6]">
+        <span className="blob-b inline-flex h-7 w-7 items-center justify-center bg-white text-champagne-deep shadow-soft ring-1 ring-[#EAD9B6]">
           <Calculator className="h-3.5 w-3.5" />
         </span>
         <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Calculation Basis</span>

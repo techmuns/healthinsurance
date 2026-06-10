@@ -166,7 +166,7 @@ export function PatBasisCompareCard({
     <section className="card-surface p-4">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-full" style={{ background: '#EEF4FF' }}>
+          <span className="blob-e flex h-7 w-7 items-center justify-center shadow-soft" style={{ background: '#EEF4FF' }}>
             <Scale className="h-3.5 w-3.5 text-navy-primary" />
           </span>
           <div>

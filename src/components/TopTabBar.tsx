@@ -33,7 +33,7 @@ export function TopTabBar({
           type="button"
           onClick={onOpenMenu}
           aria-label="Open navigation menu"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[rgba(23,43,77,0.08)] bg-white/70 text-navy-deep transition-colors hover:bg-white hover:text-navy-primary"
+          className="blob-d flex h-8 w-8 shrink-0 items-center justify-center border border-[rgba(23,43,77,0.08)] bg-white/70 text-navy-deep transition-colors hover:bg-white hover:text-navy-primary"
         >
           <Menu className="h-4 w-4" />
         </button>

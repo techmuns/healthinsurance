@@ -687,7 +687,7 @@ function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, ba
       {/* Header — Story Map title, plain-English direction, interactive cue */}
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="flex items-start gap-2.5">
-          <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" style={{ background: PALETTE.champagneSoft }}>
+          <span className="blob-e mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center shadow-soft" style={{ background: PALETTE.champagneSoft }}>
             <Cog className="h-4 w-4" style={{ color: PALETTE.champagne }} />
           </span>
           <div>
@@ -742,7 +742,7 @@ function ProfitabilityEngine({ company, series, stages, selectedId, onSelect, ba
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm" style={{ background: s.color }}>
                     {s.n}
                   </span>
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: `${s.color}1f` }}>
+                  <span className="blob-b flex h-7 w-7 shrink-0 items-center justify-center shadow-soft" style={{ background: `${s.color}1f` }}>
                     <s.Icon className="h-4 w-4" style={{ color: s.color }} strokeWidth={selected ? 2 : 1.7} />
                   </span>
                 </div>

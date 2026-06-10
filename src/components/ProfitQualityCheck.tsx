@@ -65,7 +65,7 @@ export function ProfitQualityCheck({ companyId, companyShort }: { companyId: str
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="flex items-start gap-2">
-          <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full" style={{ background: '#FBF1D8' }}>
+          <span className="blob-a mt-0.5 flex h-7 w-7 items-center justify-center shadow-soft" style={{ background: '#FBF1D8' }}>
             <Sparkles className="h-3.5 w-3.5" style={{ color: GOLD }} />
           </span>
           <div>

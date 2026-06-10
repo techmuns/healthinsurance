@@ -35,8 +35,8 @@ export function LockedPanel({
       />
 
       {/* premium lock pebble — navy gradient with a small gold accent + glow */}
-      <span className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#2C4A86] to-[#1B3260] text-white shadow-[0_10px_26px_rgba(23,43,77,0.28)] ring-1 ring-white/15">
-        <span className="absolute inset-0 -z-10 rounded-2xl opacity-60 blur-md" style={{ background: 'radial-gradient(circle, rgba(39,69,126,0.45) 0%, transparent 70%)' }} />
+      <span className="blob-b relative inline-flex h-14 w-14 items-center justify-center bg-gradient-to-br from-[#2C4A86] to-[#1B3260] text-white shadow-[0_10px_26px_rgba(23,43,77,0.28)] ring-1 ring-white/15">
+        <span className="blob-b absolute inset-0 -z-10 opacity-60 blur-md" style={{ background: 'radial-gradient(circle, rgba(39,69,126,0.45) 0%, transparent 70%)' }} />
         <Lock className="h-5 w-5" strokeWidth={2.2} />
         <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-gradient-to-br from-champagne to-champagne-deep ring-2 ring-white" />
       </span>

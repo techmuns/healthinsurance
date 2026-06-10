@@ -100,7 +100,7 @@ function CardIcon({ kind, color }: { kind: 'growth' | 'profit' | 'capital' | 'va
 function SubScore({ icon, label, cell, theme }: { icon: 'growth' | 'profit' | 'capital' | 'valuation'; label: string; cell: Cell; theme: string }) {
   return (
     <div className="flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 ring-1 ring-white/15 backdrop-blur-sm">
-      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md" style={{ background: hexA(theme, 0.55) }}>
+      <span className="blob-d grid h-7 w-7 shrink-0 place-items-center" style={{ background: hexA(theme, 0.55) }}>
         <CardIcon kind={icon} color="#FFFFFF" />
       </span>
       <div className="leading-tight">

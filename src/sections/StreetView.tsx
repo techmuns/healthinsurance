@@ -37,7 +37,7 @@ function StreetSignal({ kind, score, reason }: { kind: SignalKind; score: number
     >
       <div className="flex items-center justify-between">
         <span className="text-[9.5px] font-bold uppercase tracking-[0.18em]" style={{ color: t.fg }}>Street Signal</span>
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/80 shadow-soft" style={{ color: t.fg }}>
+        <span className="blob-a inline-flex h-7 w-7 items-center justify-center bg-white/80 shadow-soft" style={{ color: t.fg }}>
           <Icon className="h-4 w-4" />
         </span>
       </div>
@@ -321,7 +321,7 @@ function Takeaway({ icon, tone, head, name, detail, pending }: { icon: React.Rea
   return (
     <div className="rounded-xl border border-soft-border bg-white/70 p-3">
       <div className="flex items-center gap-1.5">
-        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full" style={{ background: c.bg, color: c.fg }}>{icon}</span>
+        <span className="blob-b inline-flex h-6 w-6 items-center justify-center shadow-soft" style={{ background: c.bg, color: c.fg }}>{icon}</span>
         <span className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{head}</span>
       </div>
       <p className="mt-1.5 flex items-center gap-1 text-[12.5px] font-semibold text-navy-deep">

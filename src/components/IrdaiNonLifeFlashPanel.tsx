@@ -75,7 +75,7 @@ export function IrdaiNonLifeFlashPanel() {
             Industry Premium
           </p>
           <h2 className="mt-1.5 flex items-center gap-2 font-display text-[20px] leading-tight text-navy-deep">
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-teal/12 text-teal">
+            <span className="blob-c inline-flex h-6 w-6 items-center justify-center bg-teal/12 text-teal shadow-soft">
               <Activity className="h-3.5 w-3.5" />
             </span>
             Monthly non-life premium

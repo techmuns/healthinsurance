@@ -92,7 +92,7 @@ export function RangeUnavailable({ height = 240 }: { height?: number }) {
       className="flex flex-col items-center justify-center rounded-xl2 border border-dashed border-soft-border bg-ice/50 text-center"
       style={{ height }}
     >
-      <span className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-soft-blue text-navy-primary/70">
+      <span className="blob-c mb-2 inline-flex h-9 w-9 items-center justify-center bg-soft-blue text-navy-primary/70">
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="3" y="4" width="18" height="17" rx="2" />
           <path d="M16 2v4M8 2v4M3 10h18" strokeLinecap="round" />

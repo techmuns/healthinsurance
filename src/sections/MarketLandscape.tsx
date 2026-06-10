@@ -380,7 +380,7 @@ function RibbonSummary({ ppH, ppM, ppO, span }: { ppH: number | null; ppM: numbe
       <div className="space-y-2.5">
         {items.map(({ label, v, Icon, tint, fg }) => (
           <div key={label} className="flex items-center gap-2.5">
-            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: tint, color: fg }}>
+            <span className="blob-c inline-flex h-6 w-6 shrink-0 items-center justify-center shadow-soft" style={{ background: tint, color: fg }}>
               <Icon className="h-3.5 w-3.5" strokeWidth={2.6} />
             </span>
             <div className="min-w-0 flex-1">

@@ -49,7 +49,7 @@ export function HeaderSwitcher({ active, onSelect }: { active: TopPage; onSelect
             {/* Icon blob — compact rounded square, gold icon centered. */}
             <span
               className={[
-                'flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors',
+                'flex h-7 w-7 shrink-0 items-center justify-center blob-c transition-colors',
                 on ? 'bg-white/12 ring-1 ring-white/15' : 'bg-[#F4ECDB] ring-1 ring-[#E7D8B6]',
               ].join(' ')}
             >
