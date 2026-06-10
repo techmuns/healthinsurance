@@ -214,6 +214,7 @@ export function Ownership() {
 // per-holder + bulk/block-deal feed lands. No new data, no calculation pipeline.
 
 type Signal = 'Accumulating' | 'Stable' | 'Reducing' | 'Exit Watch' | 'Unknown'
+interface HolderRow { entity: string; type: string; pct: number | null; signal: Signal; change: number | null }
 const SIGNAL_STYLE: Record<Signal, { bg: string; fg: string; dot: string }> = {
   Accumulating: { bg: 'rgba(22,142,142,0.12)', fg: '#0E6F6D', dot: '#168E8E' },
   Stable: { bg: 'rgba(39,69,126,0.10)', fg: '#27457E', dot: '#27457E' },
@@ -249,16 +250,25 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
 
   // Large-holder rows: named holders when available, else the real class
   // aggregates (signal Unknown — movement isn't tracked from a single filing).
-  const classRows: { entity: string; type: string; pct: number | null; signal: Signal }[] = [
-    { entity: 'Promoter group', type: 'Promoter', pct: row.promoter_share, signal: 'Unknown' },
-    { entity: 'Foreign institutions', type: 'FII / FPI', pct: row.fii_share, signal: 'Unknown' },
-    { entity: 'Domestic institutions', type: 'DII', pct: row.dii_share, signal: 'Unknown' },
-    { entity: 'Mutual funds', type: 'MF', pct: row.mf_share, signal: 'Unknown' },
-    { entity: 'Public & other', type: 'Public', pct: row.public_share, signal: 'Unknown' },
-  ].filter((r) => r.pct != null)
-  const tableRows = hasNamed
-    ? holders.map((h) => ({ entity: h.name, type: h.type, pct: h.share, signal: (h.change == null ? 'Unknown' : h.change > 0.1 ? 'Accumulating' : h.change < -0.1 ? 'Reducing' : 'Stable') as Signal, change: h.change }))
-    : classRows.map((r) => ({ ...r, change: null as number | null }))
+  const signalFor = (change: number | null): Signal =>
+    change == null ? 'Unknown' : change > 0.1 ? 'Accumulating' : change < -0.1 ? 'Reducing' : 'Stable'
+
+  const allClassRows: HolderRow[] = [
+    { entity: 'Promoter group', type: 'Promoter', pct: row.promoter_share, signal: 'Unknown', change: null },
+    { entity: 'Foreign institutions', type: 'FII / FPI', pct: row.fii_share, signal: 'Unknown', change: null },
+    { entity: 'Domestic institutions', type: 'DII', pct: row.dii_share, signal: 'Unknown', change: null },
+    { entity: 'Mutual funds', type: 'MF', pct: row.mf_share, signal: 'Unknown', change: null },
+    { entity: 'Public & other', type: 'Public', pct: row.public_share, signal: 'Unknown', change: null },
+  ]
+  const classRows = allClassRows.filter((r) => r.pct != null)
+  const namedRows: HolderRow[] = holders.map((h) => ({
+    entity: h.name,
+    type: h.type,
+    pct: h.share,
+    signal: signalFor(h.change),
+    change: h.change,
+  }))
+  const tableRows: HolderRow[] = hasNamed ? namedRows : classRows
 
   return (
     <section className="space-y-4">

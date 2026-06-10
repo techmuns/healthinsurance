@@ -220,13 +220,11 @@ function FrameworkCharts({ theme, basis, companyId }: { theme: FrameworkTheme; b
 // and extend below zero — losses are never hidden. Display-only derivation from
 // the existing basis model — no pipeline / calculation change.
 const Q = {
-  ifrsPat: '#27457E', // navy
-  igaapPat: '#C2922F', // warm gold / ochre
-  ifrsOp: '#168E8E', // teal
-  ifrsInv: '#9AD3CD', // mint-teal tint
-  igaapOp: '#CBA14A', // muted gold / amber
-  igaapInv: '#E7D6A8', // pale sand-gold
-  neg: '#C08680', // subtle muted rose-red
+  ifrsPat: '#27457E', // navy — IFRS PAT line
+  igaapPat: '#C2922F', // warm gold / ochre — IGAAP PAT line
+  op: '#168E8E', // teal — operating profit
+  inv: '#E6C879', // soft gold — investment profit
+  neg: '#C08680', // subtle muted rose-red — negatives
 }
 
 function investmentIncome(id: string, p: BasisPeriod): number | null {
@@ -261,7 +259,15 @@ function InfoIcon() {
   )
 }
 
+type FwMode = 'ifrs' | 'igaap' | 'both'
+const FW_TABS: { id: FwMode; label: string }[] = [
+  { id: 'ifrs', label: 'IFRS' },
+  { id: 'igaap', label: 'IGAAP' },
+  { id: 'both', label: 'Compare Both' },
+]
+
 function ProfitQualityBand({ companyId }: { companyId: string }) {
+  const [mode, setMode] = useState<FwMode>('ifrs')
   const data = useMemo(
     () =>
       YEARS.map((p) => ({
@@ -282,75 +288,130 @@ function ProfitQualityBand({ companyId }: { companyId: string }) {
   const seg = (key: 'ifrsOp' | 'ifrsInv' | 'igaapOp' | 'igaapInv', base: string) =>
     data.map((d, i) => <Cell key={i} fill={(d[key] ?? 0) < 0 ? Q.neg : base} />)
 
+  const single = mode !== 'both'
+  const opKey = mode === 'igaap' ? 'igaapOp' : 'ifrsOp'
+  const invKey = mode === 'igaap' ? 'igaapInv' : 'ifrsInv'
+  const patKey = mode === 'igaap' ? 'igaapPat' : 'ifrsPat'
+  const patColor = mode === 'igaap' ? Q.igaapPat : Q.ifrsPat
+
   return (
     <div className="rounded-[18px] border border-soft-border bg-white p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <div className="mb-2 flex items-center gap-1.5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Profit Trend &amp; Quality (₹ Cr)</p>
-        <InfoIcon />
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Profit Trend &amp; Quality (₹ Cr)</p>
+          <InfoIcon />
+        </div>
+        {/* Framework toggle */}
+        <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice/60 p-0.5">
+          {FW_TABS.map((t) => {
+            const on = mode === t.id
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setMode(t.id)}
+                aria-pressed={on}
+                className={['rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all', on ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}
+              >
+                {t.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Clean grouped legend */}
-      <QualityLegend />
+      {/* Clean legend — full labels */}
+      <QualityLegend mode={mode} />
 
-      <div style={{ width: '100%', height: 226 }}>
+      <div style={{ width: '100%', height: 222 }}>
         <ResponsiveContainer>
-          <ComposedChart data={data} margin={{ top: 6, right: 8, left: -10, bottom: 0 }} barCategoryGap="26%" barGap={3}>
+          <ComposedChart data={data} margin={{ top: 6, right: 8, left: -10, bottom: 0 }} barCategoryGap={single ? '40%' : '26%'} barGap={3}>
             <CartesianGrid strokeDasharray="3 3" stroke="#F0F2F7" vertical={false} />
             <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#E5E8EF' }} />
             <YAxis tick={{ fontSize: 10.5, fill: '#6B7280' }} tickLine={false} axisLine={false} width={44} />
-            <ReferenceLine y={0} stroke="#AEB9CA" strokeWidth={1.2} />
-            <Tooltip content={<QualityTooltip />} cursor={{ fill: 'rgba(23,43,77,0.04)' }} />
-            <Bar dataKey="ifrsOp" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsOp', Q.ifrsOp)}</Bar>
-            <Bar dataKey="ifrsInv" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsInv', Q.ifrsInv)}</Bar>
-            <Bar dataKey="igaapOp" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapOp', Q.igaapOp)}</Bar>
-            <Bar dataKey="igaapInv" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapInv', Q.igaapInv)}</Bar>
-            <Line type="monotone" dataKey="ifrsPat" stroke={Q.ifrsPat} strokeWidth={1.9} dot={{ r: 2.5, fill: Q.ifrsPat }} connectNulls={false} isAnimationActive={false} />
-            <Line type="monotone" dataKey="igaapPat" stroke={Q.igaapPat} strokeWidth={1.9} dot={{ r: 2.5, fill: Q.igaapPat }} connectNulls={false} isAnimationActive={false} />
+            <ReferenceLine y={0} stroke="#9FACC0" strokeWidth={1.3} />
+            <Tooltip
+              content={(props) => {
+                const p = props as unknown as { active?: boolean; payload?: Array<{ dataKey?: string | number; value?: number | null }>; label?: string }
+                return <QualityTooltip active={p.active} payload={p.payload} label={p.label} mode={mode} />
+              }}
+              cursor={{ fill: 'rgba(23,43,77,0.04)' }}
+            />
+            {single ? (
+              <>
+                <Bar dataKey={opKey} stackId="x" maxBarSize={30} isAnimationActive={false}>{seg(opKey as 'ifrsOp', Q.op)}</Bar>
+                <Bar dataKey={invKey} stackId="x" maxBarSize={30} isAnimationActive={false}>{seg(invKey as 'ifrsInv', Q.inv)}</Bar>
+                <Line type="monotone" dataKey={patKey} stroke={patColor} strokeWidth={2} dot={{ r: 2.6, fill: patColor }} connectNulls={false} isAnimationActive={false} />
+              </>
+            ) : (
+              <>
+                <Bar dataKey="ifrsOp" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsOp', Q.op)}</Bar>
+                <Bar dataKey="ifrsInv" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsInv', Q.inv)}</Bar>
+                <Bar dataKey="igaapOp" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapOp', Q.op)}</Bar>
+                <Bar dataKey="igaapInv" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapInv', Q.inv)}</Bar>
+                <Line type="monotone" dataKey="ifrsPat" stroke={Q.ifrsPat} strokeWidth={1.9} dot={{ r: 2.4, fill: Q.ifrsPat }} connectNulls={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="igaapPat" stroke={Q.igaapPat} strokeWidth={1.9} dot={{ r: 2.4, fill: Q.igaapPat }} connectNulls={false} isAnimationActive={false} />
+              </>
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
+
+      <p className="mt-1.5 text-[10px] text-ink-secondary/80">IFRS vs IGAAP PAT gap is shown when Compare Both is selected.</p>
     </div>
   )
 }
 
-function QualityLegend() {
+function QualityLegend({ mode }: { mode: FwMode }) {
   const dot = (c: string) => <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c }} />
   const bar = (c: string) => <span className="h-2 w-3 shrink-0 rounded-[2px]" style={{ background: c }} />
   return (
-    <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-ink-secondary">
-      <span className="inline-flex items-center gap-1.5 font-semibold text-ink-primary">PAT</span>
-      <span className="inline-flex items-center gap-1">{dot(Q.ifrsPat)} IFRS</span>
-      <span className="inline-flex items-center gap-1">{dot(Q.igaapPat)} IGAAP</span>
-      <span className="text-soft-border">|</span>
-      <span className="inline-flex items-center gap-1">{bar(Q.ifrsOp)} IFRS Op</span>
-      <span className="inline-flex items-center gap-1">{bar(Q.ifrsInv)} IFRS Inv</span>
-      <span className="inline-flex items-center gap-1">{bar(Q.igaapOp)} IGAAP Op</span>
-      <span className="inline-flex items-center gap-1">{bar(Q.igaapInv)} IGAAP Inv</span>
+    <div className="mb-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10.5px] text-ink-secondary">
+      <span className="inline-flex items-center gap-1.5">{bar(Q.op)} Operating profit</span>
+      <span className="inline-flex items-center gap-1.5">{bar(Q.inv)} Investment profit</span>
+      {mode === 'both' ? (
+        <>
+          <span className="inline-flex items-center gap-1.5">{dot(Q.ifrsPat)} IFRS PAT</span>
+          <span className="inline-flex items-center gap-1.5">{dot(Q.igaapPat)} IGAAP PAT</span>
+        </>
+      ) : (
+        <span className="inline-flex items-center gap-1.5">{dot(mode === 'igaap' ? Q.igaapPat : Q.ifrsPat)} {mode === 'igaap' ? 'IGAAP' : 'IFRS'} PAT</span>
+      )}
     </div>
   )
 }
 
-function QualityTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey: string; value: number | null }>; label?: string }) {
+function QualityTooltip({ active, payload, label, mode }: { active?: boolean; payload?: Array<{ dataKey?: string | number; value?: number | null }>; label?: string; mode: FwMode }) {
   if (!active || !payload?.length) return null
-  const v = (k: string) => payload.find((p) => p.dataKey === k)?.value
+  const v = (k: string): number | null => {
+    const found = payload.find((p) => String(p.dataKey) === k)?.value
+    return typeof found === 'number' ? found : null
+  }
   const Row = ({ c, name, val }: { c: string; name: string; val: number | null | undefined }) =>
     val == null ? null : (
-      <div className="flex items-center justify-between gap-4">
-        <span className="inline-flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-full" style={{ background: val < 0 ? Q.neg : c }} />{name}</span>
+      <div className="flex items-center justify-between gap-3">
+        <span className="inline-flex items-center gap-1.5 text-ink-secondary"><span className="h-1.5 w-1.5 rounded-full" style={{ background: val < 0 ? Q.neg : c }} />{name}</span>
         <span className="tabular-nums font-medium" style={{ color: val < 0 ? Q.neg : '#1F2937' }}>₹{val.toLocaleString('en-IN')}</span>
       </div>
     )
+  const pre = mode === 'igaap' ? 'igaap' : 'ifrs'
   return (
-    <div className="min-w-[180px] rounded-lg border border-soft-border bg-white/97 px-3 py-2 text-[11px] shadow-soft">
+    <div className="min-w-[150px] rounded-lg border border-soft-border bg-white/97 px-2.5 py-1.5 text-[11px] shadow-soft">
       <p className="mb-1 font-semibold text-navy-deep">{label}</p>
-      <p className="text-[9px] font-bold uppercase tracking-wide text-navy-primary">IFRS</p>
-      <Row c={Q.ifrsPat} name="PAT" val={v('ifrsPat')} />
-      <Row c={Q.ifrsOp} name="Operating" val={v('ifrsOp')} />
-      <Row c={Q.ifrsInv} name="Investment" val={v('ifrsInv')} />
-      <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-champagne-deep">IGAAP</p>
-      <Row c={Q.igaapPat} name="PAT" val={v('igaapPat')} />
-      <Row c={Q.igaapOp} name="Operating" val={v('igaapOp')} />
-      <Row c={Q.igaapInv} name="Investment" val={v('igaapInv')} />
+      {mode === 'both' ? (
+        <>
+          <Row c={Q.ifrsPat} name="IFRS PAT" val={v('ifrsPat')} />
+          <Row c={Q.igaapPat} name="IGAAP PAT" val={v('igaapPat')} />
+          <Row c={Q.op} name="Operating" val={v('ifrsOp')} />
+          <Row c={Q.inv} name="Investment" val={v('ifrsInv')} />
+        </>
+      ) : (
+        <>
+          <Row c={Q.op} name="Operating profit" val={v(`${pre}Op`)} />
+          <Row c={Q.inv} name="Investment profit" val={v(`${pre}Inv`)} />
+          <Row c={mode === 'igaap' ? Q.igaapPat : Q.ifrsPat} name="PAT" val={v(`${pre}Pat`)} />
+        </>
+      )}
     </div>
   )
 }
