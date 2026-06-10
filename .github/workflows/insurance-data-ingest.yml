@@ -52,6 +52,13 @@ on:
 permissions:
   contents: write
 
+# Queue runs instead of racing: simultaneous pushes used to spawn parallel
+# ingests whose final `git push` collided (one always lost). Never cancel a
+# running ingest — a finished fetch should always get to commit.
+concurrency:
+  group: insurance-data-ingest
+  cancel-in-progress: false
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -181,7 +188,16 @@ jobs:
           git add data/ src/data/snapshots/ schema-map.json
           if ! git diff --staged --quiet; then
             git commit -m "data: ingest ${{ steps.cadence.outputs.value }} run @ $(date -u +%Y-%m-%dT%H:%MZ)"
-            git push
+            # main moves constantly (other sessions + workflows push during a
+            # 10-minute ingest) — rebase onto the latest tip and retry, never
+            # lose a finished fetch to a push race.
+            for i in 1 2 3 4 5; do
+              if git pull --rebase --autostash origin main && git push; then
+                echo "pushed on attempt $i"; exit 0
+              fi
+              echo "push attempt $i failed; retrying..."; sleep 5
+            done
+            echo "ERROR: push failed after retries"; exit 1
           else
             echo "No snapshot changes — nothing to commit."
           fi
