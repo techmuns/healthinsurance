@@ -1,0 +1,107 @@
+name: sahi quarterly backfill
+
+# Fills the SAHI-comparison quarterly columns (H1 / 9M / Q1) end-to-end, with no
+# human in the loop: for each insurer x interim period it pulls the interim
+# investor deck via the muns agent, cleans the answer into structured rows, fills
+# the audit overlay, then rebuilds the value store + audit index and commits.
+#
+# The standalone-quarter columns (Q4 …) are NOT fetched — the sheet derives them
+# (full year - 9M) as formula cells. Annual columns are handled by
+# sahi-financials-fetch.yml; this workflow only adds the interim periods.
+#
+# Runs weekly (interim decks land around the Q2/Q3 results dates) and on demand.
+# Best-effort: a failed fetch for one cell never aborts the chain, and the build
+# + commit always runs so any cells that did come back are published.
+
+on:
+  schedule:
+    - cron: '0 5 * * 1' # Mondays 05:00 UTC
+  workflow_dispatch:
+    inputs:
+      periods_main:
+        description: 'Interim periods for niva/star/care (space-separated)'
+        required: false
+        default: 'H1FY25 9MFY25 H1FY26 9MFY26'
+        type: string
+      periods_q1:
+        description: 'Interim periods for aditya-birla / manipalcigna'
+        required: false
+        default: 'Q1FY25 Q1FY26'
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sahi-quarterly-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: pip install --quiet --disable-pip-version-check openpyxl
+
+      - name: Pull + clean + fill the interim columns
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+          PERIODS_MAIN: ${{ inputs.periods_main || 'H1FY25 9MFY25 H1FY26 9MFY26' }}
+          PERIODS_Q1: ${{ inputs.periods_q1 || 'Q1FY25 Q1FY26' }}
+        run: |
+          set +e
+          declare -A PERIODS
+          PERIODS[niva-bupa]="$PERIODS_MAIN"
+          PERIODS[star-health]="$PERIODS_MAIN"
+          PERIODS[care-health]="$PERIODS_MAIN"
+          PERIODS[aditya-birla]="$PERIODS_Q1"
+          PERIODS[manipalcigna]="$PERIODS_Q1"
+          for company in niva-bupa star-health care-health aditya-birla manipalcigna; do
+            for period in ${PERIODS[$company]}; do
+              echo "::group::$company $period"
+              FETCH_COMPANY_ID="$company" FETCH_PERIOD="$period" \
+                npx tsx scripts/ingest/sahi-financials-agent.ts || echo "fetch failed: $company $period"
+              npx tsx scripts/ingest/sahi-financials-clean.ts "$company" "$period" || echo "clean failed: $company $period"
+              f="data/agent-pulls/sahi-financials/$company/cleaned-$period.json"
+              if [ -f "$f" ]; then
+                npx tsx scripts/ingest/audit-fill.ts fill --from "$f" || echo "fill failed: $company $period"
+              else
+                echo "no cleaned rows for $company $period"
+              fi
+              echo "::endgroup::"
+            done
+          done
+          exit 0
+
+      - name: Rebuild value store + audit index
+        run: |
+          python3 scripts/excel/build_value_store.py
+          python3 scripts/excel/build_audit_index.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/agent-pulls/sahi-financials src/data/snapshots/audit-overlay.json \
+                  data/processed/excel-values.json data/processed/excel-held-back.json \
+                  src/data/snapshots/extracted-data-audit.json
+          if git diff --staged --quiet; then echo "No change."; exit 0; fi
+          git commit -m "sahi quarterly backfill: interim columns @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1

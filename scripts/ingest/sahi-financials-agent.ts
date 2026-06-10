@@ -56,27 +56,54 @@ interface Manifest { files: Record<string, ManifestEntry>; updated_at?: string }
 
 const DOC_URL = (process.env.FETCH_DOC_URL || '').trim()
 
+// Describe the requested period in plain terms + the right source/basis guidance.
+// Annual (FY26) → full-year, year ended 31 Mar; interim (H1/9M/Q1-3/Q4) →
+// the CUMULATIVE period-to-date figure that the interim deck reports.
+function periodSpec(period: string): { kind: 'annual' | 'interim'; ended: string; phrase: string; guidance: string } {
+  const yy = Number((period.match(/\d+/) || ['0'])[0]) // FY26 -> 26
+  const endCal = 2000 + yy
+  const m = /^(FY|H1|H2|9M|Q[1-4])/i.exec(period)
+  const tag = (m ? m[1] : 'FY').toUpperCase()
+  // End date of the cumulative window within the fiscal year (FY ends 31 Mar).
+  const ENDS: Record<string, string> = {
+    Q1: `30 June ${endCal - 1}`, H1: `30 September ${endCal - 1}`, Q2: `30 September ${endCal - 1}`,
+    '9M': `31 December ${endCal - 1}`, Q3: `31 December ${endCal - 1}`, Q4: `31 March ${endCal}`, FY: `31 March ${endCal}`,
+  }
+  const NAMES: Record<string, string> = {
+    Q1: 'first quarter (Q1, 3 months)', H1: 'first half (H1, 6 months)', Q2: 'first half (H1, 6 months)',
+    '9M': 'nine months (9M)', Q3: 'nine months (9M)', Q4: 'full year', FY: 'full year',
+  }
+  const ended = ENDS[tag] ?? `31 March ${endCal}`
+  if (tag === 'FY' || tag === 'Q4') {
+    return { kind: 'annual', ended, phrase: `the full year ended ${ended}`,
+      guidance: `use the company's FULL-YEAR source for ${period} — the Q4 / annual earnings presentation or the annual report for the year ended ${ended}. Do NOT use a part-year H1 / 9M / Q1-Q3 figure as the full-year value.` }
+  }
+  return { kind: 'interim', ended, phrase: `the ${NAMES[tag]} ended ${ended} (period-to-date / cumulative for ${period})`,
+    guidance: `use the company's INTERIM investor presentation / results for ${period} (e.g. "Investor Presentation ${period}"). Report the CUMULATIVE period-to-date figure (year-to-date within the fiscal year), NOT a single standalone quarter — except Q1, which is the first quarter alone. Premium / PAT must be the cumulative ${NAMES[tag]} value; ratios are the period's reported ratios.` }
+}
+
 function buildPayload() {
   const fyEndYear = 2000 + Number((PERIOD.match(/\d+/) || ['0'])[0]) // FY26 -> 2026
+  const ps = periodSpec(PERIOD)
   const docLine = DOC_URL
     ? `PRIMARY SOURCE — open and READ this exact document, and take the values from it: ${DOC_URL}\n` +
-      'It is the full-year statutory / financial-results document for this fiscal year. Extract the figures from this PDF.\n\n'
+      `It is the ${ps.kind === 'annual' ? 'full-year statutory / financial-results' : 'interim / quarterly results'} document for ${PERIOD}. Extract the figures from this PDF.\n\n`
     : ''
   const task =
     docLine +
-    `Pull the following FULL-YEAR financial data for ${COMPANY_NAME}, for the financial year ${PERIOD} (the full year ended 31 March ${fyEndYear}).\n\n` +
+    `Pull the following financial data for ${COMPANY_NAME}, for ${PERIOD} — ${ps.phrase}.\n\n` +
     'Return it as a table with exactly these columns, in this order:\n\n' +
     'company | period | line_item | basis | value | unit | source_name | source_url | filing_date\n\n' +
     'Rules\n\nOne row per line item.\n' +
-    `period = ${PERIOD} for all rows. These MUST be FULL-YEAR (annual) figures for the year ended 31 March ${fyEndYear}.\n` +
+    `period = ${PERIOD} for all rows. These MUST be the figures for ${ps.phrase}.\n` +
     'basis = IGAAP, IFRS, or — (use the value shown for each line item below).\n' +
     'value = the number only (no commas, no unit inside the cell). If a line item is not published, leave value blank — do not put 0 or an estimate.\n' +
     'unit = exactly as specified per line below (INR_crore, %, or x).\n' +
     'source_name = the exact document (e.g. "<Company> FY24-25 Annual Report, p.XX" or "Investor Presentation Q4 FY26").\n' +
     'source_url = direct link to that document. filing_date = date of the source document, YYYY-MM-DD.\n' +
-    `IMPORTANT: use the company's FULL-YEAR source for ${PERIOD} — the Q4 / annual earnings presentation (e.g. "Earnings Presentation Q4 ${PERIOD}") or the annual report for the year ended 31 March ${fyEndYear}. ` +
-    'Do NOT use interim H1 / 9M / Q1 / Q2 / Q3 presentations — those are part-year and must not be used as the full-year value. ' +
-    'Open the actual PDF and read the figures; if the full-year figure is genuinely not published yet, leave value blank.\n\n' +
+    `IMPORTANT: ${ps.guidance} ` +
+    'For GWP, prefer the 1/n (statutory) basis where both are shown; if only the ex-1/n figure is given, leave the GWP value blank rather than mixing bases. ' +
+    'Open the actual PDF and read the figures; if a figure is genuinely not published, leave value blank.\n\n' +
     'The line items (line_item | basis | unit):\n\n' +
     'Total GWP | IGAAP | INR_crore\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\n' +
     'Profit After Tax (PAT) | IGAAP | INR_crore\nProfit After Tax (PAT) | IFRS | INR_crore\n' +
