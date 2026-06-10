@@ -61,7 +61,7 @@ function SourceStatusButton() {
 // string that drives the period/basis behaviour in the SAHI header.
 const SAHI_TABS: SectionTab[] = [
   { id: 'companies', label: 'Companies' },
-  { id: 'distribution', label: 'Distribution' },
+  { id: 'distribution', label: 'Premium & Distribution' },
   { id: 'profitability', label: 'Profitability' },
   { id: 'valuation', label: 'Valuation' },
   { id: 'street-view', label: 'Street View' },

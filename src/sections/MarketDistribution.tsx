@@ -10,13 +10,14 @@ import {
   YAxis,
 } from 'recharts'
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
-import { giPremiumMix } from '@/data/mockData'
+import { giPremiumMix, insurers } from '@/data/mockData'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
 import { getCompanyDistributionData, type DistChannel } from '@/lib/distributionEngine'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
+import { PremiumFlowQuality } from '@/components/PremiumFlowQuality'
 
 /**
  * Market & Distribution — the Channel Mix surface: the active company's GWP by
@@ -28,8 +29,14 @@ import { SourceTag } from '@/components/SourceTag'
  * is still defined and exported from this file and imported there.)
  */
 export function MarketDistribution() {
+  const company = useActiveCompany()
   return (
     <div className="grid grid-cols-1 gap-6">
+      {/* Premium engine — GWP / NWP / NEP bars for the active insurer. The
+          'Premium & Distribution' view leads with the premium waterfall, then
+          the product mix (retail vs group) and the channel mix. */}
+      <PremiumFlowQuality focalId={company.id} />
+      <RetailGroupMixCard />
       <ChannelMixCard />
     </div>
   )
@@ -541,6 +548,60 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
         </svg>
       )}
     </div>
+  )
+}
+
+// ─── Retail Health vs Group premium mix ──────────────────────────────────────
+// A horizontal 100% split per insurer, built from each one's existing retailMix
+// (% individual/retail); group share = 100 − retail. UI-only view of data that
+// already exists — no new series, no pipeline/calculation changes.
+const RETAIL_COLOR = '#168E8E' // teal — retail/individual health
+const GROUP_COLOR = '#B68B3A' // gold — group
+
+function RetailGroupMixCard() {
+  const active = useActiveCompany()
+  const rows = insurers
+    .filter((i) => typeof i.retailMix === 'number' && i.retailMix > 0)
+    .map((i) => ({ id: i.id, name: i.shortName, retail: i.retailMix, group: Math.max(0, 100 - i.retailMix), focal: i.id === active.id }))
+    .sort((a, b) => b.retail - a.retail)
+
+  return (
+    <section className="card-surface flex h-full flex-col p-5 sm:p-6">
+      <header className="mb-4 border-b border-[#EEF1F7] pb-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
+        <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
+        <p className="mt-1 text-[12px] text-ink-secondary">Share of health GWP — individual/retail vs group — across the standalone insurers</p>
+      </header>
+
+      <div className="mb-3 flex items-center gap-4 text-[11px] text-ink-secondary">
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: RETAIL_COLOR }} /> Retail (individual)</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: GROUP_COLOR }} /> Group</span>
+      </div>
+
+      <div className="space-y-2.5">
+        {rows.map((r) => (
+          <div key={r.id} className="flex items-center gap-3">
+            <span className={['w-24 shrink-0 truncate text-[11.5px]', r.focal ? 'font-bold text-navy-deep' : 'text-ink-primary'].join(' ')} title={r.name}>{r.name}</span>
+            <div
+              className="relative flex h-5 flex-1 overflow-hidden rounded-md ring-1 ring-soft-border"
+              style={r.focal ? { boxShadow: 'inset 0 0 0 1.5px rgba(39,69,126,0.45)' } : undefined}
+              title={`${r.name}: retail ${r.retail.toFixed(0)}% · group ${r.group.toFixed(0)}%`}
+            >
+              <div className="flex items-center justify-end pr-1.5" style={{ width: `${r.retail}%`, background: RETAIL_COLOR }}>
+                {r.retail >= 18 && <span className="text-[10px] font-semibold text-white">{r.retail.toFixed(0)}%</span>}
+              </div>
+              <div className="flex items-center pl-1.5" style={{ width: `${r.group}%`, background: GROUP_COLOR }}>
+                {r.group >= 18 && <span className="text-[10px] font-semibold text-white">{r.group.toFixed(0)}%</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-4 text-[11px] leading-snug text-ink-secondary">
+        A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
+      </p>
+    </section>
   )
 }
 
