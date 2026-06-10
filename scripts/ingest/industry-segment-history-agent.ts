@@ -50,29 +50,24 @@ function buildPayload() {
   return {
     user_index: 124,
     tasks: [
-      'I need the ALL-INDIA general-insurance (non-life) industry GROSS DIRECT PREMIUM by segment, for every Indian fiscal year from FY15 (year ended 31 March 2015) through FY26 (year ended 31 March 2026).\n\n' +
-        'Authoritative sources, in order of preference:\n' +
-        '1. IRDAI "Handbook on Indian Insurance Statistics" (latest editions) — it tabulates segment-wise gross direct premium for the whole non-life industry, year by year.\n' +
-        '2. General Insurance Council "Gross Direct Premium Underwritten — Segment-wise" report (https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/) — for the most recent year(s).\n' +
-        '3. IRDAI Annual Report segment tables.\n\n' +
-        'Return a table with exactly these columns, in this order:\n\n' +
+      'Find and DOWNLOAD the GENERAL INSURANCE COUNCIL "Gross Direct Premium Underwritten — Segment-wise" report files (the Excel/XLSX files, the same kind as https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx) for the FULL YEAR ending 31 March of each year: March 2015, March 2016, March 2017, March 2018, March 2019, March 2020, March 2021, March 2022, March 2023, March 2024.\n\n' +
+        'These year-end (March) segment-wise reports live in the GI Council "Statistics → Industry Statistics → Segment-wise Report" area (https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/) and its archive; each is an .xlsx whose URL looks like https://www.gicouncil.in/media/<id>/segment_march_<YYYY>-<n>.xlsx . Give me the DIRECT .xlsx download URL for every year you can find — that is the most important output, because I will parse the spreadsheets myself.\n\n' +
+        'From each spreadsheet, also read the INDUSTRY TOTAL row (all insurers combined) and return a table with exactly these columns:\n\n' +
         'segment | period | value | unit | source_name | source_url | filing_date\n\n' +
         'Rules\n\n' +
         'One row per segment per fiscal year.\n' +
-        'segment = exactly one of: "Health", "Motor", "Total" (Total = the whole non-life industry gross direct premium for that year).\n' +
-        'period = FY15, FY16, FY17, FY18, FY19, FY20, FY21, FY22, FY23, FY24, FY25, FY26 (FY = year ended 31 March). Give every year you can find.\n' +
-        'If FY26 full-year is not yet published, give the latest available cumulative and put the cut-off month in source_name; otherwise leave it blank.\n' +
-        'value = number only, in ₹ crore, no commas, no unit inside the cell. If a year/segment is genuinely not published, leave value blank — never 0, never an estimate.\n' +
+        'segment = exactly one of: "Health", "Motor", "Total" (Total = the whole non-life industry gross direct premium for that year, the Industry Total grand total).\n' +
+        'period = FY15..FY24 (FY = year ended 31 March; e.g. the "March 2020" report is FY20). Give every year you find a file for.\n' +
+        'value = number only, in ₹ crore, no commas. If a file is not found for a year, leave its rows blank — never 0, never an estimate.\n' +
         'unit = INR_crore for every row.\n' +
-        'IMPORTANT basis: "Health" must be the standalone HEALTH segment gross direct premium for the WHOLE industry (all general + standalone-health insurers combined), the same basis IRDAI/GI Council uses — NOT a single company, and NOT including personal accident or overseas travel unless the source itself bundles them (say so in source_name if it does).\n' +
-        'source_name = the exact publication + edition/table (e.g. "IRDAI Handbook on Indian Insurance Statistics 2023-24, Table: Segment-wise GDPI" or "GI Council Segment-wise Report, Mar 2025").\n' +
-        'source_url = direct link to that document (xlsx/pdf) if available, else the publication page.\n' +
-        'filing_date = the report/edition date, YYYY-MM-DD.\n\n' +
-        'Open the actual documents and read the figures. Do not fabricate; leave blanks where the source does not publish a number.\n\n' +
-        'Example of the expected output (format only):\n\n' +
+        'IMPORTANT: "Health" = the industry-total Health segment grand total (the GI Council "Health" column summed across all insurers); "Motor" = Motor Total; "Total" = the all-segments Grand Total. Do NOT use a single company.\n' +
+        'source_name = "GI Council Segment-wise Report, Mar <YYYY>".\n' +
+        'source_url = the DIRECT .xlsx URL.\n' +
+        'filing_date = the report month-end, YYYY-03-31.\n\n' +
+        'If the GI Council archive does not go back far enough for some early years, then for those years ONLY, fall back to the IRDAI "Handbook on Indian Insurance Statistics" segment-wise GDPI table and give those figures (say so in source_name). Open the actual files and read the figures; do not fabricate.\n\n' +
+        'Example (format only):\n\n' +
         'segment\tperiod\tvalue\tunit\tsource_name\tsource_url\tfiling_date\n' +
-        'Health\tFY24\t116551\tINR_crore\tIRDAI Handbook on Indian Insurance Statistics 2023-24\thttps://…\t2024-12-31\n' +
-        'Total\tFY24\t289668\tINR_crore\tIRDAI Handbook on Indian Insurance Statistics 2023-24\thttps://…\t2024-12-31',
+        'Health\tFY20\t51637\tINR_crore\tGI Council Segment-wise Report, Mar 2020\thttps://www.gicouncil.in/media/.../segment_march_2020-...xlsx\t2020-03-31',
     ],
     query_context: {
       TICKER_SYMBOL: [],
