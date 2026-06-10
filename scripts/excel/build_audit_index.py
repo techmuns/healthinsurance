@@ -487,6 +487,21 @@ def main() -> None:
         "blocked_filings": blocked_filings,
     }
 
+    # If formulas couldn't be resolved (openpyxl/template absent — e.g. the
+    # Cloudflare build) but a committed index already carries resolved formula
+    # values, KEEP it rather than overwrite with empty formula cells. This lets a
+    # locally-resolved index (P/E, P/B, ROE, …) survive a deploy that lacks
+    # openpyxl. When openpyxl IS present we always rewrite (fresh data wins).
+    if resolve_formula is None and total_computed and OUT.exists():
+        try:
+            prior = json.loads(OUT.read_text())
+            prior_resolved = sum(1 for s in prior.get("sheets", []) for c in s.get("cells", []) if c.get("formula"))
+        except Exception:
+            prior_resolved = 0
+        if prior_resolved:
+            print(f"openpyxl unavailable — preserving committed index with {prior_resolved} resolved formula(s); not overwriting.")
+            return
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1))
     size_kb = OUT.stat().st_size / 1024

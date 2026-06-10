@@ -380,9 +380,16 @@ const METRIC_LABEL: Record<string, string> = {
   market_share: 'Market Share',
   close_price: 'Closing Price',
   market_cap: 'Market Cap',
+  gwp: 'GWP',
   pe_ttm: 'P/E (TTM)',
   pe_3yr_avg: '3-Yr Avg P/E',
-  price_to_gwp: 'P / GWP',
+  price_to_gwp: 'P/GWP',
+  pe_igaap: 'P/E (IGAAP)',
+  pb_igaap: 'P/B (IGAAP)',
+  roe_igaap: 'ROE (IGAAP)',
+  pe_ifrs: 'P/E (IFRS)',
+  pb_ifrs: 'P/B (IFRS)',
+  roe_ifrs: 'ROE (IFRS)',
   pb: 'Price / Book',
 }
 

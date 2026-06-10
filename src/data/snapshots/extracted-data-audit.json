@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T17:15:03.378251+00:00",
+  "generated_at": "2026-06-10T17:38:57.613187+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -26,8 +26,8 @@
   "last_updated": null,
   "counts": {
    "sheets": 9,
-   "audit_cells": 2956,
-   "computed_cells": 600,
+   "audit_cells": 2988,
+   "computed_cells": 630,
    "value_store_entries": 726,
    "held_back": 10,
    "blocked_filings": 26
@@ -39147,7 +39147,7 @@
    "sheet": "Comps",
    "role": "valuation",
    "dimensions": "A1:Q10",
-   "computed_cells": 19,
+   "computed_cells": 49,
    "cells": [
     {
      "cell": "C4",
@@ -39198,6 +39198,32 @@
        "label": "INR Cr."
       }
      ]
+    },
+    {
+     "cell": "E4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "INR_cr",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "='SAHIs comparison'!F7",
+     "calc": "[Total GWP]",
+     "inputs": [
+      {
+       "ref": "F7",
+       "label": "Total GWP",
+       "sheet": "SAHIs comparison",
+       "period": "FY26",
+       "entity": "niva-bupa",
+       "metric": "total_gwp"
+      }
+     ],
+     "calculated_value": 8464.9
     },
     {
      "cell": "F4",
@@ -39291,6 +39317,224 @@
      "calculated_value": 130.78
     },
     {
+     "cell": "J4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "price_to_gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C4/E4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "C4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "E4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "gwp"
+      }
+     ]
+    },
+    {
+     "cell": "K4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "pe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C4/I4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "C4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "I4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "pat_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "L4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "pb_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C4/H4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "C4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "H4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "M4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "roe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=I4/H4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "I4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "pat_igaap"
+      },
+      {
+       "ref": "H4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "N4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "pe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C4/G4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "C4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "G4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "pat_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "O4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "pb_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C4/F4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "C4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "F4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "net_worth_ifrs"
+      }
+     ],
+     "calculated_value": 4.342416
+    },
+    {
+     "cell": "P4",
+     "section": "Valuation comps",
+     "entity": "niva-bupa",
+     "metric": "roe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=G4/F4",
+     "calc": "[NSEI:NIVABUPA] / [NSEI:NIVABUPA]",
+     "inputs": [
+      {
+       "ref": "G4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "pat_ifrs"
+      },
+      {
+       "ref": "F4",
+       "label": "NSEI:NIVABUPA",
+       "period": "as_on_run_date",
+       "entity": "niva-bupa",
+       "metric": "net_worth_ifrs"
+      }
+     ]
+    },
+    {
      "cell": "Q4",
      "section": "Valuation comps",
      "entity": "niva-bupa",
@@ -39370,6 +39614,31 @@
       {
        "ref": "C1",
        "label": "INR Cr."
+      }
+     ]
+    },
+    {
+     "cell": "E5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "INR_cr",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "='SAHIs comparison'!S7",
+     "calc": "[Total GWP]",
+     "inputs": [
+      {
+       "ref": "S7",
+       "label": "Total GWP",
+       "sheet": "SAHIs comparison",
+       "period": "FY26",
+       "entity": "star-health",
+       "metric": "total_gwp"
       }
      ]
     },
@@ -39475,6 +39744,223 @@
      "calculated_value": 557
     },
     {
+     "cell": "J5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "price_to_gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C5/E5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "C5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "E5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "gwp"
+      }
+     ]
+    },
+    {
+     "cell": "K5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "pe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C5/I5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "C5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "I5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "pat_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "L5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "pb_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C5/H5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "C5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "H5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "M5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "roe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=I5/H5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "I5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "pat_igaap"
+      },
+      {
+       "ref": "H5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "N5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "pe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C5/G5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "C5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "G5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "pat_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "O5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "pb_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C5/F5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "C5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "F5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "net_worth_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "P5",
+     "section": "Valuation comps",
+     "entity": "star-health",
+     "metric": "roe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=G5/F5",
+     "calc": "[NSEI:STARHEALTH] / [NSEI:STARHEALTH]",
+     "inputs": [
+      {
+       "ref": "G5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "pat_ifrs"
+      },
+      {
+       "ref": "F5",
+       "label": "NSEI:STARHEALTH",
+       "period": "as_on_run_date",
+       "entity": "star-health",
+       "metric": "net_worth_ifrs"
+      }
+     ]
+    },
+    {
      "cell": "Q5",
      "section": "Valuation comps",
      "entity": "star-health",
@@ -39558,6 +40044,19 @@
      ]
     },
     {
+     "cell": "E6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "INR_cr",
+     "cell_kind": "input",
+     "fillable": true,
+     "source_key": "company_financials",
+     "source_status": "available"
+    },
+    {
      "cell": "F6",
      "section": "Valuation comps",
      "entity": "icici-lombard",
@@ -39608,6 +40107,223 @@
      "fillable": true,
      "source_key": "company_financials",
      "source_status": "available"
+    },
+    {
+     "cell": "J6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "price_to_gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C6/E6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "C6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "E6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "gwp"
+      }
+     ]
+    },
+    {
+     "cell": "K6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "pe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C6/I6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "C6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "I6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "pat_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "L6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "pb_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C6/H6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "C6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "H6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "M6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "roe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=I6/H6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "I6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "pat_igaap"
+      },
+      {
+       "ref": "H6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "N6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "pe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C6/G6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "C6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "G6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "pat_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "O6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "pb_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C6/F6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "C6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "F6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "net_worth_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "P6",
+     "section": "Valuation comps",
+     "entity": "icici-lombard",
+     "metric": "roe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=G6/F6",
+     "calc": "[NSEI:ICICIGI] / [NSEI:ICICIGI]",
+     "inputs": [
+      {
+       "ref": "G6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "pat_ifrs"
+      },
+      {
+       "ref": "F6",
+       "label": "NSEI:ICICIGI",
+       "period": "as_on_run_date",
+       "entity": "icici-lombard",
+       "metric": "net_worth_ifrs"
+      }
+     ]
     },
     {
      "cell": "Q6",
@@ -39693,6 +40409,19 @@
      ]
     },
     {
+     "cell": "E7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "INR_cr",
+     "cell_kind": "input",
+     "fillable": true,
+     "source_key": "company_financials",
+     "source_status": "available"
+    },
+    {
      "cell": "F7",
      "section": "Valuation comps",
      "entity": "godigit",
@@ -39743,6 +40472,223 @@
      "fillable": true,
      "source_key": "company_financials",
      "source_status": "available"
+    },
+    {
+     "cell": "J7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "price_to_gwp",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C7/E7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "C7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "E7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "gwp"
+      }
+     ]
+    },
+    {
+     "cell": "K7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "pe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C7/I7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "C7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "I7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "pat_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "L7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "pb_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C7/H7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "C7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "H7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "M7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "roe_igaap",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=I7/H7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "I7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "pat_igaap"
+      },
+      {
+       "ref": "H7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "net_worth_igaap"
+      }
+     ]
+    },
+    {
+     "cell": "N7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "pe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C7/G7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "C7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "G7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "pat_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "O7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "pb_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "ratio",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "market_cap",
+     "source_status": "available",
+     "formula": "=C7/F7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "C7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "market_cap"
+      },
+      {
+       "ref": "F7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "net_worth_ifrs"
+      }
+     ]
+    },
+    {
+     "cell": "P7",
+     "section": "Valuation comps",
+     "entity": "godigit",
+     "metric": "roe_ifrs",
+     "period": "as_on_run_date",
+     "period_type": "point_in_time",
+     "unit": "percent",
+     "cell_kind": "formula",
+     "fillable": false,
+     "source_key": "company_financials",
+     "source_status": "available",
+     "formula": "=G7/F7",
+     "calc": "[NSEI:GODIGIT] / [NSEI:GODIGIT]",
+     "inputs": [
+      {
+       "ref": "G7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "pat_ifrs"
+      },
+      {
+       "ref": "F7",
+       "label": "NSEI:GODIGIT",
+       "period": "as_on_run_date",
+       "entity": "godigit",
+       "metric": "net_worth_ifrs"
+      }
+     ]
     },
     {
      "cell": "Q7",

@@ -232,10 +232,18 @@ SAHI_CMP_ROWS = {
 COMPS_COLS = {
     "C": ("market_cap", "INR_cr", "market_cap"),
     "D": ("enterprise_value", "INR_cr", "market_cap"),
+    "E": ("gwp", "INR_cr", "company_financials"),
     "F": ("net_worth_ifrs", "INR_cr", "company_financials"),
     "G": ("pat_ifrs", "INR_cr", "company_financials"),
     "H": ("net_worth_igaap", "INR_cr", "company_financials"),
     "I": ("pat_igaap", "INR_cr", "company_financials"),
+    "J": ("price_to_gwp", "ratio", "market_cap"),
+    "K": ("pe_igaap", "ratio", "market_cap"),
+    "L": ("pb_igaap", "ratio", "market_cap"),
+    "M": ("roe_igaap", "percent", "company_financials"),
+    "N": ("pe_ifrs", "ratio", "market_cap"),
+    "O": ("pb_ifrs", "ratio", "market_cap"),
+    "P": ("roe_ifrs", "percent", "company_financials"),
     "Q": ("pe_3yr_avg", "ratio", "valuation_history"),
 }
 COMPS_ROWS = {4: "niva-bupa", 5: "star-health", 6: "icici-lombard", 7: "godigit"}

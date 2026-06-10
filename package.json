@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "python3 scripts/excel/build_audit_index.py || echo 'audit index: python unavailable — using committed index'",
+    "prebuild": "(pip3 install --quiet --disable-pip-version-check openpyxl 2>/dev/null || pip install --quiet --disable-pip-version-check openpyxl 2>/dev/null || true); python3 scripts/excel/build_audit_index.py || echo 'audit index: python unavailable — using committed index'",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
