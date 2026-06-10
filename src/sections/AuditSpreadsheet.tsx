@@ -27,13 +27,18 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
 const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
 
 // ── Source pipelines ─────────────────────────────────────────────────────────
-// Every template cell is fed by one of three acquisition pipelines. When a cell
+// Every template cell is fed by one of these acquisition pipelines. When a cell
 // is empty, this tells the reviewer which pipeline should have filled it.
-type PipelineKey = 'irdai' | 'company' | 'screener'
+type PipelineKey = 'irdai' | 'company' | 'screener' | 'capitaliq'
 const PIPELINE: Record<PipelineKey, { label: string; short: string; color: string; what: string }> = {
   irdai: { label: 'IRDAI portal', short: 'IRDAI', color: '#27457E', what: 'Industry & regulatory disclosures (GI Council / IRDAI NL forms, monthly business figures)' },
   company: { label: 'Company website · PPT', short: 'PPT', color: '#168E8E', what: 'Company investor presentations & annual reports' },
   screener: { label: 'Screener', short: 'Screener', color: '#B68B3A', what: 'Market price, valuation, shareholding & analyst data' },
+  // Enterprise value & long-run average P/E were built with the S&P Capital IQ
+  // Excel plug-in in the source workbook (the CIQ() / CIQAVG() formulas). There
+  // is no login-free public equivalent, so these stay blank by design — labelled
+  // "Capital IQ" rather than counted as a fetch gap we could close.
+  capitaliq: { label: 'S&P Capital IQ', short: 'Capital IQ', color: '#7A6CA6', what: 'Enterprise value & 3-year average P/E — from the S&P Capital IQ Excel plug-in in the source workbook. No login-free public source, so these are not auto-fetched.' },
 }
 const ROLE_PIPELINE: Record<string, PipelineKey> = {
   industry_premium: 'irdai',
@@ -48,7 +53,11 @@ const ROLE_PIPELINE: Record<string, PipelineKey> = {
   market_quote: 'screener',
   market_cap: 'screener',
 }
+// The two valuation metrics the source workbook pulled from the Capital IQ
+// plug-in and we have no free source for — they read "Capital IQ", not "Screener".
+const CAPITALIQ_METRICS = new Set(['enterprise_value', 'pe_3yr_avg'])
 function pipelineOf(cell: AuditCell): PipelineKey {
+  if (CAPITALIQ_METRICS.has(cell.metricId)) return 'capitaliq'
   return ROLE_PIPELINE[cell.role] ?? 'irdai'
 }
 // A cell is "fetched & verified" when it carries a value.
@@ -365,7 +374,8 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
   const pipeStats = useMemo(() => {
     const s: Record<PipelineKey, { fetched: number; total: number }> = {
-      irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 }, screener: { fetched: 0, total: 0 },
+      irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 },
+      screener: { fetched: 0, total: 0 }, capitaliq: { fetched: 0, total: 0 },
     }
     for (const c of group?.cells ?? []) {
       const p = pipelineOf(c)
@@ -448,7 +458,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
           how much of it has been fetched. */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-soft-border bg-ice/40 px-3 py-2">
         <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Source pipelines</span>
-        {(['irdai', 'company', 'screener'] as PipelineKey[]).map((k) => {
+        {(['irdai', 'company', 'screener', 'capitaliq'] as PipelineKey[]).map((k) => {
           const p = PIPELINE[k]
           const st = pipeStats[k]
           if (!st.total) return null
