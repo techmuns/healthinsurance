@@ -65,30 +65,24 @@ function isFetched(cell: AuditCell): boolean {
   return cell.normalizedValue != null || cell.calculatedValue != null
 }
 
-// ── Rows the company investor decks (PPT) do NOT publish ─────────────────────
+// ── Rows the company investor decks (PPT) do NOT give a value for ────────────
 // The whole "SAHIs comparison" tab is wired to one pipeline — the company deck —
-// so by default every empty cell here is tagged "• PPT" ("expected from the
-// deck, not fetched yet"). For two rows that tag is misleading: the figure is
-// not a deck number at all, so no PPT pull will ever fill it. We mark those
-// blanks honestly instead, and name where the number really comes from.
-//   • overall_health_market_share — an industry-share figure (the insurer's
-//     health premium ÷ all-India health premium). Every value we hold for it
-//     comes from the GI Council segment report; decks never print it.
-//   • total_gwp — Gross Written Premium on the regulator's 1/n basis. Decks
-//     headline the ex-1/n figure, so the 1/n number is taken from the IRDAI
-//     public disclosure / annual report. (A few decks — e.g. Care's Religare
-//     deck — do restate the 1/n GWP; those cells stay filled with their own
-//     deck source and are not touched here.)
+// so by default every blank cell here is tagged "• PPT" ("expected from the
+// deck, not fetched yet"). For overall health market share that is misleading:
+// the deck's KPI page lists the RETAIL health share but leaves overall health
+// share blank (verified in Niva's Q4 FY25 deck), and every value we actually
+// hold for it comes from the GI Council segment report — so no PPT pull will
+// fill it. We mark those blanks honestly and name the real source instead.
+//
+// NOTE: total GWP is deliberately NOT listed here. The decks DO state it on the
+// 1/n basis (Niva FY25 ₹6,762.2 Cr, Care FY26 ₹10,416 Cr, Star FY26 ₹20,369 Cr
+// — all read straight from the decks), so a blank GWP cell is a real fill
+// opportunity, not a dead end. PPTs are a preferred source, not an excluded one.
 const DECK_UNPUBLISHED: Record<string, { sourceLabel: string; reason: string }> = {
   overall_health_market_share: {
     sourceLabel: 'GI Council segment report (industry share)',
     reason:
-      "Overall health market share isn't printed in investor decks — it's an industry-share figure (the insurer's health premium ÷ all-India health premium). Where we have it, it comes from the GI Council segment report; the blank periods (FY23 and the quarters) aren't published there either.",
-  },
-  total_gwp: {
-    sourceLabel: 'IRDAI public disclosure (1/n basis)',
-    reason:
-      "This is Gross Written Premium on the regulator's 1/n basis. Investor decks headline the ex-1/n figure, so the 1/n number comes from the IRDAI public disclosure / annual report — not the deck. (A few decks, e.g. Care's Religare deck, do restate the 1/n GWP.)",
+      "Investor decks don't give a value for overall health market share — the KPI page lists the retail health share only (verified in Niva's Q4 FY25 deck). It's an industry-share figure (the insurer's health premium ÷ all-India health premium), so the values we have come from the GI Council segment report; the blank periods (FY23 and the quarters) aren't published there either.",
   },
 }
 // An EMPTY cell whose row the deck doesn't publish — the "• PPT" tag is wrong
@@ -545,7 +539,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         {pipeStats.notInDeck > 0 && (
           <span
             className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px]"
-            title="Rows the investor decks don't publish — overall health market share and GWP on the 1/n basis. These come from official IRDAI / GI-Council sources, so a blank here is not a pending deck pull."
+            title="Overall health market share isn't given a value in the investor decks (the KPI page shows the retail health share only) — it comes from the GI Council segment report, so a blank here is not a pending deck pull."
           >
             <span className="h-2 w-2 rounded-full bg-slate-300" />
             <span className="font-semibold text-navy-deep">Not in deck</span>
