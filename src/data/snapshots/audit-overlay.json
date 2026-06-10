@@ -1350,7 +1350,7 @@
     "star-health::total_gwp::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "FY26 1/n premium line not yet available",
+      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1358,13 +1358,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
-      "display_tag": "FY26 premium pending"
+      "note": "FY26 Gross Written Premium (1/n; FY25 = ₹16,781 Cr — not the deck’s ₹20,369 ‘n’-basis figure) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
+      "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::gross_direct_premium::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "FY26 1/n premium line not yet available",
+      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1372,13 +1372,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
-      "display_tag": "FY26 premium pending"
+      "note": "FY26 Gross Direct Premium (1/n; FY25 ≈ ₹16,781 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
+      "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::nwp::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "FY26 1/n premium line not yet available",
+      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1386,13 +1386,13 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
-      "display_tag": "FY26 premium pending"
+      "note": "FY26 Net Written Premium (FY25 = ₹15,525 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
+      "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::nep::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "FY26 1/n premium line not yet available",
+      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1400,8 +1400,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
-      "display_tag": "FY26 premium pending"
+      "note": "FY26 Net Earned Premium (FY25 = ₹14,822 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
+      "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::pat_igaap::FY26": {
       "value": 557,
@@ -1485,7 +1485,7 @@
     "star-health::net_worth_ifrs::FY26": {
       "value": null,
       "unit": "",
-      "source_name": "FY26 1/n premium line not yet available",
+      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
       "source_url": null,
       "source_file": null,
       "source_page": null,
@@ -1493,8 +1493,8 @@
       "confidence": null,
       "priority": 1,
       "layer": "annotation",
-      "note": "The Q4 FY26 deck gives FY26 IGAAP profit and ratios but not the premium/balance-sheet lines on the 1/n statutory basis (it shows GWP on the n-basis only). The BSE audited-results download was blocked by BSE’s server; these fill once the full FY26 statutory annual report (or the IRDAI public disclosure) is available.",
-      "display_tag": "FY26 premium pending"
+      "note": "FY26 Net Worth (FY25 = ₹7,022 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
+      "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::settlement_ratio::FY26": {
       "value": null,
