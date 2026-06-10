@@ -46,10 +46,14 @@ const num = (v: unknown): number | null => {
 /** ISO YYYY-MM-DD → DDMMYYYY (the MTO filename format). */
 const ddmmyyyy = (iso: string) => `${iso.slice(8, 10)}${iso.slice(5, 7)}${iso.slice(0, 4)}`
 const mtoUrl = (iso: string) => `https://archives.nseindia.com/archives/equities/mto/MTO_${ddmmyyyy(iso)}.DAT`
+const bhavUrl = (iso: string) => `https://archives.nseindia.com/products/content/sec_bhavdata_full_${ddmmyyyy(iso)}.csv`
 
-/** Parse an MTO file → { NSE symbol → { traded, deliverable } } (EQ series). */
-export function parseMto(text: string): Map<string, { traded: number | null; deliverable: number | null }> {
-  const out = new Map<string, { traded: number | null; deliverable: number | null }>()
+type Deliv = { traded: number | null; deliverable: number | null }
+
+/** Parse an MTO file → { NSE symbol → { traded, deliverable } } (EQ series).
+ *  Rows: 20,SrNo,SYMBOL,SERIES,QtyTraded,DeliverableQty,Deliv% */
+export function parseMto(text: string): Map<string, Deliv> {
+  const out = new Map<string, Deliv>()
   for (const line of text.split(/\r?\n/)) {
     if (!line.startsWith('20,')) continue // record-type 20 = a security row
     const p = line.split(',')
@@ -57,6 +61,19 @@ export function parseMto(text: string): Map<string, { traded: number | null; del
     const series = (p[3] ?? '').trim()
     if (series !== 'EQ' || !WANTED.has(symbol)) continue
     out.set(symbol, { traded: num(p[4]), deliverable: num(p[5]) })
+  }
+  return out
+}
+
+/** Parse the full bhavdata CSV (fallback when the MTO file has a gap).
+ *  Header: SYMBOL, SERIES, …, TTL_TRD_QNTY(10), …, DELIV_QTY(13), DELIV_PER(14) */
+export function parseBhavdata(text: string): Map<string, Deliv> {
+  const out = new Map<string, Deliv>()
+  for (const line of text.split(/\r?\n/)) {
+    const p = line.split(',').map((s) => s.trim())
+    if (p.length < 15) continue
+    if (p[1] !== 'EQ' || !WANTED.has(p[0])) continue
+    out.set(p[0], { traded: num(p[10]), deliverable: num(p[13]) })
   }
   return out
 }
@@ -97,14 +114,26 @@ export const fetchNseDelivery: Fetcher = {
     const incoming: PriceRow[] = []
     const warnings: string[] = []
     let days = 0
-    let missing = 0
+    let noFile = 0 // dates with no NSE settlement file at all (likely non-trading)
     for (const date of dates) {
-      const url = mtoUrl(date)
       try {
-        const { status, text } = await fetchText(url)
-        if (status === 404) { missing++; continue } // settlement holiday / not published
-        if (status !== 200) { if (warnings.length < 3) warnings.push(`${date}: HTTP ${status}`); continue }
-        const map = parseMto(text)
+        // Primary: the small MTO delivery file. Fallback: the full bhavdata CSV
+        // (covers the odd day NSE doesn't publish an MTO).
+        let map: Map<string, Deliv> | null = null
+        let src = mtoUrl(date)
+        const mto = await fetchText(src)
+        if (mto.status === 200) map = parseMto(mto.text)
+        if (!map || map.size === 0) {
+          src = bhavUrl(date)
+          const bhav = await fetchText(src)
+          if (bhav.status === 200) map = parseBhavdata(bhav.text)
+        }
+        if (!map || map.size === 0) {
+          noFile++
+          if (warnings.length < 5) warnings.push(`${date}: no NSE settlement file (MTO + bhavdata both absent — likely a non-trading day)`)
+          await sleep(80)
+          continue
+        }
         for (const [symbol, v] of map) {
           if (v.deliverable == null) continue
           incoming.push({
@@ -114,9 +143,9 @@ export const fetchNseDelivery: Fetcher = {
             traded_qty: v.traded,
             deliverable_qty: v.deliverable,
             provenance: {
-              source_name: 'NSE security-wise delivery (MTO)',
-              source_url: url,
-              source_file: url,
+              source_name: 'NSE security-wise delivery',
+              source_url: src,
+              source_file: src,
               source_period: date,
               fetched_at,
               parsed_at: nowIso(),
@@ -127,7 +156,7 @@ export const fetchNseDelivery: Fetcher = {
         }
         days++
       } catch (e) {
-        if (warnings.length < 3) warnings.push(`${date}: ${e instanceof Error ? e.message : String(e)}`)
+        if (warnings.length < 5) warnings.push(`${date}: ${e instanceof Error ? e.message : String(e)}`)
       }
       await sleep(80) // be gentle on the archives host
     }
@@ -139,7 +168,7 @@ export const fetchNseDelivery: Fetcher = {
       added = res.added
       enriched = res.enriched
       await savePriceHistory(snap, { nse_delivery_last_run: fetched_at })
-      await appendLog('fetch-nse-delivery.log', { source: SOURCE_ID, days, rows: incoming.length, enriched, missing })
+      await appendLog('fetch-nse-delivery.log', { source: SOURCE_ID, days, rows: incoming.length, enriched, noFile })
     }
 
     return {
