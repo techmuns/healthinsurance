@@ -4313,6 +4313,71 @@
       "priority": 1,
       "layer": "company_filing",
       "note": "KPI table (IND-AS basis); MTM-driven dip."
+    },
+    "niva-bupa::group_other_gwp::FY23": {
+      "value": 1103.33,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY2024-25 Investor Presentation — Group + other GWP FY23 = total GWP 4073.03 − retail health GWP 2969.7",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/agent-pulls/sahi-ppt-metrics/sources/Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Group + other GWP FY23 = total GWP 4073.03 − retail health GWP 2969.7",
+      "fetched_at": "2026-06-10",
+      "confidence": "medium",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Derived: total GWP (1/n) minus the deck-stated Retail Health GWP."
+    },
+    "niva-bupa::group_other_gwp::FY24": {
+      "value": 1767.87,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY2024-25 Investor Presentation — Group + other GWP FY24 = total GWP 5607.57 − retail health GWP 3839.7",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/agent-pulls/sahi-ppt-metrics/sources/Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Group + other GWP FY24 = total GWP 5607.57 − retail health GWP 3839.7",
+      "fetched_at": "2026-06-10",
+      "confidence": "medium",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Derived: total GWP (1/n) minus the deck-stated Retail Health GWP."
+    },
+    "niva-bupa::group_other_gwp::FY25": {
+      "value": 2329.73,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Q4 FY2024-25 Investor Presentation — Group + other GWP FY25 = total GWP 6762.23 − retail health GWP 4432.5",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
+      "source_file": "data/agent-pulls/sahi-ppt-metrics/sources/Investors-Presentation-Q4-FY2025.pdf",
+      "source_page": "Group + other GWP FY25 = total GWP 6762.23 − retail health GWP 4432.5",
+      "fetched_at": "2026-06-10",
+      "confidence": "medium",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Derived: total GWP (1/n) minus the deck-stated Retail Health GWP."
+    },
+    "care-health::retail_health_gwp::FY26": {
+      "value": 6874.56,
+      "unit": "INR_cr",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation) — Retail health GWP FY26 ≈ 66% × total GWP 10416",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Retail health GWP FY26 ≈ 66% × total GWP 10416",
+      "fetched_at": "2026-06-10",
+      "confidence": "medium",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Derived from the deck's stated product mix (Retail 66%) × FY26 total GWP (1/n)."
+    },
+    "care-health::group_other_gwp::FY26": {
+      "value": 3541.44,
+      "unit": "INR_cr",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation) — Group + other GWP FY26 ≈ 34% × total GWP 10416",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Group + other GWP FY26 ≈ 34% × total GWP 10416",
+      "fetched_at": "2026-06-10",
+      "confidence": "medium",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "Derived from the deck's stated product mix (Group+PA+Travel 34%) × FY26 total GWP (1/n)."
     }
   },
   "meta": {}
