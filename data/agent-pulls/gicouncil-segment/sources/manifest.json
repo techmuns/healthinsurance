@@ -1,11 +1,578 @@
 {
   "files": {
+    "https://www.gicouncil.in/media/3119/segment-wise-report-april-2018.xlsx": {
+      "filename": "segment-wise-report-april-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3119/segment-wise-report-april-2018.xlsx",
+      "bytes": 695701,
+      "sha256": "18d9166e12e678bfd031f2c7e6a8a1c0886d9689e265a94105503c6477a50eaa",
+      "fetched_at": "2026-06-10T20:16:28.142Z"
+    },
+    "https://www.gicouncil.in/media/3123/segment-wise-report-may-2018.xlsx": {
+      "filename": "segment-wise-report-may-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3123/segment-wise-report-may-2018.xlsx",
+      "bytes": 695943,
+      "sha256": "0123e434f3813e0560e7059e6ba13a108daef31c957a8b439b80354d5a214907",
+      "fetched_at": "2026-06-10T20:16:25.200Z"
+    },
+    "https://www.gicouncil.in/media/3125/segment-wise-report-june-2018.xlsx": {
+      "filename": "segment-wise-report-june-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3125/segment-wise-report-june-2018.xlsx",
+      "bytes": 1071178,
+      "sha256": "30a67b1f68a643a1972acb52c7a6703490c49b7fdaa16755b13ff00acc79d710",
+      "fetched_at": "2026-06-10T20:16:11.901Z"
+    },
+    "https://www.gicouncil.in/media/3129/segment-wise-report-july-2018.xlsx": {
+      "filename": "segment-wise-report-july-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3129/segment-wise-report-july-2018.xlsx",
+      "bytes": 696198,
+      "sha256": "12d8aa585b8b8021605fd4dd35192a8a0705253f17b1f39ac323cc4e2a9cbcbc",
+      "fetched_at": "2026-06-10T20:15:25.084Z"
+    },
+    "https://www.gicouncil.in/media/3135/segment-wise-report-august-2018.xlsx": {
+      "filename": "segment-wise-report-august-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3135/segment-wise-report-august-2018.xlsx",
+      "bytes": 702162,
+      "sha256": "976f3a31bf6fe9f9c0dc7f187d12ef432c729cd8f1ab944b45a665c89f0cc0b3",
+      "fetched_at": "2026-06-10T20:15:08.351Z"
+    },
+    "https://www.gicouncil.in/media/3143/updated-segment-wise-report-sept-2018.xlsx": {
+      "filename": "updated-segment-wise-report-sept-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3143/updated-segment-wise-report-sept-2018.xlsx",
+      "bytes": 702465,
+      "sha256": "2e8c280568a8c7876811c099c8777832bb90fd8d89347142f988cbb6277fba33",
+      "fetched_at": "2026-06-10T20:14:40.812Z"
+    },
+    "https://www.gicouncil.in/media/3146/segment-wise-report-october-2018.xlsx": {
+      "filename": "segment-wise-report-october-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3146/segment-wise-report-october-2018.xlsx",
+      "bytes": 1078978,
+      "sha256": "4c92ab477c0d8047f3421b1e18bed39848b0c4251ee87b2e57ed94ff98e519b8",
+      "fetched_at": "2026-06-10T20:14:30.896Z"
+    },
+    "https://www.gicouncil.in/media/3679/segment-wise-report-november-2018.xlsx": {
+      "filename": "segment-wise-report-november-2018.xlsx",
+      "url": "https://www.gicouncil.in/media/3679/segment-wise-report-november-2018.xlsx",
+      "bytes": 702444,
+      "sha256": "154d3eb213ba6ac6528a86abeffa3599440d3398d2578cfbb5c0b7751f530e60",
+      "fetched_at": "2026-06-10T20:14:16.537Z"
+    },
+    "https://www.gicouncil.in/media/3686/segment-wise-report-january-2019.xlsx": {
+      "filename": "segment-wise-report-january-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3686/segment-wise-report-january-2019.xlsx",
+      "bytes": 158933,
+      "sha256": "50daf6ba1c9f9d9f8e4046c9ffce139f4bd236e24bf140a55a576fd1b7c71d87",
+      "fetched_at": "2026-06-10T20:13:09.449Z"
+    },
+    "https://www.gicouncil.in/media/3709/segment-wise-report-february-2019.xlsx": {
+      "filename": "segment-wise-report-february-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3709/segment-wise-report-february-2019.xlsx",
+      "bytes": 159315,
+      "sha256": "b3661aa08aea19f6ae3fe3b99b5203214643faf5a1adb94f5795e73c8f33a399",
+      "fetched_at": "2026-06-10T20:12:53.507Z"
+    },
+    "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx": {
+      "filename": "segment-wise-report_march-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx",
+      "bytes": 159282,
+      "sha256": "e4c657ecbd34dbde75148b17528bf5b1a9334d46e306da91b29d1b6bc24a4835",
+      "fetched_at": "2026-06-10T20:12:48.093Z"
+    },
+    "https://www.gicouncil.in/media/3715/segment-wise-report_april-2019.xlsx": {
+      "filename": "segment-wise-report_april-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3715/segment-wise-report_april-2019.xlsx",
+      "bytes": 163620,
+      "sha256": "8d7718e90a548af1728455ff37420f4396484646319e914e5c3721711d4f9a60",
+      "fetched_at": "2026-06-10T20:12:37.560Z"
+    },
+    "https://www.gicouncil.in/media/3718/segment-wise-report_may-2019.xlsx": {
+      "filename": "segment-wise-report_may-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3718/segment-wise-report_may-2019.xlsx",
+      "bytes": 260226,
+      "sha256": "c0224b57a0813ef812037bb81a3a7a000d26a6f53545c9f9eb085d33f78d5773",
+      "fetched_at": "2026-06-10T20:12:34.058Z"
+    },
+    "https://www.gicouncil.in/media/3748/segment-wise-report_june-2019_revised_22072019.xlsx": {
+      "filename": "segment-wise-report_june-2019_revised_22072019.xlsx",
+      "url": "https://www.gicouncil.in/media/3748/segment-wise-report_june-2019_revised_22072019.xlsx",
+      "bytes": 158273,
+      "sha256": "72dd5c505cf44debf3afbdc4eb5a9a029d561e348aa1a8335d3d1992fd9ac942",
+      "fetched_at": "2026-06-10T20:12:27.568Z"
+    },
+    "https://www.gicouncil.in/media/3762/segment-wise-report_july-2019.xlsx": {
+      "filename": "segment-wise-report_july-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3762/segment-wise-report_july-2019.xlsx",
+      "bytes": 163682,
+      "sha256": "95bff031c09e1f299f2facae88d0cee3f344c3ce20053f69709fdb7a02995488",
+      "fetched_at": "2026-06-10T20:12:17.392Z"
+    },
+    "https://www.gicouncil.in/media/3763/segment-wise-report-upto-august-2019.xlsx": {
+      "filename": "segment-wise-report-upto-august-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3763/segment-wise-report-upto-august-2019.xlsx",
+      "bytes": 162028,
+      "sha256": "06a36dfc891f687aaa40be8f122b438da625c3483b7bf8c7229c853f51b1b5a1",
+      "fetched_at": "2026-06-10T20:12:05.488Z"
+    },
+    "https://www.gicouncil.in/media/3766/segment-wise-report-upto-september-2019.xlsx": {
+      "filename": "segment-wise-report-upto-september-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3766/segment-wise-report-upto-september-2019.xlsx",
+      "bytes": 159041,
+      "sha256": "57f8667ab7437703641353410f572f1544beb17658b1eba75e0a3b5fedcb6a45",
+      "fetched_at": "2026-06-10T20:12:00.275Z"
+    },
+    "https://www.gicouncil.in/media/3781/segment-wise-report-upto-october-2019.xlsx": {
+      "filename": "segment-wise-report-upto-october-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3781/segment-wise-report-upto-october-2019.xlsx",
+      "bytes": 158946,
+      "sha256": "448e18fcdec5edf623d57bfa25bad73f82ec2c49ea7dfc7e7a41c0db2a658800",
+      "fetched_at": "2026-06-10T20:11:42.668Z"
+    },
+    "https://www.gicouncil.in/media/3787/segment-wise-report-upto-november-2019.xlsx": {
+      "filename": "segment-wise-report-upto-november-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3787/segment-wise-report-upto-november-2019.xlsx",
+      "bytes": 162069,
+      "sha256": "0181016f8e98ef51c709cfd5384f3e62ac6d033916c0ea93ed0ba908ce701824",
+      "fetched_at": "2026-06-10T20:11:25.795Z"
+    },
+    "https://www.gicouncil.in/media/3789/segment-wise-report-upto-december-2019.xlsx": {
+      "filename": "segment-wise-report-upto-december-2019.xlsx",
+      "url": "https://www.gicouncil.in/media/3789/segment-wise-report-upto-december-2019.xlsx",
+      "bytes": 159611,
+      "sha256": "e4571764d87c46122493ccaff891f4a651044cd398ee5c96fdcaa93ce4effb57",
+      "fetched_at": "2026-06-10T20:11:14.824Z"
+    },
+    "https://www.gicouncil.in/media/3811/segment-wise-report-upto-january-2020.xlsx": {
+      "filename": "segment-wise-report-upto-january-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3811/segment-wise-report-upto-january-2020.xlsx",
+      "bytes": 265982,
+      "sha256": "f82d6df7915bb9aacf18a0d196f87d22259d10dc9acb41c4e565c07afdba8de9",
+      "fetched_at": "2026-06-10T20:11:06.622Z"
+    },
+    "https://www.gicouncil.in/media/3853/segment-wise-report-upto-february-2020.xlsx": {
+      "filename": "segment-wise-report-upto-february-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3853/segment-wise-report-upto-february-2020.xlsx",
+      "bytes": 164992,
+      "sha256": "e45f2e156a0f115fb1aca70cf83eefcc2129e550c95eefd064b2eff0aacc8be8",
+      "fetched_at": "2026-06-10T20:10:57.339Z"
+    },
+    "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx": {
+      "filename": "segment-wise-report-upto-march-2020_revised.xlsx",
+      "url": "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx",
+      "bytes": 167838,
+      "sha256": "2f1eded3fea15e30b6771932e19b061741391d5e7fe33c1cf7de7f0ee86deca8",
+      "fetched_at": "2026-06-10T20:10:54.619Z"
+    },
+    "https://www.gicouncil.in/media/3886/segment-wise-report-for-april-2020.xlsx": {
+      "filename": "segment-wise-report-for-april-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3886/segment-wise-report-for-april-2020.xlsx",
+      "bytes": 166583,
+      "sha256": "1e83020354642804841febb625ff6c61efae10e40e038969cb5968ce984a4f96",
+      "fetched_at": "2026-06-10T20:10:49.108Z"
+    },
+    "https://www.gicouncil.in/media/3892/segment-wise-report-for-may-2020.xlsx": {
+      "filename": "segment-wise-report-for-may-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3892/segment-wise-report-for-may-2020.xlsx",
+      "bytes": 167031,
+      "sha256": "91eb3f2600ac7f464a0700002e0379d8a33b847e8f70de3d81188db1bf2dc304",
+      "fetched_at": "2026-06-10T20:10:46.600Z"
+    },
+    "https://www.gicouncil.in/media/3894/segment-wise-report-for-june-2020.xlsx": {
+      "filename": "segment-wise-report-for-june-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3894/segment-wise-report-for-june-2020.xlsx",
+      "bytes": 167586,
+      "sha256": "f60ce0f0d49c6221db1224dae3018f46db45571b2079bc836ccc7e56fdefcfba",
+      "fetched_at": "2026-06-10T20:10:41.153Z"
+    },
+    "https://www.gicouncil.in/media/3896/segment-wise-report-for-july-2020.xlsx": {
+      "filename": "segment-wise-report-for-july-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3896/segment-wise-report-for-july-2020.xlsx",
+      "bytes": 167555,
+      "sha256": "964ce0b9863744636d5a70a05a3dd1a53b7f2e499e6c0e1ded627f05014f04e4",
+      "fetched_at": "2026-06-10T20:10:38.665Z"
+    },
+    "https://www.gicouncil.in/media/3905/segment-wise-report_aug-2020.xlsx": {
+      "filename": "segment-wise-report_aug-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3905/segment-wise-report_aug-2020.xlsx",
+      "bytes": 165806,
+      "sha256": "d41dee63efba2d0c9e604a984a8baabf7d4b1c6669eb75b1d67eae3280b0313f",
+      "fetched_at": "2026-06-10T20:10:26.436Z"
+    },
+    "https://www.gicouncil.in/media/3906/segment-wise-report_sept-2020.xlsx": {
+      "filename": "segment-wise-report_sept-2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3906/segment-wise-report_sept-2020.xlsx",
+      "bytes": 164419,
+      "sha256": "e7a7e6868e48a582be1581449e2d2048a56172541e6d72a67347b11e3b594cd4",
+      "fetched_at": "2026-06-10T20:10:11.651Z"
+    },
+    "https://www.gicouncil.in/media/3910/segment-wise-report_october-2020_revised.xlsx": {
+      "filename": "segment-wise-report_october-2020_revised.xlsx",
+      "url": "https://www.gicouncil.in/media/3910/segment-wise-report_october-2020_revised.xlsx",
+      "bytes": 164371,
+      "sha256": "05fbef7d88ac5e1e2d729d3de659541d7b1dc6a18cb04230868f4f8214e5ae8f",
+      "fetched_at": "2026-06-10T20:10:07.033Z"
+    },
+    "https://www.gicouncil.in/media/3913/new-online-mis_segment-wise-report_november_2020_updated.xlsx": {
+      "filename": "new-online-mis_segment-wise-report_november_2020_updated.xlsx",
+      "url": "https://www.gicouncil.in/media/3913/new-online-mis_segment-wise-report_november_2020_updated.xlsx",
+      "bytes": 31651,
+      "sha256": "3c13d6ef46003ae95f21ae629a9d61ac5e58759c5475ea2e7380f5ecc8592078",
+      "fetched_at": "2026-06-10T20:09:58.112Z"
+    },
+    "https://www.gicouncil.in/media/3919/new-online-mis_segment-wise-report_december_2020.xlsx": {
+      "filename": "new-online-mis_segment-wise-report_december_2020.xlsx",
+      "url": "https://www.gicouncil.in/media/3919/new-online-mis_segment-wise-report_december_2020.xlsx",
+      "bytes": 31671,
+      "sha256": "37d7597d4ce81eae75652c089cfde40e4a53eb856073414f5c802f6876a448a6",
+      "fetched_at": "2026-06-10T20:09:47.895Z"
+    },
+    "https://www.gicouncil.in/media/3924/new-online-mis_segmentwise-report_complete-industry_january_2021.xlsx": {
+      "filename": "new-online-mis_segmentwise-report_complete-industry_january_2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3924/new-online-mis_segmentwise-report_complete-industry_january_2021.xlsx",
+      "bytes": 31063,
+      "sha256": "9bd8eb78c989bf018893f90f984adf7fc0b29a90a9564d559be52161f530e7a7",
+      "fetched_at": "2026-06-10T20:09:23.971Z"
+    },
+    "https://www.gicouncil.in/media/3926/new-online-mis-segment-report_february_2021.xlsx": {
+      "filename": "new-online-mis-segment-report_february_2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3926/new-online-mis-segment-report_february_2021.xlsx",
+      "bytes": 48432,
+      "sha256": "625ebdf98d299668a9bf5e7740d4e9b5bc8909ae3f08369e0c7d252813a9c912",
+      "fetched_at": "2026-06-10T20:09:10.529Z"
+    },
+    "https://www.gicouncil.in/media/3936/segmentwise-report_april-2021.xlsx": {
+      "filename": "segmentwise-report_april-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3936/segmentwise-report_april-2021.xlsx",
+      "bytes": 47903,
+      "sha256": "1e99b551f38541d7f8e15c449573fab72f8f926949dbcb66a7a021a0a925b25b",
+      "fetched_at": "2026-06-10T20:09:02.611Z"
+    },
+    "https://www.gicouncil.in/media/3937/segmentwise-report_may-2021.xlsx": {
+      "filename": "segmentwise-report_may-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3937/segmentwise-report_may-2021.xlsx",
+      "bytes": 28909,
+      "sha256": "3a51062c9d3a90c5ba4f26c8509817827505163481132534402cce7977b2b225",
+      "fetched_at": "2026-06-10T20:08:49.638Z"
+    },
+    "https://www.gicouncil.in/media/3939/segmentwise-report_june-2021.xlsx": {
+      "filename": "segmentwise-report_june-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3939/segmentwise-report_june-2021.xlsx",
+      "bytes": 29337,
+      "sha256": "5b03092554c2e90e5b9bf693683fb86f949cfa24ae0530efff7630838ec44e6a",
+      "fetched_at": "2026-06-10T20:08:30.760Z"
+    },
+    "https://www.gicouncil.in/media/3940/segmentwise-report_july-2021.xlsx": {
+      "filename": "segmentwise-report_july-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3940/segmentwise-report_july-2021.xlsx",
+      "bytes": 29968,
+      "sha256": "fda4940fe70b6ae68abf0fa45d187f46622069692dc017b0ff768097a5e670c0",
+      "fetched_at": "2026-06-10T20:08:27.458Z"
+    },
+    "https://www.gicouncil.in/media/3943/segmentwise-report_august-2021.xlsx": {
+      "filename": "segmentwise-report_august-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3943/segmentwise-report_august-2021.xlsx",
+      "bytes": 29731,
+      "sha256": "da2d202b39a7505a08b9de13f123e4a07813db83b33f01a55537375d79cc52cc",
+      "fetched_at": "2026-06-10T20:08:23.544Z"
+    },
+    "https://www.gicouncil.in/media/3944/segmentwise-report_september-2021.xlsx": {
+      "filename": "segmentwise-report_september-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3944/segmentwise-report_september-2021.xlsx",
+      "bytes": 30037,
+      "sha256": "305951d0424857a425fc171da1040eabce8ca3da68990e3e0221fcec48d5ef97",
+      "fetched_at": "2026-06-10T20:08:10.349Z"
+    },
+    "https://www.gicouncil.in/media/3945/segmentwise-report_october-2021.xlsx": {
+      "filename": "segmentwise-report_october-2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3945/segmentwise-report_october-2021.xlsx",
+      "bytes": 48543,
+      "sha256": "3c52b14f66c5ba48612ed943e5a49b65c16e6158c34a335846a1bddc6f5b6233",
+      "fetched_at": "2026-06-10T20:08:08.277Z"
+    },
+    "https://www.gicouncil.in/media/3962/segmentwise-report_november_2021.xlsx": {
+      "filename": "segmentwise-report_november_2021.xlsx",
+      "url": "https://www.gicouncil.in/media/3962/segmentwise-report_november_2021.xlsx",
+      "bytes": 31875,
+      "sha256": "8a5def27ad46fb04779b53b2b66053e8c72886c5c576e19c02787042c293a51d",
+      "fetched_at": "2026-06-10T20:08:01.151Z"
+    },
+    "https://www.gicouncil.in/media/3969/revised-segment-wise-december-2021_xlsx21012022.xlsx": {
+      "filename": "revised-segment-wise-december-2021_xlsx21012022.xlsx",
+      "url": "https://www.gicouncil.in/media/3969/revised-segment-wise-december-2021_xlsx21012022.xlsx",
+      "bytes": 36975,
+      "sha256": "228fda2e58e51c136ee7f931444a6ba19ecdb196a683a9d497f1cc22087f5a97",
+      "fetched_at": "2026-06-10T20:07:43.359Z"
+    },
+    "https://www.gicouncil.in/media/3974/segment-wise-figures-upto-january-2022.xlsx": {
+      "filename": "segment-wise-figures-upto-january-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/3974/segment-wise-figures-upto-january-2022.xlsx",
+      "bytes": 49404,
+      "sha256": "eb02d1e8c1643f2ddaef3f87c863e25d02d265a9d0d986227359018809b55137",
+      "fetched_at": "2026-06-10T20:07:33.892Z"
+    },
+    "https://www.gicouncil.in/media/3988/segment-wise-figures-upto-february-2022.xlsx": {
+      "filename": "segment-wise-figures-upto-february-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/3988/segment-wise-figures-upto-february-2022.xlsx",
+      "bytes": 28763,
+      "sha256": "cd1458635b3f6d3062f73d458a369dc808be1ea1fa19a5cebb9466f5aba5db5b",
+      "fetched_at": "2026-06-10T20:07:13.157Z"
+    },
+    "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx": {
+      "filename": "segment-wise-figures-upto-march-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+      "bytes": 34765,
+      "sha256": "8c67dbc5a0ac13690dbaf95b2f730a4e68b7094ce19f6f6206a0ce42cf155c76",
+      "fetched_at": "2026-06-10T20:07:07.597Z"
+    },
+    "https://www.gicouncil.in/media/4063/segment-report-upto-october-2022.xlsx": {
+      "filename": "segment-report-upto-october-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4063/segment-report-upto-october-2022.xlsx",
+      "bytes": 46602,
+      "sha256": "21417a2222dbf5660bb571968837065bb6e0706c8962db8ae6536feebe5f0b3d",
+      "fetched_at": "2026-06-10T20:05:34.233Z"
+    },
+    "https://www.gicouncil.in/media/4067/segment-report-for-april-2022.xlsx": {
+      "filename": "segment-report-for-april-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4067/segment-report-for-april-2022.xlsx",
+      "bytes": 31176,
+      "sha256": "4408b530fae0d78f8dd8b3facaad9fd08b2b8a5727a8f57352edcce32aeee5c4",
+      "fetched_at": "2026-06-10T20:06:44.899Z"
+    },
+    "https://www.gicouncil.in/media/4068/segment-report-upto-may_2022.xlsx": {
+      "filename": "segment-report-upto-may_2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4068/segment-report-upto-may_2022.xlsx",
+      "bytes": 51824,
+      "sha256": "0748ccbcc90264ab396dc994aec3957878254b891f4f90296be10e5cca073017",
+      "fetched_at": "2026-06-10T20:06:12.854Z"
+    },
+    "https://www.gicouncil.in/media/4069/segment-report-upto-june_2022.xlsx": {
+      "filename": "segment-report-upto-june_2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4069/segment-report-upto-june_2022.xlsx",
+      "bytes": 34099,
+      "sha256": "d977de3b566c19cf6f3486164ba8a8d328ff729578480a2d359e145132ae0a29",
+      "fetched_at": "2026-06-10T20:06:08.614Z"
+    },
+    "https://www.gicouncil.in/media/4070/segment-report-upto-july_2022.xlsx": {
+      "filename": "segment-report-upto-july_2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4070/segment-report-upto-july_2022.xlsx",
+      "bytes": 34915,
+      "sha256": "80ed2466eebb961ac89347e7f78972f93a82839ae8d6fbd26080a9e103a0b72d",
+      "fetched_at": "2026-06-10T20:05:59.662Z"
+    },
+    "https://www.gicouncil.in/media/4071/segment-report-upto-august-2022.xlsx": {
+      "filename": "segment-report-upto-august-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4071/segment-report-upto-august-2022.xlsx",
+      "bytes": 34103,
+      "sha256": "76331fa60599b029901a3f6b7d8b4df16d1f10b070c67d8e7f8ddfd04541309e",
+      "fetched_at": "2026-06-10T20:05:56.921Z"
+    },
+    "https://www.gicouncil.in/media/4072/segment-report-upto-september_2022.xlsx": {
+      "filename": "segment-report-upto-september_2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4072/segment-report-upto-september_2022.xlsx",
+      "bytes": 34005,
+      "sha256": "4f7130e7b21e7dda07904add1ebd5ebe6061a2492a47ca5334f3f2bdf57471d0",
+      "fetched_at": "2026-06-10T20:05:40.266Z"
+    },
+    "https://www.gicouncil.in/media/4077/segment-wise-figures-upto-november_2022.xlsx": {
+      "filename": "segment-wise-figures-upto-november_2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4077/segment-wise-figures-upto-november_2022.xlsx",
+      "bytes": 46524,
+      "sha256": "63016c2aa1c405b3be92a5b891518ded4eb343fc6a35b531dc8d333906c67d2f",
+      "fetched_at": "2026-06-10T20:05:22.316Z"
+    },
+    "https://www.gicouncil.in/media/4099/segmentwise-figures-upto-december-2022.xlsx": {
+      "filename": "segmentwise-figures-upto-december-2022.xlsx",
+      "url": "https://www.gicouncil.in/media/4099/segmentwise-figures-upto-december-2022.xlsx",
+      "bytes": 46847,
+      "sha256": "e6c285cf3e852df398003478f95a4309d04123304e74cb93a34e3b8a6f2d84a5",
+      "fetched_at": "2026-06-10T20:05:17.001Z"
+    },
+    "https://www.gicouncil.in/media/4137/revised-segment-wise-figures-upto-january-2023.xlsx": {
+      "filename": "revised-segment-wise-figures-upto-january-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4137/revised-segment-wise-figures-upto-january-2023.xlsx",
+      "bytes": 48526,
+      "sha256": "d38daaa812b0b986171bc760e2e47cbaaf4c49f4e05f23a088042b2493eb4d87",
+      "fetched_at": "2026-06-10T20:05:15.277Z"
+    },
+    "https://www.gicouncil.in/media/4148/segment-wise-figures-upto-february-2023.xlsx": {
+      "filename": "segment-wise-figures-upto-february-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4148/segment-wise-figures-upto-february-2023.xlsx",
+      "bytes": 49239,
+      "sha256": "e79b14bf3bb0761402a5b646e80c4017bed3ccd7677b6a636b2d29c2e637b5e3",
+      "fetched_at": "2026-06-10T20:05:13.109Z"
+    },
+    "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx": {
+      "filename": "segment-wise-figures-upto-march-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
+      "bytes": 45620,
+      "sha256": "032c0e0eab805621e6d38069c8530cb9b9ae0a2c7e2bdd50267cb46b6cb50386",
+      "fetched_at": "2026-06-10T20:05:04.783Z"
+    },
+    "https://www.gicouncil.in/media/4210/segment-wise-figures-upto-april-2023.xlsx": {
+      "filename": "segment-wise-figures-upto-april-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4210/segment-wise-figures-upto-april-2023.xlsx",
+      "bytes": 38305,
+      "sha256": "8d9a230099dab3286f17ca3f13965f5a07dbdcbe0a333807bc67926b32b11c2a",
+      "fetched_at": "2026-06-10T20:04:54.331Z"
+    },
+    "https://www.gicouncil.in/media/4212/segment-wise-figures-upto-may-2023.xlsx": {
+      "filename": "segment-wise-figures-upto-may-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4212/segment-wise-figures-upto-may-2023.xlsx",
+      "bytes": 41483,
+      "sha256": "6711fc54189df99210a1679952fa643f7f75f45bf16609e2acc6f071f19adb52",
+      "fetched_at": "2026-06-10T20:04:51.872Z"
+    },
+    "https://www.gicouncil.in/media/4231/segment-wise-figures-upto-june-2023.xlsx": {
+      "filename": "segment-wise-figures-upto-june-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4231/segment-wise-figures-upto-june-2023.xlsx",
+      "bytes": 47749,
+      "sha256": "74c16943f675490f88fa70161c66292d79a2420ed26c2543bfab65717b718f8c",
+      "fetched_at": "2026-06-10T20:04:50.118Z"
+    },
+    "https://www.gicouncil.in/media/4256/segment-wise-report-month-of_july_2023-final.xlsx": {
+      "filename": "segment-wise-report-month-of_july_2023-final.xlsx",
+      "url": "https://www.gicouncil.in/media/4256/segment-wise-report-month-of_july_2023-final.xlsx",
+      "bytes": 68834,
+      "sha256": "4755d8f0cf3cb34abe19e1df48456a6ba5b6179b9c67021ee9e35002769ac615",
+      "fetched_at": "2026-06-10T20:04:45.818Z"
+    },
+    "https://www.gicouncil.in/media/4263/segment-wise-figures-up-to-august-2023.xlsx": {
+      "filename": "segment-wise-figures-up-to-august-2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4263/segment-wise-figures-up-to-august-2023.xlsx",
+      "bytes": 47371,
+      "sha256": "45dee70d63a8a2c77d354574409bd3c5dd8e01d337eee4fedff9f628795728bb",
+      "fetched_at": "2026-06-10T20:04:32.119Z"
+    },
+    "https://www.gicouncil.in/media/4295/segment_september_2023.xlsx": {
+      "filename": "segment_september_2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4295/segment_september_2023.xlsx",
+      "bytes": 72334,
+      "sha256": "bf44b48d8a0a564152bc1d6b599571bf4d2881c9e41e0224a4607abba890d9df",
+      "fetched_at": "2026-06-10T20:04:29.564Z"
+    },
+    "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx": {
+      "filename": "segment-wise-premiums-for-fy-2020-21_updated-2.xlsx",
+      "url": "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx",
+      "bytes": 160246,
+      "sha256": "623015cdcfed32be0447764a5bce3587f721cf733ac15805ce1af2173dce60fa",
+      "fetched_at": "2026-06-10T20:09:04.927Z"
+    },
+    "https://www.gicouncil.in/media/4309/segment-wise-report-month-of-october_2023.xlsx": {
+      "filename": "segment-wise-report-month-of-october_2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4309/segment-wise-report-month-of-october_2023.xlsx",
+      "bytes": 47475,
+      "sha256": "b0b5eb65ff8242504a75522d031898091ae77018075e0082ea0b918992afdf41",
+      "fetched_at": "2026-06-10T20:04:19.614Z"
+    },
+    "https://www.gicouncil.in/media/4321/segmentwise-report-month-of-november_2023.xlsx": {
+      "filename": "segmentwise-report-month-of-november_2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4321/segmentwise-report-month-of-november_2023.xlsx",
+      "bytes": 66566,
+      "sha256": "eb86860ab3e3222a618a4267dca500ef323d6dad0dbbb1e51ea775aba12e3619",
+      "fetched_at": "2026-06-10T20:04:14.639Z"
+    },
+    "https://www.gicouncil.in/media/4339/segmentwise-report-month-of-december_2023.xlsx": {
+      "filename": "segmentwise-report-month-of-december_2023.xlsx",
+      "url": "https://www.gicouncil.in/media/4339/segmentwise-report-month-of-december_2023.xlsx",
+      "bytes": 48364,
+      "sha256": "f2a6866d3e7ec02225d9d78dcb84df1732a3b4bed5bacd72ad3b5273c6304850",
+      "fetched_at": "2026-06-10T20:04:05.895Z"
+    },
+    "https://www.gicouncil.in/media/4351/segmentwise-report-month-of-january-2024.xlsx": {
+      "filename": "segmentwise-report-month-of-january-2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4351/segmentwise-report-month-of-january-2024.xlsx",
+      "bytes": 48521,
+      "sha256": "57710f56e806c7d4ab4e90dc4ba5c9b04aed7269cf576a2a024af0fa779a037b",
+      "fetched_at": "2026-06-10T20:03:51.178Z"
+    },
+    "https://www.gicouncil.in/media/4373/segment_february_2024.xlsx": {
+      "filename": "segment_february_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4373/segment_february_2024.xlsx",
+      "bytes": 72835,
+      "sha256": "1ef3ba95fd021ba87669ff8e91396443535eb7e93fdcae8b7649c476d4fdc26f",
+      "fetched_at": "2026-06-10T20:03:34.462Z"
+    },
+    "https://www.gicouncil.in/media/4401/segment_april_2024.xlsx": {
+      "filename": "segment_april_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4401/segment_april_2024.xlsx",
+      "bytes": 44227,
+      "sha256": "2cefb4a5fbdacd11b833b42f39fe767b740e6fa9e48d778831f78c3aadf495ee",
+      "fetched_at": "2026-06-10T20:03:17.804Z"
+    },
+    "https://www.gicouncil.in/media/4407/segment_may_2024.xlsx": {
+      "filename": "segment_may_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4407/segment_may_2024.xlsx",
+      "bytes": 41795,
+      "sha256": "b85263a9d57c01bfcb550c4f4456ee9225608374f33dd15cc0c5468ee55ed05b",
+      "fetched_at": "2026-06-10T20:03:15.410Z"
+    },
     "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx": {
       "filename": "segment_march_2024-16.xlsx",
       "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
       "bytes": 45972,
       "sha256": "730552933ce2d67b92730f91063ad02568b8df558470e3271e598467a348f31d",
       "fetched_at": "2026-06-09T12:25:05.911Z"
+    },
+    "https://www.gicouncil.in/media/4425/segment_june_2024.xlsx": {
+      "filename": "segment_june_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4425/segment_june_2024.xlsx",
+      "bytes": 42322,
+      "sha256": "140db2d9ff730302cbfca5d8091eac6ee37c32322a34b6d77379cb7096fc4d82",
+      "fetched_at": "2026-06-10T20:03:02.973Z"
+    },
+    "https://www.gicouncil.in/media/4431/segmentwise-report_july_2024.xlsx": {
+      "filename": "segmentwise-report_july_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4431/segmentwise-report_july_2024.xlsx",
+      "bytes": 43935,
+      "sha256": "78276908eb69514c71435f67f75035bd51f72ef9b4c4bae2c23bdb435fa7f3ef",
+      "fetched_at": "2026-06-10T20:03:00.344Z"
+    },
+    "https://www.gicouncil.in/media/4450/segmentwise-report_august_2024.xlsx": {
+      "filename": "segmentwise-report_august_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4450/segmentwise-report_august_2024.xlsx",
+      "bytes": 65308,
+      "sha256": "f871048fd69c232df2bce7a74e38673769576e3a42facf6057fcb81267d994ee",
+      "fetched_at": "2026-06-10T20:02:52.437Z"
+    },
+    "https://www.gicouncil.in/media/4453/segment_september_2024.xlsx": {
+      "filename": "segment_september_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4453/segment_september_2024.xlsx",
+      "bytes": 43072,
+      "sha256": "d91e3bbc4f11665ef376e82efb24200ed05d1f01c61b9ed9984ab146c8854d1a",
+      "fetched_at": "2026-06-10T20:02:42.962Z"
+    },
+    "https://www.gicouncil.in/media/4461/segment_october_2024-updated.xlsx": {
+      "filename": "segment_october_2024-updated.xlsx",
+      "url": "https://www.gicouncil.in/media/4461/segment_october_2024-updated.xlsx",
+      "bytes": 43555,
+      "sha256": "a3c3efe1a011762bb51059fad05da9c722ea26f67451c7617f02352514e6298f",
+      "fetched_at": "2026-06-10T20:02:41.134Z"
+    },
+    "https://www.gicouncil.in/media/4474/segment_november_2024.xlsx": {
+      "filename": "segment_november_2024.xlsx",
+      "url": "https://www.gicouncil.in/media/4474/segment_november_2024.xlsx",
+      "bytes": 59150,
+      "sha256": "489976775a8daffc53eeb310b98edffb52196be34421fe6ae7a36d1a28b89b9f",
+      "fetched_at": "2026-06-10T20:02:39.734Z"
+    },
+    "https://www.gicouncil.in/media/4480/segment_december_2024-1.xlsx": {
+      "filename": "segment_december_2024-1.xlsx",
+      "url": "https://www.gicouncil.in/media/4480/segment_december_2024-1.xlsx",
+      "bytes": 43810,
+      "sha256": "84efc94d89e446033c0059661e73da478bebde12f170bafa924feb834672ced1",
+      "fetched_at": "2026-06-10T20:02:35.101Z"
+    },
+    "https://www.gicouncil.in/media/4488/segment_january_2025.xlsx": {
+      "filename": "segment_january_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4488/segment_january_2025.xlsx",
+      "bytes": 72101,
+      "sha256": "72a8b3f0c1455a95dde84df947d7150899faf33af7793c0243f6c6112429a884",
+      "fetched_at": "2026-06-10T20:02:23.020Z"
+    },
+    "https://www.gicouncil.in/media/4504/segment_february_2025-1.xlsx": {
+      "filename": "segment_february_2025-1.xlsx",
+      "url": "https://www.gicouncil.in/media/4504/segment_february_2025-1.xlsx",
+      "bytes": 44210,
+      "sha256": "cb06f8fefdd1be920cef1130b59e0d9172ff4b5ad39db21f652414f6fe75674b",
+      "fetched_at": "2026-06-10T20:02:11.360Z"
     },
     "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx": {
       "filename": "final-segment-24-25.xlsx",
@@ -14,13 +581,97 @@
       "sha256": "b43d761797372644d451a58b4939df5abb88b6cd1e20941dd3b869943af8385a",
       "fetched_at": "2026-06-09T12:25:11.485Z"
     },
+    "https://www.gicouncil.in/media/4522/segment_april_2025.xlsx": {
+      "filename": "segment_april_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4522/segment_april_2025.xlsx",
+      "bytes": 54290,
+      "sha256": "53c5577fe446a9326d0dc9e5a1a06806dcac7043009d85cde0a4e5c77cf40739",
+      "fetched_at": "2026-06-10T20:02:01.762Z"
+    },
+    "https://www.gicouncil.in/media/4540/segment_may_2025.xlsx": {
+      "filename": "segment_may_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4540/segment_may_2025.xlsx",
+      "bytes": 43360,
+      "sha256": "18154f1b0f90b59c507487414503a50925b7521c463003842e4132553d95d2af",
+      "fetched_at": "2026-06-10T20:01:43.379Z"
+    },
+    "https://www.gicouncil.in/media/4545/segment_june_2025.xlsx": {
+      "filename": "segment_june_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4545/segment_june_2025.xlsx",
+      "bytes": 43630,
+      "sha256": "80e86afe6a8698b375be55e5732b8883584a4bf59c441230adaa1eb9ba0a271b",
+      "fetched_at": "2026-06-10T20:01:03.499Z"
+    },
     "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx": {
       "filename": "segment_july_2025.xlsx",
       "url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
       "bytes": 43772,
       "sha256": "ad5a701282adb476e5a923f76f8f742d12c9fc69c2f22b6d703b76cd2ac133b1",
       "fetched_at": "2026-06-09T12:25:19.871Z"
+    },
+    "https://www.gicouncil.in/media/4564/segment_august_2025.xlsx": {
+      "filename": "segment_august_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4564/segment_august_2025.xlsx",
+      "bytes": 44092,
+      "sha256": "3674962bf9df8434b80d075dc443073be61d980939c31d54c707fc90ec89a4a1",
+      "fetched_at": "2026-06-10T20:00:54.809Z"
+    },
+    "https://www.gicouncil.in/media/4572/segment_september_2025.xlsx": {
+      "filename": "segment_september_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4572/segment_september_2025.xlsx",
+      "bytes": 67960,
+      "sha256": "e8d4124763273cceb2ddf2ed89a0b39e952af49a3bd5b19c03276f666600a52a",
+      "fetched_at": "2026-06-10T20:00:49.724Z"
+    },
+    "https://www.gicouncil.in/media/4577/segment_october_2025.xlsx": {
+      "filename": "segment_october_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4577/segment_october_2025.xlsx",
+      "bytes": 44488,
+      "sha256": "9bbf0eeb1bed5b81290e1232a0540d406337903835894698f2b4773a00882949",
+      "fetched_at": "2026-06-10T20:00:41.918Z"
+    },
+    "https://www.gicouncil.in/media/4586/segment_november_2025.xlsx": {
+      "filename": "segment_november_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4586/segment_november_2025.xlsx",
+      "bytes": 44515,
+      "sha256": "f8dbfa2d6eb5e272f05e2840c197777524bc4fd5423d8da0fafb4d23cbea91a6",
+      "fetched_at": "2026-06-10T20:00:39.256Z"
+    },
+    "https://www.gicouncil.in/media/4591/segment_december_2025.xlsx": {
+      "filename": "segment_december_2025.xlsx",
+      "url": "https://www.gicouncil.in/media/4591/segment_december_2025.xlsx",
+      "bytes": 44790,
+      "sha256": "8960ff3a9af15a5db3336dbb7b3c53448bf571fdd3213b9996883b1f9212ff78",
+      "fetched_at": "2026-06-10T20:00:37.309Z"
+    },
+    "https://www.gicouncil.in/media/4601/segment_january_2026.xlsx": {
+      "filename": "segment_january_2026.xlsx",
+      "url": "https://www.gicouncil.in/media/4601/segment_january_2026.xlsx",
+      "bytes": 44652,
+      "sha256": "aa9c76120bc6251feb31b94fb9db177834b7cb7b5e6187422f4e6f7781302849",
+      "fetched_at": "2026-06-10T20:00:30.864Z"
+    },
+    "https://www.gicouncil.in/media/4604/segment_february_2026.xlsx": {
+      "filename": "segment_february_2026.xlsx",
+      "url": "https://www.gicouncil.in/media/4604/segment_february_2026.xlsx",
+      "bytes": 68321,
+      "sha256": "d9539a0cca85bad847e7d6ff6ead5c8a15b8bc0e72087b70797ea52e132156b0",
+      "fetched_at": "2026-06-10T20:00:28.428Z"
+    },
+    "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx": {
+      "filename": "segment_march_2026-170426.xlsx",
+      "url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "bytes": 48638,
+      "sha256": "de2151d8552f65be672f8e048b0ec34f076d6545d488ef6e8c27219850b51515",
+      "fetched_at": "2026-06-10T20:00:21.020Z"
+    },
+    "https://www.gicouncil.in/media/4645/segment_april_2026.xlsx": {
+      "filename": "segment_april_2026.xlsx",
+      "url": "https://www.gicouncil.in/media/4645/segment_april_2026.xlsx",
+      "bytes": 46572,
+      "sha256": "a6d296a585e516013ab61d2a1734ff7cb38599518e6fc27d5050ca57c64b8394",
+      "fetched_at": "2026-06-10T20:00:18.327Z"
     }
   },
-  "updated_at": "2026-06-09T12:25:19.871Z"
+  "updated_at": "2026-06-10T20:16:28.142Z"
 }
