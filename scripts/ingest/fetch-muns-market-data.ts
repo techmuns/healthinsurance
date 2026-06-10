@@ -1,28 +1,23 @@
 // ---------------------------------------------------------------------------
 //  Fetcher — muns market-data API (PRIMARY daily price/volume source).
 //
-//  fastapi.muns.io/market_data is muns' own historical stock-data service with
-//  first-class India support (country=India). It is the primary source for the
-//  Historical Stock Movement + Comps sheets: reachable from CI, controlled by
-//  us, and able to backfill the full listing→today series in one call. Yahoo
-//  Finance stays wired as a backup; the workbook seeds the listing→Jul-2025
-//  deliverable column that exchange-only sources block.
+//  fastapi.muns.io/market_data is muns' own India-capable stock-data service.
+//  It doesn't return the full series inline — it saves a CSV server-side and
+//  returns a TRUNCATED "Sample Data Preview" (a couple of head + tail rows, with
+//  "…" in the middle). For a SMALL window (≤4 trading days) nothing is truncated,
+//  so we walk the requested range in tiny windows and stitch the rows together.
+//  That fills the gap on the first run AND advances the series every day after —
+//  the automation keeps the Historical Stock Movement tab current on its own.
 //
-//  The parser is shape-tolerant on purpose (FastAPI + pandas can serialise a
-//  frame several ways) — it accepts a record list, a {data|result|market_data}
-//  wrapper, or pandas 'columns'/'split' orients, and reads Date / Close / Volume
-//  (and Deliverable, if the API carries it) under their common aliases.
+//  Reachable from CI (the sandbox can't egress). Writes THROUGH price-history-
+//  store, so it merges with — never clobbers — the workbook seed / Yahoo / NSE.
+//  A field the preview doesn't carry (deliverable quantity) stays null, never 0.
 //
-//  HONESTY: a field the API doesn't return stays null (never 0). Writes THROUGH
-//  price-history-store so it merges with — never clobbers — the seed and Yahoo.
-//
-//    INGEST_OFFLINE=0 npm run ingest:price:muns      # live (CI)
-//    npm run ingest:price:muns                        # offline: replay staged JSON
+//    INGEST_OFFLINE=0 npm run ingest:price:muns       # live (CI)
 // ---------------------------------------------------------------------------
 
 import type { Fetcher, FetchResult } from './types'
-import { appendLog, detectAccessBlock, nowIso } from './util'
-import { fetchOrLoadRaw } from './parsers'
+import { appendLog, isOfflineMode, nowIso } from './util'
 import { loadPriceHistory, mergePriceRows, savePriceHistory, type PriceRow } from './price-history-store'
 
 const SOURCE_ID = 'muns_market_data'
@@ -37,56 +32,52 @@ const TICKERS: Array<{ company_id: string; ticker: string }> = [
   { company_id: 'godigit', ticker: 'GODIGIT' },
 ]
 
-// Niva Bupa listed 2024-11-14; start a touch earlier so every insurer's history
-// is covered. Overridable via env for ad-hoc backfills.
-const START = process.env.MUNS_START ?? '2024-11-01'
+// A 4-calendar-day window spans at most 4 trading days, so the preview shows
+// every row (no "…"). The walk steps by this much.
+const WINDOW_DAYS = Number(process.env.MUNS_WINDOW_DAYS ?? 4)
+// Safety cap on windows per ticker per run (≈ how far back one run will backfill).
+const MAX_WINDOWS = Number(process.env.MUNS_MAX_WINDOWS ?? 160)
+// Earliest date to ever request when a ticker has no stored history yet.
+const FLOOR_START = process.env.MUNS_START ?? '2024-11-01'
+// For peers that aren't the focal insurer and have no history yet, only keep
+// recent data current (full backfill isn't needed for the Comps sheet).
+const PEER_LOOKBACK_DAYS = 35
+const FOCAL = 'niva-bupa'
 
-function apiUrl(ticker: string, end: string): string {
-  const p = new URLSearchParams({ ticker, start: START, end, country: 'India' })
-  return `${API_BASE}?${p.toString()}`
-}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const isoOf = (d: Date) => d.toISOString().slice(0, 10)
+const addDays = (iso: string, n: number) => isoOf(new Date(Date.parse(iso + 'T00:00:00Z') + n * 86_400_000))
 
-// ── shape-tolerant normalisation ────────────────────────────────────────────
 type Rec = Record<string, unknown>
 
-/** Coerce any of the plausible response shapes into an array of record objects. */
-export function toRecords(parsed: unknown): Rec[] {
-  if (Array.isArray(parsed)) return parsed as Rec[]
-  if (parsed && typeof parsed === 'object') {
-    const o = parsed as Rec
-    // pandas 'split' orient: { columns: [...], index: [...], data: [[...]] } —
-    // check BEFORE the generic wrapper so its array-of-arrays `data` isn't
-    // mistaken for a record list.
-    if (Array.isArray(o.columns) && Array.isArray(o.data)) {
-      const cols = o.columns as string[]
-      const idx = (o.index as unknown[]) ?? []
-      return (o.data as unknown[][]).map((row, i) => {
-        const rec: Rec = {}
-        cols.forEach((c, j) => (rec[c] = row[j]))
-        if (idx[i] !== undefined && rec.Date === undefined && rec.date === undefined) rec.Date = idx[i]
-        return rec
-      })
-    }
-    // Common wrappers — only when the wrapped value is a list of record objects.
-    for (const k of ['data', 'result', 'results', 'market_data', 'records', 'history', 'prices']) {
-      const v = o[k]
-      if (Array.isArray(v) && (v.length === 0 || (typeof v[0] === 'object' && !Array.isArray(v[0])))) return v as Rec[]
-    }
-    // pandas 'columns' orient: { "Close": {idx: val,...}, "Volume": {...}, ... }
-    const colKeys = Object.keys(o).filter((k) => o[k] && typeof o[k] === 'object' && !Array.isArray(o[k]))
-    if (colKeys.length && colKeys.length === Object.keys(o).length) {
-      const rowIds = Object.keys(o[colKeys[0]] as Rec)
-      const dateCol = colKeys.find((k) => /date|time/i.test(k))
-      return rowIds.map((id) => {
-        const rec: Rec = {}
-        for (const c of colKeys) rec[c] = (o[c] as Rec)[id]
-        // When the row id IS the date (typical for a DatetimeIndex), keep it.
-        if (!dateCol && rec.Date === undefined) rec.Date = id
-        return rec
-      })
-    }
+/** Parse the API's "Sample Data Preview" table (pipe-delimited rows under a
+ *  Date/Open/High/Low/Close/Volume header). Also tolerant of a CSV/JSON body. */
+export function parseMunsBody(text: string): Rec[] {
+  const t = text.trim()
+  // JSON (in case the endpoint ever returns it directly).
+  if (t.startsWith('{') || t.startsWith('[')) {
+    try {
+      const j = JSON.parse(t)
+      if (Array.isArray(j)) return j as Rec[]
+      for (const k of ['data', 'result', 'records', 'history', 'prices']) {
+        if (Array.isArray((j as Rec)[k])) return (j as Rec)[k] as Rec[]
+      }
+    } catch { /* fall through */ }
   }
-  return []
+  // Table form (preview or CSV): locate the header row, then read data rows.
+  const lines = t.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+  const hi = lines.findIndex((l) => /date/i.test(l) && /close/i.test(l))
+  if (hi < 0) return []
+  const headers = lines[hi].split(/[|,]/).map((h) => h.trim().toLowerCase())
+  const out: Rec[] = []
+  for (const line of lines.slice(hi + 1)) {
+    if (!/^\d{4}-\d{2}-\d{2}/.test(line)) continue // skip "…", dashes, footnotes
+    const cells = line.includes('|') ? line.split('|') : line.split(',')
+    const rec: Rec = {}
+    headers.forEach((h, i) => (rec[h] = (cells[i] ?? '').trim()))
+    out.push(rec)
+  }
+  return out
 }
 
 function pick(rec: Rec, aliases: string[]): unknown {
@@ -97,97 +88,23 @@ function pick(rec: Rec, aliases: string[]): unknown {
   }
   return undefined
 }
-
 function num(v: unknown): number | null {
   if (v === null || v === undefined || v === '') return null
   const n = typeof v === 'number' ? v : parseFloat(String(v).replace(/[, ₹]/g, ''))
   return Number.isFinite(n) ? n : null
 }
-
-/** Robust date → ISO (YYYY-MM-DD): ISO strings, epoch ms/s, "dd-MMM-yyyy". */
-export function isoDate(v: unknown): string | null {
-  if (v === null || v === undefined || v === '') return null
-  if (typeof v === 'number') {
-    const ms = v > 1e12 ? v : v > 1e9 ? v * 1000 : null // ms vs s epoch
-    if (ms !== null) return new Date(ms).toISOString().slice(0, 10)
-  }
-  const s = String(v).trim()
-  const iso = s.match(/^(\d{4}-\d{2}-\d{2})/)
-  if (iso) return iso[1]
-  // All-digit string → epoch (ms or s), e.g. a pandas DatetimeIndex serialised as keys.
-  if (/^\d+$/.test(s)) {
-    const n = Number(s)
-    const ms = n > 1e12 ? n : n > 1e9 ? n * 1000 : null
-    if (ms !== null) return new Date(ms).toISOString().slice(0, 10)
-  }
-  const d = new Date(s)
-  if (!Number.isNaN(d.getTime())) return d.toISOString().slice(0, 10)
-  const m = s.match(/(\d{1,2})[-\s]([A-Za-z]{3})[-\s](\d{4})/)
-  if (m) {
-    const dd = new Date(`${m[2]} ${m[1]}, ${m[3]}`)
-    if (!Number.isNaN(dd.getTime())) return dd.toISOString().slice(0, 10)
-  }
-  return null
+function isoDate(v: unknown): string | null {
+  const s = String(v ?? '').trim()
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})/)
+  return m ? m[1] : null
 }
 
-/** Minimal CSV → records (header row + rows), tolerant of simple quoted fields. */
-function splitCsvLine(line: string): string[] {
-  const out: string[] = []
-  let cur = ''
-  let q = false
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i]
-    if (q) {
-      if (c === '"') {
-        if (line[i + 1] === '"') { cur += '"'; i++ } else q = false
-      } else cur += c
-    } else if (c === '"') q = true
-    else if (c === ',') { out.push(cur); cur = '' }
-    else cur += c
-  }
-  out.push(cur)
-  return out.map((s) => s.trim())
-}
-function parseCsv(text: string): Rec[] {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim())
-  if (lines.length < 2 || !lines[0].includes(',')) return []
-  const headers = splitCsvLine(lines[0])
-  const out: Rec[] = []
-  for (const line of lines.slice(1)) {
-    const cells = splitCsvLine(line)
-    if (cells.length < 2) continue
-    const rec: Rec = {}
-    headers.forEach((h, i) => (rec[h] = cells[i]))
-    out.push(rec)
-  }
-  return out
-}
-
-export function parseMunsMarketData(
-  buffer: Buffer,
-  company_id: string,
-  url: string,
-  raw_file: string,
-  fetched_at: string,
-): PriceRow[] {
-  const text = buffer.toString('utf8').trim()
-  let records: Rec[] = []
-  try {
-    records = toRecords(JSON.parse(text))
-  } catch {
-    records = parseCsv(text) // some endpoints return CSV instead of JSON
-  }
-  if (!records.length) {
-    // Surface what the endpoint actually returned so the contract is visible in
-    // the CI log (e.g. a "File created…" message, an HTML page, or empty body).
-    throw new Error(
-      `unparseable response (${text.length}B): ${JSON.stringify(text.slice(0, 240))}`,
-    )
-  }
+/** One preview/CSV/JSON body → PriceRow[] for a company. */
+export function rowsFromBody(text: string, company_id: string, url: string, fetched_at: string): PriceRow[] {
   const prov = (period: string) => ({
     source_name: 'muns market-data API — NSE daily history',
-    source_url: url,
-    source_file: raw_file,
+    source_url: API_BASE,
+    source_file: url,
     source_period: period,
     fetched_at,
     parsed_at: nowIso(),
@@ -196,23 +113,66 @@ export function parseMunsMarketData(
   })
   const out: PriceRow[] = []
   const seen = new Set<string>()
-  for (const rec of records) {
+  for (const rec of parseMunsBody(text)) {
     const date = isoDate(pick(rec, ['date', 'datetime', 'timestamp', 'index']))
     if (!date || seen.has(date)) continue
-    const close = num(pick(rec, ['close', 'adjclose', 'closeprice', 'lastprice'])) // prefer raw close; adjclose as fallback alias
+    const close = num(pick(rec, ['close', 'adjclose', 'closeprice']))
     if (close === null) continue
     seen.add(date)
     out.push({
       company_id,
       date,
       close: Number(close.toFixed(2)),
-      traded_qty: num(pick(rec, ['volume', 'totaltradedquantity', 'tradedquantity', 'totalquantity', 'qty'])),
-      // The API may carry NSE delivery; capture it when present, else null.
-      deliverable_qty: num(pick(rec, ['deliverablequantity', 'deliverablevolume', 'delivqty', 'deliverableqty', 'deliverable'])),
+      traded_qty: num(pick(rec, ['volume', 'totaltradedquantity', 'tradedquantity', 'totalquantity'])),
+      deliverable_qty: num(pick(rec, ['deliverablequantity', 'deliverablevolume', 'delivqty', 'deliverable'])),
       provenance: prov(date),
     })
   }
   return out
+}
+
+function apiUrl(ticker: string, start: string, end: string): string {
+  const p = new URLSearchParams({ ticker, start, end, country: 'India' })
+  return `${API_BASE}?${p.toString()}`
+}
+
+async function fetchText(url: string, tries = 3): Promise<string> {
+  let lastErr: unknown
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0', Accept: 'application/json, text/plain, */*' } })
+      if (r.status === 429 || r.status >= 500) throw new Error(`HTTP ${r.status}`)
+      return await r.text()
+    } catch (e) {
+      lastErr = e
+      await sleep(400 * (i + 1))
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr))
+}
+
+/** Walk [start, today] in WINDOW_DAYS windows, collecting every preview row. */
+async function walkTicker(company_id: string, ticker: string, start: string, today: string, fetched_at: string): Promise<{ rows: PriceRow[]; windows: number; sampleErr?: string }> {
+  const rows: PriceRow[] = []
+  let cursor = start
+  let windows = 0
+  let sampleErr: string | undefined
+  while (cursor <= today && windows < MAX_WINDOWS) {
+    const end = addDays(cursor, WINDOW_DAYS)
+    const url = apiUrl(ticker, cursor, end > today ? addDays(today, 1) : end)
+    try {
+      const text = await fetchText(url)
+      const parsed = rowsFromBody(text, company_id, url, fetched_at)
+      if (!parsed.length && !sampleErr) sampleErr = `no rows parsed; head=${JSON.stringify(text.slice(0, 160))}`
+      rows.push(...parsed)
+    } catch (e) {
+      if (!sampleErr) sampleErr = e instanceof Error ? e.message : String(e)
+    }
+    windows++
+    cursor = addDays(cursor, WINDOW_DAYS)
+    await sleep(120) // be gentle on the API
+  }
+  return { rows, windows, sampleErr }
 }
 
 export const fetchMunsMarketData: Fetcher = {
@@ -221,59 +181,52 @@ export const fetchMunsMarketData: Fetcher = {
   frequency: 'daily',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
-    const end = fetched_at.slice(0, 10)
+    const today = fetched_at.slice(0, 10)
+    if (isOfflineMode()) {
+      return { source_id: SOURCE_ID, status: 'pending', raw_file: null, records: [], records_fetched: 0, fetched_at, warnings: ['offline: muns API walk needs INGEST_OFFLINE=0 (runs in CI).'] }
+    }
+
     const snap = await loadPriceHistory()
+    const latestByCompany = new Map<string, string>()
+    for (const r of snap.data) {
+      const cur = latestByCompany.get(r.company_id)
+      if (!cur || r.date > cur) latestByCompany.set(r.company_id, r.date)
+    }
+
     const warnings: string[] = []
     let added = 0
     let enriched = 0
-    let parsedTickers = 0
-    let blocked = false
+    let okTickers = 0
 
     for (const t of TICKERS) {
-      const url = apiUrl(t.ticker, end)
-      try {
-        const { buffer, raw_file, mode } = await fetchOrLoadRaw(
-          url,
-          `muns-market/${t.company_id}`,
-          `${t.company_id}-muns-${end}.json`,
-          /\.json$/i,
-        )
-        const block = detectAccessBlock(buffer, url)
-        if (block.blocked) {
-          blocked = true
-          warnings.push(`${t.company_id}: ${block.reason} (muns API). Check the endpoint or stage the JSON under data/raw/muns-market/${t.company_id}/.`)
-          await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'blocked', reason: block.reason })
-          continue
-        }
-        const rows = parseMunsMarketData(buffer, t.company_id, url, raw_file, fetched_at)
-        if (!rows.length) {
-          warnings.push(`${t.company_id}: muns API returned no parseable rows (ticker ${t.ticker}). Response shape may have changed.`)
-          await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'empty', mode })
-          continue
-        }
+      // Start from a few days before the last stored session (overlap = self-heal),
+      // or a sensible floor when this ticker has no history yet.
+      const stored = latestByCompany.get(t.company_id)
+      const start = stored
+        ? addDays(stored, -3)
+        : t.company_id === FOCAL
+          ? FLOOR_START
+          : addDays(today, -PEER_LOOKBACK_DAYS)
+      const { rows, windows, sampleErr } = await walkTicker(t.company_id, t.ticker, start, today, fetched_at)
+      if (rows.length) {
         const res = mergePriceRows(snap, rows)
         added += res.added
         enriched += res.enriched
-        parsedTickers++
-        await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'parsed', mode, rows: rows.length, added: res.added, enriched: res.enriched })
-      } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err)
-        warnings.push(`${t.company_id}: ${reason}. Endpoint: ${API_BASE}`)
-        await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'pending', reason })
+        okTickers++
+        await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'parsed', windows, rows: rows.length, added: res.added, enriched: res.enriched })
+      } else {
+        warnings.push(`${t.company_id}: no rows over ${windows} windows from ${start}. ${sampleErr ?? ''}`)
+        await appendLog('fetch-muns-market-data.log', { source: SOURCE_ID, company_id: t.company_id, status: 'empty', windows, sampleErr })
       }
     }
 
-    if (parsedTickers > 0) {
-      await savePriceHistory(snap, {
-        last_successful_run: fetched_at,
-        parser_status: 'ready',
-        muns_last_run: fetched_at,
-      })
+    if (okTickers > 0) {
+      await savePriceHistory(snap, { last_successful_run: fetched_at, parser_status: 'ready', muns_last_run: fetched_at })
     }
 
     return {
       source_id: SOURCE_ID,
-      status: parsedTickers > 0 ? 'success' : blocked ? 'blocked' : 'pending',
+      status: okTickers > 0 ? 'success' : 'pending',
       raw_file: null,
       records: [],
       records_fetched: added + enriched,
@@ -283,7 +236,7 @@ export const fetchMunsMarketData: Fetcher = {
   },
 }
 
-// Allow standalone invocation: `npm run ingest:price:muns`.
+// Standalone: `npm run ingest:price:muns`.
 if (process.argv[1] && /fetch-muns-market-data\.(ts|js|mjs)$/.test(process.argv[1])) {
   fetchMunsMarketData
     .run()
