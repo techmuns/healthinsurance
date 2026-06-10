@@ -248,6 +248,57 @@ export function getBasisNep(companyId: string, period: BasisPeriod): number | nu
   return NEP[companyId]?.[period] ?? null
 }
 
+// ── Investment book — AUM (₹ Cr) + yield (%) ─────────────────────────────────
+// Statutory / IGAAP basis, from the insurers' audited annual reports & IRDAI
+// disclosures (kept on one basis so the peer line is apple-to-apple). Missing
+// years are absent (rendered as an honest "—"), never coerced to 0 and never
+// back-filled from an IND-AS deck figure on a different basis (e.g. Star's FY26
+// IND-AS yield is deliberately left out of this statutory series).
+export interface InvestmentMetrics {
+  /** Investment assets under management (₹ Cr). */
+  aum: number | null
+  /** Investment yield (%). */
+  yield: number | null
+}
+
+const INVESTMENT: Record<string, Partial<Record<BasisPeriod, InvestmentMetrics>>> = {
+  'niva-bupa': {
+    FY23: { aum: 3366, yield: 6.7 },
+    FY24: { aum: 5458, yield: 7.1 },
+    FY25: { aum: 8175, yield: 7.4 },
+  },
+  'star-health': {
+    FY23: { aum: 13392, yield: 6.94 },
+    FY24: { aum: 15491, yield: 7.66 },
+    FY25: { aum: 17898, yield: 7.79 },
+  },
+  'care-health': {
+    FY24: { aum: 6633, yield: null },
+    FY25: { aum: 8399, yield: null },
+    FY26: { aum: 10944, yield: 7.3 },
+  },
+}
+
+/** Investment AUM (₹ Cr) + yield (%) for a company + period. `null` => NA. */
+export function getInvestment(companyId: string, period: BasisPeriod): InvestmentMetrics | null {
+  return INVESTMENT[companyId]?.[period] ?? null
+}
+
+/** Reported net worth (₹ Cr) for a company + period; Q4FYxx maps to the FY year-end. */
+export function getNetWorth(companyId: string, period: BasisPeriod): number | null {
+  return netWorthFor(companyId, period)
+}
+
+/** Investment leverage (x) = investment AUM ÷ net worth — how many times the
+ *  capital base is deployed as investments. Derived only when both inputs exist
+ *  on the same basis/period; otherwise null (never a partial-basis number). */
+export function getInvestmentLeverage(companyId: string, period: BasisPeriod): number | null {
+  const aum = INVESTMENT[companyId]?.[period]?.aum ?? null
+  const nw = netWorthFor(companyId, period)
+  if (aum == null || nw == null || nw === 0) return null
+  return aum / nw
+}
+
 /** Statutory solvency ratio (x) for a company + period. Always statutory. */
 export function getBasisSolvency(companyId: string, period: BasisPeriod): number | null {
   return SOLVENCY[companyId]?.[period] ?? null
