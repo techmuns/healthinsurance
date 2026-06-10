@@ -52,8 +52,10 @@
 
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
 import type { XlsxRow } from './parsers'
-import { fetchBuffer, fetchHtml, findLinks, parseXlsx, toNumber } from './parsers'
+import { parseXlsx, toNumber } from './parsers'
+import { gicFetch } from './gic-fetch'
 import { appendLog, ensureDir, fileExists, isOfflineMode, nowIso, writeRaw, RAW_ROOT, PROCESSED_ROOT, REPO_ROOT } from './util'
+import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
 import { readdir, readFile, writeFile } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
@@ -211,7 +213,9 @@ export function classifySegmentFile(s: string): { period: string; kind: 'march' 
 }
 
 /** Discover segment-report links on the listing page(s), following simple
- *  numbered pagination. Best-effort: the site 403s datacenter IPs. */
+ *  numbered pagination. Fetches go through every gic-fetch route (direct →
+ *  relays → Internet Archive); if the listing still can't be read, the muns
+ *  chat agent (MUNS_API_TOKEN) is asked to enumerate the links server-side. */
 async function discoverListing(warnings: string[]): Promise<Array<{ url: string; text: string }>> {
   const seen = new Set<string>()
   const out: Array<{ url: string; text: string }> = []
@@ -222,21 +226,23 @@ async function discoverListing(warnings: string[]): Promise<Array<{ url: string;
       const pageUrl = queue.shift()!
       if (visited.has(pageUrl)) continue
       visited.add(pageUrl)
-      let $: Awaited<ReturnType<typeof fetchHtml>>
+      let $: cheerio.CheerioAPI
       try {
-        $ = await fetchHtml(pageUrl)
+        const got = await gicFetch(pageUrl, 'listing')
+        warnings.push(...got.warnings.map((w) => `listing (${got.via}): ${w}`))
+        $ = cheerio.load(got.buffer.toString('utf8'))
       } catch (err) {
-        warnings.push(`listing fetch failed (${pageUrl}): ${err instanceof Error ? err.message : String(err)}`)
+        warnings.push(`listing fetch failed on every route (${pageUrl}): ${err instanceof Error ? err.message : String(err)}`)
         break // same host — the next page would fail the same way
       }
-      const fileLinks = findLinks($, pageUrl, (href, text) =>
-        /\.(xlsx|xls)(\?|$)/i.test(href) && /segment/i.test(`${href} ${text}`))
+      const fileLinks = new Set<string>()
       $('a[href]').each((_, el) => {
         const href = $(el).attr('href')?.trim()
         const text = clean($(el).text())
         if (!href) return
         const abs = href.startsWith('http') ? href : new URL(href, pageUrl).toString()
-        if (fileLinks.includes(abs) && !seen.has(abs)) {
+        if (/\.(xlsx|xls)(\?|$)/i.test(abs) && /segment/i.test(`${abs} ${text}`)) fileLinks.add(abs)
+        if (fileLinks.has(abs) && !seen.has(abs)) {
           seen.add(abs)
           out.push({ url: abs, text })
         }
@@ -247,14 +253,105 @@ async function discoverListing(warnings: string[]): Promise<Array<{ url: string;
     }
     if (out.length > 0) break // first listing URL that works is enough
   }
+  if (out.length === 0) {
+    const agentLinks = await agentDiscoverLinks(warnings)
+    out.push(...agentLinks.filter((l) => !seen.has(l.url)))
+  }
   return out
+}
+
+/** Last-resort discovery: ask the muns chat agent (which fetches gicouncil.in
+ *  server-side, from a non-blocked network) to enumerate the report links.
+ *  No-ops without MUNS_API_TOKEN. The agent only supplies URLs — the files
+ *  themselves are still downloaded and checksummed by this fetcher. */
+async function agentDiscoverLinks(warnings: string[]): Promise<Array<{ url: string; text: string }>> {
+  const token = (process.env.MUNS_API_TOKEN || '').trim()
+  if (!token) return []
+  try {
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 480_000)
+    const res = await fetch('https://devde.muns.io/chat/chat-muns', {
+      method: 'POST',
+      headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_index: 124,
+        tasks: [
+          `Open ${LISTING_URLS[0]} (General Insurance Council — Segmentwise report list, including its older pages) and return EVERY report download link on it. One line per link, format exactly: <report title> | <absolute .xlsx/.xls URL>. Include all months and all years visible. Do not summarise, do not skip any, no other text.`,
+        ],
+        query_context: {
+          TICKER_SYMBOL: [], FROM_DATE: '2015-04-01', TO_DATE: new Date().toISOString().slice(0, 10),
+          ANNOUNCEMENT_FORM_TYPE: 'all', DOCUMENT_IDS: [], CATEGORIES: [], WEB_SEARCH_ENABLED: true,
+          COUNTRY: [], CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [],
+          GET_ANNOUNCEMENTS_ENABLED: false, chatHistory: [], mode: 'fast',
+        },
+        autoAddUpcoming: false,
+        urls: [],
+      }),
+      signal: ctrl.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const text = await res.text()
+    const out: Array<{ url: string; text: string }> = []
+    for (const line of text.split(/\r?\n/)) {
+      const m = line.match(/(.*?)\|?\s*(https?:\/\/[^\s)|"'<>\]]+\.(?:xlsx|xls))/i)
+      if (m && /gicouncil\.in/i.test(m[2])) out.push({ url: m[2], text: clean(m[1]).slice(0, 120) })
+    }
+    if (out.length > 0) warnings.push(`listing discovered via muns agent (${out.length} links) — direct + relay + archive routes were all blocked`)
+    else warnings.push('muns agent returned no usable gicouncil links')
+    return out
+  } catch (err) {
+    warnings.push(`muns agent discovery failed: ${err instanceof Error ? err.message : String(err)}`)
+    return []
+  }
 }
 
 async function sha256(buf: Buffer): Promise<string> {
   return createHash('sha256').update(buf).digest('hex')
 }
 
-interface ManifestEntry { filename: string; url: string; bytes: number; sha256: string; fetched_at: string }
+interface ManifestEntry { filename: string; url: string; bytes: number; sha256: string; fetched_at: string; via?: string }
+
+/** Scan every data/agent-pulls/<pull>/sources/manifest.json for gicouncil
+ *  segment workbooks the muns-agent workflows already downloaded (checksummed).
+ *  Full-FY editions feed this fetcher directly; monthly editions are staged
+ *  into data/raw/gicouncil/segment/<YYYY-MM>.xlsx for the monthly pipeline,
+ *  so one agent pull feeds BOTH pipelines with no extra steps. */
+async function scanAgentPulls(warnings: string[]): Promise<CommittedSource[]> {
+  const out: CommittedSource[] = []
+  const root = resolve(REPO_ROOT, 'data', 'agent-pulls')
+  for (const pull of (await readdir(root).catch(() => [] as string[]))) {
+    const manifestPath = resolve(root, pull, 'sources', 'manifest.json')
+    if (!(await fileExists(manifestPath))) continue
+    let files: Record<string, ManifestEntry>
+    try {
+      files = JSON.parse(await readFile(manifestPath, 'utf8')).files ?? {}
+    } catch {
+      continue
+    }
+    for (const [url, e] of Object.entries(files)) {
+      if (!/gicouncil\.in/i.test(url) || !e?.filename || !/\.(xlsx|xls)$/i.test(e.filename)) continue
+      const cls = classifySegmentFile(`${e.filename} ${url}`)
+      if (!cls) continue
+      const path = `data/agent-pulls/${pull}/sources/${e.filename}`
+      if (!(await fileExists(resolve(REPO_ROOT, path)))) continue
+      if ('period' in cls) {
+        out.push({ period: cls.period, kind: cls.kind, path, url })
+      } else {
+        // Monthly edition — stage for the monthly fetcher if not already there.
+        const monthlyPath = resolve(RAW_ROOT, RAW_SUBDIR_MONTHLY, `${cls.monthly}.xlsx`)
+        if (!(await fileExists(monthlyPath))) {
+          try {
+            await writeRaw(RAW_SUBDIR_MONTHLY, `${cls.monthly}.xlsx`, await readFile(resolve(REPO_ROOT, path)))
+          } catch (err) {
+            warnings.push(`could not stage monthly ${e.filename}: ${err instanceof Error ? err.message : String(err)}`)
+          }
+        }
+      }
+    }
+  }
+  return out
+}
 
 /** Gather every available full-FY file: staged drops, committed agent pulls,
  *  and (live mode) fresh downloads from the listing page. One file per
@@ -266,8 +363,10 @@ async function resolveSources(warnings: string[]): Promise<SourceFile[]> {
     if (overwrite || !byEdition.has(k)) byEdition.set(k, f)
   }
 
-  // 1. Committed official pulls (lowest precedence — same bytes, just older copies).
-  for (const c of COMMITTED_SOURCES) {
+  // 1. Committed official pulls — the hardcoded seeds plus whatever any
+  //    muns-agent workflow has downloaded since (lowest precedence: same
+  //    bytes as a staged/live copy of the same edition, just older).
+  for (const c of [...COMMITTED_SOURCES, ...(await scanAgentPulls(warnings))]) {
     const abs = resolve(REPO_ROOT, c.path)
     if (!(await fileExists(abs))) continue
     put({ period: c.period, kind: c.kind, buffer: await readFile(abs), source_url: c.url, raw_file: c.path }, false)
@@ -305,21 +404,21 @@ async function resolveSources(warnings: string[]): Promise<SourceFile[]> {
           // they are structurally barred from the annual path).
           const monthlyPath = resolve(RAW_ROOT, RAW_SUBDIR_MONTHLY, `${cls.monthly}.xlsx`)
           if (!(await fileExists(monthlyPath))) {
-            const { buffer } = await fetchBuffer(url)
-            await writeRaw(RAW_SUBDIR_MONTHLY, `${cls.monthly}.xlsx`, buffer)
+            const got = await gicFetch(url, 'xlsx')
+            await writeRaw(RAW_SUBDIR_MONTHLY, `${cls.monthly}.xlsx`, got.buffer)
           }
           continue
         }
         const filename = `${fyOfPeriod(cls.period)}-${cls.kind}.xlsx`
         if (manifest.files[url] && byEdition.has(`${cls.period}:${cls.kind}`)) continue // already have this edition
-        const { buffer } = await fetchBuffer(url)
-        const raw = await writeRaw(RAW_SUBDIR, filename, buffer)
+        const got = await gicFetch(url, 'xlsx')
+        const raw = await writeRaw(RAW_SUBDIR, filename, got.buffer)
         manifest.files[url] = {
-          filename, url, bytes: buffer.length, sha256: await sha256(buffer), fetched_at: nowIso(),
+          filename, url, bytes: got.buffer.length, sha256: await sha256(got.buffer), fetched_at: nowIso(), via: got.via,
         }
-        put({ period: cls.period, kind: cls.kind, buffer, source_url: url, raw_file: relative(REPO_ROOT, raw) }, true)
+        put({ period: cls.period, kind: cls.kind, buffer: got.buffer, source_url: url, raw_file: relative(REPO_ROOT, raw) }, true)
       } catch (err) {
-        warnings.push(`download failed (${url}): ${err instanceof Error ? err.message : String(err)}`)
+        warnings.push(`download failed on every route (${url}): ${err instanceof Error ? err.message : String(err)}`)
       }
     }
     if (Object.keys(manifest.files).length > 0) {

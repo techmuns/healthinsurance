@@ -7,11 +7,22 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **378 fillable cells filled (17.5%).** QA: 54 hard violations, all PRE-EXISTING
-  and all one kind — curated overlay values (ManipalCigna / Aditya Birla annual-
-  report transcriptions, SAHIs comparison sheet) carrying a source name but **no
-  source_url**. Verified present on the committed state before 2026-06-10's
-  changes; fix is to add the document URLs to those audit-overlay entries.
+- **378 fillable cells filled (17.5%). QA passes (no hard violations).**
+- **QA gate repaired + scheduled commits unblocked** (2026-06-10): all 115
+  url-less audit-overlay citations (the cause of 54 hard violations that were
+  failing EVERY scheduled ingest run at the QA step, before the commit) now
+  carry their document URL — exact PDF links where recorded in the repo's
+  manifests, the official disclosures landing page (honestly noted in the
+  entry) where the exact file link was never captured.
+- **GIC fetch made bullet-proof** (2026-06-10): all gicouncil.in requests go
+  through `scripts/ingest/gic-fetch.ts` — direct → headless browser →
+  INGEST_FETCH_PROXY → ScraperAPI → keyless public relays → Internet Archive
+  (incl. fresh Save-Page-Now captures), with byte-level validation at every
+  tier and a muns-agent listing fallback. The monthly agent workflow now
+  enumerates ALL listing links, and `ingest-gicouncil-segment-annual.ts`
+  auto-scans every agent-pull manifest (full-FY files feed the FY columns,
+  monthly editions auto-stage for the monthly pipeline). The agent workflow
+  chains into the main ingest, which rebuilds the grid and commits.
 - **Industry Growth tab filled from the GI Council segment-wise report**
   (2026-06-10): 19 → 124 cells. FY26 column 30/30, FY25 30/32 (the 2 gaps are
   honest — Reliance Health exited 2019, HDFC Ergo Health merged FY21; no FY25

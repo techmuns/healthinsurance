@@ -127,6 +127,12 @@ jobs:
           # them automatically; unset = unchanged behaviour (those sources stay
           # pending, never fabricated).
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+          # GI Council fetch tiers (scripts/ingest/gic-fetch.ts): an in-region
+          # relay key and the muns agent token for listing discovery of last
+          # resort. Both optional — the keyless relays + Internet Archive tiers
+          # still run without them.
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
         run: npx tsx scripts/ingest/ingest-all.ts
 
       - name: Show data-health

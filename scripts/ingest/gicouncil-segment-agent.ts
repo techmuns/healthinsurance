@@ -57,12 +57,17 @@ function buildPayload() {
   return {
     user_index: 124,
     tasks: [
+      // Task 1 — enumerate EVERY report file currently listed, so the runner
+      // can download any new month/edition (the downloads + checksums happen
+      // here, not at the agent). scripts/ingest/ingest-gicouncil-segment-annual.ts
+      // auto-stages whatever lands in the sources manifest.
+      'Open https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/ (General Insurance Council — Segmentwise report list, including older pagination pages) and list EVERY report download link on it. One line per link, format exactly: <report title> | <absolute .xlsx/.xls URL>. Include all months and years visible. Do not summarise and do not skip any.',
       'From the GENERAL INSURANCE COUNCIL of India "Gross Direct Premium Underwritten — Segment-wise" report (source: https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/), pull the HEALTH segment gross direct premium for each standalone health insurer, plus the all-industry total health premium.\n\nReturn a table with exactly these columns, in this order:\n\ncompany | period | line_item | value | unit | source_name | source_url | filing_date\n\nRules\n\nOne row per company per period.\nperiod = FY24, FY25, and FY26 (FY = year ended 31 March). If FY26 full-year is not yet published, give the latest available cumulative (e.g. up to the most recent month) and put that month in source_name.\nline_item = "Health GDPI" for each insurer row, and "Industry total Health GDPI" for the all-industry row.\nvalue = number only, ₹ crore, no commas, no unit inside the cell. If a figure is not published for a period, leave value blank — never 0, never an estimate.\nunit = INR_crore for every row.\nsource_name = the exact GI Council report + month/edition (e.g. "GI Council Segment-wise Report, Mar 2025 (FY25 cumulative)").\nsource_url = direct link to the GI Council report file (xlsx/pdf) if available, else the GI Council statistics page.\nfiling_date = the report month-end date, YYYY-MM-DD.\n\nCompanies (use these exact names):\nStar Health and Allied Insurance\nCare Health Insurance\nNiva Bupa Health Insurance\nAditya Birla Health Insurance\nManipalCigna Health Insurance\n\nAlso include one row: company = "All India (industry)", line_item = "Industry total Health GDPI", for FY24/FY25/FY26.\n\nUse ONLY the GI Council segment-wise report as the source for these health-premium figures (not company press releases). If the GI Council figure for a given insurer/period genuinely is not in the report, leave it blank.\n\nExample of the expected output (format only):\n\ncompany\tperiod\tline_item\tvalue\tunit\tsource_name\tsource_url\tfiling_date\nStar Health and Allied Insurance\tFY25\tHealth GDPI\t15890\tINR_crore\tGI Council Segment-wise Report, Mar 2025\thttps://…\t2025-03-31\nAll India (industry)\tFY25\tIndustry total Health GDPI\t122800\tINR_crore\tGI Council Segment-wise Report, Mar 2025\thttps://…\t2025-03-31',
     ],
     query_context: {
       TICKER_SYMBOL: [],
       FROM_DATE: '2023-04-01',
-      TO_DATE: '2026-06-09',
+      TO_DATE: new Date().toISOString().slice(0, 10),
       ANNOUNCEMENT_FORM_TYPE: 'all',
       DOCUMENT_IDS: [],
       CATEGORIES: [],

@@ -25,13 +25,19 @@
 
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
 import type { XlsxRow } from './parsers'
-import { fetchBuffer, fetchHtml, findLinks, parsePdf, parseXlsx, toNumber } from './parsers'
+import { findLinks, parsePdf, parseXlsx, toNumber } from './parsers'
+import { gicFetch } from './gic-fetch'
+import * as cheerio from 'cheerio'
 import { appendLog, ensureDir, fileExists, isOfflineMode, nowIso, writeRaw, RAW_ROOT, PROCESSED_ROOT } from './util'
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 const SOURCE_ID = 'gicouncil_segmentwise'
-const SOURCE_URL = 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/'
+const SOURCE_URL = 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/'
+const LISTING_URLS = [
+  SOURCE_URL,
+  'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/',
+]
 const RAW_SUBDIR = 'gicouncil/segment'
 
 const MONTH_NAMES = [
@@ -187,19 +193,30 @@ async function loadStagedMonth(month: string): Promise<ResolvedFile | null> {
   return null
 }
 
-/** Discover the report link for a month on the Segmentwise index page (XLSX first). */
+/** Discover the report link for a month on the Segmentwise index page (XLSX
+ *  first). The listing is fetched through every gic-fetch route (direct →
+ *  relays → Internet Archive), so a runner the site 403s can still discover. */
 async function discoverUrl(month: string): Promise<string | null> {
   const [yyyy, mm] = month.split('-')
   const name = MONTH_NAMES[Number(mm) - 1].toLowerCase()
-  const $ = await fetchHtml(SOURCE_URL)
-  const links = findLinks($, SOURCE_URL, (href, text) => {
-    if (!/\.(xlsx|xls|pdf)(\?|$)/i.test(href)) return false
-    const t = `${href} ${text}`.toLowerCase()
-    return /segment/.test(t) && t.includes(name) && t.includes(yyyy)
-  })
-  if (links.length === 0) return null
-  links.sort((a, b) => Number(/\.(xlsx|xls)(\?|$)/i.test(b)) - Number(/\.(xlsx|xls)(\?|$)/i.test(a)))
-  return links[0]
+  for (const listing of LISTING_URLS) {
+    let $: cheerio.CheerioAPI
+    try {
+      const got = await gicFetch(listing, 'listing')
+      $ = cheerio.load(got.buffer.toString('utf8'))
+    } catch {
+      continue
+    }
+    const links = findLinks($, listing, (href, text) => {
+      if (!/\.(xlsx|xls|pdf)(\?|$)/i.test(href)) return false
+      const t = `${href} ${text}`.toLowerCase()
+      return /segment/.test(t) && t.includes(name) && t.includes(yyyy)
+    })
+    if (links.length === 0) continue
+    links.sort((a, b) => Number(/\.(xlsx|xls)(\?|$)/i.test(b)) - Number(/\.(xlsx|xls)(\?|$)/i.test(a)))
+    return links[0]
+  }
+  return null
 }
 
 async function resolveMonth(month: string): Promise<ResolvedFile | null> {
@@ -208,8 +225,8 @@ async function resolveMonth(month: string): Promise<ResolvedFile | null> {
     try {
       const url = MONTH_URLS[month] ?? (await discoverUrl(month))
       if (url) {
-        const { buffer } = await fetchBuffer(url)
         const ext: 'xlsx' | 'pdf' = /\.pdf(\?|$)/i.test(url) ? 'pdf' : 'xlsx'
+        const { buffer } = await gicFetch(url, ext)
         const raw_file = await writeRaw(RAW_SUBDIR, `${month}.${ext}`, buffer)
         return { buffer, ext, source_url: url, raw_file }
       }

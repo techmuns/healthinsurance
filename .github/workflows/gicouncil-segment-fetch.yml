@@ -68,3 +68,20 @@ jobs:
             echo "push attempt $i failed; retrying..."; sleep 3
           done
           echo "ERROR: push failed after retries"; exit 1
+
+      # Freshly pulled GIC workbooks should flow straight into the dashboard:
+      # kick the main ingest (it stages the new files, parses them, rebuilds
+      # the Excel value store + audit index, and commits the refreshed
+      # snapshots). workflow_dispatch via GITHUB_TOKEN is the sanctioned way
+      # to chain workflows (plain bot pushes deliberately don't re-trigger).
+      - name: Chain the dashboard fill (ingest -> grid refresh)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/actions/workflows/insurance-data-ingest.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"cadence":"monthly","live":"true"}}' \
+            && echo "ingest dispatched" || echo "WARNING: could not dispatch ingest"

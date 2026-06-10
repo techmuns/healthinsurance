@@ -110,27 +110,40 @@ months are structurally never promoted to an FY value. For each FY the **newest
 GIC statement wins** — a later report's restated "Previous Year" columns
 supersede the year's own earlier edition.
 
-When the next March report is published (≈ mid-April each year):
+**This is now hands-off.** Every month, two scheduled workflows cover each
+other:
+
+1. `gicouncil-segment-fetch.yml` (2nd of the month) — the muns chat agent
+   enumerates every link on the listing page server-side, the runner downloads
+   + checksums any new workbook into `data/agent-pulls/gicouncil-segment/`,
+   commits, then dispatches the main ingest.
+2. `insurance-data-ingest.yml` (monthly cadence) — the GIC fetchers run live.
+   Every gicouncil.in request goes through the tiered byte-getter
+   `scripts/ingest/gic-fetch.ts`: direct fetch → headless browser →
+   `INGEST_FETCH_PROXY` → ScraperAPI (`SCRAPER_KEY`) → keyless public relays →
+   the Internet Archive (with a fresh "Save Page Now" capture of the listing —
+   archive.org's crawler fetches GIC from a non-blocked network). If even those
+   fail, the muns agent (`MUNS_API_TOKEN`) supplies the listing links. Every
+   response is validated (ZIP/PDF magic, block-page detection) before being
+   trusted; the ingest then stages files, parses, rebuilds the value store +
+   audit index, passes the QA gate and commits the refreshed snapshots.
+
+The fetcher also auto-scans every `data/agent-pulls/*/sources/manifest.json`,
+so anything any agent workflow ever downloads flows into both pipelines with
+no extra steps. All of it stays idempotent (no new file → no-op), validates
+that derived rows re-add to the report's printed sub-totals, and writes a
+review sidecar to `data/processed/gic-segment-annual.json` showing which file
+"won" each FY.
+
+Manual override (never required, always available): drop a downloaded XLSX
+into `data/raw/gicouncil/segment-annual/` (full-FY March / "final" editions)
+or `data/raw/gicouncil/segment/<YYYY-MM>.xlsx` (monthly), push or run:
 
 ```bash
-# 1. Get the file in (any ONE of these):
-#    a. live run from a non-datacenter network (or INGEST_FETCH_PROXY set):
-INGEST_OFFLINE=0 npm run ingest:gic-segment-annual
-#    b. or download it in a browser and drop it in (filename can stay as-is):
-#       data/raw/gicouncil/segment-annual/segment_march_2027.xlsx
 npm run ingest:gic-segment-annual
-
-# 2. Re-project into the workbook grid:
 python3 scripts/excel/build_value_store.py
 python3 scripts/excel/build_audit_index.py
 ```
-
-The run is idempotent (re-running with no new file is a no-op), validates that
-derived rows re-add to the report's printed sub-totals, and writes an audit
-sidecar to `data/processed/gic-segment-annual.json` showing which file "won"
-each FY. Older full-FY editions dropped into the same folder backfill FY15-FY22
-the same way. Monthly (partial-year) editions belong in
-`data/raw/gicouncil/segment/<YYYY-MM>.xlsx` for the monthly flow pipeline.
 
 ---
 
