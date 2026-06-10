@@ -161,6 +161,15 @@ OVERLAY_PCT_METRICS = {
 }
 RANK_OVERLAY = 0  # curated overlay — highest priority
 
+# Our curated values sometimes carry a different metric name than the Excel
+# template's cell. Project a curated value into the template metric(s) too so no
+# verified figure is left unmapped. Our net-worth values are the statutory IGAAP
+# net worth (Share Capital + Reserves − accumulated deficit), so they fill the
+# template's generic `net_worth` and `net_worth_igaap` rows as well.
+OVERLAY_METRIC_ALIAS = {
+    "net_worth_ifrs": ["net_worth", "net_worth_igaap"],
+}
+
 
 def collect_overlay():
     """Curated values staged in src/data/snapshots/audit-overlay.json — the same
@@ -178,8 +187,6 @@ def collect_overlay():
         parts = key.split("::")
         if len(parts) != 3:
             continue
-        if key in CANDIDATES:  # gap-fill only — never override an extracted value
-            continue
         entity, metric, period = parts
         val = e["value"]
         is_pct = metric in OVERLAY_PCT_METRICS
@@ -191,9 +198,14 @@ def collect_overlay():
             "source_file": e.get("source_file"), "fetched_at": e.get("fetched_at"),
             "confidence": e.get("confidence") or "high",
         }
-        add_candidate(entity, metric, period, val, norm, label, unit, prov,
-                      RANK_OVERLAY, "curated_overlay", e.get("source_status", "available"),
-                      {"basis_note": e.get("note")})
+        # Fill the overlay metric AND any template-metric aliases. Gap-fill each
+        # target: never override an extracted value already in the store.
+        for target in [metric] + OVERLAY_METRIC_ALIAS.get(metric, []):
+            if f"{entity}::{target}::{period}" in CANDIDATES:
+                continue
+            add_candidate(entity, target, period, val, norm, label, unit, prov,
+                          RANK_OVERLAY, "curated_overlay", e.get("source_status", "available"),
+                          {"basis_note": e.get("note")})
 
 
 def load(name):
