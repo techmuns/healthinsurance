@@ -1,0 +1,61 @@
+name: fetch rendered pages (JS-locked investor docs)
+
+# Opens investor pages whose document lists are built by JavaScript (so the
+# raw-HTML fetchers see an empty shell) in a REAL headless browser, lets the JS
+# run, then discovers + downloads any NEW document PDFs into
+# data/raw/companies/<id>/. This is what makes the "the link is hidden behind
+# JavaScript" pages (Star's Debt & Equity, etc.) hands-off: new filings each
+# period are picked up automatically — no manual link-pasting.
+#
+# Routes through ScraperAPI's India IP (SCRAPER_KEY secret) so the insurer sites
+# don't 403 the datacenter runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'Optional company_id (e.g. "star-health"). Blank = all configured pages.'
+        required: false
+        default: ''
+  schedule:
+    # Weekly sweep (Mondays 06:30 UTC) so new quarterly/annual filings get picked
+    # up on their own. Cancel/adjust as needed.
+    - cron: '30 6 * * 1'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-rendered-pages
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Render JS-locked pages + download new docs (India-IP proxy)
+        env:
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          COMPANY: ${{ github.event.inputs.company }}
+        run: npx tsx scripts/ingest/fetch-rendered.ts
+      - name: Commit any new documents
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/companies data/raw/rendered
+          if git diff --staged --quiet; then echo "No new documents."; exit 0; fi
+          git commit -m "fetch-rendered: new JS-page documents @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1
