@@ -177,6 +177,7 @@ QUARTERLY_MAP = [
 INDUSTRY_MAP = [
     ("health_premium", "Health Insurance", "gi_segment_gross_premium"),
     ("motor_premium", "Motor Insurance", "gi_segment_gross_premium"),
+    ("other_premium", "Others", "gi_segment_gross_premium"),
     ("total_gi_premium", "Total", "gi_segment_gross_premium"),
 ]
 CHANNEL_MAP = [

@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T08:45:47.260541+00:00",
+  "generated_at": "2026-06-10T09:23:11.454270+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -28,7 +28,7 @@
    "sheets": 9,
    "audit_cells": 2956,
    "computed_cells": 600,
-   "value_store_entries": 328,
+   "value_store_entries": 335,
    "held_back": 10,
    "blocked_filings": 26
   }
@@ -845,7 +845,7 @@
        "metric": "gi_segment_gross_premium"
       }
      ],
-     "calculated_value": 85107
+     "calculated_value": 89709.59
     },
     {
      "cell": "N6",
@@ -883,7 +883,8 @@
        "entity": "Motor Insurance",
        "metric": "gi_segment_gross_premium"
       }
-     ]
+     ],
+     "calculated_value": 90762.14
     },
     {
      "cell": "C7",
@@ -1993,7 +1994,8 @@
        "entity": "Health Insurance",
        "metric": "gi_segment_gross_premium"
       }
-     ]
+     ],
+     "calculated_value": 108911
     },
     {
      "cell": "M14",
@@ -2018,7 +2020,7 @@
        "metric": "gi_segment_gross_premium"
       }
      ],
-     "calculated_value": 122800
+     "calculated_value": 118857.63
     },
     {
      "cell": "N14",
@@ -2042,7 +2044,8 @@
        "entity": "Health Insurance",
        "metric": "gi_segment_gross_premium"
       }
-     ]
+     ],
+     "calculated_value": 137144.46
     },
     {
      "cell": "F18",
@@ -54929,18 +54932,95 @@
    "conflict_status": "none",
    "eligible_for_excel": true
   },
+  "Health Insurance::gi_segment_gross_premium::FY26": {
+   "entity": "Health Insurance",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY26",
+   "unit": "INR_cr",
+   "raw_value": 137144.46,
+   "normalized_value": 137144.46,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total), upto March 2026 (FY26, provisional & unaudited)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Motor Insurance::gi_segment_gross_premium::FY26": {
+   "entity": "Motor Insurance",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY26",
+   "unit": "INR_cr",
+   "raw_value": 108216.08,
+   "normalized_value": 108216.08,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total), upto March 2026 (FY26, provisional & unaudited)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Others::gi_segment_gross_premium::FY26": {
+   "entity": "Others",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY26",
+   "unit": "INR_cr",
+   "raw_value": 90762.14,
+   "normalized_value": 90762.14,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total), upto March 2026 (FY26, provisional & unaudited)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Total::gi_segment_gross_premium::FY26": {
+   "entity": "Total",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY26",
+   "unit": "INR_cr",
+   "raw_value": 336122.68,
+   "normalized_value": 336122.68,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total), upto March 2026 (FY26, provisional & unaudited)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
   "Health Insurance::gi_segment_gross_premium::FY25": {
    "entity": "Health Insurance",
    "metric": "gi_segment_gross_premium",
    "period": "FY25",
    "unit": "INR_cr",
-   "raw_value": 122800,
-   "normalized_value": 122800,
+   "raw_value": 118857.63,
+   "normalized_value": 118857.63,
    "transformation_used": "identity (value used as-is)",
-   "source_name": "CareRatings Non-Life Insurance Update — March 2025 (IRDAI flash figures)",
-   "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
-   "fetched_at": "2026-05-28T10:05:00Z",
-   "confidence": "medium",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total, prior-year column), FY25",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
    "source_status": "available",
    "source_layer": "official_snapshot",
    "priority_rank": 3,
@@ -54952,13 +55032,33 @@
    "metric": "gi_segment_gross_premium",
    "period": "FY25",
    "unit": "INR_cr",
-   "raw_value": 99093,
-   "normalized_value": 99093,
+   "raw_value": 99093.47,
+   "normalized_value": 99093.47,
    "transformation_used": "identity (value used as-is)",
-   "source_name": "CareRatings Non-Life Insurance Update — March 2025 (IRDAI flash figures)",
-   "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
-   "fetched_at": "2026-05-28T10:05:00Z",
-   "confidence": "medium",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total, prior-year column), FY25",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Others::gi_segment_gross_premium::FY25": {
+   "entity": "Others",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY25",
+   "unit": "INR_cr",
+   "raw_value": 89709.59,
+   "normalized_value": 89709.59,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total, prior-year column), FY25",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
    "source_status": "available",
    "source_layer": "official_snapshot",
    "priority_rank": 3,
@@ -54970,12 +55070,49 @@
    "metric": "gi_segment_gross_premium",
    "period": "FY25",
    "unit": "INR_cr",
-   "raw_value": 307000,
-   "normalized_value": 307000,
+   "raw_value": 307660.69,
+   "normalized_value": 307660.69,
    "transformation_used": "identity (value used as-is)",
-   "source_name": "CareRatings Non-Life Insurance Update — March 2025 (IRDAI flash figures)",
-   "source_url": "https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf",
-   "fetched_at": "2026-05-28T10:05:00Z",
+   "source_name": "GI Council Segment-wise Report — Gross Direct Premium Underwritten (Industry Total, prior-year column), FY25",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Health Insurance::gi_segment_gross_premium::FY24": {
+   "entity": "Health Insurance",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY24",
+   "unit": "INR_cr",
+   "raw_value": 108911,
+   "normalized_value": 108911,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council — Indian Non-life industry segment premium, FY24 full year (Health & Total)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "fetched_at": "2026-06-10T08:50:00Z",
+   "confidence": "medium",
+   "source_status": "available",
+   "source_layer": "official_snapshot",
+   "priority_rank": 3,
+   "conflict_status": "none",
+   "eligible_for_excel": true
+  },
+  "Total::gi_segment_gross_premium::FY24": {
+   "entity": "Total",
+   "metric": "gi_segment_gross_premium",
+   "period": "FY24",
+   "unit": "INR_cr",
+   "raw_value": 289673,
+   "normalized_value": 289673,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "GI Council — Indian Non-life industry segment premium, FY24 full year (Health & Total)",
+   "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/",
+   "fetched_at": "2026-06-10T08:50:00Z",
    "confidence": "medium",
    "source_status": "available",
    "source_layer": "official_snapshot",
