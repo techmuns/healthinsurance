@@ -1859,43 +1859,43 @@
       "note": "Full-year YTD column of the IRDAI disclosure; cross-validated — each year’s current column equals the next year’s prior column, and FY24/FY25 match the store anchors."
     },
     "care-health::expense_ratio_igaap::FY22": {
-      "value": 38,
+      "value": 42,
       "unit": "%",
-      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 22) — Expense of Management to NWP (= Combined − Claims)",
+      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 22) — Expense of Management to Net Written Premium Ratio = 42% (stated)",
       "source_url": null,
       "source_file": "data/raw/companies/care-health/care-health-Qtr_4_21_22_1755597998.pdf",
-      "source_page": "NL ratios (full-year)",
+      "source_page": "Analytical ratios — Expense of Management to Net Written Premium Ratio",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
+      "note": "Stated directly in the disclosure's analytical ratios (EOM/NWP). Replaces an earlier combined−claims derivation, which was on a different basis. FY25/FY26 (38.3/37.1) are the Religare deck's stated figures."
     },
     "care-health::expense_ratio_igaap::FY23": {
-      "value": 38,
+      "value": 40,
       "unit": "%",
-      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 23) — Expense of Management to NWP (= Combined − Claims)",
+      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 23) — Expense of Management to Net Written Premium Ratio = 40% (stated)",
       "source_url": null,
       "source_file": "data/raw/companies/care-health/care-health-Qtr_4_22_23_1755597956.pdf",
-      "source_page": "NL ratios (full-year)",
+      "source_page": "Analytical ratios — Expense of Management to Net Written Premium Ratio",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
+      "note": "Stated directly in the disclosure's analytical ratios (EOM/NWP). Replaces an earlier combined−claims derivation, which was on a different basis. FY25/FY26 (38.3/37.1) are the Religare deck's stated figures."
     },
     "care-health::expense_ratio_igaap::FY24": {
-      "value": 37,
+      "value": 38,
       "unit": "%",
-      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 24) — Expense of Management to NWP (= Combined − Claims)",
+      "source_name": "Care Health IRDAI Public Disclosure (year ended Mar 24) — Expense of Management to Net Written Premium Ratio = 38% (stated)",
       "source_url": null,
       "source_file": "data/raw/companies/care-health/care-health-Qtr_4_23_24_1755597904.pdf",
-      "source_page": "NL ratios (full-year)",
+      "source_page": "Analytical ratios — Expense of Management to Net Written Premium Ratio",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Care’s combined ratio = claims (NIC/NEP) + EOM/NWP; expense = combined − claims, confirmed against the disclosure’s direct EOM/NWP ratio (FY25 = 0.38). EOM includes commission."
+      "note": "Stated directly in the disclosure's analytical ratios (EOM/NWP). Replaces an earlier combined−claims derivation, which was on a different basis. FY25/FY26 (38.3/37.1) are the Religare deck's stated figures."
     },
     "care-health::expense_ratio_igaap::FY25": {
       "value": 38.3,
