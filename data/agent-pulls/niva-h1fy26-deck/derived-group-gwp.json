@@ -1,0 +1,74 @@
+[
+ {
+  "company": "aditya-birla",
+  "year": "FY23",
+  "metric": "group_other_gwp",
+  "value": 1881.67,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ },
+ {
+  "company": "aditya-birla",
+  "year": "FY24",
+  "metric": "group_other_gwp",
+  "value": 2574.09,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ },
+ {
+  "company": "aditya-birla",
+  "year": "FY25",
+  "metric": "group_other_gwp",
+  "value": 3500.24,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ },
+ {
+  "company": "manipalcigna",
+  "year": "FY23",
+  "metric": "group_other_gwp",
+  "value": 781.22,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ },
+ {
+  "company": "manipalcigna",
+  "year": "FY24",
+  "metric": "group_other_gwp",
+  "value": 945.41,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ },
+ {
+  "company": "manipalcigna",
+  "year": "FY25",
+  "metric": "group_other_gwp",
+  "value": 1112.54,
+  "unit": "INR_cr",
+  "priority": 1,
+  "confidence": "high",
+  "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP \u2014 both from the same IRDAI/annual-report basis already in the grid.",
+  "source_url": null,
+  "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+ }
+]
