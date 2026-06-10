@@ -32,6 +32,12 @@ const API_TIMEOUT_MS = 600_000
 const CATEGORY_SET = new Set<string>(SECTORAL_CATEGORY_ORDER.map((c) => c.toLowerCase()))
 
 function buildPayload() {
+  const today = new Date()
+  const iso = (offsetDays: number) => {
+    const d = new Date(today)
+    d.setUTCDate(d.getUTCDate() + offsetDays)
+    return d.toISOString().slice(0, 10)
+  }
   const themes = SECTORAL_CATEGORY_ORDER.join(' | ')
   return {
     user_index: 124,
@@ -60,8 +66,8 @@ function buildPayload() {
     ],
     query_context: {
       TICKER_SYMBOL: ['NIVABUPA', 'STARHEALTH'],
-      FROM_DATE: '',
-      TO_DATE: '',
+      FROM_DATE: iso(-150),
+      TO_DATE: iso(15),
       ANNOUNCEMENT_FORM_TYPE: 'all',
       DOCUMENT_IDS: [],
       CATEGORIES: [],
@@ -183,9 +189,17 @@ export async function main(): Promise<number> {
   const token = (process.env.MUNS_API_TOKEN || '').trim()
 
   const map = await loadBase()
+  // Preserve the last genuinely-successful refresh time across a failed / no-token run.
+  let prevSuccessRun: string | null = null
+  try {
+    prevSuccessRun = (await readSnapshot<SectoralNewsSnapshot>(SNAPSHOT_FILE))._meta?.last_successful_run ?? null
+  } catch {
+    /* no snapshot yet */
+  }
   const seenSubjects = new Set<string>([...map.values()].map((i) => i.subject.toLowerCase().replace(/\s+/g, ' ').trim()))
   let maxSn = Math.max(0, ...[...map.values()].map((i) => i.sn))
   let added = 0
+  let pullSucceeded = false
 
   if (!token) {
     console.warn('MUNS_API_TOKEN not set — writing the seed snapshot only (no fresh pull this run).')
@@ -193,6 +207,7 @@ export async function main(): Promise<number> {
     console.log('Calling chat-muns agent for the latest sectoral updates ...')
     try {
       const raw = await callAgent(token)
+      pullSucceeded = true
       const items = parseItems(extractAnswer(raw))
       console.log(`Parsed ${items.length} candidate update(s) from the agent.`)
       for (const it of items) {
@@ -214,7 +229,8 @@ export async function main(): Promise<number> {
   const data = [...map.values()].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.sn - a.sn))
   const seed_count = data.filter((d) => d.origin === 'seed').length
   const agent_count = data.filter((d) => d.origin === 'agent').length
-  const last_updated = data.reduce((m, d) => (d.added_at && d.added_at > m ? d.added_at : m), today)
+  // Content-change date = newest added_at (NOT "today"), so a no-op run stays a no-op.
+  const last_updated = data.reduce((m, d) => (d.added_at && d.added_at > m ? d.added_at : m), '') || today
 
   await writeSnapshot(SNAPSHOT_FILE, {
     _meta: {
@@ -223,7 +239,7 @@ export async function main(): Promise<number> {
         'Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.',
       schema_version: '1.0.0',
       last_updated,
-      last_successful_run: token ? fetched_at : null,
+      last_successful_run: pullSucceeded ? fetched_at : prevSuccessRun,
       seed_count,
       agent_count,
       generated_by: 'Seed: investor portfolio pack. Updates: AI (muns agent, web search).',

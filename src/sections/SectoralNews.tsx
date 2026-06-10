@@ -92,11 +92,10 @@ function buildItems(): SectoralNewsItem[] {
   return [...byId.values()]
 }
 const ALL_ITEMS = buildItems()
-const LAST_UPDATED: string | null = SNAP?._meta?.last_updated ?? null
 // When the scheduled agent last completed a live pull (null until CI first runs).
 const LAST_REFRESHED: string | null = SNAP?._meta?.last_successful_run ?? null
 // "New" = an agent-gathered item that landed within ~30 days of the latest refresh.
-const NEW_CUTOFF = shiftDays(LAST_UPDATED ?? new Date().toISOString().slice(0, 10), -30)
+const NEW_CUTOFF = shiftDays(LAST_REFRESHED ?? new Date().toISOString().slice(0, 10), -30)
 function isNew(it: SectoralNewsItem): boolean {
   return it.origin === 'agent' && !!it.added_at && it.added_at >= NEW_CUTOFF
 }
