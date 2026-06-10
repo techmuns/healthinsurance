@@ -1,0 +1,25 @@
+name: probe delivery (temp)
+
+# TEMPORARY: tests whether NSE's archives host (delivery files) is reachable from
+# a CI runner. Deleted once the delivery fetcher is wired. Manual-trigger only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Probe delivery sources
+        run: npx tsx scripts/ingest/probe-delivery.ts
