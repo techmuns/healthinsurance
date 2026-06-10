@@ -15,6 +15,7 @@ import { ProfitabilityReview } from '@/sections/ProfitabilityReview'
 import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
+import { SectoralNews } from '@/sections/SectoralNews'
 import { SourceAutomationPanel } from '@/components/SourceAutomationPanel'
 import { STATE_META, MOCK_CELL_STATUS } from '@/data/sourceAutomation'
 
@@ -66,6 +67,7 @@ const SAHI_TABS: SectionTab[] = [
   { id: 'valuation', label: 'Valuation' },
   { id: 'street-view', label: 'Street View' },
   { id: 'governance', label: 'Governance' },
+  { id: 'sector-news', label: 'Key Sectoral News' },
 ]
 
 // Per-view colour-psychology aura key (reuses the section palette below).
@@ -76,6 +78,7 @@ const AURA_KEY: Record<string, string> = {
   valuation: 'company-performance',
   'street-view': 'street-view',
   governance: 'ownership-governance',
+  'sector-news': 'sector-news',
 }
 
 const SECTION_AURA: Record<string, { a: string; b: string; c: string }> = {
@@ -85,6 +88,8 @@ const SECTION_AURA: Record<string, { a: string; b: string; c: string }> = {
   'street-view': { a: '#B68B3A', b: '#27457E', c: '#168E8E' },
   peers: { a: '#6E7BD6', b: '#168E8E', c: '#27457E' },
   'ownership-governance': { a: '#27457E', b: '#8C97A8', c: '#B68B3A' },
+  // Editorial field for the sector briefing — navy (trust) / gold (editorial) / teal.
+  'sector-news': { a: '#27457E', b: '#B68B3A', c: '#168E8E' },
   // Calm, neutral field for the QA surface — navy / slate / muted gold.
   audit: { a: '#27457E', b: '#8C97A8', c: '#B68B3A' },
 }
@@ -155,6 +160,8 @@ function SahiContent({ tab }: { tab: string }) {
       return <StreetView />
     case 'governance':
       return <StatefulSection Comp={OwnershipGovernance} />
+    case 'sector-news':
+      return <SectoralNews />
     case 'companies':
     default:
       return <CompetitivePositioning />
