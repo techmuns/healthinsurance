@@ -3294,28 +3294,28 @@
     "manipalcigna::combined_ratio_igaap::FY23": {
       "value": 116,
       "unit": "%",
-      "source_name": "ManipalCigna FY2022-23 Annual Report — Combined Ratio FY23 = 116% (claims 65% + expense 51%)",
+      "source_name": "ManipalCigna FY2022-23 Annual Report — Combined Ratio FY23 = 116% (stated, analytical ratios)",
       "source_url": null,
-      "source_file": "data/raw/companies/manipalcigna/manipalcigna-Annual-Report-FY25.pdf",
-      "source_page": "Analytical ratios",
+      "source_file": "data/raw/companies/manipalcigna/manipalcigna-Annual-Report-2023.pdf",
+      "source_page": "Analytical ratios — Combined Ratio",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Combined ratio = claims ratio + expense ratio; matches the annual report’s stated value."
+      "note": "Stated directly in the AR: \"Combined Ratio 116% 130%\" = FY23 / FY22."
     },
     "manipalcigna::combined_ratio_igaap::FY24": {
       "value": 111,
       "unit": "%",
-      "source_name": "ManipalCigna FY2024-25 Annual Report — Combined Ratio FY24 = 111% (claims 64% + expense 47%)",
+      "source_name": "ManipalCigna FY2024-25 Annual Report — Combined Ratio FY24 = 111% (stated, analytical ratios)",
       "source_url": null,
       "source_file": "data/raw/companies/manipalcigna/manipalcigna-Annual-Report-FY25.pdf",
-      "source_page": "Analytical ratios",
+      "source_page": "Analytical ratios — Combined Ratio",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Combined ratio = claims ratio + expense ratio; matches the annual report’s stated value."
+      "note": "Stated directly in the AR: \"Combined Ratio 115% 111%\" = FY25 / FY24."
     },
     "manipalcigna::pat_ifrs::FY22": {
       "value": null,
@@ -3842,8 +3842,8 @@
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "official_filing",
-      "note": "From the ManipalCigna FY2022-23 Annual Report (₹ ’000 → Cr); FY23 figures match the store anchors (GWP 1359.79, expense 51%, solvency 1.56, PBT −200.93), validating the FY22 comparative column."
+      "layer": "derived",
+      "note": "Last resort: the ManipalCigna ARs do not state a claims ratio for any year. Computed as Combined (130%, stated) − Expense/NWP (54%, stated). Validated by FY23, where stated Combined (116%) − Expense (51%) = 65% = the stored claims ratio."
     },
     "manipalcigna::expense_ratio_igaap::FY22": {
       "value": 54,
