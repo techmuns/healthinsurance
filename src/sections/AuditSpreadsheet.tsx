@@ -13,12 +13,15 @@ import {
 //  items, columns are its periods. Read-only; no data is changed here.
 // ---------------------------------------------------------------------------
 
+// Cell fills are solid (fully opaque) tone-coded tints — the soft tokens are
+// already light pastels, so painting them at full opacity reads as a clean,
+// decision-grade column rather than a washed-out, see-through one.
 const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: string; label: string }> = {
-  green: { cell: 'bg-emerald-soft/45', ring: 'rgba(47,133,90,0.22)', text: 'text-emerald', dot: '#2F855A', label: 'Fetched' },
-  yellow: { cell: 'bg-gold-soft/45', ring: 'rgba(183,121,31,0.22)', text: 'text-gold', dot: '#B7791F', label: 'Adjusted / typed' },
-  red: { cell: 'bg-coral-soft/35', ring: 'rgba(199,93,84,0.22)', text: 'text-coral', dot: '#C75D54', label: 'Missing / not reachable' },
-  grey: { cell: 'bg-slate-100/70', ring: 'rgba(148,163,184,0.25)', text: 'text-slate-500', dot: '#94A3B8', label: 'Not needed / blocked' },
-  info: { cell: 'bg-lavender-soft/35', ring: 'rgba(110,123,214,0.22)', text: 'text-lavender', dot: '#6E7BD6', label: 'Calculated' },
+  green: { cell: 'bg-emerald-soft', ring: 'rgba(47,133,90,0.22)', text: 'text-emerald', dot: '#2F855A', label: 'Fetched' },
+  yellow: { cell: 'bg-gold-soft', ring: 'rgba(183,121,31,0.22)', text: 'text-gold', dot: '#B7791F', label: 'Adjusted / typed' },
+  red: { cell: 'bg-coral-soft', ring: 'rgba(199,93,84,0.22)', text: 'text-coral', dot: '#C75D54', label: 'Missing / not reachable' },
+  grey: { cell: 'bg-slate-100', ring: 'rgba(148,163,184,0.25)', text: 'text-slate-500', dot: '#94A3B8', label: 'Not needed / blocked' },
+  info: { cell: 'bg-lavender-soft', ring: 'rgba(110,123,214,0.22)', text: 'text-lavender', dot: '#6E7BD6', label: 'Calculated' },
 }
 const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
 
