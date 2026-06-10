@@ -26,6 +26,9 @@ if (!existsSync(DIR)) { console.error(`no pulls for ${companyId} at ${DIR}`); pr
 // (line_item, basis) → grid metric key. Keys normalised to lower-case.
 const MAP: Record<string, string> = {
   'total gwp|igaap': 'total_gwp',
+  'retail health gwp|igaap': 'retail_health_gwp',
+  'retail health gwp|—': 'retail_health_gwp',
+  'retail health gwp|-': 'retail_health_gwp',
   'net written premium (nwp)|igaap': 'nwp',
   'net earned premium (nep)|igaap': 'nep',
   'profit after tax (pat)|igaap': 'pat_igaap',
@@ -37,10 +40,17 @@ const MAP: Record<string, string> = {
   'combined ratio|igaap': 'combined_ratio_igaap',
   'solvency ratio|—': 'solvency_ratio',
   'solvency ratio|-': 'solvency_ratio',
+  'retail health market share|—': 'retail_health_market_share',
+  'retail health market share|-': 'retail_health_market_share',
+  'assets under management (aum)|—': 'investment_aum',
+  'assets under management (aum)|-': 'investment_aum',
+  'assets under management|—': 'investment_aum',
+  'assets under management|-': 'investment_aum',
 }
 const UNIT: Record<string, string> = {
-  total_gwp: 'INR_cr', nwp: 'INR_cr', nep: 'INR_cr', pat_igaap: 'INR_cr', pat_ifrs: 'INR_cr',
-  net_worth_ifrs: 'INR_cr', solvency_ratio: 'x',
+  total_gwp: 'INR_cr', retail_health_gwp: 'INR_cr', nwp: 'INR_cr', nep: 'INR_cr',
+  pat_igaap: 'INR_cr', pat_ifrs: 'INR_cr', net_worth_ifrs: 'INR_cr', investment_aum: 'INR_cr',
+  solvency_ratio: 'x',
 }
 
 function metricFor(lineItem: string, basis: string): { key: string; note?: string } | null {

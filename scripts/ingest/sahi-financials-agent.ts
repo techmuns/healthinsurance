@@ -105,10 +105,11 @@ function buildPayload() {
     'For GWP, prefer the 1/n (statutory) basis where both are shown; if only the ex-1/n figure is given, leave the GWP value blank rather than mixing bases. ' +
     'Open the actual PDF and read the figures; if a figure is genuinely not published, leave value blank.\n\n' +
     'The line items (line_item | basis | unit):\n\n' +
-    'Total GWP | IGAAP | INR_crore\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\n' +
+    'Total GWP | IGAAP | INR_crore\nRetail health GWP | IGAAP | INR_crore\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\n' +
     'Profit After Tax (PAT) | IGAAP | INR_crore\nProfit After Tax (PAT) | IFRS | INR_crore\n' +
     'Claims ratio | IGAAP | %\nClaims ratio | IFRS | %\nExpense ratio | IGAAP | %\nCommission ratio | IGAAP | %\nCombined ratio | IGAAP | %\n' +
-    'Solvency ratio | — | x\nNet worth (shareholders\' equity) | IGAAP | INR_crore\n\n' +
+    'Solvency ratio | — | x\nNet worth (shareholders\' equity) | IGAAP | INR_crore\n' +
+    'Retail health market share | — | %\nAssets Under Management (AUM) | — | INR_crore\n\n' +
     `Example row:\n${COMPANY_NAME}\t${PERIOD}\tTotal GWP\tIGAAP\t12345\tINR_crore\t<Company> FY24-25 Annual Report, p.XX\thttps://…\t2025-05-XX`
   return {
     user_index: 124,
