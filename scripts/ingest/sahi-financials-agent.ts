@@ -83,7 +83,6 @@ function periodSpec(period: string): { kind: 'annual' | 'interim'; ended: string
 }
 
 function buildPayload() {
-  const fyEndYear = 2000 + Number((PERIOD.match(/\d+/) || ['0'])[0]) // FY26 -> 2026
   const ps = periodSpec(PERIOD)
   const docLine = DOC_URL
     ? `PRIMARY SOURCE — open and READ this exact document, and take the values from it: ${DOC_URL}\n` +
