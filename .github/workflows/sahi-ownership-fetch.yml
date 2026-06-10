@@ -1,0 +1,49 @@
+name: sahi ownership fetch
+
+# Pulls the latest quarterly shareholding pattern (promoter / FII / DII / MF /
+# public) for the two listed SAHIs (Star Health, Niva Bupa) via the muns chat
+# agent and writes src/data/snapshots/ownership-snapshot.json. The Governance ›
+# Ownership section renders straight from that snapshot.
+#
+# Secrets used:
+#   MUNS_API_TOKEN  (required) bearer token for the chat agent.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sahi-ownership-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Pull listed-SAHI shareholding (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+        run: npx tsx scripts/ingest/sahi-ownership-agent.ts
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/data/snapshots/ownership-snapshot.json data/logs/sahi-ownership-agent.log
+          if git diff --staged --quiet; then echo "No change."; exit 0; fi
+          git commit -m "ownership: listed-SAHI shareholding via muns agent @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1
