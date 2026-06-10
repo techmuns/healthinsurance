@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Bar, CartesianGrid, ComposedChart, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Landmark, ShieldCheck } from 'lucide-react'
+import { Bar, CartesianGrid, Cell, ComposedChart, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Info, Landmark, ShieldCheck } from 'lucide-react'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
@@ -213,17 +213,52 @@ function FrameworkCharts({ theme, basis, companyId }: { theme: FrameworkTheme; b
 }
 
 // ── Profit Trend & Quality — one combo band above the tables ─────────────────
-// Lines: IFRS PAT (navy) + IGAAP PAT (gold). Stacked columns per year compose
-// the profit DRIVER — Operating profit (statutory underwriting result, teal) +
-// Investment profit (investment income = AUM × yield, muted amber). Negatives
-// extend below zero so losses are never hidden. Display-only derivation from the
-// existing basis model — no pipeline / calculation change.
-const Q_COLORS = { ifrs: '#27457E', igaap: '#B68B3A', operating: '#168E8E', investment: '#E6C879' }
+// Per year: TWO clustered stacked columns — IFRS (Operating + Investment) and
+// IGAAP (Operating + Investment) — plus TWO overlaid PAT lines (IFRS, IGAAP).
+// Operating = underwriting result on that basis; Investment = investment income
+// (AUM × yield, basis-neutral). Negative segments switch to a subtle muted red
+// and extend below zero — losses are never hidden. Display-only derivation from
+// the existing basis model — no pipeline / calculation change.
+const Q = {
+  ifrsPat: '#27457E', // navy
+  igaapPat: '#C2922F', // warm gold / ochre
+  ifrsOp: '#168E8E', // teal
+  ifrsInv: '#9AD3CD', // mint-teal tint
+  igaapOp: '#CBA14A', // muted gold / amber
+  igaapInv: '#E7D6A8', // pale sand-gold
+  neg: '#C08680', // subtle muted rose-red
+}
 
 function investmentIncome(id: string, p: BasisPeriod): number | null {
   const inv = getInvestment(id, p)
   if (!inv || inv.aum == null || inv.yield == null) return null
   return Math.round((inv.aum * inv.yield) / 100)
+}
+
+const INFO_TEXT =
+  'This chart combines PAT trend and profit composition. For each year, stacked bars show the operating and investment split for IFRS and IGAAP, while lines show reported PAT under both frameworks. Negative values extend below zero.'
+
+function InfoIcon() {
+  const [open, setOpen] = useState(false)
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onClick={() => setOpen((o) => !o)}
+        aria-label="About this chart"
+        className="grid h-4 w-4 place-items-center rounded-full text-ink-secondary transition-colors hover:text-navy-primary"
+      >
+        <Info className="h-3.5 w-3.5" />
+      </button>
+      {open && (
+        <span className="absolute left-1/2 top-[calc(100%+6px)] z-30 w-64 -translate-x-1/4 rounded-lg border border-soft-border bg-white px-3 py-2 text-[11px] font-normal leading-snug text-ink-primary shadow-[0_8px_30px_rgba(23,43,77,0.16)]">
+          {INFO_TEXT}
+        </span>
+      )}
+    </span>
+  )
 }
 
 function ProfitQualityBand({ companyId }: { companyId: string }) {
@@ -233,33 +268,44 @@ function ProfitQualityBand({ companyId }: { companyId: string }) {
         fy: p,
         ifrsPat: getBasisProfit(companyId, 'ifrs', p)?.pat ?? null,
         igaapPat: getBasisProfit(companyId, 'igaap', p)?.pat ?? null,
-        operating: uw(getBasisNep(companyId, p), getBasisProfit(companyId, 'igaap', p)?.combinedRatio ?? null),
-        investment: investmentIncome(companyId, p),
+        ifrsOp: uw(getBasisNep(companyId, p), getBasisProfit(companyId, 'ifrs', p)?.combinedRatio ?? null),
+        igaapOp: uw(getBasisNep(companyId, p), getBasisProfit(companyId, 'igaap', p)?.combinedRatio ?? null),
+        ifrsInv: investmentIncome(companyId, p),
+        igaapInv: investmentIncome(companyId, p),
       })),
     [companyId],
   )
-  const hasAny = data.some((d) => d.ifrsPat != null || d.igaapPat != null || d.operating != null || d.investment != null)
+  const hasAny = data.some((d) => d.ifrsPat != null || d.igaapPat != null || d.ifrsOp != null || d.igaapOp != null || d.ifrsInv != null)
   if (!hasAny) return null
+
+  // Per-segment colour: positive → theme colour, negative → subtle muted red.
+  const seg = (key: 'ifrsOp' | 'ifrsInv' | 'igaapOp' | 'igaapInv', base: string) =>
+    data.map((d, i) => <Cell key={i} fill={(d[key] ?? 0) < 0 ? Q.neg : base} />)
 
   return (
     <div className="rounded-[18px] border border-soft-border bg-white p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-2 flex items-center gap-1.5">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">Profit Trend &amp; Quality (₹ Cr)</p>
-        <p className="text-[10px] text-ink-secondary">Bars = profit driver (operating vs investment) · Lines = reported PAT</p>
+        <InfoIcon />
       </div>
-      <div style={{ width: '100%', height: 212 }}>
+
+      {/* Clean grouped legend */}
+      <QualityLegend />
+
+      <div style={{ width: '100%', height: 226 }}>
         <ResponsiveContainer>
-          <ComposedChart data={data} margin={{ top: 6, right: 8, left: -10, bottom: 0 }} barCategoryGap="34%">
-            <CartesianGrid strokeDasharray="3 3" stroke="#EEF1F7" vertical={false} />
+          <ComposedChart data={data} margin={{ top: 6, right: 8, left: -10, bottom: 0 }} barCategoryGap="26%" barGap={3}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F0F2F7" vertical={false} />
             <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#E5E8EF' }} />
             <YAxis tick={{ fontSize: 10.5, fill: '#6B7280' }} tickLine={false} axisLine={false} width={44} />
-            <ReferenceLine y={0} stroke="#C7D0DE" />
+            <ReferenceLine y={0} stroke="#AEB9CA" strokeWidth={1.2} />
             <Tooltip content={<QualityTooltip />} cursor={{ fill: 'rgba(23,43,77,0.04)' }} />
-            <Legend verticalAlign="top" align="right" height={22} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 10.5, paddingBottom: 6 }} />
-            <Bar name="Operating profit" dataKey="operating" stackId="drv" fill={Q_COLORS.operating} radius={[2, 2, 0, 0]} maxBarSize={34} isAnimationActive={false} />
-            <Bar name="Investment profit" dataKey="investment" stackId="drv" fill={Q_COLORS.investment} radius={[2, 2, 0, 0]} maxBarSize={34} isAnimationActive={false} />
-            <Line name="IFRS PAT" type="monotone" dataKey="ifrsPat" stroke={Q_COLORS.ifrs} strokeWidth={1.8} dot={{ r: 2.4, fill: Q_COLORS.ifrs }} connectNulls={false} isAnimationActive={false} />
-            <Line name="IGAAP PAT" type="monotone" dataKey="igaapPat" stroke={Q_COLORS.igaap} strokeWidth={1.8} dot={{ r: 2.4, fill: Q_COLORS.igaap }} connectNulls={false} isAnimationActive={false} />
+            <Bar dataKey="ifrsOp" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsOp', Q.ifrsOp)}</Bar>
+            <Bar dataKey="ifrsInv" stackId="ifrs" maxBarSize={20} isAnimationActive={false}>{seg('ifrsInv', Q.ifrsInv)}</Bar>
+            <Bar dataKey="igaapOp" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapOp', Q.igaapOp)}</Bar>
+            <Bar dataKey="igaapInv" stackId="igaap" maxBarSize={20} isAnimationActive={false}>{seg('igaapInv', Q.igaapInv)}</Bar>
+            <Line type="monotone" dataKey="ifrsPat" stroke={Q.ifrsPat} strokeWidth={1.9} dot={{ r: 2.5, fill: Q.ifrsPat }} connectNulls={false} isAnimationActive={false} />
+            <Line type="monotone" dataKey="igaapPat" stroke={Q.igaapPat} strokeWidth={1.9} dot={{ r: 2.5, fill: Q.igaapPat }} connectNulls={false} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -267,25 +313,44 @@ function ProfitQualityBand({ companyId }: { companyId: string }) {
   )
 }
 
-function QualityTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number | null; color: string }>; label?: string }) {
-  if (!active || !payload?.length) return null
-  const order = ['IFRS PAT', 'IGAAP PAT', 'Operating profit', 'Investment profit']
-  const byName = new Map(payload.map((p) => [p.name, p]))
+function QualityLegend() {
+  const dot = (c: string) => <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: c }} />
+  const bar = (c: string) => <span className="h-2 w-3 shrink-0 rounded-[2px]" style={{ background: c }} />
   return (
-    <div className="rounded-lg border border-soft-border bg-white/95 px-3 py-2 text-[11px] shadow-soft">
+    <div className="mb-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-ink-secondary">
+      <span className="inline-flex items-center gap-1.5 font-semibold text-ink-primary">PAT</span>
+      <span className="inline-flex items-center gap-1">{dot(Q.ifrsPat)} IFRS</span>
+      <span className="inline-flex items-center gap-1">{dot(Q.igaapPat)} IGAAP</span>
+      <span className="text-soft-border">|</span>
+      <span className="inline-flex items-center gap-1">{bar(Q.ifrsOp)} IFRS Op</span>
+      <span className="inline-flex items-center gap-1">{bar(Q.ifrsInv)} IFRS Inv</span>
+      <span className="inline-flex items-center gap-1">{bar(Q.igaapOp)} IGAAP Op</span>
+      <span className="inline-flex items-center gap-1">{bar(Q.igaapInv)} IGAAP Inv</span>
+    </div>
+  )
+}
+
+function QualityTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ dataKey: string; value: number | null }>; label?: string }) {
+  if (!active || !payload?.length) return null
+  const v = (k: string) => payload.find((p) => p.dataKey === k)?.value
+  const Row = ({ c, name, val }: { c: string; name: string; val: number | null | undefined }) =>
+    val == null ? null : (
+      <div className="flex items-center justify-between gap-4">
+        <span className="inline-flex items-center gap-1.5 text-ink-secondary"><span className="h-2 w-2 rounded-full" style={{ background: val < 0 ? Q.neg : c }} />{name}</span>
+        <span className="tabular-nums font-medium" style={{ color: val < 0 ? Q.neg : '#1F2937' }}>₹{val.toLocaleString('en-IN')}</span>
+      </div>
+    )
+  return (
+    <div className="min-w-[180px] rounded-lg border border-soft-border bg-white/97 px-3 py-2 text-[11px] shadow-soft">
       <p className="mb-1 font-semibold text-navy-deep">{label}</p>
-      {order.map((n) => {
-        const p = byName.get(n)
-        if (!p || p.value == null) return null
-        return (
-          <div key={n} className="flex items-center justify-between gap-4">
-            <span className="inline-flex items-center gap-1.5 text-ink-secondary">
-              <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />{n}
-            </span>
-            <span className="tabular-nums font-medium text-ink-primary">₹{p.value.toLocaleString('en-IN')}</span>
-          </div>
-        )
-      })}
+      <p className="text-[9px] font-bold uppercase tracking-wide text-navy-primary">IFRS</p>
+      <Row c={Q.ifrsPat} name="PAT" val={v('ifrsPat')} />
+      <Row c={Q.ifrsOp} name="Operating" val={v('ifrsOp')} />
+      <Row c={Q.ifrsInv} name="Investment" val={v('ifrsInv')} />
+      <p className="mt-1 text-[9px] font-bold uppercase tracking-wide text-champagne-deep">IGAAP</p>
+      <Row c={Q.igaapPat} name="PAT" val={v('igaapPat')} />
+      <Row c={Q.igaapOp} name="Operating" val={v('igaapOp')} />
+      <Row c={Q.igaapInv} name="Investment" val={v('igaapInv')} />
     </div>
   )
 }
