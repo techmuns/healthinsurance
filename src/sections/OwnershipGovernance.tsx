@@ -1,17 +1,17 @@
 import { SectionTabs, type SectionTab } from '@/components/SectionTabs'
-import { LockedPanel } from '@/components/LockedPanel'
 import { Ownership } from '@/sections/Ownership'
+import { ManagementEvents } from '@/sections/ManagementEvents'
 
 const TABS: SectionTab[] = [
   { id: 'ownership', label: 'Ownership' },
-  { id: 'management', label: 'Management Events', locked: true },
+  { id: 'management', label: 'Management Events' },
 ]
 
 /**
  * Ownership & Governance — merges Ownership and Management Events under one
- * section with internal tabs. Ownership stays active; Management Events is locked
- * with a pending overlay (the section/structure is preserved for when the
- * management ingest lands).
+ * section with internal tabs. Both are now exposed for visual review: Ownership
+ * carries its shareholding scaffold and Management Events its Promise Tracker +
+ * event-feed structure (each clearly flagged where live data is still pending).
  */
 export function OwnershipGovernance({ onNavigate, sub }: { onNavigate?: (id: string) => void; sub?: string }) {
   const tab = TABS.find((t) => t.id === sub?.split('/')[0])?.id ?? TABS[0].id
@@ -21,13 +21,7 @@ export function OwnershipGovernance({ onNavigate, sub }: { onNavigate?: (id: str
       <SectionTabs tabs={TABS} active={tab} onSelect={go} />
       <div key={tab} className="animate-fade-in">
         {tab === 'ownership' && <Ownership />}
-        {tab === 'management' && (
-          <LockedPanel
-            title="Management Events"
-            message="Pending data integration — the event feed, KMP appointments and board changes populate here once the management ingest runs."
-            height={360}
-          />
-        )}
+        {tab === 'management' && <ManagementEvents />}
       </div>
     </div>
   )

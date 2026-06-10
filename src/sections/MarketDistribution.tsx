@@ -34,11 +34,63 @@ export function MarketDistribution() {
     <div className="grid grid-cols-1 gap-6">
       {/* Premium engine — GWP / NWP / NEP bars for the active insurer. The
           'Premium & Distribution' view leads with the premium waterfall, then
-          the product mix (retail vs group) and the channel mix. */}
+          the product mix (retail vs group), the renewal trend and channel mix. */}
       <PremiumFlowQuality focalId={company.id} />
-      <RetailGroupMixCard />
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <RetailGroupMixCard />
+        <RenewalTrendCard />
+      </div>
       <ChannelMixCard />
     </div>
+  )
+}
+
+// ─── Renewal metrics historical trend ─────────────────────────────────────────
+// UI scaffold for the renewal/persistency trend container. Values are
+// illustrative placeholders (clearly flagged) until the renewal series is wired
+// — no ingestion, no calculation changes.
+const RENEWAL_TREND = [
+  { label: 'FY21', rate: 84 },
+  { label: 'FY22', rate: 86 },
+  { label: 'FY23', rate: 88 },
+  { label: 'FY24', rate: 90 },
+  { label: 'FY25', rate: 92 },
+]
+
+function RenewalTrendCard() {
+  return (
+    <section className="card-surface flex h-full flex-col p-5 sm:p-6">
+      <header className="mb-4 border-b border-[#EEF1F7] pb-4">
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Renewal Trend</p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <h2 className="font-display text-[20px] leading-tight text-navy-deep">Renewal rate over time</h2>
+          <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: '#FBF2E0', color: '#8A6516' }}>Illustrative</span>
+        </div>
+        <p className="mt-1 text-[12px] text-ink-secondary">Retail renewal / persistency — placeholder until the renewal series is wired</p>
+      </header>
+      <div className="h-[220px] flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={RENEWAL_TREND} margin={{ top: 8, right: 12, bottom: 4, left: -12 }}>
+            <defs>
+              <linearGradient id="renewalArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#168E8E" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="#168E8E" stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid stroke="#ECEFF5" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} />
+            <YAxis domain={[80, 95]} tick={{ fontSize: 11, fill: '#6B7280' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} width={42} />
+            <Tooltip
+              cursor={{ stroke: '#CBD5E1', strokeDasharray: '3 3' }}
+              contentStyle={{ borderRadius: 10, border: '1px solid #E5E9F0', fontSize: 12, boxShadow: '0 6px 20px rgba(23,43,77,0.10)' }}
+              formatter={(v: number) => [`${v}%`, 'Renewal rate']}
+            />
+            <Area type="monotone" dataKey="rate" stroke="none" fill="url(#renewalArea)" isAnimationActive={false} />
+            <Line type="monotone" dataKey="rate" stroke="#168E8E" strokeWidth={1.8} dot={{ r: 3, fill: '#168E8E' }} isAnimationActive={false} />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+    </section>
   )
 }
 
