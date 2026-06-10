@@ -213,8 +213,12 @@ def collect_existing():
         prov, period = r.get("provenance", {}), r.get("fiscal_year")
         if not period:
             continue
-        snap_candidate(r["company_id"], "overall_health_market_share", period,
-                       r.get("health_market_share"), "pct_to_fraction", "ratio", prov)
+        # overall_health_market_share is NOT wired from sahi-peer-comparison: that
+        # field is a back-of-envelope estimate (company premium / industry segment
+        # premium) carrying a provenance mis-cited to a retail-only press release.
+        # The real overall-health share comes from the GI Council segment-wise
+        # report (staged in audit-overlay.json) — see Neha, 2026-06-10. Leaving it
+        # out here keeps the regenerated store from re-introducing the bad estimate.
         snap_candidate(r["company_id"], "retail_health_market_share", period,
                        r.get("retail_health_market_share"), "pct_to_fraction", "ratio", prov)
     for r in load("insurer-quarterly-financials"):
