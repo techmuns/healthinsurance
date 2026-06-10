@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T17:43:13.082210+00:00",
+  "generated_at": "2026-06-10T18:34:56.613013+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -26572,7 +26572,8 @@
        "label": "Niva Bupa",
        "sheet": "Industry Growth"
       }
-     ]
+     ],
+     "calculated_value": 0.101376
     },
     {
      "cell": "H8",
@@ -29246,7 +29247,8 @@
        "label": "Star Health",
        "sheet": "Industry Growth"
       }
-     ]
+     ],
+     "calculated_value": 0.312951
     },
     {
      "cell": "U8",
@@ -31519,7 +31521,8 @@
        "label": "Care",
        "sheet": "Industry Growth"
       }
-     ]
+     ],
+     "calculated_value": 0.116368
     },
     {
      "cell": "AH8",
@@ -39323,7 +39326,7 @@
      "metric": "price_to_gwp",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39345,7 +39348,8 @@
        "entity": "niva-bupa",
        "metric": "gwp"
       }
-     ]
+     ],
+     "calculated_value": 1.837738
     },
     {
      "cell": "K4",
@@ -39354,7 +39358,7 @@
      "metric": "pe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39376,7 +39380,8 @@
        "entity": "niva-bupa",
        "metric": "pat_igaap"
       }
-     ]
+     ],
+     "calculated_value": 118.949916
     },
     {
      "cell": "L4",
@@ -39385,7 +39390,7 @@
      "metric": "pb_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39407,7 +39412,8 @@
        "entity": "niva-bupa",
        "metric": "net_worth_igaap"
       }
-     ]
+     ],
+     "calculated_value": 4.832641
     },
     {
      "cell": "M4",
@@ -39416,7 +39422,7 @@
      "metric": "roe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -39438,7 +39444,8 @@
        "entity": "niva-bupa",
        "metric": "net_worth_igaap"
       }
-     ]
+     ],
+     "calculated_value": 0.040628
     },
     {
      "cell": "N4",
@@ -39447,7 +39454,7 @@
      "metric": "pe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39469,7 +39476,8 @@
        "entity": "niva-bupa",
        "metric": "pat_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 42.49186
     },
     {
      "cell": "O4",
@@ -39478,7 +39486,7 @@
      "metric": "pb_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39510,7 +39518,7 @@
      "metric": "roe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -39532,7 +39540,8 @@
        "entity": "niva-bupa",
        "metric": "net_worth_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 0.102194
     },
     {
      "cell": "Q4",
@@ -39541,7 +39550,7 @@
      "metric": "pe_3yr_avg",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": true,
      "source_key": "valuation_history",
@@ -39664,7 +39673,8 @@
        "entity": "star-health",
        "metric": "pat_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 9578
     },
     {
      "cell": "G5",
@@ -39750,7 +39760,7 @@
      "metric": "price_to_gwp",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39781,7 +39791,7 @@
      "metric": "pe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39803,7 +39813,8 @@
        "entity": "star-health",
        "metric": "pat_igaap"
       }
-     ]
+     ],
+     "calculated_value": 55.396553
     },
     {
      "cell": "L5",
@@ -39812,7 +39823,7 @@
      "metric": "pb_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39843,7 +39854,7 @@
      "metric": "roe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -39874,7 +39885,7 @@
      "metric": "pe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39896,7 +39907,8 @@
        "entity": "star-health",
        "metric": "pat_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 33.87034
     },
     {
      "cell": "O5",
@@ -39905,7 +39917,7 @@
      "metric": "pb_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -39927,7 +39939,8 @@
        "entity": "star-health",
        "metric": "net_worth_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 3.221537
     },
     {
      "cell": "P5",
@@ -39936,7 +39949,7 @@
      "metric": "roe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -39958,7 +39971,8 @@
        "entity": "star-health",
        "metric": "net_worth_ifrs"
       }
-     ]
+     ],
+     "calculated_value": 0.095114
     },
     {
      "cell": "Q5",
@@ -39967,7 +39981,7 @@
      "metric": "pe_3yr_avg",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": true,
      "source_key": "valuation_history",
@@ -40115,7 +40129,7 @@
      "metric": "price_to_gwp",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40146,7 +40160,7 @@
      "metric": "pe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40177,7 +40191,7 @@
      "metric": "pb_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40208,7 +40222,7 @@
      "metric": "roe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -40239,7 +40253,7 @@
      "metric": "pe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40270,7 +40284,7 @@
      "metric": "pb_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40301,7 +40315,7 @@
      "metric": "roe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -40332,7 +40346,7 @@
      "metric": "pe_3yr_avg",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": true,
      "source_key": "valuation_history",
@@ -40480,7 +40494,7 @@
      "metric": "price_to_gwp",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40511,7 +40525,7 @@
      "metric": "pe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40542,7 +40556,7 @@
      "metric": "pb_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40573,7 +40587,7 @@
      "metric": "roe_igaap",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -40604,7 +40618,7 @@
      "metric": "pe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40635,7 +40649,7 @@
      "metric": "pb_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "market_cap",
@@ -40666,7 +40680,7 @@
      "metric": "roe_ifrs",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "percent",
+     "unit": "ratio",
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "company_financials",
@@ -40697,7 +40711,7 @@
      "metric": "pe_3yr_avg",
      "period": "as_on_run_date",
      "period_type": "point_in_time",
-     "unit": "ratio",
+     "unit": "x",
      "cell_kind": "formula",
      "fillable": true,
      "source_key": "valuation_history",

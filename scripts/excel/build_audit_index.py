@@ -44,6 +44,13 @@ OUT = REPO / "src" / "data" / "snapshots" / "extracted-data-audit.json"
 # Max referenced cells we record per formula (keeps a big SUM range bounded).
 MAX_FORMULA_INPUTS = 24
 
+# How deep the formula evaluator will chase a chain of cell-to-cell references
+# before giving up. A ratio cell (e.g. Comps P/E = Market Cap / PAT) divides
+# intermediate cells that THEMSELVES pull a number from another sheet, so the
+# resolver has to follow two or three hops to reach a source-backed value. The
+# cap guards against a cyclic reference; the real chains here are 2–3 deep.
+MAX_RESOLVE_DEPTH = 8
+
 # Cell kinds we surface as audit rows. `text` / `empty` are pure layout labels
 # (no value contract) and are skipped. Everything else is shown — including
 # `formula` cells (computed in-sheet) so the coverage check sees EVERY cell the
@@ -185,7 +192,7 @@ def build_formula_resolver(schema, store):
 
     # ---- value-from-our-data: evaluate a formula using the source-backed store,
     #      but ONLY when every referenced cell has a value (missing != guessed). ----
-    def store_value(sheet, coord, cur_sheet):
+    def store_value(sheet, coord, cur_sheet, depth=0):
         s = sheet or cur_sheet
         b = cellmap.get(s, {}).get(coord) or {}
         e, m, p = b.get("entity"), b.get("metric"), b.get("period")
@@ -193,6 +200,15 @@ def build_formula_resolver(schema, store):
             v = store.get(f"{e}::{m}::{p}")
             if v and v.get("normalized_value") is not None:
                 return v["normalized_value"]
+        # No direct store value for this cell. If the cell is ITSELF an in-sheet
+        # formula, follow it: the Comps multiples (P/GWP, P/E, P/B, ROE) divide
+        # intermediate cells (GWP, PAT, Net worth) that each pull their number
+        # from the 'SAHIs comparison' grid via a cross-sheet reference. Chasing
+        # those references reproduces the template's own calculation rather than
+        # fetching the ratio from anywhere. External (Capital IQ) refs resolve to
+        # None and so leave the cell honestly blank. Recursion is depth-capped.
+        if depth < MAX_RESOLVE_DEPTH:
+            return compute(s, coord, depth + 1)
         return None
 
     _OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul,
@@ -211,7 +227,7 @@ def build_formula_resolver(schema, store):
     sum_re = re.compile(r"(SUM|AVERAGE)\(([^()]+)\)", re.I)
     ref_re = re.compile(r"(?:'[^']+'|\[\d+\][^!']*'?)?!?\$?[A-Z]{1,3}\$?\d+")
 
-    def compute(cur_sheet, coord):
+    def compute(cur_sheet, coord, depth=0):
         ws = wb[cur_sheet] if cur_sheet in wb.sheetnames else None
         if ws is None:
             return None
@@ -230,7 +246,7 @@ def build_formula_resolver(schema, store):
                 part = part.strip()
                 for c in (expand(part) if ":" in part else [part.replace("$", "")]):
                     sheet, ref, ext = split_ref(c)
-                    v = None if ext else store_value(sheet, ref, cur_sheet)
+                    v = None if ext else store_value(sheet, ref, cur_sheet, depth)
                     if v is None:
                         bad[0] = True
                         return "0"
@@ -243,7 +259,7 @@ def build_formula_resolver(schema, store):
 
         def repl_ref(m):
             sheet, ref, ext = split_ref(m.group(0))
-            v = None if ext else store_value(sheet, ref, cur_sheet)
+            v = None if ext else store_value(sheet, ref, cur_sheet, depth)
             if v is None:
                 bad[0] = True
                 return "0"

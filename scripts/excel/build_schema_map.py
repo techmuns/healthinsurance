@@ -237,14 +237,18 @@ COMPS_COLS = {
     "G": ("pat_ifrs", "INR_cr", "company_financials"),
     "H": ("net_worth_igaap", "INR_cr", "company_financials"),
     "I": ("pat_igaap", "INR_cr", "company_financials"),
-    "J": ("price_to_gwp", "ratio", "market_cap"),
-    "K": ("pe_igaap", "ratio", "market_cap"),
-    "L": ("pb_igaap", "ratio", "market_cap"),
-    "M": ("roe_igaap", "percent", "company_financials"),
-    "N": ("pe_ifrs", "ratio", "market_cap"),
-    "O": ("pb_ifrs", "ratio", "market_cap"),
-    "P": ("roe_ifrs", "percent", "company_financials"),
-    "Q": ("pe_3yr_avg", "ratio", "valuation_history"),
+    # Valuation MULTIPLES are "x" (42.5x, 4.3x, 1.8x), not percentages. ROE is a
+    # return percentage computed as PAT / Net worth — a fraction (0.04) shown
+    # ×100 as 4%, so it carries the "ratio" unit like every other percentage
+    # metric in the workbook (claims / combined / expense ratios, market share).
+    "J": ("price_to_gwp", "x", "market_cap"),
+    "K": ("pe_igaap", "x", "market_cap"),
+    "L": ("pb_igaap", "x", "market_cap"),
+    "M": ("roe_igaap", "ratio", "company_financials"),
+    "N": ("pe_ifrs", "x", "market_cap"),
+    "O": ("pb_ifrs", "x", "market_cap"),
+    "P": ("roe_ifrs", "ratio", "company_financials"),
+    "Q": ("pe_3yr_avg", "x", "valuation_history"),
 }
 COMPS_ROWS = {4: "niva-bupa", 5: "star-health", 6: "icici-lombard", 7: "godigit"}
 
