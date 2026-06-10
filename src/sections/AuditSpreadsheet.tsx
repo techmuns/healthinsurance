@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import { ExternalLink, FunctionSquare, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
@@ -21,6 +21,36 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
   info: { cell: 'bg-lavender-soft/35', ring: 'rgba(110,123,214,0.22)', text: 'text-lavender', dot: '#6E7BD6', label: 'Calculated' },
 }
 const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
+
+// ── Source pipelines ─────────────────────────────────────────────────────────
+// Every template cell is fed by one of three acquisition pipelines. When a cell
+// is empty, this tells the reviewer which pipeline should have filled it.
+type PipelineKey = 'irdai' | 'company' | 'screener'
+const PIPELINE: Record<PipelineKey, { label: string; short: string; color: string; what: string }> = {
+  irdai: { label: 'IRDAI portal', short: 'IRDAI', color: '#27457E', what: 'Industry & regulatory disclosures (GI Council / IRDAI NL forms, monthly business figures)' },
+  company: { label: 'Company website · PPT', short: 'PPT', color: '#168E8E', what: 'Company investor presentations & annual reports' },
+  screener: { label: 'Screener', short: 'Screener', color: '#B68B3A', what: 'Market price, valuation, shareholding & analyst data' },
+}
+const ROLE_PIPELINE: Record<string, PipelineKey> = {
+  industry_premium: 'irdai',
+  company_premium_quarterly: 'irdai',
+  company_premium_monthly: 'irdai',
+  distribution: 'irdai',
+  company_financials: 'company',
+  management_commentary: 'company',
+  analyst_coverage: 'screener',
+  valuation: 'screener',
+  shareholding: 'screener',
+  market_quote: 'screener',
+  market_cap: 'screener',
+}
+function pipelineOf(cell: AuditCell): PipelineKey {
+  return ROLE_PIPELINE[cell.role] ?? 'irdai'
+}
+// A cell is "fetched & verified" when it carries a value.
+function isFetched(cell: AuditCell): boolean {
+  return cell.normalizedValue != null || cell.calculatedValue != null
+}
 
 function parseRef(ref: string): { col: string; row: number } | null {
   const m = /^([A-Z]+)(\d+)$/.exec(ref || '')
@@ -122,6 +152,8 @@ function DetailField({ label, children }: { label: string; children: React.React
 function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void }) {
   const meta = STATUS_META[cell.status]
   const q = QA[meta.color]
+  const fetched = isFetched(cell)
+  const pipe = PIPELINE[pipelineOf(cell)]
   return (
     <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
       <div className="flex items-start justify-between gap-2 px-4 py-3" style={{ background: 'linear-gradient(135deg,#172B4D,#27457E)' }}>
@@ -134,42 +166,61 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
           <X className="h-4 w-4" />
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3 px-4 py-3">
-        <DetailField label="Status">
-          <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${q.cell} ${q.text}`}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.dot }} />{meta.label}
+
+      {/* Fetched / Missing banner */}
+      <div className={`flex items-center gap-2 px-4 py-2.5 ${fetched ? 'bg-emerald-soft/40' : 'bg-coral-soft/30'}`}>
+        {fetched
+          ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald" />
+          : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
+        <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : 'text-coral'}`}>
+          {fetched ? 'Fetched & verified' : 'Not fetched — cell empty'}
+        </span>
+        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${q.cell} ${q.text}`}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.dot }} />{meta.label}
+        </span>
+      </div>
+
+      <div className="space-y-3 px-4 py-3">
+        {/* Pipeline */}
+        <DetailField label="Source pipeline">
+          <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[12px] font-semibold text-white" style={{ background: pipe.color }}>
+            {pipe.label}
           </span>
+          <p className="mt-1 text-[11px] text-ink-secondary">{pipe.what}</p>
         </DetailField>
-        <DetailField label="Unit">{cell.unit || '—'}</DetailField>
-        <DetailField label="As printed (source)"><span className="font-semibold tabular-nums">{formatRaw(cell.rawValue ?? cell.normalizedValue) || '—'}</span></DetailField>
-        <DetailField label="Final value (dashboard)"><span className="font-semibold tabular-nums text-navy-deep">{cell.normalizedValue != null ? formatValue(cell.normalizedValue, cell.unit) : cell.calculatedValue != null ? formatValue(cell.calculatedValue, cell.unit) : '—'}</span></DetailField>
-        {cell.formula && (
-          <div className="col-span-2">
-            <DetailField label="Excel formula">
-              <code className="block rounded-md bg-ice/70 px-2 py-1 font-mono text-[11px] text-ink-primary">{cell.formula}</code>
-              {cell.calc && <p className="mt-1 text-[11px] text-ink-secondary">{cell.calc}</p>}
-            </DetailField>
+
+        {/* Source — actual when fetched, expected when empty */}
+        <DetailField label={fetched ? 'Source (verified)' : 'Expected source'}>
+          {cell.sourceName ? (
+            cell.sourceUrl ? (
+              <a href={cell.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-navy-primary hover:underline">
+                {cell.sourceName}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
+              </a>
+            ) : <span>{cell.sourceName}</span>
+          ) : <span className="text-ink-secondary">Not defined</span>}
+          {cell.sourceFile && <p className="mt-0.5 break-all font-mono text-[10px] text-ink-secondary/80">{cell.sourceFile}</p>}
+        </DetailField>
+
+        {fetched ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <DetailField label="As printed (source)"><span className="font-semibold tabular-nums">{formatRaw(cell.rawValue ?? cell.normalizedValue) || '—'}</span></DetailField>
+            <DetailField label="Final value (dashboard)"><span className="font-semibold tabular-nums text-navy-deep">{cell.normalizedValue != null ? formatValue(cell.normalizedValue, cell.unit) : formatValue(cell.calculatedValue ?? null, cell.unit)}</span></DetailField>
           </div>
-        )}
-        {cell.note && (
-          <div className="col-span-2">
-            <DetailField label="Note">{cell.note}</DetailField>
-          </div>
-        )}
-        <div className="col-span-2">
-          <DetailField label="Source">
-            {cell.sourceName ? (
-              cell.sourceUrl ? (
-                <a href={cell.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-navy-primary hover:underline">
-                  {cell.sourceName}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                </a>
-              ) : (
-                <span>{cell.sourceName}</span>
-              )
-            ) : '—'}
-            {cell.dashboardField && <p className="mt-1 text-[11px] text-ink-secondary">Dashboard: <span className="text-ink-primary">{cell.dashboardField}</span></p>}
+        ) : (
+          <DetailField label="Why it's missing">
+            <span className="text-coral-deep">{cell.note || `No value yet — should be fetched from ${pipe.label}.`}</span>
           </DetailField>
-        </div>
+        )}
+
+        {cell.formula && (
+          <DetailField label="Excel formula">
+            <code className="block rounded-md bg-ice/70 px-2 py-1 font-mono text-[11px] text-ink-primary">{cell.formula}</code>
+            {cell.calc && <p className="mt-1 text-[11px] text-ink-secondary">{cell.calc}</p>}
+          </DetailField>
+        )}
+        {cell.dashboardField && (
+          <DetailField label="Dashboard field">{cell.dashboardField}</DetailField>
+        )}
       </div>
     </div>
   )
@@ -241,19 +292,26 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                     const txt = cellDisplay(cell, raw)
                     const isSel = selected?.id === cell.id
                     const isFormula = cell.cellKind === 'formula'
+                    const fetched = isFetched(cell)
+                    const pipe = PIPELINE[pipelineOf(cell)]
                     return (
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0">
                         <button
                           type="button"
                           onClick={() => onSelect(cell)}
-                          title={`${cell.metricLabel} · ${cell.period} — ${meta.label}`}
-                          className={`relative flex h-full min-h-[34px] w-full items-center justify-end px-2 py-1 text-right tabular-nums transition-all ${q.cell} ${q.text} hover:brightness-95`}
+                          title={fetched ? `${cell.metricLabel} · ${cell.period} — ${meta.label}` : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`}
+                          className={`relative flex h-full min-h-[34px] w-full items-center ${fetched ? 'justify-end text-right' : 'justify-center'} px-2 py-1 tabular-nums transition-all ${q.cell} hover:brightness-95`}
                           style={isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
                         >
                           {isFormula && <FunctionSquare className="absolute left-1 top-1 h-2.5 w-2.5 opacity-40" />}
-                          <span className="text-[11.5px] font-semibold">
-                            {txt || <span className="h-1 w-1 rounded-full" style={{ display: 'inline-block', background: q.dot }} />}
-                          </span>
+                          {fetched ? (
+                            <span className={`text-[11.5px] font-semibold ${q.text}`}>{txt}</span>
+                          ) : (
+                            // Empty cell → show which pipeline should have filled it.
+                            <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/75">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: pipe.color }} />{pipe.short}
+                            </span>
+                          )}
                         </button>
                       </td>
                     )
@@ -276,6 +334,20 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   const [selected, setSelected] = useState<AuditCell | null>(null)
 
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
+
+  // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
+  const pipeStats = useMemo(() => {
+    const s: Record<PipelineKey, { fetched: number; total: number }> = {
+      irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 }, screener: { fetched: 0, total: 0 },
+    }
+    for (const c of group?.cells ?? []) {
+      const p = pipelineOf(c)
+      s[p].total += 1
+      if (isFetched(c)) s[p].fetched += 1
+    }
+    return s
+  }, [group])
+
   if (!group) return null
 
   return (
@@ -334,6 +406,26 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Source-pipeline coverage for this sheet — where each source maps and
+          how much of it has been fetched. */}
+      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-soft-border bg-ice/40 px-3 py-2">
+        <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Source pipelines</span>
+        {(['irdai', 'company', 'screener'] as PipelineKey[]).map((k) => {
+          const p = PIPELINE[k]
+          const st = pipeStats[k]
+          if (!st.total) return null
+          const miss = st.total - st.fetched
+          return (
+            <span key={k} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px]" title={p.what}>
+              <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
+              <span className="font-semibold text-navy-deep">{p.label}</span>
+              <span className="text-emerald">{st.fetched} fetched</span>
+              {miss > 0 && <><span className="text-ink-secondary/40">·</span><span className="text-coral">{miss} missing</span></>}
+            </span>
+          )
+        })}
       </div>
 
       {/* Grid + (optional) detail */}
