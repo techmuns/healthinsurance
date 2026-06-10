@@ -67,7 +67,7 @@ const LISTING_URLS = [
 ]
 const RAW_SUBDIR = 'gicouncil/segment-annual' // full-FY drops (any recognisable name)
 const RAW_SUBDIR_MONTHLY = 'gicouncil/segment' // shared with the monthly fetcher (<YYYY-MM>.xlsx)
-const MAX_LISTING_PAGES = 8
+const MAX_LISTING_PAGES = 4
 
 const MONTH_NAMES = [
   'january', 'february', 'march', 'april', 'may', 'june',
@@ -269,7 +269,7 @@ async function agentDiscoverLinks(warnings: string[]): Promise<Array<{ url: stri
   if (!token) return []
   try {
     const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), 480_000)
+    const timer = setTimeout(() => ctrl.abort(), 300_000)
     const res = await fetch('https://devde.muns.io/chat/chat-muns', {
       method: 'POST',
       headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },

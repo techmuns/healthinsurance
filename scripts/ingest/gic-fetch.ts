@@ -122,7 +122,7 @@ async function waybackLatest(url: string): Promise<WaybackSnapshot | null> {
 /** Ask archive.org to capture the URL fresh (their crawler fetches gicouncil.in
  *  from a non-blocked network). Best-effort, anonymous, rate-limited. */
 async function waybackSaveNow(url: string): Promise<void> {
-  await plainGet(`${WAYBACK_SAVE}${url}`, 45_000)
+  await plainGet(`${WAYBACK_SAVE}${url}`, 25_000)
   // SPN processes asynchronously; give the snapshot a moment to index.
   await sleep(4_000)
 }
@@ -133,27 +133,59 @@ function snapshotAgeDays(ts: string): number {
   return (Date.now() - d.getTime()) / 86_400_000
 }
 
+// Per-process memo: callers (e.g. the monthly fetcher, once per month key)
+// re-request the same listing URL many times in one run — walk the tier
+// ladder once, then serve the result (or the definitive failure) from memory.
+const memo = new Map<string, Promise<GicFetchResult>>()
+
 /**
  * Fetch a gicouncil.in resource through every available route.
  * kind 'xlsx'/'pdf' = a report file; 'listing' = the reports index page.
  */
 export async function gicFetch(url: string, kind: GicFetchKind): Promise<GicFetchResult> {
+  const key = `${kind}:${url}`
+  if (!memo.has(key)) {
+    memo.set(key, gicFetchUncached(url, kind).catch((err) => {
+      // Cache the failure too (as a rejected promise the caller re-receives).
+      throw err
+    }))
+  }
+  return memo.get(key)!
+}
+
+// Once a route delivers for this host, later fetches in the same run start
+// there — a blocked runner shouldn't re-pay the direct-fetch + dead-relay
+// walk for every one of a dozen workbook downloads.
+let knownGoodRoute: string | null = null
+
+async function gicFetchUncached(url: string, kind: GicFetchKind): Promise<GicFetchResult> {
   const warnings: string[] = []
+  const tryDirect = knownGoodRoute === null || knownGoodRoute === 'direct'
 
   // 1. direct (incl. headless browser + INGEST_FETCH_PROXY inside fetchBuffer)
-  try {
-    const { buffer } = await fetchBuffer(url)
-    if (validate(kind, buffer, url)) return { buffer, via: 'direct', warnings }
-    warnings.push(`direct fetch returned a non-${kind} response (block page?)`)
-  } catch (err) {
-    warnings.push(`direct fetch failed: ${err instanceof Error ? err.message : String(err)}`)
+  if (tryDirect) {
+    try {
+      const { buffer } = await fetchBuffer(url)
+      if (validate(kind, buffer, url)) {
+        knownGoodRoute = 'direct'
+        return { buffer, via: 'direct', warnings }
+      }
+      warnings.push(`direct fetch returned a non-${kind} response (block page?)`)
+    } catch (err) {
+      warnings.push(`direct fetch failed: ${err instanceof Error ? err.message : String(err)}`)
+    }
   }
 
-  // 2-3. keyed + public relays
-  for (const { name, tmpl } of relayTemplates()) {
+  // 2-3. keyed + public relays (known-good one first)
+  const relays = relayTemplates().sort((a, b) =>
+    Number(b.name === knownGoodRoute) - Number(a.name === knownGoodRoute))
+  for (const { name, tmpl } of relays) {
     const target = tmpl.replace('{url}', encodeURIComponent(url)).replace('{raw}', url)
-    const buf = await plainGet(target, 60_000)
-    if (buf && validate(kind, buf, url)) return { buffer: buf, via: name, warnings }
+    const buf = await plainGet(target, 25_000)
+    if (buf && validate(kind, buf, url)) {
+      knownGoodRoute = name
+      return { buffer: buf, via: name, warnings }
+    }
   }
   warnings.push('all relay routes failed or returned non-file responses')
 
@@ -169,12 +201,13 @@ export async function gicFetch(url: string, kind: GicFetchKind): Promise<GicFetc
     snap = await waybackLatest(url)
   }
   if (snap) {
-    const buf = await plainGet(snap.rawUrl, 90_000)
+    const buf = await plainGet(snap.rawUrl, 45_000)
     if (buf && validate(kind, buf, url)) {
       const age = snapshotAgeDays(snap.timestamp)
       if (needFresh && age > LISTING_FRESH_DAYS) {
         warnings.push(`wayback listing snapshot is ${Math.round(age)} days old — newest month links may be missing`)
       }
+      knownGoodRoute = knownGoodRoute ?? 'wayback'
       return { buffer: buf, via: `wayback:${snap.timestamp}`, warnings }
     }
     warnings.push('wayback snapshot fetch failed or returned invalid bytes')
