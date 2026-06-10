@@ -1169,8 +1169,8 @@
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "official_filing",
-      "note": "Net commission ÷ NWP from the AR 5-year highlights (a component of the expense ratio)."
+      "layer": "derived",
+      "note": "Last-resort calculation: the AR states the Net commission ratio only for FY24/FY25 (13.22% / 14.43%). For FY22 it is not separately stated, so computed as Net commission ÷ NWP from the AR 5-year audited figures."
     },
     "star-health::commission_ratio_igaap::FY23": {
       "value": 13.66,
@@ -1182,34 +1182,34 @@
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "official_filing",
-      "note": "Net commission ÷ NWP from the AR 5-year highlights (a component of the expense ratio)."
+      "layer": "derived",
+      "note": "Last-resort calculation: the AR states the Net commission ratio only for FY24/FY25 (13.22% / 14.43%). For FY23 it is not separately stated, so computed as Net commission ÷ NWP from the AR 5-year audited figures."
     },
     "star-health::commission_ratio_igaap::FY24": {
       "value": 13.22,
       "unit": "%",
-      "source_name": "Star Health FY2024-25 Annual Report — Commission ratio FY24 = 13.22% (Net commission ÷ NWP)",
+      "source_name": "Star Health FY2024-25 Annual Report — Net commission ratio (Total) FY24 = 13.22% (analytical ratios; stated)",
       "source_url": null,
       "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
-      "source_page": "5-year financial highlights (audited)",
+      "source_page": "Analytical ratios — Net commission ratio (%), Total",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Net commission ÷ NWP from the AR 5-year highlights (a component of the expense ratio)."
+      "note": "Stated directly in the AR's analytical ratios table (Net commission ratio, Total row: 14.43% / 13.22% for FY25 / FY24; Health segment 14.48% / 13.24%)."
     },
     "star-health::commission_ratio_igaap::FY25": {
       "value": 14.43,
       "unit": "%",
-      "source_name": "Star Health FY2024-25 Annual Report — Commission ratio FY25 = 14.43% (Net commission ÷ NWP)",
+      "source_name": "Star Health FY2024-25 Annual Report — Net commission ratio (Total) FY25 = 14.43% (analytical ratios; stated)",
       "source_url": null,
       "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
-      "source_page": "5-year financial highlights (audited)",
+      "source_page": "Analytical ratios — Net commission ratio (%), Total",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Net commission ÷ NWP from the AR 5-year highlights (a component of the expense ratio)."
+      "note": "Stated directly in the AR's analytical ratios table (Net commission ratio, Total row: 14.43% / 13.22% for FY25 / FY24; Health segment 14.48% / 13.24%)."
     },
     "star-health::pat_ifrs::FY22": {
       "value": null,
