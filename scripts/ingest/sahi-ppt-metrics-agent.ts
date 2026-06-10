@@ -43,11 +43,26 @@ const URL_RE = /https?:\/\/[^\s)|"'<>\]]+/g
 interface ManifestEntry { filename: string; url: string; bytes: number; sha256: string; fetched_at: string }
 interface Manifest { files: Record<string, ManifestEntry>; updated_at?: string }
 
+// The exact investor-presentation / report PDFs to READ (dedicated document path
+// — passed in `urls` so the agent opens these files instead of web-searching).
+const DOC_URLS: string[] = [
+  'https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf',
+  'https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf',
+  'https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf',
+  'https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx',
+  'https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf/53e157a5-1217-0571-e11b-33f8c203cd8c?t=1770120770447',
+]
+
 function buildPayload() {
+  const docLine =
+    'PRIMARY SOURCES — open and READ each of these exact documents, and take the values directly from them:\n' +
+    DOC_URLS.map((u, i) => `  ${i + 1}. ${u}`).join('\n') +
+    '\n(1 = Niva Bupa Q4 FY25 deck, 2 = Star Health Q4 FY26 deck, 3 = Care/Religare Q4 & FY26 deck, 4 = Aditya Birla Capital Q2 FY26 deck (ABHI section), 5 = ManipalCigna FY2024-25 annual report.)\n\n'
   return {
     user_index: 124,
     tasks: [
-      'I need investor-presentation metrics for the five Indian STANDALONE HEALTH INSURERS (SAHIs), for the full financial years FY23, FY24, FY25 and FY26 (year ended 31 March).\n\n' +
+      docLine +
+        'I need investor-presentation metrics for the five Indian STANDALONE HEALTH INSURERS (SAHIs), for the full financial years FY23, FY24, FY25 and FY26 (year ended 31 March).\n\n' +
         'Companies (use these exact names):\n' +
         'Star Health and Allied Insurance\nCare Health Insurance (Religare Enterprises)\nNiva Bupa Health Insurance\nAditya Birla Health Insurance\nManipalCigna Health Insurance\n\n' +
         'For each company, read its latest INVESTOR PRESENTATION / earnings deck (and annual report where needed) and return these line items:\n' +
@@ -86,7 +101,9 @@ function buildPayload() {
       mode: 'fast',
     },
     autoAddUpcoming: false,
-    urls: [],
+    // Dedicated document-reading path: hand the agent the exact PDFs to open and
+    // read, instead of leaving it to web-search for them.
+    urls: DOC_URLS,
   }
 }
 
