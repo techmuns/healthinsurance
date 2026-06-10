@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { useFilters } from '@/state/filters'
 import { formatRange } from '@/lib/dateRange'
 import { AnalysisBuilder } from '@/components/AnalysisBuilder'
+import { SectionTabs } from '@/components/SectionTabs'
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import {
   getScorecard,
@@ -420,18 +421,8 @@ export function CompetitivePositioning() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-soft-border">
-        {TABS.map((t) => {
-          const on = t === tab
-          return (
-            <button key={t} type="button" onClick={() => setTab(t)} className={['relative px-3.5 py-2 text-[13px] font-semibold transition-colors', on ? 'text-navy-deep' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}>
-              {t}
-              {on && <span className="absolute inset-x-2.5 -bottom-px h-[2.5px] rounded-full" style={{ background: GOLD }} />}
-            </button>
-          )
-        })}
-      </div>
+      {/* Tabs — pill switcher matching the in-page section toggle */}
+      <SectionTabs tabs={TABS.map((t) => ({ id: t, label: t }))} active={tab} onSelect={(id) => setTab(id as Tab)} />
 
       {/* Views */}
       {tab === 'Scorecard' && (
