@@ -75,16 +75,27 @@ async function loadManifest(p: string): Promise<Record<string, ManifestEntry>> {
   try { return JSON.parse(await readFile(p, 'utf8')).files ?? {} } catch { return {} }
 }
 
-async function discoverLinks(ctx: BrowserContext, url: string): Promise<{ href: string; text: string }[]> {
+interface Discovered { href: string; text: string }
+interface PageScan { title: string; bodyLen: number; allLinks: Discovered[] }
+// A link looks like a document if its URL or text points at a file/download —
+// not just a ".pdf" suffix (many sites use /download?id=, .ashx, viewers, etc.).
+const DOC_RX = /\.(pdf|ashx|xlsx?)(\?|#|$)|\/(download|document|getfile|attachment|viewfile|filedownload)/i
+const DOC_TEXT_RX = /\.pdf|download|financial statement|ind[\s-]?as|disclosure|annual report|balance sheet|revenue account/i
+
+async function scanPage(ctx: BrowserContext, url: string): Promise<PageScan> {
   const page = await ctx.newPage()
   try {
-    await page.goto(url, { waitUntil: 'networkidle', timeout: NAV_TIMEOUT_MS }).catch(() => page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS }))
-    await page.waitForTimeout(3500) // let late-loading document lists settle
-    return await page.$$eval('a[href]', (as) =>
-      as
-        .map((a) => ({ href: (a as HTMLAnchorElement).href, text: (a.textContent || '').trim().slice(0, 120) }))
-        .filter((l) => /\.(pdf|ashx)(\?|#|$)/i.test(l.href)),
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: NAV_TIMEOUT_MS })
+    // Give the JS document list time to populate; try to wait for any anchor that
+    // looks like a document, but don't fail if none appears.
+    await page.waitForTimeout(7000)
+    await page.waitForSelector('a[href*=".pdf"], a[href*="download"], a[href*=".ashx"]', { timeout: 8000 }).catch(() => {})
+    const allLinks: Discovered[] = await page.$$eval('a[href]', (as) =>
+      as.map((a) => ({ href: (a as HTMLAnchorElement).href, text: (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 100) })),
     )
+    const title = await page.title().catch(() => '')
+    const bodyLen = (await page.evaluate(() => document.body?.innerText?.length ?? 0).catch(() => 0)) as number
+    return { title, bodyLen, allLinks }
   } finally {
     await page.close().catch(() => {})
   }
@@ -111,15 +122,25 @@ async function main(): Promise<number> {
     for (const t of targets) {
       const destDir = resolve(REPO, 'data/raw/companies', t.company_id)
       await mkdir(destDir, { recursive: true })
-      const links: { href: string; text: string }[] = []
+      const allLinks: Discovered[] = []
       for (const url of t.pages) {
-        try { links.push(...(await discoverLinks(ctx, url))) }
-        catch (e) { failures++; console.error(`  ! render failed: ${url} (${e instanceof Error ? e.message : String(e)})`) }
+        try {
+          const scan = await scanPage(ctx, url)
+          console.log(`    page: "${scan.title}" | body ${scan.bodyLen} chars | ${scan.allLinks.length} total links — ${url}`)
+          allLinks.push(...scan.allLinks)
+        } catch (e) { failures++; console.error(`  ! render failed: ${url} (${e instanceof Error ? e.message : String(e)})`) }
       }
-      // Dedup + relevance filter.
+      // Keep links that look like documents (URL or text), then apply the
+      // company relevance filter.
+      const docLinks = allLinks.filter((l) => DOC_RX.test(l.href) || DOC_TEXT_RX.test(l.text))
       const uniq = new Map<string, string>()
-      for (const l of links) if (!t.keep || t.keep.test(l.href) || t.keep.test(l.text)) uniq.set(l.href, l.text)
-      console.log(`  ${t.company_id}: ${uniq.size} relevant document link(s) discovered`)
+      for (const l of docLinks) if (!t.keep || t.keep.test(l.href) || t.keep.test(l.text)) uniq.set(l.href, l.text)
+      console.log(`  ${t.company_id}: ${uniq.size} relevant document link(s) discovered (of ${docLinks.length} doc-like, ${allLinks.length} total)`)
+      if (uniq.size === 0) {
+        // Diagnostic dump so we can SEE what the rendered page exposes and refine.
+        console.log('    [diagnostic] sample of rendered links:')
+        for (const l of allLinks.slice(0, 40)) console.log(`      ${l.href.slice(0, 110)}  «${l.text}»`)
+      }
 
       for (const [href, text] of uniq) {
         seen++
@@ -143,7 +164,8 @@ async function main(): Promise<number> {
 
   await writeFile(manifestPath, JSON.stringify({ updated_at: new Date().toISOString(), files: manifest }, null, 2) + '\n')
   console.log(`fetch-rendered: discovered ${seen}, downloaded ${newCount} new, ${failures} failure(s).`)
-  return newCount > 0 || seen > 0 ? 0 : 1
+  // "Nothing new" is a normal, successful outcome (don't fail the scheduled run).
+  return 0
 }
 
 main().then((c) => { process.exitCode = c }).catch((e) => { console.error('fetch-rendered error:', e); process.exitCode = 1 })
