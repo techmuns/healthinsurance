@@ -65,6 +65,40 @@ function isFetched(cell: AuditCell): boolean {
   return cell.normalizedValue != null || cell.calculatedValue != null
 }
 
+// ── Why a *computed* cell is blank ───────────────────────────────────────────
+// A formula cell (e.g. P/GWP = market cap ÷ GWP, or the GWP cell that mirrors the
+// financials tab) isn't a pending source fetch — it stays empty until the figures
+// it derives from are in. So tagging it "expected from Screener" is misleading.
+// Instead, name the missing figure right on the cell. (Honesty rule: missing ≠
+// zero, and say *why* it's missing.)
+function shortMetric(label: string): string {
+  return label
+    .replace(/\s*\((?:IFRS|IGAAP)\)$/i, '') // "Net Worth (IGAAP)" → "Net Worth"
+    .replace(/Gross Written Premium|Total GWP/i, 'GWP')
+    .replace(/Profit After Tax/i, 'PAT')
+    .trim()
+}
+function blankComputedReason(cell: AuditCell): { tag: string; why: string } {
+  const missing = (cell.inputs ?? []).filter((i) => i.value === null || i.value === undefined)
+  const names = [...new Set(missing.map((i) => shortMetric(i.metricLabel ?? i.label)))]
+  // Mirror / passthrough cell (the GWP cell reaching for GWP) vs a true ratio
+  // (P/GWP reaching for GWP) — word each honestly.
+  const passthrough = names.length > 0 && names.every((n) => n === shortMetric(cell.metricLabel))
+  if (passthrough) {
+    // Prefer the source period the formula reaches for (e.g. FY26), not the
+    // cell's own "as on run date" label.
+    const per = missing.map((i) => i.period).find((p) => /FY|Q\d/i.test(p ?? ''))
+    return { tag: 'not fetched', why: `${cell.entityLabel}'s ${per ? `${per} ` : ''}${shortMetric(cell.metricLabel)} isn't fetched yet` }
+  }
+  if (names.length) {
+    return {
+      tag: `needs ${names.join(' + ')}`,
+      why: `calculated — blank because ${names.join(' and ')} ${names.length > 1 ? "aren't" : "isn't"} fetched yet`,
+    }
+  }
+  return { tag: 'awaiting inputs', why: 'calculated from cells that are not available yet' }
+}
+
 // ── Rows the company investor decks (PPT) do NOT give a value for ────────────
 // The whole "SAHIs comparison" tab is wired to one pipeline — the company deck —
 // so by default every blank cell here is tagged "• PPT" ("expected from the
@@ -378,11 +412,19 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                     const isFormula = cell.cellKind === 'formula'
                     const fetched = isFetched(cell)
                     const pipe = PIPELINE[pipelineOf(cell)]
+                    // A formula cell waiting on its inputs (but NOT a Capital IQ
+                    // metric — those stay "paid source", which is their real reason).
+                    const computedBlank =
+                      !fetched && !gap && cell.status === 'computed' &&
+                      !CAPITALIQ_METRICS.has(cell.metricId) && (cell.inputs?.length ?? 0) > 0
+                    const blank = computedBlank ? blankComputedReason(cell) : null
                     const title = fetched
                       ? `${cell.metricLabel} · ${cell.period} — ${meta.label}`
                       : gap
                         ? `${cell.metricLabel} · ${cell.period} — not published in the investor deck; comes from ${gap.sourceLabel}`
-                        : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
+                        : blank
+                          ? `${cell.metricLabel} · ${cell.period} — ${blank.why}`
+                          : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0">
                         <button
@@ -401,8 +443,14 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: q.dot }} />not in PPT
                             </span>
+                          ) : blank ? (
+                            // A formula cell waiting on its inputs — name the missing
+                            // figure on the cell, not a misleading pipeline tag.
+                            <span className="inline-flex flex-wrap items-center justify-center gap-1 text-[8px] font-bold uppercase leading-tight tracking-wide text-slate-400">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />{blank.tag}
+                            </span>
                           ) : (
-                            // Empty cell → show which pipeline should have filled it.
+                            // Empty input cell → show which pipeline should have filled it.
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/75">
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: pipe.color }} />{pipe.short}
                             </span>

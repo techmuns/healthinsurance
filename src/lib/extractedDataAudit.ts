@@ -626,6 +626,20 @@ export function buildAudit(): AuditModel {
   const values = INDEX.values
   const boundKeys = new Set<string>()
 
+  // Values a formula cell works out for itself (build_audit_index's
+  // calculated_value), keyed like the value store. Lets a formula input that is
+  // satisfied by a *sibling* computed cell — e.g. ROE = PAT ÷ Net Worth, where
+  // PAT is itself a calculated cell, not a raw fetch — resolve instead of looking
+  // falsely "missing", so a blank cell names only the figure it's truly waiting on.
+  const computedValues = new Map<string, number>()
+  for (const sh of INDEX.sheets) {
+    for (const bc of sh.cells) {
+      if (bc.calculated_value != null && bc.entity && bc.metric && bc.period) {
+        computedValues.set(joinKey(bc.entity, bc.metric, bc.period), bc.calculated_value)
+      }
+    }
+  }
+
   // Index held-back + blocked filings by template join key for enrichment.
   const heldByKey = new Map<string, RawHeld>()
   for (const h of INDEX.held_back) {
@@ -740,7 +754,10 @@ export function buildAudit(): AuditModel {
       }
 
       const inputs = b.inputs?.map<FormulaInput>((inp) => {
-        const v = inp.entity && inp.metric && inp.period ? values[joinKey(inp.entity, inp.metric, inp.period)] : undefined
+        const inKey = inp.entity && inp.metric && inp.period ? joinKey(inp.entity, inp.metric, inp.period) : ''
+        const v = inKey ? values[inKey] : undefined
+        // Raw fetched value first; else a sibling cell's calculated value.
+        const resolved = v?.normalized_value ?? (inKey ? computedValues.get(inKey) ?? null : null)
         return {
           ref: inp.ref,
           label: inp.label,
@@ -748,7 +765,7 @@ export function buildAudit(): AuditModel {
           entityLabel: inp.entity ? entityLabel(inp.entity) : undefined,
           metricLabel: inp.metric ? metricLabel(inp.metric) : undefined,
           period: inp.period,
-          value: v?.normalized_value ?? null,
+          value: resolved,
           unit: v?.unit ?? undefined,
           sourceUrl: v?.source_url ?? null,
         }
@@ -760,8 +777,15 @@ export function buildAudit(): AuditModel {
         if (b.calculated_value != null) {
           note = "Calculated from the cells below — we have all of them, so the number is shown."
         } else {
+          // Name the missing figure by its metric ("GWP", "Net Worth"), not the
+          // raw cell label (an exchange ticker like NSEI:STARHEALTH), and only
+          // show a period when it's a real fiscal one (not "as_on_run_date").
           const missingLabels = [...new Set(
-            (inputs ?? []).filter((i) => i.value === null).map((i) => `${i.label}${i.period ? ` (${i.period})` : ''}`),
+            (inputs ?? []).filter((i) => i.value === null || i.value === undefined).map((i) => {
+              const name = i.metricLabel ?? i.label
+              const per = /FY|Q\d/i.test(i.period ?? '') ? ` (${i.period})` : ''
+              return `${name}${per}`
+            }),
           )]
           note = missingLabels.length
             ? `Can't calculate this yet — it needs ${missingLabels.join(' and ')}, which we don't have.`
