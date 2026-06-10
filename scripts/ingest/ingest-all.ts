@@ -27,6 +27,7 @@ import { ingestValuation } from './ingest-valuation'
 import { ingestMoneycontrolAnalyst } from './ingest-moneycontrol-analyst'
 import { fetchInvesting } from './fetch-investing'
 import { fetchMunsMarketData } from './fetch-muns-market-data'
+import { fetchNseDelivery } from './fetch-nse-delivery'
 import { fetchYahooPrice } from './fetch-yahoo-price'
 import { fetchScreener } from './fetch-screener'
 import { fetchTrendlyne } from './fetch-trendlyne'
@@ -60,6 +61,9 @@ const ALL: Fetcher[] = [
   fetchMunsMarketData,
   fetchYahooPrice,
   fetchInvesting,
+  // Runs after the price fetchers so the deliverable column is filled onto rows
+  // that already carry price/volume (NSE archives MTO file, reachable from CI).
+  fetchNseDelivery,
   fetchScreener,
   fetchTrendlyne,
 ]

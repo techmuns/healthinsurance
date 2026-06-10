@@ -53,6 +53,14 @@ jobs:
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
         run: npm run ingest:price:yahoo
 
+      - name: Fetch NSE delivery quantity (fills the deliverable column, live)
+        # The MTO delivery file from NSE's archives host (reachable from CI) fills
+        # the deliverable / % delivered figures the price feeds don't carry —
+        # backfilling every "n/a" session and topping up each new day.
+        env:
+          INGEST_OFFLINE: '0'
+        run: npm run ingest:delivery:nse
+
       - name: Verify the series actually moved forward (no silent no-op)
         # The whole point is that the data fills itself. If a live run can't get
         # the series within a week of today, the automation is broken — fail

@@ -726,8 +726,8 @@ export function buildAudit(): AuditModel {
         // source) doesn't carry it. Honest "not from this source", not a defect.
         status = 'source_unavailable'
         note =
-          'Deliverable quantity is an exchange-only field (NSE) — the daily price feeds (muns market-data API / Yahoo) do not carry it. ' +
-          'Real where the workbook covers the day; fills forward when an NSE security-wise delivery file is staged under data/raw/exchanges/.'
+          'Deliverable quantity is an exchange-only field (NSE) — the price feeds (muns / Yahoo) do not carry it. ' +
+          'It auto-fills from the daily NSE delivery (MTO) file; this day is only blank if that file is not published yet.'
       } else {
         const ss = b.source_status ?? 'available'
         status = ss === 'backup' || ss === 'excluded_from_core' ? 'source_unavailable' : 'missing'

@@ -18,6 +18,7 @@
     "ingest:gic-segment-annual": "tsx scripts/ingest/run-gic-segment-annual.ts",
     "ingest:audit": "tsx scripts/ingest/audit-fill.ts fill",
     "ingest:price:muns": "tsx scripts/ingest/fetch-muns-market-data.ts",
+    "ingest:delivery:nse": "tsx scripts/ingest/fetch-nse-delivery.ts",
     "ingest:price:yahoo": "tsx scripts/ingest/fetch-yahoo-price.ts",
     "seed:stock-history": "tsx scripts/ingest/seed-stock-history-from-workbook.ts",
     "audit:index": "python3 scripts/excel/build_audit_index.py",

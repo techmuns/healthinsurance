@@ -238,8 +238,8 @@ export function HistoricalStockMovement() {
         <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary/80">
           <span className="font-semibold text-ink-secondary">Source ·</span> Close &amp; volume — workbook (listing→Jul 2025),
           then the muns market-data API &amp; Yahoo Finance keep it current{lastUpdated ? `, last refreshed ${lastUpdated}` : ''}.
-          Delivery — NSE via the workbook; shown <span className="italic">n/a</span> on days only a price feed covers (price
-          feeds carry no delivery figures), never 0.
+          Delivery — NSE (workbook history + the daily NSE delivery file); shown <span className="italic">n/a</span> only if a
+          day's file isn't out yet, never 0.
         </p>
       </div>
 
