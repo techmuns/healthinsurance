@@ -617,6 +617,58 @@
       "layer": "staging",
       "note": "Full-year PAT (IRDAI 1/n revenue-account basis), YTD column — method self-validated against the FY25 store value (≈214)."
     },
+    "niva-bupa::gross_direct_premium::FY22": {
+      "value": 2809.97,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2023, prior-year column) — Gross Direct Premium FY22 = 2,80,997 Lakhs = ₹2,809.97 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "FORM NL-4 — Premium Schedule (GDP YTD Total 2,80,997 Lakhs)",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly read from Niva's IRDAI public disclosure. Niva carries no reinsurance accepted, so gross direct premium = gross written premium (total_gwp). FY22 is on the received basis (pre the FY23 IRDAI 1/n change)."
+    },
+    "niva-bupa::gross_direct_premium::FY23": {
+      "value": 4073.03,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2023) — Gross Direct Premium FY23 = 4,07,303 Lakhs = ₹4,073.03 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "FORM NL-4 — Premium Schedule (GDP YTD Total 4,07,303 Lakhs)",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly read from Niva's IRDAI public disclosure; equals total_gwp (no reinsurance accepted). 1/n basis."
+    },
+    "niva-bupa::gross_direct_premium::FY24": {
+      "value": 5607.57,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2025, prior-year column) — Gross Direct Premium FY24 = 5,60,757 Lakhs = ₹5,607.57 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2025.pdf",
+      "source_page": "FORM NL-4 — Premium Schedule (GDP YTD Total 5,60,757 Lakhs)",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly read from Niva's IRDAI public disclosure; equals total_gwp (no reinsurance accepted). 1/n basis."
+    },
+    "niva-bupa::gross_direct_premium::FY25": {
+      "value": 6762.23,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2025) — Gross Direct Premium FY25 = 6,76,223 Lakhs = ₹6,762.23 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2025.pdf",
+      "source_page": "FORM NL-4 — Premium Schedule (GDP YTD Total 6,76,223 Lakhs)",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly read from Niva's IRDAI public disclosure; equals total_gwp (no reinsurance accepted) and the company's Q4 FY25 deck headline (₹6,762.2 Cr). 1/n basis."
+    },
     "niva-bupa::gross_direct_premium::FY26": {
       "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
       "value": 8464.9,
@@ -730,18 +782,17 @@
       "display_tag": "IFRS not available"
     },
     "niva-bupa::net_worth_ifrs::FY22": {
-      "value": null,
-      "unit": "",
-      "source_name": "IFRS accounting not available",
+      "value": 507.64,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2023, prior-year column) — Net worth FY22 = Share Capital ₹1,408.60 Cr + Reserves ₹125.40 Cr − accumulated losses ₹1,026.36 Cr = ₹507.64 Cr",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "FORM NL-3 — Balance Sheet as at 31 Mar 2022 (SC 1,40,860 + Reserves 12,540 − P&L debit 1,02,636 lakhs)",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "IFRS accounting not available — Niva Bupa began producing IFRS / Ind-AS special-purpose financials from FY23; no FY22 IFRS basis exists.",
-      "display_tag": "IFRS not available"
+      "layer": "official_filing",
+      "note": "IGAAP net worth (the same basis shown for FY23-FY26 here — e.g. FY23 ₹831.1 Cr reconciles exactly to Share Capital + Reserves − accumulated losses). No separate FY22 IFRS/Ind-AS basis exists (Niva began Ind-AS special-purpose financials from FY23), so the statutory IGAAP net worth is shown."
     },
     "niva-bupa::claims_ratio_igaap::FY23": {
       "value": 54,
