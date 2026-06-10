@@ -3,7 +3,7 @@
     "artifact": "audit-overlay",
     "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-09T14:31:40.741Z"
+    "updated_at": "2026-06-10T20:18:19.370Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
@@ -4562,7 +4562,7 @@
       "note": "Derived: investment-weighted blend of the stated policyholder & shareholder fund yields (the AR states the two separately, not a single total)."
     },
     "manipalcigna::investment_yield::FY24": {
-      "value": 7.0,
+      "value": 7,
       "unit": "%",
       "source_name": "ManipalCigna FY2024-25 Annual Report — Summary of Financial Statements (5-year) — Blended investment yield FY24 ≈ 7.0%",
       "source_url": "https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf/53e157a5-1217-0571-e11b-33f8c203cd8c?t=1770120770447",
@@ -4690,6 +4690,149 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Directly stated 'Yield on Total Investments', IGAAP basis (replaces the earlier IND-AS deck figure for basis consistency with peers)."
+    },
+    "niva-bupa::total_gwp::H1FY26": {
+      "value": 3475,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.369Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "GWP on the 1/n basis (with-1/n) from the H1 FY26 deck KPI table; the without-1/n figure is the deck's headline ₹3,983 cr."
+    },
+    "niva-bupa::nwp::H1FY26": {
+      "value": 2737.9,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Net Written Premium (with 1/n) from the H1 FY26 deck KPI table."
+    },
+    "niva-bupa::pat_igaap::H1FY26": {
+      "value": -126.7,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (I-GAAP, with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "I-GAAP Profit/(Loss) After Tax with 1/n — an interim loss in the 1/n transition; the deck's IFRS PAT for the same period is +131.7 cr."
+    },
+    "niva-bupa::net_worth::H1FY26": {
+      "value": 2956,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Net worth from the H1 FY26 deck KPI table (with 1/n)."
+    },
+    "niva-bupa::expense_ratio_igaap::H1FY26": {
+      "value": 36.3,
+      "unit": "%",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Expense of Management as % of GWP — the same basis the dashboard's FY24 (39.3%) / FY25 (37.4%) expense-ratio cells use (validated against those anchors). Not the deck's separate 'Expense Ratio' row."
+    },
+    "niva-bupa::retail_health_market_share::H1FY26": {
+      "value": 9.9,
+      "unit": "%",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — narrative summary",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Narrative summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "H1 FY26 retail health market share, stated in the deck narrative summary."
+    },
+    "niva-bupa::total_gwp::H1FY25": {
+      "value": 3241.5,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "GWP on the 1/n basis (with-1/n), H1 FY25 comparative column of the H1 FY26 deck KPI table."
+    },
+    "niva-bupa::nwp::H1FY25": {
+      "value": 2544.9,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Net Written Premium (with 1/n), H1 FY25 comparative column of the H1 FY26 deck KPI table."
+    },
+    "niva-bupa::pat_igaap::H1FY25": {
+      "value": -5.8,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table (I-GAAP, with 1/n)",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "I-GAAP Profit/(Loss) After Tax with 1/n, H1 FY25 comparative column."
+    },
+    "niva-bupa::net_worth::H1FY25": {
+      "value": 2064.6,
+      "unit": "INR_cr",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Net worth, H1 FY25 comparative column of the H1 FY26 deck KPI table."
+    },
+    "niva-bupa::expense_ratio_igaap::H1FY25": {
+      "value": 40,
+      "unit": "%",
+      "source_name": "Niva Bupa Investor Presentation H1 FY26 — Financial Performance KPI table",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+      "source_file": "data/agent-pulls/sahi-financials/niva-bupa/sources/Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
+      "source_page": "Financial Performance — KPI summary",
+      "fetched_at": "2026-06-10T20:18:19.370Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Expense of Management as % of GWP, H1 FY25 comparative column (same basis as the dashboard's FY24/FY25 expense-ratio cells)."
     }
   },
   "meta": {}

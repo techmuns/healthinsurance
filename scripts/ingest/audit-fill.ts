@@ -69,6 +69,8 @@ const METRICS: MetricDef[] = [
   { key: 'combined_ratio_igaap', unit: '%', store: 'combined_ratio_igaap', annual: 'combined_ratio' },
   { key: 'solvency_ratio', unit: 'x', store: 'solvency_ratio', annual: 'solvency_ratio' },
   { key: 'net_worth_ifrs', unit: 'INR_cr', store: 'net_worth_ifrs' },
+  { key: 'net_worth', unit: 'INR_cr', store: 'net_worth' },
+  { key: 'eom_igaap', unit: '%', store: 'eom_igaap' },
   { key: 'sahi_segment_share', unit: '%', share: 'segment_share_pct' },
   { key: 'retail_health_market_share', unit: '%', store: 'retail_health_market_share', share: 'retail_share_pct' },
   { key: 'overall_health_market_share', unit: '%', store: 'overall_health_market_share', share: 'overall_share_pct' },
@@ -157,7 +159,13 @@ function cmdFill(flags: Record<string, string>) {
   const raw = loadJSON<unknown>(resolve(REPO, flags.from), [])
   const rows = (Array.isArray(raw) ? raw : ((raw as { rows?: unknown[] }).rows ?? [])) as AnyEntry[]
   const onlyCompany = flags.company
-  const allowYears = new Set(targetYears(flags))
+  // Period gate. With --year/--years, restrict to those; otherwise accept ANY
+  // well-formed period in the file — annual (FY25) OR interim (H1FY26, 9MFY26,
+  // Q4FY26, Q1FY25 …). The overlay → value-store → audit-index path already
+  // carries quarterly periods natively (build_value_store.collect_overlay keys on
+  // entity::metric::period), so this gate was the only thing dropping them.
+  const explicitPeriods = flags.years || flags.year ? new Set(targetYears(flags)) : null
+  const PERIOD_RE = /^(FY\d{2}|(?:Q[1-4]|H1|H2|9M)FY\d{2})$/
 
   let written = 0
   let skippedBlank = 0
@@ -171,7 +179,8 @@ function cmdFill(flags: Record<string, string>) {
     const metric = r.metric as string
     if (!company || !year || !metric) { log.push(`skip (missing company/year/metric): ${JSON.stringify(r)}`); continue }
     if (onlyCompany && company !== onlyCompany) continue
-    if (!allowYears.has(year)) continue
+    if (explicitPeriods) { if (!explicitPeriods.has(year)) continue }
+    else if (!PERIOD_RE.test(year)) { log.push(`skip (unrecognized period ${year})`); continue }
     const m = METRIC_BY_KEY.get(metric)
     if (!m) { log.push(`skip (unknown metric ${metric})`); continue }
 
