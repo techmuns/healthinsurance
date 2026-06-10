@@ -1048,12 +1048,12 @@
       "source_name": "Star Health FY2024-25 Annual Report — Net Earned Premium FY22 = ₹9,809.17 Cr (NWP 10,809.49 − Δ unearned-premium reserve 1,000.32)",
       "source_url": null,
       "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
-      "source_page": "5-year financial highlights (audited)",
+      "source_page": "Annexure 2 — Summary of Financial Statements (5-year, audited), p.235",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "NEP = Net premium income − change in UPR; method validated against the AR-stated FY24/FY25 NEP."
+      "note": "NEP is not stated on its own line in the 5-year summary; reconstructed as Net premium income (NWP) − change in UPR. Method self-validates: the identical reconstruction for FY24 (14,067.36 − 1,129.09) yields 12,938.27, exactly the AR-stated FY24 NEP."
     },
     "star-health::nep::FY23": {
       "value": 11261.59,
@@ -1061,12 +1061,12 @@
       "source_name": "Star Health FY2024-25 Annual Report — Net Earned Premium FY23 = ₹11,261.59 Cr (NWP 12,319.64 − Δ UPR 1,058.05)",
       "source_url": null,
       "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
-      "source_page": "5-year financial highlights (audited)",
+      "source_page": "Annexure 2 — Summary of Financial Statements (5-year, audited), p.235",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "NEP = Net premium income − change in UPR; method validated against the AR-stated FY24/FY25 NEP."
+      "note": "NEP is not stated on its own line in the 5-year summary; reconstructed as Net premium income (NWP) − change in UPR. Method self-validates: the identical reconstruction for FY24 (14,067.36 − 1,129.09) yields 12,938.27, exactly the AR-stated FY24 NEP."
     },
     "star-health::pat_igaap::FY22": {
       "value": -1040.67,
