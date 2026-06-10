@@ -9,13 +9,16 @@ import {
   type AuditCell, type AuditStatus, type QaColor, type StripCounts,
 } from '@/lib/extractedDataAudit'
 import { AuditDataGrid } from '@/sections/AuditDataGrid'
+import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 
-// Top-level switch between the new dashboard-shaped Data Grid (Company × Year ×
-// Metric) and the original Excel-cell-by-cell audit.
-function AuditWorkflowToggle({ view, onChange }: { view: 'grid' | 'cells'; onChange: (v: 'grid' | 'cells') => void }) {
+// Top-level switch: the Excel-mirroring Spreadsheet view (default), the
+// dashboard-shaped Data Grid (Company × Year × Metric), and the original
+// cell-by-cell Cell Audit.
+type TopView = 'sheet' | 'grid' | 'cells'
+function AuditWorkflowToggle({ view, onChange }: { view: TopView; onChange: (v: TopView) => void }) {
   return (
     <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-ice/60 p-0.5">
-      {([['grid', 'Data Grid'], ['cells', 'Cell Audit']] as const).map(([v, label]) => (
+      {([['sheet', 'Spreadsheet'], ['grid', 'Data Grid'], ['cells', 'Cell Audit']] as const).map(([v, label]) => (
         <button
           key={v}
           type="button"
@@ -66,7 +69,7 @@ export function ExtractedDataAudit() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS)
   const [open, setOpen] = useState<Record<string, boolean>>({})
   const [exporting, setExporting] = useState(false)
-  const [topView, setTopView] = useState<'grid' | 'cells'>('grid')
+  const [topView, setTopView] = useState<TopView>('sheet')
 
   const allCells = useMemo(() => model.groups.flatMap((g) => g.cells), [model])
   const scopeCounts = useMemo(() => ({
@@ -156,6 +159,30 @@ export function ExtractedDataAudit() {
     setExporting(true)
     try { await exportToExcel(view, model, scope, groupMode) }
     finally { setExporting(false) }
+  }
+
+  if (topView === 'sheet') {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5">
+            <span className="mt-0.5 h-8 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+            <div className="leading-tight">
+              <h1 className="font-display text-[20px] text-navy-deep">Extracted Data Audit</h1>
+              <p className="mt-0.5 max-w-2xl text-[12px] text-ink-secondary">
+                Your Excel template, tab-for-tab and cell-for-cell, beside the dashboard data — open your sheet next to this and compare each cell.
+              </p>
+              <p className="mt-1 text-[10.5px] text-ink-secondary/80">
+                Template: <span className="font-medium text-ink-primary">{model.meta.template_file ?? 'niva-bupa-portfolio-review.xlsx'}</span>
+                {model.meta.last_updated && <> · Pipeline updated {model.meta.last_updated.slice(0, 10)}</>}
+              </p>
+            </div>
+          </div>
+          <AuditWorkflowToggle view={topView} onChange={setTopView} />
+        </div>
+        <AuditSpreadsheet model={model} />
+      </div>
+    )
   }
 
   if (topView === 'grid') {
