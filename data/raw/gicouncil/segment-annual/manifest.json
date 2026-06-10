@@ -1,0 +1,68 @@
+{
+  "files": {
+    "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx": {
+      "filename": "FY26-march.xlsx",
+      "url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "bytes": 48638,
+      "sha256": "de2151d8552f65be672f8e048b0ec34f076d6545d488ef6e8c27219850b51515",
+      "fetched_at": "2026-06-10T19:58:05.402Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx": {
+      "filename": "FY25-final.xlsx",
+      "url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "bytes": 71958,
+      "sha256": "a03f5f7b087991ca4eedd3bf51f9c7802b5840f3ee2c451689f82e5f9b4de95b",
+      "fetched_at": "2026-06-10T19:59:11.945Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx": {
+      "filename": "FY24-march.xlsx",
+      "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "bytes": 45972,
+      "sha256": "730552933ce2d67b92730f91063ad02568b8df558470e3271e598467a348f31d",
+      "fetched_at": "2026-06-10T20:00:06.467Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx": {
+      "filename": "FY23-march.xlsx",
+      "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
+      "bytes": 70149,
+      "sha256": "64cee005b0cf0f64da6090d367a9e53d197e7d9371c615c521324df36c8ba5d6",
+      "fetched_at": "2026-06-10T20:00:57.271Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx": {
+      "filename": "FY22-march.xlsx",
+      "url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+      "bytes": 34765,
+      "sha256": "8c67dbc5a0ac13690dbaf95b2f730a4e68b7094ce19f6f6206a0ce42cf155c76",
+      "fetched_at": "2026-06-10T20:01:26.810Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx": {
+      "filename": "FY21-march.xlsx",
+      "url": "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx",
+      "bytes": 160246,
+      "sha256": "623015cdcfed32be0447764a5bce3587f721cf733ac15805ce1af2173dce60fa",
+      "fetched_at": "2026-06-10T20:02:19.413Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx": {
+      "filename": "FY20-march.xlsx",
+      "url": "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx",
+      "bytes": 167838,
+      "sha256": "2f1eded3fea15e30b6771932e19b061741391d5e7fe33c1cf7de7f0ee86deca8",
+      "fetched_at": "2026-06-10T20:03:05.848Z",
+      "via": "scraperapi"
+    },
+    "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx": {
+      "filename": "FY19-march.xlsx",
+      "url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx",
+      "bytes": 159282,
+      "sha256": "e4c657ecbd34dbde75148b17528bf5b1a9334d46e306da91b29d1b6bc24a4835",
+      "fetched_at": "2026-06-10T20:04:16.638Z",
+      "via": "scraperapi"
+    }
+  }
+}

@@ -3,42 +3,88 @@
     "snapshot_id": "gic-segment-annual",
     "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
     "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "last_run_at": "2026-06-10T19:54:36.327Z",
+    "last_run_at": "2026-06-10T19:57:55.687Z",
     "files_used": [
       {
         "period": "2026-03",
         "kind": "march",
-        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
         "url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx"
       },
       {
         "period": "2025-03",
         "kind": "final",
-        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY25-final.xlsx",
         "url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx"
       },
       {
         "period": "2024-03",
         "kind": "march",
-        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
         "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx"
+      },
+      {
+        "period": "2023-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
+        "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx"
+      },
+      {
+        "period": "2022-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx"
+      },
+      {
+        "period": "2021-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY21-march.xlsx",
+        "url": "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx"
+      },
+      {
+        "period": "2020-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY20-march.xlsx",
+        "url": "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx"
+      },
+      {
+        "period": "2019-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx"
       }
     ],
     "canonical_statement_per_fy": {
+      "FY18": {
+        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "FY19": {
+        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "basis": "current-year columns"
+      },
+      "FY21": {
+        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "FY22": {
+        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "basis": "current-year columns"
+      },
       "FY23": {
-        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
         "basis": "prior-year comparative columns"
       },
       "FY24": {
-        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
-        "basis": "prior-year comparative columns"
+        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
+        "basis": "current-year columns"
       },
       "FY25": {
-        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
         "basis": "prior-year comparative columns"
       },
       "FY26": {
-        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
         "basis": "current-year columns"
       },
       "9MFY26": {
@@ -48,8 +94,126 @@
       "9MFY25": {
         "file": "data/raw/gicouncil/segment/2025-12.xlsx",
         "basis": "prior-year comparative columns"
+      },
+      "H1FY26": {
+        "file": "data/raw/gicouncil/segment/2025-09.xlsx",
+        "basis": "current-year columns"
+      },
+      "H1FY25": {
+        "file": "data/raw/gicouncil/segment/2025-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "H1FY24": {
+        "file": "data/raw/gicouncil/segment/2024-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "Q1FY25": {
+        "file": "data/raw/gicouncil/segment/2024-06.xlsx",
+        "basis": "current-year columns"
+      },
+      "Q1FY24": {
+        "file": "data/raw/gicouncil/segment/2024-06.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "H1FY23": {
+        "file": "data/raw/gicouncil/segment/2023-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "H1FY22": {
+        "file": "data/raw/gicouncil/segment/2022-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "Q1FY23": {
+        "file": "data/raw/gicouncil/segment/2022-06.xlsx",
+        "basis": "current-year columns"
+      },
+      "Q1FY22": {
+        "file": "data/raw/gicouncil/segment/2022-06.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "9MFY22": {
+        "file": "data/raw/gicouncil/segment/2021-12.xlsx",
+        "basis": "current-year columns"
+      },
+      "9MFY21": {
+        "file": "data/raw/gicouncil/segment/2021-12.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "H1FY21": {
+        "file": "data/raw/gicouncil/segment/2021-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "9MFY20": {
+        "file": "data/raw/gicouncil/segment/2020-12.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "Q1FY20": {
+        "file": "data/raw/gicouncil/segment/2019-06.xlsx",
+        "basis": "current-year columns"
+      },
+      "Q1FY19": {
+        "file": "data/raw/gicouncil/segment/2019-06.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "9MFY19": {
+        "file": "data/raw/gicouncil/segment/2018-12.xlsx",
+        "basis": "current-year columns"
+      },
+      "9MFY18": {
+        "file": "data/raw/gicouncil/segment/2018-12.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "H1FY19": {
+        "file": "data/raw/gicouncil/segment/2018-09.xlsx",
+        "basis": "current-year columns"
+      },
+      "H1FY18": {
+        "file": "data/raw/gicouncil/segment/2018-09.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "Q1FY18": {
+        "file": "data/raw/gicouncil/segment/2018-06.xlsx",
+        "basis": "prior-year comparative columns"
       }
     },
-    "warnings": []
+    "warnings": [
+      "listing (scraperapi): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
+      "data/raw/gicouncil/segment-annual/FY25-final.xlsx: parse error: Bad compressed size: 0 != 24798583",
+      "data/raw/gicouncil/segment-annual/FY23-march.xlsx: parse error: Bad compressed size: 0 != 3307379651",
+      "data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
+      "data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
+      "FY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "FY19: only 7/11 named retail rows found — \"Others\" left null.",
+      "FY18: found 2/4 PSU rows — PSUs/Private left null.",
+      "Q1FY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "Q1FY19: only 7/11 named retail rows found — \"Others\" left null.",
+      "Q1FY18: found 2/4 PSU rows — PSUs/Private left null.",
+      "H1FY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "H1FY19: only 7/11 named retail rows found — \"Others\" left null.",
+      "H1FY18: found 2/4 PSU rows — PSUs/Private left null.",
+      "9MFY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "9MFY19: only 7/11 named retail rows found — \"Others\" left null.",
+      "9MFY18: found 2/4 PSU rows — PSUs/Private left null.",
+      "Q1FY20: found 2/4 PSU rows — PSUs/Private left null.",
+      "Q1FY20: only 7/11 named retail rows found — \"Others\" left null.",
+      "Q1FY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "data/raw/gicouncil/segment/2019-09.xlsx: Health Portfolio: header row not found — format changed?",
+      "data/raw/gicouncil/segment/2019-12.xlsx: Health Portfolio: header row not found — format changed?",
+      "data/raw/gicouncil/segment/2020-06.xlsx: Health Portfolio: header row not found — format changed?",
+      "data/raw/gicouncil/segment/2020-09.xlsx: Health Portfolio: header row not found — format changed?",
+      "9MFY21: hdfc-ergo matched 2 rows in the sahi block — using the first.",
+      "9MFY20: hdfc-ergo matched 2 rows in the sahi block — using the first.",
+      "data/raw/gicouncil/segment/2021-06.xlsx: parse error: Bad compressed size: 0 != 2040840792",
+      "9MFY22: hdfc-ergo matched 2 rows in the sahi block — using the first.",
+      "9MFY21: hdfc-ergo matched 2 rows in the sahi block — using the first.",
+      "Q1FY23: only 6/11 named retail rows found — \"Others\" left null.",
+      "H1FY23: only 6/11 named retail rows found — \"Others\" left null.",
+      "data/raw/gicouncil/segment/2022-12.xlsx: parse error: Bad compressed size: 0 != 3307379651",
+      "data/raw/gicouncil/segment/2023-06.xlsx: parse error: Bad compressed size: 0 != 3802907275",
+      "H1FY24: only 6/11 named retail rows found — \"Others\" left null.",
+      "data/raw/gicouncil/segment/2023-12.xlsx: parse error: Bad compressed size: 0 != 3802907275",
+      "data/raw/gicouncil/segment/2024-12.xlsx: parse error: Bad compressed size: 0 != 2053473967",
+      "data/raw/gicouncil/segment/2025-06.xlsx: parse error: Bad compressed size: 0 != 24798583"
+    ]
   }
 }
