@@ -149,6 +149,53 @@ def snap_candidate(entity, metric, period, raw_value, transform, unit, prov, sta
                   RANK_EXISTING, "official_snapshot", status)
 
 
+# Curated audit-overlay metrics that the overlay carries as PERCENTAGES (e.g.
+# 70.3, 101.2) but the store keeps as fractions (0.703, 1.012). Everything else
+# (premium/PAT/net-worth amounts, and solvency which is a multiple) is used as-is.
+OVERLAY = SNAP / "audit-overlay.json"
+OVERLAY_PCT_METRICS = {
+    "combined_ratio_igaap", "claims_ratio_igaap", "expense_ratio_igaap", "commission_ratio_igaap",
+    "combined_ratio_ifrs", "claims_ratio_ifrs", "expense_ratio_ifrs", "commission_ratio_ifrs",
+    "settlement_ratio", "customer_retention", "renewal_rate", "persistency_ratio",
+    "retail_health_market_share", "sahi_segment_share", "overall_health_market_share", "health_market_share",
+}
+RANK_OVERLAY = 0  # curated overlay — highest priority
+
+
+def collect_overlay():
+    """Curated values staged in src/data/snapshots/audit-overlay.json — the same
+    layer the Audit grid reads. GAP-FILL ONLY: a curated value is added only where
+    no extracted candidate already exists for that cell, so it lifts store coverage
+    (and the Extracted-Data-Audit '% of template') without ever conflicting with an
+    extracted figure. Value-less tag entries (display_tag only) are skipped."""
+    try:
+        data = json.loads(OVERLAY.read_text()).get("data", {})
+    except Exception:
+        return
+    for key, e in data.items():
+        if not isinstance(e, dict) or e.get("value") is None:
+            continue
+        parts = key.split("::")
+        if len(parts) != 3:
+            continue
+        if key in CANDIDATES:  # gap-fill only — never override an extracted value
+            continue
+        entity, metric, period = parts
+        val = e["value"]
+        is_pct = metric in OVERLAY_PCT_METRICS
+        norm = pct_to_fraction(val) if is_pct else val
+        label = "percent -> fraction (value / 100)" if is_pct else "identity (value used as-is)"
+        unit = "ratio" if is_pct else ("x" if metric == "solvency_ratio" else "INR_cr")
+        prov = {
+            "source_name": e.get("source_name"), "source_url": e.get("source_url"),
+            "source_file": e.get("source_file"), "fetched_at": e.get("fetched_at"),
+            "confidence": e.get("confidence") or "high",
+        }
+        add_candidate(entity, metric, period, val, norm, label, unit, prov,
+                      RANK_OVERLAY, "curated_overlay", e.get("source_status", "available"),
+                      {"basis_note": e.get("note")})
+
+
 def load(name):
     p = SNAP / f"{name}.json"
     if not p.exists():
@@ -541,6 +588,7 @@ def main():
     deck = collect_deck_sourced()
     ar = collect_annual_report()
     screener = collect_screener()
+    collect_overlay()  # curated gap-fills, last so it only fills cells still empty
     store, conflicts, alternates = resolve()
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
