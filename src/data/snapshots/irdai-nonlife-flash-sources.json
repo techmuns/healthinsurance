@@ -14,10 +14,10 @@
     "description": "Captured IRDAI Non-Life Flash Figures source URLs / files, per report month.",
     "dataset": "pending",
     "last_updated": "2026-06-10",
-    "last_fetched_at": "2026-06-10T08:45:07.499Z",
-    "last_attempt_status": "blocked",
-    "parser_status": "blocked",
-    "notes": "IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated."
+    "last_fetched_at": "2026-06-10T09:50:37.652Z",
+    "last_attempt_status": "pending",
+    "parser_status": "pending",
+    "notes": "Pending — IRDAI source not yet reachable / no file. Drop data/raw/irdai/nonlife-flash/<YYYY-MM>.xlsx to populate."
   },
   "data": [
     {
@@ -28,9 +28,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "May",
@@ -40,9 +40,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "June",
@@ -52,9 +52,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "July",
@@ -64,9 +64,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "August",
@@ -76,9 +76,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "September",
@@ -88,9 +88,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "October",
@@ -100,9 +100,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "November",
@@ -112,9 +112,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "December",
@@ -124,9 +124,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "January",
@@ -136,9 +136,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "February",
@@ -148,9 +148,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "March",
@@ -160,9 +160,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "April",
@@ -172,9 +172,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     },
     {
       "report_month": "May",
@@ -184,9 +184,9 @@
       "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
       "downloaded_file_url": null,
       "file_type": null,
-      "status": "blocked",
+      "status": "pending",
       "rows": 0,
-      "fetched_at": "2026-06-10T08:45:07.499Z"
+      "fetched_at": "2026-06-10T09:50:37.652Z"
     }
   ]
 }
