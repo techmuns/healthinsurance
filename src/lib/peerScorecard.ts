@@ -64,8 +64,8 @@ export const METRICS: MetricDef[] = [
     whyItMatters: 'Solvency above the 1.5x regulatory floor is the cushion that lets a company grow safely without raising equity.',
   },
   {
-    key: 'valuation', field: 'valuation', label: 'Valuation · P/EV', short: 'Valuation', group: 'Valuation', unit: 'x', polarity: 'rich',
-    whyItMatters: 'A premium multiple prices in future growth and quality — it has to be justified by ROE and underwriting improvement.',
+    key: 'valuation', field: 'valuation', label: 'Valuation · P/GWP', short: 'Valuation', group: 'Valuation', unit: 'x', polarity: 'rich',
+    whyItMatters: 'Price-to-GWP (market cap ÷ gross written premium) prices in future growth and quality — it has to be justified by ROE and underwriting improvement. Premium metric, not profit.',
     naWhen: (i) => i.valuation === 0,
   },
 ]

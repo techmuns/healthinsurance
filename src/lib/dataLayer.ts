@@ -325,6 +325,16 @@ function round1(v: number): number {
   return Math.round(v * 10) / 10
 }
 
+// Real fetched P/GWP per company from the live valuation feed (listed insurers).
+// Prefer this over the annual snapshot's stored multiple so the scorecard /
+// builder reflect the latest market price, not a stale figure.
+function realPriceToGwp(companyId: string): number | null {
+  const row = (valuationSnapshot.data as Array<{ company_id: string; price_to_gwp: number | null }>).find(
+    (r) => r.company_id === companyId,
+  )
+  return row?.price_to_gwp ?? null
+}
+
 function buildInsurer(c: CompanyMasterEntry): Insurer {
   const rows = annualRowsFor(c.company_id)
   const latest = rows[0] ?? null
@@ -361,7 +371,7 @@ function buildInsurer(c: CompanyMasterEntry): Insurer {
     combinedRatio,
     solvency: latest?.solvency_ratio ?? 0,
     roe,
-    valuation: latest?.valuation_p_gwp ?? 0, // 0 = N/A (unlisted)
+    valuation: realPriceToGwp(c.company_id) ?? latest?.valuation_p_gwp ?? 0, // real feed first; 0 = N/A (unlisted)
     marketShareChange,
     retailMix: latest?.retail_mix ?? 0,
     signal: 'Watch',
