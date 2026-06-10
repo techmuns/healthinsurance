@@ -1516,7 +1516,7 @@
     "metric": "retail_health_market_share",
     "period": "FY25",
     "unit": "ratio",
-    "raw_value": 33,
+    "raw_value": 33.0,
     "normalized_value": 0.33,
     "transformation_used": "percent -> fraction (value / 100)",
     "source_name": "Derived from insurer-annual-snapshot + industry-segment-premium",
