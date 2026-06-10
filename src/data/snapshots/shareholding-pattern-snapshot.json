@@ -1,0 +1,268 @@
+{
+  "_meta": {
+    "snapshot_id": "shareholding-pattern-snapshot",
+    "description": "Per-holder shareholding pattern (share counts) for listed SAHIs, from the quarterly exchange shareholding-pattern filing. Feeds the Captable tab's shareholding_shares::<holder> cells via build_value_store.py (rank-1 official filing). Missing stays missing — never 0; a holder is written only with a real sourced count.",
+    "schema_version": "1.0.0",
+    "company_id": "niva-bupa",
+    "as_of": "2026-03-31",
+    "period_label": "Q4 FY26 (Mar 2026)",
+    "total_shares": 1847456771,
+    "holders_sum_ties_to_total": true,
+    "last_successful_run": "2026-06-10T20:47:59.243806+00:00",
+    "parser_status": "ready",
+    "source_policy": "Official exchange shareholding-pattern filing is authoritative (rank 1). The named per-holder breakdown is NOT on Screener's public page (login-only there), so the filing is the source; Screener's four category totals are kept below as a public cross-check only.",
+    "category_totals_pct": {
+      "as_of": "2026-03-31",
+      "promoters": 55.36,
+      "fii": 10.6,
+      "dii": 16.49,
+      "public": 17.56,
+      "no_of_shareholders": 135343,
+      "source_name": "Screener.in public company page — shareholding pattern (category aggregates, Mar 2026)",
+      "source_url": "https://www.screener.in/company/NIVABUPA/#shareholding",
+      "note": "Public Screener exposes only these four class totals + shareholder count; the named-holder list is login-only."
+    }
+  },
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "holder": "Bupa Singapore Holdings",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 1022690470,
+      "pct": 55.36,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Fettle Tone LLP",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 146202091,
+      "pct": 7.91,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Temasek",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 82454426,
+      "pct": 4.46,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "DSP Mutual Fund",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 59247149,
+      "pct": 3.21,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Motilal Oswal Private Equity",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 48399106,
+      "pct": 2.62,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Nippon India Mutual Funds",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 46624267,
+      "pct": 2.52,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Amansa Holdings",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 42291644,
+      "pct": 2.29,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "A91",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 39035360,
+      "pct": 2.11,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Tata Mutual Fund",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 27583115,
+      "pct": 1.49,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "SBI Mutual Fund",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 25698569,
+      "pct": 1.39,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Insurance Companies",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 17157540,
+      "pct": 0.93,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Pallonji",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 21281061,
+      "pct": 1.15,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Other Mutual funds",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 40266015,
+      "pct": 2.18,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Paragon",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 7818694,
+      "pct": 0.42,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "holder": "Others",
+      "period": "2026-03-31",
+      "filing_period": "Q4FY26",
+      "shares": 220707264,
+      "pct": 11.95,
+      "provenance": {
+        "source_name": "Niva Bupa Health Insurance — Shareholding pattern, quarter ended 31 Mar 2026 (Q4 FY26), as filed with BSE/NSE (Reg. 31 LODR). Seeded from the owner's master Captable and internally verified: the 15 holders sum exactly to the 1,84,74,56,771 total shares and each holder's implied % matches the disclosed %. Re-derived automatically each quarter by the shareholding-fetch pipeline (cross-reference: https://www.screener.in/company/NIVABUPA/#shareholding).",
+        "source_url": "https://www.bseindia.com/stock-share-price/niva-bupa-health-insurance-company-ltd/nivabupa/544286/shareholding-pattern/",
+        "source_file": null,
+        "fetched_at": "2026-06-10T20:47:59.243806+00:00",
+        "confidence": "high",
+        "source_status": "available"
+      }
+    }
+  ]
+}
