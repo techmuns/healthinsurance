@@ -1,16 +1,18 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, ExternalLink, Newspaper, Search } from 'lucide-react'
+import { CalendarDays, ExternalLink, Newspaper, RefreshCw, Search, Sparkles } from 'lucide-react'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { SectionHeading } from '@/components/SectionHeading'
 import { SourceTag } from '@/components/SourceTag'
 import {
   sectoralNews,
-  sectoralNewsMeta,
+  makeSectoralId,
   SECTORAL_CATEGORY_META,
   SECTORAL_CATEGORY_ORDER,
   type SectoralCategory,
   type SectoralNewsItem,
+  type SectoralNewsSnapshot,
 } from '@/data/sectoralNews'
+import sectoralSnapshot from '@/data/snapshots/sectoral-news-snapshot.json'
 
 // ---------------------------------------------------------------------------
 //  Key Sectoral News — a calm, tone-coded briefing of the standalone-health
@@ -18,8 +20,9 @@ import {
 //  (what themes dominate + when activity clustered) → a filterable, searchable,
 //  month-grouped feed where every update links its original article.
 //
-//  This is a curated, point-in-time pack sourced from the investor portfolio
-//  review (NOT a live feed) — labelled honestly throughout.
+//  SELF-UPDATING: the feed is the seed floor (31 curated portfolio-pack items)
+//  merged with an auto-refreshed snapshot a scheduled web agent keeps current.
+//  Seed items are curated; agent items are AI-gathered (web) and clearly tagged.
 // ---------------------------------------------------------------------------
 
 type Lens = SectoralCategory | 'all'
@@ -64,40 +67,78 @@ function monthsBetween(startISO: string, endISO: string): string[] {
   }
   return out
 }
+function shiftDays(iso: string, delta: number): string {
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + delta)
+  return d.toISOString().slice(0, 10)
+}
+
+// ── Live dataset — seed floor merged with the auto-refreshed snapshot, by id ──
+// The seed (31 portfolio-pack items) is the permanent floor: even if the snapshot
+// is empty it always shows. The scheduled agent appends fresh items into the
+// snapshot; a re-reported seed item collapses on its id rather than double-listing.
+const SNAP = sectoralSnapshot as unknown as SectoralNewsSnapshot
+
+function buildItems(): SectoralNewsItem[] {
+  const byId = new Map<string, SectoralNewsItem>()
+  for (const s of sectoralNews) {
+    const id = makeSectoralId(s.subject, s.date)
+    byId.set(id, { ...s, id, origin: s.origin ?? 'seed', added_at: s.added_at ?? s.date })
+  }
+  for (const it of SNAP.data ?? []) {
+    const id = it.id ?? makeSectoralId(it.subject, it.date)
+    byId.set(id, { ...it, id, origin: it.origin ?? 'agent', added_at: it.added_at ?? it.date })
+  }
+  return [...byId.values()]
+}
+const ALL_ITEMS = buildItems()
+const LAST_UPDATED: string | null = SNAP?._meta?.last_updated ?? null
+// When the scheduled agent last completed a live pull (null until CI first runs).
+const LAST_REFRESHED: string | null = SNAP?._meta?.last_successful_run ?? null
+// "New" = an agent-gathered item that landed within ~30 days of the latest refresh.
+const NEW_CUTOFF = shiftDays(LAST_UPDATED ?? new Date().toISOString().slice(0, 10), -30)
+function isNew(it: SectoralNewsItem): boolean {
+  return it.origin === 'agent' && !!it.added_at && it.added_at >= NEW_CUTOFF
+}
 
 export function SectoralNews() {
   const [lens, setLens] = useState<Lens>('all')
   const [query, setQuery] = useState('')
 
-  const total = sectoralNews.length
+  const total = ALL_ITEMS.length
+  const newCount = useMemo(() => ALL_ITEMS.filter(isNew).length, [])
 
   // Per-theme counts (kept in the canonical display order).
   const counts = useMemo(() => {
     const c = Object.fromEntries(SECTORAL_CATEGORY_ORDER.map((k) => [k, 0])) as Record<SectoralCategory, number>
-    for (const n of sectoralNews) c[n.category] += 1
+    for (const n of ALL_ITEMS) c[n.category] += 1
     return c
   }, [])
   const dominant = SECTORAL_CATEGORY_ORDER[0]
   // Share of the feed taken by the two structural themes (consolidation + reform).
   const structuralShare = Math.round(((counts['Competition / Peers'] + counts.Regulatory) / total) * 100)
 
+  // Date span — computed live so the timeline always reaches the newest item.
+  const { spanStart, spanEnd } = useMemo(() => {
+    const sorted = ALL_ITEMS.map((i) => i.date).sort()
+    return { spanStart: sorted[0], spanEnd: sorted[sorted.length - 1] }
+  }, [])
+  const windowLabel = `${fmtMonth(spanStart)} – ${fmtMonth(spanEnd)}`
+
   // Monthly volume histogram — the "when" of the story.
-  const months = useMemo(() => monthsBetween(sectoralNewsMeta.span_start, sectoralNewsMeta.span_end), [])
+  const months = useMemo(() => monthsBetween(spanStart, spanEnd), [spanStart, spanEnd])
   const monthCounts = useMemo(() => {
     const m: Record<string, number> = {}
-    for (const n of sectoralNews) m[monthKey(n.date)] = (m[monthKey(n.date)] ?? 0) + 1
+    for (const n of ALL_ITEMS) m[monthKey(n.date)] = (m[monthKey(n.date)] ?? 0) + 1
     return m
   }, [])
   const maxMonth = Math.max(1, ...months.map((m) => monthCounts[m] ?? 0))
   const peakKey = months.reduce((a, b) => ((monthCounts[b] ?? 0) > (monthCounts[a] ?? 0) ? b : a), months[0])
 
-  const windowLabel = `${fmtMonth(sectoralNewsMeta.span_start)} – ${fmtMonth(sectoralNewsMeta.span_end)}`
-
   // Filter (theme + free-text) then sort newest-first.
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return sectoralNews
-      .filter((n) => (lens === 'all' ? true : n.category === lens))
+    return ALL_ITEMS.filter((n) => (lens === 'all' ? true : n.category === lens))
       .filter((n) =>
         q === ''
           ? true
@@ -142,13 +183,26 @@ export function SectoralNews() {
           { label: 'Themes', value: String(SECTORAL_CATEGORY_ORDER.length) },
           { label: 'Most active', value: SECTORAL_CATEGORY_META[dominant].short },
         ]}
-        source="Portfolio pack"
+        source="Portfolio + AI web"
         sourcePeriod={windowLabel}
         sourceFrequency="Event-based"
         sourceStatus="available"
         sourceConfidence="medium"
-        sourceProvenance={{ source_name: sectoralNewsMeta.source_name }}
+        sourceProvenance={{ source_name: SNAP?._meta?.snapshot_id ? 'Seed: portfolio pack · Updates: muns web agent' : 'Portfolio pack' }}
       />
+
+      {/* ── Self-updating banner (honest AI provenance) ──────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#EAD9B6]/70 bg-gradient-to-r from-[#FBF6EA] to-white px-3.5 py-2">
+        <span className="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-champagne-deep">
+          <RefreshCw className="h-3.5 w-3.5" /> Self-updating · fresh items are AI-gathered from public web sources and
+          source-linked — verify before acting
+        </span>
+        <span className="text-[10.5px] text-ink-secondary">
+          {newCount > 0 && <b className="font-semibold text-teal">{newCount} new</b>}
+          {newCount > 0 && ' · '}
+          {LAST_REFRESHED ? `Last refreshed ${fmtFull(LAST_REFRESHED)}` : 'Awaiting first auto-refresh'}
+        </span>
+      </div>
 
       {/* ── "Shape of the news" — what dominates (left) + when it clustered (right) ── */}
       <section className="card-surface p-5">
@@ -161,6 +215,7 @@ export function SectoralNews() {
                 const meta = SECTORAL_CATEGORY_META[c]
                 const w = (counts[c] / total) * 100
                 const on = lens === 'all' || lens === c
+                if (w === 0) return null
                 return (
                   <button
                     key={c}
@@ -302,7 +357,7 @@ export function SectoralNews() {
               </div>
               <div className="grid gap-2.5">
                 {items.map((n) => (
-                  <NewsCard key={n.sn} item={n} />
+                  <NewsCard key={n.id ?? n.sn} item={n} neu={isNew(n)} />
                 ))}
               </div>
             </div>
@@ -312,17 +367,18 @@ export function SectoralNews() {
 
       {/* ── Honest provenance footer ─────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-soft-border pt-3">
-        <p className="max-w-[60ch] text-[11px] leading-relaxed text-ink-secondary">
-          Curated sector briefing from the investor portfolio pack — a point-in-time snapshot, not a live feed. Every
-          update links its original article (Economic Times, Moneycontrol, Reuters and others).
+        <p className="max-w-[62ch] text-[11px] leading-relaxed text-ink-secondary">
+          Self-updating feed. The {SNAP?._meta?.seed_count ?? 31}-item history is curated from the investor portfolio
+          pack; ongoing updates are AI-gathered from public web sources on a schedule, each linking its source — verify
+          before acting.
         </p>
         <SourceTag
-          source="Portfolio pack"
+          source="Portfolio + AI web"
           period={windowLabel}
           frequency="Event-based"
           status="available"
           confidence="medium"
-          provenance={{ source_name: sectoralNewsMeta.source_name }}
+          provenance={{ source_name: 'Seed: investor portfolio pack · Updates: muns web agent (AI, web search)' }}
         />
       </div>
     </div>
@@ -365,7 +421,7 @@ function LensChip({
 }
 
 // ── Single update card ───────────────────────────────────────────────────────
-function NewsCard({ item }: { item: SectoralNewsItem }) {
+function NewsCard({ item, neu }: { item: SectoralNewsItem; neu: boolean }) {
   const meta = SECTORAL_CATEGORY_META[item.category]
   const [open, setOpen] = useState(false)
   const long = item.summary.length > 230 || item.summary.includes('\n')
@@ -385,7 +441,22 @@ function NewsCard({ item }: { item: SectoralNewsItem }) {
         <span className="inline-flex items-center gap-1 text-[10.5px] font-medium text-ink-secondary">
           <CalendarDays className="h-3 w-3" /> {fmtFull(item.date)}
         </span>
-        <span className="ml-auto text-[10px] font-semibold tabular-nums text-ink-secondary/40">#{item.sn}</span>
+        {neu && (
+          <span className="rounded-full bg-teal-soft px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-teal">
+            New
+          </span>
+        )}
+        <span className="ml-auto inline-flex items-center gap-2">
+          {item.origin === 'agent' && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-1.5 py-0.5 text-[9px] font-semibold text-champagne-deep"
+              title="AI-gathered from a public web source — verify before acting"
+            >
+              <Sparkles className="h-2.5 w-2.5" /> AI
+            </span>
+          )}
+          <span className="text-[10px] font-semibold tabular-nums text-ink-secondary/40">#{item.sn}</span>
+        </span>
       </div>
 
       <h4 className="mt-1.5 text-[13.5px] font-semibold leading-snug text-navy-deep">{item.subject}</h4>

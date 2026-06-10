@@ -1,7 +1,11 @@
-// AUTO-DERIVED from the investor portfolio pack — do not hand-edit the items below.
-// Source: templates/niva-bupa-portfolio-review.xlsx › sheet "Key sectoral updates".
-// A curated, source-linked briefing of 31 sector updates (Dec 2023 → Aug 2025); each item
-// links its original article. This is a sourced, point-in-time pack — NOT a live feed.
+// SEED for the Key Sectoral News feed. The 31 items below are AUTO-DERIVED from
+// the investor portfolio pack (templates/niva-bupa-portfolio-review.xlsx › sheet
+// "Key sectoral updates"), Dec 2023 → Aug 2025, each linking its original article.
+//
+// This is the permanent FLOOR of the feed — it can never be lost. On top of it,
+// a scheduled agent (scripts/ingest/sahi-sectoral-news-agent.ts) appends fresh,
+// source-linked updates into sectoral-news-snapshot.json, so the section keeps
+// itself current with no manual work. The UI merges seed + snapshot by id.
 
 export type SectoralCategory =
   | 'Competition / Peers'
@@ -11,17 +15,59 @@ export type SectoralCategory =
   | 'Profitability'
 
 export interface SectoralNewsItem {
-  /** Serial number as it appears in the source sheet. */
+  /** Serial number — stable tracking index (1..N); new items get the next number. */
   sn: number
   category: SectoralCategory
-  /** ISO date (yyyy-mm-dd) the update is dated to in the source. */
+  /** ISO date (yyyy-mm-dd) the update is dated to. */
   date: string
   /** Headline. */
   subject: string
-  /** Plain-English summary (verbatim from source; two obvious typos lightly fixed). */
+  /** Plain-English summary. */
   summary: string
   /** Link to the original article. */
   reference: string
+  /** Stable de-dupe id (hash of subject + date). Computed on load when absent. */
+  id?: string
+  /** Provenance: the seeded portfolio pack, or the auto web agent. */
+  origin?: 'seed' | 'agent'
+  /** ISO date the item first entered the feed (powers the "new" marker). */
+  added_at?: string
+}
+
+/**
+ * Deterministic de-dupe id (cyrb53) over the normalised subject + date. Pure JS
+ * so the SAME id is produced in the browser (loader) and in Node (the agent) —
+ * that parity is what lets the scheduled agent merge fresh items without ever
+ * double-listing one already in the feed.
+ */
+export function makeSectoralId(subject: string, date: string): string {
+  const str = `${subject.toLowerCase().replace(/\s+/g, ' ').trim()}|${(date || '').slice(0, 10)}`
+  let h1 = 0xdeadbeef
+  let h2 = 0x41c6ce57
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i)
+    h1 = Math.imul(h1 ^ ch, 2654435761)
+    h2 = Math.imul(h2 ^ ch, 1597334677)
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909)
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909)
+  const n = 4294967296 * (2097151 & h2) + (h1 >>> 0)
+  return n.toString(16).padStart(14, '0')
+}
+
+/** Shape of the auto-refreshed snapshot the scheduled agent maintains. */
+export interface SectoralNewsSnapshot {
+  _meta: {
+    snapshot_id: string
+    description?: string
+    last_updated: string
+    last_successful_run?: string | null
+    seed_count: number
+    agent_count: number
+    generated_by?: string
+    notes?: string
+  }
+  data: SectoralNewsItem[]
 }
 
 export interface SectoralCategoryMeta {

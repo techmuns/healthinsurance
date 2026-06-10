@@ -1,0 +1,60 @@
+name: sahi sectoral news fetch
+
+# Keeps the SAHI Analysis › "Key Sectoral News" tab current with NO manual work.
+# A muns web-search agent gathers the latest Indian health-insurance sector
+# updates (GST / General / Competition / Regulatory / Profitability), de-dupes
+# them against the existing feed, and commits src/data/snapshots/
+# sectoral-news-snapshot.json. The 31-item portfolio-pack seed is the permanent
+# floor — a no-token or failed run preserves it and simply commits nothing new.
+#
+# Secrets used:
+#   MUNS_API_TOKEN  (required for fresh pulls) bearer token for the chat agent.
+
+on:
+  schedule:
+    # Twice a week — Monday & Thursday 06:00 UTC (11:30 IST). Sector news moves on
+    # a weekly rhythm, not minutes, so this keeps it fresh without churn.
+    - cron: '0 6 * * 1,4'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sahi-sectoral-news-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Gather latest sectoral news (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+        run: npx tsx scripts/ingest/sahi-sectoral-news-agent.ts
+
+      - name: Commit refreshed snapshot
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/sectoral-news-snapshot.json
+          if git diff --staged --quiet; then
+            echo "No new sectoral updates — nothing to commit."
+            exit 0
+          fi
+          git commit -m "sectoral-news: auto-refresh via muns agent @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push retry $i"; sleep $((2 ** i))
+          done
+          echo "ERROR: push failed after retries"; exit 1
