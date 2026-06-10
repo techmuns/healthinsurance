@@ -1,0 +1,28 @@
+[
+  {
+    "company": "aditya-birla",
+    "year": "Q1FY26",
+    "metric": "total_gwp",
+    "value": 1357,
+    "unit": "INR_cr",
+    "source_name": "Aditya Birla Capital Q1 FY26 financial results: Consolidated PAT and Revenues up 10%",
+    "source_url": "https://www.adityabirla.com/media/press-releases/aditya-birla-capital-q1-fy26-financial-results-consolidated-pat-and-revenues-up-10/",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-08-03). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "aditya-birla",
+    "year": "Q1FY26",
+    "metric": "combined_ratio_igaap",
+    "value": 111,
+    "unit": "%",
+    "source_name": "Aditya Birla Capital Q1 FY26 financial results: Consolidated PAT and Revenues up 10%",
+    "source_url": "https://www.adityabirla.com/media/press-releases/aditya-birla-capital-q1-fy26-financial-results-consolidated-pat-and-revenues-up-10/",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-08-03). Fetched via munschat sahi-financials."
+  }
+]

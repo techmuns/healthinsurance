@@ -7,6 +7,13 @@
       "sha256": "c4fa47d55c4b2e7f3259f14fee41b62c62677146c9a479c7b96e0d2495120936",
       "fetched_at": "2026-06-09T19:16:53.159Z"
     },
+    "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/040825_ABCL-Results-Q1-FY26.ashx": {
+      "filename": "040825_ABCL-Results-Q1-FY26.ashx",
+      "url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/040825_ABCL-Results-Q1-FY26.ashx",
+      "bytes": 371564,
+      "sha256": "595a492f5314a912cbb78c7d865269d5521e179ab61e0a84da8f6419e36b0fc8",
+      "fetched_at": "2026-06-10T21:32:17.075Z"
+    },
     "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx": {
       "filename": "301025_Q2-FY26-Investor-Presentation.ashx",
       "url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx",
@@ -36,5 +43,5 @@
       "fetched_at": "2026-06-09T19:17:20.162Z"
     }
   },
-  "updated_at": "2026-06-09T19:18:31.373Z"
+  "updated_at": "2026-06-10T21:32:17.088Z"
 }

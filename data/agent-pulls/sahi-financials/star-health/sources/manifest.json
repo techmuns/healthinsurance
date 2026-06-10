@@ -13,7 +13,14 @@
       "bytes": 894504,
       "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
       "fetched_at": "2026-06-09T16:51:20.831Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf": {
+      "filename": "2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf",
+      "bytes": 780224,
+      "sha256": "50c1f4bdc42b2757b6293808c8e6e4d6834ada51ba9da037a0eeb065a42e8575",
+      "fetched_at": "2026-06-10T21:29:24.172Z"
     }
   },
-  "updated_at": "2026-06-09T19:35:38.768Z"
+  "updated_at": "2026-06-10T21:29:24.186Z"
 }

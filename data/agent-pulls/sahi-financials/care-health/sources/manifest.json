@@ -1,5 +1,12 @@
 {
   "files": {
+    "https://3adeal.com/images/pdf-doc/Care%20Health%20Insurance%20Limited%20AR%202024.pdf?1742636588393=": {
+      "filename": "Care Health Insurance Limited AR 2024.pdf",
+      "url": "https://3adeal.com/images/pdf-doc/Care%20Health%20Insurance%20Limited%20AR%202024.pdf?1742636588393=",
+      "bytes": 7687253,
+      "sha256": "34372d6f1c14a8a1cea292e554c50e7a43a0d03c97357ea32d87e8fb96dc8265",
+      "fetched_at": "2026-06-10T21:30:35.446Z"
+    },
     "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf": {
       "filename": "6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
       "url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
@@ -70,13 +77,69 @@
       "sha256": "27ad9dcedadcf5cf946906de71eb4bc7760a1feede097b9530b1b39455582b61",
       "fetched_at": "2026-06-09T12:42:47.964Z"
     },
+    "https://dyvmwwyqozzzb.cloudfront.net/main/CARE-HEALTH-AR-22.pdf": {
+      "filename": "CARE-HEALTH-AR-22.pdf",
+      "url": "https://dyvmwwyqozzzb.cloudfront.net/main/CARE-HEALTH-AR-22.pdf",
+      "bytes": 11076531,
+      "sha256": "d6849dc8afb470946ce9000719b8e8c85940100b55ffaf9cfcd831c472e8cdf6",
+      "fetched_at": "2026-06-10T21:30:38.070Z"
+    },
+    "https://s205.q4cdn.com/626266368/files/doc_financials/2026/q3/CRM-Q3-FY26-Quarterly-Investor-Deck.pdf": {
+      "filename": "CRM-Q3-FY26-Quarterly-Investor-Deck.pdf",
+      "url": "https://s205.q4cdn.com/626266368/files/doc_financials/2026/q3/CRM-Q3-FY26-Quarterly-Investor-Deck.pdf",
+      "bytes": 9462164,
+      "sha256": "abdc17e63083724b326f10107d22ebbf24cb9d7b3b4eea03f5266807d6f8b4ac",
+      "fetched_at": "2026-06-10T21:30:52.145Z"
+    },
     "https://wwipl.com/data/company/report/CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf": {
       "filename": "CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf",
       "url": "https://wwipl.com/data/company/report/CARE-HEALTH-INSURANCE-LIMITED--RESEARCH-REPORT-Care-Health-Annual-Report-2025.pdf",
       "bytes": 1892097,
       "sha256": "ac5c070c2996c016b02314a241f31eca560968b8ea13ce2f1aebce470e274781",
       "fetched_at": "2026-06-09T12:42:18.014Z"
+    },
+    "https://www.anandrathiwealth.in/wealthpdf/12jan2026/ARWL-Investor-Presentation-Q3-9M-FY26.pdf": {
+      "filename": "ARWL-Investor-Presentation-Q3-9M-FY26.pdf",
+      "url": "https://www.anandrathiwealth.in/wealthpdf/12jan2026/ARWL-Investor-Presentation-Q3-9M-FY26.pdf",
+      "bytes": 2574972,
+      "sha256": "b6e6efb166940b67d6ccb119f2a9f6665a0c7a791b77e5d6a6f33c0d8a4350fb",
+      "fetched_at": "2026-06-10T21:30:45.934Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2d18c03e-42da-480d-8d26-c95605c2c394.pdf": {
+      "filename": "2d18c03e-42da-480d-8d26-c95605c2c394.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2d18c03e-42da-480d-8d26-c95605c2c394.pdf",
+      "bytes": 3670535,
+      "sha256": "74bcf680ec2907da7ef02ee7615b2717b66672660a63b58340eba7875b820970",
+      "fetched_at": "2026-06-10T21:30:30.718Z"
+    },
+    "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/financial-results/2025-2026/quarter-3/Q3FY26-earnings-presentation.pdf": {
+      "filename": "Q3FY26-earnings-presentation.pdf",
+      "url": "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/financial-results/2025-2026/quarter-3/Q3FY26-earnings-presentation.pdf",
+      "bytes": 813034,
+      "sha256": "0c833d1e9f221f522e9219f8e032f7cced7bfc163983e22d314d47267dbd2012",
+      "fetched_at": "2026-06-10T21:30:51.481Z"
+    },
+    "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf": {
+      "filename": "IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf",
+      "url": "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf",
+      "bytes": 4903230,
+      "sha256": "99e4c61c73e03dd58ecc56b5b7d9a3403cbb7013a85fa8228be989131196e8ec",
+      "fetched_at": "2026-06-10T21:30:33.615Z"
+    },
+    "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/Investor-Presentation-Q3-FY26-updated-Final.pdf": {
+      "filename": "Investor-Presentation-Q3-FY26-updated-Final.pdf",
+      "url": "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/Investor-Presentation-Q3-FY26-updated-Final.pdf",
+      "bytes": 4765921,
+      "sha256": "4ff6f18556d56600b230390ac5148bfe3ed8b7dc6687c3a09586292f430acb43",
+      "fetched_at": "2026-06-10T21:30:34.141Z"
+    },
+    "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/rhc_2026_half_year_results_presentation.pdf": {
+      "filename": "rhc_2026_half_year_results_presentation.pdf",
+      "url": "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/rhc_2026_half_year_results_presentation.pdf",
+      "bytes": 3611696,
+      "sha256": "d5954b3b21f8e315f004a8552dba3ee4efdb3457bf0113f3105216c608c58b67",
+      "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-10T09:07:11.348Z"
+  "updated_at": "2026-06-10T21:30:54.826Z"
 }
