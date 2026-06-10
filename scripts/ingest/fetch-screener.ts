@@ -128,10 +128,13 @@ export function parseScreener(
   const add = (metric: string, value: number | null) => {
     if (value != null) out.push({ company_id, metric, value, period: 'TTM', provenance: prov })
   }
-  // Screener renders "Stock P/E", "Price to book value", "ROE" in a ratios list,
-  // plus "Market Cap" and "Current Price" at the top of the page.
+  // Screener's top ratio list renders "Market Cap", "Current Price", "Stock P/E",
+  // "Book Value", "ROE", etc. (P/B isn't shown directly — derive it from current
+  // price ÷ book value downstream). The numbers hydrate client-side, so the
+  // fetch must render JS (scraperapi render=true) for these to be non-empty.
   add('pe_ttm', labelledNumber(html, /stock p\/?e/i))
   add('price_to_book', labelledNumber(html, /price to book(?:\s*value)?/i))
+  add('book_value', labelledNumber(html, /book value/i))
   add('roe', labelledNumber(html, /\bROE\b/i))
   add('market_cap', labelledNumber(html, /market cap/i))
   add('current_price', labelledNumber(html, /current price/i))

@@ -3,33 +3,49 @@
 //
 //  Neha asked the Analysis Builder's Valuation columns (P/E, P/B, P/GWP) to come
 //  from "the market feed". The two listed SAHIs (Star Health, Niva Bupa) publish
-//  a Stock P/E and Price-to-Book on their Screener.in page; the other three SAHIs
+//  a Stock P/E and Book Value on their Screener.in page; the other three SAHIs
 //  are unlisted and have no market price, so they stay null (honest n/a).
 //
-//  Pipeline:
-//    1. Run the existing Screener fetcher (live, via the India-IP proxy set in
-//       CI) → screener-crosscheck-snapshot.json carries pe_ttm, price_to_book,
-//       market_cap, current_price per listed company.
-//    2. Map those into the canonical ValuationRow shape, derive Price/GWP from
-//       market cap ÷ latest-FY GWP, and write valuation-snapshot.json.
+//  Screener renders the top-ratio numbers client-side, so the fetch MUST run
+//  with JS rendering (scraperapi render=true, set in the workflow's
+//  INGEST_FETCH_PROXY). We fetch + parse each page directly here rather than via
+//  fetchScreener.run(), because that path's access-block detector false-positives
+//  on Screener's "Premium feature" upsell banner even though P/E and Book Value
+//  are public.
 //
-//  Honesty: every emitted number traces to the Screener page (provenance +
-//  date). A company with no P/E or P/B on the page contributes no row — never a
-//  fabricated 0. If Screener is blocked, the snapshot is left untouched.
+//    P/E  = Screener "Stock P/E"
+//    P/B  = current price ÷ Book Value   (Screener shows Book Value, not P/B)
+//    P/GWP = market cap ÷ latest-FY GWP  (insurer-annual-snapshot)
+//
+//  Honesty: every number traces to the Screener page (provenance + date). A
+//  company with no P/E and no derivable P/B contributes no row — never a
+//  fabricated 0. A genuinely blocked page (Cloudflare/CAPTCHA/login/empty) is
+//  skipped; the snapshot is only rewritten when at least one row is built.
 // ---------------------------------------------------------------------------
 
-import { fetchScreener } from './fetch-screener'
+import { parseScreener } from './fetch-screener'
+import { fetchOrLoadRaw } from './parsers'
 import { appendLog, nowIso, readSnapshot, writeSnapshot } from './util'
 import type { InsurerAnnualRow, SnapshotEnvelope } from '../../src/data/snapshots/_schemas'
 
-interface CrossRow {
-  company_id: string
-  metric: string
-  value: number | null
-  provenance: Record<string, unknown>
+const TARGETS: Array<{ company_id: string; symbol: string }> = [
+  { company_id: 'niva-bupa', symbol: 'NIVABUPA' },
+  { company_id: 'star-health', symbol: 'STARHEALTH' },
+]
+
+function screenerUrl(symbol: string): string {
+  return `https://www.screener.in/company/${encodeURIComponent(symbol)}/consolidated/`
 }
-interface CrosscheckSnapshot {
-  data: CrossRow[]
+
+/** Hard block signals only — NOT the "premium feature" upsell banner. */
+function isHardBlock(html: string): string | null {
+  const head = html.slice(0, 20000).toLowerCase()
+  if (/just a moment|cf-browser-verification|cloudflare/.test(head)) return 'cloudflare'
+  if (/captcha|recaptcha|hcaptcha/.test(head)) return 'captcha'
+  if (/please log\s?in|sign in to continue|login required/.test(head)) return 'login wall'
+  if (/access denied|403 forbidden/.test(head)) return '403'
+  if (head.trim().length < 200) return 'empty'
+  return null
 }
 
 async function loadLatestGwp(): Promise<Map<string, number>> {
@@ -51,61 +67,80 @@ async function loadLatestGwp(): Promise<Map<string, number>> {
   return out
 }
 
+const round2 = (v: number): number => Math.round(v * 100) / 100
+
 async function main(): Promise<number> {
   const fetched_at = nowIso()
   const date = fetched_at.slice(0, 10)
-
-  // 1. Refresh the Screener crosscheck (writes the snapshot; live in CI).
-  const res = await fetchScreener.run()
-  console.log(`screener: status=${res.status} rows=${res.records_fetched}`)
-  for (const w of res.warnings ?? []) console.log(`  warn: ${w}`)
-
-  // 2. Read back the parsed metrics and the GWP basis.
-  const cross = await readSnapshot<CrosscheckSnapshot>('screener-crosscheck-snapshot.json')
   const gwpByCompany = await loadLatestGwp()
 
-  // Group the crosscheck rows by company.
-  const byCompany = new Map<string, Map<string, { value: number; prov: Record<string, unknown> }>>()
-  for (const r of cross.data ?? []) {
-    if (r.value == null) continue
-    if (!byCompany.has(r.company_id)) byCompany.set(r.company_id, new Map())
-    byCompany.get(r.company_id)!.set(r.metric, { value: r.value, prov: r.provenance })
+  const rows = []
+  for (const t of TARGETS) {
+    const url = screenerUrl(t.symbol)
+    try {
+      const { buffer, raw_file, mode } = await fetchOrLoadRaw(
+        url,
+        `screener/${t.company_id}`,
+        `${t.company_id}-screener-${date}.html`,
+        /\.(html?|json)$/i,
+      )
+      const block = isHardBlock(buffer.toString('utf8'))
+      if (block) {
+        console.log(`  · ${t.company_id}: blocked (${block}) — skipped.`)
+        await appendLog('ingest-listed-valuation.log', { company_id: t.company_id, status: 'blocked', reason: block })
+        continue
+      }
+      const metrics = new Map(parseScreener(buffer, t.company_id, url, raw_file, fetched_at).map((r) => [r.metric, r.value]))
+      const pe = metrics.get('pe_ttm') ?? null
+      const price = metrics.get('current_price') ?? null
+      const bookValue = metrics.get('book_value') ?? null
+      const directPb = metrics.get('price_to_book') ?? null
+      const market_cap = metrics.get('market_cap') ?? null
+      const pb = directPb ?? (price != null && bookValue != null && bookValue > 0 ? round2(price / bookValue) : null)
+
+      if (pe == null && pb == null) {
+        console.log(`  · ${t.company_id}: no P/E or P/B on page (mode=${mode}) — skipped.`)
+        await appendLog('ingest-listed-valuation.log', { company_id: t.company_id, status: 'no-multiples', pe, price, bookValue })
+        continue
+      }
+
+      const gwp = gwpByCompany.get(t.company_id) ?? null
+      const price_to_gwp = market_cap != null && gwp != null && gwp > 0 ? round2(market_cap / gwp) : null
+
+      rows.push({
+        company_id: t.company_id,
+        date,
+        market_cap,
+        share_price: price,
+        shares_outstanding: null,
+        price_to_book: pb,
+        price_to_earnings: pe,
+        price_to_gwp,
+        price_to_nep: null,
+        analyst_target_price: null,
+        provenance: {
+          source_name: `Screener.in public page (${t.symbol}) — Stock P/E${pb != null && directPb == null ? ', Book Value' : ''}`,
+          source_url: url,
+          source_file: raw_file,
+          source_period: 'TTM',
+          fetched_at,
+          parsed_at: nowIso(),
+          parser_name: 'ingest-listed-valuation',
+          confidence: 'medium',
+        },
+      })
+      console.log(`  + ${t.company_id}: P/E ${pe ?? 'n/a'} · P/B ${pb ?? 'n/a'} · P/GWP ${price_to_gwp ?? 'n/a'}`)
+      await appendLog('ingest-listed-valuation.log', { company_id: t.company_id, status: 'parsed', pe, pb, price_to_gwp, market_cap, mode })
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err)
+      console.log(`  ! ${t.company_id}: ${reason}`)
+      await appendLog('ingest-listed-valuation.log', { company_id: t.company_id, status: 'error', reason })
+    }
   }
 
-  const rows = []
-  for (const [company_id, metrics] of byCompany) {
-    const pe = metrics.get('pe_ttm')?.value ?? null
-    const pb = metrics.get('price_to_book')?.value ?? null
-    const market_cap = metrics.get('market_cap')?.value ?? null
-    const share_price = metrics.get('current_price')?.value ?? null
-    // Only emit a row that carries at least one valuation multiple.
-    if (pe == null && pb == null) continue
-    const gwp = gwpByCompany.get(company_id) ?? null
-    const price_to_gwp = market_cap != null && gwp != null && gwp > 0 ? Math.round((market_cap / gwp) * 100) / 100 : null
-    const prov = metrics.get('pe_ttm')?.prov ?? metrics.get('price_to_book')?.prov ?? {}
-    rows.push({
-      company_id,
-      date,
-      market_cap,
-      share_price,
-      shares_outstanding: null,
-      price_to_book: pb,
-      price_to_earnings: pe,
-      price_to_gwp,
-      price_to_nep: null,
-      analyst_target_price: null,
-      provenance: {
-        source_name: `Screener.in public page (${company_id}) — listed-insurer valuation`,
-        source_url: `https://www.screener.in/company/${company_id === 'niva-bupa' ? 'NIVABUPA' : 'STARHEALTH'}/consolidated/`,
-        source_period: 'TTM',
-        fetched_at,
-        parsed_at: nowIso(),
-        parser_name: 'ingest-listed-valuation',
-        confidence: 'medium',
-        ...prov,
-      },
-    })
-    await appendLog('ingest-listed-valuation.log', { company_id, pe, pb, price_to_gwp, market_cap })
+  if (rows.length === 0) {
+    console.log('No listed-insurer valuation rows built — leaving valuation-snapshot.json untouched.')
+    return 0
   }
 
   await writeSnapshot('valuation-snapshot.json', {
@@ -113,16 +148,15 @@ async function main(): Promise<number> {
       snapshot_id: 'valuation-snapshot',
       description: 'Daily valuation snapshot for listed insurers — price, market cap, P/GWP, P/B, P/E.',
       schema_version: '1.0.0',
-      dataset: rows.length ? 'mixed' : 'pending',
-      last_updated: rows.length ? date : null,
-      last_successful_run: rows.length ? fetched_at : null,
+      dataset: 'mixed',
+      last_updated: date,
+      last_successful_run: fetched_at,
       upstream_sources: ['screener_public'],
-      parser_status: rows.length ? 'ready' : 'pending',
-      notes: 'Listed-insurer only (Star Health, Niva Bupa). Unlisted SAHIs (Care, Aditya Birla, ManipalCigna) have no market price → null (n/a). P/E and P/B sourced from the Screener public page; P/GWP = market cap ÷ latest-FY GWP.',
+      parser_status: 'ready',
+      notes: 'Listed-insurer only (Star Health, Niva Bupa). Unlisted SAHIs (Care, Aditya Birla, ManipalCigna) have no market price → null (n/a). P/E from Screener "Stock P/E"; P/B = current price ÷ Book Value; P/GWP = market cap ÷ latest-FY GWP.',
     },
     data: rows,
   })
-
   console.log(`valuation-snapshot: wrote ${rows.length} listed-insurer row(s).`)
   return 0
 }

@@ -35,7 +35,9 @@ jobs:
       - name: Fetch listed-insurer valuation (Screener via India-IP proxy)
         env:
           INGEST_OFFLINE: '0'
-          INGEST_FETCH_PROXY: https://api.scraperapi.com/?api_key=${{ secrets.SCRAPER_KEY }}&country_code=in&url={url}
+          # render=true → scraperapi runs a real browser so Screener's
+          # client-side ratio numbers (Stock P/E, Book Value, market cap) hydrate.
+          INGEST_FETCH_PROXY: https://api.scraperapi.com/?api_key=${{ secrets.SCRAPER_KEY }}&country_code=in&render=true&url={url}
         run: npx tsx scripts/ingest/ingest-listed-valuation.ts
       - name: Commit results
         run: |
