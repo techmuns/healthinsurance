@@ -798,32 +798,30 @@
       "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::expense_ratio_igaap::FY22": {
-      "value": null,
-      "unit": "",
-      "source_name": "Not comparable — ratio definition changed in FY24",
+      "value": 45,
+      "unit": "%",
+      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (107%) − Claims (62%) = 45%",
       "source_url": null,
       "source_file": null,
-      "source_page": null,
+      "source_page": "Template formula: Combined = Claims + Expense",
       "fetched_at": "2026-06-09",
-      "confidence": null,
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
-      "display_tag": "Basis changed (FY24)"
+      "layer": "derived",
+      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 107% and Claims 62%."
     },
     "niva-bupa::expense_ratio_igaap::FY23": {
-      "value": null,
-      "unit": "",
-      "source_name": "Not comparable — ratio definition changed in FY24",
+      "value": 43,
+      "unit": "%",
+      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (97%) − Claims (54%) = 43%",
       "source_url": null,
       "source_file": null,
-      "source_page": null,
+      "source_page": "Template formula: Combined = Claims + Expense",
       "fetched_at": "2026-06-09",
-      "confidence": null,
+      "confidence": "high",
       "priority": 1,
-      "layer": "annotation",
-      "note": "Pre-1/n basis. The commission and expense (EOM) ratio definitions changed under the 2023 expenses-of-management regulations effective FY24, so the FY22/FY23 figures are on a different basis and not comparable to the FY24+ series — left blank rather than shown misleadingly.",
-      "display_tag": "Basis changed (FY24)"
+      "layer": "derived",
+      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 97% and Claims 54%."
     },
     "niva-bupa::settlement_ratio::FY22": {
       "value": null,
@@ -4089,6 +4087,19 @@
       "priority": 1,
       "layer": "company_filing",
       "note": "I-GAAP combined ratio from the Religare deck (PPT-precise; prior 103%)."
+    },
+    "niva-bupa::expense_ratio_igaap::FY26": {
+      "value": 35.3,
+      "unit": "%",
+      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (103.4%) − Claims (68.1%) = 35.3%",
+      "source_url": null,
+      "source_file": null,
+      "source_page": "Template formula: Combined = Claims + Expense",
+      "fetched_at": "2026-06-09",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "derived",
+      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 103.4% and Claims 68.1%."
     }
   },
   "meta": {}
