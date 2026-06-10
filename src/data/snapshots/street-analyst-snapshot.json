@@ -13,8 +13,8 @@
     ],
     "dataset": "official",
     "last_updated": "2026-06-10",
-    "last_successful_run": "2026-06-10T10:01:42.855Z",
-    "last_fetched_at": "2026-06-10T10:01:42.855Z",
+    "last_successful_run": "2026-06-10T20:33:09.307Z",
+    "last_fetched_at": "2026-06-10T20:33:09.307Z",
     "parser_status": "ready",
     "notes": "Live Moneycontrol pull from: Moneycontrol Broker Research, Moneycontrol Price. Missing fields stay null (never fabricated)."
   },
@@ -34,7 +34,7 @@
     "week_high_52": 92.9,
     "week_low_52": 67.5,
     "price_change_pct": 1.1048,
-    "price_as_of": "2026-06-10 15:31:52"
+    "price_as_of": "2026-06-10 15:54:51"
   },
   "reports": [
     {

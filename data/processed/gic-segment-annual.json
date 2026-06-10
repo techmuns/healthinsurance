@@ -3,24 +3,24 @@
     "snapshot_id": "gic-segment-annual",
     "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
     "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "last_run_at": "2026-06-10T19:57:55.687Z",
+    "last_run_at": "2026-06-10T20:32:42.257Z",
     "files_used": [
       {
         "period": "2026-03",
         "kind": "march",
-        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx"
       },
       {
         "period": "2025-03",
         "kind": "final",
-        "file": "data/raw/gicouncil/segment-annual/FY25-final.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
         "url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx"
       },
       {
         "period": "2024-03",
         "kind": "march",
-        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
         "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx"
       },
       {
@@ -50,17 +50,17 @@
       {
         "period": "2019-03",
         "kind": "march",
-        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx"
       }
     ],
     "canonical_statement_per_fy": {
       "FY18": {
-        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "basis": "prior-year comparative columns"
       },
       "FY19": {
-        "file": "data/raw/gicouncil/segment-annual/FY19-march.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "basis": "current-year columns"
       },
       "FY21": {
@@ -68,23 +68,23 @@
         "basis": "prior-year comparative columns"
       },
       "FY22": {
-        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
-        "basis": "current-year columns"
+        "file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
+        "basis": "prior-year comparative columns"
       },
       "FY23": {
-        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
         "basis": "prior-year comparative columns"
       },
       "FY24": {
-        "file": "data/raw/gicouncil/segment-annual/FY24-march.xlsx",
-        "basis": "current-year columns"
+        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "basis": "prior-year comparative columns"
       },
       "FY25": {
-        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "basis": "prior-year comparative columns"
       },
       "FY26": {
-        "file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "basis": "current-year columns"
       },
       "9MFY26": {
@@ -95,21 +95,21 @@
         "file": "data/raw/gicouncil/segment/2025-12.xlsx",
         "basis": "prior-year comparative columns"
       },
-      "H1FY26": {
-        "file": "data/raw/gicouncil/segment/2025-09.xlsx",
+      "Q1FY26": {
+        "file": "data/raw/gicouncil/segment/2025-06.xlsx",
         "basis": "current-year columns"
       },
-      "H1FY25": {
-        "file": "data/raw/gicouncil/segment/2025-09.xlsx",
+      "Q1FY25": {
+        "file": "data/raw/gicouncil/segment/2025-06.xlsx",
         "basis": "prior-year comparative columns"
+      },
+      "H1FY25": {
+        "file": "data/raw/gicouncil/segment/2024-09.xlsx",
+        "basis": "current-year columns"
       },
       "H1FY24": {
         "file": "data/raw/gicouncil/segment/2024-09.xlsx",
         "basis": "prior-year comparative columns"
-      },
-      "Q1FY25": {
-        "file": "data/raw/gicouncil/segment/2024-06.xlsx",
-        "basis": "current-year columns"
       },
       "Q1FY24": {
         "file": "data/raw/gicouncil/segment/2024-06.xlsx",
@@ -177,9 +177,16 @@
       }
     },
     "warnings": [
+      "staged file not recognised as a segment report (skipped): FY19-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY20-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY21-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY22-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY23-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY24-march.xlsx",
+      "staged file not recognised as a segment report (skipped): FY25-final.xlsx",
+      "staged file not recognised as a segment report (skipped): FY26-march.xlsx",
       "listing (scraperapi): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-      "data/raw/gicouncil/segment-annual/FY25-final.xlsx: parse error: Bad compressed size: 0 != 24798583",
-      "data/raw/gicouncil/segment-annual/FY23-march.xlsx: parse error: Bad compressed size: 0 != 3307379651",
+      "FY23: only 6/11 named retail rows found — \"Others\" left null.",
       "data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
       "data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
       "FY19: found 2/4 PSU rows — PSUs/Private left null.",
@@ -213,7 +220,7 @@
       "H1FY24: only 6/11 named retail rows found — \"Others\" left null.",
       "data/raw/gicouncil/segment/2023-12.xlsx: parse error: Bad compressed size: 0 != 3802907275",
       "data/raw/gicouncil/segment/2024-12.xlsx: parse error: Bad compressed size: 0 != 2053473967",
-      "data/raw/gicouncil/segment/2025-06.xlsx: parse error: Bad compressed size: 0 != 24798583"
+      "data/raw/gicouncil/segment/2025-09.xlsx: parse error: Bad compressed size: 0 != 24798583"
     ]
   }
 }
