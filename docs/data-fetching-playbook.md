@@ -58,3 +58,30 @@ Tag it (value-less overlay entry with `display_tag` + `note`) so the grid shows 
 calm "Not available" with the reason on the surface — never leave a naked blank,
 never invent a number. Common tags: `IFRS not reported`, `FY26 premium pending`,
 `FY25 only`, `Basis changed (FY24)`.
+
+## Quarterly (interim) columns — fully automated
+
+The SAHI-comparison **interim** columns (H1 / 9M / Q1) self-fill via
+`.github/workflows/sahi-quarterly-backfill.yml` (weekly cron + manual dispatch),
+so no human is in the loop. The chain:
+
+1. **Agent is period-aware** — `sahi-financials-agent.ts` detects an interim
+   `FETCH_PERIOD` (H1FYxx / 9MFYxx / Q1FYxx) and asks for the *cumulative
+   period-to-date* figure with basis discipline (1/n GWP, IGAAP/IFRS). Each fetch
+   is wrapped in `timeout 360` so an unreachable deck fails fast.
+2. **Per-insurer period map** — niva/star use H1+9M columns, care uses Q1+9M,
+   aditya/manipal use Q1. Q4 columns are never fetched (the sheet derives them as
+   full-year − 9M).
+3. **`audit-fill.ts` accepts interim periods** — its period gate matches
+   `FY\d\d` *and* `(Q[1-4]|H1|9M)FY\d\d`; the overlay → value-store → audit-index
+   path already keys on `entity::metric::period`, so quarterly flows through.
+4. **Publish is "re-apply, never merge"** — the job commits the raw pulls, then on
+   each attempt **resets to latest `main` and re-runs the fill** from the cleaned
+   files before rebuilding the store + index. This is the only pattern that
+   survives the bot's concurrent regenerations; text-merging the big generated
+   JSON (or the overlay) deadlocks the rebase. Use the same discipline for any
+   manual quarterly fill from a repo PDF.
+
+Validate a backfilled column against a known anchor before trusting the run — the
+agent's Niva H1FY26 GWP/NWP reproduced the hand-read deck values exactly, and the
+combined = claims + expense identity should hold per period.
