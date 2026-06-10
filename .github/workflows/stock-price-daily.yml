@@ -1,0 +1,70 @@
+name: stock price daily
+
+# Keeps the Historical Stock Movement tab current. Pulls the daily close + traded
+# volume for the listed insurers (NIVABUPA + peers) and commits the refreshed
+# price-history snapshot. Sources run newest-wins through price-history-store:
+#   1. muns market-data API (fastapi.muns.io) — PRIMARY, India-capable, ours;
+#   2. Yahoo Finance public chart API — backup.
+# Both are reachable from CI, unlike NSE which WAF-blocks datacenter IPs. The
+# deliverable-quantity column is exchange-only and stays as it was (real where the
+# workbook/NSE/API carries it, n/a otherwise) — never fabricated. Merge is
+# idempotent, so a holiday (no new candle) simply commits nothing.
+
+on:
+  schedule:
+    # Weekdays at 12:30 UTC (18:00 IST) — well after the 15:30 IST close, so the
+    # day's final settled close is available.
+    - cron: '30 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stock-price-daily
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch daily price & volume from muns market-data API (primary, live)
+        env:
+          # Live network (default is offline = staged-file replay only).
+          INGEST_OFFLINE: '0'
+        run: npm run ingest:price:muns
+
+      - name: Fetch daily price & volume from Yahoo Finance (backup, live)
+        # Fills any day the primary missed; merge is idempotent so this is safe.
+        env:
+          INGEST_OFFLINE: '0'
+          # If Yahoo ever rate-limits the runner IP, set this repo secret to an
+          # in-region fetch-relay template ({url} placeholder); unset = direct.
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+        run: npm run ingest:price:yahoo
+
+      - name: Commit refreshed snapshot
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/price-history-snapshot.json
+          if git diff --staged --quiet; then
+            echo "No new price data — nothing to commit."
+            exit 0
+          fi
+          git commit -m "stock price: daily Yahoo refresh @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed on attempt $i"; exit 0; fi
+            echo "push retry $i"; sleep $((2 ** i))
+          done
+          echo "ERROR: push failed after retries"; exit 1

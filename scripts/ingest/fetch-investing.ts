@@ -19,8 +19,9 @@
 // ---------------------------------------------------------------------------
 
 import type { Fetcher, FetchResult } from './types'
-import { appendLog, detectAccessBlock, nowIso, writeSnapshot } from './util'
+import { appendLog, detectAccessBlock, nowIso } from './util'
 import { fetchOrLoadRaw } from './parsers'
+import { loadPriceHistory, mergePriceRows, savePriceHistory } from './price-history-store'
 
 const SOURCE_ID = 'price_history'
 const PARSER_NAME = 'fetch-investing'
@@ -88,19 +89,17 @@ export const fetchInvesting: Fetcher = {
       }
     }
 
-    await writeSnapshot('price-history-snapshot.json', {
-      _meta: {
-        snapshot_id: 'price-history-snapshot',
-        description: 'Daily close / traded / deliverable quantity per listed insurer. NSE official; Investing.com public backup.',
-        schema_version: '1.0.0',
-        dataset: rows.length ? 'official' : 'pending',
-        source_policy: 'official-first (NSE). Investing.com is login-free backup only, tagged low-confidence.',
-        last_successful_run: rows.length ? fetched_at : null,
-        parser_status: rows.length ? 'ready' : blocked ? 'blocked' : 'pending',
-        notes: 'WAF/IP blocks are expected from datacenter IPs; stage the official NSE price-volume CSV under data/raw/exchanges/<id>/ as a fallback.',
-      },
-      data: rows,
-    })
+    // Merge THROUGH the store so a blocked NSE pull (0 rows) never wipes the
+    // seeded history or the Yahoo close/volume — NSE only contributes the
+    // deliverable-quantity column it uniquely carries.
+    if (rows.length) {
+      const snap = await loadPriceHistory()
+      mergePriceRows(snap, rows)
+      await savePriceHistory(snap, {
+        nse_last_run: fetched_at,
+        nse_parser_status: 'ready',
+      })
+    }
 
     return {
       source_id: SOURCE_ID,

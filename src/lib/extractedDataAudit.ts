@@ -21,6 +21,7 @@
 import auditIndex from '@/data/snapshots/extracted-data-audit.json'
 import companyMaster from '@/data/snapshots/company-master.json'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
+import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 
 // ─── Raw index shapes (as emitted by build_audit_index.py) ──────────────────
 
@@ -139,6 +140,50 @@ interface RawIndex {
 }
 
 const INDEX = auditIndex as unknown as RawIndex
+
+// ── Historical Stock Movement (market_quote) values ─────────────────────────
+// The price-history snapshot is the single source of truth for daily stock
+// movement (Yahoo Finance keeps it current; the workbook seeds listing→Jul-25).
+// Project it into the audit value store so the market_quote cells fill honestly:
+// close_price + traded_quantity are source-backed; deliverable_quantity is real
+// only where the workbook/NSE carries it and stays absent (never 0) on the days
+// only Yahoo covers. Keyed exactly like the template binding (entity::metric::date).
+interface RawPriceRow {
+  company_id: string
+  date: string
+  close: number | null
+  traded_qty: number | null
+  deliverable_qty: number | null
+  provenance?: { source_name?: string; source_url?: string; source_file?: string; fetched_at?: string; confidence?: string }
+}
+const MARKET_VALUES: Record<string, RawValue> = (() => {
+  const out: Record<string, RawValue> = {}
+  const rows = (priceHistory as unknown as { data?: RawPriceRow[] }).data ?? []
+  for (const r of rows) {
+    const p = r.provenance ?? {}
+    const put = (metric: string, value: number | null, unit: string) => {
+      if (value === null || value === undefined) return
+      out[joinKey(r.company_id, metric, r.date)] = {
+        entity: r.company_id,
+        metric,
+        period: r.date,
+        unit,
+        raw_value: value,
+        normalized_value: value,
+        source_name: p.source_name ?? 'muns market-data API / Yahoo Finance — daily price history',
+        source_url: p.source_url ?? null,
+        source_file: p.source_file ?? null,
+        fetched_at: p.fetched_at ?? null,
+        filing_date: r.date,
+        confidence: p.confidence ?? 'high',
+      }
+    }
+    put('close_price', r.close, 'INR')
+    put('traded_quantity', r.traded_qty, 'shares')
+    put('deliverable_quantity', r.deliverable_qty, 'shares')
+  }
+  return out
+})()
 
 // ─── Public types ───────────────────────────────────────────────────────────
 
@@ -603,7 +648,7 @@ export function buildAudit(): AuditModel {
       const period = b.period ?? ''
       const key = joinKey(entity, metric, period)
       boundKeys.add(key) // every template cell (input, formula or n/a), not only fillable ones
-      const entry = values[key]
+      const entry = values[key] ?? MARKET_VALUES[key]
       const hasValue = !!entry && entry.normalized_value !== null && entry.normalized_value !== undefined
       const held = heldByKey.get(key)
       const blocked = blockedByKey.get(key)
@@ -676,6 +721,13 @@ export function buildAudit(): AuditModel {
       } else if ((b.source_status ?? '') === 'web_blocked') {
         status = 'web_blocked'
         note = 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'
+      } else if (sheet.role === 'market_quote' && metric === 'deliverable_quantity') {
+        // Deliverable quantity is an NSE-only field; Yahoo (the reachable daily
+        // source) doesn't carry it. Honest "not from this source", not a defect.
+        status = 'source_unavailable'
+        note =
+          'Deliverable quantity is an exchange-only field (NSE) — the daily price feeds (muns market-data API / Yahoo) do not carry it. ' +
+          'Real where the workbook covers the day; fills forward when an NSE security-wise delivery file is staged under data/raw/exchanges/.'
       } else {
         const ss = b.source_status ?? 'available'
         status = ss === 'backup' || ss === 'excluded_from_core' ? 'source_unavailable' : 'missing'

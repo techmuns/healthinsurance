@@ -26,6 +26,8 @@ import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
 import { ingestMoneycontrolAnalyst } from './ingest-moneycontrol-analyst'
 import { fetchInvesting } from './fetch-investing'
+import { fetchMunsMarketData } from './fetch-muns-market-data'
+import { fetchYahooPrice } from './fetch-yahoo-price'
 import { fetchScreener } from './fetch-screener'
 import { fetchTrendlyne } from './fetch-trendlyne'
 import { buildSnapshots } from './build-snapshots'
@@ -48,9 +50,15 @@ const ALL: Fetcher[] = [
   ingestManagementEvents,
   ingestValuation,
   ingestMoneycontrolAnalyst,
-  // Excel-template sources. fetch-investing is official-first (NSE) for the
-  // price/Comps sheets; fetch-screener / fetch-trendlyne are login-free BACKUP
-  // adapters, tagged low-confidence, for cells with no official equivalent.
+  // Excel-template sources. Daily price/volume runs newest-source-wins through
+  // price-history-store, so a blocked source can never wipe the seeded history:
+  //   1. fetch-muns-market-data — PRIMARY (muns' own India-capable API),
+  //   2. fetch-yahoo-price — backup (public Yahoo chart API),
+  //   3. fetch-investing — official NSE deliverable-quantity column via staged CSV.
+  // fetch-screener / fetch-trendlyne are login-free BACKUP adapters, tagged
+  // low-confidence, for cells with no official equivalent.
+  fetchMunsMarketData,
+  fetchYahooPrice,
   fetchInvesting,
   fetchScreener,
   fetchTrendlyne,

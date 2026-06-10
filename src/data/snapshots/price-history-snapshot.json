@@ -2,12 +2,2658 @@
   "_meta": {
     "snapshot_id": "price-history-snapshot",
     "description": "Daily close / traded / deliverable quantity per listed insurer. NSE official; Investing.com public backup.",
-    "schema_version": "1.0.0",
-    "dataset": "pending",
+    "schema_version": "1.1.0",
+    "dataset": "official",
     "source_policy": "official-first (NSE). Investing.com is login-free backup only, tagged low-confidence.",
     "last_successful_run": null,
     "parser_status": "pending",
-    "notes": "WAF/IP blocks are expected from datacenter IPs; stage the official NSE price-volume CSV under data/raw/exchanges/<id>/ as a fallback."
+    "notes": "Daily close / traded / deliverable quantity per listed insurer. Workbook seed (NSE via S&P Capital IQ) for niva-bupa listing→Jul-2025; Yahoo Finance keeps it current (close + volume). Deliverable quantity is NSE-only — null where only Yahoo covers a day, until an NSE delivery file is staged.",
+    "last_updated": "2026-06-10T17:34:50.426Z",
+    "row_count": 155,
+    "companies": [
+      "niva-bupa"
+    ],
+    "coverage": {
+      "from": "2024-11-14",
+      "to": "2025-07-01"
+    },
+    "seeded_from_workbook": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx"
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-14",
+      "close": 74,
+      "traded_qty": 2887218,
+      "deliverable_qty": 1592630,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-14"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-18",
+      "close": 72.53,
+      "traded_qty": 411002,
+      "deliverable_qty": 211305,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-18"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-19",
+      "close": 73.95,
+      "traded_qty": 251234,
+      "deliverable_qty": 125278,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-21",
+      "close": 73.29,
+      "traded_qty": 104511,
+      "deliverable_qty": 49414,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-22",
+      "close": 73.72,
+      "traded_qty": 307495,
+      "deliverable_qty": 213820,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-22"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-25",
+      "close": 76.76,
+      "traded_qty": 911126,
+      "deliverable_qty": 490803,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-25"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-26",
+      "close": 75.66,
+      "traded_qty": 252580,
+      "deliverable_qty": 95988,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-26"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-27",
+      "close": 75.2,
+      "traded_qty": 246602,
+      "deliverable_qty": 175226,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-28",
+      "close": 74.82,
+      "traded_qty": 625735,
+      "deliverable_qty": 231499,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-11-29",
+      "close": 75.34,
+      "traded_qty": 144541,
+      "deliverable_qty": 86838,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-11-29"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-02",
+      "close": 74.45,
+      "traded_qty": 110855,
+      "deliverable_qty": 69956,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-02"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-03",
+      "close": 82.04,
+      "traded_qty": 2198641,
+      "deliverable_qty": 898895,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-04",
+      "close": 98.44,
+      "traded_qty": 3747605,
+      "deliverable_qty": 1570166,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-04"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-05",
+      "close": 99.92,
+      "traded_qty": 2972260,
+      "deliverable_qty": 948025,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-05"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-06",
+      "close": 95.36,
+      "traded_qty": 510540,
+      "deliverable_qty": 203532,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-09",
+      "close": 89.17,
+      "traded_qty": 776166,
+      "deliverable_qty": 435542,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-09"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-10",
+      "close": 92.69,
+      "traded_qty": 419250,
+      "deliverable_qty": 108025,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-10"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-11",
+      "close": 89.99,
+      "traded_qty": 125804,
+      "deliverable_qty": 59418,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-11"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-12",
+      "close": 85.71,
+      "traded_qty": 537749,
+      "deliverable_qty": 305290,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-12"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-13",
+      "close": 83.59,
+      "traded_qty": 456447,
+      "deliverable_qty": 171365,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-16",
+      "close": 85.12,
+      "traded_qty": 162543,
+      "deliverable_qty": 56425,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-16"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-17",
+      "close": 83.77,
+      "traded_qty": 156064,
+      "deliverable_qty": 72557,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-18",
+      "close": 81.32,
+      "traded_qty": 166658,
+      "deliverable_qty": 85222,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-18"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-19",
+      "close": 79.88,
+      "traded_qty": 157908,
+      "deliverable_qty": 71004,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-20",
+      "close": 76.37,
+      "traded_qty": 530921,
+      "deliverable_qty": 196080,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-23",
+      "close": 76.52,
+      "traded_qty": 407428,
+      "deliverable_qty": 135005,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-23"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-24",
+      "close": 76.09,
+      "traded_qty": 87509,
+      "deliverable_qty": 42704,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-26",
+      "close": 81.05,
+      "traded_qty": 597064,
+      "deliverable_qty": 146584,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-26"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-27",
+      "close": 79.72,
+      "traded_qty": 127297,
+      "deliverable_qty": 43369,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-30",
+      "close": 78.78,
+      "traded_qty": 395103,
+      "deliverable_qty": 188229,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-30"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2024-12-31",
+      "close": 83.84,
+      "traded_qty": 387456,
+      "deliverable_qty": 117965,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2024-12-31"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-01",
+      "close": 83.82,
+      "traded_qty": 160058,
+      "deliverable_qty": 44799,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-01"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-02",
+      "close": 82.35,
+      "traded_qty": 349186,
+      "deliverable_qty": 201206,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-02"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-03",
+      "close": 83.12,
+      "traded_qty": 319905,
+      "deliverable_qty": 130187,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-06",
+      "close": 78.96,
+      "traded_qty": 182608,
+      "deliverable_qty": 98916,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-07",
+      "close": 80.42,
+      "traded_qty": 200550,
+      "deliverable_qty": 94574,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-07"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-08",
+      "close": 79.22,
+      "traded_qty": 185288,
+      "deliverable_qty": 79871,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-08"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-09",
+      "close": 77.95,
+      "traded_qty": 65085,
+      "deliverable_qty": 23888,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-09"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-10",
+      "close": 76.96,
+      "traded_qty": 208890,
+      "deliverable_qty": 96939,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-10"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-13",
+      "close": 75.26,
+      "traded_qty": 129593,
+      "deliverable_qty": 60636,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-14",
+      "close": 77.55,
+      "traded_qty": 112560,
+      "deliverable_qty": 46646,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-14"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-15",
+      "close": 78.68,
+      "traded_qty": 118017,
+      "deliverable_qty": 49131,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-15"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-16",
+      "close": 82.01,
+      "traded_qty": 311082,
+      "deliverable_qty": 188013,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-16"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-17",
+      "close": 81.34,
+      "traded_qty": 160726,
+      "deliverable_qty": 100174,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-20",
+      "close": 83.04,
+      "traded_qty": 95971,
+      "deliverable_qty": 49556,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-21",
+      "close": 81.2,
+      "traded_qty": 80920,
+      "deliverable_qty": 33025,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-22",
+      "close": 79.47,
+      "traded_qty": 155416,
+      "deliverable_qty": 60446,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-22"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-23",
+      "close": 81.17,
+      "traded_qty": 61160,
+      "deliverable_qty": 26090,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-23"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-24",
+      "close": 78.95,
+      "traded_qty": 134402,
+      "deliverable_qty": 72846,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-27",
+      "close": 75.25,
+      "traded_qty": 238383,
+      "deliverable_qty": 124864,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-28",
+      "close": 76.34,
+      "traded_qty": 172404,
+      "deliverable_qty": 72155,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-29",
+      "close": 80.59,
+      "traded_qty": 145063,
+      "deliverable_qty": 51127,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-29"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-30",
+      "close": 79.38,
+      "traded_qty": 209163,
+      "deliverable_qty": 66094,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-30"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-01-31",
+      "close": 81.15,
+      "traded_qty": 138979,
+      "deliverable_qty": 45241,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-01-31"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-01",
+      "close": 79.36,
+      "traded_qty": 445514,
+      "deliverable_qty": null,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-01"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-03",
+      "close": 81.09,
+      "traded_qty": 203811,
+      "deliverable_qty": 89880,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-04",
+      "close": 82.16,
+      "traded_qty": 91326,
+      "deliverable_qty": 32916,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-04"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-05",
+      "close": 80.93,
+      "traded_qty": 249461,
+      "deliverable_qty": 141097,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-05"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-06",
+      "close": 81.13,
+      "traded_qty": 136120,
+      "deliverable_qty": 65955,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-07",
+      "close": 79.48,
+      "traded_qty": 118650,
+      "deliverable_qty": 55923,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-07"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-10",
+      "close": 81.4,
+      "traded_qty": 75205,
+      "deliverable_qty": 22921,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-10"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-11",
+      "close": 79.94,
+      "traded_qty": 97368,
+      "deliverable_qty": 29200,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-11"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-12",
+      "close": 79.29,
+      "traded_qty": 60435,
+      "deliverable_qty": 39155,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-12"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-13",
+      "close": 79.96,
+      "traded_qty": 63620,
+      "deliverable_qty": 40943,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-14",
+      "close": 79.47,
+      "traded_qty": 63193,
+      "deliverable_qty": 24252,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-14"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-17",
+      "close": 76.94,
+      "traded_qty": 51317,
+      "deliverable_qty": 23281,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-18",
+      "close": 75.35,
+      "traded_qty": 115474,
+      "deliverable_qty": 73419,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-18"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-19",
+      "close": 75.04,
+      "traded_qty": 76620,
+      "deliverable_qty": 39512,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-20",
+      "close": 77.05,
+      "traded_qty": 50466,
+      "deliverable_qty": 24362,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-21",
+      "close": 77.79,
+      "traded_qty": 97668,
+      "deliverable_qty": 57788,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-24",
+      "close": 77.66,
+      "traded_qty": 155989,
+      "deliverable_qty": 73490,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-25",
+      "close": 77.21,
+      "traded_qty": 38866,
+      "deliverable_qty": 26575,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-25"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-27",
+      "close": 73.71,
+      "traded_qty": 98820,
+      "deliverable_qty": 59914,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-02-28",
+      "close": 73.01,
+      "traded_qty": 42636,
+      "deliverable_qty": 25784,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-02-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-03",
+      "close": 71.14,
+      "traded_qty": 113088,
+      "deliverable_qty": 53421,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-04",
+      "close": 72.46,
+      "traded_qty": 47191,
+      "deliverable_qty": 20846,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-04"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-05",
+      "close": 73.25,
+      "traded_qty": 41945,
+      "deliverable_qty": 26946,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-05"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-06",
+      "close": 71.12,
+      "traded_qty": 48656,
+      "deliverable_qty": 30224,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-07",
+      "close": 72.28,
+      "traded_qty": 86584,
+      "deliverable_qty": 45591,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-07"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-10",
+      "close": 71.16,
+      "traded_qty": 20395,
+      "deliverable_qty": 10111,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-10"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-11",
+      "close": 71.12,
+      "traded_qty": 41400,
+      "deliverable_qty": 16186,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-11"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-12",
+      "close": 72.15,
+      "traded_qty": 44398,
+      "deliverable_qty": 27869,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-12"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-13",
+      "close": 71.14,
+      "traded_qty": 35022,
+      "deliverable_qty": 19207,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-17",
+      "close": 70.87,
+      "traded_qty": 17299,
+      "deliverable_qty": 8264,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-18",
+      "close": 71.29,
+      "traded_qty": 63913,
+      "deliverable_qty": 45313,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-18"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-19",
+      "close": 72.33,
+      "traded_qty": 20643,
+      "deliverable_qty": 9612,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-20",
+      "close": 74.88,
+      "traded_qty": 109575,
+      "deliverable_qty": 57312,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-21",
+      "close": 74.71,
+      "traded_qty": 45203,
+      "deliverable_qty": 16952,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-24",
+      "close": 74.22,
+      "traded_qty": 69936,
+      "deliverable_qty": 28273,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-25",
+      "close": 72.12,
+      "traded_qty": 80706,
+      "deliverable_qty": 49536,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-25"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-26",
+      "close": 71.6,
+      "traded_qty": 67907,
+      "deliverable_qty": 39222,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-26"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-27",
+      "close": 76.56,
+      "traded_qty": 161062,
+      "deliverable_qty": 94799,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-03-28",
+      "close": 78.01,
+      "traded_qty": 92253,
+      "deliverable_qty": 32822,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-03-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-01",
+      "close": 75.87,
+      "traded_qty": 24078,
+      "deliverable_qty": 7847,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-01"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-02",
+      "close": 76.56,
+      "traded_qty": 19555,
+      "deliverable_qty": 7229,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-02"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-03",
+      "close": 75.84,
+      "traded_qty": 26031,
+      "deliverable_qty": 14360,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-04",
+      "close": 74.52,
+      "traded_qty": 44484,
+      "deliverable_qty": 30391,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-04"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-07",
+      "close": 71.78,
+      "traded_qty": 90508,
+      "deliverable_qty": 45473,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-07"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-08",
+      "close": 72.89,
+      "traded_qty": 64886,
+      "deliverable_qty": 37425,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-08"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-09",
+      "close": 73.5,
+      "traded_qty": 11342,
+      "deliverable_qty": 5287,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-09"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-11",
+      "close": 73.79,
+      "traded_qty": 18292,
+      "deliverable_qty": 10817,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-11"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-15",
+      "close": 74.53,
+      "traded_qty": 8250,
+      "deliverable_qty": 4461,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-15"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-16",
+      "close": 76.06,
+      "traded_qty": 50271,
+      "deliverable_qty": 40328,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-16"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-17",
+      "close": 75.82,
+      "traded_qty": 14248,
+      "deliverable_qty": 6816,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-21",
+      "close": 78,
+      "traded_qty": 76446,
+      "deliverable_qty": 43950,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-22",
+      "close": 77.48,
+      "traded_qty": 64212,
+      "deliverable_qty": 33189,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-22"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-23",
+      "close": 83.76,
+      "traded_qty": 1522790,
+      "deliverable_qty": 338889,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-23"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-24",
+      "close": 88.14,
+      "traded_qty": 336186,
+      "deliverable_qty": 118251,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-25",
+      "close": 85.05,
+      "traded_qty": 293909,
+      "deliverable_qty": 65682,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-25"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-28",
+      "close": 82.11,
+      "traded_qty": 303502,
+      "deliverable_qty": 152419,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-29",
+      "close": 81.29,
+      "traded_qty": 113328,
+      "deliverable_qty": 62765,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-29"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-04-30",
+      "close": 81.46,
+      "traded_qty": 54253,
+      "deliverable_qty": 27230,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-04-30"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-02",
+      "close": 82.5,
+      "traded_qty": 85362,
+      "deliverable_qty": 24591,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-02"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-05",
+      "close": 86.02,
+      "traded_qty": 341069,
+      "deliverable_qty": 214825,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-05"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-06",
+      "close": 80.85,
+      "traded_qty": 124425,
+      "deliverable_qty": 59232,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-07",
+      "close": 81.07,
+      "traded_qty": 231383,
+      "deliverable_qty": 53027,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-07"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-08",
+      "close": 87.38,
+      "traded_qty": 5616606,
+      "deliverable_qty": 1430462,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-08"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-09",
+      "close": 86.74,
+      "traded_qty": 858008,
+      "deliverable_qty": 267422,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-09"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-12",
+      "close": 85.14,
+      "traded_qty": 482213,
+      "deliverable_qty": 188209,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-12"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-13",
+      "close": 84.89,
+      "traded_qty": 186677,
+      "deliverable_qty": 85982,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-14",
+      "close": 84.53,
+      "traded_qty": 277303,
+      "deliverable_qty": null,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-14"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-15",
+      "close": 84.53,
+      "traded_qty": 210215,
+      "deliverable_qty": 119796,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-15"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-16",
+      "close": 90.45,
+      "traded_qty": 772182,
+      "deliverable_qty": 383526,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-16"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-19",
+      "close": 91.13,
+      "traded_qty": 915912,
+      "deliverable_qty": 416729,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-20",
+      "close": 90.91,
+      "traded_qty": 343509,
+      "deliverable_qty": 90412,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-21",
+      "close": 89.63,
+      "traded_qty": 129024,
+      "deliverable_qty": 53955,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-21"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-22",
+      "close": 88.55,
+      "traded_qty": 409649,
+      "deliverable_qty": 151237,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-22"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-23",
+      "close": 89.36,
+      "traded_qty": 254707,
+      "deliverable_qty": 129026,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-23"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-26",
+      "close": 91.26,
+      "traded_qty": 279508,
+      "deliverable_qty": 130428,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-26"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-27",
+      "close": 87.1,
+      "traded_qty": 196930,
+      "deliverable_qty": 70024,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-28",
+      "close": 87.95,
+      "traded_qty": 232079,
+      "deliverable_qty": 87669,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-28"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-29",
+      "close": 92.36,
+      "traded_qty": 1172480,
+      "deliverable_qty": 587605,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-29"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-05-30",
+      "close": 92.28,
+      "traded_qty": 525003,
+      "deliverable_qty": 279943,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-05-30"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-02",
+      "close": 83.07,
+      "traded_qty": 236362473,
+      "deliverable_qty": 183936207,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-02"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-03",
+      "close": 83.08,
+      "traded_qty": 1098856,
+      "deliverable_qty": 485416,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-03"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-04",
+      "close": 82.93,
+      "traded_qty": 396016,
+      "deliverable_qty": 97987,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-04"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-05",
+      "close": 82.57,
+      "traded_qty": 125017,
+      "deliverable_qty": 52372,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-05"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-06",
+      "close": 83.01,
+      "traded_qty": 135440,
+      "deliverable_qty": 46443,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-06"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-09",
+      "close": 83.35,
+      "traded_qty": 385076,
+      "deliverable_qty": 243037,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-09"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-10",
+      "close": 82.87,
+      "traded_qty": 267429,
+      "deliverable_qty": 145267,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-10"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-11",
+      "close": 82.65,
+      "traded_qty": 163909,
+      "deliverable_qty": 66828,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-11"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-12",
+      "close": 82.13,
+      "traded_qty": 198556,
+      "deliverable_qty": 99054,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-12"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-13",
+      "close": 81.39,
+      "traded_qty": 140460,
+      "deliverable_qty": 72812,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-13"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-16",
+      "close": 81.85,
+      "traded_qty": 92495,
+      "deliverable_qty": 34512,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-16"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-17",
+      "close": 80.17,
+      "traded_qty": 189168,
+      "deliverable_qty": 90389,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-17"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-18",
+      "close": 81.03,
+      "traded_qty": 181799,
+      "deliverable_qty": 82188,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-18"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-19",
+      "close": 80.02,
+      "traded_qty": 193688,
+      "deliverable_qty": 86087,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-19"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-20",
+      "close": 81.14,
+      "traded_qty": 86506,
+      "deliverable_qty": 47352,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-20"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-23",
+      "close": 81.68,
+      "traded_qty": 67041,
+      "deliverable_qty": 33255,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-23"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-24",
+      "close": 81.67,
+      "traded_qty": 50518,
+      "deliverable_qty": 28781,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-24"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-25",
+      "close": 82.02,
+      "traded_qty": 120001,
+      "deliverable_qty": 82908,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-25"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-26",
+      "close": 82.02,
+      "traded_qty": 133045,
+      "deliverable_qty": 66521,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-26"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-27",
+      "close": 81.79,
+      "traded_qty": 306082,
+      "deliverable_qty": 200060,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-27"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-06-30",
+      "close": 81.81,
+      "traded_qty": 72042,
+      "deliverable_qty": 42831,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-06-30"
+      }
+    },
+    {
+      "company_id": "niva-bupa",
+      "date": "2025-07-01",
+      "close": 82.02,
+      "traded_qty": 163681,
+      "deliverable_qty": 68756,
+      "provenance": {
+        "source_name": "Niva Bupa portfolio review workbook — NSE security-wise price & delivery",
+        "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
+        "source_file": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
+        "fetched_at": "2026-06-10T17:34:50.413Z",
+        "parsed_at": "2026-06-10T17:34:50.413Z",
+        "parser_name": "seed-stock-history-from-workbook",
+        "confidence": "high",
+        "source_period": "2025-07-01"
+      }
+    }
+  ]
 }

@@ -4,6 +4,7 @@ import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
 } from '@/lib/extractedDataAudit'
+import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 
 // ---------------------------------------------------------------------------
 //  Audit · Spreadsheet view — mirrors the source Excel template tab-for-tab and
@@ -405,6 +406,13 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         })}
       </div>
 
+      {group.role === 'market_quote' ? (
+        // The Historical Stock Movement sheet is a transposed, date-by-row series
+        // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
+        // can't represent — it gets a dedicated, workbook-faithful renderer.
+        <HistoricalStockMovement />
+      ) : (
+      <>
       {/* ───────── grid view ───────── */}
 
       {/* Toolbar — value mode + legend */}
@@ -465,6 +473,8 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }
