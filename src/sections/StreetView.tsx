@@ -319,7 +319,8 @@ export function StreetView() {
 function Takeaway({ icon, tone, head, name, detail, pending }: { icon: React.ReactNode; tone: 'teal' | 'slate' | 'navy'; head: string; name: string; detail: string; pending: boolean }) {
   const c = tone === 'teal' ? { bg: '#E1F2F1', fg: TEAL } : tone === 'navy' ? { bg: '#EAF0FB', fg: NAVY } : { bg: '#EEF1F6', fg: SLATE }
   return (
-    <div className="rounded-xl border border-soft-border bg-white/70 p-3">
+    <div className="hover-lift relative overflow-hidden rounded-xl border border-soft-border p-3 shadow-soft" style={{ background: `linear-gradient(145deg, #FFFFFF 55%, ${c.bg})` }}>
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: c.fg }} aria-hidden />
       <div className="flex items-center gap-1.5">
         <span className="blob-b inline-flex h-6 w-6 items-center justify-center shadow-soft" style={{ background: c.bg, color: c.fg }}>{icon}</span>
         <span className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{head}</span>

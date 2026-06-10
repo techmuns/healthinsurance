@@ -165,16 +165,15 @@ export function SectoralNews() {
       {/* ── Answer-first verdict ─────────────────────────────────────────── */}
       <VerdictStrip
         eyebrow={`Sector Pulse · ${windowLabel}`}
-        verdict="Reform meets a land-grab"
+        verdict="Consolidation meets reform"
         tone="navy"
         badge={`${total} updates`}
         summary={
           <>
-            Two forces are reshaping standalone health: a wave of{' '}
-            <b className="font-semibold text-navy-deep">competitive moves</b> — new entrants, JVs and leadership churn (
-            {counts['Competition / Peers']}) — and sweeping{' '}
-            <b className="font-semibold text-navy-deep">regulatory reform</b> — 100% FDI, composite licences, Ind AS and
-            consumer-first rules ({counts.Regulatory}). GST relief and rising medical costs round out the rest.
+            Two forces dominate standalone health: <b className="font-semibold text-navy-deep">competitive activity</b> —
+            new entrants, JVs and leadership changes ({counts['Competition / Peers']}) — and{' '}
+            <b className="font-semibold text-navy-deep">regulatory change</b> — 100% FDI, composite licences, Ind AS and
+            consumer-protection rules ({counts.Regulatory}). GST relief and medical inflation make up the rest.
           </>
         }
         stats={[
@@ -404,7 +403,7 @@ function LensChip({
       onClick={onClick}
       aria-pressed={active}
       className={[
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all duration-200',
+        'chip-soft inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all duration-200',
         active ? 'text-white shadow-soft' : 'bg-white text-ink-secondary ring-1 ring-soft-border hover:text-navy-primary',
       ].join(' ')}
       style={active ? { background: color } : undefined}
@@ -427,8 +426,11 @@ function NewsCard({ item, neu }: { item: SectoralNewsItem; neu: boolean }) {
   const domain = domainOf(item.reference)
 
   return (
-    <article className="group relative overflow-hidden rounded-xl border border-soft-border bg-card py-3 pl-4 pr-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-navy-primary/25 hover:shadow-card">
-      <span className="absolute inset-y-0 left-0 w-1" style={{ background: meta.color }} aria-hidden />
+    <article
+      className="group relative overflow-hidden rounded-xl border border-soft-border py-3 pl-4 pr-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-navy-primary/25 hover:shadow-card"
+      style={{ background: `linear-gradient(100deg, ${meta.soft} 0%, #ffffff 24%)` }}
+    >
+      <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: meta.color }} aria-hidden />
       <div className="flex flex-wrap items-center gap-2">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold"

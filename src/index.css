@@ -31,6 +31,17 @@ body {
   background-attachment: fixed;
 }
 
+/* Fraunces (the serif "display" face) must NOT inherit Inter's character-variant
+   features. The cvXX tags set on <body> above are Inter-specific; in Fraunces
+   those same tags map to different glyphs (e.g. an alternate lowercase "f"),
+   which made display headings such as "Near Street fair value" render one letter
+   inconsistently. Reset display headings to the font's own defaults and let it
+   size optically. */
+.font-display {
+  font-feature-settings: normal;
+  font-optical-sizing: auto;
+}
+
 @layer components {
   .blob-a {
     border-radius: 58% 42% 61% 39% / 46% 54% 38% 62%;
@@ -101,6 +112,52 @@ body {
     box-shadow:
       0 2px 4px rgba(23, 43, 77, 0.04),
       0 18px 40px rgba(23, 43, 77, 0.1);
+  }
+
+  /* Reusable hover-lift for any interactive card/tile/row (opt-in). A slight
+     rise and a deeper-but-soft shadow — premium, calm, never bouncy. */
+  .hover-lift {
+    transition:
+      transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+      box-shadow 0.3s cubic-bezier(0.22, 0.61, 0.36, 1),
+      border-color 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 6px rgba(23, 43, 77, 0.05),
+      0 18px 40px rgba(23, 43, 77, 0.1);
+  }
+
+  /* Soft tinted chip/badge: a calm pill that gains a faint focus halo on hover. */
+  .chip-soft {
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .chip-soft:hover {
+    box-shadow: 0 0 0 3px rgba(39, 69, 126, 0.07);
+  }
+
+  /* Section-level soft wash — a faint tonal field behind an otherwise flat
+     section so it reads as a layered surface, not a blank band. Tone-coded
+     navy (trust) + teal (growth), kept very low alpha. */
+  .section-wash {
+    position: relative;
+    isolation: isolate;
+  }
+  .section-wash::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background:
+      radial-gradient(70% 60% at 100% 0%, rgba(39, 69, 126, 0.05), transparent 60%),
+      radial-gradient(60% 60% at 0% 100%, rgba(22, 142, 142, 0.045), transparent 62%);
+    pointer-events: none;
   }
 
   /* Selected / highlighted company: soft navy tint + subtle ring + glow so the

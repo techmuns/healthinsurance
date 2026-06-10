@@ -15,7 +15,7 @@ import { srcTag } from '@/data/valuationSources'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import type { Insurer } from '@/data/types'
-import { CORAL, Eyebrow, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
+import { CORAL, Eyebrow, GOLD, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
 
 export function ValuationMarketView() {
   const company = useActiveCompany()
@@ -151,7 +151,7 @@ export function ValuationMarketView() {
                     {shownPeers.map((r) => {
                       const unlisted = r.listingStatus === 'Unlisted'
                       return (
-                        <tr key={r.companyId} className={`border-b border-[#F2F4F8] last:border-0 ${r.companyId === FOCAL_VALUATION_ID ? 'bg-soft-blue/40' : ''}`}>
+                        <tr key={r.companyId} className={`border-b border-[#F2F4F8] transition-colors last:border-0 ${r.companyId === FOCAL_VALUATION_ID ? 'bg-soft-blue/40' : 'hover:bg-soft-blue/25'}`}>
                           <td className="py-2 pr-2 font-semibold text-navy-deep">{r.companyName}{r.companyId === FOCAL_VALUATION_ID && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
                           <td className="py-2 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
                           <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.gwp != null ? fmtCr(r.gwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
@@ -378,12 +378,19 @@ function ValuationPending({ company, peerRow }: { company: Insurer; peerRow: Pee
 // ── Building blocks ──────────────────────────────────────────────────────────
 
 function Tile({ k, v, sub, tone = 'navy' }: { k: string; v: string; sub?: string; tone?: 'navy' | 'teal' | 'amber' | 'red' }) {
-  const c = tone === 'teal' ? 'text-teal' : tone === 'red' ? 'text-signal-negative' : tone === 'amber' ? 'text-champagne-deep' : 'text-navy-deep'
+  // Tone-coded tint + accent so each metric reads by meaning at a glance
+  // (navy = price, teal = upside, amber = multiple, coral = downside).
+  const t =
+    tone === 'teal' ? { text: 'text-teal', bar: TEAL, bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(22,142,142,0.07) 100%)', border: 'rgba(22,142,142,0.20)' }
+    : tone === 'red' ? { text: 'text-signal-negative', bar: CORAL, bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(194,118,107,0.07) 100%)', border: 'rgba(194,118,107,0.22)' }
+    : tone === 'amber' ? { text: 'text-champagne-deep', bar: GOLD, bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(182,139,58,0.08) 100%)', border: 'rgba(182,139,58,0.22)' }
+    : { text: 'text-navy-deep', bar: NAVY, bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(39,69,126,0.06) 100%)', border: 'rgba(39,69,126,0.16)' }
   return (
-    <div className="rounded-lg border border-soft-border bg-white px-2.5 py-1.5">
-      <p className="whitespace-nowrap text-[8.5px] font-semibold uppercase text-ink-secondary">{k}</p>
-      <p className={`mt-0.5 font-display text-[16px] leading-none ${c}`}>{v}</p>
-      {sub && <p className="mt-0.5 text-[8.5px] text-ink-secondary/80">{sub}</p>}
+    <div className="hover-lift relative overflow-hidden rounded-xl border px-2.5 py-2 shadow-soft" style={{ background: t.bg, borderColor: t.border }}>
+      <span className="absolute inset-y-0 left-0 w-[2.5px]" style={{ background: t.bar }} aria-hidden />
+      <p className="whitespace-nowrap pl-1 text-[8.5px] font-semibold uppercase text-ink-secondary">{k}</p>
+      <p className={`mt-0.5 pl-1 font-display text-[16px] leading-none ${t.text}`}>{v}</p>
+      {sub && <p className="mt-0.5 pl-1 text-[8.5px] text-ink-secondary/80">{sub}</p>}
     </div>
   )
 }
