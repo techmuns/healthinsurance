@@ -1,0 +1,51 @@
+name: listed valuation fetch
+
+# Pulls the listed-insurer valuation multiples (Stock P/E, Price-to-Book, plus
+# market cap → Price/GWP) for Star Health & Niva Bupa from their Screener.in
+# public pages, via the India-IP scraper proxy, and writes
+# src/data/snapshots/valuation-snapshot.json. The Analysis Builder's Valuation
+# columns (P/E, P/B, P/GWP) read straight from that snapshot.
+#
+# Secrets used:
+#   SCRAPER_KEY  (required) scraperapi key — routes the Screener fetch via an India IP.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: listed-valuation-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Fetch listed-insurer valuation (Screener via India-IP proxy)
+        env:
+          INGEST_OFFLINE: '0'
+          INGEST_FETCH_PROXY: https://api.scraperapi.com/?api_key=${{ secrets.SCRAPER_KEY }}&country_code=in&url={url}
+        run: npx tsx scripts/ingest/ingest-listed-valuation.ts
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/screener src/data/snapshots/screener-crosscheck-snapshot.json src/data/snapshots/valuation-snapshot.json
+          if git diff --staged --quiet; then echo "No change."; exit 0; fi
+          git commit -m "valuation: listed-insurer P/E, P/B, P/GWP from Screener @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1

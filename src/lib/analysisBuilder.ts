@@ -21,7 +21,7 @@ import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 // The feed is currently pending (no rows) so these resolve to null → honest
 // "n/a"; the moment NSE/BSE quotes are ingested the columns light up with no UI
 // change. Keyed by company_id, tolerant of a few field-name spellings.
-interface ValuationRow { company_id?: string; pe?: number | null; pb?: number | null; p_e?: number | null; p_b?: number | null }
+interface ValuationRow { company_id?: string; price_to_earnings?: number | null; price_to_book?: number | null }
 const VALUATION_BY_CO = new Map<string, ValuationRow>(
   ((valuationSnapshot.data as ValuationRow[]) ?? [])
     .filter((r) => !!r.company_id)
@@ -30,7 +30,7 @@ const VALUATION_BY_CO = new Map<string, ValuationRow>(
 function valuationMultiple(i: Insurer, kind: 'pe' | 'pb'): number | null {
   const r = VALUATION_BY_CO.get(i.id)
   if (!r) return null
-  const v = kind === 'pe' ? r.pe ?? r.p_e : r.pb ?? r.p_b
+  const v = kind === 'pe' ? r.price_to_earnings : r.price_to_book
   return typeof v === 'number' && isFinite(v) ? v : null
 }
 

@@ -128,10 +128,13 @@ export function parseScreener(
   const add = (metric: string, value: number | null) => {
     if (value != null) out.push({ company_id, metric, value, period: 'TTM', provenance: prov })
   }
-  // Screener renders "Stock P/E", "Price to book value", "ROE" in a ratios list.
+  // Screener renders "Stock P/E", "Price to book value", "ROE" in a ratios list,
+  // plus "Market Cap" and "Current Price" at the top of the page.
   add('pe_ttm', labelledNumber(html, /stock p\/?e/i))
   add('price_to_book', labelledNumber(html, /price to book(?:\s*value)?/i))
   add('roe', labelledNumber(html, /\bROE\b/i))
+  add('market_cap', labelledNumber(html, /market cap/i))
+  add('current_price', labelledNumber(html, /current price/i))
   return out
 }
 
