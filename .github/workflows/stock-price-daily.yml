@@ -53,6 +53,26 @@ jobs:
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
         run: npm run ingest:price:yahoo
 
+      - name: Verify the series actually moved forward (no silent no-op)
+        # The whole point is that the data fills itself. If a live run can't get
+        # the series within a week of today, the automation is broken — fail
+        # loudly (red run) instead of silently committing nothing. A normal
+        # weekend/holiday gap stays well inside the 7-day tolerance.
+        run: |
+          node -e '
+            const j = require("./src/data/snapshots/price-history-snapshot.json");
+            const niva = j.data.filter(r => r.company_id === "niva-bupa");
+            if (!niva.length) { console.error("FAIL: no niva-bupa rows in snapshot."); process.exit(1); }
+            const latest = niva.map(r => r.date).sort().pop();
+            const ageDays = Math.floor((Date.now() - Date.parse(latest + "T00:00:00Z")) / 86400000);
+            console.log("latest niva-bupa session: " + latest + " (" + ageDays + " days old)");
+            if (ageDays > 7) {
+              console.error("FAIL: series is " + ageDays + " days stale — the live price fetch did not advance it. Check the muns / Yahoo steps above.");
+              process.exit(1);
+            }
+            console.log("OK: Historical Stock Movement is current.");
+          '
+
       - name: Commit refreshed snapshot
         run: |
           git config user.name "insurance-data-bot"
