@@ -84,9 +84,11 @@ OUT_HELD = REPO / "data" / "processed" / "excel-held-back.json"
 DECK = REPO / "data" / "source-map" / "deck-sourced-values.json"
 ANNUAL_REPORT = REPO / "data" / "source-map" / "annual-report-values.json"
 SCREENER = SNAP / "screener-crosscheck-snapshot.json"
+SHAREHOLDING = SNAP / "shareholding-pattern-snapshot.json"
 
 CONF_ORDER = {"high": 0, "medium": 1, "low": 2, "pending": 3, None: 4}
 RANK_CF_DISCLOSURE = 1
+RANK_SHAREHOLDING = 1  # official exchange shareholding-pattern filing (Reg. 31 LODR)
 RANK_DECK = 2
 RANK_AR = 2
 RANK_EXISTING = 3
@@ -208,6 +210,43 @@ def collect_overlay():
             add_candidate(entity, target, period, val, norm, label, unit, prov,
                           RANK_OVERLAY, "curated_overlay", e.get("source_status", "available"),
                           {"basis_note": e.get("note")})
+
+
+def collect_shareholding():
+    """Per-holder shareholding share counts from the quarterly exchange
+    shareholding-pattern filing (src/data/snapshots/shareholding-pattern-snapshot.json).
+    Fills the Captable tab's `shareholding_shares::<holder>` cells (unit 'shares',
+    rank-1 official filing). Integer counts; missing stays missing — a holder is
+    wired only when the snapshot carries a real sourced count.
+
+    NOTE on the source: the named per-holder list is NOT on Screener's public page
+    (login-only there), so the authoritative source is the company's exchange
+    shareholding-pattern filing — the same document Screener itself copies from. The
+    automated fetcher (scripts/ingest/fetch-shareholding.ts) refreshes the snapshot
+    each quarter under a strict sum-ties-to-total gate, so a wrong number can never
+    land here."""
+    try:
+        snap = json.loads(SHAREHOLDING.read_text())
+    except Exception:
+        return
+    for r in snap.get("data", []):
+        if not isinstance(r, dict):
+            continue
+        entity, holder, period, shares = (
+            r.get("company_id"), r.get("holder"), r.get("period"), r.get("shares"),
+        )
+        if not (entity and holder and period) or shares is None:
+            continue
+        prov = r.get("provenance", {}) or {}
+        add_candidate(
+            entity, f"shareholding_shares::{holder}", period,
+            shares, shares, "identity (value used as-is)", "shares", prov,
+            RANK_SHAREHOLDING, "official_filing", prov.get("source_status", "available"),
+            {"filing_date": r.get("filing_date") or period,
+             "document_type": "shareholding_pattern",
+             "document_title": prov.get("source_name"),
+             "basis_note": prov.get("note")},
+        )
 
 
 def load(name):
@@ -703,6 +742,7 @@ def resolve():
 
 def main():
     collect_existing()
+    collect_shareholding()  # rank-1 per-holder shareholding shares (Captable tab)
     wired, held = collect_company_filings()
     deck = collect_deck_sourced()
     ar = collect_annual_report()
