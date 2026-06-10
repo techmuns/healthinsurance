@@ -2511,7 +2511,7 @@
     "aditya-birla::combined_ratio_igaap::FY24": {
       "value": 110,
       "unit": "%",
-      "source_name": "Aditya Birla Capital FY25 Subsidiaries Financial Report (ABHI) — Combined Ratio FY24 = 110.0% (claims 68.3% + expense 41.8%)",
+      "source_name": "Aditya Birla Capital FY25 Subsidiaries Financial Report (ABHI) — Combined Ratio FY24 = 110.0% (stated; report shows 110.01%)",
       "source_url": null,
       "source_file": "data/raw/companies/aditya-birla/aditya-birla-ABCL-Subsidiaries-Financial-Report-FY25.pdf",
       "source_page": "ABHI financial statements & ratios",
@@ -2519,7 +2519,7 @@
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Combined ratio = claims ratio + expense ratio; matches the report’s stated 110.01% for ABHI FY24."
+      "note": "Stated in the ABCL subsidiaries report (ABHI combined ratio 110.01%, rounded to 110.0%); independently confirmed by claims 68.3% + expense 41.8% = 110.1%."
     },
     "aditya-birla::pat_ifrs::FY22": {
       "value": null,
