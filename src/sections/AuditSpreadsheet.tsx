@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, StickyNote, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
@@ -50,6 +50,25 @@ function pipelineOf(cell: AuditCell): PipelineKey {
 // A cell is "fetched & verified" when it carries a value.
 function isFetched(cell: AuditCell): boolean {
   return cell.normalizedValue != null || cell.calculatedValue != null
+}
+
+// ── Provenance notepad ───────────────────────────────────────────────────────
+// A cell earns a note when its value isn't a clean, direct read — it's derived /
+// computed / reconstructed, or it's blocked/missing for a stated reason.
+function noteWorthy(cell: AuditCell): boolean {
+  const n = (cell.note || '').toLowerCase()
+  if (['web_blocked', 'missing', 'source_unavailable', 'blocked', 'parser_issue', 'computed'].includes(cell.status)) return true
+  return /deriv|reconstruct|mix-derived|last resort|estimate|proxy|≈|awaited|not yet|site blocks|not separately|supersed|basis|1\/n/.test(n)
+}
+// A pragmatic "another way we could get this directly" per note type.
+function anotherWay(cell: AuditCell): string {
+  const n = (cell.note || '').toLowerCase()
+  if (cell.status === 'web_blocked') return 'Drop a browser-downloaded IRDAI Handbook into data/raw/irdai/ so the figure can be read directly.'
+  if (/deriv|reconstruct|mix-derived|= total|proxy|estimate|≈/.test(n)) return 'Use a directly-stated figure when the source prints it (e.g. a future deck slide / disclosure that gives the number outright) instead of deriving it.'
+  if (/awaited|not yet|site blocks|disclosure awaited|not filed/.test(n)) return 'Fetch the filing once published, or paste the figure / a source link.'
+  if (cell.status === 'computed') return 'Replace with a directly-reported value if the company discloses it.'
+  if (/superseded|basis|1\/n/.test(n)) return 'Confirm the basis (1/n vs ex-1/n, IGAAP vs Ind-AS) against the audited statement.'
+  return 'Source a directly-stated figure to replace the current read.'
 }
 
 function parseRef(ref: string): { col: string; row: number } | null {
@@ -212,6 +231,14 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
           </DetailField>
         )}
 
+        {fetched && cell.note && <DetailField label="Note">{cell.note}</DetailField>}
+
+        {noteWorthy(cell) && (
+          <div className="flex items-center gap-1.5 rounded-md bg-gold-soft/40 px-2 py-1 text-[10.5px] font-medium text-gold">
+            <StickyNote className="h-3 w-3 shrink-0" /> Logged in the Notes &amp; caveats tab
+          </div>
+        )}
+
         {cell.formula && (
           <DetailField label="Excel formula">
             <code className="block rounded-md bg-ice/70 px-2 py-1 font-mono text-[11px] text-ink-primary">{cell.formula}</code>
@@ -326,14 +353,90 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
   )
 }
 
+// ── Notes & caveats panel ────────────────────────────────────────────────────
+function NotesPanel({ notes, onJump }: { notes: AuditCell[]; onJump: (c: AuditCell) => void }) {
+  const bySheet = useMemo(() => {
+    const m = new Map<string, AuditCell[]>()
+    for (const c of notes) { if (!m.has(c.sheet)) m.set(c.sheet, []); m.get(c.sheet)!.push(c) }
+    return [...m.entries()]
+  }, [notes])
+
+  return (
+    <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
+      <div className="mb-3 flex items-start gap-2">
+        <StickyNote className="mt-0.5 h-4 w-4 shrink-0 text-champagne-deep" />
+        <div>
+          <h3 className="font-display text-[15px] leading-tight text-navy-deep">Notes &amp; caveats</h3>
+          <p className="mt-0.5 max-w-2xl text-[11.5px] text-ink-secondary">
+            Every figure that isn't a clean direct read — what we did, why it isn't direct, and another way to get it
+            outright. Click any note to jump to its exact cell.
+          </p>
+        </div>
+        <span className="ml-auto rounded-full bg-ice px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-secondary">{notes.length}</span>
+      </div>
+
+      {notes.length === 0 ? (
+        <p className="text-[12px] text-ink-secondary">No caveats — every value is a direct read.</p>
+      ) : (
+        <div className="space-y-4">
+          {bySheet.map(([sheet, cells]) => (
+            <div key={sheet}>
+              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-navy-primary">
+                {sheet} <span className="text-ink-secondary">· {cells.length}</span>
+              </p>
+              <div className="space-y-1.5">
+                {cells.map((c) => {
+                  const meta = STATUS_META[c.status]
+                  const q = QA[meta.color]
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => onJump(c)}
+                      className="block w-full rounded-lg border border-soft-border bg-white px-3 py-2 text-left transition-colors hover:border-navy-primary/40 hover:bg-ice/40"
+                    >
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="font-mono text-[10px] text-ink-secondary">{c.cellRef}</span>
+                        <span className="text-[12px] font-semibold text-navy-deep">{c.metricLabel}</span>
+                        <span className="text-[11px] text-ink-secondary">{c.entityLabel} · {c.period}</span>
+                        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9.5px] font-semibold ${q.cell} ${q.text}`}>
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.dot }} />{meta.label}
+                        </span>
+                      </div>
+                      {c.note && (
+                        <p className="mt-1 text-[11.5px] leading-snug text-ink-primary">
+                          <span className="font-semibold text-navy-deep">What we did · </span>{c.note}
+                        </p>
+                      )}
+                      <p className="mt-0.5 text-[11px] leading-snug text-teal">
+                        <span className="font-semibold">Another way · </span>{anotherWay(c)}
+                      </p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Page ─────────────────────────────────────────────────────────────────────
+const NOTES_TAB = '__notes__'
+
 export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   const sheets = model.groups
   const [active, setActive] = useState(sheets[0]?.sheet ?? '')
   const [raw, setRaw] = useState(false)
   const [selected, setSelected] = useState<AuditCell | null>(null)
 
+  const isNotes = active === NOTES_TAB
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
+
+  // Every derived / computed / missing cell with a caveat, for the Notes tab.
+  const notes = useMemo(() => sheets.flatMap((g) => g.cells.filter(noteWorthy)), [sheets])
 
   // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
   const pipeStats = useMemo(() => {
@@ -348,14 +451,16 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
     return s
   }, [group])
 
-  if (!group) return null
+  const jumpToCell = (c: AuditCell) => { setActive(c.sheet); setSelected(c) }
+
+  if (!sheets.length) return null
 
   return (
     <div className="space-y-3">
       {/* Excel-style sheet tabs */}
       <div className="flex flex-wrap items-end gap-1 border-b border-soft-border">
         {sheets.map((g) => {
-          const on = g.sheet === active
+          const on = !isNotes && g.sheet === active
           const filled = g.stats.valuePresent
           return (
             <button
@@ -377,7 +482,29 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
             </button>
           )
         })}
+        {/* Notes & caveats tab — the provenance notepad. */}
+        <button
+          type="button"
+          onClick={() => { setActive(NOTES_TAB); setSelected(null) }}
+          className={[
+            'relative -mb-px ml-1 flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors',
+            isNotes
+              ? 'border-soft-border border-b-white bg-white font-semibold text-navy-deep'
+              : 'border-transparent bg-transparent font-medium text-ink-secondary hover:bg-ice/60 hover:text-navy-primary',
+          ].join(' ')}
+        >
+          {isNotes && <span className="absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep" />}
+          <StickyNote className="h-3.5 w-3.5 text-champagne-deep" />
+          Notes &amp; caveats
+          <span className={`rounded-full px-1.5 text-[9.5px] font-semibold tabular-nums ${isNotes ? 'bg-gold-soft text-gold' : 'bg-ice text-ink-secondary'}`}>{notes.length}</span>
+        </button>
       </div>
+
+      {isNotes ? (
+        <NotesPanel notes={notes} onJump={jumpToCell} />
+      ) : (
+      <>
+      {/* ───────── grid view ───────── */}
 
       {/* Toolbar — value mode + legend */}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -437,6 +564,8 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }
