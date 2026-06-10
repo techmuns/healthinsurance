@@ -315,7 +315,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                   </tr>
                 )}
                 <tr className="group">
-                  <th className="sticky left-0 z-10 border-b border-r border-soft-border bg-white px-3 py-1.5 text-left align-middle group-hover:bg-ice/50">
+                  <th className="sticky left-0 z-10 border-b border-r border-soft-border bg-white px-3 py-1.5 text-left align-middle group-hover:bg-ice">
                     <span className="block truncate text-[11.5px] font-semibold text-navy-deep" style={{ maxWidth: 210 }} title={r.primary}>{r.primary}</span>
                     {r.secondary && r.secondary !== r.primary && (
                       <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 210 }} title={r.secondary}>{r.secondary}</span>
