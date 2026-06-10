@@ -59,7 +59,7 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - run: pip install --quiet --disable-pip-version-check openpyxl
 
-      - name: Pull + clean + fill the interim columns
+      - name: Fetch + clean the interim decks
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
@@ -84,39 +84,42 @@ jobs:
               FETCH_COMPANY_ID="$company" FETCH_PERIOD="$period" \
                 npx tsx scripts/ingest/sahi-financials-agent.ts || echo "fetch failed: $company $period"
               npx tsx scripts/ingest/sahi-financials-clean.ts "$company" "$period" || echo "clean failed: $company $period"
-              f="data/agent-pulls/sahi-financials/$company/cleaned-$period.json"
-              if [ -f "$f" ]; then
-                npx tsx scripts/ingest/audit-fill.ts fill --from "$f" || echo "fill failed: $company $period"
-              else
-                echo "no cleaned rows for $company $period"
-              fi
               echo "::endgroup::"
             done
           done
           exit 0
 
-      - name: Rebuild + commit (conflict-safe)
+      - name: Publish — land pulls, then re-apply fills onto latest main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Commit the SOURCE OF TRUTH first (curated overlay + raw agent pulls).
-          # The derived value store + audit index are large generated files the bot
-          # also regenerates, so text-merging them on rebase conflicts (that was the
-          # failure). Instead we rebuild them FRESH after each rebase — regenerated on
-          # top of the bot's concurrent commits — and never try to merge their content.
-          git add data/agent-pulls/sahi-financials src/data/snapshots/audit-overlay.json
-          if git diff --staged --quiet; then echo "No new source data — nothing to publish."; exit 0; fi
-          git commit -m "sahi quarterly backfill: interim columns @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          # 1) Land the raw + cleaned agent pulls (new files — these rarely conflict).
+          #    They must reach main so step 2 can re-run the fill from them after a reset.
+          git add data/agent-pulls/sahi-financials
+          if ! git diff --staged --quiet; then
+            git commit -m "sahi quarterly backfill: agent pulls @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            for i in 1 2 3 4 5; do
+              git fetch origin main && git rebase origin/main && git push && break || { git rebase --abort 2>/dev/null || true; echo "pulls push retry $i"; sleep 5; }
+            done
+          else
+            echo "No new agent pulls."
+          fi
+          # 2) Re-apply EVERY cleaned fill onto the latest main, then rebuild + commit.
+          #    Resetting to main on each attempt means the overlay + generated files are
+          #    regenerated on top of concurrent commits and NEVER text-merged — which was
+          #    the failure (two writers colliding on audit-overlay.json / the index).
           for i in 1 2 3 4 5 6; do
             git fetch origin main || { echo "fetch retry $i"; sleep 5; continue; }
-            if ! git rebase origin/main; then git rebase --abort 2>/dev/null || true; echo "rebase retry $i"; sleep 5; continue; fi
-            python3 scripts/excel/build_value_store.py  || { echo "value-store build failed"; exit 1; }
-            python3 scripts/excel/build_audit_index.py  || { echo "audit-index build failed"; exit 1; }
-            git add data/processed/excel-values.json data/processed/excel-held-back.json src/data/snapshots/extracted-data-audit.json
-            git diff --cached --quiet || git commit -m "rebuild store + audit index (quarterly backfill)"
-            if git push; then echo "pushed on attempt $i"; exit 0; fi
-            # Lost the push race: drop the rebuild commit so the next loop re-rebases just the source commit.
-            git log -1 --pretty=%s | grep -q "^rebuild store" && git reset --hard HEAD~1
-            echo "push retry $i"; sleep 5
+            git reset --hard origin/main
+            for f in data/agent-pulls/sahi-financials/*/cleaned-*.json; do
+              [ -e "$f" ] && npx tsx scripts/ingest/audit-fill.ts fill --from "$f" || true
+            done
+            python3 scripts/excel/build_value_store.py || { echo "value-store build failed"; exit 1; }
+            python3 scripts/excel/build_audit_index.py || { echo "audit-index build failed"; exit 1; }
+            git add src/data/snapshots/audit-overlay.json data/processed/excel-values.json data/processed/excel-held-back.json src/data/snapshots/extracted-data-audit.json
+            if git diff --staged --quiet; then echo "Nothing new to fill — already current."; exit 0; fi
+            git commit -m "sahi quarterly backfill: fill interim columns @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            if git push; then echo "published on attempt $i"; exit 0; fi
+            echo "publish retry $i"; sleep 5
           done
-          echo "ERROR: push failed after retries"; exit 1
+          echo "ERROR: publish failed after retries"; exit 1
