@@ -1,0 +1,53 @@
+name: fetch IRDAI handbook (segment GDPI history)
+
+# Downloads the IRDAI "Handbook on Indian Insurance Statistics" editions that
+# carry the segment-wise GDPI history (Health / Motor / Total, FY15-FY23),
+# streaming each big PDF/ZIP through ScraperAPI's India IP and VALIDATING
+# completeness (Content-Length match + PDF parses) before saving — so a
+# truncated/corrupt copy is never committed. Files land in data/raw/irdai/.
+
+on:
+  workflow_dispatch:
+    inputs:
+      edition:
+        description: 'Optional single edition (e.g. "handbook-2022-23" or "FY23"). Blank = all.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-irdai-handbook
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Download + validate IRDAI handbooks (ScraperAPI India proxy)
+        env:
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          EDITION: ${{ github.event.inputs.edition }}
+        run: npx tsx scripts/ingest/fetch-irdai-handbook.ts
+      - name: Commit valid handbooks
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/irdai
+          if git diff --staged --quiet; then echo "No valid new handbooks."; exit 0; fi
+          git commit -m "fetch-irdai-handbook: validated handbook download(s) @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push; then echo "pushed $i"; exit 0; fi
+            echo "retry $i"; sleep 3
+          done
+          echo "ERROR: push failed"; exit 1
