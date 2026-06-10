@@ -71,6 +71,8 @@ const METRICS: MetricDef[] = [
   { key: 'net_worth_ifrs', unit: 'INR_cr', store: 'net_worth_ifrs' },
   { key: 'net_worth', unit: 'INR_cr', store: 'net_worth' },
   { key: 'eom_igaap', unit: '%', store: 'eom_igaap' },
+  { key: 'investment_aum', unit: 'INR_cr', store: 'investment_aum' },
+  { key: 'investment_yield', unit: '%', store: 'investment_yield' },
   { key: 'sahi_segment_share', unit: '%', share: 'segment_share_pct' },
   { key: 'retail_health_market_share', unit: '%', store: 'retail_health_market_share', share: 'retail_share_pct' },
   { key: 'overall_health_market_share', unit: '%', store: 'overall_health_market_share', share: 'overall_share_pct' },
