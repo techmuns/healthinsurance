@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/data/snapshots/ownership-snapshot.json data/logs/sahi-ownership-agent.log
+          git add src/data/snapshots/ownership-snapshot.json
           if git diff --staged --quiet; then echo "No change."; exit 0; fi
           git commit -m "ownership: listed-SAHI shareholding via muns agent @ $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do
