@@ -130,6 +130,39 @@ export function isoDate(v: unknown): string | null {
   return null
 }
 
+/** Minimal CSV → records (header row + rows), tolerant of simple quoted fields. */
+function splitCsvLine(line: string): string[] {
+  const out: string[] = []
+  let cur = ''
+  let q = false
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i]
+    if (q) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++ } else q = false
+      } else cur += c
+    } else if (c === '"') q = true
+    else if (c === ',') { out.push(cur); cur = '' }
+    else cur += c
+  }
+  out.push(cur)
+  return out.map((s) => s.trim())
+}
+function parseCsv(text: string): Rec[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim())
+  if (lines.length < 2 || !lines[0].includes(',')) return []
+  const headers = splitCsvLine(lines[0])
+  const out: Rec[] = []
+  for (const line of lines.slice(1)) {
+    const cells = splitCsvLine(line)
+    if (cells.length < 2) continue
+    const rec: Rec = {}
+    headers.forEach((h, i) => (rec[h] = cells[i]))
+    out.push(rec)
+  }
+  return out
+}
+
 export function parseMunsMarketData(
   buffer: Buffer,
   company_id: string,
@@ -137,7 +170,20 @@ export function parseMunsMarketData(
   raw_file: string,
   fetched_at: string,
 ): PriceRow[] {
-  const records = toRecords(JSON.parse(buffer.toString('utf8')))
+  const text = buffer.toString('utf8').trim()
+  let records: Rec[] = []
+  try {
+    records = toRecords(JSON.parse(text))
+  } catch {
+    records = parseCsv(text) // some endpoints return CSV instead of JSON
+  }
+  if (!records.length) {
+    // Surface what the endpoint actually returned so the contract is visible in
+    // the CI log (e.g. a "File created…" message, an HTML page, or empty body).
+    throw new Error(
+      `unparseable response (${text.length}B): ${JSON.stringify(text.slice(0, 240))}`,
+    )
+  }
   const prov = (period: string) => ({
     source_name: 'muns market-data API — NSE daily history',
     source_url: url,
