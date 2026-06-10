@@ -372,10 +372,19 @@ function buildInsurer(c: CompanyMasterEntry): Insurer {
   return insurer
 }
 
-/** The canonical insurer universe, in company-master order. */
+// Standalone-health minnows with negligible market share and no meaningful
+// financials. They are EXCLUDED from the deep analysis (peer scorecard, company
+// selector, company-specific views) so they don't clutter it with empty rows.
+// Their records stay in company-master for SAHI industry-level context. (Neha,
+// 2026-06-10 — "very low market share, don't extend deep analysis to them".)
+const DEEP_ANALYSIS_EXCLUDE = new Set(['galaxy-health', 'narayana-health', 'reliance-health'])
+
+/** The canonical insurer universe for the deep analysis, in company-master
+ *  order — the negligible-share SAHI minnows are dropped (see above). */
 export function getInsurers(): Insurer[] {
   return getCompanyMaster()
     .filter((c) => c.active_status !== 'inactive')
+    .filter((c) => !DEEP_ANALYSIS_EXCLUDE.has(c.company_id))
     .map(buildInsurer)
 }
 
