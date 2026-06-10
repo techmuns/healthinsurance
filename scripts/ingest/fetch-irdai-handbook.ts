@@ -21,9 +21,11 @@ import { existsSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { ProxyAgent, type Dispatcher } from 'undici'
-// pdf-parse validates that a downloaded PDF is complete & readable.
-import pdfParse from 'pdf-parse'
+
+const execFileP = promisify(execFile)
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -62,7 +64,9 @@ async function download(url: string, dispatcher: Dispatcher | undefined): Promis
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), NAV_TIMEOUT_MS)
   try {
-    const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': BROWSER_UA, Accept: '*/*' }, signal: ctrl.signal, ...(dispatcher ? { dispatcher } : {}) } as RequestInit)
+    // Accept-Encoding: identity stops the proxy from gzip-(de)compressing the
+    // body — which was mangling these PDFs' internal flate streams in transit.
+    const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': BROWSER_UA, Accept: '*/*', 'Accept-Encoding': 'identity' }, signal: ctrl.signal, ...(dispatcher ? { dispatcher } : {}) } as RequestInit)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const cl = res.headers.get('content-length')
     const buf = Buffer.from(await res.arrayBuffer())
@@ -70,17 +74,23 @@ async function download(url: string, dispatcher: Dispatcher | undefined): Promis
   } finally { clearTimeout(timer) }
 }
 
-async function validate(t: Target, r: DLResult): Promise<string | null> {
-  // null = OK; a string = the reason it's rejected.
+async function validate(t: Target, r: DLResult, tmpPath: string): Promise<string | null> {
+  // null = OK; a string = the reason it's rejected. Validation shells out to
+  // poppler (pdfinfo) so a malformed PDF can never crash this Node process.
   if (r.buf.length < 100_000) return `too small (${r.buf.length} bytes)`
   if (r.declared !== null && r.declared !== r.buf.length) return `truncated: got ${r.buf.length} of ${r.declared} bytes`
   if (t.ext === 'pdf') {
     if (!r.buf.subarray(0, 1024).includes(PDF_MAGIC)) return 'not a PDF (no %PDF header)'
+    await writeFile(tmpPath, r.buf)
     try {
-      const parsed = await pdfParse(r.buf)
-      if (!parsed.numpages || parsed.numpages < 20) return `parsed but only ${parsed.numpages} pages`
-      if ((parsed.text || '').length < 5000) return `parsed but text too short (${(parsed.text || '').length} chars)`
-    } catch (e) { return `pdf-parse failed: ${e instanceof Error ? e.message : String(e)}` }
+      const { stdout } = await execFileP('pdfinfo', [tmpPath], { maxBuffer: 4_000_000 })
+      const m = stdout.match(/Pages:\s+(\d+)/)
+      const pages = m ? Number(m[1]) : 0
+      if (pages < 20) return `pdfinfo reports only ${pages} pages (corrupt/truncated)`
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e)
+      return `pdfinfo rejected the file (corrupt): ${msg.split('\n')[0].slice(0, 120)}`
+    }
   } else {
     if (!r.buf.subarray(0, 4).equals(ZIP_MAGIC)) return 'not a ZIP (no PK header)'
   }
@@ -102,22 +112,21 @@ async function main(): Promise<number> {
   let ok = 0, fail = 0
   for (const t of targets) {
     const name = `${t.edition}.${t.ext}`
+    const tmpPath = resolve(OUT_DIR, `.tmp-${t.edition}.${t.ext}`)
     try {
       console.log(`  ↓ ${t.fy} ${t.edition} …`)
       let r = await download(t.url, dispatcher)
-      let why = await validate(t, r)
+      let why = await validate(t, r, tmpPath)
       if (why && dispatcher) {
         // one retry — transient proxy hiccups truncate occasionally
         console.log(`    retry (${why})`)
         r = await download(t.url, dispatcher)
-        why = await validate(t, r)
+        why = await validate(t, r, tmpPath)
       }
       if (why) { fail++; console.error(`    ✗ rejected: ${why} — NOT saved`); continue }
       await writeFile(resolve(OUT_DIR, name), r.buf)
       const sha256 = createHash('sha256').update(r.buf).digest('hex')
-      let pages: number | undefined
-      if (t.ext === 'pdf') { try { pages = (await pdfParse(r.buf)).numpages } catch { /* already validated */ } }
-      manifest[t.url] = { filename: name, bytes: r.buf.length, sha256, pages, fetched_at: new Date().toISOString() }
+      manifest[t.url] = { filename: name, bytes: r.buf.length, sha256, fetched_at: new Date().toISOString() }
       ok++
       console.log(`    ✓ saved ${name} (${r.buf.length.toLocaleString()} bytes${pages ? `, ${pages} pages` : ''})`)
     } catch (e) { fail++; console.error(`    ✗ ${t.edition}: ${e instanceof Error ? e.message : String(e)}`) }

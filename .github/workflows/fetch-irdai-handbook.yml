@@ -34,6 +34,8 @@ jobs:
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - name: Install poppler-utils (pdfinfo validation)
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
       - name: Download + validate IRDAI handbooks (ScraperAPI India proxy)
         env:
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
