@@ -92,29 +92,21 @@ function CardIcon({ kind, color }: { kind: 'growth' | 'profit' | 'capital' | 'va
   )
 }
 
-function SummaryCard({ icon, label, cell, explain, theme }: { icon: 'growth' | 'profit' | 'capital' | 'valuation'; label: string; cell: Cell; explain: string; theme: string }) {
-  const accent = cell.tone === 'na' ? SLATE : TONE[cell.tone].fg
+// Compact sub-score chip — the four metric standings, relocated from the old
+// big top cards into the hero scorecard header (item: "show sub-scores inside
+// the hero"). White-on-gradient, premium, space-efficient.
+function SubScore({ icon, label, cell, theme }: { icon: 'growth' | 'profit' | 'capital' | 'valuation'; label: string; cell: Cell; theme: string }) {
   return (
-    <div
-      className="group relative overflow-hidden rounded-xl2 border p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_12px_28px_rgba(23,43,77,0.07)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_2px_6px_rgba(23,43,77,0.06),0_18px_38px_rgba(23,43,77,0.1)]"
-      style={{ background: `linear-gradient(135deg, #FFFFFF 0%, ${hexA(theme, 0.07)} 100%)`, borderColor: hexA(theme, 0.2) }}
-    >
-      {/* soft tonal layover — a faint colour bloom + a slim accent rib */}
-      <span className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full opacity-70 blur-2xl transition-opacity duration-300 group-hover:opacity-100" style={{ background: hexA(theme, 0.1) }} />
-      <span className="absolute inset-y-3 left-0 w-[3px] rounded-full" style={{ background: hexA(theme, 0.5) }} />
-      <div className="relative pl-2">
-        <div className="flex items-center gap-1.5">
-          <CardIcon kind={icon} color={accent} />
-          <span className="text-[10.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
-        </div>
-        <div className="mt-2.5 flex items-end justify-between">
-          <div className="flex items-baseline gap-1">
-            <span className="font-display text-[26px] leading-none text-navy-deep">{cell.rank ?? 'NA'}</span>
-            {cell.rank != null && <span className="text-[12px] font-medium text-ink-secondary">of {cell.count}</span>}
-          </div>
-          <SignalBadge signal={cell.signal} />
-        </div>
-        <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{explain}</p>
+    <div className="flex items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5 ring-1 ring-white/15 backdrop-blur-sm">
+      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md" style={{ background: hexA(theme, 0.55) }}>
+        <CardIcon kind={icon} color="#FFFFFF" />
+      </span>
+      <div className="leading-tight">
+        <span className="block text-[9px] font-semibold uppercase tracking-[0.07em] text-white/55">{label}</span>
+        <span className="flex items-baseline gap-1">
+          <span className="font-display text-[15px] leading-none text-white">{cell.rank ?? 'NA'}</span>
+          {cell.rank != null && <span className="text-[10px] text-white/55">/ {cell.count}</span>}
+        </span>
       </div>
     </div>
   )
@@ -263,7 +255,7 @@ function CompareBar({ label, value, max, color, unit, strong }: { label: string;
   )
 }
 
-function PeerSignalPanel({ cell, focalName, onPick, pills }: { cell: Cell; focalName: string; onPick: (k: string) => void; pills: { key: string; label: string }[] }) {
+function PeerSignalPanel({ cell, focalName, onPick, pills, whyBullets, questions }: { cell: Cell; focalName: string; onPick: (k: string) => void; pills: { key: string; label: string }[]; whyBullets: string[]; questions: string[] }) {
   const m = cell.metric
   const insight = cell.value == null
     ? `${m.label} isn't comparable across this peer group — pick another metric.`
@@ -274,32 +266,56 @@ function PeerSignalPanel({ cell, focalName, onPick, pills }: { cell: Cell; focal
   return (
     <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-soft">
       <div className="px-4 py-3" style={{ background: `linear-gradient(135deg, ${NAVY}, ${NAVY_PRIMARY})` }}>
-        <p className="font-display text-[14.5px] leading-tight text-white">Peer Signal Panel</p>
-        <p className="mt-0.5 text-[10.5px] text-white/65">Click a metric to see insights</p>
+        <p className="font-display text-[14.5px] leading-tight text-white">Why this score?</p>
+        <p className="mt-0.5 text-[10.5px] text-white/65">Buy-side read · {focalName}</p>
       </div>
-      <div className="flex flex-wrap gap-1.5 px-4 py-3">
-        {pills.map((p) => {
-          const on = p.key === m.key
-          return (
-            <button key={p.key} type="button" onClick={() => onPick(p.key)} className={['rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-all', on ? 'border-transparent text-white' : 'border-soft-border bg-ice/50 text-ink-secondary hover:text-navy-primary'].join(' ')} style={on ? { background: NAVY_PRIMARY } : undefined}>
-              {p.label}
-            </button>
-          )
-        })}
+
+      {/* Why this score — 3 factual bullets (from the focal company's standing). */}
+      <ul className="space-y-1.5 px-4 pt-3">
+        {whyBullets.map((b, i) => (
+          <li key={i} className="flex gap-2 text-[11.5px] leading-snug text-ink-primary">
+            <span className="mt-[6px] h-1 w-1 shrink-0 rounded-full" style={{ background: GOLD }} />
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* Key questions this answers. */}
+      <div className="mt-3 px-4">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.09em] text-ink-secondary">Key questions this answers</p>
+        <ul className="mt-1.5 space-y-1">
+          {questions.map((q, i) => (
+            <li key={i} className="flex gap-1.5 text-[11px] leading-snug text-ink-secondary">
+              <span className="font-semibold text-navy-primary">{i + 1}.</span>
+              <span>{q}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-      <div className="space-y-3 px-4 pb-4">
+
+      {/* Interactive metric compare — leaner; dynamically shows the gap to peers. */}
+      <div className="mt-3 space-y-2.5 border-t border-soft-border px-4 pb-4 pt-3">
+        <div className="flex flex-wrap gap-1.5">
+          {pills.map((p) => {
+            const on = p.key === m.key
+            return (
+              <button key={p.key} type="button" onClick={() => onPick(p.key)} className={['rounded-full border px-2.5 py-1 text-[10.5px] font-semibold transition-all', on ? 'border-transparent text-white' : 'border-soft-border bg-ice/50 text-ink-secondary hover:text-navy-primary'].join(' ')} style={on ? { background: NAVY_PRIMARY } : undefined}>
+                {p.label}
+              </button>
+            )
+          })}
+        </div>
         <div className="flex items-center justify-between gap-2">
-          <p className="font-display text-[13.5px] text-navy-deep">{m.label}</p>
+          <p className="font-display text-[12.5px] text-navy-deep">{m.label}</p>
           <SignalBadge signal={cell.signal} />
         </div>
-        <p className="text-[12px] leading-relaxed text-ink-primary">{insight}</p>
+        <p className="text-[11.5px] leading-relaxed text-ink-primary">{insight}</p>
         {cell.value != null && (
           <div className="space-y-2 rounded-lg bg-ice/50 p-3">
             <CompareBar label={focalName} value={cell.value} max={max} color={TEAL} unit={m.unit} strong />
             {cell.median != null && <CompareBar label="Peer median" value={cell.median} max={max} color={SLATE} unit={m.unit} />}
           </div>
         )}
-        <p className="text-[11.5px] leading-relaxed text-ink-secondary"><span className="font-semibold text-ink-primary">Why it matters · </span>{m.whyItMatters}</p>
       </div>
     </div>
   )
@@ -370,6 +386,18 @@ export function CompetitivePositioning() {
   const explainCapital = focalRow.cells.solvency.best ? 'Best solvency in the group' : focalRow.cells.solvency.tone === 'strong' ? 'Strong solvency cushion' : 'Solvency near peer median'
   const explainVal = focalRow.cells.valuation.value == null ? 'Not listed — no market price' : focalRow.cells.valuation.signal === 'Premium' ? 'Priced above peers' : 'Priced below peers'
 
+  // Display-only summary of the already-computed tones (no new calculation):
+  // how many metrics the focal company is leading/strong in — the hero anchor.
+  const STRONG_TONES = new Set<CellTone>(['leader', 'strong'])
+  const strongCount = card.metrics.filter((m) => STRONG_TONES.has(focalRow.cells[m.key]?.tone)).length
+  const totalMetrics = card.metrics.length
+  const whyBullets = [explainGrowth, explainProfit, explainCapital, explainVal]
+  const keyQuestions = [
+    `Is ${focal.shortName} growing faster than the ${card.groupLabel} peer group?`,
+    'Do profitability and capital justify where it is priced?',
+    'Where does it lead — and where is the gap to close?',
+  ]
+
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -383,16 +411,6 @@ export function CompetitivePositioning() {
             <span className="font-semibold text-navy-deep">{focal.shortName}</span> · {card.groupLabel} peer group · Multi-metric scorecard
           </p>
         </div>
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {/* Tone-coded by meaning: teal = growth, navy = core profitability,
-            muted blue = capital strength, gold = valuation/premium. */}
-        <SummaryCard icon="growth" label="Growth" cell={focalRow.cells.growth} explain={explainGrowth} theme={TEAL} />
-        <SummaryCard icon="profit" label="Profitability" cell={focalRow.cells.roe} explain={explainProfit} theme={NAVY_PRIMARY} />
-        <SummaryCard icon="capital" label="Capital" cell={focalRow.cells.solvency} explain={explainCapital} theme={MUTED_BLUE} />
-        <SummaryCard icon="valuation" label="Valuation" cell={focalRow.cells.valuation} explain={explainVal} theme={GOLD} />
       </div>
 
       {/* Tabs */}
@@ -411,14 +429,42 @@ export function CompetitivePositioning() {
       {/* Views */}
       {tab === 'Scorecard' && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[72fr_28fr]">
-          <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
-            <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} onPick={setActiveKey} />
-            <div className="mt-3 border-t border-soft-border pt-2.5">
-              <Legend />
+          {/* HERO scorecard — a soft navy→teal gradient header carrying the focal
+              company's overall standing and the four sub-scores (the former top
+              metric cards, relocated + compacted here), over the peer heatmap. */}
+          <div className="overflow-hidden rounded-2xl border border-soft-border shadow-[0_2px_8px_rgba(23,43,77,0.06),0_22px_46px_rgba(23,43,77,0.10)]">
+            <div className="relative overflow-hidden px-5 pb-4 pt-4" style={{ background: `linear-gradient(120deg, ${NAVY} 0%, ${NAVY_PRIMARY} 56%, ${TEAL_DEEP} 132%)` }}>
+              <span aria-hidden className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full opacity-25 blur-3xl" style={{ background: hexA(GOLD, 0.5) }} />
+              <div className="relative flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-[9.5px] font-semibold uppercase tracking-[0.14em] text-white/55">Peer Scorecard</p>
+                  <p className="font-display text-[21px] leading-tight text-white">{focal.shortName}</p>
+                  <p className="text-[11px] text-white/65">{card.groupLabel} peers · {totalMetrics} metrics</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className="font-display text-[34px] leading-none text-white">
+                    {strongCount}
+                    <span className="text-[15px] text-white/55">/{totalMetrics}</span>
+                  </span>
+                  <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-white/55">metrics strong+</p>
+                </div>
+              </div>
+              <div className="relative mt-3.5 flex flex-wrap gap-2">
+                <SubScore icon="growth" label="Growth" cell={focalRow.cells.growth} theme={TEAL} />
+                <SubScore icon="profit" label="Profitability" cell={focalRow.cells.roe} theme="#6E8FD6" />
+                <SubScore icon="capital" label="Capital" cell={focalRow.cells.solvency} theme="#3FAE9A" />
+                <SubScore icon="valuation" label="Valuation" cell={focalRow.cells.valuation} theme={GOLD} />
+              </div>
+            </div>
+            <div className="bg-card p-4">
+              <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} onPick={setActiveKey} />
+              <div className="mt-3 border-t border-soft-border pt-2.5">
+                <Legend />
+              </div>
             </div>
           </div>
           <div className="space-y-3">
-            <PeerSignalPanel cell={activeCell} focalName={focal.shortName} onPick={setActiveKey} pills={PILLS} />
+            <PeerSignalPanel cell={activeCell} focalName={focal.shortName} onPick={setActiveKey} pills={PILLS} whyBullets={whyBullets} questions={keyQuestions} />
           </div>
         </div>
       )}

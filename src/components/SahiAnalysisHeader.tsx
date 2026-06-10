@@ -26,6 +26,11 @@ function L({ children }: { children: string }) {
 function Caret() {
   return <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 h-3 w-3 -translate-y-1/2 text-ink-secondary" />
 }
+// Subtle separator between control groups so Company / FY Range / View / Quarter
+// read as distinct clusters rather than one crowded row.
+function Divider() {
+  return <span aria-hidden className="hidden h-5 w-px shrink-0 bg-soft-border/70 sm:block" />
+}
 
 interface QSel {
   fy: number
@@ -124,8 +129,9 @@ export function SahiAnalysisHeader({
         })}
       </div>
 
-      {/* ROW 2 — Company → Year range → Period → Quarter range (reserved) */}
-      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+      {/* ROW 2 — Company · Year range · View · Quarter range, grouped with
+          subtle separators and a touch more breathing room. */}
+      <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5">
         {/* Company */}
         <div className="flex items-center gap-1">
           <L>Co.</L>
@@ -140,6 +146,8 @@ export function SahiAnalysisHeader({
             <Caret />
           </span>
         </div>
+
+        <Divider />
 
         {/* Year range */}
         <div className="flex items-center gap-1">
@@ -167,6 +175,8 @@ export function SahiAnalysisHeader({
           </span>
         </div>
 
+        <Divider />
+
         {/* Period toggle */}
         <div className="inline-flex h-[30px] items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
           {[{ label: 'Annual', q: false }, { label: 'Quarterly', q: true }].map((m) => {
@@ -187,6 +197,8 @@ export function SahiAnalysisHeader({
             )
           })}
         </div>
+
+        <Divider />
 
         {/* Quarter range — always rendered (faint + disabled in Annual) so the
             layout never shifts when toggling. Constrained to the year range. */}
