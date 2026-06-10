@@ -175,6 +175,13 @@
       "sha256": "74bcf680ec2907da7ef02ee7615b2717b66672660a63b58340eba7875b820970",
       "fetched_at": "2026-06-10T21:30:30.718Z"
     },
+    "https://www.coforge.com/hubfs/Q1FY25-Web-presentation.pdf": {
+      "filename": "Q1FY25-Web-presentation.pdf",
+      "url": "https://www.coforge.com/hubfs/Q1FY25-Web-presentation.pdf",
+      "bytes": 424788,
+      "sha256": "1699ae5b73bfb4cba1e3292d4ecdfcb6ee736bebbaedc4457af8a74cf2b1ee06",
+      "fetched_at": "2026-06-10T22:30:35.817Z"
+    },
     "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/financial-results/2025-2026/quarter-3/Q3FY26-earnings-presentation.pdf": {
       "filename": "Q3FY26-earnings-presentation.pdf",
       "url": "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/financial-results/2025-2026/quarter-3/Q3FY26-earnings-presentation.pdf",
@@ -203,6 +210,13 @@
       "sha256": "4ff6f18556d56600b230390ac5148bfe3ed8b7dc6687c3a09586292f430acb43",
       "fetched_at": "2026-06-10T21:30:34.141Z"
     },
+    "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/fy25-rhc_investor_presentation_speech-and-slides.pdf": {
+      "filename": "fy25-rhc_investor_presentation_speech-and-slides.pdf",
+      "url": "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/fy25-rhc_investor_presentation_speech-and-slides.pdf",
+      "bytes": 4327784,
+      "sha256": "47bff1881cac34103f2c17b11dea0c8295a0f41302f3cd7f53f10406edb65aba",
+      "fetched_at": "2026-06-10T22:30:17.405Z"
+    },
     "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/rhc_2026_half_year_results_presentation.pdf": {
       "filename": "rhc_2026_half_year_results_presentation.pdf",
       "url": "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/rhc_2026_half_year_results_presentation.pdf",
@@ -211,5 +225,5 @@
       "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-10T22:02:30.707Z"
+  "updated_at": "2026-06-10T22:35:56.361Z"
 }

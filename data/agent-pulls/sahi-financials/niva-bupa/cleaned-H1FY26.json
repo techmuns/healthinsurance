@@ -10,7 +10,20 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "H1FY26",
+    "metric": "retail_health_gwp",
+    "value": 2371.8,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation H1'FY2026",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -23,7 +36,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -36,7 +49,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -49,7 +62,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -62,7 +75,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -75,7 +88,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -88,7 +101,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -101,7 +114,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -114,7 +127,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -127,7 +140,7 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   },
   {
     "company": "niva-bupa",
@@ -140,6 +153,32 @@
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "H1FY26",
+    "metric": "retail_health_market_share",
+    "value": 9.9,
+    "unit": "%",
+    "source_name": "Investor Presentation H1'FY2026",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "H1FY26",
+    "metric": "investment_aum",
+    "value": 8481.8,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation H1'FY2026",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-11-10). Fetched via munschat sahi-financials."
   }
 ]

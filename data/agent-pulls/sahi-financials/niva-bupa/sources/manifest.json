@@ -1,11 +1,32 @@
 {
   "files": {
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Disclosure-Earnings-call-Presentation.pdf": {
+      "filename": "Disclosure-Earnings-call-Presentation.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Disclosure-Earnings-call-Presentation.pdf",
+      "bytes": 2584372,
+      "sha256": "6d84d1511d05d362498c44133a37d04af26ee547c63ce73404e31564818427e4",
+      "fetched_at": "2026-06-10T22:24:14.280Z"
+    },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1": {
       "filename": "Disclosure-Earnings-call-presentation-2025.pdf",
       "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1",
       "bytes": 2566661,
       "sha256": "df8ea29b728997a0a95a440fc6842a8cb1bdd85f1e6da2324beb8d50ea5ed2ad",
       "fetched_at": "2026-06-10T21:42:51.916Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q3-FY-2025.pdf": {
+      "filename": "Earnings-Call-Transcript-Q3-FY-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q3-FY-2025.pdf",
+      "bytes": 227077,
+      "sha256": "5bb53b8ff7987f652a292a7a954dc383b1b7189ad22d4d378bd1c3579109b07d",
+      "fetched_at": "2026-06-10T22:24:17.949Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q4-FY-2025.pdf": {
+      "filename": "Earnings-Call-Transcript-Q4-FY-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q4-FY-2025.pdf",
+      "bytes": 270301,
+      "sha256": "ee1a1cac579589537b32091525d66be86b55a62e33b812bb55912035e6735119",
+      "fetched_at": "2026-06-10T22:24:16.135Z"
     },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investor-Presentation-Q3.pdf": {
       "filename": "Investor-Presentation-Q3.pdf",
@@ -57,5 +78,5 @@
       "fetched_at": "2026-06-10T21:43:10.611Z"
     }
   },
-  "updated_at": "2026-06-10T21:45:10.945Z"
+  "updated_at": "2026-06-10T22:24:17.949Z"
 }

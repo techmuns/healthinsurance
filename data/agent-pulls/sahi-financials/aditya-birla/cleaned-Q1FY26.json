@@ -5,11 +5,24 @@
     "metric": "total_gwp",
     "value": 1357,
     "unit": "INR_cr",
-    "source_name": "Q2 FY26 Financial Results Investor Presentation",
-    "source_url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx",
+    "source_name": "Aditya Birla Capital’s June Quarter Profit Up by 10%",
+    "source_url": "https://hdfcsky.com/news/aditya-birla-capitals-june-quarter-profit-up-by-10-percent",
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-10-30). Fetched via munschat sahi-financials."
+    "note": "Company filing / quarterly investor presentation (2025-08-04). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "aditya-birla",
+    "year": "Q1FY26",
+    "metric": "retail_health_gwp",
+    "value": 768,
+    "unit": "INR_cr",
+    "source_name": "Aditya Birla Capital’s June Quarter Profit Up by 10%",
+    "source_url": "https://hdfcsky.com/news/aditya-birla-capitals-june-quarter-profit-up-by-10-percent",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-08-04). Fetched via munschat sahi-financials."
   }
 ]
