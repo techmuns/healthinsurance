@@ -151,6 +151,7 @@ export type AuditStatus =
   | 'missing'
   | 'parser_issue'
   | 'source_unavailable'
+  | 'web_blocked'
   | 'blocked'
   | 'computed'
   | 'not_applicable'
@@ -172,6 +173,7 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   missing: { key: 'missing', label: 'Not reachable', color: 'red' },
   parser_issue: { key: 'parser_issue', label: "Couldn't extract", color: 'red' },
   source_unavailable: { key: 'source_unavailable', label: 'Not found', color: 'red' },
+  web_blocked: { key: 'web_blocked', label: 'IRDAI web blocked', color: 'grey' },
   blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
   computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
@@ -660,6 +662,9 @@ export function buildAudit(): AuditModel {
         normalizedValue = null
         confidence = held.confidence ?? null
         note = held.note || 'We found this number but are holding it back for a check.'
+      } else if ((b.source_status ?? '') === 'web_blocked') {
+        status = 'web_blocked'
+        note = 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'
       } else {
         const ss = b.source_status ?? 'available'
         status = ss === 'backup' || ss === 'excluded_from_core' ? 'source_unavailable' : 'missing'

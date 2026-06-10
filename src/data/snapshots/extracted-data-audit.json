@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T10:02:03.171571+00:00",
+  "generated_at": "2026-06-10T10:10:56.010287+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -118,7 +118,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "D4",
@@ -131,7 +131,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "E4",
@@ -144,7 +144,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "F4",
@@ -157,7 +157,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "G4",
@@ -170,7 +170,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "H4",
@@ -183,7 +183,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "I4",
@@ -196,7 +196,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "J4",
@@ -209,7 +209,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "K4",
@@ -222,7 +222,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "L4",
@@ -274,7 +274,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=20755+18006",
      "calc": "20755 + 18006",
      "calculated_value": 38761
@@ -290,7 +290,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=22731+21293",
      "calc": "22731 + 21293",
      "calculated_value": 44024
@@ -306,7 +306,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=25160+26649",
      "calc": "25160 + 26649",
      "calculated_value": 51809
@@ -322,7 +322,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "G5",
@@ -335,7 +335,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "H5",
@@ -348,7 +348,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "I5",
@@ -361,7 +361,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "J5",
@@ -374,7 +374,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "K5",
@@ -387,7 +387,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "L5",
@@ -400,7 +400,7 @@
      "cell_kind": "input",
      "fillable": true,
      "source_key": "industry_premium",
-     "source_status": "available"
+     "source_status": "web_blocked"
     },
     {
      "cell": "M5",
@@ -439,7 +439,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=C7-SUM(C4:C5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -477,7 +477,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=D7-SUM(D4:D5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -515,7 +515,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=E7-SUM(E4:E5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -553,7 +553,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=F7-SUM(F4:F5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -591,7 +591,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=G7-SUM(G4:G5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -629,7 +629,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=H7-SUM(H4:H5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -667,7 +667,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=I7-SUM(I4:I5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -705,7 +705,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=J7-SUM(J4:J5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -743,7 +743,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=K7-SUM(K4:K5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [
@@ -781,7 +781,7 @@
      "cell_kind": "formula",
      "fillable": false,
      "source_key": "industry_premium",
-     "source_status": "available",
+     "source_status": "web_blocked",
      "formula": "=L7-SUM(L4:L5)",
      "calc": "[Total] - SUM( [Health Insurance … Motor Insurance] )",
      "inputs": [

@@ -411,6 +411,21 @@ def main() -> None:
     # "we don't have this yet" and our extracted values land in their real cell.
     total_cells += _add_full_grid(sheets)
 
+    # --- IRDAI-blocked industry-history cells -----------------------------
+    # The industry GI-segment premium history (Health / Motor / Others, the
+    # pre-FY24 years) is published in the IRDAI Handbook, but IRDAI blocks
+    # automated downloads and every proxy corrupts the files in transit. Mark
+    # those specific empty cells "web_blocked" so they read "IRDAI web blocked"
+    # instead of a generic "not reachable". Only cells with no source value.
+    for sh in sheets:
+        for cell in sh["cells"]:
+            if cell.get("metric") != "gi_segment_gross_premium":
+                continue
+            k = f'{cell.get("entity")}::{cell.get("metric")}::{cell.get("period")}'
+            v = store.get(k)
+            if not (v and v.get("normalized_value") is not None):
+                cell["source_status"] = "web_blocked"
+
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
 
