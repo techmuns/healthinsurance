@@ -16,6 +16,26 @@
 
 import type { Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
+import {
+  ANNUAL_PERIODS,
+  getBasisNep,
+  getBasisProfit,
+  getInvestment,
+  getInvestmentLeverage,
+  getNetWorth,
+  type BasisPeriod,
+} from '@/data/accountingBasis'
+
+// Latest annual (FY23→FY26) value with data, for the curated dual-basis module
+// (net worth, investment book, premium/profit). Companies not tracked there
+// resolve to null → honest n/a, never 0.
+function latestAnnual(get: (p: BasisPeriod) => number | null): number | null {
+  for (let i = ANNUAL_PERIODS.length - 1; i >= 0; i--) {
+    const v = get(ANNUAL_PERIODS[i])
+    if (v != null) return v
+  }
+  return null
+}
 
 // Listed-insurer valuation multiples (P/E, P/B) from the daily valuation feed.
 // The feed is currently pending (no rows) so these resolve to null → honest
@@ -82,14 +102,22 @@ export const BUILDER_METRICS: BuilderMetric[] = [
   // ── Growth ────────────────────────────────────────────────────────────────
   { key: 'growth', field: 'growth', label: 'GWP Growth', category: 'Growth', unit: '%', polarity: 'higher' },
   { key: 'premiumCollection', field: 'premiumCollection', label: 'GWP (₹ Cr)', category: 'Growth', unit: 'cr', polarity: 'higher' },
+  { key: 'nep', resolve: (i) => latestAnnual((p) => getBasisNep(i.id, p)), label: 'Net Earned Premium (₹ Cr)', category: 'Growth', unit: 'cr', polarity: 'higher' },
 
   // ── Profitability ─────────────────────────────────────────────────────────
   { key: 'combinedRatio', field: 'combinedRatio', label: 'Combined Ratio', category: 'Profitability', unit: '%', polarity: 'lower', naWhen: (i) => i.combinedRatio === 0 },
+  { key: 'claimsRatio', resolve: (i) => latestAnnual((p) => getBasisProfit(i.id, 'igaap', p)?.claimsRatio ?? null), label: 'Claims Ratio', category: 'Profitability', unit: '%', polarity: 'lower' },
+  { key: 'expenseRatio', resolve: (i) => latestAnnual((p) => getBasisProfit(i.id, 'igaap', p)?.expenseRatio ?? null), label: 'Expense Ratio', category: 'Profitability', unit: '%', polarity: 'lower' },
   { key: 'margin', field: 'margin', label: 'Underwriting Margin', category: 'Profitability', unit: '%', polarity: 'higher', naWhen: (i) => i.margin === 0 },
+  { key: 'pat', resolve: (i) => latestAnnual((p) => getBasisProfit(i.id, 'igaap', p)?.pat ?? null), label: 'Profit After Tax (₹ Cr)', category: 'Profitability', unit: 'cr', polarity: 'higher' },
   { key: 'roe', field: 'roe', label: 'Return on Equity', category: 'Profitability', unit: '%', polarity: 'higher' },
 
   // ── Capital ───────────────────────────────────────────────────────────────
   { key: 'solvency', field: 'solvency', label: 'Solvency Ratio', category: 'Capital', unit: 'x', polarity: 'higher' },
+  { key: 'netWorth', resolve: (i) => latestAnnual((p) => getNetWorth(i.id, p)), label: 'Net Worth (₹ Cr)', category: 'Capital', unit: 'cr', polarity: 'higher' },
+  { key: 'investmentAum', resolve: (i) => latestAnnual((p) => getInvestment(i.id, p)?.aum ?? null), label: 'Investment AUM (₹ Cr)', category: 'Capital', unit: 'cr', polarity: 'higher' },
+  { key: 'investmentYield', resolve: (i) => latestAnnual((p) => getInvestment(i.id, p)?.yield ?? null), label: 'Investment Yield', category: 'Capital', unit: '%', polarity: 'higher' },
+  { key: 'investmentLeverage', resolve: (i) => latestAnnual((p) => getInvestmentLeverage(i.id, p)), label: 'Investment Leverage', category: 'Capital', unit: 'x', polarity: 'higher' },
 
   // ── Distribution ──────────────────────────────────────────────────────────
   { key: 'retailMix', field: 'retailMix', label: 'Retail Mix', category: 'Distribution', unit: '%', polarity: 'higher', naWhen: (i) => i.retailMix === 0 },
