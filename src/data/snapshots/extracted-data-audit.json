@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T10:23:57.812836+00:00",
+  "generated_at": "2026-06-10T10:26:09.963747+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -28,7 +28,7 @@
    "sheets": 9,
    "audit_cells": 2956,
    "computed_cells": 600,
-   "value_store_entries": 491,
+   "value_store_entries": 492,
    "held_back": 10,
    "blocked_filings": 26
   }
@@ -61585,6 +61585,25 @@
    "priority_rank": 0,
    "conflict_status": "none",
    "basis_note": "Year-end FY26 solvency ratio from the Q4 FY26 earnings presentation.",
+   "eligible_for_excel": true
+  },
+  "star-health::gross_direct_premium::FY22": {
+   "entity": "star-health",
+   "metric": "gross_direct_premium",
+   "period": "FY22",
+   "unit": "INR_cr",
+   "raw_value": 11463.47,
+   "normalized_value": 11463.47,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements, Gross Direct Premium FY22 = ₹11,46,347 lakhs = ₹11,463.47 Cr",
+   "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+   "fetched_at": "2026-06-10",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "curated_overlay",
+   "priority_rank": 0,
+   "conflict_status": "none",
+   "basis_note": "Directly read from the audited 5-year summary; equals Gross Written Premium for FY22 (no RI inward pre-FY23).",
    "eligible_for_excel": true
   },
   "care-health::nep::FY22": {
