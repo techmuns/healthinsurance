@@ -4586,6 +4586,32 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Derived: investment-weighted blend of the stated policyholder & shareholder fund yields (the AR states the two separately, not a single total)."
+    },
+    "care-health::investment_aum::FY24": {
+      "value": 6632.92,
+      "unit": "INR_cr",
+      "source_name": "Care Health IRDAI Public Disclosure (year ended 31 Mar 2025), FORM NL-3 Balance Sheet — Total Investments FY24 = Shareholders ₹2,130.35 Cr + Policyholders ₹4,502.57 Cr = ₹6,632.92 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/care-health/care-health-PublicDisclosure_1756111277.pdf",
+      "source_page": "Total Investments FY24 = Shareholders ₹2,130.35 Cr + Policyholders ₹4,502.57 Cr = ₹6,632.92 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = shareholder + policyholder fund investments (NL-3 balance sheet)."
+    },
+    "care-health::investment_aum::FY25": {
+      "value": 8399.44,
+      "unit": "INR_cr",
+      "source_name": "Care Health IRDAI Public Disclosure (year ended 31 Mar 2025), FORM NL-3 Balance Sheet — Total Investments FY25 = Shareholders ₹2,466.33 Cr + Policyholders ₹5,933.11 Cr = ₹8,399.44 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/care-health/care-health-PublicDisclosure_1756111277.pdf",
+      "source_page": "Total Investments FY25 = Shareholders ₹2,466.33 Cr + Policyholders ₹5,933.11 Cr = ₹8,399.44 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = shareholder + policyholder fund investments (NL-3 balance sheet)."
     }
   },
   "meta": {}

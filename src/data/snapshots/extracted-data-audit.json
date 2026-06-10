@@ -2,7 +2,7 @@
  "_meta": {
   "artifact": "extracted-data-audit",
   "schema_version": "1.0.0",
-  "generated_at": "2026-06-10T13:32:07.603781+00:00",
+  "generated_at": "2026-06-10T13:33:41.199515+00:00",
   "description": "QA index for the Extracted Data Audit tab. A compact projection of schema-map.json (cell contract) + excel-values.json (normalized value store) + held-back + blocked-filings. The binding x value join (Fetched / Missing / Parser issue / Source unavailable / Manual override) is computed at read time in src/lib/extractedDataAudit.ts so no data logic is duplicated.",
   "template_file": "niva-bupa-portfolio-review.xlsx",
   "template_sha256": "55a3613091929b1aaf604f52a880bc5f1ef8c90db1f5a4c6736f76b0f3f570d3",
@@ -28,7 +28,7 @@
    "sheets": 9,
    "audit_cells": 2743,
    "computed_cells": 600,
-   "value_store_entries": 583,
+   "value_store_entries": 585,
    "held_back": 10,
    "blocked_filings": 26
   }
@@ -47721,6 +47721,44 @@
    "priority_rank": 0,
    "conflict_status": "none",
    "basis_note": "Derived: investment-weighted blend of the stated policyholder & shareholder fund yields (the AR states the two separately, not a single total).",
+   "eligible_for_excel": true
+  },
+  "care-health::investment_aum::FY24": {
+   "entity": "care-health",
+   "metric": "investment_aum",
+   "period": "FY24",
+   "unit": "INR_cr",
+   "raw_value": 6632.92,
+   "normalized_value": 6632.92,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "Care Health IRDAI Public Disclosure (year ended 31 Mar 2025), FORM NL-3 Balance Sheet — Total Investments FY24 = Shareholders ₹2,130.35 Cr + Policyholders ₹4,502.57 Cr = ₹6,632.92 Cr",
+   "source_file": "data/raw/companies/care-health/care-health-PublicDisclosure_1756111277.pdf",
+   "fetched_at": "2026-06-10",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "curated_overlay",
+   "priority_rank": 0,
+   "conflict_status": "none",
+   "basis_note": "Total investments = shareholder + policyholder fund investments (NL-3 balance sheet).",
+   "eligible_for_excel": true
+  },
+  "care-health::investment_aum::FY25": {
+   "entity": "care-health",
+   "metric": "investment_aum",
+   "period": "FY25",
+   "unit": "INR_cr",
+   "raw_value": 8399.44,
+   "normalized_value": 8399.44,
+   "transformation_used": "identity (value used as-is)",
+   "source_name": "Care Health IRDAI Public Disclosure (year ended 31 Mar 2025), FORM NL-3 Balance Sheet — Total Investments FY25 = Shareholders ₹2,466.33 Cr + Policyholders ₹5,933.11 Cr = ₹8,399.44 Cr",
+   "source_file": "data/raw/companies/care-health/care-health-PublicDisclosure_1756111277.pdf",
+   "fetched_at": "2026-06-10",
+   "confidence": "high",
+   "source_status": "available",
+   "source_layer": "curated_overlay",
+   "priority_rank": 0,
+   "conflict_status": "none",
+   "basis_note": "Total investments = shareholder + policyholder fund investments (NL-3 balance sheet).",
    "eligible_for_excel": true
   }
  },
