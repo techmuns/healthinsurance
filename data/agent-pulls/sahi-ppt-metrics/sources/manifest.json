@@ -1,0 +1,47 @@
+{
+  "files": {
+    "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf": {
+      "filename": "STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "bytes": 894504,
+      "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
+      "fetched_at": "2026-06-10T12:40:36.238Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf?v=1.0": {
+      "filename": "Investors-Presentation-Q4-FY2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf?v=1.0",
+      "bytes": 3149256,
+      "sha256": "b0d733920dc90f83c65b5b8192ca9f74c80f34528dc2427cf8d0b742ae841cfe",
+      "fetched_at": "2026-06-10T12:40:41.610Z"
+    },
+    "https://www.manipalcigna.com/documents/20124/0/Annual+Report.pdf/2ecfe907-dfdf-cb4d-a04f-55a49498ad3e?t=1728975537214": {
+      "filename": "2ecfe907-dfdf-cb4d-a04f-55a49498ad3e",
+      "url": "https://www.manipalcigna.com/documents/20124/0/Annual+Report.pdf/2ecfe907-dfdf-cb4d-a04f-55a49498ad3e?t=1728975537214",
+      "bytes": 9364998,
+      "sha256": "87448b0711a21753fbd6f7cb1e188f7b04c52b14533fca0666bb9186af0a1f7d",
+      "fetched_at": "2026-06-10T12:41:10.234Z"
+    },
+    "https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf/53e157a5-1217-0571-e11b-33f8c203cd8c?t=1770120770447": {
+      "filename": "53e157a5-1217-0571-e11b-33f8c203cd8c",
+      "url": "https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf/53e157a5-1217-0571-e11b-33f8c203cd8c?t=1770120770447",
+      "bytes": 6159818,
+      "sha256": "29c67ea7cf3dfce312f179b20b8e182c335d4fda7dc734df3007beac91864f2f",
+      "fetched_at": "2026-06-10T12:41:19.499Z"
+    },
+    "https://www.manipalcigna.com/documents/20124/131103/Annual+Report+2023.pdf/b1b98948-3b19-85ff-383b-3d7a93a16aaa?t=1703076554969": {
+      "filename": "b1b98948-3b19-85ff-383b-3d7a93a16aaa",
+      "url": "https://www.manipalcigna.com/documents/20124/131103/Annual+Report+2023.pdf/b1b98948-3b19-85ff-383b-3d7a93a16aaa?t=1703076554969",
+      "bytes": 4876774,
+      "sha256": "9a6c761847eee6cafeba03c25a7704ec39f4d80b4cb31f9f4a51ed947959208a",
+      "fetched_at": "2026-06-10T12:41:07.196Z"
+    },
+    "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/abhi-investor-presentation.pdf": {
+      "filename": "abhi-investor-presentation.pdf",
+      "url": "https://www.momentumgroupltd.co.za/remote-assets/s3/clt_mmh_s3/static-assets/documents/investor-relations/abhi-investor-presentation.pdf",
+      "bytes": 1625989,
+      "sha256": "9243617936c65c23eef176eebbab900db35b789a6262c2fd583b265f8da553c5",
+      "fetched_at": "2026-06-10T12:40:48.093Z"
+    }
+  },
+  "updated_at": "2026-06-10T12:41:34.151Z"
+}
