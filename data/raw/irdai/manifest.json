@@ -1,0 +1,41 @@
+{
+  "updated_at": "2026-06-10T09:57:17.876Z",
+  "files": {
+    "https://irdai.gov.in/documents/37343/825690/HANDBOOK+ON+INDIAN+INSURANCE+STATISTICS+2014-15.pdf/441d1a66-6639-b339-2aeb-9c7381891d4a?version=2.2&t=1665049920830&download=true": {
+      "filename": "handbook-2014-15.pdf",
+      "bytes": 4375827,
+      "sha256": "9e5ea458e9ec0aac18dd835ef5bd55688ffa3a4c09824ffb151ef3fb90caa252",
+      "fetched_at": "2026-06-10T09:56:35.930Z"
+    },
+    "https://irdai.gov.in/documents/37343/825690/HANDBOOK+ON+INDIAN+INSURANCE+STATISTICS+FY+2018-19.pdf/732d6395-68f3-75ae-b5c3-3be8cccada1b?version=2.7&t=1665049905447&download=true": {
+      "filename": "handbook-2018-19.pdf",
+      "bytes": 13705539,
+      "sha256": "71783690e33995e2a2a65cdba1755253357f18f8043909e222b7af0c77a74df4",
+      "fetched_at": "2026-06-10T09:56:45.077Z"
+    },
+    "https://irdai.gov.in/documents/37343/825690/HANDBOOK+ON+INDIAN+INSURANCE+STATISTICS+FY+2019-20.pdf/f8b208fa-5ab1-0b98-e620-1b60b9f747e5?version=2.1&t=1665049899966&download=true": {
+      "filename": "handbook-2019-20.pdf",
+      "bytes": 13705539,
+      "sha256": "71783690e33995e2a2a65cdba1755253357f18f8043909e222b7af0c77a74df4",
+      "fetched_at": "2026-06-10T09:57:02.475Z"
+    },
+    "https://irdai.gov.in/documents/37343/825690/HANDBOOK+ON+INDIAN+INSURANCE+STATISTICS+F.Y.+2020-21.zip/03ba7334-01d7-1739-32cc-12e75a098022?version=1.1&t=1665049909969&download=true": {
+      "filename": "handbook-2020-21.zip",
+      "bytes": 4744078,
+      "sha256": "980d550291e546b35d9e69011a1036029b02616252a7fc77af842226ffec24e0",
+      "fetched_at": "2026-06-10T09:57:06.169Z"
+    },
+    "https://irdai.gov.in/documents/37343/825690/%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4%E0%A5%80%E0%A4%AF+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B8%E0%A4%BE%E0%A4%82%E0%A4%96%E0%A5%8D%E0%A4%AF%E0%A4%BF%E0%A4%95%E0%A5%80+2021-22+%E0%A4%AA%E0%A4%B0+%E0%A4%AA%E0%A5%81%E0%A4%B8%E0%A5%8D%E0%A4%A4%E0%A4%BF%E0%A4%95%E0%A4%BE+_+Handbook+on+Indian+Insurance+Statistics+2021-22.zip/1fb61ca6-d2d3-5100-6218-a2108b224762?version=1.2&t=1685004848159&download=true": {
+      "filename": "handbook-2021-22.zip",
+      "bytes": 5826383,
+      "sha256": "21adcf3502bedbef82af169c39593d0c918d03d27e9170e081e765789f32baa6",
+      "fetched_at": "2026-06-10T09:57:12.364Z"
+    },
+    "https://irdai.gov.in/documents/37343/825690/%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4%E0%A5%80%E0%A4%AF+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B8%E0%A4%BE%E0%A4%82%E0%A4%96%E0%A5%8D%E0%A4%AF%E0%A4%BF%E0%A4%95%E0%A5%80+2022-23+%E0%A4%AA%E0%A4%B0+%E0%A4%AA%E0%A5%81%E0%A4%B8%E0%A5%8D%E0%A4%A4%E0%A4%BF%E0%A4%95%E0%A4%BE+_+Handbook+on+Indian+Insurance+Statistics+2022-23.zip/665fa6b4-dc4e-e2f3-9b21-f1c5ba8f5a6b?version=2.0&t=1710157936828&download=true": {
+      "filename": "handbook-2022-23.zip",
+      "bytes": 13082580,
+      "sha256": "187ff156361bd3a27d25748d6c19deb5edd2610d4e5bc98bdd81510386718987",
+      "fetched_at": "2026-06-10T09:57:17.876Z"
+    }
+  }
+}
