@@ -4276,30 +4276,30 @@
       "note": "FY26 KEY HIGHLIGHTS."
     },
     "star-health::investment_yield::FY24": {
-      "value": 8.3,
+      "value": 7.66,
       "unit": "%",
-      "source_name": "Star Health Q4 FY26 Earnings Presentation (IND-AS) — Investment Yield (Annualised) FY24 = 8.3%",
-      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
-      "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
-      "source_page": "Investment Yield (Annualised) FY24 = 8.3%",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Yield on Total Investments FY24 = 7.66%",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Yield on Total Investments FY24 = 7.66%",
       "fetched_at": "2026-06-10",
       "confidence": "high",
       "priority": 1,
-      "layer": "company_filing",
-      "note": "KPI table (IND-AS basis)."
+      "layer": "official_filing",
+      "note": "Directly stated 'Yield on Total Investments', IGAAP basis (replaces the earlier IND-AS deck figure for basis consistency with peers)."
     },
     "star-health::investment_yield::FY25": {
-      "value": 7.6,
+      "value": 7.79,
       "unit": "%",
-      "source_name": "Star Health Q4 FY26 Earnings Presentation (IND-AS) — Investment Yield (Annualised) FY25 = 7.6%",
-      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
-      "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
-      "source_page": "Investment Yield (Annualised) FY25 = 7.6%",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Yield on Total Investments FY25 = 7.79%",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Yield on Total Investments FY25 = 7.79%",
       "fetched_at": "2026-06-10",
       "confidence": "high",
       "priority": 1,
-      "layer": "company_filing",
-      "note": "KPI table (IND-AS basis)."
+      "layer": "official_filing",
+      "note": "Directly stated 'Yield on Total Investments', IGAAP basis (replaces the earlier IND-AS deck figure for basis consistency with peers)."
     },
     "star-health::investment_yield::FY26": {
       "value": 5.8,
@@ -4309,10 +4309,10 @@
       "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
       "source_page": "Investment Yield (Annualised) FY26 = 5.8%",
       "fetched_at": "2026-06-10",
-      "confidence": "high",
+      "confidence": "medium",
       "priority": 1,
       "layer": "company_filing",
-      "note": "KPI table (IND-AS basis); MTM-driven dip."
+      "note": "IND-AS basis (Star Q4 FY26 deck). FY22-FY25 above are IGAAP from the annual report; FY26 IGAAP is not yet filed, so the IND-AS deck figure is shown for FY26 only."
     },
     "niva-bupa::group_other_gwp::FY23": {
       "value": 1103.33,
@@ -4612,6 +4612,84 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Total investments = shareholder + policyholder fund investments (NL-3 balance sheet)."
+    },
+    "star-health::investment_aum::FY22": {
+      "value": 11373.43,
+      "unit": "INR_cr",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Total Investments FY22 (policyholder + shareholder) = ₹11373.43 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Total Investments FY22 (policyholder + shareholder) = ₹11373.43 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = policyholder + shareholder fund investments (Annexure 2). IGAAP basis."
+    },
+    "star-health::investment_aum::FY23": {
+      "value": 13392.1,
+      "unit": "INR_cr",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Total Investments FY23 (policyholder + shareholder) = ₹13392.1 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Total Investments FY23 (policyholder + shareholder) = ₹13392.1 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = policyholder + shareholder fund investments (Annexure 2). IGAAP basis."
+    },
+    "star-health::investment_aum::FY24": {
+      "value": 15490.88,
+      "unit": "INR_cr",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Total Investments FY24 (policyholder + shareholder) = ₹15490.88 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Total Investments FY24 (policyholder + shareholder) = ₹15490.88 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = policyholder + shareholder fund investments (Annexure 2). IGAAP basis."
+    },
+    "star-health::investment_aum::FY25": {
+      "value": 17898.37,
+      "unit": "INR_cr",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Total Investments FY25 (policyholder + shareholder) = ₹17898.37 Cr",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Total Investments FY25 (policyholder + shareholder) = ₹17898.37 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Total investments = policyholder + shareholder fund investments (Annexure 2). IGAAP basis."
+    },
+    "star-health::investment_yield::FY22": {
+      "value": 8.25,
+      "unit": "%",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Yield on Total Investments FY22 = 8.25%",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Yield on Total Investments FY22 = 8.25%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly stated 'Yield on Total Investments', IGAAP basis (replaces the earlier IND-AS deck figure for basis consistency with peers)."
+    },
+    "star-health::investment_yield::FY23": {
+      "value": 6.94,
+      "unit": "%",
+      "source_name": "Star Health FY2024-25 Annual Report — Annexure 2 Summary of Financial Statements (5-year, audited) — Yield on Total Investments FY23 = 6.94%",
+      "source_url": null,
+      "source_file": "data/raw/companies/star-health/star-health-AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
+      "source_page": "Yield on Total Investments FY23 = 6.94%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Directly stated 'Yield on Total Investments', IGAAP basis (replaces the earlier IND-AS deck figure for basis consistency with peers)."
     }
   },
   "meta": {}
