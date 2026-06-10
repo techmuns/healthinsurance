@@ -84,7 +84,7 @@ function colIndex(col: string): number {
   return n
 }
 
-interface GridCol { col: string; period: string; entity: string }
+interface GridCol { col: string; period: string; entity: string; metric: string; label: string }
 interface GridRow {
   rowNum: number
   section: string
@@ -101,15 +101,24 @@ interface GridRow {
 function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; entityByColumn: boolean } {
   const cells = group.cells.filter((c) => parseRef(c.cellRef))
 
-  // Per Excel column: the period and the (dominant) entity it carries.
-  const colMap = new Map<string, { period: string; entity: string }>()
+  // Per Excel column: the period, the (dominant) entity, and the (dominant)
+  // metric it carries.
+  const colMap = new Map<string, { period: string; entity: string; metric: string }>()
   for (const c of cells) {
     const col = parseRef(c.cellRef)!.col
-    if (!colMap.has(col)) colMap.set(col, { period: c.period || col, entity: c.entityLabel || '' })
+    if (!colMap.has(col)) colMap.set(col, { period: c.period || col, entity: c.entityLabel || '', metric: c.metricLabel || '' })
   }
-  const columns = [...colMap.entries()]
-    .map(([col, v]) => ({ col, period: v.period, entity: v.entity }))
+  let columns: GridCol[] = [...colMap.entries()]
+    .map(([col, v]) => ({ col, period: v.period, entity: v.entity, metric: v.metric, label: v.period }))
     .sort((a, b) => colIndex(a.col) - colIndex(b.col))
+
+  // When every column shares one period but carries a distinct metric (e.g. the
+  // Valuation 'Comps' sheet: Market Cap | Enterprise Value | Net Worth | PAT |
+  // …), the columns are distinguished by METRIC, not by time — label them so.
+  const distinctPeriods = new Set(columns.map((c) => c.period)).size
+  const distinctMetrics = new Set(columns.map((c) => c.metric).filter(Boolean)).size
+  const labelByMetric = distinctPeriods <= 1 && distinctMetrics > 1
+  if (labelByMetric) columns = columns.map((c) => ({ ...c, label: c.metric || c.period }))
 
   const rowMap = new Map<number, AuditCell[]>()
   for (const c of cells) {
@@ -128,7 +137,8 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
       const f = rc[0]
       // Primary label = the dimension that distinguishes this row.
       const primary = entityByRow ? f.entityLabel : f.metricLabel
-      const secondary = entityByColumn ? '' : entityByRow ? f.metricLabel : f.entityLabel
+      // When columns are the metrics, the row is just the entity — no metric subtitle.
+      const secondary = entityByColumn || labelByMetric ? '' : entityByRow ? f.metricLabel : f.entityLabel
       return {
         rowNum,
         section: f.section || '',
@@ -296,7 +306,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
             {columns.map((c) => (
               <th key={c.col} className="border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center" style={{ minWidth: 78 }}>
                 <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.col}</span>
-                <span className="block text-[11px] font-bold text-navy-deep">{c.period}</span>
+                <span className="block text-[11px] font-bold text-navy-deep">{c.label}</span>
               </th>
             ))}
           </tr>
