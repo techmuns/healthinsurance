@@ -15,6 +15,7 @@ export type SnapshotTarget =
   | 'insurer-annual-snapshot'
   | 'industry-segment-premium'
   | 'gic-health-portfolio'
+  | 'gic-health-quarterly'
   | 'distribution-channel-mix'
   | 'distribution-reach-depth'
   | 'valuation-snapshot'

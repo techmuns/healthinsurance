@@ -1,0 +1,2323 @@
+{
+  "_meta": {
+    "artifact": "industry-growth-seed",
+    "description": "Historical seed values for the Industry Growth sheet, read from Neha's workbook via the schema-map cell contract. Rank-8 in the value store: every official source supersedes a seed.",
+    "workbook": "data/uploads/industry-growth-seed-workbook.xlsx",
+    "generated_by": "scripts/excel/build_industry_growth_seed.py"
+  },
+  "values": {
+    "Health Insurance::gi_segment_gross_premium::FY15": {
+      "value": 20615.0,
+      "unit": "INR_cr",
+      "cell": "C4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY16": {
+      "value": 25037.0,
+      "unit": "INR_cr",
+      "cell": "D4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY17": {
+      "value": 31164.0,
+      "unit": "INR_cr",
+      "cell": "E4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY18": {
+      "value": 37711.79,
+      "unit": "INR_cr",
+      "cell": "F4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY19": {
+      "value": 45488.91,
+      "unit": "INR_cr",
+      "cell": "G4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY20": {
+      "value": 51674.49,
+      "unit": "INR_cr",
+      "cell": "H4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY21": {
+      "value": 58572.46,
+      "unit": "INR_cr",
+      "cell": "I4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY22": {
+      "value": 73598.14,
+      "unit": "INR_cr",
+      "cell": "J4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY23": {
+      "value": 90651.64,
+      "unit": "INR_cr",
+      "cell": "K4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY24": {
+      "value": 108911.39,
+      "unit": "INR_cr",
+      "cell": "L4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY25": {
+      "value": 118687.94,
+      "unit": "INR_cr",
+      "cell": "M4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Health Insurance::gi_segment_gross_premium::FY26": {
+      "value": 137144.46,
+      "unit": "INR_cr",
+      "cell": "N4",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY18": {
+      "value": 59247.97,
+      "unit": "INR_cr",
+      "cell": "F5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY19": {
+      "value": 64454.86,
+      "unit": "INR_cr",
+      "cell": "G5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY20": {
+      "value": 68950.93,
+      "unit": "INR_cr",
+      "cell": "H5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY21": {
+      "value": 67790.01,
+      "unit": "INR_cr",
+      "cell": "I5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY22": {
+      "value": 70433.48,
+      "unit": "INR_cr",
+      "cell": "J5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY23": {
+      "value": 81280.03,
+      "unit": "INR_cr",
+      "cell": "K5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY24": {
+      "value": 91780.53,
+      "unit": "INR_cr",
+      "cell": "L5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY25": {
+      "value": 99065.82,
+      "unit": "INR_cr",
+      "cell": "M5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Motor Insurance::gi_segment_gross_premium::FY26": {
+      "value": 108216.08,
+      "unit": "INR_cr",
+      "cell": "N5",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY15": {
+      "value": 90365.0,
+      "unit": "INR_cr",
+      "cell": "C7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY16": {
+      "value": 102396.0,
+      "unit": "INR_cr",
+      "cell": "D7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY17": {
+      "value": 134177.0,
+      "unit": "INR_cr",
+      "cell": "E7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY18": {
+      "value": 150592.78,
+      "unit": "INR_cr",
+      "cell": "F7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY19": {
+      "value": 169964.96,
+      "unit": "INR_cr",
+      "cell": "G7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY20": {
+      "value": 188915.94,
+      "unit": "INR_cr",
+      "cell": "H7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY21": {
+      "value": 198724.21,
+      "unit": "INR_cr",
+      "cell": "I7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY22": {
+      "value": 220700.22,
+      "unit": "INR_cr",
+      "cell": "J7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY23": {
+      "value": 256894.25,
+      "unit": "INR_cr",
+      "cell": "K7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY24": {
+      "value": 289673.05,
+      "unit": "INR_cr",
+      "cell": "L7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY25": {
+      "value": 307659.41,
+      "unit": "INR_cr",
+      "cell": "M7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::gi_segment_gross_premium::FY26": {
+      "value": 336122.68,
+      "unit": "INR_cr",
+      "cell": "N7",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "SAHI::health_premium_by_carrier_type::FY15": {
+      "value": 2896.0,
+      "unit": "INR_cr",
+      "cell": "C11",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "SAHI::health_premium_by_carrier_type::FY16": {
+      "value": 4043.0,
+      "unit": "INR_cr",
+      "cell": "D11",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "SAHI::health_premium_by_carrier_type::FY17": {
+      "value": 5589.0,
+      "unit": "INR_cr",
+      "cell": "E11",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY18": {
+      "value": 21538.29,
+      "unit": "INR_cr",
+      "cell": "F13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY19": {
+      "value": 23518.95,
+      "unit": "INR_cr",
+      "cell": "G13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY20": {
+      "value": 24652.07,
+      "unit": "INR_cr",
+      "cell": "H13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY21": {
+      "value": 27272.02,
+      "unit": "INR_cr",
+      "cell": "I13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY22": {
+      "value": 32954.79,
+      "unit": "INR_cr",
+      "cell": "J13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY23": {
+      "value": 39078.11,
+      "unit": "INR_cr",
+      "cell": "K13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY24": {
+      "value": 41012.02,
+      "unit": "INR_cr",
+      "cell": "L13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY25": {
+      "value": 42245.22,
+      "unit": "INR_cr",
+      "cell": "M13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "PSUs::health_premium_by_carrier_type::FY26": {
+      "value": 42245.22,
+      "unit": "INR_cr",
+      "cell": "N13",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY18": {
+      "value": 4044.65,
+      "unit": "INR_cr",
+      "cell": "F18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY19": {
+      "value": 5286.46,
+      "unit": "INR_cr",
+      "cell": "G18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY20": {
+      "value": 6731.42,
+      "unit": "INR_cr",
+      "cell": "H18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY21": {
+      "value": 9204.49,
+      "unit": "INR_cr",
+      "cell": "I18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY22": {
+      "value": 11294.58,
+      "unit": "INR_cr",
+      "cell": "J18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY23": {
+      "value": 12757.54,
+      "unit": "INR_cr",
+      "cell": "K18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY24": {
+      "value": 15038.78,
+      "unit": "INR_cr",
+      "cell": "L18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY25": {
+      "value": 16525.48,
+      "unit": "INR_cr",
+      "cell": "M18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_total_health_premium::FY26": {
+      "value": 18435.04,
+      "unit": "INR_cr",
+      "cell": "N18",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY18": {
+      "value": 987.94,
+      "unit": "INR_cr",
+      "cell": "F19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY19": {
+      "value": 1681.33,
+      "unit": "INR_cr",
+      "cell": "G19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY20": {
+      "value": 2231.74,
+      "unit": "INR_cr",
+      "cell": "H19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY21": {
+      "value": 2334.06,
+      "unit": "INR_cr",
+      "cell": "I19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY22": {
+      "value": 3491.45,
+      "unit": "INR_cr",
+      "cell": "J19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY23": {
+      "value": 4819.42,
+      "unit": "INR_cr",
+      "cell": "K19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY24": {
+      "value": 6658.07,
+      "unit": "INR_cr",
+      "cell": "L19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY25": {
+      "value": 8135.35,
+      "unit": "INR_cr",
+      "cell": "M19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_total_health_premium::FY26": {
+      "value": 9768.4,
+      "unit": "INR_cr",
+      "cell": "N19",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY18": {
+      "value": 743.26,
+      "unit": "INR_cr",
+      "cell": "F20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY19": {
+      "value": 914.49,
+      "unit": "INR_cr",
+      "cell": "G20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY20": {
+      "value": 1179.04,
+      "unit": "INR_cr",
+      "cell": "H20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY21": {
+      "value": 1669.72,
+      "unit": "INR_cr",
+      "cell": "I20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY22": {
+      "value": 2749.22,
+      "unit": "INR_cr",
+      "cell": "J20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY23": {
+      "value": 3993.02,
+      "unit": "INR_cr",
+      "cell": "K20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY24": {
+      "value": 5514.46,
+      "unit": "INR_cr",
+      "cell": "L20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY25": {
+      "value": 6634.53,
+      "unit": "INR_cr",
+      "cell": "M20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_total_health_premium::FY26": {
+      "value": 8479.66,
+      "unit": "INR_cr",
+      "cell": "N20",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY18": {
+      "value": 230.37,
+      "unit": "INR_cr",
+      "cell": "F21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY19": {
+      "value": 423.43,
+      "unit": "INR_cr",
+      "cell": "G21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY20": {
+      "value": 755.51,
+      "unit": "INR_cr",
+      "cell": "H21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY21": {
+      "value": 1165.84,
+      "unit": "INR_cr",
+      "cell": "I21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY22": {
+      "value": 1582.48,
+      "unit": "INR_cr",
+      "cell": "J21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY23": {
+      "value": 2556.81,
+      "unit": "INR_cr",
+      "cell": "K21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY24": {
+      "value": 3480.83,
+      "unit": "INR_cr",
+      "cell": "L21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY25": {
+      "value": 4446.81,
+      "unit": "INR_cr",
+      "cell": "M21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_total_health_premium::FY26": {
+      "value": 5825.47,
+      "unit": "INR_cr",
+      "cell": "N21",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY18": {
+      "value": 326.54,
+      "unit": "INR_cr",
+      "cell": "F22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY19": {
+      "value": 469.48,
+      "unit": "INR_cr",
+      "cell": "G22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY20": {
+      "value": 568.16,
+      "unit": "INR_cr",
+      "cell": "H22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY21": {
+      "value": 745.79,
+      "unit": "INR_cr",
+      "cell": "I22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY22": {
+      "value": 971.59,
+      "unit": "INR_cr",
+      "cell": "J22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY23": {
+      "value": 1329.79,
+      "unit": "INR_cr",
+      "cell": "K22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY24": {
+      "value": 1661.68,
+      "unit": "INR_cr",
+      "cell": "L22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY25": {
+      "value": 1766.98,
+      "unit": "INR_cr",
+      "cell": "M22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_total_health_premium::FY26": {
+      "value": 2170.31,
+      "unit": "INR_cr",
+      "cell": "N22",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "reliance-health::sahi_total_health_premium::FY19": {
+      "value": 4.09,
+      "unit": "INR_cr",
+      "cell": "G23",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "reliance-health::sahi_total_health_premium::FY20": {
+      "value": 5.98,
+      "unit": "INR_cr",
+      "cell": "H23",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "reliance-health::sahi_total_health_premium::FY21": {
+      "value": -0.01,
+      "unit": "INR_cr",
+      "cell": "I23",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::sahi_total_health_premium::FY18": {
+      "value": 1586.25,
+      "unit": "INR_cr",
+      "cell": "F24",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::sahi_total_health_premium::FY19": {
+      "value": 2014.74,
+      "unit": "INR_cr",
+      "cell": "G24",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::sahi_total_health_premium::FY20": {
+      "value": 2073.84,
+      "unit": "INR_cr",
+      "cell": "H24",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "galaxy-health::sahi_total_health_premium::FY25": {
+      "value": 16.08,
+      "unit": "INR_cr",
+      "cell": "M25",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "galaxy-health::sahi_total_health_premium::FY26": {
+      "value": 141.0,
+      "unit": "INR_cr",
+      "cell": "N25",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "narayana-health::sahi_total_health_premium::FY25": {
+      "value": 2.37,
+      "unit": "INR_cr",
+      "cell": "M26",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "narayana-health::sahi_total_health_premium::FY26": {
+      "value": 43.85,
+      "unit": "INR_cr",
+      "cell": "N26",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY18": {
+      "value": 3629.09,
+      "unit": "INR_cr",
+      "cell": "F42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY19": {
+      "value": 4678.05,
+      "unit": "INR_cr",
+      "cell": "G42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY20": {
+      "value": 5865.75,
+      "unit": "INR_cr",
+      "cell": "H42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY21": {
+      "value": 8242.68,
+      "unit": "INR_cr",
+      "cell": "I42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY22": {
+      "value": 10129.4,
+      "unit": "INR_cr",
+      "cell": "J42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY23": {
+      "value": 11947.5,
+      "unit": "INR_cr",
+      "cell": "K42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY24": {
+      "value": 13951.3,
+      "unit": "INR_cr",
+      "cell": "L42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY25": {
+      "value": 15413.0,
+      "unit": "INR_cr",
+      "cell": "M42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::sahi_retail_health_premium::FY26": {
+      "value": 17743.0,
+      "unit": "INR_cr",
+      "cell": "N42",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY18": {
+      "value": 616.51,
+      "unit": "INR_cr",
+      "cell": "F43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY19": {
+      "value": 869.0,
+      "unit": "INR_cr",
+      "cell": "G43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY20": {
+      "value": 1143.08,
+      "unit": "INR_cr",
+      "cell": "H43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY21": {
+      "value": 1618.97,
+      "unit": "INR_cr",
+      "cell": "I43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY22": {
+      "value": 2170.4,
+      "unit": "INR_cr",
+      "cell": "J43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY23": {
+      "value": 2727.7,
+      "unit": "INR_cr",
+      "cell": "K43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY24": {
+      "value": 3973.83,
+      "unit": "INR_cr",
+      "cell": "L43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY25": {
+      "value": 5111.36,
+      "unit": "INR_cr",
+      "cell": "M43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::sahi_retail_health_premium::FY26": {
+      "value": 6597.6,
+      "unit": "INR_cr",
+      "cell": "N43",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY18": {
+      "value": 634.2,
+      "unit": "INR_cr",
+      "cell": "F44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY19": {
+      "value": 736.68,
+      "unit": "INR_cr",
+      "cell": "G44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY20": {
+      "value": 869.37,
+      "unit": "INR_cr",
+      "cell": "H44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY21": {
+      "value": 1355.52,
+      "unit": "INR_cr",
+      "cell": "I44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY22": {
+      "value": 2157.34,
+      "unit": "INR_cr",
+      "cell": "J44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY23": {
+      "value": 2969.74,
+      "unit": "INR_cr",
+      "cell": "K44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY24": {
+      "value": 3839.73,
+      "unit": "INR_cr",
+      "cell": "L44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY25": {
+      "value": 4432.5,
+      "unit": "INR_cr",
+      "cell": "M44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::sahi_retail_health_premium::FY26": {
+      "value": 5747.59,
+      "unit": "INR_cr",
+      "cell": "N44",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY18": {
+      "value": 76.91,
+      "unit": "INR_cr",
+      "cell": "F45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY19": {
+      "value": 198.31,
+      "unit": "INR_cr",
+      "cell": "G45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY20": {
+      "value": 349.56,
+      "unit": "INR_cr",
+      "cell": "H45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY21": {
+      "value": 558.97,
+      "unit": "INR_cr",
+      "cell": "I45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY22": {
+      "value": 680.05,
+      "unit": "INR_cr",
+      "cell": "J45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY23": {
+      "value": 835.36,
+      "unit": "INR_cr",
+      "cell": "K45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY24": {
+      "value": 1127.23,
+      "unit": "INR_cr",
+      "cell": "L45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY25": {
+      "value": 1440.17,
+      "unit": "INR_cr",
+      "cell": "M45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::sahi_retail_health_premium::FY26": {
+      "value": 2163.86,
+      "unit": "INR_cr",
+      "cell": "N45",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY18": {
+      "value": 219.91,
+      "unit": "INR_cr",
+      "cell": "F46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY19": {
+      "value": 266.49,
+      "unit": "INR_cr",
+      "cell": "G46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY20": {
+      "value": 312.31,
+      "unit": "INR_cr",
+      "cell": "H46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY21": {
+      "value": 393.59,
+      "unit": "INR_cr",
+      "cell": "I46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY22": {
+      "value": 463.68,
+      "unit": "INR_cr",
+      "cell": "J46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY23": {
+      "value": 578.57,
+      "unit": "INR_cr",
+      "cell": "K46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY24": {
+      "value": 746.08,
+      "unit": "INR_cr",
+      "cell": "L46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY25": {
+      "value": 841.12,
+      "unit": "INR_cr",
+      "cell": "M46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::sahi_retail_health_premium::FY26": {
+      "value": 1119.03,
+      "unit": "INR_cr",
+      "cell": "N46",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "galaxy-health::sahi_retail_health_premium::FY25": {
+      "value": 13.99,
+      "unit": "INR_cr",
+      "cell": "M47",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "galaxy-health::sahi_retail_health_premium::FY26": {
+      "value": 97.0,
+      "unit": "INR_cr",
+      "cell": "N47",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "narayana-health::sahi_retail_health_premium::FY25": {
+      "value": 2.37,
+      "unit": "INR_cr",
+      "cell": "M48",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "narayana-health::sahi_retail_health_premium::FY26": {
+      "value": 9.05,
+      "unit": "INR_cr",
+      "cell": "N48",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY18": {
+      "value": 3629.09,
+      "unit": "INR_cr",
+      "cell": "F54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY19": {
+      "value": 4678.05,
+      "unit": "INR_cr",
+      "cell": "G54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY20": {
+      "value": 5865.75,
+      "unit": "INR_cr",
+      "cell": "H54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY21": {
+      "value": 8242.68,
+      "unit": "INR_cr",
+      "cell": "I54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY22": {
+      "value": 10129.4,
+      "unit": "INR_cr",
+      "cell": "J54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY23": {
+      "value": 11947.5,
+      "unit": "INR_cr",
+      "cell": "K54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY24": {
+      "value": 13951.3,
+      "unit": "INR_cr",
+      "cell": "L54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY25": {
+      "value": 15413.0,
+      "unit": "INR_cr",
+      "cell": "M54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "star-health::retail_health_premium::FY26": {
+      "value": 17743.0,
+      "unit": "INR_cr",
+      "cell": "N54",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY18": {
+      "value": 616.51,
+      "unit": "INR_cr",
+      "cell": "F55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY19": {
+      "value": 869.0,
+      "unit": "INR_cr",
+      "cell": "G55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY20": {
+      "value": 1143.08,
+      "unit": "INR_cr",
+      "cell": "H55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY21": {
+      "value": 1618.97,
+      "unit": "INR_cr",
+      "cell": "I55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY22": {
+      "value": 2170.4,
+      "unit": "INR_cr",
+      "cell": "J55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY23": {
+      "value": 2727.7,
+      "unit": "INR_cr",
+      "cell": "K55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY24": {
+      "value": 3973.83,
+      "unit": "INR_cr",
+      "cell": "L55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY25": {
+      "value": 5111.36,
+      "unit": "INR_cr",
+      "cell": "M55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "care-health::retail_health_premium::FY26": {
+      "value": 6597.6,
+      "unit": "INR_cr",
+      "cell": "N55",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY18": {
+      "value": 634.2,
+      "unit": "INR_cr",
+      "cell": "F56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY19": {
+      "value": 736.68,
+      "unit": "INR_cr",
+      "cell": "G56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY20": {
+      "value": 869.37,
+      "unit": "INR_cr",
+      "cell": "H56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY21": {
+      "value": 1355.52,
+      "unit": "INR_cr",
+      "cell": "I56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY22": {
+      "value": 2157.34,
+      "unit": "INR_cr",
+      "cell": "J56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY23": {
+      "value": 2969.74,
+      "unit": "INR_cr",
+      "cell": "K56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY24": {
+      "value": 3839.73,
+      "unit": "INR_cr",
+      "cell": "L56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY25": {
+      "value": 4432.5,
+      "unit": "INR_cr",
+      "cell": "M56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "niva-bupa::retail_health_premium::FY26": {
+      "value": 5747.59,
+      "unit": "INR_cr",
+      "cell": "N56",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY18": {
+      "value": 1080.33,
+      "unit": "INR_cr",
+      "cell": "F57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY19": {
+      "value": 1392.03,
+      "unit": "INR_cr",
+      "cell": "G57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY20": {
+      "value": 1452.24,
+      "unit": "INR_cr",
+      "cell": "H57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY21": {
+      "value": 2723.59,
+      "unit": "INR_cr",
+      "cell": "I57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY22": {
+      "value": 3076.2,
+      "unit": "INR_cr",
+      "cell": "J57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY23": {
+      "value": 3440.48,
+      "unit": "INR_cr",
+      "cell": "K57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY24": {
+      "value": 3964.17,
+      "unit": "INR_cr",
+      "cell": "L57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY25": {
+      "value": 4212.7,
+      "unit": "INR_cr",
+      "cell": "M57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "hdfc-ergo::retail_health_premium::FY26": {
+      "value": 5155.8,
+      "unit": "INR_cr",
+      "cell": "N57",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY18": {
+      "value": 2142.31,
+      "unit": "INR_cr",
+      "cell": "F58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY19": {
+      "value": 2338.63,
+      "unit": "INR_cr",
+      "cell": "G58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY20": {
+      "value": 2367.0,
+      "unit": "INR_cr",
+      "cell": "H58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY21": {
+      "value": 2599.74,
+      "unit": "INR_cr",
+      "cell": "I58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY22": {
+      "value": 2683.73,
+      "unit": "INR_cr",
+      "cell": "J58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY23": {
+      "value": 2697.07,
+      "unit": "INR_cr",
+      "cell": "K58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY24": {
+      "value": 3098.81,
+      "unit": "INR_cr",
+      "cell": "L58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY25": {
+      "value": 3422.78,
+      "unit": "INR_cr",
+      "cell": "M58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "new-india::retail_health_premium::FY26": {
+      "value": 3672.81,
+      "unit": "INR_cr",
+      "cell": "N58",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY18": {
+      "value": 1493.5,
+      "unit": "INR_cr",
+      "cell": "F59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY19": {
+      "value": 1634.26,
+      "unit": "INR_cr",
+      "cell": "G59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY20": {
+      "value": 1737.96,
+      "unit": "INR_cr",
+      "cell": "H59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY21": {
+      "value": 2082.99,
+      "unit": "INR_cr",
+      "cell": "I59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY22": {
+      "value": 2227.78,
+      "unit": "INR_cr",
+      "cell": "J59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY23": {
+      "value": 2184.75,
+      "unit": "INR_cr",
+      "cell": "K59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY24": {
+      "value": 2332.59,
+      "unit": "INR_cr",
+      "cell": "L59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY25": {
+      "value": 2444.14,
+      "unit": "INR_cr",
+      "cell": "M59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "national-insurance::retail_health_premium::FY26": {
+      "value": 2619.65,
+      "unit": "INR_cr",
+      "cell": "N59",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY18": {
+      "value": 1080.6,
+      "unit": "INR_cr",
+      "cell": "F60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY19": {
+      "value": 967.82,
+      "unit": "INR_cr",
+      "cell": "G60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY20": {
+      "value": 585.2,
+      "unit": "INR_cr",
+      "cell": "H60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY21": {
+      "value": 735.73,
+      "unit": "INR_cr",
+      "cell": "I60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY22": {
+      "value": 885.99,
+      "unit": "INR_cr",
+      "cell": "J60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY23": {
+      "value": 1037.22,
+      "unit": "INR_cr",
+      "cell": "K60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY24": {
+      "value": 1244.52,
+      "unit": "INR_cr",
+      "cell": "L60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY25": {
+      "value": 1556.23,
+      "unit": "INR_cr",
+      "cell": "M60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "icici-lombard::retail_health_premium::FY26": {
+      "value": 2351.2,
+      "unit": "INR_cr",
+      "cell": "N60",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY18": {
+      "value": 76.91,
+      "unit": "INR_cr",
+      "cell": "F61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY19": {
+      "value": 198.31,
+      "unit": "INR_cr",
+      "cell": "G61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY20": {
+      "value": 349.56,
+      "unit": "INR_cr",
+      "cell": "H61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY21": {
+      "value": 558.97,
+      "unit": "INR_cr",
+      "cell": "I61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY22": {
+      "value": 680.05,
+      "unit": "INR_cr",
+      "cell": "J61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY23": {
+      "value": 835.36,
+      "unit": "INR_cr",
+      "cell": "K61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY24": {
+      "value": 1127.23,
+      "unit": "INR_cr",
+      "cell": "L61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY25": {
+      "value": 1440.17,
+      "unit": "INR_cr",
+      "cell": "M61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "aditya-birla::retail_health_premium::FY26": {
+      "value": 2163.86,
+      "unit": "INR_cr",
+      "cell": "N61",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY18": {
+      "value": 1407.47,
+      "unit": "INR_cr",
+      "cell": "F62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY19": {
+      "value": 1526.96,
+      "unit": "INR_cr",
+      "cell": "G62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY20": {
+      "value": 1554.15,
+      "unit": "INR_cr",
+      "cell": "H62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY21": {
+      "value": 1857.87,
+      "unit": "INR_cr",
+      "cell": "I62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY22": {
+      "value": 1741.94,
+      "unit": "INR_cr",
+      "cell": "J62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY23": {
+      "value": 1734.28,
+      "unit": "INR_cr",
+      "cell": "K62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY24": {
+      "value": 1786.91,
+      "unit": "INR_cr",
+      "cell": "L62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY25": {
+      "value": 1859.07,
+      "unit": "INR_cr",
+      "cell": "M62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "oriental-insurance::retail_health_premium::FY26": {
+      "value": 2005.74,
+      "unit": "INR_cr",
+      "cell": "N62",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY18": {
+      "value": 1016.0,
+      "unit": "INR_cr",
+      "cell": "F63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY19": {
+      "value": 1057.69,
+      "unit": "INR_cr",
+      "cell": "G63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY20": {
+      "value": 1213.96,
+      "unit": "INR_cr",
+      "cell": "H63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY21": {
+      "value": 1364.64,
+      "unit": "INR_cr",
+      "cell": "I63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY22": {
+      "value": 1388.77,
+      "unit": "INR_cr",
+      "cell": "J63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY23": {
+      "value": 1382.21,
+      "unit": "INR_cr",
+      "cell": "K63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY24": {
+      "value": 1561.6,
+      "unit": "INR_cr",
+      "cell": "L63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY25": {
+      "value": 1718.77,
+      "unit": "INR_cr",
+      "cell": "M63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "united-india::retail_health_premium::FY26": {
+      "value": 1796.32,
+      "unit": "INR_cr",
+      "cell": "N63",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY18": {
+      "value": 219.91,
+      "unit": "INR_cr",
+      "cell": "F64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY19": {
+      "value": 266.49,
+      "unit": "INR_cr",
+      "cell": "G64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY20": {
+      "value": 312.31,
+      "unit": "INR_cr",
+      "cell": "H64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY21": {
+      "value": 393.59,
+      "unit": "INR_cr",
+      "cell": "I64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY22": {
+      "value": 463.68,
+      "unit": "INR_cr",
+      "cell": "J64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY23": {
+      "value": 578.57,
+      "unit": "INR_cr",
+      "cell": "K64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY24": {
+      "value": 746.08,
+      "unit": "INR_cr",
+      "cell": "L64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY25": {
+      "value": 841.12,
+      "unit": "INR_cr",
+      "cell": "M64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "manipalcigna::retail_health_premium::FY26": {
+      "value": 1119.03,
+      "unit": "INR_cr",
+      "cell": "N64",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY18": {
+      "value": 15832.57,
+      "unit": "INR_cr",
+      "cell": "F66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY19": {
+      "value": 18318.99,
+      "unit": "INR_cr",
+      "cell": "G66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY20": {
+      "value": 20466.21,
+      "unit": "INR_cr",
+      "cell": "H66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY21": {
+      "value": 26301.19,
+      "unit": "INR_cr",
+      "cell": "I66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY22": {
+      "value": 30737.52,
+      "unit": "INR_cr",
+      "cell": "J66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY23": {
+      "value": 35434.93,
+      "unit": "INR_cr",
+      "cell": "K66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY24": {
+      "value": 42168.98,
+      "unit": "INR_cr",
+      "cell": "L66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY25": {
+      "value": 47291.27,
+      "unit": "INR_cr",
+      "cell": "M66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    },
+    "Total::retail_health_premium::FY26": {
+      "value": 56695.79,
+      "unit": "INR_cr",
+      "cell": "N66",
+      "source_name": "Neha's portfolio-review workbook (Capital IQ era) — Industry Growth sheet, user-provided 2026-06-10 as the historical seed",
+      "source_file": "data/uploads/industry-growth-seed-workbook.xlsx",
+      "source_url": "https://github.com/techmuns/HealthInsurance/blob/main/data/uploads/industry-growth-seed-workbook.xlsx",
+      "note": "Historical seed per Neha (2026-06-10). Superseded automatically by any official source for the same cell (GI Council segment reports outrank it)."
+    }
+  }
+}

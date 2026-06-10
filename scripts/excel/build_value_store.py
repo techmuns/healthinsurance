@@ -90,6 +90,7 @@ RANK_CF_DISCLOSURE = 1
 RANK_DECK = 2
 RANK_AR = 2
 RANK_EXISTING = 3
+RANK_SEED = 8  # Neha's workbook history seed — every official source supersedes it
 RANK_BACKUP = 9
 
 # Screener fallback (Neha, 2026-06-08): map a Screener metric -> schema metric ONLY
@@ -216,6 +217,33 @@ def load(name):
     return json.loads(p.read_text()).get("data", [])
 
 
+# Industry Growth history seed (Neha's workbook, 2026-06-10): rank 8, so any
+# official value silently supersedes it and a seed can never raise a conflict
+# (the conflict check only considers rank ≤ 3 candidates). Built by
+# scripts/excel/build_industry_growth_seed.py from the committed workbook.
+SEED_FILE = REPO / "data" / "source-map" / "industry-growth-seed.json"
+
+
+def collect_workbook_seed():
+    try:
+        values = json.loads(SEED_FILE.read_text()).get("values", {})
+    except Exception:
+        return
+    for key, e in values.items():
+        if not isinstance(e, dict) or e.get("value") is None:
+            continue
+        entity, metric, period = key.split("::")
+        prov = {
+            "source_name": e.get("source_name"), "source_url": e.get("source_url"),
+            "source_file": e.get("source_file"), "fetched_at": None,
+            "confidence": "medium",
+        }
+        add_candidate(entity, metric, period, e["value"], e["value"],
+                      "identity (value used as-is)", e.get("unit") or "INR_cr", prov,
+                      RANK_SEED, "user_workbook_seed", "seed",
+                      {"basis_note": e.get("note")})
+
+
 ANNUAL_MAP = [
     ("gross_direct_premium", "total_gwp", "identity", "INR_cr"),
     ("nwp", "nwp", "identity", "INR_cr"), ("nep", "nep", "identity", "INR_cr"),
@@ -252,6 +280,23 @@ GIC_RETAIL_INSURER_IDS = {
     "national-insurance", "icici-lombard", "aditya-birla", "oriental-insurance",
     "united-india", "manipalcigna",
 }
+# The "FY26 GWP" tab's per-insurer rows (total_health_gwp / retail_health_gwp,
+# periods H1FYxx / 9MFYxx from gic-health-quarterly, FYxx from the annual
+# gic-health-portfolio). The tab's Total row entity is the template's label.
+GIC_GWP_TAB_IDS = GIC_RETAIL_INSURER_IDS | {
+    "galaxy-health", "narayana-health", "bajaj-general", "reliance-general", "sbi-general",
+}
+GIC_GWP_TOTAL_ENTITY = "Total Health GWP (INR cr)"
+
+
+def gic_gwp_candidates(r, period, ent, grp, prov):
+    """Project one GIC health row onto the FY26 GWP tab's two metrics."""
+    if grp in ("sahi", "general") and ent in GIC_GWP_TAB_IDS:
+        snap_candidate(ent, "total_health_gwp", period, r.get("health_total"), "identity", "INR_cr", prov)
+        snap_candidate(ent, "retail_health_gwp", period, r.get("health_retail"), "identity", "INR_cr", prov)
+    if grp == "aggregate" and ent == "INDUSTRY":
+        snap_candidate(GIC_GWP_TOTAL_ENTITY, "total_health_gwp", period, r.get("health_total"), "identity", "INR_cr", prov)
+        snap_candidate(GIC_GWP_TOTAL_ENTITY, "retail_health_gwp", period, r.get("health_retail"), "identity", "INR_cr", prov)
 CHANNEL_MAP = [
     ("banca_share", "channel_gwp_mix::Banca"), ("broker_share", "channel_gwp_mix::Brokers"),
     ("agent_share", "channel_gwp_mix::Individual agents"),
@@ -302,11 +347,25 @@ def collect_existing():
         for field, metric, tf, unit in QUARTERLY_MAP:
             snap_candidate(r["company_id"], metric, period, r.get(field), tf, unit, prov)
     for r in load("industry-segment-premium"):
+        # ANNUAL rows only: the snapshot also carries monthly flow rows (period
+        # "2026-01" + a fiscal_year tag) whose single-month values must never
+        # masquerade as a fiscal-year figure.
+        if r.get("period_type") not in (None, "annual"):
+            continue
         prov, period = r.get("provenance", {}), (r.get("fiscal_year") or r.get("period"))
-        if not period:
+        if not period or not str(period).startswith("FY"):
             continue
         for field, entity, metric in INDUSTRY_MAP:
             snap_candidate(entity, metric, period, r.get(field), "identity", "INR_cr", prov)
+    for r in load("gic-health-quarterly"):
+        period, ent, grp = r.get("period"), r.get("entity"), r.get("carrier_group")
+        if not period or not ent:
+            continue
+        prov = dict(r.get("provenance", {}))
+        basis = r.get("basis")
+        if basis and str(basis).startswith("derived"):
+            prov["source_name"] = f"{prov.get('source_name')} · {basis}"
+        gic_gwp_candidates(r, period, ent, grp, prov)
     for r in load("gic-health-portfolio"):
         period, ent, grp = r.get("fiscal_year"), r.get("entity"), r.get("carrier_group")
         if not period or not ent:
@@ -317,6 +376,7 @@ def collect_existing():
             # Surface the arithmetic (e.g. "Private = General sub-total − PSUs")
             # right on the source label so the audit cell explains itself.
             prov["source_name"] = f"{prov.get('source_name')} · {basis}"
+        gic_gwp_candidates(r, period, ent, grp, prov)  # the FY columns of the GWP tab
         if grp == "aggregate":
             if ent in GIC_CARRIER_ENTITY:
                 snap_candidate(GIC_CARRIER_ENTITY[ent], "health_premium_by_carrier_type", period,
@@ -648,6 +708,7 @@ def main():
     ar = collect_annual_report()
     screener = collect_screener()
     collect_overlay()  # curated gap-fills, last so it only fills cells still empty
+    collect_workbook_seed()  # rank-8 history seed — only wins where nothing official exists
     store, conflicts, alternates = resolve()
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.

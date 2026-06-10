@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-06-10",
-    "last_successful_run": "2026-06-10T17:08:07.366Z",
+    "last_successful_run": "2026-06-10T19:54:36.673Z",
     "upstream_sources": [
       "gi_council"
     ],
@@ -895,8 +895,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -919,8 +919,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -943,8 +943,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -967,8 +967,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -991,8 +991,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1015,8 +1015,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1039,8 +1039,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1063,8 +1063,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1087,8 +1087,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1111,8 +1111,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1135,8 +1135,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1159,8 +1159,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1183,8 +1183,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1207,8 +1207,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1231,8 +1231,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1255,8 +1255,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1279,8 +1279,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1303,8 +1303,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1327,8 +1327,8 @@
         "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
         "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-10T17:08:07.151Z",
-        "parsed_at": "2026-06-10T17:08:07.353Z",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -1785,6 +1785,294 @@
         "source_period": "FY26",
         "fetched_at": "2026-06-10T17:04:18.008Z",
         "parsed_at": "2026-06-10T17:04:18.201Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY23",
+      "entity": "bajaj-general",
+      "carrier_group": "general",
+      "insurer_name": "Bajaj Allianz General Insurance Co Ltd",
+      "health_retail": 888.93,
+      "health_group": 1894.57,
+      "health_govt": 194.36,
+      "overseas_medical": 163.9,
+      "health_total": 3141.76,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2023",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "source_period": "FY23",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY23",
+      "entity": "reliance-general",
+      "carrier_group": "general",
+      "insurer_name": "Reliance General Insurance Co Ltd",
+      "health_retail": 303.46,
+      "health_group": 934.36,
+      "health_govt": 74.63,
+      "overseas_medical": 77.9,
+      "health_total": 1390.35,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2023",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "source_period": "FY23",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY23",
+      "entity": "sbi-general",
+      "carrier_group": "general",
+      "insurer_name": "SBI General Insurance Co Ltd",
+      "health_retail": 568.03,
+      "health_group": 1752.13,
+      "health_govt": 0,
+      "overseas_medical": 2.47,
+      "health_total": 2322.63,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2023",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "source_period": "FY23",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY24",
+      "entity": "bajaj-general",
+      "carrier_group": "general",
+      "insurer_name": "Bajaj Allianz General Insurance Co Ltd",
+      "health_retail": 989.9,
+      "health_group": 2764.03,
+      "health_govt": 2766.98,
+      "overseas_medical": 189.4,
+      "health_total": 6710.31,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2024",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "source_period": "FY24",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY24",
+      "entity": "reliance-general",
+      "carrier_group": "general",
+      "insurer_name": "Reliance General Insurance Co Ltd",
+      "health_retail": 427.14,
+      "health_group": 1144.85,
+      "health_govt": 170.96,
+      "overseas_medical": 95.82,
+      "health_total": 1838.77,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2024",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "source_period": "FY24",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY24",
+      "entity": "sbi-general",
+      "carrier_group": "general",
+      "insurer_name": "SBI General Insurance Co Ltd",
+      "health_retail": 567.76,
+      "health_group": 2311.52,
+      "health_govt": 0,
+      "overseas_medical": 1.15,
+      "health_total": 2880.43,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2024",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+        "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "source_period": "FY24",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY25",
+      "entity": "bajaj-general",
+      "carrier_group": "general",
+      "insurer_name": "Bajaj General Insurance Limited",
+      "health_retail": 1116.83,
+      "health_group": 3260.12,
+      "health_govt": 3260.29,
+      "overseas_medical": 191.55,
+      "health_total": 7828.79,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2025",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY25",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY25",
+      "entity": "reliance-general",
+      "carrier_group": "general",
+      "insurer_name": "IndusInd General Insurance Company Limited",
+      "health_retail": 425.68,
+      "health_group": 1168.79,
+      "health_govt": 186.9,
+      "overseas_medical": 127.74,
+      "health_total": 1909.11,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2025",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY25",
+        "fetched_at": "2026-06-10T19:54:36.327Z",
+        "parsed_at": "2026-06-10T19:54:36.522Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY25",
+      "entity": "sbi-general",
+      "carrier_group": "general",
+      "insurer_name": "SBI General Insurance Co Ltd",
+      "health_retail": 392.37,
+      "health_group": 3040.23,
+      "health_govt": 0,
+      "overseas_medical": 1.09,
+      "health_total": 3433.69,
+      "basis": "as printed in the report",
+      "source_basis": "prior-year comparative columns",
+      "period_label": "For the period up to March 2025",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY25",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY26",
+      "entity": "bajaj-general",
+      "carrier_group": "general",
+      "insurer_name": "Bajaj General Insurance Limited",
+      "health_retail": 1268.59,
+      "health_group": 3493.78,
+      "health_govt": 3587.53,
+      "overseas_medical": 175.67,
+      "health_total": 8525.57,
+      "basis": "as printed in the report",
+      "source_basis": "current-year columns",
+      "period_label": "For the period up to March 2026",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY26",
+      "entity": "sbi-general",
+      "carrier_group": "general",
+      "insurer_name": "SBI General Insurance Co Ltd",
+      "health_retail": 412.99,
+      "health_group": 3958.78,
+      "health_govt": 0,
+      "overseas_medical": 1.17,
+      "health_total": 4372.94,
+      "basis": "as printed in the report",
+      "source_basis": "current-year columns",
+      "period_label": "For the period up to March 2026",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "fetched_at": "2026-06-10T19:52:01.085Z",
+        "parsed_at": "2026-06-10T19:52:01.306Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "fiscal_year": "FY26",
+      "entity": "reliance-general",
+      "carrier_group": "general",
+      "insurer_name": "IndusInd General Insurance Company Limited",
+      "health_retail": 508.1,
+      "health_group": 1432.54,
+      "health_govt": 346.44,
+      "overseas_medical": 148.27,
+      "health_total": 2435.35,
+      "basis": "as printed in the report",
+      "source_basis": "current-year columns",
+      "period_label": "For the period up to March 2026",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "fetched_at": "2026-06-10T19:54:36.327Z",
+        "parsed_at": "2026-06-10T19:54:36.522Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }

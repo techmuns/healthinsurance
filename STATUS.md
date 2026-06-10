@@ -7,7 +7,26 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **378 fillable cells filled (17.5%). QA passes (no hard violations).**
+- **1,127 fillable cells filled (52.2%). QA passes (no hard violations).**
+- **FY26 GWP tab wired to the GIC quarter-end editions** (2026-06-10):
+  `gic-health-quarterly.json` holds the printed Jun/Sep/Dec cumulatives
+  (Q1/H1/9M, current + restated prior-year) per insurer; FY columns come from
+  `gic-health-portfolio.json`. 136/200 inputs filled — the H1 columns wait on
+  the Sep-2024/Sep-2025 editions, which the dedicated workflow fetches.
+  Reliance General is "IndusInd General" from the Mar-2026 edition (alias
+  mapped, as-printed name kept on the row).
+- **Industry Growth history seeded from Neha's workbook** (her instruction,
+  2026-06-10): 257 cells via `data/source-map/industry-growth-seed.json`
+  (built by `scripts/excel/build_industry_growth_seed.py` from the committed
+  workbook in `data/uploads/`). Rank-8: ANY official value supersedes a seed;
+  seeds can't raise conflicts; the workbook's 38 not-applicable zeros stayed
+  empty (missing ≠ zero). 261/295 inputs filled — the 34 gaps are defunct /
+  not-yet-licensed insurer eras.
+- **Dedicated `gic-segment-monthly.yml` workflow**: the whole GIC chain
+  (tiered fetch → parse → value store → fill → audit index → QA → commit with
+  rebase+retry) on its own clock (3rd monthly + dispatch + chained from the
+  agent pull), immune to slow unrelated sources. The big ingest also gained
+  per-fetcher timeouts + a run budget so it always reaches its commit step.
 - **QA gate repaired + scheduled commits unblocked** (2026-06-10): all 115
   url-less audit-overlay citations (the cause of 54 hard violations that were
   failing EVERY scheduled ingest run at the QA step, before the commit) now

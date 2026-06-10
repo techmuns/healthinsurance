@@ -228,6 +228,7 @@ export function validateByTarget(target: string, row: Record<string, unknown>): 
     case 'industry-segment-premium':
       return validateMonthlySegmentRow(row)
     case 'gic-health-portfolio':
+    case 'gic-health-quarterly':
       return validateGicHealthPortfolioRow(row)
     default:
       return []

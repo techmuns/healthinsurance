@@ -117,6 +117,11 @@ const GENERAL_ALIASES: Record<string, string[]> = {
   'icici-lombard': ['icici lombard'],
   'oriental-insurance': ['oriental insurance'],
   'united-india': ['united india'],
+  'sbi-general': ['sbi general'],
+  // Renamed to IndusInd General in the March-2026 edition (Hinduja/IndusInd
+  // acquisition) — same legal entity; the as-printed name is kept on the row.
+  'reliance-general': ['reliance general', 'indusind general'],
+  'bajaj-general': ['bajaj allianz', 'bajaj general'],
 }
 // The 4 public-sector general insurers — the "PSUs" carrier row.
 const PSU_IDS = ['national-insurance', 'new-india', 'oriental-insurance', 'united-india']
@@ -735,6 +740,91 @@ function entitiesForYear(parse: FileParse, which: 'current' | 'previous', fy: st
   return out
 }
 
+// ── quarter-end cumulative statements (the FY26 GWP tab's H1/9M inputs) ─────
+//
+// Besides the March/full-FY editions, the June / September / December editions
+// are quarter-end cumulatives: "up to September 2025" IS H1 FY26 as printed —
+// no delta arithmetic. Each file also restates the same period of the PRIOR
+// year in its "Previous Year" rows (Sep-2025 file ⇒ H1 FY26 + H1 FY25), and
+// the newest statement of a period wins, exactly like the FY columns.
+
+const QUARTER_END: Record<string, { label: (fy: string) => string; monthName: string }> = {
+  '06': { label: (fy) => `Q1${fy}`, monthName: 'June' },
+  '09': { label: (fy) => `H1${fy}`, monthName: 'September' },
+  '12': { label: (fy) => `9M${fy}`, monthName: 'December' },
+}
+
+interface QuarterFile { period: string; buffer: Buffer; source_url: string; raw_file: string }
+
+/** Quarter-end editions available locally: the monthly drop dir (which the
+ *  live run + agent pulls keep stocked) — June/September/December only. */
+async function resolveQuarterEndFiles(): Promise<QuarterFile[]> {
+  const out: QuarterFile[] = []
+  const dir = resolve(RAW_ROOT, RAW_SUBDIR_MONTHLY)
+  for (const name of (await readdir(dir).catch(() => [] as string[]))) {
+    const m = name.match(/^(\d{4})-(06|09|12)\.xlsx$/)
+    if (!m) continue
+    const abs = resolve(dir, name)
+    out.push({
+      period: `${m[1]}-${m[2]}`, buffer: await readFile(abs),
+      source_url: LISTING_URLS[0], raw_file: relative(REPO_ROOT, abs),
+    })
+  }
+  return out
+}
+
+/** FY a calendar quarter-end belongs to: Jun/Sep/Dec YYYY → FY(YYYY+1). */
+function fyOfQuarterEnd(period: string): string {
+  return `FY${String(Number(period.slice(2, 4)) + 1).padStart(2, '0')}`
+}
+
+interface QuarterStatement {
+  period: string // e.g. 'H1FY26'
+  recency: string
+  file: QuarterFile
+  basis: 'current-year columns' | 'prior-year comparative columns'
+  entities: EntityValues[]
+  periodLabel: string
+}
+
+function quarterStatementsOf(files: QuarterFile[], warnings: string[]): QuarterStatement[] {
+  const statements: QuarterStatement[] = []
+  for (const file of files) {
+    const mm = file.period.slice(5, 7)
+    const q = QUARTER_END[mm]
+    if (!q) continue
+    const fileWarnings: string[] = []
+    let parse: FileParse | null = null
+    try {
+      parse = parseWorkbook(file.buffer, fileWarnings)
+    } catch (err) {
+      fileWarnings.push(`parse error: ${err instanceof Error ? err.message : String(err)}`)
+    }
+    warnings.push(...fileWarnings.map((w) => `${file.raw_file}: ${w}`))
+    if (!parse) continue
+    const fy = fyOfQuarterEnd(file.period)
+    const label = `For the period up to ${q.monthName} ${file.period.slice(0, 4)} (provisional & unaudited)`
+    statements.push({
+      period: q.label(fy), recency: file.period, file, basis: 'current-year columns',
+      entities: entitiesForYear(parse, 'current', q.label(fy), warnings), periodLabel: label,
+    })
+    statements.push({
+      period: q.label(prevFy(fy)), recency: file.period, file, basis: 'prior-year comparative columns',
+      entities: entitiesForYear(parse, 'previous', q.label(prevFy(fy)), warnings), periodLabel: label,
+    })
+  }
+  // Newest statement of each cumulative period wins; drop the older ones.
+  statements.sort((a, b) => (a.recency > b.recency ? -1 : 1))
+  const seen = new Set<string>()
+  const kept: QuarterStatement[] = []
+  for (const st of statements) {
+    if (seen.has(st.period)) continue
+    seen.add(st.period)
+    kept.push(st)
+  }
+  return kept
+}
+
 // ── orchestration ───────────────────────────────────────────────────────────
 
 interface YearStatement {
@@ -869,9 +959,41 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
       }
     }
 
+    // Quarter-end cumulatives (H1 / 9M / Q1 YTD) → gic-health-quarterly.
+    const quarterStatements = quarterStatementsOf(await resolveQuarterEndFiles(), warnings)
+    for (const st of quarterStatements) {
+      const provenance = {
+        source_name: `GI Council Segment-wise Report (${st.periodLabel}) — ${st.basis}`,
+        source_url: st.file.source_url,
+        source_file: st.file.raw_file,
+        source_period: st.period,
+        fetched_at,
+        parsed_at: nowIso(),
+        parser_name: 'ingest-gicouncil-segment-annual',
+        confidence: 'high' as const,
+      }
+      for (const e of st.entities) {
+        records.push({
+          target: 'gic-health-quarterly',
+          keys: { period: st.period, entity: e.entity, carrier_group: e.carrier_group },
+          values: {
+            insurer_name: e.insurer_name,
+            health_retail: e.health_retail, health_group: e.health_group,
+            health_govt: e.health_govt, overseas_medical: e.overseas_medical,
+            health_total: e.health_total,
+            basis: e.derivation ? `derived: ${e.derivation}` : 'as printed in the report',
+            source_basis: st.basis,
+            period_label: st.periodLabel,
+          },
+          provenance,
+        })
+      }
+    }
+
     // Honest processed sidecar — which file "won" each FY, for review.
     const winners: Record<string, { file: string; basis: string }> = {}
     for (const st of kept) winners[st.fy] = { file: st.file.raw_file, basis: st.basis }
+    for (const st of quarterStatements) winners[st.period] = { file: st.file.raw_file, basis: st.basis }
     await ensureDir(PROCESSED_ROOT)
     await writeFile(resolve(PROCESSED_ROOT, 'gic-segment-annual.json'), JSON.stringify({
       _meta: {

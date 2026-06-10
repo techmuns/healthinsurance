@@ -90,7 +90,7 @@ function shouldRun(f: Fetcher): boolean {
 const PER_FETCHER_MS = Number(process.env.INGEST_FETCHER_TIMEOUT_MINUTES ?? 6) * 60_000
 const RUN_BUDGET_MS = Number(process.env.INGEST_BUDGET_MINUTES ?? 20) * 60_000
 
-function fetcherTimeout(sourceId: string): Promise<never> {
+function fetcherTimeout(): Promise<never> {
   return new Promise((_, reject) =>
     setTimeout(() => reject(new Error(`fetcher timed out after ${PER_FETCHER_MS / 60_000} min (capped so the run always reaches snapshot merge + commit)`)),
       PER_FETCHER_MS).unref?.())
@@ -116,7 +116,7 @@ async function main() {
       continue
     }
     try {
-      const r = await Promise.race([f.run(), fetcherTimeout(f.source_id)])
+      const r = await Promise.race([f.run(), fetcherTimeout()])
       results.push(r)
     } catch (err) {
       // One source failing must not break the whole run.
