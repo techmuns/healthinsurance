@@ -1,0 +1,47 @@
+{
+  "_meta": {
+    "snapshot_id": "gic-segment-annual",
+    "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
+    "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
+    "last_run_at": "2026-06-10T17:09:07.325Z",
+    "files_used": [
+      {
+        "period": "2026-03",
+        "kind": "march",
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx"
+      },
+      {
+        "period": "2025-03",
+        "kind": "final",
+        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx"
+      },
+      {
+        "period": "2024-03",
+        "kind": "march",
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx"
+      }
+    ],
+    "canonical_statement_per_fy": {
+      "FY23": {
+        "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "FY24": {
+        "file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "FY25": {
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "basis": "prior-year comparative columns"
+      },
+      "FY26": {
+        "file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "basis": "current-year columns"
+      }
+    },
+    "warnings": []
+  }
+}

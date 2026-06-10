@@ -85,6 +85,7 @@ Offline (default), the Node fetchers replay whatever is staged under
 | `scripts/excel/build_schema_map.py` | 1 | template reader → `schema-map.json` |
 | `schema-map.json` | 1 | cell-level contract (entity / metric / period / source per cell) |
 | `scripts/excel/build_value_store.py` | 2 | bridge: official snapshots → `data/processed/excel-values.json` |
+| `scripts/ingest/ingest-gicouncil-segment-annual.ts` | 3 | GI Council segment report, full-FY cut → Industry Growth sheet (segments, carrier mix, per-insurer health) |
 | `scripts/ingest/fetch-investing.ts` | 3 | NSE-first price / delivery (Investing.com backup) |
 | `scripts/ingest/fetch-screener.ts` | 3 | Screener backup cross-check (login-free) |
 | `scripts/ingest/fetch-trendlyne.ts` | 3 | Trendlyne analyst/shareholding backup (login-free) |
@@ -96,6 +97,40 @@ Offline (default), the Node fetchers replay whatever is staged under
 The Node ingest framework (IRDAI / GI Council / company disclosures / ownership /
 distribution / management events) already existed and is reused as-is; see
 `data/README.md` for that layer.
+
+### The Industry Growth sheet (GI Council segment report) — yearly refresh
+
+The whole Industry Growth tab (industry premium by segment, health premium by
+carrier type, per-SAHI health premium, retail health by insurer) fills from the
+GI Council's **segment-wise report** — the monthly XLSX list at
+<https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/>.
+Only the **March** editions (and the mid-year **"final segment YY-YY"** re-issues)
+cover a complete fiscal year, so only those can fill an FY column; partial-year
+months are structurally never promoted to an FY value. For each FY the **newest
+GIC statement wins** — a later report's restated "Previous Year" columns
+supersede the year's own earlier edition.
+
+When the next March report is published (≈ mid-April each year):
+
+```bash
+# 1. Get the file in (any ONE of these):
+#    a. live run from a non-datacenter network (or INGEST_FETCH_PROXY set):
+INGEST_OFFLINE=0 npm run ingest:gic-segment-annual
+#    b. or download it in a browser and drop it in (filename can stay as-is):
+#       data/raw/gicouncil/segment-annual/segment_march_2027.xlsx
+npm run ingest:gic-segment-annual
+
+# 2. Re-project into the workbook grid:
+python3 scripts/excel/build_value_store.py
+python3 scripts/excel/build_audit_index.py
+```
+
+The run is idempotent (re-running with no new file is a no-op), validates that
+derived rows re-add to the report's printed sub-totals, and writes an audit
+sidecar to `data/processed/gic-segment-annual.json` showing which file "won"
+each FY. Older full-FY editions dropped into the same folder backfill FY15-FY22
+the same way. Monthly (partial-year) editions belong in
+`data/raw/gicouncil/segment/<YYYY-MM>.xlsx` for the monthly flow pipeline.
 
 ---
 

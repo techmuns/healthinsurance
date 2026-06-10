@@ -1020,6 +1020,646 @@
       "source_period": "FY21",
       "fetched_at": "2026-06-04T07:07:49.264Z",
       "confidence": "high"
+    },
+    "period_type::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fiscal_year::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fire_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "crop_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "marine_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "other_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "total_gi_premium::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_share::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_share::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "insurer_name::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_retail::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_group::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_govt::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "overseas_medical::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_total::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "basis::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "source_basis::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_label::INDUSTRY::FY23": {
+      "source_name": "GI Council Segment-wise Report (upto March 2024 (FY24, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_period": "FY23",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_type::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fiscal_year::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fire_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "crop_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "marine_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "other_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "total_gi_premium::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_share::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_share::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "insurer_name::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_retail::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_group::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_govt::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "overseas_medical::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_total::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "basis::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "source_basis::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_label::INDUSTRY::FY24": {
+      "source_name": "GI Council Segment-wise Report (upto March 2025 (FY25, final)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
+      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_period": "FY24",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_type::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fiscal_year::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fire_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "crop_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "marine_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "other_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "total_gi_premium::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_share::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_share::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "insurer_name::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_retail::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_group::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_govt::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "overseas_medical::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_total::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "basis::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "source_basis::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_label::INDUSTRY::FY25": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY25",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_type::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fiscal_year::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "fire_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "crop_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "marine_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "other_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "total_gi_premium::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_share::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "motor_share::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "insurer_name::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_retail::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_group::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_govt::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "overseas_medical::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "health_total::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "basis::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "source_basis::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
+    },
+    "period_label::INDUSTRY::FY26": {
+      "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
+      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_period": "FY26",
+      "fetched_at": "2026-06-10T17:09:07.325Z",
+      "confidence": "high"
     }
   }
 }

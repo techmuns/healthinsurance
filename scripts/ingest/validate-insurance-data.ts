@@ -149,6 +149,31 @@ export function validateMonthlySegmentRow(row: Record<string, unknown>): Validat
   return out
 }
 
+/**
+ * Validate a GI Council health-portfolio row (annual, per insurer or carrier
+ * aggregate): premiums cannot be negative; when the grand total and all four
+ * sub-splits are present they must re-add (the GIC sheet prints both).
+ */
+export function validateGicHealthPortfolioRow(row: Record<string, unknown>): ValidationIssue[] {
+  const out: ValidationIssue[] = []
+  const fields = ['health_retail', 'health_group', 'health_govt', 'overseas_medical', 'health_total']
+  for (const f of fields) {
+    const v = row[f]
+    if (typeof v === 'number' && v < -0.005) {
+      out.push({ level: 'error', metric_id: f, message: `${f} (${v}) is negative — premium cannot be negative.` })
+    }
+  }
+  const total = row.health_total
+  const parts = [row.health_retail, row.health_group, row.health_govt, row.overseas_medical]
+  if (typeof total === 'number' && parts.every((v) => typeof v === 'number')) {
+    const sum = (parts as number[]).reduce((a, b) => a + b, 0)
+    if (Math.abs(sum - total) > Math.max(Math.abs(total) * 0.02, 1)) {
+      out.push({ level: 'warning', metric_id: 'health_total', message: `health_total (${total}) ≠ sum of sub-splits (${sum.toFixed(1)}).` })
+    }
+  }
+  return out
+}
+
 export function validateFiscalYear(fy: string): ValidationIssue | null {
   if (!/^FY\d{2,4}$/.test(fy)) {
     return { level: 'error', message: `Fiscal year "${fy}" does not match FYxx pattern. Run normaliseFy first.` }
@@ -202,6 +227,8 @@ export function validateByTarget(target: string, row: Record<string, unknown>): 
     case 'insurer-monthly-premium':
     case 'industry-segment-premium':
       return validateMonthlySegmentRow(row)
+    case 'gic-health-portfolio':
+      return validateGicHealthPortfolioRow(row)
     default:
       return []
   }

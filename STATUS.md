@@ -1,13 +1,30 @@
 # Project Status — Official Filings → Excel Pipeline
 
-_Last updated: 2026-06-08. Branch: `main`._
+_Last updated: 2026-06-10. Branch: `main`._
 
 This is the handoff/status doc for the official-filings → Excel-fill work. The
 container is ephemeral, so this lives in the repo so the next session can pick up
 without re-deriving state.
 
 ## Where it stands
-- **146 / 2155 fillable cells filled (6.8%). QA passes (no hard violations).**
+- **378 fillable cells filled (17.5%).** QA: 54 hard violations, all PRE-EXISTING
+  and all one kind — curated overlay values (ManipalCigna / Aditya Birla annual-
+  report transcriptions, SAHIs comparison sheet) carrying a source name but **no
+  source_url**. Verified present on the committed state before 2026-06-10's
+  changes; fix is to add the document URLs to those audit-overlay entries.
+- **Industry Growth tab filled from the GI Council segment-wise report**
+  (2026-06-10): 19 → 124 cells. FY26 column 30/30, FY25 30/32 (the 2 gaps are
+  honest — Reliance Health exited 2019, HDFC Ergo Health merged FY21; no FY25
+  SAHI rows exist). FY23/FY24 back-filled from the same three official workbooks
+  already committed under `data/agent-pulls/` (sha256-manifested). New pipeline:
+  `npm run ingest:gic-segment-annual` → `gic-health-portfolio.json` snapshot +
+  gap-fills `industry-segment-premium.json`; March / "final segment" editions
+  only; newest GIC statement per FY wins (restatements supersede); idempotent;
+  136-check independent verification against the raw XLSX passed. Note: FY23
+  industry total moved 2,56,984 → 2,56,894.25 (GIC's own March-2024 restated
+  comparative replacing the handbook-seeded figure, per the canonical rule; the
+  row now sums exactly). See EXCEL-INGESTION.md "Industry Growth sheet" for the
+  yearly refresh runbook.
 - **Aditya Birla Health + ManipalCigna Health statutory cells filled** (2026-06-08)
   from their audited FY25 annual reports — both **auto-fetched** by the
   `fetch-company-pdfs` workflow (grasim & manipalcigna.com served the Actions runner

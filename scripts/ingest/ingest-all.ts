@@ -14,6 +14,7 @@ import { ingestIrdaiMonthly } from './ingest-irdai-monthly'
 import { ingestIrdaiNonLifeFlashFigures } from './ingest-irdai-nonlife-flash'
 import { ingestGicouncilFlash } from './ingest-gicouncil-flash'
 import { ingestGicouncilSegment } from './ingest-gicouncil-segment'
+import { ingestGicouncilSegmentAnnual } from './ingest-gicouncil-segment-annual'
 import { ingestIrdaiAnnual } from './ingest-irdai-annual'
 import { ingestIrdaiQuarterly } from './ingest-irdai-quarterly'
 import { ingestCompanyDisclosures } from './ingest-company-disclosures'
@@ -36,6 +37,7 @@ const ALL: Fetcher[] = [
   ingestIrdaiNonLifeFlashFigures,
   ingestGicouncilFlash,
   ingestGicouncilSegment,
+  ingestGicouncilSegmentAnnual,
   ingestIrdaiAnnual,
   ingestIrdaiQuarterly,
   ingestCompanyDisclosures,

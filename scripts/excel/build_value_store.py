@@ -240,6 +240,18 @@ INDUSTRY_MAP = [
     ("other_premium", "Others", "gi_segment_gross_premium"),
     ("total_gi_premium", "Total", "gi_segment_gross_premium"),
 ]
+# GI Council health-portfolio snapshot (gic-health-portfolio.json) -> the
+# Industry Growth sheet's carrier-type and per-insurer health rows. Aggregate
+# entities map to the template's carrier rows; insurer rows are gated by the
+# carrier_group the GIC report printed them under, so the SAHI-era HDFC Ergo
+# Health (Apollo Munich) feeds the SAHI section while HDFC Ergo General feeds
+# the retail-by-insurer section.
+GIC_CARRIER_ENTITY = {"SAHI": "SAHI", "Private": "Private", "PSUs": "PSUs", "INDUSTRY": "Total"}
+GIC_RETAIL_INSURER_IDS = {
+    "star-health", "care-health", "niva-bupa", "hdfc-ergo", "new-india",
+    "national-insurance", "icici-lombard", "aditya-birla", "oriental-insurance",
+    "united-india", "manipalcigna",
+}
 CHANNEL_MAP = [
     ("banca_share", "channel_gwp_mix::Banca"), ("broker_share", "channel_gwp_mix::Brokers"),
     ("agent_share", "channel_gwp_mix::Individual agents"),
@@ -295,6 +307,40 @@ def collect_existing():
             continue
         for field, entity, metric in INDUSTRY_MAP:
             snap_candidate(entity, metric, period, r.get(field), "identity", "INR_cr", prov)
+    for r in load("gic-health-portfolio"):
+        period, ent, grp = r.get("fiscal_year"), r.get("entity"), r.get("carrier_group")
+        if not period or not ent:
+            continue
+        prov = dict(r.get("provenance", {}))
+        basis = r.get("basis")
+        if basis and str(basis).startswith("derived"):
+            # Surface the arithmetic (e.g. "Private = General sub-total − PSUs")
+            # right on the source label so the audit cell explains itself.
+            prov["source_name"] = f"{prov.get('source_name')} · {basis}"
+        if grp == "aggregate":
+            if ent in GIC_CARRIER_ENTITY:
+                snap_candidate(GIC_CARRIER_ENTITY[ent], "health_premium_by_carrier_type", period,
+                               r.get("health_total"), "identity", "INR_cr", prov)
+            if ent == "SAHI":  # the SAHI sections' printed Total rows
+                snap_candidate("Total", "sahi_total_health_premium", period,
+                               r.get("health_total"), "identity", "INR_cr", prov)
+                snap_candidate("Total", "sahi_retail_health_premium", period,
+                               r.get("health_retail"), "identity", "INR_cr", prov)
+            if ent == "INDUSTRY":
+                snap_candidate("Total", "retail_health_premium", period,
+                               r.get("health_retail"), "identity", "INR_cr", prov)
+            if ent == "Others":
+                snap_candidate("Others", "retail_health_premium", period,
+                               r.get("health_retail"), "identity", "INR_cr", prov)
+            continue
+        if grp == "sahi":
+            snap_candidate(ent, "sahi_total_health_premium", period,
+                           r.get("health_total"), "identity", "INR_cr", prov)
+            snap_candidate(ent, "sahi_retail_health_premium", period,
+                           r.get("health_retail"), "identity", "INR_cr", prov)
+        if ent in GIC_RETAIL_INSURER_IDS:
+            snap_candidate(ent, "retail_health_premium", period,
+                           r.get("health_retail"), "identity", "INR_cr", prov)
     for r in load("price-history-snapshot"):
         prov, date = r.get("provenance", {}), r.get("date")
         if not date:
