@@ -84,7 +84,7 @@ function colIndex(col: string): number {
   return n
 }
 
-interface GridCol { col: string; period: string; entity: string; metric: string; label: string }
+interface GridCol { col: string; period: string; entity: string; metric: string; label: string; top: string }
 interface GridRow {
   rowNum: number
   section: string
@@ -109,7 +109,7 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
     if (!colMap.has(col)) colMap.set(col, { period: c.period || col, entity: c.entityLabel || '', metric: c.metricLabel || '' })
   }
   let columns: GridCol[] = [...colMap.entries()]
-    .map(([col, v]) => ({ col, period: v.period, entity: v.entity, metric: v.metric, label: v.period }))
+    .map(([col, v]) => ({ col, period: v.period, entity: v.entity, metric: v.metric, label: v.period, top: col }))
     .sort((a, b) => colIndex(a.col) - colIndex(b.col))
 
   // When every column shares one period but carries a distinct metric (e.g. the
@@ -119,6 +119,13 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
   const distinctMetrics = new Set(columns.map((c) => c.metric).filter(Boolean)).size
   const labelByMetric = distinctPeriods <= 1 && distinctMetrics > 1
   if (labelByMetric) columns = columns.map((c) => ({ ...c, label: c.metric || c.period }))
+
+  // Breakdown sheet: every cell is one base metric split by a sub-entity
+  // (e.g. 'Captable' = shareholding_shares::<holder>). Rows are the holders and
+  // the single column is the base metric ("Shareholding Shares").
+  const subBreakdown = cells.length > 0 && cells.every((c) => (c.metricId ?? '').includes('::')) && new Set(cells.map((c) => (c.metricId ?? '').split('::')[0])).size === 1
+  const baseLabel = subBreakdown ? (cells[0].metricLabel || '').split(' · ')[0] : ''
+  if (subBreakdown && distinctPeriods <= 1) columns = columns.map((c) => ({ ...c, label: baseLabel || c.label, top: c.period }))
 
   const rowMap = new Map<number, AuditCell[]>()
   for (const c of cells) {
@@ -131,14 +138,18 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
   const entityByColumn = new Set(columns.map((c) => c.entity).filter(Boolean)).size > 1
   const rowEntities = new Set([...rowMap.values()].map((rc) => rc[0].entityLabel))
   const entityByRow = !entityByColumn && rowEntities.size > 1
+  const singleEntity = rowEntities.size <= 1
 
   const rows: GridRow[] = [...rowMap.entries()]
     .map(([rowNum, rc]) => {
       const f = rc[0]
+      // The sub-entity (holder) for a breakdown row, e.g. "Bupa Singapore Holdings".
+      const sub = subBreakdown ? (f.metricLabel || '').split(' · ').slice(1).join(' · ') : ''
       // Primary label = the dimension that distinguishes this row.
-      const primary = entityByRow ? f.entityLabel : f.metricLabel
-      // When columns are the metrics, the row is just the entity — no metric subtitle.
-      const secondary = entityByColumn || labelByMetric ? '' : entityByRow ? f.metricLabel : f.entityLabel
+      const primary = subBreakdown ? sub || f.metricLabel : entityByRow ? f.entityLabel : f.metricLabel
+      // When columns are the metrics (or it's a single-entity breakdown), the
+      // row needs no entity / metric subtitle.
+      const secondary = entityByColumn || labelByMetric || (subBreakdown && singleEntity) ? '' : entityByRow ? f.metricLabel : f.entityLabel
       return {
         rowNum,
         section: f.section || '',
@@ -305,7 +316,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
             </th>
             {columns.map((c) => (
               <th key={c.col} className="border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center" style={{ minWidth: 78 }}>
-                <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.col}</span>
+                <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.top}</span>
                 <span className="block text-[11px] font-bold text-navy-deep">{c.label}</span>
               </th>
             ))}
