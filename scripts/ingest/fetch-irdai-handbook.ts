@@ -82,14 +82,18 @@ async function validate(t: Target, r: DLResult, tmpPath: string): Promise<string
   if (t.ext === 'pdf') {
     if (!r.buf.subarray(0, 1024).includes(PDF_MAGIC)) return 'not a PDF (no %PDF header)'
     await writeFile(tmpPath, r.buf)
+    // pdfinfo can be fooled — it reconstructs a damaged xref and still reports a
+    // page count. The real test is whether TEXT actually extracts: a clean
+    // multi-hundred-page handbook yields >100k chars; a mangled one yields a few
+    // hundred (xref/flate errors). Require a substantial text body.
     try {
-      const { stdout } = await execFileP('pdfinfo', [tmpPath], { maxBuffer: 4_000_000 })
-      const m = stdout.match(/Pages:\s+(\d+)/)
-      const pages = m ? Number(m[1]) : 0
-      if (pages < 20) return `pdfinfo reports only ${pages} pages (corrupt/truncated)`
+      const txt = `${tmpPath}.txt`
+      await execFileP('pdftotext', ['-layout', tmpPath, txt], { maxBuffer: 8_000_000 })
+      const body = await readFile(txt, 'utf8').catch(() => '')
+      if (body.length < 50_000) return `text extraction yielded only ${body.length} chars (corrupt/truncated download)`
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
-      return `pdfinfo rejected the file (corrupt): ${msg.split('\n')[0].slice(0, 120)}`
+      return `pdftotext rejected the file (corrupt): ${msg.split('\n')[0].slice(0, 120)}`
     }
   } else {
     if (!r.buf.subarray(0, 4).equals(ZIP_MAGIC)) return 'not a ZIP (no PK header)'
