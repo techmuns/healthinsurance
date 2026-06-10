@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, Info, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
@@ -63,6 +63,40 @@ function pipelineOf(cell: AuditCell): PipelineKey {
 // A cell is "fetched & verified" when it carries a value.
 function isFetched(cell: AuditCell): boolean {
   return cell.normalizedValue != null || cell.calculatedValue != null
+}
+
+// ── Rows the company investor decks (PPT) do NOT publish ─────────────────────
+// The whole "SAHIs comparison" tab is wired to one pipeline — the company deck —
+// so by default every empty cell here is tagged "• PPT" ("expected from the
+// deck, not fetched yet"). For two rows that tag is misleading: the figure is
+// not a deck number at all, so no PPT pull will ever fill it. We mark those
+// blanks honestly instead, and name where the number really comes from.
+//   • overall_health_market_share — an industry-share figure (the insurer's
+//     health premium ÷ all-India health premium). Every value we hold for it
+//     comes from the GI Council segment report; decks never print it.
+//   • total_gwp — Gross Written Premium on the regulator's 1/n basis. Decks
+//     headline the ex-1/n figure, so the 1/n number is taken from the IRDAI
+//     public disclosure / annual report. (A few decks — e.g. Care's Religare
+//     deck — do restate the 1/n GWP; those cells stay filled with their own
+//     deck source and are not touched here.)
+const DECK_UNPUBLISHED: Record<string, { sourceLabel: string; reason: string }> = {
+  overall_health_market_share: {
+    sourceLabel: 'GI Council segment report (industry share)',
+    reason:
+      "Overall health market share isn't printed in investor decks — it's an industry-share figure (the insurer's health premium ÷ all-India health premium). Where we have it, it comes from the GI Council segment report; the blank periods (FY23 and the quarters) aren't published there either.",
+  },
+  total_gwp: {
+    sourceLabel: 'IRDAI public disclosure (1/n basis)',
+    reason:
+      "This is Gross Written Premium on the regulator's 1/n basis. Investor decks headline the ex-1/n figure, so the 1/n number comes from the IRDAI public disclosure / annual report — not the deck. (A few decks, e.g. Care's Religare deck, do restate the 1/n GWP.)",
+  },
+}
+// An EMPTY cell whose row the deck doesn't publish — the "• PPT" tag is wrong
+// for it. Filled cells are untouched: they keep their real value and source,
+// including the rare deck that does restate the figure.
+function deckGap(cell: AuditCell): { sourceLabel: string; reason: string } | null {
+  if (isFetched(cell)) return null
+  return DECK_UNPUBLISHED[cell.metricId] ?? null
 }
 
 function parseRef(ref: string): { col: string; row: number } | null {
@@ -187,6 +221,7 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
   const meta = STATUS_META[cell.status]
   const q = QA[meta.color]
   const fetched = isFetched(cell)
+  const gap = deckGap(cell)
   const pipe = PIPELINE[pipelineOf(cell)]
   return (
     <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
@@ -201,37 +236,50 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
         </button>
       </div>
 
-      {/* Fetched / Missing banner */}
-      <div className={`flex items-center gap-2 px-4 py-2.5 ${fetched ? 'bg-emerald-soft/40' : 'bg-coral-soft/30'}`}>
+      {/* Fetched / Not-in-deck / Missing banner */}
+      <div className={`flex items-center gap-2 px-4 py-2.5 ${fetched ? 'bg-emerald-soft/40' : gap ? 'bg-slate-100' : 'bg-coral-soft/30'}`}>
         {fetched
           ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald" />
-          : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
-        <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : 'text-coral'}`}>
-          {fetched ? 'Fetched & verified' : 'Not fetched — cell empty'}
+          : gap
+            ? <Info className="h-4 w-4 shrink-0 text-slate-500" />
+            : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
+        <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : gap ? 'text-slate-600' : 'text-coral'}`}>
+          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : 'Not fetched — cell empty'}
         </span>
-        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${q.cell} ${q.text}`}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.dot }} />{meta.label}
+        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${gap ? 'bg-slate-100 text-slate-500' : `${q.cell} ${q.text}`}`}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: gap ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : meta.label}
         </span>
       </div>
 
       <div className="space-y-3 px-4 py-3">
-        {/* Pipeline */}
+        {/* Pipeline — the real source for a row the deck doesn't publish */}
         <DetailField label="Source pipeline">
-          <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[12px] font-semibold text-white" style={{ background: pipe.color }}>
-            {pipe.label}
-          </span>
-          <p className="mt-1 text-[11px] text-ink-secondary">{pipe.what}</p>
+          {gap ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[12px] font-semibold text-white" style={{ background: PIPELINE.irdai.color }}>
+                {gap.sourceLabel}
+              </span>
+              <p className="mt-1 text-[11px] text-ink-secondary">Not a deck metric — the investor presentation doesn’t carry this number, so it isn’t a pending PPT pull.</p>
+            </>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[12px] font-semibold text-white" style={{ background: pipe.color }}>
+                {pipe.label}
+              </span>
+              <p className="mt-1 text-[11px] text-ink-secondary">{pipe.what}</p>
+            </>
+          )}
         </DetailField>
 
-        {/* Source — actual when fetched, expected when empty */}
-        <DetailField label={fetched ? 'Source (verified)' : 'Expected source'}>
+        {/* Source — actual when fetched, expected (or "comes from") when empty */}
+        <DetailField label={fetched ? 'Source (verified)' : gap ? 'Comes from' : 'Expected source'}>
           {cell.sourceName ? (
             cell.sourceUrl ? (
               <a href={cell.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-navy-primary hover:underline">
                 {cell.sourceName}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
               </a>
             ) : <span>{cell.sourceName}</span>
-          ) : <span className="text-ink-secondary">Not defined</span>}
+          ) : gap ? <span>{gap.sourceLabel}</span> : <span className="text-ink-secondary">Not defined</span>}
           {cell.sourceFile && <p className="mt-0.5 break-all font-mono text-[10px] text-ink-secondary/80">{cell.sourceFile}</p>}
         </DetailField>
 
@@ -240,6 +288,10 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
             <DetailField label="As printed (source)"><span className="font-semibold tabular-nums">{formatRaw(cell.rawValue ?? cell.normalizedValue) || '—'}</span></DetailField>
             <DetailField label="Final value (dashboard)"><span className="font-semibold tabular-nums text-navy-deep">{cell.normalizedValue != null ? formatValue(cell.normalizedValue, cell.unit) : formatValue(cell.calculatedValue ?? null, cell.unit)}</span></DetailField>
           </div>
+        ) : gap ? (
+          <DetailField label="Why it's blank">
+            <span className="text-ink-secondary">{gap.reason}</span>
+          </DetailField>
         ) : (
           <DetailField label="Why it's missing">
             <span className="text-coral-deep">{cell.note || `No value yet — should be fetched from ${pipe.label}.`}</span>
@@ -324,24 +376,37 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                     const cell = r.byCol.get(col.col)
                     if (!cell) return <td key={col.col} className="border-b border-r border-soft-border/60 bg-[#FCFDFE]" />
                     const meta = STATUS_META[cell.status]
-                    const q = QA[meta.color]
+                    const gap = deckGap(cell)
+                    // A "not in the deck" blank reads as calm grey, not alarming red.
+                    const q = gap ? QA.grey : QA[meta.color]
                     const txt = cellDisplay(cell, raw)
                     const isSel = selected?.id === cell.id
                     const isFormula = cell.cellKind === 'formula'
                     const fetched = isFetched(cell)
                     const pipe = PIPELINE[pipelineOf(cell)]
+                    const title = fetched
+                      ? `${cell.metricLabel} · ${cell.period} — ${meta.label}`
+                      : gap
+                        ? `${cell.metricLabel} · ${cell.period} — not published in the investor deck; comes from ${gap.sourceLabel}`
+                        : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0">
                         <button
                           type="button"
                           onClick={() => onSelect(cell)}
-                          title={fetched ? `${cell.metricLabel} · ${cell.period} — ${meta.label}` : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`}
+                          title={title}
                           className={`relative flex h-full min-h-[34px] w-full items-center ${fetched ? 'justify-end text-right' : 'justify-center'} px-2 py-1 tabular-nums transition-all ${q.cell} hover:brightness-95`}
                           style={isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
                         >
                           {isFormula && <FunctionSquare className="absolute left-1 top-1 h-2.5 w-2.5 opacity-40" />}
                           {fetched ? (
                             <span className={`text-[11.5px] font-semibold ${q.text}`}>{txt}</span>
+                          ) : gap ? (
+                            // The deck doesn't carry this number — say so, plainly,
+                            // instead of implying a "• PPT" pull is still pending.
+                            <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: q.dot }} />not in PPT
+                            </span>
                           ) : (
                             // Empty cell → show which pipeline should have filled it.
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/75">
@@ -372,17 +437,22 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
 
   // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
+  // Blanks the deck doesn't publish are pulled into their own "not in deck" count
+  // so they don't inflate the PPT pipeline's "missing" tally with pulls that can
+  // never happen.
   const pipeStats = useMemo(() => {
-    const s: Record<PipelineKey, { fetched: number; total: number }> = {
+    const pipes: Record<PipelineKey, { fetched: number; total: number }> = {
       irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 },
       screener: { fetched: 0, total: 0 }, capitaliq: { fetched: 0, total: 0 },
     }
+    let notInDeck = 0
     for (const c of group?.cells ?? []) {
+      if (deckGap(c)) { notInDeck += 1; continue }
       const p = pipelineOf(c)
-      s[p].total += 1
-      if (isFetched(c)) s[p].fetched += 1
+      pipes[p].total += 1
+      if (isFetched(c)) pipes[p].fetched += 1
     }
-    return s
+    return { pipes, notInDeck }
   }, [group])
 
   if (!sheets.length) return null
@@ -460,7 +530,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Source pipelines</span>
         {(['irdai', 'company', 'screener', 'capitaliq'] as PipelineKey[]).map((k) => {
           const p = PIPELINE[k]
-          const st = pipeStats[k]
+          const st = pipeStats.pipes[k]
           if (!st.total) return null
           const miss = st.total - st.fetched
           return (
@@ -472,6 +542,16 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
             </span>
           )
         })}
+        {pipeStats.notInDeck > 0 && (
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px]"
+            title="Rows the investor decks don't publish — overall health market share and GWP on the 1/n basis. These come from official IRDAI / GI-Council sources, so a blank here is not a pending deck pull."
+          >
+            <span className="h-2 w-2 rounded-full bg-slate-300" />
+            <span className="font-semibold text-navy-deep">Not in deck</span>
+            <span className="text-ink-secondary">{pipeStats.notInDeck} cells</span>
+          </span>
+        )}
       </div>
 
       {/* Grid + (optional) detail */}
