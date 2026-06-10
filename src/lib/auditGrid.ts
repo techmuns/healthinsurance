@@ -370,11 +370,24 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
 
   const candidates = storeHas ? [storeRef as SourceRef, ...others] : others
   const pptRef = candidates.find(isInvestorPresentation)
+  // A store value sourced as "Derived from …" is a back-of-envelope estimate, not
+  // a directly-read figure (e.g. the overall-health-share cells, derived from the
+  // annual snapshot and mis-cited to a retail-only press release, regenerated each
+  // month by the pipeline). It must lose to any real directly-sourced value.
+  const storeIsDerived = storeHas && /^derived from/i.test((storeRef as SourceRef).sourceName ?? '')
+  const realOther = others.find((c) => !isInvestorPresentation(c))
   let chosen: SourceRef
   let pptPreferred = false
+  let derivedSuperseded = false
   if (pptRef) {
     chosen = pptRef
     pptPreferred = candidates.some((c) => c !== pptRef && materiallyDifferent(c.value as number, pptRef.value as number, m.unit))
+  } else if (storeHas && !storeIsDerived) {
+    chosen = storeRef as SourceRef
+  } else if (storeIsDerived && others.length) {
+    // Prefer the real source over the derived store estimate.
+    chosen = realOther ?? others[0]
+    derivedSuperseded = materiallyDifferent((storeRef as SourceRef).value as number, chosen.value as number, m.unit)
   } else if (storeHas) {
     chosen = storeRef as SourceRef
   } else {
@@ -393,6 +406,9 @@ function classifyCell(company: string, m: GridMetricDef, year: string): GridCell
     if (pptPreferred) {
       // Auto-resolved to the investor presentation per the PPT-first policy.
       notes = `Investor-presentation value preferred over ${competing.map((c) => c.value).join(', ')} (PPT-first policy).`
+    } else if (derivedSuperseded) {
+      // Real directly-sourced value chosen over the "Derived from …" store estimate.
+      notes = `Directly-sourced value preferred over the derived estimate (${competing.map((c) => c.value).join(', ')}).`
     } else {
       status = 'needs_review'
       notes = `Sources disagree — ${chosen.value} vs ${competing.map((c) => c.value).join(', ')}. Both kept for review.`
