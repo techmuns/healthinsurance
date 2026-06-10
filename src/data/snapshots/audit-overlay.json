@@ -798,30 +798,30 @@
       "display_tag": "Basis changed (FY24)"
     },
     "niva-bupa::expense_ratio_igaap::FY22": {
-      "value": 45,
+      "value": 42,
       "unit": "%",
-      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (107%) − Claims (62%) = 45%",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2023, FY22 comparative) — Expense of Management to Gross Direct Premium (\"EOM ratio\", before 1/n) = 42%",
       "source_url": null,
-      "source_file": null,
-      "source_page": "Template formula: Combined = Claims + Expense",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "EOM ratio (before 1/n) — same basis as the FY24/FY25 cells",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "derived",
-      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 107% and Claims 62%."
+      "layer": "official_filing",
+      "note": "Expense ratio taken directly from the disclosure’s stated EOM ratio (before 1/n) — same basis as FY24 (39.3%) / FY25 (37.4%). Not calculated."
     },
     "niva-bupa::expense_ratio_igaap::FY23": {
-      "value": 43,
+      "value": 41,
       "unit": "%",
-      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (97%) − Claims (54%) = 43%",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2023) — Expense of Management to Gross Direct Premium (\"EOM ratio\", before 1/n) = 41%",
       "source_url": null,
-      "source_file": null,
-      "source_page": "Template formula: Combined = Claims + Expense",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Public-Disclosure-Reports-March-2023.pdf",
+      "source_page": "EOM ratio (before 1/n) — same basis as the FY24/FY25 cells",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "derived",
-      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 97% and Claims 54%."
+      "layer": "official_filing",
+      "note": "Expense ratio taken directly from the disclosure’s stated EOM ratio (before 1/n) — same basis as FY24 (39.3%) / FY25 (37.4%). Not calculated."
     },
     "niva-bupa::settlement_ratio::FY22": {
       "value": null,
@@ -4089,17 +4089,17 @@
       "note": "I-GAAP combined ratio from the Religare deck (PPT-precise; prior 103%)."
     },
     "niva-bupa::expense_ratio_igaap::FY26": {
-      "value": 35.3,
+      "value": 32.29,
       "unit": "%",
-      "source_name": "Derived per the audit template's combined-ratio identity — Expense ratio = Combined (103.4%) − Claims (68.1%) = 35.3%",
+      "source_name": "Niva Bupa IRDAI Public Disclosure (year ended Mar 2026) — Expense of Management to Gross Direct Premium (\"EOM ratio\", before 1/n) = 32.29%",
       "source_url": null,
-      "source_file": null,
-      "source_page": "Template formula: Combined = Claims + Expense",
+      "source_file": "data/raw/companies/niva-bupa/niva-bupa-Website-Public-Disclosures-Mar-2026.pdf",
+      "source_page": "EOM ratio (before 1/n) — same basis as the FY24/FY25 cells",
       "fetched_at": "2026-06-09",
       "confidence": "high",
       "priority": 1,
-      "layer": "derived",
-      "note": "Expense ratio derived as Combined − Claims, the identity the audit template uses (Combined ratio = Claims ratio + Expense ratio). Both inputs are source-backed: Combined 103.4% and Claims 68.1%."
+      "layer": "official_filing",
+      "note": "Expense ratio taken directly from the disclosure’s stated EOM ratio (before 1/n) — same basis as FY24 (39.3%) / FY25 (37.4%). Not calculated."
     }
   },
   "meta": {}
