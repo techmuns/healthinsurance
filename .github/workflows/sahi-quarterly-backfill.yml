@@ -82,7 +82,7 @@ jobs:
             for period in ${PERIODS[$company]}; do
               echo "::group::$company $period"
               FETCH_COMPANY_ID="$company" FETCH_PERIOD="$period" \
-                npx tsx scripts/ingest/sahi-financials-agent.ts || echo "fetch failed: $company $period"
+                timeout 360 npx tsx scripts/ingest/sahi-financials-agent.ts || echo "fetch skipped/timed-out: $company $period"
               npx tsx scripts/ingest/sahi-financials-clean.ts "$company" "$period" || echo "clean failed: $company $period"
               echo "::endgroup::"
             done
