@@ -157,7 +157,7 @@ function HeatCell({ cell, onPick }: { cell: Cell; onPick: (k: string) => void })
   )
 }
 
-function HeatmapScorecard({ rows, metrics, activeKey, onPick }: { rows: ScoreRow[]; metrics: MetricDef[]; activeKey: string; onPick: (k: string) => void }) {
+function HeatmapScorecard({ rows, metrics, activeKey, onPick, onPickCompany }: { rows: ScoreRow[]; metrics: MetricDef[]; activeKey: string; onPick: (k: string) => void; onPickCompany: (id: string) => void }) {
   const groups = groupsOf(metrics)
   return (
     <div className="overflow-x-auto">
@@ -195,11 +195,17 @@ function HeatmapScorecard({ rows, metrics, activeKey, onPick }: { rows: ScoreRow
           {rows.map((r) => (
             <tr key={r.insurer.id} style={r.focal ? { background: hexA(NAVY_PRIMARY, 0.035) } : undefined}>
               <td className="sticky left-0 z-10 py-1 pr-3" style={{ background: r.focal ? '#F3F6FB' : '#FFFFFF' }}>
-                <div className="flex items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2" style={r.focal ? { boxShadow: `inset 0 0 0 1px ${hexA(NAVY_PRIMARY, 0.4)}` } : undefined}>
+                <button
+                  type="button"
+                  onClick={() => onPickCompany(r.insurer.id)}
+                  title={r.focal ? `${r.insurer.shortName} — selected` : `View ${r.insurer.shortName}`}
+                  className="flex w-full items-center gap-2 rounded-lg py-1.5 pl-1.5 pr-2 text-left transition-colors hover:bg-ice/70"
+                  style={r.focal ? { boxShadow: `inset 0 0 0 1px ${hexA(NAVY_PRIMARY, 0.4)}` } : undefined}
+                >
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: r.focal ? NAVY_PRIMARY : SLATE }} />
-                  <span className={['whitespace-nowrap text-[12.5px]', r.focal ? 'font-bold text-navy-deep' : 'font-medium text-ink-primary'].join(' ')}>{r.insurer.shortName}</span>
+                  <span className={['whitespace-nowrap text-[12.5px]', r.focal ? 'font-bold text-navy-deep' : 'font-medium text-ink-primary group-hover:text-navy-primary'].join(' ')}>{r.insurer.shortName}</span>
                   {r.focal && <span className="ml-0.5 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide" style={{ background: NAVY_PRIMARY, color: '#fff' }}>Selected</span>}
-                </div>
+                </button>
               </td>
               {groups.map((g, gi) => (
                 <Fragment key={g.group}>
@@ -458,7 +464,7 @@ export function CompetitivePositioning() {
               </div>
             </div>
             <div className="bg-card p-4">
-              <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} onPick={setActiveKey} />
+              <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} onPick={setActiveKey} onPickCompany={filters.setHighlightedCompany} />
               <div className="mt-3 border-t border-soft-border pt-2.5">
                 <Legend />
               </div>

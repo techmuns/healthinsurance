@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, StickyNote, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
@@ -168,7 +168,7 @@ function DetailField({ label, children }: { label: string; children: React.React
   )
 }
 
-function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void }) {
+function CellDetail({ cell, onClose, onJumpToNote }: { cell: AuditCell; onClose: () => void; onJumpToNote?: (c: AuditCell) => void }) {
   const meta = STATUS_META[cell.status]
   const q = QA[meta.color]
   const fetched = isFetched(cell)
@@ -234,9 +234,16 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
         {fetched && cell.note && <DetailField label="Note">{cell.note}</DetailField>}
 
         {noteWorthy(cell) && (
-          <div className="flex items-center gap-1.5 rounded-md bg-gold-soft/40 px-2 py-1 text-[10.5px] font-medium text-gold">
-            <StickyNote className="h-3 w-3 shrink-0" /> Logged in the Notes &amp; caveats tab
-          </div>
+          <button
+            type="button"
+            onClick={() => onJumpToNote?.(cell)}
+            className="flex w-full items-center gap-1.5 rounded-md bg-gold-soft/40 px-2 py-1 text-left text-[10.5px] font-medium text-gold transition-colors hover:bg-gold-soft/70"
+            title="Open this note in the Notes & caveats tab"
+          >
+            <StickyNote className="h-3 w-3 shrink-0" />
+            <span className="underline decoration-gold/40 underline-offset-2">View in the Notes &amp; caveats tab</span>
+            <ExternalLink className="ml-auto h-3 w-3 shrink-0" />
+          </button>
         )}
 
         {cell.formula && (
@@ -354,12 +361,20 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
 }
 
 // ── Notes & caveats panel ────────────────────────────────────────────────────
-function NotesPanel({ notes, onJump }: { notes: AuditCell[]; onJump: (c: AuditCell) => void }) {
+function NotesPanel({ notes, onJump, focusId }: { notes: AuditCell[]; onJump: (c: AuditCell) => void; focusId?: string | null }) {
   const bySheet = useMemo(() => {
     const m = new Map<string, AuditCell[]>()
     for (const c of notes) { if (!m.has(c.sheet)) m.set(c.sheet, []); m.get(c.sheet)!.push(c) }
     return [...m.entries()]
   }, [notes])
+
+  // Scroll the targeted note into view + flash it when navigated from a cell.
+  const focusRef = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (focusId && focusRef.current) {
+      focusRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [focusId])
 
   return (
     <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
@@ -388,12 +403,19 @@ function NotesPanel({ notes, onJump }: { notes: AuditCell[]; onJump: (c: AuditCe
                 {cells.map((c) => {
                   const meta = STATUS_META[c.status]
                   const q = QA[meta.color]
+                  const focused = c.id === focusId
                   return (
                     <button
                       key={c.id}
+                      ref={focused ? focusRef : undefined}
                       type="button"
                       onClick={() => onJump(c)}
-                      className="block w-full rounded-lg border border-soft-border bg-white px-3 py-2 text-left transition-colors hover:border-navy-primary/40 hover:bg-ice/40"
+                      className={[
+                        'block w-full rounded-lg border bg-white px-3 py-2 text-left transition-all',
+                        focused
+                          ? 'border-champagne-deep ring-2 ring-champagne/60 bg-gold-soft/20'
+                          : 'border-soft-border hover:border-navy-primary/40 hover:bg-ice/40',
+                      ].join(' ')}
                     >
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="font-mono text-[10px] text-ink-secondary">{c.cellRef}</span>
@@ -431,6 +453,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   const [active, setActive] = useState(sheets[0]?.sheet ?? '')
   const [raw, setRaw] = useState(false)
   const [selected, setSelected] = useState<AuditCell | null>(null)
+  const [noteFocus, setNoteFocus] = useState<string | null>(null)
 
   const isNotes = active === NOTES_TAB
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
@@ -452,6 +475,8 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   }, [group])
 
   const jumpToCell = (c: AuditCell) => { setActive(c.sheet); setSelected(c) }
+  // Cell detail → open the Notes & caveats tab and flash this cell's note.
+  const jumpToNote = (c: AuditCell) => { setSelected(null); setNoteFocus(c.id); setActive(NOTES_TAB) }
 
   if (!sheets.length) return null
 
@@ -501,7 +526,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
       </div>
 
       {isNotes ? (
-        <NotesPanel notes={notes} onJump={jumpToCell} />
+        <NotesPanel notes={notes} onJump={jumpToCell} focusId={noteFocus} />
       ) : (
       <>
       {/* ───────── grid view ───────── */}
@@ -560,7 +585,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         <SheetGrid group={group} raw={raw} selected={selected} onSelect={setSelected} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
-            <CellDetail cell={selected} onClose={() => setSelected(null)} />
+            <CellDetail cell={selected} onClose={() => setSelected(null)} onJumpToNote={jumpToNote} />
           </div>
         )}
       </div>
