@@ -4248,6 +4248,71 @@
       "priority": 1,
       "layer": "company_filing",
       "note": "Investment Yield chart."
+    },
+    "care-health::investment_aum::FY26": {
+      "value": 10944,
+      "unit": "INR_cr",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation) — Investment Book FY26 = ₹10,944 Cr",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Investment Book FY26 = ₹10,944 Cr",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "FY26 KEY HIGHLIGHTS: 'Investment Book expanded to Rs.10,944 Cr, providing a yield of 7.3%'."
+    },
+    "care-health::investment_yield::FY26": {
+      "value": 7.3,
+      "unit": "%",
+      "source_name": "Care Health (Religare Enterprises Q4 & FY26 Investor Presentation) — Investment yield FY26 = 7.3%",
+      "source_url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/care-health/sources/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
+      "source_page": "Investment yield FY26 = 7.3%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "FY26 KEY HIGHLIGHTS."
+    },
+    "star-health::investment_yield::FY24": {
+      "value": 8.3,
+      "unit": "%",
+      "source_name": "Star Health Q4 FY26 Earnings Presentation (IND-AS) — Investment Yield (Annualised) FY24 = 8.3%",
+      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_page": "Investment Yield (Annualised) FY24 = 8.3%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "KPI table (IND-AS basis)."
+    },
+    "star-health::investment_yield::FY25": {
+      "value": 7.6,
+      "unit": "%",
+      "source_name": "Star Health Q4 FY26 Earnings Presentation (IND-AS) — Investment Yield (Annualised) FY25 = 7.6%",
+      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_page": "Investment Yield (Annualised) FY25 = 7.6%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "KPI table (IND-AS basis)."
+    },
+    "star-health::investment_yield::FY26": {
+      "value": 5.8,
+      "unit": "%",
+      "source_name": "Star Health Q4 FY26 Earnings Presentation (IND-AS) — Investment Yield (Annualised) FY26 = 5.8%",
+      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_file": "data/agent-pulls/sahi-financials/star-health/sources/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "source_page": "Investment Yield (Annualised) FY26 = 5.8%",
+      "fetched_at": "2026-06-10",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "company_filing",
+      "note": "KPI table (IND-AS basis); MTM-driven dip."
     }
   },
   "meta": {}
