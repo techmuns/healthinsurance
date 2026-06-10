@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-10T20:34:07.332Z",
-  "last_failed_run": "2026-06-10T20:34:07.332Z",
+  "last_successful_run": "2026-06-10T21:11:35.553Z",
+  "last_failed_run": "2026-06-10T21:11:35.553Z",
   "sources_checked": 11,
   "sources_success": 4,
   "sources_failed": 1,
@@ -6720,17 +6720,19 @@
     "[gicouncil_flash_sahi] 2025-04: HTTP 403 for https://www.gicouncil.in/media/4523/flash_april_2025.pdf",
     "[gicouncil_segmentwise] 2025-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2025-05: parse error — Bad compressed size: 0 != 24798583",
-    "[gicouncil_segmentwise] 2025-06: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-06: parse error — Bad compressed size: 0 != 24798583",
     "[gicouncil_segmentwise] 2025-07: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2025-08: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-09: parse error — Bad compressed size: 0 != 24798583",
+    "[gicouncil_segmentwise] 2025-09: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2025-10: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2025-11: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2025-12: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2026-01: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-02: parse error — Bad compressed size: 0 != 24798583",
+    "[gicouncil_segmentwise] 2026-02: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
     "[gicouncil_segmentwise] 2026-03: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-04: parse error — Bad compressed size: 0 != 3802907275",
+    "[gicouncil_segmentwise] 2025-10 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (0.76→0.64); monthly set null (restatement/mis-parse, not estimated).",
+    "[gicouncil_segmentwise] 2026-02 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (2.21→1.88); monthly set null (restatement/mis-parse, not estimated).",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY19-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY20-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY21-march.xlsx",
@@ -6740,7 +6742,7 @@
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY25-final.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY26-march.xlsx",
     "[gicouncil_segmentwise_annual] listing (scraperapi): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "[gicouncil_segmentwise_annual] FY23: only 6/11 named retail rows found — \"Others\" left null.",
+    "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY23-march.xlsx: parse error: Bad compressed size: 0 != 3307379651",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
     "[gicouncil_segmentwise_annual] FY19: found 2/4 PSU rows — PSUs/Private left null.",
@@ -6774,7 +6776,7 @@
     "[gicouncil_segmentwise_annual] H1FY24: only 6/11 named retail rows found — \"Others\" left null.",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment/2023-12.xlsx: parse error: Bad compressed size: 0 != 3802907275",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment/2024-12.xlsx: parse error: Bad compressed size: 0 != 2053473967",
-    "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment/2025-09.xlsx: parse error: Bad compressed size: 0 != 24798583",
+    "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment/2025-06.xlsx: parse error: Bad compressed size: 0 != 24798583",
     "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
     "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
     "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
@@ -6807,7 +6809,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-10T20:30:39.181Z",
+      "last_attempt_at": "2026-06-10T21:07:54.851Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -6955,28 +6957,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:33:08.204Z",
+      "last_attempt_at": "2026-06-10T21:10:34.924Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:30:51.705Z",
+      "last_attempt_at": "2026-06-10T21:08:07.601Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-10T20:31:02.019Z",
-      "last_success_at": "2026-06-10T20:31:02.019Z",
-      "records_fetched": 74
+      "last_attempt_at": "2026-06-10T21:08:18.234Z",
+      "last_success_at": "2026-06-10T21:08:18.234Z",
+      "records_fetched": 73
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:30:45.565Z",
+      "last_attempt_at": "2026-06-10T21:08:01.493Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -6990,42 +6992,42 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-10T20:33:09.307Z",
-      "last_success_at": "2026-06-10T20:33:09.307Z",
+      "last_attempt_at": "2026-06-10T21:10:36.082Z",
+      "last_success_at": "2026-06-10T21:10:36.082Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:34:05.180Z",
+      "last_attempt_at": "2026-06-10T21:11:33.574Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-10T20:32:42.257Z",
-      "last_success_at": "2026-06-10T20:32:42.257Z",
-      "records_fetched": 577
+      "last_attempt_at": "2026-06-10T21:10:06.190Z",
+      "last_success_at": "2026-06-10T21:10:06.190Z",
+      "records_fetched": 561
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-10T20:33:34.414Z",
-      "last_success_at": "2026-06-10T20:33:34.414Z",
+      "last_attempt_at": "2026-06-10T21:11:03.062Z",
+      "last_success_at": "2026-06-10T21:11:03.062Z",
       "records_fetched": 0
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:33:36.516Z",
+      "last_attempt_at": "2026-06-10T21:11:05.129Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-10T20:34:07.243Z",
+      "last_attempt_at": "2026-06-10T21:11:35.470Z",
       "last_success_at": null,
       "records_fetched": 0
     }

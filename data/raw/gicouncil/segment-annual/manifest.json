@@ -27,9 +27,9 @@
     "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx": {
       "filename": "FY23-march.xlsx",
       "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
-      "bytes": 45620,
-      "sha256": "032c0e0eab805621e6d38069c8530cb9b9ae0a2c7e2bdd50267cb46b6cb50386",
-      "fetched_at": "2026-06-10T20:32:46.821Z",
+      "bytes": 70149,
+      "sha256": "64cee005b0cf0f64da6090d367a9e53d197e7d9371c615c521324df36c8ba5d6",
+      "fetched_at": "2026-06-10T21:10:12.491Z",
       "via": "scraperapi"
     },
     "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx": {
@@ -37,7 +37,7 @@
       "url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
       "bytes": 34765,
       "sha256": "8c67dbc5a0ac13690dbaf95b2f730a4e68b7094ce19f6f6206a0ce42cf155c76",
-      "fetched_at": "2026-06-10T20:32:52.322Z",
+      "fetched_at": "2026-06-10T21:10:14.654Z",
       "via": "scraperapi"
     },
     "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx": {
@@ -45,7 +45,7 @@
       "url": "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx",
       "bytes": 160246,
       "sha256": "623015cdcfed32be0447764a5bce3587f721cf733ac15805ce1af2173dce60fa",
-      "fetched_at": "2026-06-10T20:32:58.785Z",
+      "fetched_at": "2026-06-10T21:10:24.478Z",
       "via": "scraperapi"
     },
     "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx": {
@@ -53,7 +53,7 @@
       "url": "https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx",
       "bytes": 167838,
       "sha256": "2f1eded3fea15e30b6771932e19b061741391d5e7fe33c1cf7de7f0ee86deca8",
-      "fetched_at": "2026-06-10T20:33:04.650Z",
+      "fetched_at": "2026-06-10T21:10:31.744Z",
       "via": "scraperapi"
     },
     "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx": {
