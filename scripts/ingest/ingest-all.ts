@@ -82,13 +82,41 @@ function shouldRun(f: Fetcher): boolean {
   return true
 }
 
+// Time guards: a single slow/hung source must never starve the run past the
+// workflow's kill, which would lose EVERY fetcher's work (the job dies before
+// snapshots are merged and committed). Each fetcher gets a hard cap, and once
+// the overall budget is spent the remaining fetchers are skipped as honest
+// failures — they simply retry on the next cron. Tunable via env.
+const PER_FETCHER_MS = Number(process.env.INGEST_FETCHER_TIMEOUT_MINUTES ?? 6) * 60_000
+const RUN_BUDGET_MS = Number(process.env.INGEST_BUDGET_MINUTES ?? 20) * 60_000
+
+function fetcherTimeout(sourceId: string): Promise<never> {
+  return new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`fetcher timed out after ${PER_FETCHER_MS / 60_000} min (capped so the run always reaches snapshot merge + commit)`)),
+      PER_FETCHER_MS).unref?.())
+}
+
 async function main() {
   const targets = ALL.filter(shouldRun)
   await appendLog('ingest-all.log', { event: 'run_start', cadence: CADENCE, fetchers: targets.map((t) => t.source_id) })
+  const startedAt = Date.now()
   const results = []
   for (const f of targets) {
+    if (Date.now() - startedAt > RUN_BUDGET_MS) {
+      results.push({
+        source_id: f.source_id,
+        status: 'failed' as const,
+        raw_file: null,
+        records: [],
+        records_fetched: 0,
+        fetched_at: new Date().toISOString(),
+        error: `skipped — run budget (${RUN_BUDGET_MS / 60_000} min) exhausted by earlier sources; retries next scheduled run`,
+      })
+      await appendLog('ingest-all.log', { event: 'fetcher_skipped_budget', source_id: f.source_id })
+      continue
+    }
     try {
-      const r = await f.run()
+      const r = await Promise.race([f.run(), fetcherTimeout(f.source_id)])
       results.push(r)
     } catch (err) {
       // One source failing must not break the whole run.
@@ -120,4 +148,8 @@ main()
     // Release the headless browser (if the WAF fallback launched one) so the
     // process can exit instead of hanging on an open Chromium.
     await closeBrowser()
+    // A raced-out fetcher can leave sockets/timers open; everything durable is
+    // already written and logged, so exit deterministically instead of letting
+    // a hung handle keep the job alive until the workflow kill.
+    process.exit(process.exitCode ?? 0)
   })
