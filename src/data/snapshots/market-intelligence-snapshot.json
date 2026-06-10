@@ -1,15 +1,114 @@
 {
   "_meta": {
     "snapshot_id": "market-intelligence-snapshot",
-    "description": "AI-generated market intelligence for the SAHI health insurers — upcoming investor/analyst meets, board & earnings dates, sector & regulatory news, and catalysts that could move the share. Web-sourced via the muns agent; every item carries a source link. This is AI-generated intelligence, not audited data.",
+    "description": "AI-generated market intelligence for the SAHI health insurers — investor meets, earnings/board dates, sector & regulatory news, share catalysts. Web-sourced; each item links its source. AI-generated, not audited.",
     "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
-    "upstream_sources": ["muns_agent_web"],
-    "parser_status": "pending",
+    "dataset": "ai_generated",
+    "last_updated": "2026-06-10",
+    "last_successful_run": "2026-06-10T15:03:43.575Z",
+    "upstream_sources": [
+      "muns_agent_web"
+    ],
+    "parser_status": "ready",
     "generated_by": "AI (muns agent, web search)",
     "notes": "Clearly labelled AI-generated intelligence — verify before acting. Items rank by investor impact, not recency."
   },
-  "data": []
+  "data": [
+    {
+      "id": "4103403335",
+      "company_id": "sector",
+      "date": "2026-06-06",
+      "kind": "regulatory",
+      "horizon": "recent",
+      "impact": "positive",
+      "headline": "IRDAI extends “Insurance for All by 2047” push via State Insurance Plans",
+      "detail": "A stronger distribution and inclusion push can expand the addressable market for standalone health insurers including Niva Bupa, though execution benefits will be gradual.",
+      "source_name": "irdai.gov.in",
+      "source_url": "https://irdai.gov.in/circulars"
+    },
+    {
+      "id": "0631bcc08c",
+      "company_id": "sector",
+      "date": "2026-05-29",
+      "kind": "regulatory",
+      "horizon": "recent",
+      "impact": "watch",
+      "headline": "IRDAI continues focus on cashless, faster claims handling standards",
+      "detail": "Claims-turnaround and service-compliance pressure matter for health insurers’ customer acquisition, retention and expense ratios, making operational execution a near-term stock driver.",
+      "source_name": "irdai.gov.in",
+      "source_url": "https://irdai.gov.in/circulars"
+    },
+    {
+      "id": "2f11b1f8c4",
+      "company_id": "niva-bupa",
+      "date": "2026-06-10",
+      "kind": "catalyst",
+      "horizon": "recent",
+      "impact": "watch",
+      "headline": "No clearly surfaced June 2026 board-meeting / results-date disclosure in the retrieved public search set",
+      "detail": "The absence of a verified fresh exchange-surfaced event in the search results means investors should watch NSE corporate announcements directly for any board meeting, result date or investor interaction notice.",
+      "source_name": "nseindia.com",
+      "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA"
+    },
+    {
+      "id": "148e013de3",
+      "company_id": "sector",
+      "date": "2026-05-15",
+      "kind": "sector_news",
+      "horizon": "recent",
+      "impact": "watch",
+      "headline": "Competition remains intense across standalone and diversified health-insurance players",
+      "detail": "Pricing discipline, claims inflation and channel costs across Star Health, Care, Aditya Birla Health and ManipalCigna can influence sector growth-versus-margin trade-offs and therefore sentiment on Niva Bupa.",
+      "source_name": "moneycontrol.com",
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA"
+    },
+    {
+      "id": "3017f420eb",
+      "company_id": "sector",
+      "date": "2026-06-10",
+      "kind": "rating",
+      "horizon": "recent",
+      "impact": "neutral",
+      "headline": "No clearly verifiable June 2026 broker rating / target-price action surfaced in retrieved results for listed health insurers",
+      "detail": "With search outputs dominated by market-data portals and non-broker pages, there is no clean, source-backed rating change to report; any genuine brokerage action would be a potential stock mover once exchange/media-verified.",
+      "source_name": "economictimes.indiatimes.com",
+      "source_url": "https://economictimes.indiatimes.com/star-health-and-allied-insurance-company-ltd/stocks/companyid-24968.cms"
+    },
+    {
+      "id": "92822efdca",
+      "company_id": "sector",
+      "date": "2026-06-10",
+      "kind": "regulatory",
+      "horizon": "recent",
+      "impact": "watch",
+      "headline": "IRDAI circular stream remains the key live monitor for product, pricing and claims-rule changes",
+      "detail": "For health insurers, even incremental circulars on policy wordings, grievance handling, expenses or claims servicing can move earnings expectations via loss ratios or distribution economics.",
+      "source_name": "irdai.gov.in",
+      "source_url": "https://irdai.gov.in/circulars"
+    },
+    {
+      "id": "76c0626195",
+      "company_id": "niva-bupa",
+      "date": "2026-06-10",
+      "kind": "catalyst",
+      "horizon": "recent",
+      "impact": "neutral",
+      "headline": "Stock-specific near-term trigger remains next formal disclosure cadence",
+      "detail": "In the absence of a verified fresh event in the retrieved source set, the next confirmed result date, business update, partnership, capital action or analyst interaction would likely be the main immediate share catalyst.",
+      "source_name": "nseindia.com",
+      "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA/Niva-Bupa-Health-Insurance-Company-Limited"
+    },
+    {
+      "id": "0fc3211984",
+      "company_id": "niva-bupa",
+      "date": "2025-07-31",
+      "kind": "investor_meet",
+      "horizon": "recent",
+      "impact": "watch",
+      "headline": "AGM notice and annual report available on NSE archive",
+      "detail": "The AGM/annual-report disclosures remain the cleanest company-backed source for management commentary, governance agenda and any capital or business updates relevant for the stock.",
+      "source_name": "nsearchives.nseindia.com",
+      "source_url": "https://nsearchives.nseindia.com/content/debt/WDM/MAXBUPA_31072025211054_SubmissionARNotice31072025.pdf"
+    }
+  ]
 }
