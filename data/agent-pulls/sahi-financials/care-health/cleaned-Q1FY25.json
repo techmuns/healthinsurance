@@ -1,0 +1,15 @@
+[
+  {
+    "company": "care-health",
+    "year": "Q1FY25",
+    "metric": "pat_ifrs",
+    "value": 79,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation Q1 FY25",
+    "source_url": "https://doc-files-donotdelete.s3.ap-south-1.amazonaws.com/cmsdocs/Investor%20Presentation%20Q1%20FY25.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-07-27). Fetched via munschat sahi-financials."
+  }
+]

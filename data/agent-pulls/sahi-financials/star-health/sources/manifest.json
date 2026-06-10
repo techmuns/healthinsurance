@@ -14,13 +14,27 @@
       "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
       "fetched_at": "2026-06-09T16:51:20.831Z"
     },
+    "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf": {
+      "filename": "STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+      "url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+      "bytes": 1117573,
+      "sha256": "3996c2dd78220a8934e36a880a1bf47feb293d4968981b5747e241bd7e65f0f8",
+      "fetched_at": "2026-06-10T21:51:13.394Z"
+    },
     "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf": {
       "filename": "2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf",
       "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/2a2d8b9d-02b0-4a8e-a0a0-a75b54aca2c3.pdf",
       "bytes": 780224,
       "sha256": "50c1f4bdc42b2757b6293808c8e6e4d6834ada51ba9da037a0eeb065a42e8575",
       "fetched_at": "2026-06-10T21:29:24.172Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/9bebde68-155d-4d31-a3c8-69d24f72cf07.pdf": {
+      "filename": "9bebde68-155d-4d31-a3c8-69d24f72cf07.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/9bebde68-155d-4d31-a3c8-69d24f72cf07.pdf",
+      "bytes": 811190,
+      "sha256": "dec3b63e8e62eabfca92d6e4570babac66c1e56609e056be1da0e7304b2da499",
+      "fetched_at": "2026-06-10T21:52:31.882Z"
     }
   },
-  "updated_at": "2026-06-10T21:29:24.186Z"
+  "updated_at": "2026-06-10T21:52:31.896Z"
 }

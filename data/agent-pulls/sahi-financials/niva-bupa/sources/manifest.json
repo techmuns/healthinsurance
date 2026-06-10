@@ -1,11 +1,32 @@
 {
   "files": {
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1": {
+      "filename": "Disclosure-Earnings-call-presentation-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1",
+      "bytes": 2566661,
+      "sha256": "df8ea29b728997a0a95a440fc6842a8cb1bdd85f1e6da2324beb8d50ea5ed2ad",
+      "fetched_at": "2026-06-10T21:42:51.916Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investor-Presentation-Q3.pdf": {
+      "filename": "Investor-Presentation-Q3.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investor-Presentation-Q3.pdf",
+      "bytes": 2043187,
+      "sha256": "70ac52cd71dc2b977579c8b6b510376d97c327175efddf7c3056ae0ee2e399ce",
+      "fetched_at": "2026-06-10T21:42:36.324Z"
+    },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf": {
       "filename": "Investors-Presentation-Q4-FY2025.pdf",
       "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2024-2025/Investors-Presentation-Q4-FY2025.pdf",
       "bytes": 3149256,
       "sha256": "b0d733920dc90f83c65b5b8192ca9f74c80f34528dc2427cf8d0b742ae841cfe",
       "fetched_at": "2026-06-09T13:22:25.228Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Earnings-Presentation-Q1-FY26.pdf?v=1.0": {
+      "filename": "Earnings-Presentation-Q1-FY26.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Earnings-Presentation-Q1-FY26.pdf?v=1.0",
+      "bytes": 2158853,
+      "sha256": "8a673218a1e7da3bfa7d960117954e09d03fd5f78f15471f707090af80e10195",
+      "fetched_at": "2026-06-10T21:42:46.556Z"
     },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0": {
       "filename": "Niva-Bupa-Investor-Presentation-H1-FY26.pdf",
@@ -20,7 +41,21 @@
       "bytes": 12482947,
       "sha256": "a044d040e01bb00e0109a93bf87a3d2701ec283699f51be91466412a9d526249",
       "fetched_at": "2026-06-09T13:22:20.256Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/833d6359-951e-48ae-83c6-49f22ec36242.pdf": {
+      "filename": "833d6359-951e-48ae-83c6-49f22ec36242.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/833d6359-951e-48ae-83c6-49f22ec36242.pdf",
+      "bytes": 2077331,
+      "sha256": "2e21c4f0f46d0f0583bbf18d2f12308f9fa024fbe633297c9781d90e287fdb53",
+      "fetched_at": "2026-06-10T21:42:48.316Z"
+    },
+    "https://www.moneycontrol.com/financials/nivabupahealthinsurancecompany/cash-flowVI/NBH/1": {
+      "filename": "1",
+      "url": "https://www.moneycontrol.com/financials/nivabupahealthinsurancecompany/cash-flowVI/NBH/1",
+      "bytes": 680636,
+      "sha256": "1629a3df8634e1ccb824b9272a4e479ca7c297c9b0becec4c83b42bd248b3105",
+      "fetched_at": "2026-06-10T21:43:10.611Z"
     }
   },
-  "updated_at": "2026-06-10T21:28:41.982Z"
+  "updated_at": "2026-06-10T21:45:10.945Z"
 }

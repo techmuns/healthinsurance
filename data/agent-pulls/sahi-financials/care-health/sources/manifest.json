@@ -28,6 +28,41 @@
       "sha256": "f072a9ac96e99f0beb8dd6b1b287d8cc61bfc9d1dfd4f2aef25367173f20d483",
       "fetched_at": "2026-06-09T12:42:20.360Z"
     },
+    "https://cms.careinsurance.com/cms/public/uploads/download_center/care-heart---piano-fold-brochure---web.pdf": {
+      "filename": "care-heart---piano-fold-brochure---web.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/download_center/care-heart---piano-fold-brochure---web.pdf",
+      "bytes": 302901,
+      "sha256": "5624cc8fa6b43b1ed64f7d8ad0956d56b9cd58d037b544ccf270589545ea2332",
+      "fetched_at": "2026-06-10T22:02:26.629Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/download_center/care-senior-brochure.pdf": {
+      "filename": "care-senior-brochure.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/download_center/care-senior-brochure.pdf",
+      "bytes": 318029,
+      "sha256": "2dc35e8cb5b93eeebbb18e1c384032a2d2a15c0db482548b0d4b823c2fd86f28",
+      "fetched_at": "2026-06-10T22:02:27.095Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/download_center/care-supreme---brochure.pdf?rv=0.97442500+1669104450": {
+      "filename": "care-supreme---brochure.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/download_center/care-supreme---brochure.pdf?rv=0.97442500+1669104450",
+      "bytes": 1672639,
+      "sha256": "32ba87044cf98f1a7b446b24024c6fb3b8738fcb1f7ccd6bf34a78a9ab2cdf5b",
+      "fetched_at": "2026-06-10T22:02:17.411Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/download_center/supreme-enhance---brochure.pdf?rv=0.403138001730890666": {
+      "filename": "supreme-enhance---brochure.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/download_center/supreme-enhance---brochure.pdf?rv=0.403138001730890666",
+      "bytes": 465556,
+      "sha256": "2085b78d9ab56afe9ee06d47f3bbc5c3de515f6e6e10101ce5ee63bb9ac55bf8",
+      "fetched_at": "2026-06-10T22:02:27.550Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/download_center/ultimate-care---brochure.pdf": {
+      "filename": "ultimate-care---brochure.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/download_center/ultimate-care---brochure.pdf",
+      "bytes": 1220726,
+      "sha256": "efe6f7a39d56e643ffd7d668f9f3f9e0fe547e62a995b00cc1c0895c167fba48",
+      "fetched_at": "2026-06-10T22:02:28.229Z"
+    },
     "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/AnnualReport20202021_1647433216.pdf": {
       "filename": "AnnualReport20202021_1647433216.pdf",
       "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/other_disclosure/AnnualReport20202021_1647433216.pdf",
@@ -77,12 +112,40 @@
       "sha256": "27ad9dcedadcf5cf946906de71eb4bc7760a1feede097b9530b1b39455582b61",
       "fetched_at": "2026-06-09T12:42:47.964Z"
     },
+    "https://doc-files-donotdelete.s3.ap-south-1.amazonaws.com/cmsdocs/Investor%20Presentation%20Q1%20FY25.pdf": {
+      "filename": "Investor Presentation Q1 FY25.pdf",
+      "url": "https://doc-files-donotdelete.s3.ap-south-1.amazonaws.com/cmsdocs/Investor%20Presentation%20Q1%20FY25.pdf",
+      "bytes": 3124878,
+      "sha256": "4fe91f4ea4a0a0cabf9a2ff6ce2dd3c444745cfc71181e809b86de3630b09f68",
+      "fetched_at": "2026-06-10T21:53:15.715Z"
+    },
+    "https://dragarwals.co.in/wp-content/uploads/2025/02/Q3-FY25-Investor-Presentation.pdf": {
+      "filename": "Q3-FY25-Investor-Presentation.pdf",
+      "url": "https://dragarwals.co.in/wp-content/uploads/2025/02/Q3-FY25-Investor-Presentation.pdf",
+      "bytes": 3513505,
+      "sha256": "673d8da25bd7ab35dfe4ed682d34d99cdf60f82a0eaf5df01e53daef4e74561f",
+      "fetched_at": "2026-06-10T21:54:13.351Z"
+    },
     "https://dyvmwwyqozzzb.cloudfront.net/main/CARE-HEALTH-AR-22.pdf": {
       "filename": "CARE-HEALTH-AR-22.pdf",
       "url": "https://dyvmwwyqozzzb.cloudfront.net/main/CARE-HEALTH-AR-22.pdf",
       "bytes": 11076531,
       "sha256": "d6849dc8afb470946ce9000719b8e8c85940100b55ffaf9cfcd831c472e8cdf6",
       "fetched_at": "2026-06-10T21:30:38.070Z"
+    },
+    "https://hudco.org.in/writereaddata/PublicNotice/MPQ3FY25.pdf": {
+      "filename": "MPQ3FY25.pdf",
+      "url": "https://hudco.org.in/writereaddata/PublicNotice/MPQ3FY25.pdf",
+      "bytes": 3372295,
+      "sha256": "53a0de377dc435f68245a3e0a0487085ab54c4551937c5d0e90cf297b74dedc9",
+      "fetched_at": "2026-06-10T21:54:54.192Z"
+    },
+    "https://radiuscare.co.nz/wp-content/uploads/2025/05/FY25-Investor-Presentation.pdf": {
+      "filename": "FY25-Investor-Presentation.pdf",
+      "url": "https://radiuscare.co.nz/wp-content/uploads/2025/05/FY25-Investor-Presentation.pdf",
+      "bytes": 4369617,
+      "sha256": "5eb3e33e8aa6606753574de0868c7e8254e222bca3aeb40729fa8242aee600ff",
+      "fetched_at": "2026-06-10T21:54:54.460Z"
     },
     "https://s205.q4cdn.com/626266368/files/doc_financials/2026/q3/CRM-Q3-FY26-Quarterly-Investor-Deck.pdf": {
       "filename": "CRM-Q3-FY26-Quarterly-Investor-Deck.pdf",
@@ -119,6 +182,13 @@
       "sha256": "0c833d1e9f221f522e9219f8e032f7cced7bfc163983e22d314d47267dbd2012",
       "fetched_at": "2026-06-10T21:30:51.481Z"
     },
+    "https://www.hdfclife.com/content/dam/hdfclifeinsurancecompany/about-us/pdf/investor-relations/financial-information/investor-presentation/HDFC-Life-9M-FY2025-Investor-Presentation.pdf": {
+      "filename": "HDFC-Life-9M-FY2025-Investor-Presentation.pdf",
+      "url": "https://www.hdfclife.com/content/dam/hdfclifeinsurancecompany/about-us/pdf/investor-relations/financial-information/investor-presentation/HDFC-Life-9M-FY2025-Investor-Presentation.pdf",
+      "bytes": 2726091,
+      "sha256": "2adeac4e4b4993d0a4107f52b42d97cd33e775aeec315ce08fd11b65a00a0625",
+      "fetched_at": "2026-06-10T21:54:13.545Z"
+    },
     "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf": {
       "filename": "IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf",
       "url": "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf",
@@ -141,5 +211,5 @@
       "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-10T21:30:54.826Z"
+  "updated_at": "2026-06-10T22:02:30.707Z"
 }

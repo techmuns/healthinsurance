@@ -6,7 +6,21 @@
       "bytes": 154452,
       "sha256": "f1883d5f66844cbf7806fe27467a18830ecc6b755132c628298ff9fb4f349593",
       "fetched_at": "2026-06-10T21:32:59.292Z"
+    },
+    "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/financial-results/Investor-Presentation-Q1FY26-Final.pdf": {
+      "filename": "Investor-Presentation-Q1FY26-Final.pdf",
+      "url": "https://www.idfcfirstbank.com/content/dam/idfcfirstbank/pdf/financial-results/Investor-Presentation-Q1FY26-Final.pdf",
+      "bytes": 5895650,
+      "sha256": "5dd5f3dee099ae863e7d9ea41cddf5c19e7786ea0a4dbc75554c72b143c020b6",
+      "fetched_at": "2026-06-10T22:10:05.699Z"
+    },
+    "https://www.manipalcigna.com/documents/20124/0/Public+Disclosure+March+23-Final-2.pdf/3499c565-881c-1871-d727-04b216e4f3ff?t=1688133094984": {
+      "filename": "3499c565-881c-1871-d727-04b216e4f3ff",
+      "url": "https://www.manipalcigna.com/documents/20124/0/Public+Disclosure+March+23-Final-2.pdf/3499c565-881c-1871-d727-04b216e4f3ff?t=1688133094984",
+      "bytes": 2444369,
+      "sha256": "fbe3a26f2fae847ef3a6f9d5199ec89674fc08375dde8b5fcc009a86f068c885",
+      "fetched_at": "2026-06-10T22:05:17.184Z"
     }
   },
-  "updated_at": "2026-06-10T21:36:02.269Z"
+  "updated_at": "2026-06-10T22:12:01.306Z"
 }
