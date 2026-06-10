@@ -3,7 +3,7 @@
     "artifact": "audit-overlay",
     "description": "Manually-staged / CLI-ingested audit values that overlay the Python value store at read time. Managed by scripts/ingest/audit-fill.ts under strict source-priority + overwrite rules (a blank never overwrites a sourced value; conflicts are kept and flagged). Empty by default — the value store remains the authoritative source.",
     "schema_version": "1.0.0",
-    "updated_at": "2026-06-10T21:20:04.145Z"
+    "updated_at": "2026-06-10T21:20:42.631Z"
   },
   "data": {
     "niva-bupa::retail_health_market_share::FY25": {
@@ -5015,6 +5015,84 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Redseer health market-share series from the Niva Bupa DRHP; Redseer FY24 reconciles with the GI Council segment shares already in the grid."
+    },
+    "aditya-birla::group_other_gwp::FY23": {
+      "value": 1881.67,
+      "unit": "INR_cr",
+      "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+    },
+    "aditya-birla::group_other_gwp::FY24": {
+      "value": 2574.09,
+      "unit": "INR_cr",
+      "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+    },
+    "aditya-birla::group_other_gwp::FY25": {
+      "value": 3500.24,
+      "unit": "INR_cr",
+      "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+    },
+    "manipalcigna::group_other_gwp::FY23": {
+      "value": 781.22,
+      "unit": "INR_cr",
+      "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+    },
+    "manipalcigna::group_other_gwp::FY24": {
+      "value": 945.41,
+      "unit": "INR_cr",
+      "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+    },
+    "manipalcigna::group_other_gwp::FY25": {
+      "value": 1112.54,
+      "unit": "INR_cr",
+      "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
+      "source_url": null,
+      "source_file": null,
+      "source_page": null,
+      "fetched_at": "2026-06-10T21:20:42.631Z",
+      "confidence": "high",
+      "priority": 1,
+      "layer": "official_filing",
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
     }
   },
   "meta": {}

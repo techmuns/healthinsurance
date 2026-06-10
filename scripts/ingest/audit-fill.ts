@@ -57,6 +57,8 @@ interface MetricDef {
 }
 const METRICS: MetricDef[] = [
   { key: 'total_gwp', unit: 'INR_cr', store: 'total_gwp', annual: 'gwp' },
+  { key: 'retail_health_gwp', unit: 'INR_cr', store: 'retail_health_gwp' },
+  { key: 'group_other_gwp', unit: 'INR_cr', store: 'group_other_gwp' },
   { key: 'gross_direct_premium', unit: 'INR_cr', store: 'gross_direct_premium', annual: 'gross_direct_premium' },
   { key: 'nwp', unit: 'INR_cr', store: 'nwp', annual: 'nwp' },
   { key: 'nep', unit: 'INR_cr', store: 'nep', annual: 'nep' },
