@@ -18,13 +18,18 @@ on:
     - cron: '0 5 * * 1' # Mondays 05:00 UTC
   workflow_dispatch:
     inputs:
-      periods_main:
-        description: 'Interim periods for niva/star/care (space-separated)'
+      periods_niva_star:
+        description: 'Interim periods for niva-bupa / star-health (H1 + 9M columns)'
         required: false
         default: 'H1FY25 9MFY25 H1FY26 9MFY26'
         type: string
+      periods_care:
+        description: 'Interim periods for care-health (Q1 + 9M columns)'
+        required: false
+        default: 'Q1FY25 9MFY25 Q1FY26 9MFY26'
+        type: string
       periods_q1:
-        description: 'Interim periods for aditya-birla / manipalcigna'
+        description: 'Interim periods for aditya-birla / manipalcigna (Q1 columns)'
         required: false
         default: 'Q1FY25 Q1FY26'
         type: string
@@ -59,14 +64,18 @@ jobs:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
-          PERIODS_MAIN: ${{ inputs.periods_main || 'H1FY25 9MFY25 H1FY26 9MFY26' }}
+          PERIODS_NIVA_STAR: ${{ inputs.periods_niva_star || 'H1FY25 9MFY25 H1FY26 9MFY26' }}
+          PERIODS_CARE: ${{ inputs.periods_care || 'Q1FY25 9MFY25 Q1FY26 9MFY26' }}
           PERIODS_Q1: ${{ inputs.periods_q1 || 'Q1FY25 Q1FY26' }}
         run: |
           set +e
+          # Per-insurer interim columns mirror the SAHI-comparison sheet: niva/star
+          # report H1 + 9M; care reports Q1 + 9M; aditya/manipal report Q1 only.
+          # (Q4 columns are derived = full year - 9M, so they are never fetched.)
           declare -A PERIODS
-          PERIODS[niva-bupa]="$PERIODS_MAIN"
-          PERIODS[star-health]="$PERIODS_MAIN"
-          PERIODS[care-health]="$PERIODS_MAIN"
+          PERIODS[niva-bupa]="$PERIODS_NIVA_STAR"
+          PERIODS[star-health]="$PERIODS_NIVA_STAR"
+          PERIODS[care-health]="$PERIODS_CARE"
           PERIODS[aditya-birla]="$PERIODS_Q1"
           PERIODS[manipalcigna]="$PERIODS_Q1"
           for company in niva-bupa star-health care-health aditya-birla manipalcigna; do
