@@ -158,6 +158,7 @@ OVERLAY_PCT_METRICS = {
     "combined_ratio_ifrs", "claims_ratio_ifrs", "expense_ratio_ifrs", "commission_ratio_ifrs",
     "settlement_ratio", "customer_retention", "renewal_rate", "persistency_ratio",
     "retail_health_market_share", "sahi_segment_share", "overall_health_market_share", "health_market_share",
+    "investment_yield",
 }
 RANK_OVERLAY = 0  # curated overlay — highest priority
 
