@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "snapshot_id": "market-intelligence-snapshot",
+    "description": "AI-generated market intelligence for the SAHI health insurers — upcoming investor/analyst meets, board & earnings dates, sector & regulatory news, and catalysts that could move the share. Web-sourced via the muns agent; every item carries a source link. This is AI-generated intelligence, not audited data.",
+    "schema_version": "1.0.0",
+    "dataset": "pending",
+    "last_updated": null,
+    "last_successful_run": null,
+    "upstream_sources": ["muns_agent_web"],
+    "parser_status": "pending",
+    "generated_by": "AI (muns agent, web search)",
+    "notes": "Clearly labelled AI-generated intelligence — verify before acting. Items rank by investor impact, not recency."
+  },
+  "data": []
+}
