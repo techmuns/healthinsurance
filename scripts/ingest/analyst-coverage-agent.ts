@@ -21,7 +21,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chromium, type Browser } from 'playwright'
+import { chromium, type Browser, type BrowserContext } from 'playwright'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -178,90 +178,112 @@ function toIsoDate(s: string): string | null {
   return mm ? `${m[3]}-${mm}-${m[1].padStart(2, '0')}` : null
 }
 
-interface ScrapedRow { date: string; author: string; target: string; atReco: string; type: string }
+interface ScrapedRow { date: string; author: string; target: string; atReco: string; type: string; link: string }
 interface PageScrape { rows: ScrapedRow[]; tableCount: number; header: string[]; firstCells: string[] }
+
+async function loadPageRows(ctx: BrowserContext, url: string): Promise<PageScrape> {
+  let s: PageScrape = { rows: [], tableCount: 0, header: [], firstCells: [] }
+  // Retry once: the table is JS-rendered and can miss the first paint via the proxy.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const page = await ctx.newPage()
+    try {
+      try {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+      } catch {
+        await page.goto(url, { waitUntil: 'commit', timeout: 120_000 })
+      }
+      await page.waitForTimeout(5000)
+      await page.waitForSelector('table tr', { timeout: 12_000 }).catch(() => {})
+      // Trendlyne lazy-loads rows on scroll — scroll until the height stops growing.
+      let lastH = 0
+      for (let i = 0; i < 8; i++) {
+        const h = (await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); return document.body.scrollHeight }).catch(() => 0)) as number
+        await page.waitForTimeout(1200)
+        if (!h || h === lastH) break
+        lastH = h
+      }
+      s = (await page.evaluate(() => {
+        const norm = (x: string | null) => (x || '').replace(/\s+/g, ' ').trim()
+        const tables = Array.from(document.querySelectorAll('table'))
+        let best: HTMLTableElement | null = null
+        for (const t of tables) {
+          const hh = norm(t.querySelector('tr')?.textContent || '').toLowerCase()
+          if (hh.includes('target') && (hh.includes('author') || hh.includes('reco'))) { best = t as HTMLTableElement; break }
+        }
+        if (!best) return { rows: [], tableCount: tables.length, header: [], firstCells: [] }
+        const trs = Array.from(best.querySelectorAll('tr'))
+        const head = Array.from(trs[0].querySelectorAll('th,td')).map((c) => norm(c.textContent).toLowerCase())
+        const find = (kw: string) => head.findIndex((h) => h.includes(kw))
+        const di = find('date'), ai = find('author'), ti = find('target'), yi = find('type')
+        const pi = head.findIndex((h) => h.includes('price at reco') || h.includes('reco'))
+        const rows: { date: string; author: string; target: string; atReco: string; type: string; link: string }[] = []
+        for (const tr of trs.slice(1)) {
+          const tds = Array.from(tr.querySelectorAll('td')).map((c) => norm(c.textContent))
+          if (tds.length < 3) continue
+          const hrefs = Array.from(tr.querySelectorAll('a[href]')).map((a) => (a as HTMLAnchorElement).href)
+          // The exact report link: prefer the broker PDF, then the Trendlyne post page.
+          const link = hrefs.find((u) => u.toLowerCase().includes('.pdf')) || hrefs.find((u) => u.includes('/posts/')) || hrefs.find((u) => u.includes('research-reports/post')) || ''
+          rows.push({ date: tds[di] || '', author: tds[ai] || '', target: tds[ti] || '', atReco: tds[pi] || '', type: tds[yi] || '', link })
+        }
+        const firstCells = trs[1] ? Array.from(trs[1].querySelectorAll('td')).map((c) => norm(c.textContent)) : []
+        return { rows, tableCount: tables.length, header: head, firstCells }
+      })) as PageScrape
+    } catch (e) {
+      console.error(`    load ${url}: ${(e as Error).message}`)
+    } finally {
+      await page.close().catch(() => {})
+    }
+    if (s.rows.length > 0 || s.tableCount > 0) break
+  }
+  return s
+}
 
 async function scrapeTrendlyne(companies: string[]): Promise<AggRow[]> {
   const proxy = proxyConfig()
-  console.log(`Trendlyne scrape: proxy=${proxy ? 'ScraperAPI India IP' : 'DIRECT (no SCRAPER_KEY — Trendlyne will likely 403)'}`)
+  console.log(`Trendlyne scrape: proxy=${proxy ? 'ScraperAPI India IP' : 'DIRECT (no SCRAPER_KEY - Trendlyne will likely 403)'}`)
   const out: AggRow[] = []
   let browser: Browser | null = null
   try {
     browser = await chromium.launch({ headless: true, proxy })
     const ctx = await browser.newContext({ userAgent: BROWSER_UA, ignoreHTTPSErrors: true })
-    // tsx/esbuild wraps named functions with a __name() helper; inside
-    // page.evaluate that body runs in the browser, where __name is undefined and
-    // throws. Shim it to identity so our DOM-parsing closures run.
+    // tsx/esbuild wraps named closures with __name(); inside page.evaluate that
+    // runs in the browser, where __name is undefined. Shim it to identity.
     await ctx.addInitScript(() => { (globalThis as unknown as { __name: (f: unknown) => unknown }).__name = (f: unknown) => f })
     for (const cid of companies) {
       const baseUrl = TRENDLYNE_URLS[cid]
       if (!baseUrl) continue
+      const seen = new Set<string>()
       let usable = 0
-      let prevFirst = ''
-      for (let pg = 1; pg <= 10; pg++) {
-        const url = pg === 1 ? baseUrl : `${baseUrl}?page=${pg}`
-        const page = await ctx.newPage()
-        let s: PageScrape = { rows: [], tableCount: 0, header: [], firstCells: [] }
-        try {
-          try {
-            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120_000 })
-          } catch {
-            // Proxy rendering can be slow; fall back to resolving on first byte,
-            // then let the waits below give the table time to paint.
-            await page.goto(url, { waitUntil: 'commit', timeout: 120_000 })
-          }
-          await page.waitForTimeout(5000)
-          await page.waitForSelector('table tr', { timeout: 8000 }).catch(() => {})
-          s = await page.evaluate(() => {
-            const norm = (x: string | null) => (x || '').replace(/\s+/g, ' ').trim()
-            const tables = Array.from(document.querySelectorAll('table'))
-            let best: HTMLTableElement | null = null
-            for (const t of tables) {
-              const h = norm(t.querySelector('tr')?.textContent || '').toLowerCase()
-              if (h.includes('target') && (h.includes('author') || h.includes('reco'))) { best = t as HTMLTableElement; break }
-            }
-            if (!best) return { rows: [], tableCount: tables.length, header: [], firstCells: [] }
-            const trs = Array.from(best.querySelectorAll('tr'))
-            const head = Array.from(trs[0].querySelectorAll('th,td')).map((c) => norm(c.textContent).toLowerCase())
-            const find = (kw: string) => head.findIndex((h) => h.includes(kw))
-            const di = find('date'), ai = find('author'), ti = find('target'), yi = find('type')
-            const pi = head.findIndex((h) => h.includes('price at reco') || h.includes('reco'))
-            const rows: ScrapedRow[] = []
-            for (const tr of trs.slice(1)) {
-              const tds = Array.from(tr.querySelectorAll('td')).map((c) => norm(c.textContent))
-              if (tds.length < 3) continue
-              rows.push({ date: tds[di] || '', author: tds[ai] || '', target: tds[ti] || '', atReco: tds[pi] || '', type: tds[yi] || '' })
-            }
-            const firstCells = trs[1] ? Array.from(trs[1].querySelectorAll('td')).map((c) => norm(c.textContent)) : []
-            return { rows, tableCount: tables.length, header: head, firstCells }
-          }) as PageScrape
-        } catch (e) {
-          console.error(`    trendlyne ${cid} p${pg}: ${(e as Error).message}`)
-        } finally {
-          await page.close().catch(() => {})
-        }
-        if (pg === 1) console.log(`    trendlyne ${cid}: tables=${s.tableCount} header=[${s.header.join(' | ')}] firstRow=[${s.firstCells.join(' | ')}]`)
+      // Page 1 (scrolled) plus classic pagination (?page=N&qstime) for the deep
+      // history; stop when a page brings no NEW rows.
+      for (let pg = 1; pg <= 6; pg++) {
+        const url = pg === 1 ? baseUrl : `${baseUrl}?page=${pg}&qstime=${Date.now()}`
+        const s = await loadPageRows(ctx, url)
+        if (pg === 1) console.log(`    trendlyne ${cid}: tables=${s.tableCount} header=[${s.header.join(' | ')}]`)
         if (s.rows.length === 0) break
-        const first = s.rows[0]?.date || ''
-        if (first && first === prevFirst) break
-        prevFirst = first
         let kept = 0
+        let fresh = 0
         for (const r of s.rows) {
           if (!r.author || /consensus/i.test(r.author)) continue
           const date = toIsoDate(r.date)
           if (!date) continue
+          const key = `${date}|${r.author}`
+          if (seen.has(key)) continue
+          seen.add(key)
+          fresh++
           const broker = r.author.split(/target/i)[0].replace(/[^\w.&\s-]/g, '').replace(/\s+/g, ' ').trim()
           const t = parseFloat((r.target || '').replace(/[^0-9.]/g, ''))
           const a = parseFloat((r.atReco.split('(')[0] || '').replace(/[^0-9.]/g, ''))
           const target = Number.isFinite(t) && t > 0 ? Math.round(t * 100) / 100 : null
           const atReco = Number.isFinite(a) && a > 0 ? Math.round(a * 100) / 100 : null
           if (target == null && atReco == null) continue
-          out.push({ company_id: cid, broker: broker || r.author, date, rating: r.type || null, target, atReco, url: baseUrl })
+          // Tag the row with the EXACT report link when the page exposed one.
+          out.push({ company_id: cid, broker: broker || r.author, date, rating: r.type || null, target, atReco, url: r.link || baseUrl })
           kept++
         }
         usable += kept
-        console.log(`    trendlyne ${cid} p${pg}: ${s.rows.length} rows -> kept ${kept}`)
-        if (s.rows.length < 5) break
+        console.log(`    trendlyne ${cid} p${pg}: ${s.rows.length} rows -> kept ${kept} (fresh ${fresh})`)
+        if (fresh === 0) break
       }
       console.log(`  trendlyne ${cid}: ${usable} usable broker rows`)
     }
