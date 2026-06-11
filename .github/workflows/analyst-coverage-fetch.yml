@@ -10,8 +10,11 @@ name: analyst coverage fetch
 on:
   workflow_dispatch:
   schedule:
-    # Monthly on the 5th — the dated set only changes when the template does.
-    - cron: '0 6 5 * *'
+    # Daily — keep pulling the live broker reports with no human step. New
+    # targets land as they publish, and because the merge only ever ADDS (never
+    # wipes a filled cell), the flaky aggregator's misses get filled in over
+    # successive runs.
+    - cron: '0 6 * * *'
 
 permissions:
   contents: write
