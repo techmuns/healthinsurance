@@ -33,6 +33,20 @@ function hexA(hex: string, a: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`
 }
 
+// Blend two hex colours (t=0 → a, t=1 → b). Used to give the legend key chips a
+// touch more saturation than the ultra-pale grid tiles so the key reads crisply
+// without making the calm grid itself any louder.
+function mix(a: string, b: string, t: number): string {
+  const pa = parseInt(a.slice(1), 16)
+  const pb = parseInt(b.slice(1), 16)
+  const ch = (shift: number) => {
+    const av = (pa >> shift) & 255
+    const bv = (pb >> shift) & 255
+    return Math.round(av + (bv - av) * t)
+  }
+  return `#${((1 << 24) + (ch(16) << 16) + (ch(8) << 8) + ch(0)).toString(16).slice(1)}`
+}
+
 // Soft pastel tile fills — calm, premium, never loud blocks.
 const TONE: Record<CellTone, { bg: string; fg: string }> = {
   leader: { bg: '#E2F2F0', fg: TEAL_DEEP },
@@ -234,14 +248,22 @@ function Legend() {
     { tone: 'na', label: 'n/a' },
   ]
   return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10px] text-ink-secondary">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] font-medium text-ink-secondary">
       {items.map((i) => (
-        <span key={i.label} className="inline-flex items-center gap-1">
-          <span className="h-2.5 w-3 rounded-[3px]" style={{ background: TONE[i.tone].bg, boxShadow: `inset 0 0 0 1px ${hexA(SLATE, 0.25)}` }} />
+        <span key={i.label} className="inline-flex items-center gap-1.5">
+          <span
+            className="h-3 w-4 rounded-[4px]"
+            style={{
+              background: mix(TONE[i.tone].bg, TONE[i.tone].fg, 0.26),
+              boxShadow: `inset 0 0 0 1.25px ${hexA(TONE[i.tone].fg, 0.62)}, 0 1px 1.5px rgba(23,43,77,0.08)`,
+            }}
+          />
           {i.label}
         </span>
       ))}
-      <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full" style={{ background: GOLD }} /> best in column</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-2 w-2 rounded-full" style={{ background: GOLD, boxShadow: `0 0 0 2px ${hexA(GOLD, 0.18)}` }} /> best in column
+      </span>
     </div>
   )
 }
