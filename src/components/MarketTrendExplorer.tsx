@@ -8,13 +8,13 @@
 //     clean line — Niva Bupa solid & strong, the rest softly dimmed, every line
 //     in its company's theme colour, with line style varying subtly per metric;
 //   • four compact summary cards (SAHI · Retail · Overall · GDPI) carrying Niva
-//     Bupa's FY24 value, its FY22–FY24 move and a tiny sparkline — no full chart.
+//     Bupa's latest value, its first→latest move and a tiny sparkline.
 //
 // View modes:
 //   • Absolute        — raw values; only metrics that share a unit can sit on
 //                        one axis, so a mixed selection auto-switches to Indexed.
-//   • Indexed FY22=100 — every line rebased to 100 at the first year, so share
-//                        and premium can be compared on one scale.
+//   • Indexed (base year = 100) — every line rebased to 100 at the first data
+//                        year, so share and premium compare on one scale.
 //   • YoY change      — year-on-year % move; the first year has no prior base.
 //
 // Honesty: years come from the data (never hardcoded), a null value is omitted
@@ -40,6 +40,8 @@ import {
   METRICS,
   sortYears,
   TREND_COMPANIES,
+  TREND_SOURCES,
+  yearNum,
   type MetricDef,
   type MetricId,
 } from '@/lib/marketTrends'
@@ -62,21 +64,19 @@ const METRIC_COLOR: Record<MetricId, string> = {
 
 type ViewMode = 'absolute' | 'indexed' | 'yoy'
 
-const VIEW_MODES: { id: ViewMode; label: string }[] = [
-  { id: 'absolute', label: 'Absolute' },
-  { id: 'indexed', label: 'Indexed FY22 = 100' },
-  { id: 'yoy', label: 'YoY change' },
-]
-
 const GRID = '#EEF1F7'
 const AXIS = '#6B7280'
 const round1 = (n: number) => Math.round(n * 10) / 10
 
-// The story spans FY22–FY25. The SAHI share/premium source currently lands
-// only through FY24, so FY25 is carried as an honest, visible gap (the axis
-// shows it, the lines stop at FY24, and the tick is marked "not yet reported")
-// rather than fabricated. It fills in automatically the moment FY25 ingests.
-const GAP_YEAR = 'FY25'
+// The running fiscal year (Indian FY: Apr→Mar). The fiscal year after the
+// latest reported one is carried as an honest, visible trailing gap on the
+// axis ("not yet reported") for as long as the clock has entered it — it fills
+// in automatically the moment the next March edition ingests, and the gap tick
+// then advances to the following year by itself. Nothing here is hardcoded.
+const CLOCK_FY = (() => {
+  const d = new Date()
+  return (d.getUTCMonth() >= 3 ? d.getUTCFullYear() + 1 : d.getUTCFullYear()) - 2000
+})()
 
 // ── A single (company × metric) line, with its absolute series + index base. ──
 interface Combo {
@@ -312,8 +312,13 @@ function InsurerDropdown({
 }
 
 const PANEL_SOURCE = {
-  source_name:
-    'Niva Bupa DRHP (Jul 2024) · Redseer Report, Exhibits 40–41 (overall- & retail-health GDPI and market share). Premium metric — not profit.',
+  source_name: [
+    `Niva Bupa DRHP (Jul 2024) · Redseer Report, Exhibits 40–41 (overall- & retail-health GDPI and market share), ${TREND_SOURCES.drhp.span}.`,
+    TREND_SOURCES.gic.span
+      ? ` ${TREND_SOURCES.gic.span} computed from the GI Council Segment-wise Report (health portfolio) on the same GDPI bases — the FY24 five-SAHI retail base matches the DRHP to the rupee.`
+      : '',
+    ' Premium metric — not profit.',
+  ].join(''),
   source_url: METRICS.gdpi.source.source_url,
   fetched_at: METRICS.gdpi.source.fetched_at,
 }
@@ -344,10 +349,16 @@ export function MarketTrendExplorer() {
     [selMetrics],
   )
 
-  // Axis years = the real data years, plus FY25 as a trailing gap if the source
-  // hasn't reached it yet (so the chart reads FY22–FY25 honestly).
-  const showGap = years.length > 0 && !years.includes(GAP_YEAR)
-  const axisYears = useMemo(() => (showGap ? [...years, GAP_YEAR] : years), [years, showGap])
+  // Axis years = the real data years, plus the next fiscal year as a trailing
+  // "not yet reported" gap once the clock has entered it — so the axis always
+  // honestly shows where the story has reached, and advances by itself.
+  const lastDataYear = years[years.length - 1]
+  const gapYear = lastDataYear ? `FY${yearNum(lastDataYear) + 1}` : null
+  const showGap = gapYear != null && yearNum(gapYear) <= CLOCK_FY
+  const axisYears = useMemo(() => (showGap && gapYear ? [...years, gapYear] : years), [years, showGap, gapYear])
+  // The label of the indexing base (first data year) + the visible story span.
+  const baseYear = years[0] ?? '—'
+  const spanLabel = `${baseYear}–${axisYears[axisYears.length - 1] ?? '—'}`
 
   const combos: Combo[] = useMemo(() => {
     const out: Combo[] = []
@@ -364,7 +375,8 @@ export function MarketTrendExplorer() {
 
   // Build the chart rows: one per axis year carrying every combo's value in the
   // active view (null stays null — never coerced, never indexed off a gap; the
-  // FY25 gap row is all-null so every line simply stops at FY24).
+  // trailing gap-year row is all-null so every line simply stops at the last
+  // reported year).
   const data = useMemo(() => {
     return axisYears.map((y, i) => {
       const row: Record<string, number | string | null> = { year: y }
@@ -515,13 +527,13 @@ export function MarketTrendExplorer() {
     )
   }
 
-  // X tick — FY25 (the gap year) reads soft-grey with a quiet "not yet reported"
-  // sub-label so the missing year is honest, never blank or fabricated.
+  // X tick — the trailing gap year reads soft-grey with a quiet "not yet
+  // reported" sub-label so the missing year is honest, never blank or fabricated.
   const renderXTick = (props: { x?: number; y?: number; payload?: { value?: string } }) => {
     const x = Number(props.x)
     const y = Number(props.y)
     const val = props.payload?.value ?? ''
-    const isGap = val === GAP_YEAR && showGap
+    const isGap = val === gapYear && showGap
     return (
       <g>
         <text x={x} y={y + 11} textAnchor="middle" fontSize={10} fill={isGap ? '#B6BECB' : AXIS}>
@@ -548,7 +560,7 @@ export function MarketTrendExplorer() {
           </span>
         </div>
         <p className="mt-1 text-[12px] text-ink-secondary">
-          Five standalone health insurers · four lenses · FY22–FY25 ·{' '}
+          Five standalone health insurers · four lenses · {spanLabel} ·{' '}
           <span className="text-ink-secondary/80">premium basis, not profit</span>
         </p>
       </header>
@@ -595,7 +607,13 @@ export function MarketTrendExplorer() {
           </div>
           <span className="mr-0.5 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">View</span>
           <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-white/60">
-            {VIEW_MODES.map((vm) => {
+            {(
+              [
+                { id: 'absolute', label: 'Absolute' },
+                { id: 'indexed', label: `Indexed ${baseYear} = 100` },
+                { id: 'yoy', label: 'YoY change' },
+              ] as { id: ViewMode; label: string }[]
+            ).map((vm) => {
               const on = mode === vm.id
               const disabled = vm.id === 'absolute' && mixedUnits
               return (
@@ -618,7 +636,7 @@ export function MarketTrendExplorer() {
           </div>
           {mode === 'indexed' && (
             <span className="text-[9.5px] italic text-ink-secondary">
-              Indexed to FY22 = 100 so share and premium growth can be compared on one scale.
+              Indexed to {baseYear} = 100 so share and premium growth can be compared on one scale.
             </span>
           )}
         </div>
@@ -725,9 +743,9 @@ export function MarketTrendExplorer() {
         </div>
       </div>
 
-      {/* Footer — a single shared source (all from the DRHP). */}
+      {/* Footer — the two joined sources (DRHP through FY24, GI Council after). */}
       <div className="mt-3 flex justify-end pt-1">
-        <SourceTag source="Company filing" period="FY22–FY25" frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
+        <SourceTag source="Company filing + GI Council" period={spanLabel} frequency="Annual" confidence="high" provenance={PANEL_SOURCE} />
       </div>
     </div>
   )
