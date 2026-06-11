@@ -1,0 +1,82 @@
+<task>
+<1>
+<tool><s>WriteTodos: [{'content': 'Search and extract broker report details for NIVABUPA dated reports', 'status': 'in_progress'}, {'content': 'Search and extract broker report details for STARHEALTH dated reports', 'status': 'in_progress'}, {'content': 'Search and extract broker report details for ICICIGI dated reports', 'status': 'in_progress'}, {'content': 'Search and extract broker report details for GODIGIT dated report', 'status': 'in_progress'}]</s></tool>
+<tool><e>WriteTodos</e></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Motilal Oswal 2026-01-29 target price CMP OR site:moneycontrol.com NIVABUPA Motilal Oswal 2026-01-29 target price CMP OR site:tradingview.com NIVABUPA Motilal Oswal 2026-01-29</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA ICICI Securities 2025-11-06 target price CMP OR site:moneycontrol.com NIVABUPA ICICI Securities 2025-11-06 target price CMP OR site:tradingview.com NIVABUPA ICICI Securities 2025-11-06</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Motilal Oswal 2025-11-03 target price CMP OR site:moneycontrol.com NIVABUPA Motilal Oswal 2025-11-03 target price CMP OR site:tradingview.com NIVABUPA Motilal Oswal 2025-11-03</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA ICICI Securities 2025-08-11 target price CMP OR site:moneycontrol.com NIVABUPA ICICI Securities 2025-08-11 target price CMP OR site:tradingview.com NIVABUPA ICICI Securities 2025-08-11</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Motilal Oswal 2025-08-07 target price CMP OR site:moneycontrol.com NIVABUPA Motilal Oswal 2025-08-07 target price CMP OR site:tradingview.com NIVABUPA Motilal Oswal 2025-08-07</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Motilal Oswal 2025-07-31 target price CMP OR site:moneycontrol.com NIVABUPA Motilal Oswal 2025-07-31 target price CMP OR site:tradingview.com NIVABUPA Motilal Oswal 2025-07-31</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Motilal Oswal 2025-04-23 target price CMP OR site:moneycontrol.com NIVABUPA Motilal Oswal 2025-04-23 target price CMP OR site:tradingview.com NIVABUPA Motilal Oswal 2025-04-23</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA ICICI Securities 2025-04-15 target price CMP OR site:moneycontrol.com NIVABUPA ICICI Securities 2025-04-15 target price CMP OR site:tradingview.com NIVABUPA ICICI Securities 2025-04-15</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Kotak Securities 2025-04-02 target price CMP OR site:moneycontrol.com NIVABUPA Kotak Securities 2025-04-02 target price CMP OR site:tradingview.com NIVABUPA Kotak Securities 2025-04-02</s></tool>
+<tool><s>WebSearch: site:trendlyne.com NIVABUPA Morgan Stanley 2024-12-22 target price CMP OR site:moneycontrol.com NIVABUPA Morgan Stanley 2024-12-22 target price CMP OR site:tradingview.com NIVABUPA Morgan Stanley 2024-12-22</s></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<tool><e>WebSearch</e></tool>
+<ans>NIVABUPA | Motilal Oswal | 2026-01-29 |  |  |  | 
+NIVABUPA | ICICI Securities | 2025-11-06 |  |  |  | 
+NIVABUPA | Motilal Oswal | 2025-11-03 |  |  |  | 
+NIVABUPA | ICICI Securities | 2025-08-11 |  |  |  | 
+NIVABUPA | Motilal Oswal | 2025-08-07 |  |  |  | 
+NIVABUPA | Motilal Oswal | 2025-07-31 |  |  |  | 
+NIVABUPA | Motilal Oswal | 2025-04-23 |  |  |  | 
+NIVABUPA | ICICI Securities | 2025-04-15 |  |  |  | 
+NIVABUPA | Kotak Securities | 2025-04-02 |  |  |  | 
+NIVABUPA | Morgan Stanley | 2024-12-22 |  |  |  | 
+NIVABUPA | HDFC Securities | 2024-11-06 |  |  |  | 
+NIVABUPA | KR Choksey | 2024-11-06 |  |  |  | 
+NIVABUPA | SBI Securities | 2024-11-06 |  |  |  | 
+NIVABUPA | Ventura | 2024-11-06 |  |  |  | 
+STARHEALTH | ICICI Securities Limited | 2026-05-03 |  |  |  | 
+STARHEALTH | Emkay | 2026-04-29 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2026-04-29 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2026-01-29 |  |  |  | 
+STARHEALTH | Geojit BNP Paribas | 2026-01-06 |  |  |  | 
+STARHEALTH | ICICI Securities | 2025-11-06 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2025-10-29 |  |  |  | 
+STARHEALTH | ICICI Securities | 2025-09-03 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2025-08-25 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2025-07-30 |  |  |  | 
+STARHEALTH | Geojit BNP Paribas | 2025-05-14 |  |  |  | 
+STARHEALTH | Geojit BNP Paribas | 2025-02-13 |  |  |  | 
+STARHEALTH | Emkay | 2025-01-30 |  |  |  | 
+STARHEALTH | ICICI Direct | 2024-11-11 |  |  |  | 
+STARHEALTH | Geojit BNP Paribas | 2024-09-04 |  |  |  | 
+STARHEALTH | Motilal Oswal | 2024-06-28 |  |  |  | 
+STARHEALTH | Emkay | 2024-05-01 |  |  |  | 
+ICICIGI | Motilal Oswal | 2026-05-05 |  |  |  | 
+ICICIGI | ICICI Securities | 2026-04-20 |  |  |  | 
+ICICIGI | Motilal Oswal | 2026-04-15 |  |  |  | 
+ICICIGI | ICICI Securities | 2026-03-16 |  |  |  | 
+ICICIGI | Geojit BNP Paribas | 2026-01-28 |  |  |  | 
+ICICIGI | ICICI Securities | 2026-01-14 |  |  |  | 
+ICICIGI | Motilal Oswal | 2026-01-13 |  |  |  | 
+ICICIGI | ICICI Securities | 2025-10-15 |  |  |  | 
+ICICIGI | Motilal Oswal | 2025-10-14 |  |  |  | 
+ICICIGI | Geojit BNP Paribas | 2025-07-22 |  |  |  | 
+ICICIGI | Motilal Oswal | 2025-07-15 |  |  |  | 
+ICICIGI | Sharekhan | 2025-04-16 |  |  |  | 
+ICICIGI | Motilal Oswal | 2025-04-15 |  |  |  | 
+ICICIGI | Geojit BNP Paribas | 2025-01-31 |  |  |  | 
+ICICIGI | Emkay | 2025-01-19 |  |  |  | 
+ICICIGI | Sharekhan | 2025-01-17 |  |  |  | 
+ICICIGI | Motilal Oswal | 2025-01-17 |  |  |  | 
+ICICIGI | ICICI Direct | 2024-10-23 |  |  |  | 
+ICICIGI | Emkay | 2024-10-20 |  |  |  | 
+ICICIGI | Motilal Oswal | 2024-10-18 |  |  |  | 
+ICICIGI | Sharekhan | 2024-08-23 |  |  |  | 
+ICICIGI | Geojit BNP Paribas | 2024-08-01 |  |  |  | 
+ICICIGI | IDBI Capital | 2024-06-14 |  |  |  | 
+GODIGIT | Emkay | 2025-04-29 |  |  |  |</ans>
+</1>
+</task>
+<eos></eos>
