@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "company": "niva-bupa",
+    "year": "9MFY25",
+    "metric": "total_gwp",
+    "value": 4684,
+    "unit": "INR_cr",
+    "source_name": "Press Release Q3 Results",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Press-Release-Q3-Results.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-02-04). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "niva-bupa",
+    "year": "9MFY25",
+    "metric": "retail_health_market_share",
+    "value": 9.6,
+    "unit": "%",
+    "source_name": "Press Release Q3 Results",
+    "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Press-Release-Q3-Results.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2025-02-04). Fetched via munschat sahi-financials."
+  }
+]

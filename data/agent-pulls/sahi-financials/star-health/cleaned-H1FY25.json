@@ -1,0 +1,80 @@
+[
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "total_gwp",
+    "value": 7847,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "pat_igaap",
+    "value": 430,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "expense_ratio_igaap",
+    "value": 15.6,
+    "unit": "%",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "combined_ratio_igaap",
+    "value": 101.1,
+    "unit": "%",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials."
+  },
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "net_worth_ifrs",
+    "value": 6805,
+    "unit": "INR_cr",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
+  },
+  {
+    "company": "star-health",
+    "year": "H1FY25",
+    "metric": "retail_health_market_share",
+    "value": 32,
+    "unit": "%",
+    "source_name": "Investor Presentation H1FY25",
+    "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_30102024161230_Investor_Presentation30102024.pdf",
+    "source_page": null,
+    "confidence": "high",
+    "priority": 1,
+    "note": "Company filing / quarterly investor presentation (2024-10-30). Fetched via munschat sahi-financials."
+  }
+]

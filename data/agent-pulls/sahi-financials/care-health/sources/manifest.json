@@ -7,6 +7,13 @@
       "sha256": "34372d6f1c14a8a1cea292e554c50e7a43a0d03c97357ea32d87e8fb96dc8265",
       "fetched_at": "2026-06-10T21:30:35.446Z"
     },
+    "https://cdn.prod.website-files.com/655e222dea1ce803df0436bc/673b153d936505e19810df48__NDR_Investor%20Presentation_Q2FY25.pdf": {
+      "filename": "673b153d936505e19810df48__NDR_Investor Presentation_Q2FY25.pdf",
+      "url": "https://cdn.prod.website-files.com/655e222dea1ce803df0436bc/673b153d936505e19810df48__NDR_Investor%20Presentation_Q2FY25.pdf",
+      "bytes": 5605965,
+      "sha256": "9a4d73192e049ade96233f7b3325caeef526fc3b7fff747811ec536bfa9eb996",
+      "fetched_at": "2026-06-11T16:22:01.646Z"
+    },
     "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf": {
       "filename": "6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
       "url": "https://cdn.prod.website-files.com/66ab5208ecc61810760ef8d7/6a03629b51d2ccbe3203baea_REL_Q4_and_FY26_Investor_Presentation_12_May.pdf",
@@ -147,6 +154,13 @@
       "sha256": "5eb3e33e8aa6606753574de0868c7e8254e222bca3aeb40729fa8242aee600ff",
       "fetched_at": "2026-06-10T21:54:54.460Z"
     },
+    "https://rocket.ixigo.com/investors/q12026/Q1%20FY26%20Earnings%20Investor%20Presentation.pdf": {
+      "filename": "Q1 FY26 Earnings Investor Presentation.pdf",
+      "url": "https://rocket.ixigo.com/investors/q12026/Q1%20FY26%20Earnings%20Investor%20Presentation.pdf",
+      "bytes": 6938178,
+      "sha256": "02690e658709dc6d1906bf622afcc7c12125cf05b0adb5f48672e703b01ff8ab",
+      "fetched_at": "2026-06-11T16:22:39.622Z"
+    },
     "https://s205.q4cdn.com/626266368/files/doc_financials/2026/q3/CRM-Q3-FY26-Quarterly-Investor-Deck.pdf": {
       "filename": "CRM-Q3-FY26-Quarterly-Investor-Deck.pdf",
       "url": "https://s205.q4cdn.com/626266368/files/doc_financials/2026/q3/CRM-Q3-FY26-Quarterly-Investor-Deck.pdf",
@@ -174,6 +188,13 @@
       "bytes": 3670535,
       "sha256": "74bcf680ec2907da7ef02ee7615b2717b66672660a63b58340eba7875b820970",
       "fetched_at": "2026-06-10T21:30:30.718Z"
+    },
+    "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf": {
+      "filename": "Financial Ratios _Insurance Sector_November2020.pdf",
+      "url": "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf",
+      "bytes": 210863,
+      "sha256": "7bfb6ca52019e2068a72efec07ad00e5dada6aa73aee5c7162c0476ce39e1707",
+      "fetched_at": "2026-06-11T16:23:48.137Z"
     },
     "https://www.coforge.com/hubfs/Q1FY25-Web-presentation.pdf": {
       "filename": "Q1FY25-Web-presentation.pdf",
@@ -210,6 +231,13 @@
       "sha256": "4ff6f18556d56600b230390ac5148bfe3ed8b7dc6687c3a09586292f430acb43",
       "fetched_at": "2026-06-10T21:30:34.141Z"
     },
+    "https://www.moneycontrol.com/financials/careratings/balance-sheetVI/car": {
+      "filename": "car",
+      "url": "https://www.moneycontrol.com/financials/careratings/balance-sheetVI/car",
+      "bytes": 745678,
+      "sha256": "0a09094be9ad0e91c2f36fa20e866bc929ce4a3ea89a5a99059ad43196b7ae85",
+      "fetched_at": "2026-06-11T16:22:06.367Z"
+    },
     "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/fy25-rhc_investor_presentation_speech-and-slides.pdf": {
       "filename": "fy25-rhc_investor_presentation_speech-and-slides.pdf",
       "url": "https://www.ramsayhealth.com/globalassets/global/investor-centre/investor-centre-pdfs/fy25-rhc_investor_presentation_speech-and-slides.pdf",
@@ -225,5 +253,5 @@
       "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-10T22:35:56.361Z"
+  "updated_at": "2026-06-11T16:23:48.138Z"
 }

@@ -7,6 +7,13 @@
       "sha256": "6d84d1511d05d362498c44133a37d04af26ee547c63ce73404e31564818427e4",
       "fetched_at": "2026-06-10T22:24:14.280Z"
     },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Press-Release-Q3-Results.pdf": {
+      "filename": "Press-Release-Q3-Results.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Press-Release-Q3-Results.pdf",
+      "bytes": 1296865,
+      "sha256": "27564497b7e85dcf7f5a10d3919ffefc2f90e459d999d67b35dbed1934be251c",
+      "fetched_at": "2026-06-11T16:16:03.555Z"
+    },
     "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1": {
       "filename": "Disclosure-Earnings-call-presentation-2025.pdf",
       "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2025-26/Disclosure-Earnings-call-presentation-2025.pdf?v=1.1",
@@ -70,6 +77,13 @@
       "sha256": "2e21c4f0f46d0f0583bbf18d2f12308f9fa024fbe633297c9781d90e287fdb53",
       "fetched_at": "2026-06-10T21:42:48.316Z"
     },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachLive/957fe837-817f-4515-8092-168e8437711f.pdf": {
+      "filename": "957fe837-817f-4515-8092-168e8437711f.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/957fe837-817f-4515-8092-168e8437711f.pdf",
+      "bytes": 3314844,
+      "sha256": "9eea40006139f64cbddbc82f8efb6745b1111cfb82a07373c3acfd6010d167eb",
+      "fetched_at": "2026-06-11T16:17:31.215Z"
+    },
     "https://www.moneycontrol.com/financials/nivabupahealthinsurancecompany/cash-flowVI/NBH/1": {
       "filename": "1",
       "url": "https://www.moneycontrol.com/financials/nivabupahealthinsurancecompany/cash-flowVI/NBH/1",
@@ -78,5 +92,5 @@
       "fetched_at": "2026-06-10T21:43:10.611Z"
     }
   },
-  "updated_at": "2026-06-10T22:24:17.949Z"
+  "updated_at": "2026-06-11T16:17:54.917Z"
 }
