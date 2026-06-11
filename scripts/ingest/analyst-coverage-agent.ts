@@ -55,24 +55,24 @@ async function tuplesFromSchema(): Promise<Tuple[]> {
   return out
 }
 
-function buildPayload(tuples: Tuple[]) {
-  const companies = [...new Set(tuples.map((t) => t.company_id))]
-  const tasks = companies.map((cid) => {
-    const name = COMPANY_NAMES[cid] ?? cid
-    const ticker = name.match(/NSE: (\w+)/)?.[1] ?? cid
-    return (
+// ONE focused task per company. Bundling all four companies into a single call
+// made the agent answer only the first (Niva Bupa) and drop the rest, so each
+// company now gets its own call with its own ticker in the query context.
+function buildPayload(cid: string) {
+  const name = COMPANY_NAMES[cid] ?? cid
+  const ticker = name.match(/NSE: (\w+)/)?.[1] ?? cid
+  const task = (
       `Open the public broker research-reports listing for ${name} — Trendlyne's "Research Reports" page for the stock (trendlyne.com), or Moneycontrol's broker-research page for it. Return EVERY broker report row in the table (all pages you can see), one pipe-delimited line each, exactly these columns:\n\n` +
       `${ticker} | broker name | report date YYYY-MM-DD | rating | target_price | price_at_reco | source_url\n\n` +
       'target_price = the broker\u2019s target in \u20b9, number only. price_at_reco = the share price at the recommendation date (Trendlyne calls it "Price at reco"), number only. source_url = the public page listing the report. If a number is not shown for a row, leave that field blank \u2014 never 0, never an estimate. No other text.'
-    )
-  })
+  )
   return {
     user_index: 124,
-    tasks,
+    tasks: [task],
     query_context: {
-      TICKER_SYMBOL: [], FROM_DATE: '2024-01-01', TO_DATE: new Date().toISOString().slice(0, 10),
+      TICKER_SYMBOL: [ticker], FROM_DATE: '2024-01-01', TO_DATE: new Date().toISOString().slice(0, 10),
       ANNOUNCEMENT_FORM_TYPE: 'all', DOCUMENT_IDS: [], CATEGORIES: [], WEB_SEARCH_ENABLED: true,
-      COUNTRY: [], CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [],
+      COUNTRY: [], CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [name],
       GET_ANNOUNCEMENTS_ENABLED: false, chatHistory: [], mode: 'fast',
     },
     autoAddUpcoming: false,
@@ -124,7 +124,7 @@ function alignToTuples(rows: AggRow[], tuples: Tuple[]) {
     const want = new Date(t.report_date).getTime()
     const candidates = rows
       .filter((r) => r.company_id === t.company_id && brokerMatches(r.broker, t.broker)
-        && Math.abs(new Date(r.date).getTime() - want) <= 6 * DAY
+        && Math.abs(new Date(r.date).getTime() - want) <= 8 * DAY
         && (r.target != null || r.atReco != null))
       .sort((a, b) => Math.abs(new Date(a.date).getTime() - want) - Math.abs(new Date(b.date).getTime() - want))
     const hit = candidates[0]
@@ -150,31 +150,41 @@ async function main(): Promise<number> {
     return 1
   }
   const tuples = await tuplesFromSchema()
-  console.log(`Template names ${tuples.length} dated broker reports; asking the agent...`)
-
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS)
-  let raw: string
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildPayload(tuples)),
-      signal: ctrl.signal,
-    })
-    if (!res.ok) throw new Error(`agent call failed: HTTP ${res.status}`)
-    raw = await res.text()
-  } finally {
-    clearTimeout(timer)
-  }
+  const companies = [...new Set(tuples.map((t) => t.company_id))]
+  console.log(`Template names ${tuples.length} dated broker reports across ${companies.length} companies; asking the agent one company at a time...`)
 
   await mkdir(OUT_DIR, { recursive: true })
   const stamp = new Date().toISOString().slice(0, 10)
-  await writeFile(resolve(OUT_DIR, `analyst-coverage-${stamp}.json`), raw, 'utf8')
 
-  const ans = raw.match(/<ans>([\s\S]*?)<\/ans>/)?.[1] ?? raw
-  const rows = alignToTuples(parseAggregatorRows(ans), tuples)
-  console.log(`Parsed ${rows.length} valid dated rows (of ${tuples.length} asked).`)
+  // One focused call PER COMPANY. A single company's failure is logged and
+  // skipped — it never aborts the others. Every raw response is saved for audit.
+  const allRows: AggRow[] = []
+  for (const cid of companies) {
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS)
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildPayload(cid)),
+        signal: ctrl.signal,
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const raw = await res.text()
+      await writeFile(resolve(OUT_DIR, `analyst-coverage-${cid}-${stamp}.json`), raw, 'utf8')
+      const ans = raw.match(/<ans>([\s\S]*?)<\/ans>/)?.[1] ?? raw
+      const parsed = parseAggregatorRows(ans)
+      console.log(`  ${cid}: ${parsed.length} parseable rows from the agent`)
+      allRows.push(...parsed)
+    } catch (e) {
+      console.error(`  ${cid}: fetch failed — ${(e as Error).message}. Continuing with the rest.`)
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  const rows = alignToTuples(allRows, tuples)
+  console.log(`Aligned ${rows.length} dated rows to the template (of ${tuples.length} cells asked).`)
 
   // Merge into the snapshot: a row may improve over time; keyed company+broker+date.
   let existing: { _meta?: object; data: Array<Record<string, unknown>> } = { data: [] }

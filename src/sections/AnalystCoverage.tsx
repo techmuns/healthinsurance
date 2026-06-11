@@ -2,6 +2,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { STATUS_META, type AuditCell, type AuditGroup } from '@/lib/extractedDataAudit'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
+import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 
 // ---------------------------------------------------------------------------
 //  Analyst coverage — the dashboard mirror of the workbook's "Analyst coverage"
@@ -46,6 +47,24 @@ const SNAP = (analystSnapshot as unknown as { data: SnapRow[] }).data ?? []
 const ratingKey = (c: string, b: string, d: string) => `${c}|${b}|${d}`
 const RATING = new Map<string, { rating: string | null; url: string | null; fetchedAt: string | null }>()
 for (const r of SNAP) RATING.set(ratingKey(r.company_id, r.broker, r.report_date), { rating: r.rating, url: r.source_url, fetchedAt: r.fetched_at })
+
+// ── Live CMP (current market price) — the latest close per company, from the
+//    same daily price feed the Historical Stock Movement tab uses. A real,
+//    source-backed reference price kept current by the price pipeline; the
+//    "upside vs CMP" column is computed from it. (Not copied from the workbook.)
+interface PriceRow { company_id: string; date: string; close: number | null; provenance?: { source_name?: string; source_url?: string } }
+const PRICE = (priceHistory as unknown as { data: PriceRow[] }).data ?? []
+interface CmpRef { cmp: number; date: string; sourceName: string | null; sourceUrl: string | null }
+const CMP_BY_COMPANY: Record<string, CmpRef> = (() => {
+  const out: Record<string, CmpRef> = {}
+  for (const r of PRICE) {
+    if (r.close == null) continue
+    const cur = out[r.company_id]
+    if (!cur || r.date > cur.date)
+      out[r.company_id] = { cmp: r.close, date: r.date, sourceName: r.provenance?.source_name ?? 'Daily price feed', sourceUrl: r.provenance?.source_url ?? null }
+  }
+  return out
+})()
 
 // ── tone palette (mirrors the audit spreadsheet's tints) ─────────────────────
 type Tone = 'green' | 'red' | 'yellow' | 'grey' | 'info'
@@ -141,6 +160,7 @@ function buildBlocks(group: AuditGroup): Block[] {
       const priceAtReco = numOf(priceCell?.normalizedValue)
       const target = numOf(targetCell?.normalizedValue)
       const rec = RATING.get(ratingKey(any.entityId, broker, date))
+      const cmp = CMP_BY_COMPANY[any.entityId]?.cmp ?? null
       return {
         rowNum,
         companyId: any.entityId,
@@ -153,9 +173,9 @@ function buildBlocks(group: AuditGroup): Block[] {
         targetCell,
         priceAtReco,
         target,
-        cmp: null,
+        cmp,
         upsideReco: priceAtReco != null && target != null && priceAtReco !== 0 ? target / priceAtReco - 1 : null,
-        upsideCmp: null,
+        upsideCmp: cmp != null && target != null && cmp !== 0 ? target / cmp - 1 : null,
       }
     })
 
@@ -172,12 +192,13 @@ function buildBlocks(group: AuditGroup): Block[] {
   for (const b of blocks) {
     const ap = fullMean(b.rows.map((r) => r.priceAtReco))
     const at = fullMean(b.rows.map((r) => r.target))
+    const cmp = CMP_BY_COMPANY[b.companyId]?.cmp ?? null
     b.avg = {
       priceAtReco: ap,
       target: at,
-      cmp: null,
+      cmp,
       upsideReco: ap != null && at != null && ap !== 0 ? at / ap - 1 : null,
-      upsideCmp: null,
+      upsideCmp: cmp != null && at != null && cmp !== 0 ? at / cmp - 1 : null,
     }
   }
   return blocks
@@ -218,6 +239,21 @@ function LiveMarker({ label }: { label: string }) {
       <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">
         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-300" />{label}
       </span>
+    </div>
+  )
+}
+
+/** CMP — the live current market price (latest close), source-backed. */
+function CmpCell({ row }: { row: BrokerRow }) {
+  if (row.cmp == null) return <LiveMarker label="live" />
+  const ref = CMP_BY_COMPANY[row.companyId]
+  return (
+    <div
+      className="flex h-full min-h-[30px] items-center justify-end gap-1 px-2.5 tabular-nums"
+      title={`Current market price — latest close ${ref ? fmtDate(ref.date) : ''}${ref?.sourceName ? ` · ${ref.sourceName}` : ''}`}
+    >
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald/60" />
+      <span className="text-[11.5px] font-semibold text-navy-deep/90">{inr(row.cmp)}</span>
     </div>
   )
 }
@@ -371,7 +407,7 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
                   <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11.5px] font-medium text-navy-deep group-hover:bg-ice/50">{r.broker || '—'}</td>
                   <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11px] tabular-nums text-ink-secondary group-hover:bg-ice/50">{fmtDate(r.date)}</td>
                   <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><RecoCell row={r} /></td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><LiveMarker label="live" /></td>
+                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><CmpCell row={r} /></td>
                   <td className="border-b border-r border-soft-border/70 p-0">
                     <ValueCell cell={r.priceCell} selected={selected?.id === r.priceCell?.id} onSelect={() => r.priceCell && setSelected(r.priceCell)} />
                   </td>
@@ -379,7 +415,7 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
                     <ValueCell cell={r.targetCell} selected={selected?.id === r.targetCell?.id} onSelect={() => r.targetCell && setSelected(r.targetCell)} />
                   </td>
                   <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideReco} /></td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><LiveMarker label="live" /></td>
+                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideCmp} /></td>
                 </tr>
               ))}
               {/* Average row — closes the block, exactly like the workbook. Fills
@@ -389,11 +425,11 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
                 <td className="border-b-2 border-r border-soft-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-navy-primary">Average</td>
                 <td className="border-b-2 border-r border-soft-border" />
                 <td className="border-b-2 border-r border-soft-border" />
-                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11px] tabular-nums text-ink-secondary/50">—</td>
+                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-semibold text-navy-deep/80">{inr(b.avg.cmp)}</td>
                 <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.priceAtReco == null ? 'Average shows once all broker price-at-reco values in this block are fetched.' : undefined}>{inr(b.avg.priceAtReco)}</td>
                 <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.target == null ? 'Average shows once all broker targets in this block are fetched.' : undefined}>{inr(b.avg.target)}</td>
                 <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideReco} /></td>
-                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11px] tabular-nums text-ink-secondary/50">—</td>
+                <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideCmp} /></td>
               </tr>
             </Fragment>
           ))}
@@ -410,14 +446,14 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
           <h3 className="font-display text-[15px] font-semibold text-navy-deep">Broker coverage</h3>
           <p className="mt-0.5 max-w-2xl text-[11px] leading-snug text-ink-secondary">
             Dated broker research notes — <span className="font-medium text-ink-primary">analyst price targets, not premium or profit</span>. Targets have no official feed, so they’re an aggregator-sourced
-            low-confidence backup (Moneycontrol / Trendlyne). Upside %s and the Average rows are calculated; CMP is the live market price (wiring next). Missing is never shown as 0.
+            low-confidence backup (Moneycontrol / Trendlyne). CMP is the live market price (latest close); upside %s and the Average rows are calculated. Missing is never shown as 0.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
           <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: TONE.green.dot, opacity: 0.85 }} />Fetched</span>
           <span className="inline-flex items-center gap-1"><FunctionSquare className="h-3 w-3 opacity-40" />Calculated</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald/60" />Live price (CMP)</span>
           <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: '#B68B3A', opacity: 0.85 }} />Reports — not fetched</span>
-          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px] bg-slate-300" />Live price — next</span>
         </div>
       </div>
 
