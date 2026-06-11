@@ -62,9 +62,9 @@ function buildPayload(cid: string) {
   const name = COMPANY_NAMES[cid] ?? cid
   const ticker = name.match(/NSE: (\w+)/)?.[1] ?? cid
   const task = (
-      `Open the public broker research-reports listing for ${name} — Trendlyne's "Research Reports" page for the stock (trendlyne.com), or Moneycontrol's broker-research page for it. Return EVERY broker report row in the table (all pages you can see), one pipe-delimited line each, exactly these columns:\n\n` +
+      `Go to Trendlyne's Research Reports page for ${name} (search trendlyne.com for the stock, open its "Research Reports" / "Broker Research" tab) - that page lists the FULL multi-year history of broker reports, far more than Moneycontrol. Scroll and page through to load EVERY row from 2024-01-01 to today, then return them ALL, one pipe-delimited line each, exactly these columns:\n\n` +
       `${ticker} | broker name | report date YYYY-MM-DD | rating | target_price | price_at_reco | source_url\n\n` +
-      'target_price = the broker\u2019s target in \u20b9, number only. price_at_reco = the share price at the recommendation date (Trendlyne calls it "Price at reco"), number only. source_url = the public page listing the report. If a number is not shown for a row, leave that field blank \u2014 never 0, never an estimate. No other text.'
+      'Use Moneycontrol\'s broker-research page ONLY if Trendlyne is unreachable. target_price = the broker target price in rupees, number only. price_at_reco = the share price on the recommendation date (Trendlyne labels it "Price at reco"), number only. source_url = the public page that lists the report. Return as many historical rows as the page shows (aim for 15 or more per company where they exist). If a number is not shown for a row, leave that field blank - never 0, never an estimate. Output ONLY the pipe-delimited rows, nothing else.'
   )
   return {
     user_index: 124,
