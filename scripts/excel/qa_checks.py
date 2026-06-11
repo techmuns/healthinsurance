@@ -37,7 +37,11 @@ VALUES = REPO / "data" / "processed" / "excel-values.json"
 FILLED = REPO / "output" / "Niva_Bupa_portfolio_review__filled.xlsx"
 
 RATIO_METRICS = {"claims_ratio_igaap", "expense_ratio_igaap", "combined_ratio_igaap",
-                 "claims_ratio_ifrs", "expense_ratio_ifrs", "investment_yield"}
+                 "claims_ratio_ifrs", "expense_ratio_ifrs"}
+# Investment yield CAN be negative in a drawdown quarter (e.g. Star Q4 FY26
+# prints an annualised -4.6% on marked-to-market losses) — a printed negative
+# is honest data, not a violation. Bounds widened accordingly.
+YIELD_METRICS = {"investment_yield"}
 SHARE_METRICS = {"overall_health_market_share", "retail_health_market_share"}
 
 
@@ -98,6 +102,8 @@ def main(filled_path: Path) -> int:
             base = str(metric).split("::")[0]
             if base in RATIO_METRICS and not (0 <= norm <= 3):
                 hard.append(f"H4 ratio out of bounds: {sheet}!{cell} {base}={norm}.")
+            if base in YIELD_METRICS and not (-0.5 <= norm <= 3):
+                hard.append(f"H4 yield out of bounds: {sheet}!{cell} {base}={norm}.")
             if base in SHARE_METRICS and not (0 <= norm <= 1.02):
                 hard.append(f"H4 share out of bounds: {sheet}!{cell} {base}={norm}.")
             if base == "solvency_ratio" and not (0 <= norm <= 10):

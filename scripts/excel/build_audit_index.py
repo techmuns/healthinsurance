@@ -464,6 +464,29 @@ def main() -> None:
                     cell["source_status"] = "not_applicable"
                     cell["na_reason"] = reason
 
+    # --- 'Not found in PPT' cells (grey) ----------------------------------
+    # Cells whose company investor presentations / annual reports were swept
+    # page-by-page (scripts/ingest/ppt-sweep.ts + reviewed transcription) and
+    # genuinely do not print the number. Curated with per-cell reasons in
+    # data/source-map/ppt-search-results.json (Neha, 2026-06-11: tag these
+    # 'not found in ppt' and colour the cell grey). Only applies while the
+    # cell has no sourced value — a statutory filing can still fill it later.
+    try:
+        ppt_neg = json.loads((REPO / "data" / "source-map" / "ppt-search-results.json").read_text()).get("cells", {})
+    except Exception:
+        ppt_neg = {}
+    if ppt_neg:
+        for sh in sheets:
+            for cell in sh["cells"]:
+                k = f'{cell.get("entity")}::{cell.get("metric")}::{cell.get("period")}'
+                entry = ppt_neg.get(k)
+                if not entry:
+                    continue
+                v = store.get(k)
+                if not (v and v.get("normalized_value") is not None):
+                    cell["source_status"] = "not_in_ppt"
+                    cell["na_reason"] = entry.get("reason") if isinstance(entry, dict) else str(entry)
+
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
 

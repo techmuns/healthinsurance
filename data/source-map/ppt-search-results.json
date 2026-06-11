@@ -1,0 +1,192 @@
+{
+ "_meta": {
+  "artifact": "ppt-search-results",
+  "description": "Cells whose company investor presentations / annual reports were swept page-by-page (scripts/ingest/ppt-sweep.ts + reviewed transcription, 2026-06-11) and genuinely do not print the number. Rendered grey as 'Not found in PPT' (Neha, 2026-06-11). Applies only while the cell has no sourced value \u2014 a statutory filing that later lands always wins. Cells whose documents are merely NOT YET FETCHED (e.g. Care Q1FY26 deck, Star FY24 AR, ABCL Q1FY25 deck) are deliberately NOT here \u2014 they stay red and on the agent fetch worklist."
+ },
+ "cells": {
+  "care-health::eom_igaap::FY26": {
+   "reason": "Not found in the PPT \u2014 the FY26 investor deck states EoM-regulation compliance but prints no ratio; the number lands with Care's FY26 annual report when published.",
+   "searched": "ppt-sweep 2026-06-11 (Religare Q4&FY26 deck p12)"
+  },
+  "manipalcigna::eom_igaap::FY23": {
+   "reason": "Not found in any PPT/annual report \u2014 ManipalCigna's ARs carry only a policy note on Expenses of Management (IRDAI granted FY24 forbearance and directed EoM down to 38% in FY25); the ratio itself is not printed.",
+   "searched": "ppt-sweep 2026-06-11 (MC ARs FY23 + FY25, notes 3.22)"
+  },
+  "manipalcigna::eom_igaap::FY24": {
+   "reason": "Not found in any PPT/annual report \u2014 ManipalCigna's ARs carry only a policy note on Expenses of Management (IRDAI granted FY24 forbearance and directed EoM down to 38% in FY25); the ratio itself is not printed.",
+   "searched": "ppt-sweep 2026-06-11 (MC ARs FY23 + FY25, notes 3.22)"
+  },
+  "manipalcigna::eom_igaap::FY25": {
+   "reason": "Not found in any PPT/annual report \u2014 ManipalCigna's ARs carry only a policy note on Expenses of Management (IRDAI granted FY24 forbearance and directed EoM down to 38% in FY25); the ratio itself is not printed.",
+   "searched": "ppt-sweep 2026-06-11 (MC ARs FY23 + FY25, notes 3.22)"
+  },
+  "manipalcigna::pat_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_ifrs::FY24": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_ifrs::FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "star-health::pat_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 Star Health's published IND-AS (IFRS) series starts FY24: the FY25 annual report's IFRS table and every staged earnings deck print FY24/FY25 onward only; no FY23 restatement exists.",
+   "searched": "ppt-sweep 2026-06-11 (Star FY25 AR p18-19 + all staged decks)"
+  },
+  "star-health::claims_ratio_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 Star Health's published IND-AS (IFRS) series starts FY24: the FY25 annual report's IFRS table and every staged earnings deck print FY24/FY25 onward only; no FY23 restatement exists.",
+   "searched": "ppt-sweep 2026-06-11 (Star FY25 AR p18-19 + all staged decks)"
+  },
+  "star-health::expense_ratio_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 Star Health's published IND-AS (IFRS) series starts FY24: the FY25 annual report's IFRS table and every staged earnings deck print FY24/FY25 onward only; no FY23 restatement exists.",
+   "searched": "ppt-sweep 2026-06-11 (Star FY25 AR p18-19 + all staged decks)"
+  },
+  "manipalcigna::group_other_gwp::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::group_other_gwp::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::nwp::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::nwp::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::nep::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::nep::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_igaap::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_igaap::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_igaap::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_igaap::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_igaap::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_igaap::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::combined_ratio_igaap::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::combined_ratio_igaap::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::eom_igaap::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::eom_igaap::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_ifrs::Q1FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::pat_ifrs::Q1FY26": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_ifrs::FY24": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_ifrs::FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_ifrs::Q1FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::claims_ratio_ifrs::Q1FY26": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_ifrs::FY23": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_ifrs::FY24": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_ifrs::FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_ifrs::Q1FY25": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::expense_ratio_ifrs::Q1FY26": {
+   "reason": "Not found in any PPT \u2014 ManipalCigna (unlisted JV) publishes no IFRS/Ind-AS investor figures; both staged annual reports and every deck were searched page-by-page.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::solvency_ratio::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::solvency_ratio::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::net_worth::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::net_worth::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::investment_aum::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::investment_aum::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::investment_yield::Q1FY25": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  },
+  "manipalcigna::investment_yield::Q1FY26": {
+   "reason": "ManipalCigna publishes no interim investor presentation \u2014 every staged ManipalCigna document was searched page-by-page (FY2022-23 and FY2024-25 annual reports; no quarterly deck exists). Not found in any PPT. The quarterly statutory disclosure (NL forms) remains the pending source and fills this cell if it lands.",
+   "searched": "ppt-sweep 2026-06-11 (all staged ManipalCigna documents)"
+  }
+ }
+}

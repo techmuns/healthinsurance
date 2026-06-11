@@ -247,21 +247,6 @@ def collect_shareholding():
              "document_title": prov.get("source_name"),
              "basis_note": prov.get("note")},
         )
-        # The % the holder represents — the sheet's own column-C calculation
-        # (shares / total). The filing discloses it directly; stored as a fraction
-        # (unit 'ratio'), so the grid shows the "% shareholding" column beside the
-        # share count. Missing pct stays missing — never fabricated.
-        pct = r.get("pct")
-        if pct is not None:
-            add_candidate(
-                entity, f"shareholding_pct::{holder}", period,
-                pct, round(pct / 100.0, 6),
-                "disclosed shareholding % (filing) expressed as a fraction", "ratio", prov,
-                RANK_SHAREHOLDING, "official_filing", prov.get("source_status", "available"),
-                {"filing_date": r.get("filing_date") or period,
-                 "document_type": "shareholding_pattern",
-                 "document_title": prov.get("source_name")},
-            )
 
 
 def load(name):
@@ -342,6 +327,14 @@ GIC_RETAIL_INSURER_IDS = {
     "national-insurance", "icici-lombard", "aditya-birla", "oriental-insurance",
     "united-india", "manipalcigna",
 }
+# The five companies on the SAHIs-comparison sheet (quarterly market-share rows).
+SAHI_COMPARE_IDS = {"niva-bupa", "star-health", "care-health", "aditya-birla", "manipalcigna"}
+
+
+def _fy_of_period(period):
+    """Fiscal-year number of a period label like 'Q1FY25' / '9MFY26' / 'FY24' (0 if unparseable)."""
+    m = re.search(r"FY(\d{2})$", str(period))
+    return int(m.group(1)) if m else 0
 # The "FY26 GWP" tab's per-insurer rows (total_health_gwp / retail_health_gwp,
 # periods H1FYxx / 9MFYxx from gic-health-quarterly, FYxx from the annual
 # gic-health-portfolio). The tab's Total row entity is the template's label.
@@ -465,7 +458,15 @@ def collect_existing():
         if basis and str(basis).startswith("derived"):
             prov["source_name"] = f"{prov.get('source_name')} · {basis}"
         gic_gwp_candidates(r, period, ent, grp, prov)
-    for r in load("gic-health-quarterly"):
+    gic_quarterly = list(load("gic-health-quarterly"))
+    # Printed INDUSTRY cumulative per period — the denominator for the SAHI
+    # quarterly market-share rows (same report edition family, same basis as
+    # the numerator; "newest GIC statement of a period wins" applies to both).
+    gic_q_industry = {
+        r["period"]: r for r in gic_quarterly
+        if r.get("carrier_group") == "aggregate" and r.get("entity") == "INDUSTRY" and r.get("period")
+    }
+    for r in gic_quarterly:
         period, ent, grp = r.get("period"), r.get("entity"), r.get("carrier_group")
         if not period or not ent:
             continue
@@ -474,6 +475,33 @@ def collect_existing():
         if basis and str(basis).startswith("derived"):
             prov["source_name"] = f"{prov.get('source_name')} · {basis}"
         gic_gwp_candidates(r, period, ent, grp, prov)
+        # SAHIs-comparison quarterly market shares — the same framework as the
+        # FY shares (GI Council segment-wise report): share = this company's
+        # printed cumulative ÷ the report's printed INDUSTRY cumulative for the
+        # SAME period. Both inputs printed; nothing annualised or estimated.
+        # Scoped to the column shapes the sheet actually has — quarterly
+        # checkpoints (Q1/H1/9M cumulative + Q4 standalone) from FY25 onward,
+        # open-ended so auto-extended future fiscal years keep filling. Earlier
+        # history / Q2 standalone would only add rows no workbook column asks
+        # for. FY-column shares stay with their existing annual sources.
+        if (grp == "sahi" and ent in SAHI_COMPARE_IDS and _fy_of_period(period) >= 25
+                and re.match(r"^(Q1|H1|9M|Q4)FY\d{2}$", str(period))):
+            ind = gic_q_industry.get(period)
+            for field, metric in (("health_total", "overall_health_market_share"),
+                                  ("health_retail", "retail_health_market_share")):
+                num = r.get(field)
+                den = (ind or {}).get(field)
+                if num is None or not den:
+                    continue  # missing != zero — no share without both printed figures
+                share = num / den
+                add_candidate(
+                    ent, metric, period, round(share * 100, 2), round(share, 6),
+                    "printed company cumulative ÷ printed INDUSTRY cumulative (share)",
+                    "ratio", prov, RANK_EXISTING, "official_snapshot", "available",
+                    {"basis_note": f"Share of industry {field.replace('_', ' ')} for {period}: "
+                                   f"both numerator and denominator are printed cumulatives from the "
+                                   f"GI Council segment-wise report."},
+                )
     for r in load("gic-health-portfolio"):
         period, ent, grp = r.get("fiscal_year"), r.get("entity"), r.get("carrier_group")
         if not period or not ent:
@@ -682,15 +710,24 @@ def collect_deck_sourced():
         if r.get("raw_value") is None:
             continue
         fn, label = TRANSFORMS[r.get("transform", "identity")]
-        caveat = ("IFRS special-purpose financials (company investor deck; audited annually, "
-                  "NOT the statutory IRDAI/IGAAP filing)")
+        # The basis caveat is per-metric: *_ifrs cells carry the special-purpose
+        # IFRS warning; everything else from a deck/AR is the company's printed
+        # IGAAP/statutory figure and says so plainly (2026-06-11 PPT sweep).
+        if r["metric"].endswith("_ifrs"):
+            caveat = ("IFRS special-purpose financials (company investor deck; audited annually, "
+                      "NOT the statutory IRDAI/IGAAP filing)")
+        else:
+            caveat = "as printed in the company's official investor deck / annual report"
         src = f"{r.get('source_title')} p.{r.get('source_page')} - {caveat}"
         prov = {"source_name": src, "source_url": r.get("source_url"),
                 "source_file": r.get("source_file"), "fetched_at": r.get("as_of"),
                 "confidence": r.get("confidence", "high")}
+        # The transcription note (page context, identity checks) stays in
+        # deck-sourced-values.json — lineage is never viewer content for a
+        # PRESENT value (standing instruction, Neha, 2026-06-11).
         extra = {"document_type": "investor_presentation", "document_title": r.get("source_title"),
                  "filing_date": r.get("as_of"), "extraction_status": "deck_transcribed",
-                 "sanity_status": "ok", "column_basis": None, "ratio_basis": None}
+                 "sanity_status": "ok", "column_basis": None, "ratio_basis": r.get("ratio_basis")}
         add_candidate(r["company_id"], r["metric"], r["period"], r.get("raw_value"),
                       fn(r["raw_value"]), label, r.get("unit"), prov,
                       RANK_DECK, "company_deck", "deck", extra)

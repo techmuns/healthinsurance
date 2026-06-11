@@ -202,6 +202,7 @@ export type AuditStatus =
   | 'blocked'
   | 'computed'
   | 'not_applicable'
+  | 'not_in_ppt'
   | 'unused'
 
 /** Cell-level QA colour (Neha's legend). `info` = neutral context (unused). */
@@ -224,6 +225,7 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
   computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
+  not_in_ppt: { key: 'not_in_ppt', label: 'Not found in PPT', color: 'grey' },
   unused: { key: 'unused', label: 'Extra — not used', color: 'info' },
 }
 
@@ -438,8 +440,6 @@ const METRIC_LABEL: Record<string, string> = {
   pb_ifrs: 'P/B (IFRS)',
   roe_ifrs: 'ROE (IFRS)',
   pb: 'Price / Book',
-  shareholding_shares: 'Shareholding Shares',
-  shareholding_pct: '% Shareholding',
 }
 
 /** Metric id → readable label (curated where it matters, humanized otherwise). */
@@ -725,6 +725,12 @@ export function buildAudit(): AuditModel {
       } else if ((b.source_status ?? '') === 'not_applicable') {
         status = 'not_applicable'
         note = b.na_reason ?? 'Not applicable in this period — the insurer was not operating.'
+      } else if ((b.source_status ?? '') === 'not_in_ppt') {
+        // The company's investor presentations / annual reports were swept
+        // page-by-page and do not print this number. Grey, per Neha
+        // (2026-06-11); a statutory filing can still fill the cell later.
+        status = 'not_in_ppt'
+        note = b.na_reason ?? 'Searched the investor presentations — this number is not disclosed there.'
       } else if ((b.source_status ?? '') === 'web_blocked') {
         status = 'web_blocked'
         note = 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'
@@ -997,6 +1003,7 @@ function tally(cells: AuditCell[]): SheetStats {
       case 'source_unavailable': s.sourceUnavailable++; break
       case 'blocked': s.blocked++; break
       case 'not_applicable': s.notApplicable++; break
+      case 'not_in_ppt': s.notApplicable++; break // grey family — searched, not disclosed
       default: break
     }
   }
