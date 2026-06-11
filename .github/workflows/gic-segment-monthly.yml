@@ -6,16 +6,17 @@ name: gic-segment-monthly
 # insurance-data-ingest so an unrelated slow source can never starve the GIC
 # chain past a timeout. ~5-10 minutes when sources respond.
 #
-# Schedule: WEEKLY (every Monday). GIC publishes a month's report around the
-# 3rd week of the FOLLOWING month (e.g. the April-2026 file appeared 19 May,
-# the March-2026 file 18 April), not on a fixed date — so we sweep weekly and
-# rely on the run being a free no-op when nothing new is listed. Worst-case
-# pickup lag: 7 days. Also dispatchable + chained from gicouncil-segment-fetch.
+# Schedule: EVERY 3 DAYS (per Neha, 2026-06-10). GIC publishes a month's
+# report around the 3rd week of the FOLLOWING month (e.g. the April-2026 file
+# appeared 19 May, the March-2026 file 18 April), not on a fixed date — so we
+# sweep frequently and rely on the run being a free no-op when nothing new is
+# listed. Worst-case pickup lag: 3 days. Also dispatchable + chained from
+# gicouncil-segment-fetch.
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 8 * * 1'
+    - cron: '0 8 */3 * *'
 
 permissions:
   contents: write
