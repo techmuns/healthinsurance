@@ -140,12 +140,12 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
   const labelByMetric = distinctPeriods <= 1 && distinctMetrics > 1
   if (labelByMetric) columns = columns.map((c) => ({ ...c, label: c.metric || c.period }))
 
-  // Breakdown sheet: every cell is one base metric split by a sub-entity
-  // (e.g. 'Captable' = shareholding_shares::<holder>). Rows are the holders and
-  // the single column is the base metric ("Shareholding Shares").
-  const subBreakdown = cells.length > 0 && cells.every((c) => (c.metricId ?? '').includes('::')) && new Set(cells.map((c) => (c.metricId ?? '').split('::')[0])).size === 1
-  const baseLabel = subBreakdown ? (cells[0].metricLabel || '').split(' · ')[0] : ''
-  if (subBreakdown && distinctPeriods <= 1) columns = columns.map((c) => ({ ...c, label: baseLabel || c.label, top: c.period }))
+  // Breakdown sheet: every cell is a base metric split by a sub-entity (e.g.
+  // 'Captable' = shareholding_pct::<holder> + shareholding_shares::<holder>).
+  // Rows are the holders; each COLUMN is one base metric ("% Shareholding",
+  // "Shareholding Shares"), so a holder's stake and share count sit side by side.
+  const subBreakdown = cells.length > 0 && cells.every((c) => (c.metricId ?? '').includes('::'))
+  if (subBreakdown && distinctPeriods <= 1) columns = columns.map((c) => ({ ...c, label: (c.metric || '').split(' · ')[0] || c.label, top: c.period }))
 
   const rowMap = new Map<number, AuditCell[]>()
   for (const c of cells) {

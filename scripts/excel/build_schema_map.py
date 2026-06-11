@@ -633,9 +633,19 @@ def build_captable(ws_v, ws_f):
         label = ws_v[f"B{row}"].value
         if not label:
             continue
+        holder = str(label).strip()
+        # Column C = "% shareholding" (the sheet's own =D/$D$19 calculation);
+        # column D = "# shares". Bind both so the audit grid shows the holder's
+        # share count AND the percentage stake beside it.
+        out.append(_binding(
+            ws_v, ws_f, "C", row,
+            entity="niva-bupa", metric=f"shareholding_pct::{holder}",
+            period=period, period_type="point_in_time", unit="ratio",
+            source_key="shareholding", section="Shareholding pattern",
+        ))
         out.append(_binding(
             ws_v, ws_f, "D", row,
-            entity="niva-bupa", metric=f"shareholding_shares::{str(label).strip()}",
+            entity="niva-bupa", metric=f"shareholding_shares::{holder}",
             period=period, period_type="point_in_time", unit="shares",
             source_key="shareholding", section="Shareholding pattern",
         ))

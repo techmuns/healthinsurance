@@ -438,6 +438,8 @@ const METRIC_LABEL: Record<string, string> = {
   pb_ifrs: 'P/B (IFRS)',
   roe_ifrs: 'ROE (IFRS)',
   pb: 'Price / Book',
+  shareholding_shares: 'Shareholding Shares',
+  shareholding_pct: '% Shareholding',
 }
 
 /** Metric id → readable label (curated where it matters, humanized otherwise). */
