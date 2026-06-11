@@ -3,12 +3,57 @@
     "snapshot_id": "analyst-coverage",
     "description": "Dated broker research reports (target price + price at recommendation) for the Analyst coverage sheet. Aggregator-sourced via the muns agent — the sanctioned low-confidence backup for broker targets (no official feed exists). Rows without a public source URL are never written. Missing is never zero.",
     "schema_version": "1.0.0",
-    "dataset": "pending",
+    "dataset": "backup_aggregator",
     "last_updated": "2026-06-11",
     "upstream_sources": [
       "muns_agent_web"
     ],
     "parser_status": "ready"
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "broker": "ICICI Securities",
+      "report_date": "2025-08-11",
+      "aggregator_date": "2025-08-13",
+      "rating": "BUY",
+      "target_price": 92,
+      "price_at_reco": 79.61,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
+      "fetched_at": "2026-06-11T09:35:05.809Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-11-03",
+      "aggregator_date": "2025-11-04",
+      "rating": "BUY",
+      "target_price": 92,
+      "price_at_reco": null,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
+      "fetched_at": "2026-06-11T09:35:05.809Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "ICICI Securities",
+      "report_date": "2025-11-06",
+      "aggregator_date": "2025-11-10",
+      "rating": "BUY",
+      "target_price": 90,
+      "price_at_reco": null,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
+      "fetched_at": "2026-06-11T09:35:05.809Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-01-29",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 92,
+      "price_at_reco": 78.07,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
+      "fetched_at": "2026-06-11T09:35:05.809Z"
+    }
+  ]
 }
