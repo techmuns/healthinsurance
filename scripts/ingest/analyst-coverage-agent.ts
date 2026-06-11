@@ -189,6 +189,10 @@ async function scrapeTrendlyne(companies: string[]): Promise<AggRow[]> {
   try {
     browser = await chromium.launch({ headless: true, proxy })
     const ctx = await browser.newContext({ userAgent: BROWSER_UA, ignoreHTTPSErrors: true })
+    // tsx/esbuild wraps named functions with a __name() helper; inside
+    // page.evaluate that body runs in the browser, where __name is undefined and
+    // throws. Shim it to identity so our DOM-parsing closures run.
+    await ctx.addInitScript(() => { (globalThis as unknown as { __name: (f: unknown) => unknown }).__name = (f: unknown) => f })
     for (const cid of companies) {
       const baseUrl = TRENDLYNE_URLS[cid]
       if (!baseUrl) continue
@@ -199,8 +203,14 @@ async function scrapeTrendlyne(companies: string[]): Promise<AggRow[]> {
         const page = await ctx.newPage()
         let s: PageScrape = { rows: [], tableCount: 0, header: [], firstCells: [] }
         try {
-          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
-          await page.waitForTimeout(4000)
+          try {
+            await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120_000 })
+          } catch {
+            // Proxy rendering can be slow; fall back to resolving on first byte,
+            // then let the waits below give the table time to paint.
+            await page.goto(url, { waitUntil: 'commit', timeout: 120_000 })
+          }
+          await page.waitForTimeout(5000)
           await page.waitForSelector('table tr', { timeout: 8000 }).catch(() => {})
           s = await page.evaluate(() => {
             const norm = (x: string | null) => (x || '').replace(/\s+/g, ' ').trim()
