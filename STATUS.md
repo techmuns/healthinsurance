@@ -1,13 +1,34 @@
 # Project Status — Official Filings → Excel Pipeline
 
-_Last updated: 2026-06-10. Branch: `main`._
+_Last updated: 2026-06-11. Branch: `main`._
 
 This is the handoff/status doc for the official-filings → Excel-fill work. The
 container is ephemeral, so this lives in the repo so the next session can pick up
 without re-deriving state.
 
 ## Where it stands
-- **1,127 fillable cells filled (52.2%). QA passes (no hard violations).**
+- **1,859 fillable cells filled (83.8%). QA passes (no hard violations).**
+- **Channel Mix tab 556/556 filled + automated** (Neha, 2026-06-11): the tab now
+  binds all four blocks (mix %, avg premium/policy, % commission, agents
+  GWP/policies; rows 31/33/35 stay in-sheet formulas). 206 cells fill from the
+  rebuilt **NL-36/NL-40 business-acquisition parser** (`ingest-distribution.ts`,
+  caption-anchored, column-aware: up-to-period premium + policies, dominance-
+  picked column group, Total(A) tie-out gate, committed parse cache) — Care all
+  8 columns official, Niva FY22→9MFY26 official; 350 cells from
+  **Neha's workbook seed** (`channel-mix-seed.json`, rank 8, zeros kept — they
+  are genuine 0% commission figures). Verified: the workbook IS the NL-form
+  premium basis (matches to the 4th decimal on every overlapping cell; the only
+  >0.15pp deltas are Care FY25/9MFY26 cells where the workbook itself holds
+  estimates and the official parse now wins). The old snapshot's 2 wrong rows
+  (policy-count shares mislabelled as premium mix, one mis-dated) were removed.
+  Star rides the seed until its 403-blocked disclosures land. % commission by
+  channel has no NL-form source → seed-only by design. Quarterly cadence in the
+  scheduled ingest keeps future columns filling hands-off. Runbook:
+  EXCEL-INGESTION.md "Channel Mix sheet".
+- **QA gate unblocked again** (2026-06-11): the 6 url-less derived group-GWP
+  overlay entries (manipalcigna/aditya-birla FY23–FY25, added 2026-06-10) now
+  cite the GI Council segment workbook of their retail leg — these were failing
+  every scheduled run's QA step.
 - **FY26 GWP tab wired to the GIC quarter-end editions** (2026-06-10):
   `gic-health-quarterly.json` holds the printed Jun/Sep/Dec cumulatives
   (Q1/H1/9M, current + restated prior-year) per insurer; FY columns come from

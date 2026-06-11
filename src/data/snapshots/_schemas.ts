@@ -227,9 +227,13 @@ export interface SahiPeerRow {
 
 export interface DistributionMixRow {
   company_id: string
-  period_type: 'annual' | 'quarterly'
+  /** FY rows are 'annual'; intra-year rows (Q1/H1/9M, all up-to-period) are 'cumulative'. */
+  period_type: 'annual' | 'quarterly' | 'cumulative'
   period: string
   fiscal_year: string
+  // Premium shares (%) of the NL-36/NL-40 Total (A), up-to-period column.
+  // Direct includes officers/employees + company-website online + direct-others
+  // (the workbook basis), so online_share stays null rather than double-count.
   banca_share: number | null
   broker_share: number | null
   agent_share: number | null
@@ -237,6 +241,31 @@ export interface DistributionMixRow {
   direct_share: number | null
   online_share: number | null
   others_share: number | null
+  total_share?: number | null
+  // Per-channel premium (INR cr) and policy counts, same column.
+  banca_premium_cr?: number | null
+  broker_premium_cr?: number | null
+  agent_premium_cr?: number | null
+  corporate_agent_premium_cr?: number | null
+  direct_premium_cr?: number | null
+  others_premium_cr?: number | null
+  total_premium_cr?: number | null
+  banca_policies?: number | null
+  broker_policies?: number | null
+  agent_policies?: number | null
+  corporate_agent_policies?: number | null
+  direct_policies?: number | null
+  others_policies?: number | null
+  total_policies?: number | null
+  // Avg premium per policy (INR '000) = premium ÷ policies, per channel.
+  banca_avg_premium?: number | null
+  broker_avg_premium?: number | null
+  agent_avg_premium?: number | null
+  corporate_agent_avg_premium?: number | null
+  direct_avg_premium?: number | null
+  others_avg_premium?: number | null
+  total_avg_premium?: number | null
+  basis_note?: string | null
   largest_channel: string | null
   channel_concentration_score: number | null
   agency_dependence_score: number | null

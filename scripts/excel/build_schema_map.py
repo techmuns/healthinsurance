@@ -124,7 +124,7 @@ SOURCES = {
         "note": "Analyst targets are inherently aggregator-sourced; tagged low-confidence per official-first policy.",
     },
     "distribution": {
-        "primary_source": "Company annual reports + IRDAI NL forms (commission)",
+        "primary_source": "IRDAI NL-36/NL-40 business-acquisition forms (channel premium & policies, public disclosures)",
         "primary_url": "https://irdai.gov.in/public-disclosures",
         "adapter": "ingest-distribution",
         "access": "public",
@@ -263,6 +263,19 @@ CHANNEL_SECTIONS = {  # header_row -> (metric_prefix, unit, data_rows->channel)
 CHANNEL_CHANNEL_ROWS = {  # offset from header row -> channel label
     1: "Banca", 2: "Brokers", 3: "Individual agents",
     4: "Corporate Agents - Others", 5: "Direct Business", 6: "Others", 7: "Total",
+}
+# The agent-productivity block (rows 30-35). Rows 31/33/35 are in-sheet formulas
+# (active agents @36%, GWP/agent, policies/active agent) and classify as
+# `formula` automatically; the three data rows are fillable inputs. Agents GWP
+# and agents policies come straight off the NL-36/NL-40 business-acquisition
+# form, so they ride the same automated pipeline as the mix block.
+CHANNEL_AGENT_ROWS = {  # row -> (metric, unit)
+    30: ("individual_agents_count", "count"),
+    31: ("active_agents_est", "count"),
+    32: ("individual_agents_gwp", "INR_cr"),
+    33: ("gwp_per_individual_agent", "INR_thousand"),
+    34: ("individual_agents_policies", "thousand"),
+    35: ("policies_per_active_agent", "count"),
 }
 
 
@@ -545,6 +558,15 @@ def build_channel_mix(ws_v, ws_f):
                         period_type=ptype, unit=unit, source_key="distribution",
                         section="Channel mix", conf="medium",
                     ))
+        for row, (metric, unit) in CHANNEL_AGENT_ROWS.items():
+            for col, period in period_cols.items():
+                ptype = "annual" if period.startswith("FY") else "quarterly_cumulative"
+                out.append(_binding(
+                    ws_v, ws_f, col, row,
+                    entity=entity, metric=metric, period=period,
+                    period_type=ptype, unit=unit, source_key="distribution",
+                    section="Agent productivity", conf="medium",
+                ))
     return [b for b in out if b["cell_kind"] != "empty"]
 
 

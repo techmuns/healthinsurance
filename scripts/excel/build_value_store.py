@@ -256,31 +256,39 @@ def load(name):
     return json.loads(p.read_text()).get("data", [])
 
 
-# Industry Growth history seed (Neha's workbook, 2026-06-10): rank 8, so any
-# official value silently supersedes it and a seed can never raise a conflict
-# (the conflict check only considers rank ≤ 3 candidates). Built by
-# scripts/excel/build_industry_growth_seed.py from the committed workbook.
-SEED_FILE = REPO / "data" / "source-map" / "industry-growth-seed.json"
+# Workbook history seeds (Neha's workbooks): rank 8, so any official value
+# silently supersedes them and a seed can never raise a conflict (the conflict
+# check only considers rank ≤ 3 candidates). Built by
+# scripts/excel/build_industry_growth_seed.py (Industry Growth, 2026-06-10)
+# and scripts/excel/build_channel_mix_seed.py (Channel Mix, 2026-06-11).
+SEED_FILES = [
+    REPO / "data" / "source-map" / "industry-growth-seed.json",
+    REPO / "data" / "source-map" / "channel-mix-seed.json",
+]
 
 
 def collect_workbook_seed():
-    try:
-        values = json.loads(SEED_FILE.read_text()).get("values", {})
-    except Exception:
-        return
-    for key, e in values.items():
-        if not isinstance(e, dict) or e.get("value") is None:
+    for seed_file in SEED_FILES:
+        try:
+            values = json.loads(seed_file.read_text()).get("values", {})
+        except Exception:
             continue
-        entity, metric, period = key.split("::")
-        prov = {
-            "source_name": e.get("source_name"), "source_url": e.get("source_url"),
-            "source_file": e.get("source_file"), "fetched_at": None,
-            "confidence": "medium",
-        }
-        add_candidate(entity, metric, period, e["value"], e["value"],
-                      "identity (value used as-is)", e.get("unit") or "INR_cr", prov,
-                      RANK_SEED, "user_workbook_seed", "seed",
-                      {"basis_note": e.get("note")})
+        for key, e in values.items():
+            if not isinstance(e, dict) or e.get("value") is None:
+                continue
+            # Channel metrics embed '::' (channel_gwp_mix::Banca) — entity is
+            # the first segment, period the last, metric everything between.
+            entity, rest = key.split("::", 1)
+            metric, period = rest.rsplit("::", 1)
+            prov = {
+                "source_name": e.get("source_name"), "source_url": e.get("source_url"),
+                "source_file": e.get("source_file"), "fetched_at": None,
+                "confidence": "medium",
+            }
+            add_candidate(entity, metric, period, e["value"], e["value"],
+                          "identity (value used as-is)", e.get("unit") or "INR_cr", prov,
+                          RANK_SEED, "user_workbook_seed", "seed",
+                          {"basis_note": e.get("note")})
 
 
 ANNUAL_MAP = [
@@ -336,11 +344,25 @@ def gic_gwp_candidates(r, period, ent, grp, prov):
     if grp == "aggregate" and ent == "INDUSTRY":
         snap_candidate(GIC_GWP_TOTAL_ENTITY, "total_health_gwp", period, r.get("health_total"), "identity", "INR_cr", prov)
         snap_candidate(GIC_GWP_TOTAL_ENTITY, "retail_health_gwp", period, r.get("health_retail"), "identity", "INR_cr", prov)
+# Channel-mix snapshot (IRDAI NL-36/NL-40 business-acquisition parse) → the
+# Channel Mix tab. Shares arrive as percentages (fractions in the cell), avg
+# premium as INR '000, agents GWP as INR cr, agents policies as a count
+# (cell shows thousands).
 CHANNEL_MAP = [
     ("banca_share", "channel_gwp_mix::Banca"), ("broker_share", "channel_gwp_mix::Brokers"),
     ("agent_share", "channel_gwp_mix::Individual agents"),
     ("corporate_agent_share", "channel_gwp_mix::Corporate Agents - Others"),
     ("direct_share", "channel_gwp_mix::Direct Business"), ("others_share", "channel_gwp_mix::Others"),
+    ("total_share", "channel_gwp_mix::Total"),
+]
+CHANNEL_AVG_MAP = [
+    ("banca_avg_premium", "avg_premium_per_policy::Banca"),
+    ("broker_avg_premium", "avg_premium_per_policy::Brokers"),
+    ("agent_avg_premium", "avg_premium_per_policy::Individual agents"),
+    ("corporate_agent_avg_premium", "avg_premium_per_policy::Corporate Agents - Others"),
+    ("direct_avg_premium", "avg_premium_per_policy::Direct Business"),
+    ("others_avg_premium", "avg_premium_per_policy::Others"),
+    ("total_avg_premium", "avg_premium_per_policy::Total"),
 ]
 # Company-filings ratio metric -> schema target (statutory IGAAP). Premiums/PAT
 # intentionally excluded here (definition/basis ambiguity).
@@ -457,11 +479,39 @@ def collect_existing():
         snap_candidate(cid, "market_cap", "as_on_run_date", r.get("market_cap"), "identity", "INR_cr", prov)
         snap_candidate(cid, "enterprise_value", "as_on_run_date", r.get("enterprise_value"), "identity", "INR_cr", prov)
     for r in load("distribution-channel-mix"):
-        prov, period = r.get("provenance", {}), (r.get("fiscal_year") or r.get("period"))
+        # Key on the row's own period label (9MFY26 / H1FY25 / FY24 …) — an
+        # intra-year cumulative row must never masquerade as the fiscal year.
+        prov, period = dict(r.get("provenance", {})), (r.get("period") or r.get("fiscal_year"))
         if not period:
             continue
+        # The full basis statement lives on the snapshot row + the source name
+        # ("channel premium, up-to-period column"); no per-cell basis_note so an
+        # officially-parsed value reads as a clean fetch in the audit.
+        basis = None
         for field, metric in CHANNEL_MAP:
-            snap_candidate(r["company_id"], metric, period, r.get(field), "pct_to_fraction", "ratio", prov, status="partial")
+            v = r.get(field)
+            if v is None:
+                continue
+            add_candidate(r["company_id"], metric, period, v, pct_to_fraction(v),
+                          "percent -> fraction (value / 100)", "ratio", prov,
+                          RANK_EXISTING, "official_snapshot", "available", basis)
+        for field, metric in CHANNEL_AVG_MAP:
+            v = r.get(field)
+            if v is None:
+                continue
+            add_candidate(r["company_id"], metric, period, v, v,
+                          "identity (value used as-is)", "INR_thousand", prov,
+                          RANK_EXISTING, "official_snapshot", "available", basis)
+        if r.get("agent_premium_cr") is not None:
+            add_candidate(r["company_id"], "individual_agents_gwp", period,
+                          r["agent_premium_cr"], r["agent_premium_cr"],
+                          "identity (value used as-is)", "INR_cr", prov,
+                          RANK_EXISTING, "official_snapshot", "available", basis)
+        if r.get("agent_policies") is not None:
+            add_candidate(r["company_id"], "individual_agents_policies", period,
+                          r["agent_policies"], round(r["agent_policies"] / 1000.0, 3),
+                          "count -> thousands (value / 1000)", "thousand", prov,
+                          RANK_EXISTING, "official_snapshot", "available", basis)
 
 
 def collect_company_filings():

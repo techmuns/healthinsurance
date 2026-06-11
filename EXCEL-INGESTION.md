@@ -145,6 +145,55 @@ python3 scripts/excel/build_value_store.py
 python3 scripts/excel/build_audit_index.py
 ```
 
+### The Channel Mix sheet (IRDAI NL-36/NL-40 business acquisition) — quarterly refresh
+
+The Channel Mix tab (channel GWP mix %, avg premium per policy by channel,
+% commission by channel, agents GWP + agents policies) is fed by **two layers**:
+
+1. **Official (rank 3, wins):** `scripts/ingest/ingest-distribution.ts` scans
+   every public-disclosure PDF staged under `data/raw/companies/<id>/` for the
+   **"Business Acquisition Through Different Channels"** form (NL-36 today,
+   NL-40 pre-2022 — it anchors on the caption, not the form number) and reads
+   the **up-to-period premium + policy columns** — the same basis as Neha's
+   workbook (verified to the 4th decimal on Care FY19/FY24 and Niva FY22–FY25).
+   The column-group is identified by a dominance test (cumulative ≥ its own
+   quarter) so the era-dependent print order can't mislead it; bucket sums must
+   tie to the printed Total (A) and the implied avg premium must be sane, else
+   the form is skipped with a warning — never guessed. Premium shares fill the
+   mix rows, premium ÷ policies fills the avg-premium rows, and the agents
+   premium/policy pair fills the productivity block. Periods are the template's
+   cumulative labels (`Q1FYxx`/`H1FYxx`/`9MFYxx`/`FYxx`). A committed parse
+   cache (`data/raw/distribution/nl36-parse-cache.json`) makes re-runs
+   incremental — bump `PARSER_VERSION` after a parser change.
+2. **Workbook seed (rank 8, superseded by any official value):** Neha's
+   Channel Mix sheet (`data/uploads/channel-mix-seed-workbook.xlsx`,
+   provided 2026-06-11) seeds the history via
+   `scripts/excel/build_channel_mix_seed.py` →
+   `data/source-map/channel-mix-seed.json`. Unlike the Industry Growth seed,
+   printed **zeros are kept** (0% commission on direct business is a real
+   figure, not a missing era). % commission by channel has **no NL-form
+   source** (the NL-6 commission schedule is by line of business, not channel),
+   so those cells ride the seed until a per-channel commission source is
+   chosen.
+
+**Hands-off forward path:** the fetcher runs at `quarterly` cadence inside the
+scheduled `insurance-data-ingest.yml` (Feb/May/Aug/Nov crons), scanning
+whatever disclosures the company fetchers have staged by then; each new
+quarter's NL-36 supersedes the seed for that column automatically and the
+ingest rebuilds the value store + audit index, passes QA and commits. Star's
+disclosures are 403-blocked to the runner today, so Star rides the seed until
+its PDFs land (the `fetch-company-pdfs` ScraperAPI path or a manual drop —
+the parser handles its layout the moment the files exist).
+
+Manual run after dropping new disclosure PDFs into `data/raw/companies/<id>/`:
+
+```bash
+npm run ingest:distribution
+python3 scripts/excel/build_value_store.py
+python3 scripts/excel/fill_template.py && python3 scripts/excel/qa_checks.py
+python3 scripts/excel/build_audit_index.py
+```
+
 ---
 
 ## How to add a new company or metric
