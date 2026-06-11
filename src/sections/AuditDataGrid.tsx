@@ -114,7 +114,10 @@ function CellDrawer({ cell, onClose }: { cell: GridCell; onClose: () => void }) 
             <Row label="Last fetched">{src.fetchedAt ? src.fetchedAt.slice(0, 10) : '—'}</Row>
           </>
         )}
-        {cell.notes && <Row label="Notes">{cell.notes}</Row>}
+        {/* A note surfaces only to explain an absent value. Internal lineage notes
+            on filled cells (seeds, supersession, policy picks) are bookkeeping,
+            not viewer content (Neha, 2026-06-11). */}
+        {cell.value == null && cell.notes && <Row label="Why it's blank">{cell.notes}</Row>}
         {cell.competing.length > 0 && (
           <Row label="Conflicts">
             <ul className="space-y-0.5">

@@ -41,6 +41,7 @@ Project guidance for Claude Code sessions on this repository.
 - **Missing ≠ zero** — render an honest "not available" marker, never a fake 0.
 - **Honest period + basis labels** (FY25 vs Q3 FY25 vs TTM; premium ≠ profit).
 - **Prefer the investor presentation (PPT) on any source mismatch** — for every company. When sources disagree on a value, the investor-presentation / earnings-deck figure is authoritative and becomes the shown value; the disagreeing source is kept for the record but does not flag the cell. This is wired into the audit grid's conflict policy (`classifyCell` in `src/lib/auditGrid.ts`, `isInvestorPresentation`). It does **not** override basis discipline — a number on a different accounting basis (e.g. IND AS vs IGAAP, 1/n vs ex-1/n) is not a "mismatch" and must not be cross-filled. (Standing instruction, Neha.)
+- **Internal notes are not viewer content.** Data-lineage bookkeeping (`basis_note` seeds, "superseded by…", conflict/policy-pick explanations) must never surface in viewer-facing UI — cell click-popups included. A note is shown only when it explains why a value is **absent** ("why it's blank / missing"). The lineage stays in the data files and audit pipeline for the record. (Standing instruction, Neha, 2026-06-11.)
 - Respect **protected charts** and **default states** (see below) — announce before changing.
 
 ## Protected charts

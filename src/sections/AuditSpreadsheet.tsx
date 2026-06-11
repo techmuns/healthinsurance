@@ -292,7 +292,8 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
           </DetailField>
         )}
 
-        {fetched && cell.note && <DetailField label="Note">{cell.note}</DetailField>}
+        {/* Internal lineage notes (seeds, supersession, basis bookkeeping) never
+            surface on fetched cells — viewer-facing panel (Neha, 2026-06-11). */}
 
         {cell.formula && (
           <DetailField label="Excel formula">
