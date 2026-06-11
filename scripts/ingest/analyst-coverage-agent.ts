@@ -56,16 +56,19 @@ async function tuplesFromSchema(): Promise<Tuple[]> {
 }
 
 function buildPayload(tuples: Tuple[]) {
-  const lines = tuples
-    .map((t) => `${COMPANY_NAMES[t.company_id] ?? t.company_id} | ${t.broker} | ${t.report_date}`)
-    .join('\n')
+  const companies = [...new Set(tuples.map((t) => t.company_id))]
+  const tasks = companies.map((cid) => {
+    const name = COMPANY_NAMES[cid] ?? cid
+    const ticker = name.match(/NSE: (\w+)/)?.[1] ?? cid
+    return (
+      `Open the public broker research-reports listing for ${name} — Trendlyne's "Research Reports" page for the stock (trendlyne.com), or Moneycontrol's broker-research page for it. Return EVERY broker report row in the table (all pages you can see), one pipe-delimited line each, exactly these columns:\n\n` +
+      `${ticker} | broker name | report date YYYY-MM-DD | rating | target_price | price_at_reco | source_url\n\n` +
+      'target_price = the broker\u2019s target in \u20b9, number only. price_at_reco = the share price at the recommendation date (Trendlyne calls it "Price at reco"), number only. source_url = the public page listing the report. If a number is not shown for a row, leave that field blank \u2014 never 0, never an estimate. No other text.'
+    )
+  })
   return {
     user_index: 124,
-    tasks: [
-      'These are dated Indian broker research reports on listed insurers. For EACH line (company | broker | report date), find THAT broker report (broker research note, Trendlyne / Moneycontrol / TradingView / broker PDF are all fine — public pages only) and return its TARGET PRICE (₹) and the SHARE PRICE AT the recommendation date (₹), plus the rating word (Buy/Add/Hold/etc.).\n\nReports to resolve:\n' +
-        lines +
-        '\n\nReturn ONE pipe-delimited row per input line, exactly these columns:\n\ncompany | broker | report_date | rating | target_price | price_at_reco | source_url\n\nRules:\ncompany = the NSE ticker I gave (STARHEALTH / NIVABUPA / ICICIGI / GODIGIT).\nreport_date = the date I gave, YYYY-MM-DD.\ntarget_price, price_at_reco = numbers in ₹, no commas, no symbol. price_at_reco = the market price on/around the report date (the price the broker quotes as CMP in that report, when stated).\nIf you cannot find that specific dated report, leave target_price and price_at_reco BLANK for that row — never 0, never another date’s report, never an estimate.\nsource_url = the exact public page the numbers come from. A row without a source_url is useless.\nNo other text.',
-    ],
+    tasks,
     query_context: {
       TICKER_SYMBOL: [], FROM_DATE: '2024-01-01', TO_DATE: new Date().toISOString().slice(0, 10),
       ANNOUNCEMENT_FORM_TYPE: 'all', DOCUMENT_IDS: [], CATEGORIES: [], WEB_SEARCH_ENABLED: true,
@@ -81,34 +84,60 @@ const TICKER_TO_ID: Record<string, string> = {
   STARHEALTH: 'star-health', NIVABUPA: 'niva-bupa', ICICIGI: 'icici-lombard', GODIGIT: 'godigit',
 }
 
-function parseRows(text: string, tuples: Tuple[]) {
-  const valid = new Set(tuples.map((t) => `${t.company_id}|${t.broker.toLowerCase()}|${t.report_date}`))
-  const out: Array<Record<string, string | number | null>> = []
+interface AggRow { company_id: string; broker: string; date: string; rating: string | null; target: number | null; atReco: number | null; url: string }
+
+function parseAggregatorRows(text: string): AggRow[] {
+  const out: AggRow[] = []
   for (const line of text.split(/\r?\n/)) {
     const cells = line.split('|').map((c) => c.trim())
     if (cells.length < 7) continue
     const ticker = cells[0].toUpperCase().replace(/[^A-Z]/g, '')
     const company_id = TICKER_TO_ID[ticker]
     if (!company_id) continue
-    const [, broker, report_date, rating, target, atReco, source_url] = cells
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(report_date)) continue
-    if (!/^https?:\/\//.test(source_url ?? '')) continue
-    // Only accept rows the template actually asked for (broker matched loosely).
-    const match = [...valid].find((k) => k.startsWith(`${company_id}|`) && k.endsWith(`|${report_date}`)
-      && (k.split('|')[1].includes(broker.toLowerCase().slice(0, 6)) || broker.toLowerCase().includes(k.split('|')[1].slice(0, 6))))
-    if (!match) continue
-    const num = (s: string) => {
-      const n = parseFloat(String(s).replace(/[,₹\s]/g, ''))
+    const date = cells[2]
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue
+    if (!/^https?:\/\//.test(cells[6] ?? '')) continue
+    const num = (v: string) => {
+      const n = parseFloat(String(v).replace(/[,\u20b9\s]/g, ''))
       return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null
     }
+    out.push({ company_id, broker: cells[1], date, rating: cells[3] || null, target: num(cells[4]), atReco: num(cells[5]), url: cells[6] })
+  }
+  return out
+}
+
+const DAY = 86_400_000
+
+function brokerMatches(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '')
+  const na = norm(a)
+  const nb = norm(b)
+  return na.includes(nb.slice(0, 8)) || nb.includes(na.slice(0, 8))
+}
+
+/** Align aggregator rows to the template's dated tuples: same company, fuzzy
+ *  broker, nearest date within ±6 days. The cell keeps the TEMPLATE's date;
+ *  the aggregator's own date is recorded when it differs. */
+function alignToTuples(rows: AggRow[], tuples: Tuple[]) {
+  const out: Array<Record<string, string | number | null>> = []
+  for (const t of tuples) {
+    const want = new Date(t.report_date).getTime()
+    const candidates = rows
+      .filter((r) => r.company_id === t.company_id && brokerMatches(r.broker, t.broker)
+        && Math.abs(new Date(r.date).getTime() - want) <= 6 * DAY
+        && (r.target != null || r.atReco != null))
+      .sort((a, b) => Math.abs(new Date(a.date).getTime() - want) - Math.abs(new Date(b.date).getTime() - want))
+    const hit = candidates[0]
+    if (!hit) continue
     out.push({
-      company_id,
-      broker: match.split('|') [1] === broker.toLowerCase() ? broker : tuples.find((t) => `${t.company_id}|${t.broker.toLowerCase()}|${t.report_date}` === match)!.broker,
-      report_date,
-      rating: rating || null,
-      target_price: num(target),
-      price_at_reco: num(atReco),
-      source_url,
+      company_id: t.company_id,
+      broker: t.broker,
+      report_date: t.report_date,
+      aggregator_date: hit.date === t.report_date ? null : hit.date,
+      rating: hit.rating,
+      target_price: hit.target,
+      price_at_reco: hit.atReco,
+      source_url: hit.url,
     })
   }
   return out
@@ -144,7 +173,7 @@ async function main(): Promise<number> {
   await writeFile(resolve(OUT_DIR, `analyst-coverage-${stamp}.json`), raw, 'utf8')
 
   const ans = raw.match(/<ans>([\s\S]*?)<\/ans>/)?.[1] ?? raw
-  const rows = parseRows(ans, tuples)
+  const rows = alignToTuples(parseAggregatorRows(ans), tuples)
   console.log(`Parsed ${rows.length} valid dated rows (of ${tuples.length} asked).`)
 
   // Merge into the snapshot: a row may improve over time; keyed company+broker+date.
@@ -158,7 +187,7 @@ async function main(): Promise<number> {
     const prev = byKey.get(key)
     // Never overwrite a populated number with a blank one.
     if (prev) {
-      for (const f of ['rating', 'target_price', 'price_at_reco', 'source_url'] as const) {
+      for (const f of ['rating', 'target_price', 'price_at_reco', 'source_url', 'aggregator_date'] as const) {
         if (r[f] != null) prev[f] = r[f]
       }
       prev.fetched_at = new Date().toISOString()
