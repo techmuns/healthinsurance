@@ -14,14 +14,168 @@
   "data": [
     {
       "company_id": "icici-lombard",
+      "broker": "Emkay",
+      "report_date": "2024-10-20",
+      "aggregator_date": null,
+      "rating": "Sell",
+      "target_price": 1900,
+      "price_at_reco": 2020.95,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "ICICI Direct",
+      "report_date": "2024-10-23",
+      "aggregator_date": null,
+      "rating": "Hold",
+      "target_price": 2100,
+      "price_at_reco": 1958.95,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Sharekhan",
+      "report_date": "2025-01-17",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2550,
+      "price_at_reco": 1948.75,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-01-17",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2300,
+      "price_at_reco": 1948.75,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Emkay",
+      "report_date": "2025-01-19",
+      "aggregator_date": null,
+      "rating": "Sell",
+      "target_price": 2000,
+      "price_at_reco": 1948.75,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2025-01-31",
+      "aggregator_date": null,
+      "rating": "Hold",
+      "target_price": 2030,
+      "price_at_reco": 1858.5,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-04-15",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2200,
+      "price_at_reco": 1822.6,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Sharekhan",
+      "report_date": "2025-04-16",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2300,
+      "price_at_reco": 1811.8,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-07-15",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2400,
+      "price_at_reco": 2002.7,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2025-07-22",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2244,
+      "price_at_reco": 1962.3,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-10-14",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2300,
+      "price_at_reco": 1854.8,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "ICICI Securities",
+      "report_date": "2025-10-15",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2250,
+      "price_at_reco": 2020.3,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-01-13",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2260,
+      "price_at_reco": 1885.5,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
       "broker": "ICICI Securities",
       "report_date": "2026-01-14",
       "aggregator_date": "2026-01-19",
       "rating": "Buy",
       "target_price": 2250,
-      "price_at_reco": 1858.6,
-      "source_url": "https://www.moneycontrol.com/news/business/stocks/buy-icici-lombard-general-insurance-company-icici-securities-1-13910570.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 1857.7,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2026-01-28",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 2080,
+      "price_at_reco": 1822.2,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "icici-lombard",
@@ -30,9 +184,9 @@
       "aggregator_date": null,
       "rating": "Buy",
       "target_price": 2250,
-      "price_at_reco": 1850.05,
-      "source_url": "https://www.moneycontrol.com/news/business/stocks/buy-icici-lombard-general-insurance-company-icici-securities-3-13890684.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 1850.5,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "icici-lombard",
@@ -41,9 +195,9 @@
       "aggregator_date": "2026-04-16",
       "rating": "Buy",
       "target_price": 2230,
-      "price_at_reco": 1859.25,
-      "source_url": "https://www.moneycontrol.com/news/business/stocks/buy-icici-lombard-target-of-rs-2230-motilal-oswal-13890684.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 1858,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "icici-lombard",
@@ -52,9 +206,9 @@
       "aggregator_date": null,
       "rating": "Buy",
       "target_price": 2250,
-      "price_at_reco": 1873.55,
-      "source_url": "https://www.moneycontrol.com/news/business/stocks/buy-icici-lombard-general-insurance-company-target-of-rs-2250-icici-securities-4-13893828.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 1891.6,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "icici-lombard",
@@ -63,9 +217,20 @@
       "aggregator_date": "2026-05-06",
       "rating": "Buy",
       "target_price": 2230,
-      "price_at_reco": 1777.2,
-      "source_url": "https://www.moneycontrol.com/news/business/buy-icici-lombard-target-of-rs-2230-motilal-oswal-2-13910431.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 1776.9,
+      "source_url": "https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "ICICI Securities",
+      "report_date": "2025-04-15",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 90,
+      "price_at_reco": 74.57,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "niva-bupa",
@@ -74,53 +239,174 @@
       "aggregator_date": null,
       "rating": "Buy",
       "target_price": 100,
-      "price_at_reco": null,
-      "source_url": "https://trendlyne.com/research-reports/post/NIVABUPA/2768807/niva-bupa-health-insurance-company-ltd/",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 77.62,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-07-31",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 101,
+      "price_at_reco": 87.55,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-08-07",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 101,
+      "price_at_reco": 80.37,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "niva-bupa",
       "broker": "ICICI Securities",
       "report_date": "2025-08-11",
       "aggregator_date": "2025-08-13",
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 92,
-      "price_at_reco": 79.61,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
-      "fetched_at": "2026-06-11T09:35:05.809Z"
+      "price_at_reco": 79.65,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "niva-bupa",
       "broker": "Motilal Oswal",
       "report_date": "2025-11-03",
       "aggregator_date": "2025-11-04",
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 92,
-      "price_at_reco": null,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
-      "fetched_at": "2026-06-11T09:35:05.809Z"
+      "price_at_reco": 74.06,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "niva-bupa",
       "broker": "ICICI Securities",
       "report_date": "2025-11-06",
       "aggregator_date": "2025-11-10",
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 90,
-      "price_at_reco": null,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
-      "fetched_at": "2026-06-11T09:35:05.809Z"
+      "price_at_reco": 75.43,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "niva-bupa",
       "broker": "Motilal Oswal",
       "report_date": "2026-01-29",
       "aggregator_date": null,
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 92,
-      "price_at_reco": 78.07,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
-      "fetched_at": "2026-06-11T09:35:05.809Z"
+      "price_at_reco": 78.08,
+      "source_url": "https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Emkay",
+      "report_date": "2024-05-01",
+      "aggregator_date": null,
+      "rating": "Sell",
+      "target_price": 525,
+      "price_at_reco": 571.6,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2024-06-28",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 730,
+      "price_at_reco": 558.65,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2024-09-04",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 738,
+      "price_at_reco": 630.25,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "ICICI Direct",
+      "report_date": "2024-11-11",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 600,
+      "price_at_reco": 479.2,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Emkay",
+      "report_date": "2025-01-30",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 525,
+      "price_at_reco": 434.95,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2025-02-13",
+      "aggregator_date": null,
+      "rating": "Hold",
+      "target_price": 430,
+      "price_at_reco": 397.15,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2025-05-14",
+      "aggregator_date": null,
+      "rating": "Hold",
+      "target_price": 421,
+      "price_at_reco": 403.6,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-07-30",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 520,
+      "price_at_reco": 447.8,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-08-25",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 520,
+      "price_at_reco": 443.5,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
@@ -129,64 +415,86 @@
       "aggregator_date": null,
       "rating": "Buy",
       "target_price": 512,
-      "price_at_reco": null,
-      "source_url": "https://www.moneycontrol.com/news/business/stocks/buy-star-health-and-allied-insurance-target-of-rs-512-icici-securities-13515280.html",
-      "fetched_at": "2026-06-11T11:32:26.043Z"
+      "price_at_reco": 452.05,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
       "broker": "Motilal Oswal",
       "report_date": "2025-10-29",
       "aggregator_date": "2025-10-30",
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 570,
-      "price_at_reco": null,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
-      "fetched_at": "2026-06-11T11:23:04.511Z"
+      "price_at_reco": 480.45,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
       "broker": "ICICI Securities",
       "report_date": "2025-11-06",
       "aggregator_date": "2025-11-05",
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 570,
-      "price_at_reco": null,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
-      "fetched_at": "2026-06-11T11:23:04.511Z"
+      "price_at_reco": 486.7,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Geojit BNP Paribas",
+      "report_date": "2026-01-06",
+      "aggregator_date": null,
+      "rating": "Accumulate",
+      "target_price": 510,
+      "price_at_reco": 451.85,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-01-29",
+      "aggregator_date": null,
+      "rating": "Buy",
+      "target_price": 560,
+      "price_at_reco": 450.5,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
       "broker": "Emkay",
       "report_date": "2026-04-29",
       "aggregator_date": null,
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 650,
-      "price_at_reco": 533.4,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
-      "fetched_at": "2026-06-11T11:23:04.511Z"
+      "price_at_reco": 533.25,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
       "broker": "Motilal Oswal",
       "report_date": "2026-04-29",
       "aggregator_date": null,
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 640,
-      "price_at_reco": 533.4,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
-      "fetched_at": "2026-06-11T11:23:04.511Z"
+      "price_at_reco": 533.25,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     },
     {
       "company_id": "star-health",
       "broker": "ICICI Securities Limited",
       "report_date": "2026-05-03",
       "aggregator_date": null,
-      "rating": "BUY",
+      "rating": "Buy",
       "target_price": 644,
-      "price_at_reco": 525.25,
-      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
-      "fetched_at": "2026-06-11T11:23:04.511Z"
+      "price_at_reco": 525.65,
+      "source_url": "https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/",
+      "fetched_at": "2026-06-11T14:13:47.963Z"
     }
   ]
 }
