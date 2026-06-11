@@ -36,6 +36,16 @@ const COMPANY_NAMES: Record<string, string> = {
   godigit: 'Go Digit General Insurance (NSE: GODIGIT)',
 }
 
+// Exact Trendlyne "Research Reports" pages (full multi-year broker history,
+// paginated ?page=2,3,...). Handed to the agent directly so it opens these
+// instead of searching and settling for Moneycontrol's recent-only list.
+const TRENDLYNE_URLS: Record<string, string> = {
+  'niva-bupa': 'https://trendlyne.com/research-reports/stock/2768807/NIVABUPA/niva-bupa-health-insurance-company-ltd/',
+  'star-health': 'https://trendlyne.com/research-reports/stock/746520/STARHEALTH/star-health-and-allied-insurance-company-ltd/',
+  'icici-lombard': 'https://trendlyne.com/research-reports/stock/61147/ICICIGI/icici-lombard-general-insurance-company-ltd/',
+  godigit: 'https://trendlyne.com/research-reports/stock/2266638/GODIGIT/go-digit-general-insurance-ltd/',
+}
+
 interface Tuple { company_id: string; broker: string; report_date: string }
 
 async function tuplesFromSchema(): Promise<Tuple[]> {
@@ -61,8 +71,9 @@ async function tuplesFromSchema(): Promise<Tuple[]> {
 function buildPayload(cid: string) {
   const name = COMPANY_NAMES[cid] ?? cid
   const ticker = name.match(/NSE: (\w+)/)?.[1] ?? cid
+  const url = TRENDLYNE_URLS[cid] ?? ''
   const task = (
-      `Go to Trendlyne's Research Reports page for ${name} (search trendlyne.com for the stock, open its "Research Reports" / "Broker Research" tab) - that page lists the FULL multi-year history of broker reports, far more than Moneycontrol. Scroll and page through to load EVERY row from 2024-01-01 to today, then return them ALL, one pipe-delimited line each, exactly these columns:\n\n` +
+      `Open this exact Trendlyne Research Reports page: ${url} - then its older pages by appending ?page=2, ?page=3 and so on until no more rows appear. It is the FULL multi-year broker history (far more than Moneycontrol). Return EVERY report row from 2024-01-01 to today, one pipe-delimited line each, exactly these columns:\n\n` +
       `${ticker} | broker name | report date YYYY-MM-DD | rating | target_price | price_at_reco | source_url\n\n` +
       'Use Moneycontrol\'s broker-research page ONLY if Trendlyne is unreachable. target_price = the broker target price in rupees, number only. price_at_reco = the share price on the recommendation date (Trendlyne labels it "Price at reco"), number only. source_url = the public page that lists the report. Return as many historical rows as the page shows (aim for 15 or more per company where they exist). If a number is not shown for a row, leave that field blank - never 0, never an estimate. Output ONLY the pipe-delimited rows, nothing else.'
   )
@@ -76,7 +87,7 @@ function buildPayload(cid: string) {
       GET_ANNOUNCEMENTS_ENABLED: false, chatHistory: [], mode: 'fast',
     },
     autoAddUpcoming: false,
-    urls: [],
+    urls: url ? [url] : [],
   }
 }
 
