@@ -3,10 +3,10 @@
     "snapshot_id": "sectoral-news-snapshot",
     "description": "Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-10",
-    "last_successful_run": "2026-06-10T20:12:52.876Z",
+    "last_updated": "2026-06-11",
+    "last_successful_run": "2026-06-11T10:26:37.552Z",
     "seed_count": 31,
-    "agent_count": 11,
+    "agent_count": 19,
     "generated_by": "Seed: investor portfolio pack. Updates: AI (muns agent, web search).",
     "notes": "Seed floor can never be lost. Agent items are de-duped by subject+date and verified-before-acting."
   },
@@ -67,6 +67,50 @@
       "added_at": "2026-06-10"
     },
     {
+      "sn": 43,
+      "category": "Regulatory",
+      "date": "2026-06-04",
+      "subject": "IRDAI tightens KMP remuneration governance",
+      "summary": "IRDAI issued a circular on remuneration for key management persons, reinforcing governance and pay oversight across insurers. For listed and private health insurers alike, this can affect senior hiring, incentive design, and cost discipline.",
+      "reference": "https://irdai.gov.in/document-detail?documentId=9508062",
+      "id": "023266cfed762e",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
+      "sn": 44,
+      "category": "General",
+      "date": "2026-06-01",
+      "subject": "Consumers compare plans more closely as health cover choices widen",
+      "summary": "Recent personal-finance coverage highlighted more active comparison of floater, top-up and senior-citizen policies across insurers including Niva Bupa and peers. For investors, this points to sustained retail demand but also a more price- and feature-sensitive market that can pressure customer-acquisition economics.",
+      "reference": "https://business-standard.com/finance/personal-finance/health-insurance-guide-the-right-way-to-choose-health-insurance-from-floaters-to-topups-126060900395_1.html",
+      "id": "1308be4a0e3a04",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
+      "sn": 45,
+      "category": "Regulatory",
+      "date": "2026-05-25",
+      "subject": "IRDAI clarifies annual fees for surveyors and loss assessors",
+      "summary": "IRDAI issued a circular clarifying annual-fee payment mechanics for surveyors and loss assessors. While not health-insurance specific, it affects the wider claims ecosystem and compliance processes used by non-life and health insurers.",
+      "reference": "https://irdai.gov.in/document-detail?documentId=9196320",
+      "id": "1ca5ade55500b5",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
+      "sn": 46,
+      "category": "General",
+      "date": "2026-05-20",
+      "subject": "Higher medical inflation keeps health-insurance growth strong but raises risk",
+      "summary": "Industry reporting said health-insurance demand remains healthy in 2026, with customers opting for higher sums insured and broader benefits, while medical inflation near low-teens continues to worry insurers. That mix supports premium growth but can worsen claims costs if pricing and underwriting do not keep pace.",
+      "reference": "https://bfsi.economictimes.indiatimes.com/articles/health-insurance-in-2026-navigating-growth-and-risk/126225527",
+      "id": "17e00de0e8623e",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
       "sn": 37,
       "category": "Profitability",
       "date": "2026-04-29",
@@ -76,6 +120,17 @@
       "id": "1d0b0807f6301e",
       "origin": "agent",
       "added_at": "2026-06-10"
+    },
+    {
+      "sn": 47,
+      "category": "Regulatory",
+      "date": "2026-04-07",
+      "subject": "IRDAI issues Ind AS implementation clarifications",
+      "summary": "IRDAI published clarifications on Ind AS implementation for insurers, an important step for financial reporting and comparability. Investors should watch for changes in disclosure quality, earnings presentation, and balance-sheet interpretation as the framework beds in.",
+      "reference": "https://irdai.gov.in/document-detail?documentId=9122615",
+      "id": "1771b0d9c68125",
+      "origin": "agent",
+      "added_at": "2026-06-11"
     },
     {
       "sn": 42,
@@ -131,6 +186,39 @@
       "id": "010e038b06d0e4",
       "origin": "agent",
       "added_at": "2026-06-10"
+    },
+    {
+      "sn": 48,
+      "category": "Regulatory",
+      "date": "2026-03-25",
+      "subject": "IRDAI announces special policyholder-servicing measures",
+      "summary": "IRDAI introduced special servicing measures for FY2025-26 aimed at improving policyholder experience and reducing friction in servicing. Better servicing can support retention and complaints management, though implementation may add operating workload in the near term.",
+      "reference": "https://irdai.gov.in/document-detail?documentId=9027284",
+      "id": "1d1702ee5d84f0",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
+      "sn": 49,
+      "category": "Profitability",
+      "date": "2026-03-01",
+      "subject": "Medical inflation emerges as the key margin risk for health insurers",
+      "summary": "Sector commentary in 2026 flagged rising treatment costs as a central challenge even as demand remains robust. For standalone health insurers, persistent medical inflation is a direct threat to loss ratios, repricing needs, and margin stability.",
+      "reference": "https://www.onsurity.com/blog/best-health-insurance-companies-india/",
+      "id": "0e44da1696c7df",
+      "origin": "agent",
+      "added_at": "2026-06-11"
+    },
+    {
+      "sn": 50,
+      "category": "GST",
+      "date": "2026-02-01",
+      "subject": "GST Council’s insurance GoM page remains active but no relief decision yet",
+      "summary": "The GST Council’s official page for the Group of Ministers on life and health insurance remained live as of June 2026, but it did not show a final decision cutting GST on health premiums. For investors, that means the affordability debate is still alive, but there is no confirmed near-term tax relief to boost demand.",
+      "reference": "https://gstcouncil.gov.in/GOM-on-health-and-life-insurance",
+      "id": "0a86bbe9a60c00",
+      "origin": "agent",
+      "added_at": "2026-06-11"
     },
     {
       "sn": 1,
