@@ -263,6 +263,16 @@ export function HistoricalStockMovement() {
                   <Th>Deliv. Qty</Th>
                   <Th>% Deliv.</Th>
                 </tr>
+                {/* Period average — pinned at the top, just under the column
+                    labels. Solid tint (== navy-primary @6% over white) so the
+                    daily rows scrolling beneath don't bleed through. */}
+                <tr className="bg-[#F2F4F7]">
+                  <Td className="border-b border-soft-border text-left text-[10.5px] font-bold uppercase tracking-wide text-navy-primary">Average</Td>
+                  <Td className="border-b border-soft-border font-semibold tabular-nums text-navy-deep">{inr(average.close)}</Td>
+                  <Td className="border-b border-soft-border tabular-nums text-ink-primary">{qty(average.traded)}</Td>
+                  <Td className="border-b border-soft-border tabular-nums text-ink-primary">{qty(average.deliverable)}</Td>
+                  <Td className="border-b border-soft-border tabular-nums font-semibold text-navy-deep">{pctStr(average.deliPct) ?? '—'}</Td>
+                </tr>
               </thead>
               <tbody>
                 {dailyDesc.map((r) => (
@@ -275,19 +285,6 @@ export function HistoricalStockMovement() {
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="sticky bottom-0 z-10">
-                {/* Opaque average band. As a sticky footer this must fully cover
-                    the daily rows scrolling beneath it — the old 6%-navy wash let
-                    the last row bleed through. #F2F4F7 == navy-primary @6% over the
-                    white card, so the tint reads identically but is now solid. */}
-                <tr className="bg-[#F2F4F7]">
-                  <Td className="border-t border-soft-border text-left text-[10.5px] font-bold uppercase tracking-wide text-navy-primary">Average</Td>
-                  <Td className="border-t border-soft-border font-semibold tabular-nums text-navy-deep">{inr(average.close)}</Td>
-                  <Td className="border-t border-soft-border tabular-nums text-ink-primary">{qty(average.traded)}</Td>
-                  <Td className="border-t border-soft-border tabular-nums text-ink-primary">{qty(average.deliverable)}</Td>
-                  <Td className="border-t border-soft-border tabular-nums font-semibold text-navy-deep">{pctStr(average.deliPct) ?? '—'}</Td>
-                </tr>
-              </tfoot>
             </table>
           </div>
         </div>
