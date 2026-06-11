@@ -423,6 +423,24 @@ def collect_existing():
             continue
         for field, entity, metric in INDUSTRY_MAP:
             snap_candidate(entity, metric, period, r.get(field), "identity", "INR_cr", prov)
+    for r in load("analyst-coverage-snapshot"):
+        # Dated broker reports (Analyst coverage sheet). Aggregator-sourced —
+        # the sanctioned low-confidence backup for broker targets (no official
+        # feed exists), rank 9 so anything better would supersede.
+        cid, broker, date = r.get("company_id"), r.get("broker"), r.get("report_date")
+        if not cid or not broker or not date:
+            continue
+        prov = {
+            "source_name": f"{broker} research note, {date} (aggregator-sourced via muns agent)",
+            "source_url": r.get("source_url"), "source_file": None,
+            "fetched_at": r.get("fetched_at"), "confidence": "low",
+        }
+        for field, metric in (("target_price", "analyst_target_price"), ("price_at_reco", "analyst_price_at_reco")):
+            if r.get(field) is not None and r.get("source_url"):
+                add_candidate(cid, f"{metric}::{broker}", date, r[field], r[field],
+                              "identity (value used as-is)", "INR", prov,
+                              RANK_BACKUP, "analyst_aggregator", "backup",
+                              {"basis_note": "Broker-report figure from a public aggregator page; low confidence by policy."})
     for r in load("gic-health-monthly"):
         period, ent, grp = r.get("period"), r.get("entity"), r.get("carrier_group")
         if not period or not ent:

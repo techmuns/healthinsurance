@@ -46,6 +46,8 @@ interface RawBindingCell {
   fillable?: boolean
   source_key?: string
   source_status?: string
+  /** Curated reason for a genuinely not-applicable cell (insurer not operating). */
+  na_reason?: string
   /** Computed (formula) cells only: the recipe + where each number comes from. */
   formula?: string
   calc?: string
@@ -718,6 +720,9 @@ export function buildAudit(): AuditModel {
         normalizedValue = null
         confidence = held.confidence ?? null
         note = held.note || 'We found this number but are holding it back for a check.'
+      } else if ((b.source_status ?? '') === 'not_applicable') {
+        status = 'not_applicable'
+        note = b.na_reason ?? 'Not applicable in this period — the insurer was not operating.'
       } else if ((b.source_status ?? '') === 'web_blocked') {
         status = 'web_blocked'
         note = 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'

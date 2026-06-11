@@ -10,6 +10,9 @@ name: listed valuation fetch
 #   SCRAPER_KEY  (required) scraperapi key — routes the Screener fetch via an India IP.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): weekly (Tue) — listed-insurer valuation multiples.
+    - cron: '0 4 * * 2'
   workflow_dispatch:
 
 permissions:

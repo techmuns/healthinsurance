@@ -23,14 +23,16 @@ function buildPayload() {
   return {
     user_index: 124,
     tasks: [
-      'I need the CURRENT market valuation multiples for these two NSE-listed Indian health insurers:\n' +
+      'I need the CURRENT market valuation multiples for these NSE-listed Indian insurers:\n' +
         'Star Health and Allied Insurance (NSE: STARHEALTH)\n' +
-        'Niva Bupa Health Insurance (NSE: NIVABUPA)\n\n' +
+        'Niva Bupa Health Insurance (NSE: NIVABUPA)\n' +
+        'ICICI Lombard General Insurance (NSE: ICICIGI)\n' +
+        'Go Digit General Insurance (NSE: GODIGIT)\n\n' +
         'For each company give the latest: trailing Stock P/E (price/earnings), Price-to-Book (P/B), market capitalisation in ₹ crore, and the current share price in ₹.\n\n' +
         'Return a table with exactly these columns, in this order, pipe-delimited:\n\n' +
         'company | pe | pb | market_cap_cr | price | source_url\n\n' +
         'Rules:\n' +
-        'company = exactly "Star Health" or "Niva Bupa".\n' +
+        'company = exactly "Star Health", "Niva Bupa", "ICICI Lombard" or "Go Digit".\n' +
         'pe, pb = plain numbers (multiples), no "x". If a multiple is not available (e.g. negative earnings), leave it blank — never 0, never an estimate.\n' +
         'market_cap_cr = market capitalisation in ₹ crore, number only.\n' +
         'price = current share price in ₹, number only.\n' +
@@ -81,7 +83,7 @@ function extractAnswer(text: string): string {
   return m ? m[1] : text
 }
 
-const ID_BY_NAME: Record<string, string> = { 'star health': 'star-health', 'niva bupa': 'niva-bupa' }
+const ID_BY_NAME: Record<string, string> = { 'star health': 'star-health', 'niva bupa': 'niva-bupa', 'icici lombard': 'icici-lombard', 'go digit': 'godigit' }
 function num(s: string | undefined, max: number): number | null {
   if (s == null) return null
   const t = s.replace(/[x₹,\s]/gi, '')

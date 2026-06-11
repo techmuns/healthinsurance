@@ -10,6 +10,9 @@ name: sahi intelligence fetch
 #   MUNS_API_TOKEN  (required) bearer token for the chat agent.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): weekly (Wed) — market-intelligence feed.
+    - cron: '0 4 * * 3'
   workflow_dispatch:
 
 permissions:

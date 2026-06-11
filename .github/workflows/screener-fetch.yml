@@ -6,6 +6,9 @@ name: screener fetch
 # (confidence low) — only fills cells with no official equivalent.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): weekly (Thu) — Screener cross-check backup.
+    - cron: '0 4 * * 4'
   workflow_dispatch:
 
 permissions:

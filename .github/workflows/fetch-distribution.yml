@@ -9,6 +9,9 @@ name: fetch-distribution
 # failure), so the result is visible without access to the Actions logs.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): quarterly (post-results window) — distribution data.
+    - cron: '0 4 16 2,5,8,11 *'
   push:
     branches: [main]
     paths:

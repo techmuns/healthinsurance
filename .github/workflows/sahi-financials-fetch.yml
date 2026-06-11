@@ -5,6 +5,9 @@ name: sahi financials fetch
 # answer + source files land in data/agent-pulls/sahi-financials/<company>/.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): monthly (8th) — SAHI statutory financials via agent.
+    - cron: '0 4 8 * *'
   workflow_dispatch:
     inputs:
       company:

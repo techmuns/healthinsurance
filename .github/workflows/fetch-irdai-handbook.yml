@@ -7,6 +7,9 @@ name: fetch IRDAI handbook (segment GDPI history)
 # truncated/corrupt copy is never committed. Files land in data/raw/irdai/.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): yearly (Dec 20) — IRDAI handbook editions land in Dec.
+    - cron: '0 4 20 12 *'
   workflow_dispatch:
     inputs:
       edition:

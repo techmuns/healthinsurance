@@ -1,0 +1,41 @@
+{
+  "_meta": {
+    "artifact": "not-applicable-cells",
+    "description": "Cells that are GENUINELY not applicable (insurer not yet licensed / merged away / exited) — shown as 'not applicable' in the audit grid, never a fake zero, never a red 'missing'. Curated; only applies while the cell has no sourced value."
+  },
+  "cells": {
+    "reliance-health::sahi_total_health_premium::FY22": "Not applicable — Reliance Health surrendered its licence in Nov 2019 (FY20); the insurer did not exist in this year.",
+    "reliance-health::sahi_total_health_premium::FY23": "Not applicable — Reliance Health surrendered its licence in Nov 2019 (FY20); the insurer did not exist in this year.",
+    "reliance-health::sahi_total_health_premium::FY24": "Not applicable — Reliance Health surrendered its licence in Nov 2019 (FY20); the insurer did not exist in this year.",
+    "reliance-health::sahi_total_health_premium::FY25": "Not applicable — Reliance Health surrendered its licence in Nov 2019 (FY20); the insurer did not exist in this year.",
+    "hdfc-ergo::sahi_total_health_premium::FY21": "Not applicable — HDFC ERGO Health (Apollo Munich) merged into HDFC ERGO General in FY21; no standalone SAHI exists from FY21 onward.",
+    "hdfc-ergo::sahi_total_health_premium::FY22": "Not applicable — HDFC ERGO Health (Apollo Munich) merged into HDFC ERGO General in FY21; no standalone SAHI exists from FY21 onward.",
+    "hdfc-ergo::sahi_total_health_premium::FY23": "Not applicable — HDFC ERGO Health (Apollo Munich) merged into HDFC ERGO General in FY21; no standalone SAHI exists from FY21 onward.",
+    "hdfc-ergo::sahi_total_health_premium::FY24": "Not applicable — HDFC ERGO Health (Apollo Munich) merged into HDFC ERGO General in FY21; no standalone SAHI exists from FY21 onward.",
+    "hdfc-ergo::sahi_total_health_premium::FY25": "Not applicable — HDFC ERGO Health (Apollo Munich) merged into HDFC ERGO General in FY21; no standalone SAHI exists from FY21 onward.",
+    "galaxy-health::sahi_total_health_premium::FY18": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_total_health_premium::FY19": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_total_health_premium::FY20": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_total_health_premium::FY21": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_total_health_premium::FY22": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_total_health_premium::FY23": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY18": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY19": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY20": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY21": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY22": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_total_health_premium::FY23": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY18": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY19": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY20": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY21": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY22": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "galaxy-health::sahi_retail_health_premium::FY23": "Not applicable — Galaxy Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY18": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY19": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY20": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY21": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY22": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year.",
+    "narayana-health::sahi_retail_health_premium::FY23": "Not applicable — Narayana Health was licensed in FY25; the insurer did not exist in this year."
+  }
+}

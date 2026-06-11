@@ -16,6 +16,9 @@ name: fetch company PDFs (manual)
 #                       placeholder, used instead of / in addition to the key.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): monthly (7th) — company PDFs (ARs/disclosures) refresh.
+    - cron: '0 4 7 * *'
   workflow_dispatch:
     inputs:
       company:

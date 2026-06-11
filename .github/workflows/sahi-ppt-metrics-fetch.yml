@@ -12,6 +12,9 @@ name: sahi ppt metrics fetch
 #   INGEST_FETCH_PROXY  (optional) alternative relay URL template ({url} placeholder).
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): monthly (9th) — investor-deck metrics (PPT-first rule).
+    - cron: '0 5 9 * *'
   workflow_dispatch:
 
 permissions:

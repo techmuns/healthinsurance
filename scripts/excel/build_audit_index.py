@@ -442,6 +442,28 @@ def main() -> None:
             if not (v and v.get("normalized_value") is not None):
                 cell["source_status"] = "web_blocked"
 
+    # --- Genuinely not-applicable cells -----------------------------------
+    # Rows for insurers that did not exist in that period (not yet licensed /
+    # merged away / exited), curated with reasons in
+    # data/source-map/not-applicable-cells.json. Shown as "not applicable" —
+    # never a fake zero, never a red "missing". Only applies while the cell
+    # has no sourced value, so real data always wins if it ever appears.
+    try:
+        na_cells = json.loads((REPO / "data" / "source-map" / "not-applicable-cells.json").read_text()).get("cells", {})
+    except Exception:
+        na_cells = {}
+    if na_cells:
+        for sh in sheets:
+            for cell in sh["cells"]:
+                k = f'{cell.get("entity")}::{cell.get("metric")}::{cell.get("period")}'
+                reason = na_cells.get(k)
+                if not reason:
+                    continue
+                v = store.get(k)
+                if not (v and v.get("normalized_value") is not None):
+                    cell["source_status"] = "not_applicable"
+                    cell["na_reason"] = reason
+
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
 

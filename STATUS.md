@@ -7,6 +7,23 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
+- **Full-auto across every Data Audit tab** (Neha, 2026-06-11): every fetch
+  workflow now has a schedule — nothing is dispatch-only any more (company
+  PDFs monthly-7th, SAHI financials monthly-8th, deck metrics monthly-9th,
+  ownership monthly-12th, valuation weekly-Tue, intelligence weekly-Wed,
+  screener weekly-Thu, distribution quarterly, IRDAI handbook yearly-Dec,
+  GIC every-3-days, analyst coverage monthly-5th). New:
+  `analyst-coverage-fetch.yml` + `analyst-coverage-agent.ts` — reads the 55
+  DATED broker reports from schema-map.json (so template edits change the ask
+  automatically), the muns agent resolves each report's target price +
+  price-at-reco from public aggregator pages (sanctioned low-confidence
+  backup; rows without a source URL are dropped), snapshot →
+  `analyst_target_price::<broker>` / `analyst_price_at_reco::<broker>` at
+  rank 9. Valuation agent now also covers ICICI Lombard + Go Digit (Comps
+  peers). The 33 genuinely not-applicable Industry Growth cells (insurers
+  not yet licensed / merged away / exited) now render grey "not applicable"
+  with per-cell reasons via data/source-map/not-applicable-cells.json —
+  real data still wins if it ever appears.
 - **1,859 fillable cells filled (83.8%). QA passes (no hard violations).**
 - **Channel Mix tab 556/556 filled + automated** (Neha, 2026-06-11): the tab now
   binds all four blocks (mix %, avg premium/policy, % commission, agents

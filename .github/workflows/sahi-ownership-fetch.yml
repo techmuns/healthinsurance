@@ -9,6 +9,9 @@ name: sahi ownership fetch
 #   MUNS_API_TOKEN  (required) bearer token for the chat agent.
 
 on:
+  schedule:
+    # Full-auto (Neha, 2026-06-11): monthly (12th) — ownership/shareholding via agent.
+    - cron: '30 4 12 * *'
   workflow_dispatch:
 
 permissions:
