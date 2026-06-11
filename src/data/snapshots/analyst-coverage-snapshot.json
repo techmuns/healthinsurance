@@ -12,6 +12,61 @@
   },
   "data": [
     {
+      "company_id": "icici-lombard",
+      "broker": "ICICI Securities",
+      "report_date": "2026-01-14",
+      "aggregator_date": "2026-01-19",
+      "rating": "BUY",
+      "target_price": 2250,
+      "price_at_reco": 1858.6,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/multiline-insurancebrokers/icicilombardgeneralinsurancecompany/ILG#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "ICICI Securities",
+      "report_date": "2026-03-16",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 2250,
+      "price_at_reco": 1850.05,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/multiline-insurancebrokers/icicilombardgeneralinsurancecompany/ILG#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-04-15",
+      "aggregator_date": "2026-04-16",
+      "rating": "BUY",
+      "target_price": 2230,
+      "price_at_reco": 1859.25,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/multiline-insurancebrokers/icicilombardgeneralinsurancecompany/ILG#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "ICICI Securities",
+      "report_date": "2026-04-20",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 2250,
+      "price_at_reco": 1873.55,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/multiline-insurancebrokers/icicilombardgeneralinsurancecompany/ILG#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "icici-lombard",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-05-05",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 2230,
+      "price_at_reco": 1777.3,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/multiline-insurancebrokers/icicilombardgeneralinsurancecompany/ILG#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
       "company_id": "niva-bupa",
       "broker": "ICICI Securities",
       "report_date": "2025-08-11",
@@ -54,6 +109,61 @@
       "price_at_reco": 78.07,
       "source_url": "https://www.moneycontrol.com/india/stockpricequote/lifehealth-insurance/nivabupahealthinsurancecompany/NBH#broker_research",
       "fetched_at": "2026-06-11T09:35:05.809Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2025-10-29",
+      "aggregator_date": "2025-10-30",
+      "rating": "BUY",
+      "target_price": 570,
+      "price_at_reco": null,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "ICICI Securities",
+      "report_date": "2025-11-06",
+      "aggregator_date": "2025-11-05",
+      "rating": "BUY",
+      "target_price": 570,
+      "price_at_reco": null,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Emkay",
+      "report_date": "2026-04-29",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 650,
+      "price_at_reco": 533.4,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "Motilal Oswal",
+      "report_date": "2026-04-29",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 640,
+      "price_at_reco": 533.4,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
+    },
+    {
+      "company_id": "star-health",
+      "broker": "ICICI Securities Limited",
+      "report_date": "2026-05-03",
+      "aggregator_date": null,
+      "rating": "BUY",
+      "target_price": 644,
+      "price_at_reco": 525.25,
+      "source_url": "https://www.moneycontrol.com/india/stockpricequote/diversified/starhealthalliedinsurancecompany/SHA#broker_research",
+      "fetched_at": "2026-06-11T11:23:04.511Z"
     }
   ]
 }
