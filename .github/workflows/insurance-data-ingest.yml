@@ -124,10 +124,18 @@ jobs:
             echo "offline=0" >> "$GITHUB_OUTPUT"
           fi
 
+      # Time-boxed + continue-on-error: a slow/blocked source degrades to
+      # "staged data only" but can never cancel the workbook build + commit of
+      # data already in hand.
       - name: Run ingestion
+        timeout-minutes: 18
+        continue-on-error: true
         env:
           CADENCE: ${{ steps.cadence.outputs.value }}
           INGEST_OFFLINE: ${{ steps.net.outputs.offline }}
+          # Live-fetch wall-clock budget for the GIC monthly resolver — past it
+          # the run proceeds with staged files (see ingest-gicouncil-segment.ts).
+          GIC_TIME_BUDGET_MS: '480000'
           # Optional: a fetch-proxy URL template (with a {url} placeholder) for
           # sources that block datacenter IPs (IRDAI / NSE return 403 to the
           # runner). Set this repo secret once and every future cron fetches

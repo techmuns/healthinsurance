@@ -51,6 +51,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * failures (5xx, 429, network). Returns the body as a Buffer (works for
  * binary like PDF / XLSX) and the final URL after redirects.
  */
+// Hard per-request deadline. Without it a single hung TCP connection stalls
+// the whole ingest run until the workflow's job timeout kills everything —
+// observed on the GIC chain (2026-06-11 run cancelled at the 25-min cap).
+const FETCH_TIMEOUT_MS = 45_000
+
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
   const maxAttempts = 3
   let lastErr: unknown = null
@@ -60,6 +65,7 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
       const res = await fetch(url, {
         redirect: 'follow',
         headers: browserHeaders(url),
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       })
       if (res.status >= 500 || res.status === 429) {
         lastErr = new Error(`HTTP ${res.status} for ${url}`)
@@ -104,7 +110,10 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
     const tmpl = process.env.INGEST_FETCH_PROXY
     if (tmpl && tmpl.includes('{url}')) {
       try {
-        const res = await fetch(tmpl.replace('{url}', encodeURIComponent(url)), { redirect: 'follow' })
+        const res = await fetch(tmpl.replace('{url}', encodeURIComponent(url)), {
+          redirect: 'follow',
+          signal: AbortSignal.timeout(90_000), // relays are slower; still bounded
+        })
         if (res.ok) {
           const ab = await res.arrayBuffer()
           if (ab.byteLength) return { buffer: Buffer.from(ab), finalUrl: url }

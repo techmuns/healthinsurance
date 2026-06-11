@@ -30,6 +30,7 @@ import { gicFetch } from './gic-fetch'
 import * as cheerio from 'cheerio'
 import { appendLog, ensureDir, fileExists, isOfflineMode, nowIso, writeRaw, RAW_ROOT, PROCESSED_ROOT } from './util'
 import { readFile, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { resolve } from 'node:path'
 
 const SOURCE_ID = 'gicouncil_segmentwise'
@@ -173,13 +174,60 @@ function monthsToAttempt(): string[] {
   return out
 }
 
-// ── file resolution (live discovery + month-specific staged fallback) ───────
+// ── file resolution (staged-first, revision-aware, time-budgeted) ───────────
 
 interface ResolvedFile {
   buffer: Buffer
   ext: 'xlsx' | 'pdf'
   source_url: string
   raw_file: string | null
+}
+
+// Month-keyed download ledger (data/raw/gicouncil/segment/manifest.json):
+// which listing URL each staged month came from. GIC media files are immutable
+// (a revised edition gets a NEW /media/<id>/ URL), so "listed URL == recorded
+// URL" means we already hold the current edition and no download is needed;
+// a changed URL is a revision and triggers exactly one re-download.
+interface MonthLedgerEntry { url: string; bytes?: number; sha256?: string; fetched_at?: string; via?: string }
+interface MonthLedger { months: Record<string, MonthLedgerEntry> }
+
+const ledgerPath = () => resolve(RAW_ROOT, RAW_SUBDIR, 'manifest.json')
+
+async function loadMonthLedger(): Promise<MonthLedger> {
+  try {
+    const j = JSON.parse(await readFile(ledgerPath(), 'utf8'))
+    if (j && typeof j === 'object' && j.months && typeof j.months === 'object') return j as MonthLedger
+  } catch { /* first run — empty ledger */ }
+  return { months: {} }
+}
+
+async function saveMonthLedger(ledger: MonthLedger): Promise<void> {
+  if (Object.keys(ledger.months).length === 0) return // nothing learned yet (e.g. offline run)
+  await ensureDir(resolve(RAW_ROOT, RAW_SUBDIR))
+  await writeFile(ledgerPath(), JSON.stringify(ledger, null, 2) + '\n', 'utf8')
+}
+
+function sha256Hex(buf: Buffer): string {
+  return createHash('sha256').update(buf).digest('hex')
+}
+
+// Live-fetch wall-clock budget for ONE run. Past the deadline the resolver is
+// staged-only: the run must always reach parse → project → commit with
+// whatever is in hand, instead of dying inside a slow relay walk (the
+// 2026-06-11 run was killed by the workflow timeout exactly this way).
+const LIVE_BUDGET_MS = Math.max(60_000, Number(process.env.GIC_TIME_BUDGET_MS) || 8 * 60_000)
+let liveDeadline = Number.POSITIVE_INFINITY
+let budgetWarned = false
+
+function liveBudgetExhausted(warnings: string[]): boolean {
+  if (Date.now() < liveDeadline) return false
+  if (!budgetWarned) {
+    budgetWarned = true
+    const msg = `live-fetch budget (${Math.round(LIVE_BUDGET_MS / 60_000)} min) spent — remaining months use staged copies only this run`
+    console.log(`[gic-monthly] ${msg}`)
+    warnings.push(msg)
+  }
+  return true
 }
 
 /** A month-specific staged file at data/raw/gicouncil/segment/<month>.<ext>. */
@@ -219,23 +267,44 @@ async function discoverUrl(month: string): Promise<string | null> {
   return null
 }
 
-async function resolveMonth(month: string): Promise<ResolvedFile | null> {
-  // 1. Live (only when not offline AND not WAF-blocked): direct override or discovery.
-  if (!isOfflineMode()) {
-    try {
-      const url = MONTH_URLS[month] ?? (await discoverUrl(month))
-      if (url) {
-        const ext: 'xlsx' | 'pdf' = /\.pdf(\?|$)/i.test(url) ? 'pdf' : 'xlsx'
-        const { buffer } = await gicFetch(url, ext)
-        const raw_file = await writeRaw(RAW_SUBDIR, `${month}.${ext}`, buffer)
-        return { buffer, ext, source_url: url, raw_file }
-      }
-    } catch {
-      // fall through to staged file
+async function resolveMonth(month: string, ledger: MonthLedger, warnings: string[]): Promise<ResolvedFile | null> {
+  const staged = await loadStagedMonth(month)
+  if (isOfflineMode() || liveBudgetExhausted(warnings)) return staged
+
+  try {
+    const url = MONTH_URLS[month] ?? (await discoverUrl(month))
+    if (!url) {
+      // Not on the listing: a new month not yet published (honest pending), or
+      // the listing was unreachable on every route this run.
+      if (!staged) console.log(`[gic-monthly] ${month}: not on the listing and no staged copy — pending`)
+      return staged
     }
+    const rec = ledger.months[month]
+    if (staged && rec?.url === url) return staged // current edition already held — immutable, skip
+    if (staged && !rec) {
+      // Staged copy predates this ledger (earlier runs / agent pulls already
+      // validated + parsed it). Record the currently listed URL once so future
+      // runs can detect a revision — without re-downloading bytes we hold.
+      ledger.months[month] = { url, via: 'adopted — staged copy predates the ledger', fetched_at: nowIso() }
+      console.log(`[gic-monthly] ${month}: staged copy adopted for listed URL (no download)`)
+      return staged
+    }
+    const why = staged ? `revised edition (listing URL changed: ${rec?.url} → ${url})` : 'no staged copy'
+    console.log(`[gic-monthly] ${month}: live download — ${why}`)
+    const t0 = Date.now()
+    const ext: 'xlsx' | 'pdf' = /\.pdf(\?|$)/i.test(url) ? 'pdf' : 'xlsx'
+    const { buffer, via } = await gicFetch(url, ext)
+    const raw_file = await writeRaw(RAW_SUBDIR, `${month}.${ext}`, buffer)
+    ledger.months[month] = { url, bytes: buffer.length, sha256: sha256Hex(buffer), fetched_at: nowIso(), via }
+    console.log(`[gic-monthly] ${month}: ${(buffer.length / 1024).toFixed(0)} KB via ${via} in ${((Date.now() - t0) / 1000).toFixed(1)}s`)
+    if (staged) warnings.push(`${month}: revised edition on the listing — re-downloaded and re-parsed from the new file.`)
+    return { buffer, ext, source_url: url, raw_file }
+  } catch (err) {
+    const msg = `${month}: live fetch failed — ${err instanceof Error ? err.message : String(err)}`
+    console.log(`[gic-monthly] ${msg}${staged ? ' (using staged copy)' : ''}`)
+    if (!staged) warnings.push(msg)
+    return staged
   }
-  // 2. Manually-staged official file (also the offline path).
-  return loadStagedMonth(month)
 }
 
 // ── parsing ────────────────────────────────────────────────────────────────
@@ -397,12 +466,16 @@ export const ingestGicouncilSegment: Fetcher = {
   frequency: 'monthly',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
+    const t0 = Date.now()
     const months = monthsToAttempt()
     const parsed: MonthParse[] = []
     const warnings: string[] = []
+    const ledger = await loadMonthLedger()
+    liveDeadline = Date.now() + LIVE_BUDGET_MS
+    budgetWarned = false
 
     for (const month of months) {
-      const file = await resolveMonth(month).catch(() => null)
+      const file = await resolveMonth(month, ledger, warnings).catch(() => null)
       if (!file) continue // honest pending for this month — no file, no fabrication
       try {
         let rowsOut: ReturnType<typeof parseSegmentRows>
@@ -429,6 +502,9 @@ export const ingestGicouncilSegment: Fetcher = {
         warnings.push(`${month}: parse error — ${err instanceof Error ? err.message : String(err)}`)
       }
     }
+
+    await saveMonthLedger(ledger)
+    console.log(`[gic-monthly] resolved ${parsed.length}/${months.length} months in ${((Date.now() - t0) / 1000).toFixed(1)}s`)
 
     // ── YTD → monthly (cumulative minus previous month), within this run ──────
     const byMonth = new Map(parsed.map((p) => [p.month, p]))

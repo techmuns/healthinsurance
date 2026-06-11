@@ -28,7 +28,7 @@ concurrency:
 jobs:
   gic:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,9 +44,17 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
+      # Time-boxed twice over: the script itself stops live-fetching after
+      # GIC_TIME_BUDGET_MS and proceeds with staged files, and the step has its
+      # own hard cap. continue-on-error means a slow/blocked source can never
+      # cancel the projection + commit of data already in hand (the 2026-06-11
+      # run lost an entire cycle exactly that way).
       - name: Fetch + parse GI Council segment reports (live, tiered)
+        timeout-minutes: 15
+        continue-on-error: true
         env:
           INGEST_OFFLINE: '0'
+          GIC_TIME_BUDGET_MS: '480000'
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
