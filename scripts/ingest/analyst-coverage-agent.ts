@@ -21,6 +21,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { chromium, type Browser } from 'playwright'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -154,44 +155,161 @@ function alignToTuples(rows: AggRow[], tuples: Tuple[]) {
   return out
 }
 
+// ── Trendlyne scrape (primary source) ────────────────────────────────────────
+// Trendlyne carries the FULL multi-year broker-report history, but it 403s a
+// bare datacenter request (so does the muns agent's fetch). So we render it in a
+// real headless browser routed through ScraperAPI's India IP — the same trick
+// fetch-rendered.ts uses to beat the insurer-site blocks — read the report table
+// straight from the DOM, and page through ?page=2,3,… for the older history.
+const BROWSER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+
+function proxyConfig(): { server: string; username: string; password: string } | undefined {
+  const key = (process.env.SCRAPERAPI_KEY || process.env.SCRAPER_KEY || '').trim()
+  if (!key) return undefined
+  return { server: 'http://proxy-server.scraperapi.com:8001', username: 'scraperapi.country_code=in', password: key }
+}
+
+const MONTHS: Record<string, string> = { jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06', jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12' }
+function toIsoDate(s: string): string | null {
+  const m = /(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/.exec(s)
+  if (!m) return null
+  const mm = MONTHS[m[2].slice(0, 3).toLowerCase()]
+  return mm ? `${m[3]}-${mm}-${m[1].padStart(2, '0')}` : null
+}
+
+interface ScrapedRow { date: string; author: string; target: string; atReco: string; type: string }
+interface PageScrape { rows: ScrapedRow[]; tableCount: number; header: string[]; firstCells: string[] }
+
+async function scrapeTrendlyne(companies: string[]): Promise<AggRow[]> {
+  const proxy = proxyConfig()
+  console.log(`Trendlyne scrape: proxy=${proxy ? 'ScraperAPI India IP' : 'DIRECT (no SCRAPER_KEY — Trendlyne will likely 403)'}`)
+  const out: AggRow[] = []
+  let browser: Browser | null = null
+  try {
+    browser = await chromium.launch({ headless: true, proxy })
+    const ctx = await browser.newContext({ userAgent: BROWSER_UA, ignoreHTTPSErrors: true })
+    for (const cid of companies) {
+      const baseUrl = TRENDLYNE_URLS[cid]
+      if (!baseUrl) continue
+      let usable = 0
+      let prevFirst = ''
+      for (let pg = 1; pg <= 10; pg++) {
+        const url = pg === 1 ? baseUrl : `${baseUrl}?page=${pg}`
+        const page = await ctx.newPage()
+        let s: PageScrape = { rows: [], tableCount: 0, header: [], firstCells: [] }
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+          await page.waitForTimeout(4000)
+          await page.waitForSelector('table tr', { timeout: 8000 }).catch(() => {})
+          s = await page.evaluate(() => {
+            const norm = (x: string | null) => (x || '').replace(/\s+/g, ' ').trim()
+            const tables = Array.from(document.querySelectorAll('table'))
+            let best: HTMLTableElement | null = null
+            for (const t of tables) {
+              const h = norm(t.querySelector('tr')?.textContent || '').toLowerCase()
+              if (h.includes('target') && (h.includes('author') || h.includes('reco'))) { best = t as HTMLTableElement; break }
+            }
+            if (!best) return { rows: [], tableCount: tables.length, header: [], firstCells: [] }
+            const trs = Array.from(best.querySelectorAll('tr'))
+            const head = Array.from(trs[0].querySelectorAll('th,td')).map((c) => norm(c.textContent).toLowerCase())
+            const find = (kw: string) => head.findIndex((h) => h.includes(kw))
+            const di = find('date'), ai = find('author'), ti = find('target'), yi = find('type')
+            const pi = head.findIndex((h) => h.includes('price at reco') || h.includes('reco'))
+            const rows: ScrapedRow[] = []
+            for (const tr of trs.slice(1)) {
+              const tds = Array.from(tr.querySelectorAll('td')).map((c) => norm(c.textContent))
+              if (tds.length < 3) continue
+              rows.push({ date: tds[di] || '', author: tds[ai] || '', target: tds[ti] || '', atReco: tds[pi] || '', type: tds[yi] || '' })
+            }
+            const firstCells = trs[1] ? Array.from(trs[1].querySelectorAll('td')).map((c) => norm(c.textContent)) : []
+            return { rows, tableCount: tables.length, header: head, firstCells }
+          }) as PageScrape
+        } catch (e) {
+          console.error(`    trendlyne ${cid} p${pg}: ${(e as Error).message}`)
+        } finally {
+          await page.close().catch(() => {})
+        }
+        if (pg === 1) console.log(`    trendlyne ${cid}: tables=${s.tableCount} header=[${s.header.join(' | ')}] firstRow=[${s.firstCells.join(' | ')}]`)
+        if (s.rows.length === 0) break
+        const first = s.rows[0]?.date || ''
+        if (first && first === prevFirst) break
+        prevFirst = first
+        let kept = 0
+        for (const r of s.rows) {
+          if (!r.author || /consensus/i.test(r.author)) continue
+          const date = toIsoDate(r.date)
+          if (!date) continue
+          const broker = r.author.split(/target/i)[0].replace(/[^\w.&\s-]/g, '').replace(/\s+/g, ' ').trim()
+          const t = parseFloat((r.target || '').replace(/[^0-9.]/g, ''))
+          const a = parseFloat((r.atReco.split('(')[0] || '').replace(/[^0-9.]/g, ''))
+          const target = Number.isFinite(t) && t > 0 ? Math.round(t * 100) / 100 : null
+          const atReco = Number.isFinite(a) && a > 0 ? Math.round(a * 100) / 100 : null
+          if (target == null && atReco == null) continue
+          out.push({ company_id: cid, broker: broker || r.author, date, rating: r.type || null, target, atReco, url: baseUrl })
+          kept++
+        }
+        usable += kept
+        console.log(`    trendlyne ${cid} p${pg}: ${s.rows.length} rows -> kept ${kept}`)
+        if (s.rows.length < 5) break
+      }
+      console.log(`  trendlyne ${cid}: ${usable} usable broker rows`)
+    }
+  } catch (e) {
+    console.error(`Trendlyne scrape error: ${(e as Error).message}`)
+  } finally {
+    await browser?.close().catch(() => {})
+  }
+  console.log(`Trendlyne scrape: ${out.length} rows total.`)
+  return out
+}
+
 async function main(): Promise<number> {
   const token = (process.env.MUNS_API_TOKEN || '').trim()
-  if (!token) {
-    console.error('ERROR: MUNS_API_TOKEN is not set.')
-    return 1
-  }
   const tuples = await tuplesFromSchema()
   const companies = [...new Set(tuples.map((t) => t.company_id))]
-  console.log(`Template names ${tuples.length} dated broker reports across ${companies.length} companies; asking the agent one company at a time...`)
+  console.log(`Template names ${tuples.length} dated broker reports across ${companies.length} companies.`)
 
   await mkdir(OUT_DIR, { recursive: true })
   const stamp = new Date().toISOString().slice(0, 10)
 
-  // One focused call PER COMPANY. A single company's failure is logged and
-  // skipped — it never aborts the others. Every raw response is saved for audit.
   const allRows: AggRow[] = []
-  for (const cid of companies) {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS)
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload(cid)),
-        signal: ctrl.signal,
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const raw = await res.text()
-      await writeFile(resolve(OUT_DIR, `analyst-coverage-${cid}-${stamp}.json`), raw, 'utf8')
-      const ans = raw.match(/<ans>([\s\S]*?)<\/ans>/)?.[1] ?? raw
-      const parsed = parseAggregatorRows(ans)
-      console.log(`  ${cid}: ${parsed.length} parseable rows from the agent`)
-      allRows.push(...parsed)
-    } catch (e) {
-      console.error(`  ${cid}: fetch failed — ${(e as Error).message}. Continuing with the rest.`)
-    } finally {
-      clearTimeout(timer)
+
+  // PRIMARY: scrape Trendlyne's full multi-year history (headless + India proxy).
+  try {
+    allRows.push(...await scrapeTrendlyne(companies))
+  } catch (e) {
+    console.error(`Trendlyne scrape skipped: ${(e as Error).message}`)
+  }
+
+  // BACKUP: the muns agent (Moneycontrol etc.), one focused call per company,
+  // only when a token is set. A company failure is logged and skipped.
+  if (token) {
+    for (const cid of companies) {
+      const ctrl = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS)
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload(cid)),
+          signal: ctrl.signal,
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const raw = await res.text()
+        await writeFile(resolve(OUT_DIR, `analyst-coverage-${cid}-${stamp}.json`), raw, 'utf8')
+        const ans = raw.match(/<ans>([\s\S]*?)<\/ans>/)?.[1] ?? raw
+        const parsed = parseAggregatorRows(ans)
+        console.log(`  ${cid}: ${parsed.length} parseable rows from the agent`)
+        allRows.push(...parsed)
+      } catch (e) {
+        console.error(`  ${cid}: agent fetch failed - ${(e as Error).message}. Continuing.`)
+      } finally {
+        clearTimeout(timer)
+      }
     }
+  } else {
+    console.log('MUNS_API_TOKEN not set - Trendlyne-only this run.')
   }
 
   const rows = alignToTuples(allRows, tuples)
@@ -220,11 +338,11 @@ async function main(): Promise<number> {
   await writeFile(SNAPSHOT, JSON.stringify({
     _meta: {
       snapshot_id: 'analyst-coverage',
-      description: 'Dated broker research reports (target price + price at recommendation) for the Analyst coverage sheet. Aggregator-sourced via the muns agent — the sanctioned low-confidence backup for broker targets (no official feed exists). Rows without a public source URL are never written. Missing is never zero.',
+      description: 'Dated broker research reports (target price + price at recommendation) for the Analyst coverage sheet. Aggregator-sourced: a headless Trendlyne scrape (ScraperAPI India IP) primary, the muns agent — the sanctioned low-confidence backup for broker targets (no official feed exists). Rows without a public source URL are never written. Missing is never zero.',
       schema_version: '1.0.0',
       dataset: merged.length > 0 ? 'backup_aggregator' : 'pending',
       last_updated: stamp,
-      upstream_sources: ['muns_agent_web'],
+      upstream_sources: ['trendlyne_scrape', 'muns_agent_web'],
       parser_status: 'ready',
     },
     data: merged,

@@ -42,9 +42,13 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Pull dated broker reports via the muns agent
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Pull broker reports - Trendlyne scrape (India IP) + muns agent backup
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
         run: npx tsx scripts/ingest/analyst-coverage-agent.ts
 
       - name: Setup Python
