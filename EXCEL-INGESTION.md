@@ -135,6 +135,21 @@ that derived rows re-add to the report's printed sub-totals, and writes a
 review sidecar to `data/processed/gic-segment-annual.json` showing which file
 "won" each FY.
 
+Three guarantees keep the chain un-stallable (added 2026-06-11 after a run
+died silently at the workflow timeout):
+
+- **Download ledger** — `data/raw/gicouncil/segment/manifest.json` records the
+  listing URL each staged month came from. GIC media URLs are immutable, so a
+  month is re-downloaded only when the listing points at a NEW url (a revised
+  edition) or no staged copy exists. Steady state = one listing fetch, zero
+  downloads, one log line per live attempt.
+- **Time budget** — `GIC_TIME_BUDGET_MS` (default 8 min) caps live-fetch
+  wall-clock per run; past it the resolver is staged-only, and every network
+  call (incl. `fetchBuffer`) carries a hard abort timeout.
+- **Degrade, never abort** — in the workflows the live-fetch step is
+  time-boxed + `continue-on-error`, so parse → project → QA → commit always
+  runs with whatever is staged.
+
 Manual override (never required, always available): drop a downloaded XLSX
 into `data/raw/gicouncil/segment-annual/` (full-FY March / "final" editions)
 or `data/raw/gicouncil/segment/<YYYY-MM>.xlsx` (monthly), push or run:
