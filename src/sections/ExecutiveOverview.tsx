@@ -49,8 +49,9 @@ function HeroHeader({
         }}
       />
 
-      {/* About this view — floating top-right */}
-      <div className="absolute right-5 top-5 z-20 sm:right-6 sm:top-6">
+      {/* About this view — floating top-right. Must stack above the status
+          chips (z-20) or the open popover gets painted over by them. */}
+      <div className="absolute right-5 top-5 z-30 sm:right-6 sm:top-6">
         <AboutView text="Standalone health insurers vs the selected peer group — market leadership, premium and quality rankings on an FY25 annual basis." />
       </div>
 
