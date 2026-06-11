@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "snapshot_id": "life-industry-premium",
+    "description": "Industry-wide LIFE insurance totals per fiscal year — total premium (new business + renewal), LIC share of life, and the PSU vs private split of TOTAL insurance premium (life + general). The life side of the Industry Snapshot ring cards. The GI side comes live from industry-segment-premium.json (GI Council); this file carries the annual IRDAI figures that have no monthly source.",
+    "schema_version": "1.0.0",
+    "dataset": "mixed",
+    "last_updated": "2026-06-04",
+    "refresh_cadence": "annual — IRDAI Annual Report (published ~Dec). The December annual ingest cadence refreshes this file; an official source file dropped into data/raw/irdai/ also auto-triggers ingestion (insurance-data-ingest.yml push path).",
+    "metric_basis": "total premium (first-year + renewal), Rs crore — a premium metric, not profit",
+    "notes": "psu_total_premium / private_total_premium are on a TOTAL-insurance basis (life + GI combined): IRDAI life totals with LIC = 57% of life, composed with the GI Council FY25 public/private GI mix. Marked best-estimate; refresh from the next IRDAI Annual Report."
+  },
+  "data": [
+    {
+      "fiscal_year": "FY25",
+      "life_total_premium": 886000,
+      "lic_share_of_life": 0.57,
+      "psu_total_premium": 600000,
+      "private_total_premium": 593000,
+      "basis": "life total premium per IRDAI Annual Report 2024-25; PSU/private split best-estimate composition (life via LIC share + GI Council FY25 GI mix)",
+      "provenance": {
+        "source_name": "IRDAI Annual Report 2024-25 (life total premium, LIC share); GI Council FY25 segment report (GI composition)",
+        "source_url": "https://irdai.gov.in/annual-reports",
+        "fetched_at": "2026-06-04",
+        "confidence": "high"
+      }
+    }
+  ]
+}

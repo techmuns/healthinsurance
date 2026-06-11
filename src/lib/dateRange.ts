@@ -15,6 +15,10 @@
 // ---------------------------------------------------------------------------
 
 import type { TimePeriod } from '@/data/types'
+// Snapshot JSONs are leaf modules (no imports), so reading them here keeps this
+// module cycle-free — they only inform the data-driven year ceiling below.
+import industrySegmentSnapshot from '@/data/snapshots/industry-segment-premium.json'
+import insurerAnnualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 
 /** Months in fiscal order — Apr is month-offset 0, Mar is 11. */
 export const FISCAL_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'] as const
@@ -24,7 +28,29 @@ export const FISCAL_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', '
 // even though real annual data currently starts at FY22 — pre-FY22 years render
 // an honest "pending / not publicly disclosed" marker, never fabricated values.
 export const FY_MIN = 19
-export const FY_MAX = 26
+
+// The ceiling is DATA-DRIVEN so the dashboard advances by itself as time moves
+// forward (no yearly hand-edit): the latest fiscal year present in the ingested
+// snapshots, or the fiscal year the clock is in — whichever is later. A clock
+// year ahead of the data simply exposes honest pending markers, never values.
+const fyNumOf = (fy: unknown): number =>
+  typeof fy === 'string' && /^FY\d{2}$/.test(fy) ? Number(fy.slice(2)) : 0
+type FyRow = { fiscal_year?: string; period_type?: string }
+const SEG_ROWS = industrySegmentSnapshot.data as FyRow[]
+const ANNUAL_ROWS = insurerAnnualSnapshot.data as FyRow[]
+// Any sourced row (a single new month is enough to extend the selector) …
+const latestSourcedFy = Math.max(0, ...SEG_ROWS.map((r) => fyNumOf(r.fiscal_year)), ...ANNUAL_ROWS.map((r) => fyNumOf(r.fiscal_year)))
+// … but the DEFAULT annual view only follows full-year (annual-basis) rows, so
+// one early month of a new fiscal year doesn't drag every annual chart onto a
+// mostly-pending year.
+const latestAnnualFy = Math.max(
+  0,
+  ...SEG_ROWS.filter((r) => r.period_type === 'annual').map((r) => fyNumOf(r.fiscal_year)),
+  ...ANNUAL_ROWS.map((r) => fyNumOf(r.fiscal_year)),
+)
+const now = new Date()
+const clockFy = (now.getUTCMonth() >= 3 ? now.getUTCFullYear() + 1 : now.getUTCFullYear()) - 2000
+export const FY_MAX = Math.max(26, latestSourcedFy, clockFy)
 
 /** Largest valid month index (FY_MIN..FY_MAX, inclusive). */
 export const IDX_MAX = (FY_MAX - FY_MIN + 1) * 12 - 1
@@ -195,9 +221,11 @@ export function toOptionValue(idx: number, period: TimePeriod): string {
   return fromOptionValue(idx, period)
 }
 
-/** Default opens on the populated annual span (FY22–FY25) so the dashboard never
- *  loads onto empty pre-FY22 years, while the selector still reaches back to
- *  FY_MIN (2019). Widen the range from the header to see the honest pending
- *  markers for the earlier, not-yet-sourced years. */
+/** Default opens on the populated annual span (FY22 → the latest fiscal year
+ *  any snapshot actually carries) so the dashboard never loads onto empty
+ *  pre-FY22 years — and never clips a freshly-ingested year. The selector
+ *  still reaches back to FY_MIN (2019) and forward to the running fiscal year;
+ *  widen the range from the header to see the honest pending markers. */
 export const DEFAULT_FROM_FY = 22
-export const DEFAULT_RANGE: DateRange = { from: fyStartIdx(DEFAULT_FROM_FY), to: fyEndIdx(25) }
+const defaultToFy = Math.min(Math.max(latestAnnualFy, DEFAULT_FROM_FY), FY_MAX)
+export const DEFAULT_RANGE: DateRange = { from: fyStartIdx(DEFAULT_FROM_FY), to: fyEndIdx(defaultToFy) }

@@ -13,6 +13,7 @@ import type {
   Signal,
 } from './types'
 import { getInsurers, getFocalCompanyId, getDataFreshness } from '@/lib/dataLayer'
+import { giPremiumAbsoluteSeries, giPremiumMixSeries } from '@/lib/industryStructure'
 
 // --- Universe (single source of truth) -------------------------------------
 // Every Executive Overview visual is derived from this array via the helpers in
@@ -131,31 +132,14 @@ export interface IndustryMetric {
 
 // --- Market Engine (industry GI premium ─ real data only) ----------------
 //
-// Industry segment premium values from IRDAI flash figures (via CareRatings
-// March 2025 update) for FY25 + IBEF / Business Standard reportage for FY24
-// and back-derived FY23 from the FY24 +12.8% YoY growth figure.
-//   FY25 Total GI ₹3.07 lakh Cr · Motor ₹99,093 Cr · Health ~40% share
-//   FY24 Total GI ₹2.90 lakh Cr  · +12.8% YoY
-//   FY23 Total GI ₹2.57 lakh Cr (derived)
-export const giPremiumAbsolute: SeriesPoint[] = [
-  // FY21–FY22 are illustrative back-extensions (mock) so the ribbon-flow spans
-  // FY21→FY25; FY23–FY25 are the seeded IRDAI/CareRatings-referenced figures.
-  { label: 'FY21', Health: 62.6, Motor: 62.5, Others: 72.9 },
-  { label: 'FY22', Health: 73.5, Motor: 68.2, Others: 78.3 },
-  { label: 'FY23', Health: 90.7, Motor: 78.0, Others: 88.3 },
-  { label: 'FY24', Health: 107.7, Motor: 89.7, Others: 92.6 },
-  { label: 'FY25', Health: 122.8, Motor: 99.1, Others: 85.1 },
-]
+// Pipeline-fed: derived in @/lib/industryStructure from the GI Council
+// segment-report snapshot (industry-segment-premium.json, FY15→latest,
+// refreshed by the every-3-days GIC sweep). Absolute values in ₹ '000 Cr;
+// mix in % of the printed GI total. A fiscal year the source doesn't split
+// stays null (honest gap) — and new years appear here automatically.
+export const giPremiumAbsolute: SeriesPoint[] = giPremiumAbsoluteSeries
 
-// Mix share (%) of total GI premium pool. Sums to ~100 each year. FY21–FY22
-// are the illustrative back-extension matching giPremiumAbsolute above.
-export const giPremiumMix: SeriesPoint[] = [
-  { label: 'FY21', Health: 31.6, Motor: 31.6, Others: 36.8 },
-  { label: 'FY22', Health: 33.4, Motor: 31.0, Others: 35.6 },
-  { label: 'FY23', Health: 35.3, Motor: 30.4, Others: 34.3 },
-  { label: 'FY24', Health: 37.1, Motor: 30.9, Others: 31.9 },
-  { label: 'FY25', Health: 40.0, Motor: 32.3, Others: 27.7 },
-]
+export const giPremiumMix: SeriesPoint[] = giPremiumMixSeries
 
 // Share of health premium pool by carrier type — only FY24 + FY25 wired
 // from Business Standard / IRDAI segment-mix references. Historical FY18

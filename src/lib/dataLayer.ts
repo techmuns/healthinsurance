@@ -404,7 +404,9 @@ export function getFocalCompanyId(): string {
   return master.find((c) => c.is_focal)?.company_id ?? master[0]?.company_id ?? 'niva-bupa'
 }
 
-/** Dashboard freshness, derived from the annual snapshot meta + coverage. */
+/** Dashboard freshness — the latest ingestion date across the snapshots the
+ *  overview actually renders (company annuals + the GI Council industry feeds),
+ *  so the "Updated" badge moves whenever any of them is refreshed. */
 export function getDataFreshness(): {
   lastUpdated: string
   coverage: string
@@ -414,8 +416,13 @@ export function getDataFreshness(): {
   const annual = annualSnapshot.data as InsurerAnnualLike[]
   const fys = [...new Set(annual.map((r) => r.fiscal_year))].sort((a, b) => fyNum(a) - fyNum(b))
   const meta = (annualSnapshot as MetaBlock)._meta
+  const lastUpdated =
+    [meta.last_updated, (industrySegmentSnapshot as MetaBlock)._meta?.last_updated]
+      .filter((d): d is string => !!d)
+      .sort()
+      .pop() ?? '—'
   return {
-    lastUpdated: meta.last_updated ?? '—',
+    lastUpdated,
     coverage: fys.length ? `${fys[0]} – ${fys[fys.length - 1]}` : 'n/a',
     quality: meta.dataset === 'official' ? 'Official' : 'Mixed',
     periodCoverage: 'Annual',

@@ -1,24 +1,27 @@
 import { useMemo } from 'react'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import { TrendingUp } from 'lucide-react'
+import {
+  industrySnapshotCards,
+  industrySnapshotSourceLine,
+  industrySnapshotSpan,
+  type StructureCard,
+} from '@/lib/industryStructure'
 
 // ---------------------------------------------------------------------------
-//  Industry Snapshot band — three lean ring cards giving the FY25 structure of
-//  the Indian insurance market in one glance: segment mix, SAHI vs non-SAHI,
-//  and PSU vs private.
+//  Industry Snapshot band — three lean ring cards giving the structure of the
+//  Indian insurance market in one glance: segment mix, SAHI vs non-SAHI, and
+//  PSU vs private.
 //
-//  Figures are the real FY25 (FY2024-25) market totals, cross-checked against
-//  public sources (Jun 2026):
-//    • Life total premium ₹8.86 lakh Cr — IRDAI Annual Report 2024-25.
-//    • Non-life gross premium ₹3.07 lakh Cr; health = 41% of non-life ≈
-//      ₹1.26 lakh Cr — IRDAI / General Insurance Council FY25.
-//    • SAHI ≈ ₹0.40 lakh Cr (Star ₹16.8k + Care ₹8.3k + Niva ₹7.0k + Aditya
-//      Birla + ManipalCigna) ≈ a third of health — company filings.
-//    • PSU vs private split is on a TOTAL-premium basis: LIC = 57% of life
-//      (IRDAI) keeps the public sector roughly level with private overall.
-//  NOTE: still hardcoded here (not yet pipeline-fed). The SAHI rupee total and
-//  the general-insurance public/private split are best estimates from filings;
-//  everything else is directly sourced. Wire to the ingest pipeline next.
+//  PIPELINE-FED (no hardcoded figures): the cards are built by
+//  @/lib/industryStructure from the committed snapshots —
+//    • GI / health / SAHI — GI Council segment report + health portfolio
+//      (swept every 3 days), so those rings advance to a new fiscal year on
+//      their own as the source publishes;
+//    • Life & the PSU/private total-premium split — the annual IRDAI seed
+//      (life-industry-premium.json), refreshed on the December annual cadence.
+//  Each ring resolves to the latest fiscal year where ALL its segments are
+//  sourced (never mixing years inside one ring) and carries its own FY label.
 // ---------------------------------------------------------------------------
 
 interface Seg {
@@ -46,39 +49,54 @@ const VIOLET = '#8061B8'
 const GREY = '#AEB6C2'
 const GOLD = '#C29A45'
 
-const CARDS: RingCard[] = [
-  {
-    title: '1. Market Size by Segment (FY25)',
+// Per-card presentation: title, tone and the segment palette (in the same
+// order industryStructure emits the segments).
+const CARD_STYLE: Record<
+  StructureCard['key'],
+  { title: (fy: string) => string; subtitle: string; tone: RingCard['tone']; palette: { color: string; labelColor: string }[] }
+> = {
+  'segment-mix': {
+    title: (fy) => `1. Market Size by Segment (${fy})`,
     subtitle: 'Total Premium (₹ Cr) and Market Share (%)',
-    segments: [
-      { name: 'Life Insurance', premium: 886000, share: 74.3, color: NAVY, labelColor: '#1E3A6B' },
-      { name: 'General Insurance (Other than Health)', premium: 181000, share: 15.1, color: VIOLET, labelColor: '#574089' },
-      { name: 'Health Insurance', premium: 126000, share: 10.6, color: TEAL, labelColor: '#0E6F6D' },
-    ],
-    insight: 'Life is the largest segment by far; health is the fastest-growing but still ~11% of total premium.',
     tone: 'blue',
-  },
-  {
-    title: '2. SAHI vs Non-SAHI (Health Insurance) (FY25)',
-    subtitle: 'Total Premium (₹ Cr) and Share (%)',
-    segments: [
-      { name: 'Non-SAHI (Health business of GI)', premium: 86000, share: 68.3, color: GREY, labelColor: '#535C68' },
-      { name: 'SAHI (Standalone Health Insurers)', premium: 40000, share: 31.7, color: TEAL, labelColor: '#0E6F6D' },
+    palette: [
+      { color: NAVY, labelColor: '#1E3A6B' },
+      { color: VIOLET, labelColor: '#574089' },
+      { color: TEAL, labelColor: '#0E6F6D' },
     ],
-    insight: 'Standalone health insurers write about a third of health premium — general insurers write the rest.',
+  },
+  'sahi-split': {
+    title: (fy) => `2. SAHI vs Non-SAHI (Health Insurance) (${fy})`,
+    subtitle: 'Total Premium (₹ Cr) and Share (%)',
     tone: 'teal',
-  },
-  {
-    title: '3. PSU vs Private (Total Insurance) (FY25)',
-    subtitle: 'Total Premium (₹ Cr) and Share (%)',
-    segments: [
-      { name: 'Private Insurers', premium: 593000, share: 49.7, color: NAVY, labelColor: '#1E3A6B' },
-      { name: 'PSU Insurers', premium: 600000, share: 50.3, color: GOLD, labelColor: '#8A6516' },
+    palette: [
+      { color: GREY, labelColor: '#535C68' },
+      { color: TEAL, labelColor: '#0E6F6D' },
     ],
-    insight: 'On total premium, public and private are roughly level — LIC’s scale offsets private’s lead in general insurance.',
-    tone: 'gold',
   },
-]
+  'psu-private': {
+    title: (fy) => `3. PSU vs Private (Total Insurance) (${fy})`,
+    subtitle: 'Total Premium (₹ Cr) and Share (%)',
+    tone: 'gold',
+    palette: [
+      { color: NAVY, labelColor: '#1E3A6B' },
+      { color: GOLD, labelColor: '#8A6516' },
+    ],
+  },
+}
+
+function buildRingCards(cards: StructureCard[]): RingCard[] {
+  return cards.map((c) => {
+    const style = CARD_STYLE[c.key]
+    return {
+      title: style.title(c.fy),
+      subtitle: style.subtitle,
+      tone: style.tone,
+      insight: c.insight,
+      segments: c.segments.map((s, i) => ({ ...s, ...style.palette[Math.min(i, style.palette.length - 1)] })),
+    }
+  })
+}
 
 const inr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
 const RAD = Math.PI / 180
@@ -200,24 +218,35 @@ function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard)
 }
 
 export function IndustrySnapshotBand() {
+  // Built once per load from the committed snapshots — advances on its own as
+  // ingestion lands new fiscal years.
+  const { cards, span, sourceLine } = useMemo(() => {
+    const structure = industrySnapshotCards()
+    return {
+      cards: buildRingCards(structure),
+      span: industrySnapshotSpan(structure),
+      sourceLine: industrySnapshotSourceLine(structure),
+    }
+  }, [])
+
+  if (!cards.length) return null
+
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <span className="h-3 w-[3px] rounded-full bg-champagne" />
         <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Industry Snapshot</span>
-        <span className="text-[11px] text-ink-secondary">FY25 · Indian insurance market</span>
+        <span className="text-[11px] text-ink-secondary">{span} · Indian insurance market</span>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
-        {CARDS.map((c) => (
+        {cards.map((c) => (
           <RingInsightCard key={c.title} {...c} />
         ))}
       </div>
 
       <div className="mt-2 flex justify-end">
-        <span className="text-[10px] text-ink-secondary/80">
-          Source: IRDAI Annual Report 2024-25 · General Insurance Council FY25 · company filings. PSU/private split shown on a total-premium basis.
-        </span>
+        <span className="text-[10px] text-ink-secondary/80">{sourceLine}</span>
       </div>
     </section>
   )

@@ -11,6 +11,7 @@ import {
 } from 'recharts'
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
 import { giPremiumMix, insurers } from '@/data/mockData'
+import { GI_SEGMENT_SOURCE } from '@/lib/industryStructure'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
@@ -149,17 +150,9 @@ function InsightLine({ children, tone = 'neutral' }: { children: ReactNode; tone
 //  LEFT CARD — Pool Shift (multi-line trend)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const POOL_SOURCE = {
-  source: 'Derived from IRDAI' as const,
-  confidence: 'medium' as const,
-  provenance: {
-    source_name:
-      'IRDAI flash figures (re-aggregated by CareRatings Non-Life Insurance Update, March 2025). Direct IRDAI handbook parse pending.',
-    source_url:
-      'https://www.careratings.com/uploads/newsfiles/1745386639_Non-Life%20Insurance%20Update%20for%20March%202025.pdf',
-    fetched_at: '2026-05-28',
-  },
-}
+// Pipeline-fed: the GI Council segment-report provenance travels with the data
+// (latest report edition + the snapshot's own refresh date) — see industryStructure.
+const POOL_SOURCE = GI_SEGMENT_SOURCE
 
 type PoolKey = 'Health' | 'Motor' | 'Others'
 
