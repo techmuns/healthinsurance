@@ -14,6 +14,7 @@
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import type { DashboardFilters, Insurer } from '@/data/types'
+import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
 type FilterInput = Pick<DashboardFilters, 'peerGroup' | 'highlightedCompany'>
 
@@ -25,7 +26,10 @@ export type MetricGroup = 'Growth' | 'Quality' | 'Capital' | 'Valuation'
 
 export interface MetricDef {
   key: string
-  field: keyof Insurer
+  /** Direct Insurer field, OR use `resolve` for feed-derived values (P/E, P/B). */
+  field?: keyof Insurer
+  /** Custom value resolver — e.g. valuation multiples read from the daily feed. */
+  resolve?: (i: Insurer) => number | null
   label: string
   short: string
   group: MetricGroup
@@ -33,6 +37,23 @@ export interface MetricDef {
   polarity: Polarity
   whyItMatters: string
   naWhen?: (i: Insurer) => boolean
+}
+
+// Listed-insurer valuation multiples (P/E, P/B) read straight from the daily
+// valuation feed. These are kept OUT of the canonical Insurer model (they are
+// listed-only and market-driven) — exactly as the Analysis Builder does it.
+// Unlisted SAHIs have no market price → null → rendered as an honest "—", never 0.
+interface ValuationFeedRow { company_id?: string; price_to_earnings?: number | null; price_to_book?: number | null }
+const VALUATION_BY_CO = new Map<string, ValuationFeedRow>(
+  ((valuationSnapshot.data as ValuationFeedRow[]) ?? [])
+    .filter((r) => !!r.company_id)
+    .map((r) => [r.company_id as string, r]),
+)
+function valuationMultiple(i: Insurer, kind: 'pe' | 'pb'): number | null {
+  const r = VALUATION_BY_CO.get(i.id)
+  if (!r) return null
+  const v = kind === 'pe' ? r.price_to_earnings : r.price_to_book
+  return typeof v === 'number' && isFinite(v) ? v : null
 }
 
 /** The eight scorecard columns, grouped Growth · Quality · Capital · Valuation. */
@@ -64,7 +85,17 @@ export const METRICS: MetricDef[] = [
     whyItMatters: 'Solvency above the 1.5x regulatory floor is the cushion that lets a company grow safely without raising equity.',
   },
   {
-    key: 'valuation', field: 'valuation', label: 'Valuation · P/GWP', short: 'Valuation', group: 'Valuation', unit: 'x', polarity: 'rich',
+    key: 'priceToEarnings', resolve: (i) => valuationMultiple(i, 'pe'), label: 'P/E', short: 'P/E', group: 'Valuation', unit: 'x', polarity: 'rich',
+    whyItMatters: 'Price-to-earnings (market price ÷ trailing profit) is the classic richness gauge — how many years of current profit the market is paying for. Listed, profitable insurers only.',
+    naWhen: (i) => valuationMultiple(i, 'pe') == null,
+  },
+  {
+    key: 'priceToBook', resolve: (i) => valuationMultiple(i, 'pb'), label: 'P/B', short: 'P/B', group: 'Valuation', unit: 'x', polarity: 'rich',
+    whyItMatters: 'Price-to-book (market price ÷ net worth) shows the premium over the capital base — for insurers it ties straight to ROE: a richer P/B has to be earned with a higher return on equity.',
+    naWhen: (i) => valuationMultiple(i, 'pb') == null,
+  },
+  {
+    key: 'valuation', field: 'valuation', label: 'P/GWP', short: 'P/GWP', group: 'Valuation', unit: 'x', polarity: 'rich',
     whyItMatters: 'Price-to-GWP (market cap ÷ gross written premium) prices in future growth and quality — it has to be justified by ROE and underwriting improvement. Premium metric, not profit.',
     naWhen: (i) => i.valuation === 0,
   },
@@ -105,7 +136,7 @@ export function median(values: number[]): number | null {
 
 function valueOf(i: Insurer, m: MetricDef): number | null {
   if (m.naWhen?.(i)) return null
-  const v = i[m.field]
+  const v = m.resolve ? m.resolve(i) : m.field ? i[m.field] : null
   return typeof v === 'number' && isFinite(v) ? v : null
 }
 

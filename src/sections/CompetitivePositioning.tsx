@@ -397,7 +397,13 @@ export function CompetitivePositioning() {
   // Display-only summary of the already-computed tones (no new calculation):
   // how many metrics the focal company is leading/strong in — the hero anchor.
   const STRONG_TONES = new Set<CellTone>(['leader', 'strong'])
-  const strongCount = card.metrics.filter((m) => STRONG_TONES.has(focalRow.cells[m.key]?.tone)).length
+  // "Strong+" is only meaningful where strength is the test — valuation multiples
+  // are richness, not strength — so the hero ratio counts the growth/quality/
+  // capital metrics and leaves the rich (P/E · P/B · P/GWP) columns out, keeping
+  // the headline stable as valuation columns are added.
+  const scoredMetrics = card.metrics.filter((m) => m.polarity !== 'rich')
+  const strongCount = scoredMetrics.filter((m) => STRONG_TONES.has(focalRow.cells[m.key]?.tone)).length
+  const strongOf = scoredMetrics.length
   const totalMetrics = card.metrics.length
   const whyBullets = [explainGrowth, explainProfit, explainCapital, explainVal]
   const keyQuestions = [
@@ -442,7 +448,7 @@ export function CompetitivePositioning() {
                 <div className="shrink-0 text-right">
                   <span className="font-display text-[34px] leading-none text-white">
                     {strongCount}
-                    <span className="text-[15px] text-white/55">/{totalMetrics}</span>
+                    <span className="text-[15px] text-white/55">/{strongOf}</span>
                   </span>
                   <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.1em] text-white/55">metrics strong+</p>
                 </div>
