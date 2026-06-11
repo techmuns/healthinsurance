@@ -15,7 +15,11 @@ name: gicouncil segment fetch
 on:
   workflow_dispatch:
   schedule:
-    # 07:00 UTC on the 2nd of every month (a day after the segment report lands).
+    # GIC publishes a month's report around the 3rd week of the following
+    # month (April-2026 file: 19 May; March-2026 file: 18 April). Sweep on
+    # the 22nd to catch the fresh file, and again on the 2nd as a safety net
+    # for late/revised uploads. Both runs are no-ops when nothing is new.
+    - cron: '0 7 22 * *'
     - cron: '0 7 2 * *'
 
 permissions:
