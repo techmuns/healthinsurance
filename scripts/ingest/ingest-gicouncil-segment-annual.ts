@@ -1277,6 +1277,67 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
       }
     }
 
+    // Standalone quarters — Q2 = H1 − Q1 and Q4 = FY − 9M, exact arithmetic
+    // over the printed cumulatives above. These feed the GWP tab's standalone
+    // columns (incl. auto-appended future FY groups, which are plain inputs).
+    const cumEnt = new Map<string, Map<string, EntityValues>>()
+    for (const st of quarterStatements) {
+      cumEnt.set(st.period, new Map(st.entities.map((e) => [`${e.entity}|${e.carrier_group}`, e])))
+    }
+    const fyEnt = new Map<string, { entities: Map<string, EntityValues>; file: string; url: string }>()
+    for (const st of kept) { // kept is oldest→newest; the newest statement wins
+      fyEnt.set(st.fy, {
+        entities: new Map(st.entities.map((e) => [`${e.entity}|${e.carrier_group}`, e])),
+        file: st.file.raw_file, url: st.file.source_url,
+      })
+    }
+    const fySeen = new Set<string>([...cumEnt.keys()].map((p) => p.slice(-4)).concat([...fyEnt.keys()]))
+    for (const fy of fySeen) {
+      const jobs = [
+        { out: `Q2${fy}`, hi: cumEnt.get(`H1${fy}`), lo: cumEnt.get(`Q1${fy}`), src: null as { file: string; url: string } | null,
+          basis: 'derived: standalone Q2 = printed H1 cumulative − printed Q1 cumulative', label: `Q2 ${fy} (standalone, from printed cumulatives)` },
+        { out: `Q4${fy}`, hi: fyEnt.get(fy)?.entities, lo: cumEnt.get(`9M${fy}`), src: fyEnt.get(fy) ?? null,
+          basis: 'derived: standalone Q4 = printed full-year − printed 9M cumulative', label: `Q4 ${fy} (standalone, from printed cumulatives)` },
+      ]
+      for (const job of jobs) {
+        if (!job.hi || !job.lo) continue
+        const provenance = {
+          source_name: `GI Council Segment-wise Report — ${job.label}`,
+          source_url: job.src?.url ?? LISTING_URLS[0],
+          source_file: job.src?.file ?? null,
+          source_period: job.out,
+          fetched_at, parsed_at: nowIso(),
+          parser_name: 'ingest-gicouncil-segment-annual',
+          confidence: 'high' as const,
+        }
+        for (const [key, hiVal] of job.hi) {
+          const loVal = job.lo.get(key)
+          if (!loVal) continue
+          const diff = subFields(hiVal, loVal)
+          let negative = false
+          for (const f of Object.keys(diff) as (keyof HealthFields)[]) {
+            if (diff[f] != null && diff[f]! < 0) { diff[f] = null; negative = true }
+          }
+          if (negative) warnings.push(`${job.out} ${key.split('|')[0]}: cumulative fell across the period (restatement) — field left null, not smoothed.`)
+          if (Object.values(diff).every((v) => v == null)) continue
+          const [entity, carrier_group] = key.split('|')
+          records.push({
+            target: 'gic-health-quarterly',
+            keys: { period: job.out, entity, carrier_group },
+            values: {
+              insurer_name: hiVal.insurer_name,
+              health_retail: diff.health_retail, health_group: diff.health_group,
+              health_govt: diff.health_govt, overseas_medical: diff.overseas_medical,
+              health_total: diff.health_total,
+              basis: job.basis,
+              period_label: job.label,
+            },
+            provenance,
+          })
+        }
+      }
+    }
+
     // Honest processed sidecar — which file "won" each FY, for review.
     const winners: Record<string, { file: string; basis: string }> = {}
     for (const st of kept) winners[st.fy] = { file: st.file.raw_file, basis: st.basis }

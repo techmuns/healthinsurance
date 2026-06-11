@@ -31,6 +31,10 @@ Project guidance for Claude Code sessions on this repository.
 - **Simple language** on the surface too: plain-English labels, with the precise term only as a quiet secondary.
 - **The feel of this dashboard**: a compact, Bloomberg-style analytic surface (thin strokes, slim bars, tight cards) warmed by tinted, tone-coded colour — calm, confident, decision-grade.
 
+**Template auto-extension — standing instruction (Neha, 2026-06-11)**
+- **The pipeline may add new PERIOD columns to the template workbook automatically** — no approval needed, ever. When real data exists for a new period (a new fiscal year, quarter, or month) and the template lacks its column, `scripts/excel/extend_template_periods.py` appends the column group in the established format and the grid fills it on the same run. Neha's words: end-to-end automation is the end goal — "even if I see this whole dashboard after 2 years, I see the best, highest-quality, live-updated data." Never hold filled data hostage to a missing column.
+- Scope guard: this covers **period-column replication only** (new FY/quarter/month columns in the same shape, gated on real data existing). New metrics, new rows, new sections, redesigns of existing layout still follow the normal announce-and-approve rule.
+
 **Non-negotiable honesty rules** (these protect the "best-in-class" trust)
 - Show **real, source-backed data**; never silently fall back to mock or fabricated numbers.
 - **No real data? Ask — every time.** If real, source-backed data for a requested chart / metric / period / year is not available (source blocked, snapshot empty, only a partial basis exists), **STOP and ask Neha how to proceed** — provide a source file, paste figures, re-scope, enable a fetch, or wait for ingestion. Never fabricate, never silently substitute, and never derive a number from an incomplete basis that would mislead. (Standing instruction, Neha, 2026-06-04.)

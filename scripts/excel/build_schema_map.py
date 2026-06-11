@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -160,6 +161,85 @@ def fy_axis(start_col: str, start_fy: int, end_fy: int) -> dict:
         axis[get_column_letter(c)] = (f"FY{fy:02d}", "annual")
         c += 1
     return axis
+
+
+# ---------------------------------------------------------------------------
+# Auto-extended period columns (standing instruction, Neha, 2026-06-11).
+# extend_template_periods.py APPENDS new period column-groups to the template
+# when their data arrives; this picks those columns up by parsing their header
+# text, so the new cells bind on the very next schema build. Hardcoded axes
+# stay the source of truth for the original columns; parsed columns only ADD.
+# A column whose row-2 group banner reads like an analysis block (YoY / Mix /
+# CAGR / growth) is never treated as a period column.
+_ANALYSIS_BANNER = re.compile(r"yoy|growth|mix|cagr|observation", re.I)
+
+
+def _banner_map(ws, banner_row: int = 2) -> dict:
+    """Row-2 group banners, forward-filled across their span."""
+    banners, current = {}, None
+    for col in range(1, ws.max_column + 1):
+        v = ws.cell(row=banner_row, column=col).value
+        if isinstance(v, str) and v.strip():
+            current = v.strip()
+        banners[col] = current
+    return banners
+
+
+def augment_axis_from_headers(ws, axis: dict, header_row: int, parse) -> tuple[dict, set]:
+    """Returns (axis incl. auto-appended period columns, the appended column
+    letters). Appended columns' cells are blank by design (data fills them),
+    so the caller must keep them as fillable inputs instead of dropping them
+    as 'empty'."""
+    out = dict(axis)
+    appended: set[str] = set()
+    last_fixed = max(column_index_from_string(c) for c in axis)
+    banners = _banner_map(ws)
+    for col in range(last_fixed + 1, ws.max_column + 1):
+        if _ANALYSIS_BANNER.search(banners.get(col) or ""):
+            continue
+        got = parse(ws.cell(row=header_row, column=col).value)
+        if got:
+            out[get_column_letter(col)] = got
+            appended.add(get_column_letter(col))
+    return out, appended
+
+
+def _parse_fy_year_header(v):
+    if isinstance(v, (int, float)) and 15 <= int(v) <= 99:
+        return (f"FY{int(v):02d}", "annual")
+    return None
+
+
+_GWP_HEADER_RES = [
+    (re.compile(r"^Q([124])(FY\d{2})$"), lambda m: (f"Q{m.group(1)}{m.group(2)}", "quarterly")),
+    (re.compile(r"^H1(FY\d{2})$"), lambda m: (f"H1{m.group(1)}", "quarterly_cumulative")),
+    (re.compile(r"^upto Q3(FY\d{2})$"), lambda m: (f"9M{m.group(1)}", "quarterly_cumulative")),
+    (re.compile(r"^(FY\d{2})$"), lambda m: (m.group(1), "annual")),
+]
+
+
+def _parse_gwp_header(v):
+    s = str(v or "").strip()
+    for rex, mk in _GWP_HEADER_RES:
+        m = rex.match(s)
+        if m:
+            return mk(m)
+    return None
+
+
+_Q1_MONTH_RE = re.compile(r"^(Apr|May|Jun)'(\d{2})$")
+
+
+def _parse_q1_header(v):
+    s = str(v or "").strip()
+    m = _Q1_MONTH_RE.match(s)
+    if m:
+        # Apr'26 is the first month of FY27 (calendar yy + 1).
+        return (f"{m.group(1)}-FY{int(m.group(2)) + 1:02d}", "monthly")
+    m = re.match(r"^Q1(FY\d{2})$", s)
+    if m:
+        return (f"Q1{m.group(1)}", "quarterly")
+    return None
 
 
 GWP_FY_AXIS = {  # FY26 GWP sheet: previous FY (C-H) then current FY (I-N)
@@ -432,8 +512,26 @@ def _binding(ws_v, ws_f, col, row, *, entity, metric, period, period_type, unit,
     }
 
 
-def build_entity_rows(ws_v, ws_f, *, sections, axis, source_key, default_unit, period_type_override=None):
-    """Orientation: entity per row (col B label), one metric per table, period across columns."""
+def _keep_bindings(out, keep_empty_cols=frozenset()):
+    """Drop blank cells, EXCEPT in auto-appended period columns — those are
+    blank by design and stay fillable inputs (Neha, 2026-06-11)."""
+    result = []
+    for b in out:
+        if b["cell_kind"] != "empty":
+            result.append(b)
+        elif b["cell"].rstrip("0123456789") in keep_empty_cols:
+            b["cell_kind"] = "input"
+            b["fillable"] = True
+            b["is_external_input"] = True
+            result.append(b)
+    return result
+
+
+def build_entity_rows(ws_v, ws_f, *, sections, axis, source_key, default_unit, period_type_override=None,
+                      keep_empty_cols=frozenset()):
+    """Orientation: entity per row (col B label), one metric per table, period across columns.
+    keep_empty_cols: auto-appended period columns — blank by design, kept as
+    fillable inputs (standing instruction, Neha, 2026-06-11)."""
     out = []
     for sec in sections:
         metric = sec["metric"]
@@ -450,11 +548,11 @@ def build_entity_rows(ws_v, ws_f, *, sections, axis, source_key, default_unit, p
                     period_type=period_type_override or ptype, unit=unit,
                     source_key=source_key, section=sec["name"],
                 ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out, keep_empty_cols)
 
 
 def build_industry_growth(ws_v, ws_f):
-    axis = fy_axis("C", 15, 26)
+    axis, appended = augment_axis_from_headers(ws_v, fy_axis("C", 15, 26), 3, _parse_fy_year_header)
     sections = [
         {"name": "GI industry premium by segment", "metric": "gi_segment_gross_premium",
          "row_start": 4, "row_end": 7, "unit": "INR_cr"},
@@ -467,7 +565,7 @@ def build_industry_growth(ws_v, ws_f):
         {"name": "Retail health premium by insurer", "metric": "retail_health_premium",
          "row_start": 54, "row_end": 66, "unit": "INR_cr"},
     ]
-    return build_entity_rows(ws_v, ws_f, sections=sections, axis=axis,
+    return build_entity_rows(ws_v, ws_f, sections=sections, axis=axis, keep_empty_cols=appended,
                              source_key="industry_premium", default_unit="INR_cr")
 
 
@@ -478,7 +576,8 @@ def build_fy26_gwp(ws_v, ws_f):
         {"name": "Retail Health GWP", "metric": "retail_health_gwp",
          "row_start": 29, "row_end": 48},
     ]
-    return build_entity_rows(ws_v, ws_f, sections=sections, axis=GWP_FY_AXIS,
+    axis, appended = augment_axis_from_headers(ws_v, GWP_FY_AXIS, 3, _parse_gwp_header)
+    return build_entity_rows(ws_v, ws_f, sections=sections, axis=axis, keep_empty_cols=appended,
                              source_key="company_premium_quarterly", default_unit="INR_cr")
 
 
@@ -489,7 +588,8 @@ def build_q1_gwp(ws_v, ws_f):
         {"name": "Retail Health GWP (monthly)", "metric": "retail_health_gwp",
          "row_start": 29, "row_end": 48},
     ]
-    return build_entity_rows(ws_v, ws_f, sections=sections, axis=Q1_MONTHLY_AXIS,
+    axis, appended = augment_axis_from_headers(ws_v, Q1_MONTHLY_AXIS, 3, _parse_q1_header)
+    return build_entity_rows(ws_v, ws_f, sections=sections, axis=axis, keep_empty_cols=appended,
                              source_key="company_premium_monthly", default_unit="INR_cr")
 
 
@@ -505,7 +605,7 @@ def build_sahis_comparison(ws_v, ws_f):
                     period_type=ptype, unit=unit, source_key=source_key,
                     section="SAHI detailed comparison",
                 ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_comps(ws_v, ws_f):
@@ -522,7 +622,7 @@ def build_comps(ws_v, ws_f):
                 conf="medium" if source_key == "valuation_history" else "high",
                 replace_formula=col in ciq_external,
             ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_captable(ws_v, ws_f):
@@ -539,7 +639,7 @@ def build_captable(ws_v, ws_f):
             period=period, period_type="point_in_time", unit="shares",
             source_key="shareholding", section="Shareholding pattern",
         ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_channel_mix(ws_v, ws_f):
@@ -567,7 +667,7 @@ def build_channel_mix(ws_v, ws_f):
                     period_type=ptype, unit=unit, source_key="distribution",
                     section="Agent productivity", conf="medium",
                 ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_hist_stock(ws_v, ws_f):
@@ -586,7 +686,7 @@ def build_hist_stock(ws_v, ws_f):
                 period_type="daily", unit=unit, source_key="market_quote",
                 section="Historical stock movement",
             ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_analyst(ws_v, ws_f):
@@ -610,7 +710,7 @@ def build_analyst(ws_v, ws_f):
                 period=period, period_type="event", unit=unit,
                 source_key="analyst_coverage", section="Analyst coverage", conf="low",
             ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_mgmt_commentary(ws_v, ws_f):
@@ -632,7 +732,7 @@ def build_mgmt_commentary(ws_v, ws_f):
                 period_type="event", unit="text", source_key="management_commentary",
                 section="Management commentary", conf="low",
             ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 def build_sector_news(ws_v, ws_f):
@@ -649,7 +749,7 @@ def build_sector_news(ws_v, ws_f):
             period_type="event", unit="text", source_key="sector_news",
             section="Key sectoral updates", conf="low",
         ))
-    return [b for b in out if b["cell_kind"] != "empty"]
+    return _keep_bindings(out)
 
 
 SHEET_ROLE = {

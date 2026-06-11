@@ -157,8 +157,11 @@ jobs:
       - name: Install Excel build deps
         run: pip install openpyxl
 
-      - name: Build filled workbook (schema-map → value store → fill → audit index)
+      - name: Build filled workbook (extend periods → schema-map → value store → fill → audit index)
         run: |
+          # Standing instruction (Neha, 2026-06-11): when data exists for a new
+          # period, append its column group to the template automatically.
+          python3 scripts/excel/extend_template_periods.py
           python3 scripts/excel/build_schema_map.py templates/niva-bupa-portfolio-review.xlsx
           python3 scripts/excel/build_value_store.py
           python3 scripts/excel/fill_template.py
@@ -185,7 +188,7 @@ jobs:
           # Stage only the data layer + snapshot + schema artefacts so unrelated
           # changes never sneak in via a scheduled run. The filled .xlsx is an
           # artifact (git-ignored), not committed.
-          git add data/ src/data/snapshots/ schema-map.json
+          git add data/ src/data/snapshots/ schema-map.json templates/
           if ! git diff --staged --quiet; then
             git commit -m "data: ingest ${{ steps.cadence.outputs.value }} run @ $(date -u +%Y-%m-%dT%H:%MZ)"
             # main moves constantly (other sessions + workflows push during a

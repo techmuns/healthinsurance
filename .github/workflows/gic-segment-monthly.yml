@@ -57,9 +57,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Project into the workbook grid (value store -> fill -> audit index)
+      - name: Project into the workbook grid (extend periods -> schema -> value store -> fill -> audit index)
         run: |
           pip install openpyxl
+          # Standing instruction (Neha, 2026-06-11): when data exists for a new
+          # period, append its column group to the template automatically.
+          python3 scripts/excel/extend_template_periods.py
+          python3 scripts/excel/build_schema_map.py templates/niva-bupa-portfolio-review.xlsx
           python3 scripts/excel/build_value_store.py
           python3 scripts/excel/fill_template.py
           python3 scripts/excel/build_audit_index.py
@@ -71,7 +75,7 @@ jobs:
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add data/ src/data/snapshots/
+          git add data/ src/data/snapshots/ schema-map.json templates/
           if git diff --staged --quiet; then
             echo "No changes — nothing to commit."
             exit 0
