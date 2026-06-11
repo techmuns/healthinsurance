@@ -1,5 +1,6 @@
 {
   "data/raw/gicouncil/segment/2018-05.xlsx@b518ee5afe17": "parse exceeded 20s (pathological workbook) @ 2026-06-11T07:42:28.504Z",
   "data/raw/gicouncil/segment/2022-05.xlsx@0748ccbcc902": "parse exceeded 20s (pathological workbook) @ 2026-06-11T07:42:53.343Z",
-  "data/raw/gicouncil/segment/2024-11.xlsx@ef504949f821": "parse exceeded 20s (pathological workbook) @ 2026-06-11T07:43:14.142Z"
+  "data/raw/gicouncil/segment/2024-11.xlsx@ef504949f821": "parse exceeded 20s (pathological workbook) @ 2026-06-11T07:43:14.142Z",
+  "data/raw/gicouncil/segment-annual/FY22-march.xlsx@0ac4a765e6fe": "parse exceeded 20s (pathological workbook) @ 2026-06-11T07:57:38.381Z"
 }
