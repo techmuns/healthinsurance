@@ -70,16 +70,24 @@ jobs:
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add data/ src/data/snapshots/
-          if git diff --staged --quiet; then
-            echo "No changes — nothing to commit."
-            exit 0
-          fi
-          git commit -m "data: analyst coverage refresh @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          # 1) Commit ONLY the analyst-exclusive source (snapshot + raw pulls). No
+          #    other workflow touches these, so this commit always rebases cleanly.
+          git add src/data/snapshots/analyst-coverage-snapshot.json data/agent-pulls/analyst-coverage
+          git commit -m "data: analyst coverage snapshot @ $(date -u +%Y-%m-%dT%H:%MZ)" || { echo "no snapshot change"; exit 0; }
+          # 2) Drop the working-tree generated files; they are rebuilt after landing.
+          git checkout -- . 2>/dev/null || true
+          git clean -fd data/processed src/data/snapshots 2>/dev/null || true
+          # 3) Land on latest main and REBUILD the derived files there (they are
+          #    generated, never merged), then commit + push. Retry on races with
+          #    other data workflows (this is what the old git-pull-rebase tripped on).
           for i in 1 2 3 4 5; do
-            if git pull --rebase --autostash origin main && git push; then
-              echo "pushed on attempt $i"; exit 0
-            fi
-            echo "push attempt $i failed; retrying..."; sleep 5
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            python3 scripts/excel/build_value_store.py >/dev/null 2>&1 || true
+            python3 scripts/excel/build_audit_index.py >/dev/null 2>&1 || true
+            git add data/ src/data/snapshots/
+            git diff --staged --quiet || git commit -m "data: rebuild audit index @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            if git push; then echo "pushed on attempt $i"; exit 0; fi
+            git log -1 --pretty=%s | grep -q "rebuild audit index" && git reset --hard HEAD~1
+            sleep 5
           done
           echo "ERROR: push failed after retries"; exit 1
