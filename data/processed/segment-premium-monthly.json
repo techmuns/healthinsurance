@@ -5,7 +5,7 @@
     "source": "GI Council Segmentwise Report (Statistics → Industry Statistics)",
     "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
     "dataset": "official",
-    "last_fetched_at": "2026-06-11T14:25:30.675Z",
+    "last_fetched_at": "2026-06-11T16:17:11.592Z",
     "last_updated": "2026-06-11",
     "note": "monthly = (YTD up to this month) − (YTD up to previous month); April is its own month; up_to_month rows lack a predecessor.",
     "warnings": [
@@ -30,7 +30,7 @@
     {
       "month": "2025-04",
       "source_period": "For the period up to April 2025",
-      "source_url": "https://www.gicouncil.in/media/4522/segment_april_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -414,7 +414,7 @@
     {
       "month": "2025-05",
       "source_period": "For the period up to May 2025",
-      "source_url": "https://www.gicouncil.in/media/4540/segment_may_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -798,7 +798,7 @@
     {
       "month": "2025-06",
       "source_period": "For the period up to June 2025",
-      "source_url": "https://www.gicouncil.in/media/4545/segment_june_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -1182,7 +1182,7 @@
     {
       "month": "2025-07",
       "source_period": "For the period up to July 2025",
-      "source_url": "https://www.gicouncil.in/media/4561/segment_july_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -1566,7 +1566,7 @@
     {
       "month": "2025-08",
       "source_period": "For the period up to August 2025",
-      "source_url": "https://www.gicouncil.in/media/4564/segment_august_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -1950,7 +1950,7 @@
     {
       "month": "2025-09",
       "source_period": "For the period up to September 2025",
-      "source_url": "https://www.gicouncil.in/media/4572/segment_september_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
@@ -2287,7 +2287,7 @@
     {
       "month": "2025-10",
       "source_period": "For the period up to October 2025",
-      "source_url": "https://www.gicouncil.in/media/4577/segment_october_2025.xlsx",
+      "source_url": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "confidence": "high",
       "rows": [
         {
