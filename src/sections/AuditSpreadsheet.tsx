@@ -5,6 +5,7 @@ import {
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
 } from '@/lib/extractedDataAudit'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
+import { AnalystCoverage } from '@/sections/AnalystCoverage'
 
 // ---------------------------------------------------------------------------
 //  Audit · Spreadsheet view — mirrors the source Excel template tab-for-tab and
@@ -486,6 +487,12 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
         // can't represent — it gets a dedicated, workbook-faithful renderer.
         <HistoricalStockMovement />
+      ) : group.role === 'analyst_coverage' ? (
+        // Analyst coverage is a record list — each row a dated broker note with
+        // nine attributes, not a period pivot — so it also gets a dedicated,
+        // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
+        // Upside×2, in four company blocks closed by Average rows).
+        <AnalystCoverage group={group} />
       ) : (
       <>
       {/* ───────── grid view ───────── */}
