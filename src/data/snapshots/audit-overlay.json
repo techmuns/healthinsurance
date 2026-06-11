@@ -5020,79 +5020,79 @@
       "value": 1881.67,
       "unit": "INR_cr",
       "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
-      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_url": "https://www.adityabirlacapital.com/investor-relations/financial-reports",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "aditya-birla::group_other_gwp::FY24": {
       "value": 2574.09,
       "unit": "INR_cr",
       "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
-      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_url": "https://www.adityabirlacapital.com/investor-relations/financial-reports",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "aditya-birla::group_other_gwp::FY25": {
       "value": 3500.24,
       "unit": "INR_cr",
       "source_name": "Derived: aditya-birla total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
-      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_url": "https://www.adityabirlacapital.com/investor-relations/financial-reports",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "manipalcigna::group_other_gwp::FY23": {
       "value": 781.22,
       "unit": "INR_cr",
       "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
-      "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
+      "source_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "manipalcigna::group_other_gwp::FY24": {
       "value": 945.41,
       "unit": "INR_cr",
       "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
-      "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
+      "source_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "manipalcigna::group_other_gwp::FY25": {
       "value": 1112.54,
       "unit": "INR_cr",
       "source_name": "Derived: manipalcigna total GWP (1/n) minus retail health GWP — both from the same IRDAI/annual-report basis already in the grid.",
-      "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
-      "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+      "source_url": "https://www.manipalcigna.com/disclosures/financial-disclosures",
+      "source_file": null,
       "source_page": null,
       "fetched_at": "2026-06-10T21:20:42.631Z",
       "confidence": "high",
       "priority": 1,
       "layer": "official_filing",
-      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis."
+      "note": "Derived = total GWP minus retail health GWP (group + PA + travel + others). Both legs are source-backed on the same 1/n basis. [Derived from grid values; underlying documents accessible from this official disclosures page.]"
     },
     "aditya-birla::total_gwp::Q1FY26": {
       "value": 1357,

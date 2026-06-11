@@ -337,7 +337,12 @@ GIC_GWP_TOTAL_ENTITY = "Total Health GWP (INR cr)"
 
 
 def gic_gwp_candidates(r, period, ent, grp, prov):
-    """Project one GIC health row onto the FY26 GWP tab's two metrics."""
+    """Project one GIC health row onto the GWP tabs' two metrics."""
+    # The GWP tabs' hdfc-ergo row means HDFC ERGO General. The SAHI-era entity
+    # (Apollo Munich / HDFC Ergo Health, FY18-FY21) shares the id but feeds the
+    # SAHI sections only — both rows here would be a same-id conflict.
+    if ent == "hdfc-ergo" and grp == "sahi":
+        return
     if grp in ("sahi", "general") and ent in GIC_GWP_TAB_IDS:
         snap_candidate(ent, "total_health_gwp", period, r.get("health_total"), "identity", "INR_cr", prov)
         snap_candidate(ent, "retail_health_gwp", period, r.get("health_retail"), "identity", "INR_cr", prov)
@@ -418,6 +423,15 @@ def collect_existing():
             continue
         for field, entity, metric in INDUSTRY_MAP:
             snap_candidate(entity, metric, period, r.get(field), "identity", "INR_cr", prov)
+    for r in load("gic-health-monthly"):
+        period, ent, grp = r.get("period"), r.get("entity"), r.get("carrier_group")
+        if not period or not ent:
+            continue
+        prov = dict(r.get("provenance", {}))
+        basis = r.get("basis")
+        if basis and str(basis).startswith("derived"):
+            prov["source_name"] = f"{prov.get('source_name')} · {basis}"
+        gic_gwp_candidates(r, period, ent, grp, prov)
     for r in load("gic-health-quarterly"):
         period, ent, grp = r.get("period"), r.get("entity"), r.get("carrier_group")
         if not period or not ent:
@@ -459,7 +473,10 @@ def collect_existing():
                            r.get("health_total"), "identity", "INR_cr", prov)
             snap_candidate(ent, "sahi_retail_health_premium", period,
                            r.get("health_retail"), "identity", "INR_cr", prov)
-        if ent in GIC_RETAIL_INSURER_IDS:
+        # Retail-by-insurer row: hdfc-ergo here means HDFC ERGO General; the
+        # SAHI-era Apollo Munich rows (same id, FY18-FY21) feed only the SAHI
+        # sections above — both would be a same-id conflict.
+        if ent in GIC_RETAIL_INSURER_IDS and not (ent == "hdfc-ergo" and grp == "sahi"):
             snap_candidate(ent, "retail_health_premium", period,
                            r.get("health_retail"), "identity", "INR_cr", prov)
     for r in load("price-history-snapshot"):

@@ -59,7 +59,14 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 function looksLikeXlsx(buf: Buffer): boolean {
   // XLSX = ZIP container: PK\x03\x04. (Legacy .xls = D0 CF 11 E0 compound doc.)
   if (buf.length < 1024) return false
-  return (buf[0] === 0x50 && buf[1] === 0x4b) || (buf[0] === 0xd0 && buf[1] === 0xcf)
+  if (buf[0] === 0xd0 && buf[1] === 0xcf) return true // legacy .xls
+  if (!(buf[0] === 0x50 && buf[1] === 0x4b)) return false
+  // Relays sometimes return TRUNCATED bodies that still begin with PK magic.
+  // A real zip ends with the end-of-central-directory record (PK\x05\x06,
+  // within the last 64KB+22 bytes) — require it so truncation fails the tier
+  // and the next route gets tried instead of a corrupt file being staged.
+  const tail = buf.subarray(Math.max(0, buf.length - 65_557))
+  return tail.includes(Buffer.from([0x50, 0x4b, 0x05, 0x06]))
 }
 
 function looksLikeListing(buf: Buffer, url: string): boolean {

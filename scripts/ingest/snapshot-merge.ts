@@ -36,6 +36,7 @@ const TARGET_FILES: Record<SnapshotTarget, string> = {
   'industry-segment-premium': 'industry-segment-premium.json',
   'gic-health-portfolio': 'gic-health-portfolio.json',
   'gic-health-quarterly': 'gic-health-quarterly.json',
+  'gic-health-monthly': 'gic-health-monthly.json',
   'distribution-channel-mix': 'distribution-channel-mix.json',
   'distribution-reach-depth': 'distribution-reach-depth.json',
   'valuation-snapshot': 'valuation-snapshot.json',

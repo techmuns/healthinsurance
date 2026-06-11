@@ -52,12 +52,14 @@
 
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
 import type { XlsxRow } from './parsers'
-import { parseXlsx, toNumber } from './parsers'
+import { toNumber } from './parsers'
+import { Worker } from 'node:worker_threads'
+import { createRequire } from 'node:module'
 import { gicFetch } from './gic-fetch'
 import { appendLog, ensureDir, fileExists, isOfflineMode, nowIso, writeRaw, RAW_ROOT, PROCESSED_ROOT, REPO_ROOT } from './util'
 import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
-import { readdir, readFile, writeFile } from 'node:fs/promises'
+import { readdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
 
 const SOURCE_ID = 'gicouncil_segmentwise_annual'
@@ -439,9 +441,116 @@ async function resolveSources(warnings: string[]): Promise<SourceFile[]> {
 
 // ── sheet parsing ───────────────────────────────────────────────────────────
 
-function findSheet(sheets: Record<string, XlsxRow[]>, re: RegExp): XlsxRow[] | null {
-  const name = Object.keys(sheets).find((n) => re.test(n))
-  return name ? sheets[name] : null
+// Old GIC editions (2018-2021) are 20× larger workbooks, and at least one
+// (2018-05) HANGS SheetJS outright — even listing its sheet names never
+// returns. SheetJS is synchronous, so the only reliable guard is to parse in
+// a WORKER THREAD with a hard deadline: on timeout the worker is terminated,
+// the file is recorded in a durable quarantine list (skipped by every future
+// run, surfaced as a warning — its cells stay honestly pending), and the
+// pipeline moves on. The worker also parses ONLY the three sheets we read,
+// capped at 200 rows × 40 columns (the real tables are < 100 rows).
+const SHEET_RES_SRC: Record<string, string> = {
+  health: 'health\\s*portfolio',
+  segmentwise: 'segment\\s*wise|segmentwise',
+  misc: 'miscellaneous',
+}
+const PARSE_TIMEOUT_MS = 20_000
+const QUARANTINE_PATH = () => resolve(RAW_ROOT, 'gicouncil', 'parse-quarantine.json')
+
+const WORKER_SRC = `
+const { parentPort, workerData } = require('node:worker_threads')
+const { readFileSync } = require('node:fs')
+const XLSX = require(workerData.xlsxPath)
+parentPort.on('message', (job) => {
+  try {
+    const buf = job.bytes ? Buffer.from(job.bytes) : readFileSync(job.filePath)
+    const names = (XLSX.read(buf, { type: 'buffer', bookSheets: true }).SheetNames) || []
+    const wanted = {}
+    for (const [key, re] of Object.entries(job.sheetRes)) {
+      const hit = names.find((n) => new RegExp(re, 'i').test(n))
+      if (hit && !(hit in wanted)) wanted[hit] = key
+    }
+    const out = {}
+    if (Object.keys(wanted).length > 0) {
+      const wb = XLSX.read(buf, { type: 'buffer', sheets: Object.keys(wanted), sheetRows: 200 })
+      for (const [name, key] of Object.entries(wanted)) {
+        const sheet = wb.Sheets[name]
+        if (!sheet) continue
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, raw: true, defval: null })
+        out[key] = rows.map((r) => (r.length > 40 ? r.slice(0, 40) : r))
+      }
+    }
+    parentPort.postMessage({ id: job.id, ok: true, sheets: out })
+  } catch (err) {
+    parentPort.postMessage({ id: job.id, ok: false, error: String((err && err.message) || err) })
+  }
+})
+`
+
+let parseWorker: import('node:worker_threads').Worker | null = null
+let jobSeq = 0
+const jobWaiters = new Map<number, { resolve: (v: { ok: boolean; sheets?: Record<string, XlsxRow[]>; error?: string }) => void }>()
+
+function ensureWorker(): import('node:worker_threads').Worker {
+  if (parseWorker) return parseWorker
+  const xlsxPath = createRequire(import.meta.url).resolve('xlsx')
+  parseWorker = new Worker(WORKER_SRC, { eval: true, workerData: { xlsxPath } })
+  parseWorker.unref()
+  parseWorker.on('message', (msg: { id: number; ok: boolean; sheets?: Record<string, XlsxRow[]>; error?: string }) => {
+    jobWaiters.get(msg.id)?.resolve(msg)
+    jobWaiters.delete(msg.id)
+  })
+  parseWorker.on('error', () => {
+    for (const [, w] of jobWaiters) w.resolve({ ok: false, error: 'parse worker crashed' })
+    jobWaiters.clear()
+    parseWorker = null
+  })
+  return parseWorker
+}
+
+async function stopParseWorker(): Promise<void> {
+  if (parseWorker) {
+    await parseWorker.terminate().catch(() => undefined)
+    parseWorker = null
+  }
+}
+
+async function loadQuarantine(): Promise<Record<string, string>> {
+  try {
+    return JSON.parse(await readFile(QUARANTINE_PATH(), 'utf8'))
+  } catch {
+    return {}
+  }
+}
+
+async function quarantineFile(rawFile: string, reason: string): Promise<void> {
+  const q = await loadQuarantine()
+  q[rawFile] = `${reason} @ ${nowIso()}`
+  await ensureDir(resolve(RAW_ROOT, 'gicouncil'))
+  await writeFile(QUARANTINE_PATH(), JSON.stringify(q, null, 2) + '\n', 'utf8')
+}
+
+/** Read the three GIC sheets in the worker, hard-capped at PARSE_TIMEOUT_MS.
+ *  Returns null on timeout/crash (the caller records the quarantine). */
+async function readGicSheets(src: { filePath?: string; bytes?: Buffer }): Promise<Record<string, XlsxRow[]> | null> {
+  const worker = ensureWorker()
+  const id = ++jobSeq
+  const result = await new Promise<{ ok: boolean; sheets?: Record<string, XlsxRow[]>; error?: string }>((resolveJob) => {
+    const timer = setTimeout(async () => {
+      jobWaiters.delete(id)
+      await stopParseWorker() // the only way to stop a wedged synchronous parse
+      resolveJob({ ok: false, error: `parse exceeded ${PARSE_TIMEOUT_MS / 1000}s (pathological workbook)` })
+    }, PARSE_TIMEOUT_MS)
+    jobWaiters.set(id, {
+      resolve: (v) => {
+        clearTimeout(timer)
+        resolveJob(v)
+      },
+    })
+    worker.postMessage({ id, filePath: src.filePath, bytes: src.bytes, sheetRes: SHEET_RES_SRC })
+  })
+  if (!result.ok) throw new Error(result.error ?? 'parse failed')
+  return result.sheets ?? {}
 }
 
 /** Locate the header row + column index per normalised alias. */
@@ -581,11 +690,48 @@ function industryTotalsOf(
   return null
 }
 
-function parseWorkbook(buffer: Buffer, warnings: string[]): FileParse | null {
-  const { sheets } = parseXlsx(buffer)
-  const hp = findSheet(sheets, /health\s*portfolio/i)
-  const sw = findSheet(sheets, /segment\s*wise|segmentwise/i)
-  const misc = findSheet(sheets, /miscellaneous/i)
+let quarantineCache: Record<string, string> | null = null
+
+/** Remove a staged GIC copy so the next live run re-downloads fresh bytes.
+ *  Only ever touches files under the gicouncil raw tree. */
+async function dropBadCopy(key: string, warnings: string[], why: string): Promise<void> {
+  if (!key.startsWith('data/raw/gicouncil/')) return
+  try {
+    await unlink(resolve(REPO_ROOT, key))
+    warnings.push(`${why} — removed ${key}; the next live run re-downloads it.`)
+  } catch { /* already gone */ }
+}
+
+async function parseWorkbook(buffer: Buffer, key: string, warnings: string[]): Promise<FileParse | null> {
+  quarantineCache = quarantineCache ?? (await loadQuarantine())
+  // Quarantine is keyed file+content, so a freshly re-downloaded copy (new
+  // bytes) gets a new attempt while the same bad bytes stay skipped.
+  const qKey = `${key}@${createHash('sha256').update(buffer).digest('hex').slice(0, 12)}`
+  if (quarantineCache[qKey]) {
+    warnings.push(`skipped (quarantined pathological workbook): ${key} — ${quarantineCache[qKey]}`)
+    return null
+  }
+  let sheets: Record<string, XlsxRow[]>
+  try {
+    sheets = (await readGicSheets({ bytes: buffer })) ?? {}
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err)
+    if (/compressed size|central directory|corrupt|invalid zip|unsupported/i.test(reason)) {
+      // A truncated/garbage relay response that still carried the ZIP magic.
+      await dropBadCopy(key, warnings, `corrupt download (${reason})`)
+    } else if (/exceeded|crashed/.test(reason)) {
+      await quarantineFile(qKey, reason)
+      quarantineCache[qKey] = reason
+      warnings.push(`QUARANTINED ${key}: ${reason} — its periods stay honestly pending.`)
+      await dropBadCopy(key, warnings, 'pathological copy') // a fresh download gets one new chance
+    } else {
+      warnings.push(`parse failed (${key}): ${reason}`)
+    }
+    return null
+  }
+  const hp = sheets.health ?? null
+  const sw = sheets.segmentwise ?? null
+  const misc = sheets.misc ?? null
   if (!hp || !sw) {
     warnings.push('expected sheets ("Health Portfolio" + "Segmentwise Report") not found — not a full-FY segment workbook?')
     return null
@@ -787,19 +933,14 @@ interface QuarterStatement {
   periodLabel: string
 }
 
-function quarterStatementsOf(files: QuarterFile[], warnings: string[]): QuarterStatement[] {
+async function quarterStatementsOf(files: QuarterFile[], warnings: string[]): Promise<QuarterStatement[]> {
   const statements: QuarterStatement[] = []
   for (const file of files) {
     const mm = file.period.slice(5, 7)
     const q = QUARTER_END[mm]
     if (!q) continue
     const fileWarnings: string[] = []
-    let parse: FileParse | null = null
-    try {
-      parse = parseWorkbook(file.buffer, fileWarnings)
-    } catch (err) {
-      fileWarnings.push(`parse error: ${err instanceof Error ? err.message : String(err)}`)
-    }
+    const parse = await parseWorkbook(file.buffer, file.raw_file, fileWarnings)
     warnings.push(...fileWarnings.map((w) => `${file.raw_file}: ${w}`))
     if (!parse) continue
     const fy = fyOfQuarterEnd(file.period)
@@ -825,6 +966,119 @@ function quarterStatementsOf(files: QuarterFile[], warnings: string[]): QuarterS
   return kept
 }
 
+// ── single-month statements (the Q1'26 GWP tab's monthly inputs) ────────────
+//
+// The monthly editions are cumulative; a single month is the difference of
+// two adjacent printed cumulatives within the same fiscal year (April IS its
+// own month — the FY starts there). Computed per insurer per field from the
+// latest-statement YTD table; a negative difference (restatement between
+// editions) is set null with a warning, never smoothed. Emitted for every
+// month available so future quarter tabs fill without code changes.
+
+const MONTH_LABEL = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
+const FULL_MONTH = ['April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March']
+
+/** Fiscal-month index 0..11 (Apr=0) and FY label for a calendar YYYY-MM. */
+function fiscalOf(period: string): { fy: string; fm: number } {
+  const [yyyy, mm] = period.split('-').map(Number)
+  const fm = (mm + 8) % 12
+  const fyEnd = mm >= 4 ? yyyy + 1 : yyyy
+  return { fy: `FY${String(fyEnd).slice(2)}`, fm }
+}
+
+interface MonthlyPoint {
+  recency: string
+  file: string
+  url: string
+  values: HealthFields
+  insurer_name: string
+}
+
+async function monthlyStatements(
+  files: Array<{ period: string; buffer: Buffer; source_url: string; raw_file: string }>,
+  warnings: string[],
+): Promise<Array<{ period: string; periodLabel: string; file: string; url: string; entities: EntityValues[]; derivation: string | null }>> {
+  // YTD table: `${fy}|${fm}|${entity}|${group}` → latest statement of that point.
+  const ytd = new Map<string, MonthlyPoint>()
+  const put = (key: string, p: MonthlyPoint) => {
+    const cur = ytd.get(key)
+    if (!cur || p.recency > cur.recency) ytd.set(key, p)
+  }
+  for (const file of files) {
+    const fileWarnings: string[] = []
+    const tf = Date.now()
+    const parse = await parseWorkbook(file.buffer, file.raw_file, fileWarnings)
+    if (Date.now() - tf > 1500) console.error(`[gic-annual] slow parse ${file.raw_file}: ${((Date.now() - tf) / 1000).toFixed(1)}s`)
+    warnings.push(...fileWarnings.map((w) => `${file.raw_file}: ${w}`))
+    if (!parse) continue
+    const { fy, fm } = fiscalOf(file.period)
+    const prevYearFy = prevFy(fy)
+    for (const which of ['current', 'previous'] as const) {
+      const rowFy = which === 'current' ? fy : prevYearFy
+      for (const e of entitiesForYear(parse, which, `${MONTH_LABEL[fm]}-${rowFy}`, warnings)) {
+        put(`${rowFy}|${fm}|${e.entity}|${e.carrier_group}`, {
+          recency: file.period, file: file.raw_file, url: file.source_url,
+          insurer_name: e.insurer_name ?? e.entity,
+          values: {
+            health_retail: e.health_retail, health_group: e.health_group,
+            health_govt: e.health_govt, overseas_medical: e.overseas_medical,
+            health_total: e.health_total,
+          },
+        })
+      }
+    }
+  }
+
+  // Adjacent YTD differences → single months (April = its own YTD).
+  const byPeriod = new Map<string, { periodLabel: string; entities: EntityValues[]; file: string; url: string; derivation: string | null }>()
+  for (const [key, point] of ytd) {
+    const [fy, fmStr, entity, group] = key.split('|')
+    const fm = Number(fmStr)
+    const prev = fm === 0 ? null : ytd.get(`${fy}|${fm - 1}|${entity}|${group}`)
+    if (fm > 0 && !prev) continue // no predecessor edition staged — honest pending
+    const single = emptyHealth()
+    let negative = false
+    for (const f of Object.keys(single) as (keyof HealthFields)[]) {
+      const cur = point.values[f]
+      const before = fm === 0 ? 0 : prev!.values[f]
+      if (cur == null || before == null) { single[f] = null; continue }
+      const d = r2(cur - before)
+      if (d < 0) { single[f] = null; negative = true; continue }
+      single[f] = d
+    }
+    if (negative) warnings.push(`${MONTH_LABEL[fm]}-${fy} ${entity}: a cumulative fell vs the prior month (restatement between editions) — that field left null, not smoothed.`)
+    if (Object.values(single).every((v) => v == null)) continue
+    const periodKey = `${MONTH_LABEL[fm]}-${fy}`
+    const bucket = byPeriod.get(periodKey) ?? {
+      periodLabel: `${FULL_MONTH[fm]} 20${fm >= 9 ? fy.slice(2) : String(Number(fy.slice(2)) - 1).padStart(2, '0')} (single month, from the printed cumulatives)`,
+      entities: [], file: point.file, url: point.url,
+      derivation: fm === 0 ? null : `single month = printed YTD(${MONTH_LABEL[fm]}) − printed YTD(${MONTH_LABEL[fm - 1]})`,
+    }
+    bucket.entities.push({
+      entity, carrier_group: group as EntityValues['carrier_group'],
+      insurer_name: point.insurer_name, derivation: bucket.derivation, ...single,
+    })
+    byPeriod.set(periodKey, bucket)
+  }
+  return [...byPeriod.entries()].map(([period, b]) => ({ period, ...b }))
+}
+
+/** Every monthly edition available locally (the live run keeps this stocked). */
+async function resolveAllMonthFiles(): Promise<Array<{ period: string; buffer: Buffer; source_url: string; raw_file: string }>> {
+  const out: Array<{ period: string; buffer: Buffer; source_url: string; raw_file: string }> = []
+  const dir = resolve(RAW_ROOT, RAW_SUBDIR_MONTHLY)
+  for (const name of (await readdir(dir).catch(() => [] as string[]))) {
+    const m = name.match(/^(\d{4})-(\d{2})\.xlsx$/)
+    if (!m) continue
+    const abs = resolve(dir, name)
+    out.push({
+      period: `${m[1]}-${m[2]}`, buffer: await readFile(abs),
+      source_url: LISTING_URLS[0], raw_file: relative(REPO_ROOT, abs),
+    })
+  }
+  return out
+}
+
 // ── orchestration ───────────────────────────────────────────────────────────
 
 interface YearStatement {
@@ -845,18 +1099,16 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
   frequency: 'monthly',
   async run(): Promise<FetchResult> {
     const fetched_at = nowIso()
+    const t0 = Date.now()
+    const mark = (label: string) => console.error(`[gic-annual] ${label} +${((Date.now() - t0) / 1000).toFixed(1)}s`)
     const warnings: string[] = []
     const files = await resolveSources(warnings)
+    mark(`resolved ${files.length} full-FY files`)
 
     const statements: YearStatement[] = []
     for (const file of files) {
       const fileWarnings: string[] = []
-      let parse: FileParse | null = null
-      try {
-        parse = parseWorkbook(file.buffer, fileWarnings)
-      } catch (err) {
-        fileWarnings.push(`parse error: ${err instanceof Error ? err.message : String(err)}`)
-      }
+      const parse = await parseWorkbook(file.buffer, file.raw_file, fileWarnings)
       warnings.push(...fileWarnings.map((w) => `${file.raw_file}: ${w}`))
       if (!parse) continue
 
@@ -959,8 +1211,10 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
       }
     }
 
+    mark(`annual statements done (${statements.length})`)
     // Quarter-end cumulatives (H1 / 9M / Q1 YTD) → gic-health-quarterly.
-    const quarterStatements = quarterStatementsOf(await resolveQuarterEndFiles(), warnings)
+    const quarterStatements = await quarterStatementsOf(await resolveQuarterEndFiles(), warnings)
+    mark(`quarter statements done (${quarterStatements.length})`)
     for (const st of quarterStatements) {
       const provenance = {
         source_name: `GI Council Segment-wise Report (${st.periodLabel}) — ${st.basis}`,
@@ -990,6 +1244,39 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
       }
     }
 
+    // Single-month values (May-FY26 etc.) → gic-health-monthly.
+    const monthFiles = await resolveAllMonthFiles()
+    mark(`loaded ${monthFiles.length} monthly files`)
+    const monthStatements = await monthlyStatements(monthFiles, warnings)
+    mark(`monthly statements done (${monthStatements.length})`)
+    for (const st of monthStatements) {
+      const provenance = {
+        source_name: `GI Council Segment-wise Report — ${st.periodLabel}`,
+        source_url: st.url,
+        source_file: st.file,
+        source_period: st.period,
+        fetched_at,
+        parsed_at: nowIso(),
+        parser_name: 'ingest-gicouncil-segment-annual',
+        confidence: 'high' as const,
+      }
+      for (const e of st.entities) {
+        records.push({
+          target: 'gic-health-monthly',
+          keys: { period: st.period, entity: e.entity, carrier_group: e.carrier_group },
+          values: {
+            insurer_name: e.insurer_name,
+            health_retail: e.health_retail, health_group: e.health_group,
+            health_govt: e.health_govt, overseas_medical: e.overseas_medical,
+            health_total: e.health_total,
+            basis: e.derivation ? `derived: ${e.derivation}` : 'as printed (April = its own cumulative)',
+            period_label: st.periodLabel,
+          },
+          provenance,
+        })
+      }
+    }
+
     // Honest processed sidecar — which file "won" each FY, for review.
     const winners: Record<string, { file: string; basis: string }> = {}
     for (const st of kept) winners[st.fy] = { file: st.file.raw_file, basis: st.basis }
@@ -1007,6 +1294,7 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
       },
     }, null, 2) + '\n', 'utf8')
 
+    await stopParseWorker()
     await appendLog('ingest-gicouncil-segment-annual.log', {
       source: SOURCE_ID, files: files.length, statements: statements.length,
       records: records.length, offline: isOfflineMode(),
