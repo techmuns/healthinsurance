@@ -5827,6 +5827,14 @@
       "confidence": "medium",
       "note": "IGAAP combined ratio, standalone Q1 FY25 (ABHI segment of listed Aditya Birla Capital).",
       "unit": "%"
+    },
+    "star-health::expense_ratio_igaap::Q4FY26": {
+      "value": 30.5,
+      "unit": "%",
+      "source_name": "Press-reported — Star Health Q4 FY26 results; expense ratio derived from the reported standalone-quarter combined (95.7%) minus claims/loss (65.2%)",
+      "source_url": "https://www.investywise.com/star-health-and-allied-insurance-q4-fy26-financial-results/",
+      "confidence": "medium",
+      "note": "IGAAP expense ratio, standalone Q4 FY26 = combined − claims (the validated identity). Official NSE deck blocks automated download."
     }
   },
   "meta": {}
