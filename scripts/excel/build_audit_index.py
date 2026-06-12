@@ -487,6 +487,34 @@ def main() -> None:
                     cell["source_status"] = "not_in_ppt"
                     cell["na_reason"] = entry.get("reason") if isinstance(entry, dict) else str(entry)
 
+    # --- 'Awaiting source file' cells (blocked at source) -----------------
+    # Cells whose figure IS published in an insurer / exchange / regulator
+    # filing, but is not obtainable through the automated pipeline (the source
+    # blocks automated download, or the document isn't machine-extractable).
+    # Curated with accurate per-cell reasons in
+    # data/source-map/source-blocked-cells.json. Rendered as an honest grey
+    # "awaiting source file" state with the reason — never a fake value, never a
+    # red "missing". Only applies while the cell has no sourced value, so a real
+    # value (e.g. a dropped filing) always wins the moment it lands.
+    try:
+        blocked = json.loads((REPO / "data" / "source-map" / "source-blocked-cells.json").read_text()).get("cells", {})
+    except Exception:
+        blocked = {}
+    if blocked:
+        for sh in sheets:
+            for cell in sh["cells"]:
+                k = f'{cell.get("entity")}::{cell.get("metric")}::{cell.get("period")}'
+                reason = blocked.get(k)
+                if not reason:
+                    continue
+                v = store.get(k)
+                if (v and v.get("normalized_value") is not None) or cell.get("calculated_value") is not None:
+                    continue
+                if cell.get("source_status") in ("not_applicable", "not_in_ppt", "web_blocked"):
+                    continue
+                cell["source_status"] = "web_blocked"
+                cell["na_reason"] = reason
+
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
 

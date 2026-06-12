@@ -217,6 +217,10 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
   const q = QA[meta.color]
   const fetched = isFetched(cell)
   const gap = deckGap(cell)
+  // "Awaiting source file" — figure exists in a filing the pipeline can't pull;
+  // a resolved, calm-grey state (with the reason), not an alarming red "missing".
+  const blocked = !fetched && cell.status === 'web_blocked'
+  const calm = gap || blocked // both render as calm grey, not coral
   const pipe = PIPELINE[pipelineOf(cell)]
   return (
     <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
@@ -232,17 +236,17 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
       </div>
 
       {/* Fetched / Not-in-deck / Missing banner */}
-      <div className={`flex items-center gap-2 px-4 py-2.5 ${fetched ? 'bg-emerald-soft/40' : gap ? 'bg-slate-100' : 'bg-coral-soft/30'}`}>
+      <div className={`flex items-center gap-2 px-4 py-2.5 ${fetched ? 'bg-emerald-soft/40' : calm ? 'bg-slate-100' : 'bg-coral-soft/30'}`}>
         {fetched
           ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald" />
-          : gap
+          : calm
             ? <Info className="h-4 w-4 shrink-0 text-slate-500" />
             : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
-        <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : gap ? 'text-slate-600' : 'text-coral'}`}>
-          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : 'Not fetched — cell empty'}
+        <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : calm ? 'text-slate-600' : 'text-coral'}`}>
+          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : blocked ? 'Awaiting source file' : 'Not fetched — cell empty'}
         </span>
-        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${gap ? 'bg-slate-100 text-slate-500' : `${q.cell} ${q.text}`}`}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: gap ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : meta.label}
+        <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${calm ? 'bg-slate-100 text-slate-500' : `${q.cell} ${q.text}`}`}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: calm ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : meta.label}
         </span>
       </div>
 
@@ -286,6 +290,10 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
         ) : gap ? (
           <DetailField label="Why it's blank">
             <span className="text-ink-secondary">{gap.reason}</span>
+          </DetailField>
+        ) : blocked ? (
+          <DetailField label="Why it's awaiting a file">
+            <span className="text-ink-secondary">{cell.note}</span>
           </DetailField>
         ) : (
           <DetailField label="Why it's missing">
@@ -373,18 +381,24 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                     if (!cell) return <td key={col.col} className="border-b border-r border-soft-border/60 bg-[#FCFDFE]" />
                     const meta = STATUS_META[cell.status]
                     const gap = deckGap(cell)
-                    // A "not in the deck" blank reads as calm grey, not alarming red.
-                    const q = gap ? QA.grey : QA[meta.color]
+                    const fetched = isFetched(cell)
+                    // "Awaiting source file": the figure exists in a filing the
+                    // pipeline can't auto-pull — a resolved grey state with a
+                    // reason, not an ambiguous pending blank.
+                    const blocked = !fetched && cell.status === 'web_blocked'
+                    // A "not in the deck" / blocked-at-source blank reads as calm grey.
+                    const q = gap || blocked ? QA.grey : QA[meta.color]
                     const txt = cellDisplay(cell, raw)
                     const isSel = selected?.id === cell.id
                     const isFormula = cell.cellKind === 'formula'
-                    const fetched = isFetched(cell)
                     const pipe = PIPELINE[pipelineOf(cell)]
                     const title = fetched
                       ? `${cell.metricLabel} · ${cell.period} — ${meta.label}`
                       : gap
                         ? `${cell.metricLabel} · ${cell.period} — not published in the investor deck; comes from ${gap.sourceLabel}`
-                        : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
+                        : blocked
+                          ? `${cell.metricLabel} · ${cell.period} — awaiting source file: ${cell.note}`
+                          : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0">
                         <button
@@ -402,6 +416,12 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                             // instead of implying a "• PPT" pull is still pending.
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: q.dot }} />not in PPT
+                            </span>
+                          ) : blocked ? (
+                            // Figure exists in a filing we can't auto-pull — a resolved
+                            // grey "awaiting file" state with the reason on click/hover.
+                            <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-slate-400">
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />awaiting file
                             </span>
                           ) : (
                             // Empty cell → show which pipeline should have filled it.

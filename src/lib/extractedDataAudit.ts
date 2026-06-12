@@ -221,7 +221,7 @@ export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   missing: { key: 'missing', label: 'Not reachable', color: 'red' },
   parser_issue: { key: 'parser_issue', label: "Couldn't extract", color: 'red' },
   source_unavailable: { key: 'source_unavailable', label: 'Not found', color: 'red' },
-  web_blocked: { key: 'web_blocked', label: 'IRDAI web blocked', color: 'grey' },
+  web_blocked: { key: 'web_blocked', label: 'Awaiting source file', color: 'grey' },
   blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
   computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
@@ -742,7 +742,10 @@ export function buildAudit(): AuditModel {
         note = b.na_reason ?? 'Searched the investor presentations — this number is not disclosed there.'
       } else if ((b.source_status ?? '') === 'web_blocked') {
         status = 'web_blocked'
-        note = 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'
+        // A curated per-cell reason (source-blocked-cells.json) explains exactly
+        // which filing carries the figure and why the pipeline can't pull it;
+        // fall back to the IRDAI-handbook case (the original web_blocked use).
+        note = b.na_reason ?? 'IRDAI web blocked — this figure is published in the IRDAI Handbook on Indian Insurance Statistics, but IRDAI blocks automated downloads and the files corrupt in transit via every proxy. It needs a browser-downloaded handbook dropped into data/raw/irdai/ to fill.'
       } else if (sheet.role === 'market_quote' && metric === 'deliverable_quantity') {
         // Deliverable quantity is an NSE-only field; Yahoo (the reachable daily
         // source) doesn't carry it. Honest "not from this source", not a defect.
