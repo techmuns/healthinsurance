@@ -53,6 +53,7 @@ jobs:
       - name: Fetch latest shareholding pattern (muns filings agent)
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
         run: npx tsx scripts/ingest/fetch-shareholding.ts
 
       - name: Advance the displayed quarter if a newer one was filed

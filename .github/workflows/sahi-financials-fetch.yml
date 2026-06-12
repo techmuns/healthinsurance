@@ -67,6 +67,7 @@ jobs:
       - name: Fetch + clean SAHI full-year financials
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
           DISPATCH_COMPANY: ${{ inputs.company }}

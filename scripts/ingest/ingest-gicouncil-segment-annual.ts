@@ -277,7 +277,7 @@ async function agentDiscoverLinks(warnings: string[]): Promise<Array<{ url: stri
   try {
     const ctrl = new AbortController()
     const timer = setTimeout(() => ctrl.abort(), 300_000)
-    const res = await fetch('https://devde.muns.io/chat/chat-muns', {
+    const res = await fetch(process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns', {
       method: 'POST',
       headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({

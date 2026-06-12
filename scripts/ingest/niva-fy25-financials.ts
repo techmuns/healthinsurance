@@ -22,7 +22,7 @@ const OUT_DIR = resolve(REPO_ROOT, 'data/agent-pulls/niva-fy25-financials')
 const SOURCES_DIR = resolve(OUT_DIR, 'sources')
 const MANIFEST_PATH = resolve(SOURCES_DIR, 'manifest.json')
 
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000 // the agent searches/reads filings live; give it room.
 const DOWNLOAD_TIMEOUT_MS = 60_000 // per fetch attempt.
 

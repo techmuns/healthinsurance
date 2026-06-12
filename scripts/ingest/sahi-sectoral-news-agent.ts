@@ -26,7 +26,7 @@ import {
 } from '../../src/data/sectoralNews'
 
 const SNAPSHOT_FILE = 'sectoral-news-snapshot.json'
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000
 
 const CATEGORY_SET = new Set<string>(SECTORAL_CATEGORY_ORDER.map((c) => c.toLowerCase()))

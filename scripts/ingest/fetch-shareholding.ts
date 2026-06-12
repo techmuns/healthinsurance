@@ -29,7 +29,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { SNAPSHOTS_ROOT, nowIso, appendLog } from './util'
 
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000
 const SNAPSHOT_PATH = resolve(SNAPSHOTS_ROOT, 'shareholding-pattern-snapshot.json')
 

@@ -38,6 +38,7 @@ jobs:
       - name: Generate AI market intelligence (muns agent)
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
         run: npx tsx scripts/ingest/sahi-intelligence-agent.ts
       - name: Commit results
         run: |

@@ -14,7 +14,7 @@
 import { writeSnapshot, nowIso, appendLog } from './util'
 import { createHash } from 'node:crypto'
 
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000
 
 function buildPayload() {

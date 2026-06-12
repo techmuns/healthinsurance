@@ -27,7 +27,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
 const OUT_DIR = resolve(REPO_ROOT, 'data/agent-pulls/analyst-coverage')
 const SNAPSHOT = resolve(REPO_ROOT, 'src/data/snapshots/analyst-coverage-snapshot.json')
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000
 
 const COMPANY_NAMES: Record<string, string> = {

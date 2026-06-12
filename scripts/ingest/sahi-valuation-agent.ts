@@ -16,7 +16,7 @@
 import { writeSnapshot, readSnapshot, nowIso, appendLog } from './util'
 import type { InsurerAnnualRow, SnapshotEnvelope } from '../../src/data/snapshots/_schemas'
 
-const API_URL = 'https://devde.muns.io/chat/chat-muns'
+const API_URL = process.env.MUNS_AGENT_URL || 'https://devde.muns.io/chat/chat-muns'
 const API_TIMEOUT_MS = 600_000
 
 function buildPayload() {

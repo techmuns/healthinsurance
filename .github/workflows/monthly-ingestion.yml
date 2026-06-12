@@ -53,6 +53,7 @@ jobs:
       - name: Run monthly ingestion
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
           # Free scraperapi.com key: routes downloads past IRDAI's WAF. With it
           # set, every file downloads automatically. (Repo secret: SCRAPER_KEY.)
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}

@@ -62,6 +62,7 @@ jobs:
       - name: Fetch + clean the interim decks
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
           PERIODS_NIVA_STAR: ${{ inputs.periods_niva_star || 'H1FY25 9MFY25 H1FY26 9MFY26' }}
