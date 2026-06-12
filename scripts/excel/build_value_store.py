@@ -877,6 +877,52 @@ def resolve():
     return store, conflicts, alternates
 
 
+# ── Derived "Others" residual for the health-GWP tabs ────────────────────────
+# The GI Council health-segment source prints each named insurer's and the
+# Industry Total health GWP, but no "Others" (all-other-insurers) row at the
+# quarterly/monthly grain — yet the template's "Others" line is exactly that:
+# Industry Total minus the named insurer rows (the same subtraction the workbook
+# formula does). Derive it here so the cell fills with a real, source-grounded
+# figure instead of staying blank. Honesty guards: only when the Total AND every
+# named insurer is present for the period (a missing input → leave blank, never a
+# partial subtotal); never overwrite an already-printed value; never surface a
+# negative residual (which would signal a data inconsistency, not an "Others").
+def derive_others_gwp_residual(store):
+    added = 0
+    for metric in ("total_health_gwp", "retail_health_gwp"):
+        periods = {k.split("::")[2] for k, v in store.items()
+                   if v["entity"] == GIC_GWP_TOTAL_ENTITY and v["metric"] == metric}
+        for period in sorted(periods):
+            total = store.get(f"{GIC_GWP_TOTAL_ENTITY}::{metric}::{period}")
+            total_val = total["normalized_value"] if total else None
+            if total_val is None:
+                continue
+            parts = [store.get(f"{ent}::{metric}::{period}") for ent in GIC_GWP_TAB_IDS]
+            vals = [p["normalized_value"] if p else None for p in parts]
+            if any(v is None for v in vals):
+                continue  # missing != zero — need every named insurer to subtract honestly
+            residual = round(total_val - sum(vals), 2)
+            key = f"Others::{metric}::{period}"
+            if residual < 0 or key in store:
+                continue  # never a negative "Others"; never overwrite a printed value
+            store[key] = {
+                "entity": "Others", "metric": metric, "period": period, "unit": "INR_cr",
+                "raw_value": residual, "normalized_value": residual,
+                "transformation_used": f"residual: Industry Total − the {len(GIC_GWP_TAB_IDS)} named insurer rows",
+                "source_name": f"{total.get('source_name')} · derived: Industry Total − the {len(GIC_GWP_TAB_IDS)} named insurer rows",
+                "source_url": total.get("source_url"), "source_file": total.get("source_file"),
+                "fetched_at": total.get("fetched_at"),
+                "confidence": "high", "source_status": "available", "source_layer": "official_snapshot",
+                "priority_rank": total.get("priority_rank", 3),
+                "document_type": None, "document_title": None, "filing_date": total.get("filing_date"),
+                "extraction_status": None, "sanity_status": None, "column_basis": None,
+                "ratio_basis": None, "basis_note": None, "eligible_for_excel": True,
+                "conflict_status": "none", "competing_values": [],
+            }
+            added += 1
+    return added
+
+
 def main():
     collect_existing()
     collect_shareholding()  # rank-1 per-holder shareholding shares (Captable tab)
@@ -887,6 +933,7 @@ def main():
     collect_overlay()  # curated gap-fills, last so it only fills cells still empty
     collect_workbook_seed()  # rank-8 history seed — only wins where nothing official exists
     store, conflicts, alternates = resolve()
+    others_derived = derive_others_gwp_residual(store)  # Total − named insurers, where every input is present
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
     held = held + alternates
@@ -909,6 +956,7 @@ def main():
     from collections import Counter
     by_layer = Counter(v["source_layer"] for v in store.values())
     print(f"excel-values.json written -> {OUT}")
+    print(f"  derived 'Others' health-GWP residuals (Total − named insurers): {others_derived}")
     print(f"  {len(store)} resolved values  |  company-filing-sourced: {by_layer.get('company_filing', 0)}"
           f"  |  deck-sourced: {by_layer.get('company_deck', 0)}"
           f"  |  annual-report-sourced: {by_layer.get('annual_report', 0)}"
