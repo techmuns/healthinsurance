@@ -36,6 +36,10 @@ const MAP: Record<string, string> = {
   'claims ratio|igaap': 'claims_ratio_igaap',
   'claims ratio|ifrs': 'claims_ratio_ifrs',
   'expense ratio|igaap': 'expense_ratio_igaap',
+  'expense of management (eom) ratio|igaap': 'eom_igaap',
+  'expense of management ratio|igaap': 'eom_igaap',
+  'expense of management (eom) ratio|—': 'eom_igaap',
+  'expense of management (eom) ratio|-': 'eom_igaap',
   'commission ratio|igaap': 'commission_ratio_igaap',
   'combined ratio|igaap': 'combined_ratio_igaap',
   'solvency ratio|—': 'solvency_ratio',
@@ -46,6 +50,9 @@ const MAP: Record<string, string> = {
   'assets under management (aum)|-': 'investment_aum',
   'assets under management|—': 'investment_aum',
   'assets under management|-': 'investment_aum',
+  'investment yield|—': 'investment_yield',
+  'investment yield|-': 'investment_yield',
+  'investment yield|igaap': 'investment_yield',
 }
 const UNIT: Record<string, string> = {
   total_gwp: 'INR_cr', retail_health_gwp: 'INR_cr', nwp: 'INR_cr', nep: 'INR_cr',
@@ -56,7 +63,10 @@ const UNIT: Record<string, string> = {
 function metricFor(lineItem: string, basis: string): { key: string; note?: string } | null {
   const li = lineItem.toLowerCase().trim()
   const b = basis.toLowerCase().trim()
-  if (li.startsWith('net worth')) return { key: 'net_worth_ifrs', note: `Net worth on ${basis || 'reported'} basis.` }
+  // Statutory (IGAAP / NL-return) net worth → the SAHI grid's net_worth cell;
+  // net_worth_ifrs only when the source explicitly states the IFRS/Ind-AS basis
+  // (keeps the two bases from crossing — basis discipline).
+  if (li.startsWith('net worth')) return { key: b === 'ifrs' ? 'net_worth_ifrs' : 'net_worth' }
   const k = MAP[`${li}|${b}`]
   return k ? { key: k } : null
 }

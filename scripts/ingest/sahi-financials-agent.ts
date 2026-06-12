@@ -79,7 +79,7 @@ function periodSpec(period: string): { kind: 'annual' | 'interim'; ended: string
       guidance: `use the company's FULL-YEAR source for ${period} — the Q4 / annual earnings presentation or the annual report for the year ended ${ended}. Do NOT use a part-year H1 / 9M / Q1-Q3 figure as the full-year value.` }
   }
   return { kind: 'interim', ended, phrase: `the ${NAMES[tag]} ended ${ended} (period-to-date / cumulative for ${period})`,
-    guidance: `use the company's INTERIM investor presentation / results for ${period} (e.g. "Investor Presentation ${period}"). Report the CUMULATIVE period-to-date figure (year-to-date within the fiscal year), NOT a single standalone quarter — except Q1, which is the first quarter alone. Premium / PAT must be the cumulative ${NAMES[tag]} value; ratios are the period's reported ratios.` }
+    guidance: `use the company's INTERIM investor presentation / results for ${period} (e.g. "Investor Presentation ${period}") for the headline GWP / PAT / ratios, AND the company's IRDAI quarterly public disclosures (the "NL" return set for ${period}) for the statutory line items the deck omits (NWP, NEP, Expense of Management, Net worth, Investments). Report the CUMULATIVE period-to-date figure (year-to-date within the fiscal year), NOT a single standalone quarter — except Q1, which is the first quarter alone. Premium / PAT must be the cumulative ${NAMES[tag]} value; ratios are the period's reported ratios.` }
 }
 
 function buildPayload() {
@@ -103,12 +103,25 @@ function buildPayload() {
     `IMPORTANT: ${ps.guidance} ` +
     'For GWP, prefer the 1/n (statutory) basis where both are shown; if only the ex-1/n figure is given, leave the GWP value blank rather than mixing bases. ' +
     'Open the actual PDF and read the figures; if a figure is genuinely not published, leave value blank.\n\n' +
+    // The interim investor decks carry headline GWP / PAT / ratios but routinely
+    // OMIT the statutory line items (NWP, NEP, expense-of-management, net worth,
+    // investments). Those live in the IRDAI quarterly PUBLIC DISCLOSURES — the
+    // "NL" return set every insurer (listed or not) files each quarter on its own
+    // site and on the IRDAI portal. Directing the agent there is what closes the
+    // per-quarter line-item gaps the decks can't.
+    'SOURCING THE STATUTORY LINE ITEMS — for Net Written Premium, Net Earned Premium, ' +
+    'Expense of Management, Net worth and Investments/AUM, if the investor deck does not show them, ' +
+    'read the company\'s IRDAI QUARTERLY PUBLIC DISCLOSURES (the "NL" return set) for this period: ' +
+    'NL-1 (Revenue Account) carries Net Written Premium and Net Earned Premium; the expenses schedule / NL-2 carries Expense of Management; ' +
+    'the Balance Sheet carries Net worth (shareholders\' funds) and Investments. ' +
+    'Every insurer files these every quarter on its website and on the IRDAI portal — they are the STATUTORY IGAAP figures, ' +
+    'so prefer them for the IGAAP cells over any IFRS-basis headline. Cite the exact NL disclosure PDF in source_url.\n\n' +
     'The line items (line_item | basis | unit):\n\n' +
     'Total GWP | IGAAP | INR_crore\nRetail health GWP | IGAAP | INR_crore\nNet Written Premium (NWP) | IGAAP | INR_crore\nNet Earned Premium (NEP) | IGAAP | INR_crore\n' +
     'Profit After Tax (PAT) | IGAAP | INR_crore\nProfit After Tax (PAT) | IFRS | INR_crore\n' +
-    'Claims ratio | IGAAP | %\nClaims ratio | IFRS | %\nExpense ratio | IGAAP | %\nCommission ratio | IGAAP | %\nCombined ratio | IGAAP | %\n' +
+    'Claims ratio | IGAAP | %\nClaims ratio | IFRS | %\nExpense ratio | IGAAP | %\nExpense of Management (EoM) ratio | IGAAP | %\nCommission ratio | IGAAP | %\nCombined ratio | IGAAP | %\n' +
     'Solvency ratio | — | x\nNet worth (shareholders\' equity) | IGAAP | INR_crore\n' +
-    'Retail health market share | — | %\nAssets Under Management (AUM) | — | INR_crore\n\n' +
+    'Retail health market share | — | %\nAssets Under Management (AUM) | — | INR_crore\nInvestment yield | — | %\n\n' +
     `Example row:\n${COMPANY_NAME}\t${PERIOD}\tTotal GWP\tIGAAP\t12345\tINR_crore\t<Company> FY24-25 Annual Report, p.XX\thttps://…\t2025-05-XX`
   return {
     user_index: 124,

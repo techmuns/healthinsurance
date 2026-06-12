@@ -1,8 +1,14 @@
 name: sahi financials fetch
 
-# One standalone-health-insurer's financials at a time, via the muns chat agent.
-# Pick the company (and optionally the fiscal year) when dispatching. The raw
-# answer + source files land in data/agent-pulls/sahi-financials/<company>/.
+# Standalone-health-insurer FULL-YEAR financials via the muns chat agent.
+#
+# On a manual dispatch you can pick one company (+ optional fiscal year / exact
+# doc URL). On the SCHEDULE it sweeps EVERY SAHI across the full-year columns —
+# previously the scheduled run read the (empty) dispatch inputs and fetched
+# nothing, and it never cleaned/filled. It now mirrors sahi-quarterly-backfill:
+# fetch → clean → audit-fill → rebuild → commit, so the full-year columns stay
+# current with no human in the loop. Interim (H1/9M/Q1) columns are handled by
+# sahi-quarterly-backfill.yml; this workflow only adds the FY columns.
 
 on:
   schedule:
@@ -11,18 +17,19 @@ on:
   workflow_dispatch:
     inputs:
       company:
-        description: 'SAHI to fetch'
-        required: true
-        default: 'star-health'
+        description: 'SAHI to fetch (leave to sweep all)'
+        required: false
+        default: ''
         type: choice
         options:
+          - ''
           - star-health
           - care-health
           - aditya-birla
           - manipalcigna
           - niva-bupa
       period:
-        description: 'Fiscal year, e.g. FY25 (may add a short steering hint; it is slugified for filenames — keep it brief)'
+        description: 'Fiscal year, e.g. FY25 (single-company dispatch only)'
         required: false
         default: 'FY25'
         type: string
@@ -42,34 +49,80 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-      - name: Pull SAHI financials + download sources
+      - run: pip install --quiet --disable-pip-version-check openpyxl
+
+      - name: Fetch + clean SAHI full-year financials
         env:
           MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
-          FETCH_COMPANY_ID: ${{ inputs.company }}
-          FETCH_PERIOD: ${{ inputs.period }}
-          FETCH_DOC_URL: ${{ inputs.doc_url }}
-        run: npx tsx scripts/ingest/sahi-financials-agent.ts
-      - name: Commit results
+          DISPATCH_COMPANY: ${{ inputs.company }}
+          DISPATCH_PERIOD: ${{ inputs.period }}
+          DISPATCH_DOC_URL: ${{ inputs.doc_url }}
+          # The full-year columns the SAHI-comparison sheet shows.
+          FY_PERIODS: 'FY25 FY26'
+        run: |
+          set +e
+          # Manual dispatch with a company → just that company/period (+ optional
+          # doc URL). Schedule (or dispatch with no company) → sweep every SAHI.
+          if [ -n "$DISPATCH_COMPANY" ]; then
+            COMPANIES="$DISPATCH_COMPANY"; PERIODS="${DISPATCH_PERIOD:-FY25}"
+          else
+            COMPANIES="star-health care-health aditya-birla manipalcigna niva-bupa"; PERIODS="$FY_PERIODS"
+          fi
+          for company in $COMPANIES; do
+            for period in $PERIODS; do
+              echo "::group::$company $period"
+              FETCH_COMPANY_ID="$company" FETCH_PERIOD="$period" FETCH_DOC_URL="$DISPATCH_DOC_URL" \
+                timeout 360 npx tsx scripts/ingest/sahi-financials-agent.ts || echo "fetch skipped/timed-out: $company $period"
+              npx tsx scripts/ingest/sahi-financials-clean.ts "$company" "$period" || echo "clean failed: $company $period"
+              echo "::endgroup::"
+            done
+          done
+          exit 0
+
+      - name: Publish — land pulls, then re-apply fills onto latest main
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # 1) Land the raw + cleaned agent pulls (new files — rarely conflict).
           git add data/agent-pulls/sahi-financials
-          if git diff --staged --quiet; then echo "No change."; exit 0; fi
-          git commit -m "sahi-financials(${{ inputs.company }} ${{ inputs.period }}): agent pull @ $(date -u +%Y-%m-%dT%H:%MZ)"
-          for i in 1 2 3 4 5; do
-            if git pull --rebase --autostash origin main && git push; then echo "pushed on attempt $i"; exit 0; fi
-            echo "retry $i"; sleep 3
+          if ! git diff --staged --quiet; then
+            git commit -m "sahi-financials: agent pulls @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            for i in 1 2 3 4 5; do
+              git fetch origin main && git rebase origin/main && git push && break || { git rebase --abort 2>/dev/null || true; echo "pulls push retry $i"; sleep 5; }
+            done
+          else
+            echo "No new agent pulls."
+          fi
+          # 2) Re-apply EVERY cleaned fill onto the latest main, then rebuild + commit.
+          #    Reset to main each attempt so the overlay + generated files regenerate
+          #    on top of concurrent commits and are never text-merged.
+          for i in 1 2 3 4 5 6; do
+            git fetch origin main || { echo "fetch retry $i"; sleep 5; continue; }
+            git reset --hard origin/main
+            for f in data/agent-pulls/sahi-financials/*/cleaned-*.json; do
+              [ -e "$f" ] && npx tsx scripts/ingest/audit-fill.ts fill --from "$f" || true
+            done
+            python3 scripts/excel/build_value_store.py || { echo "value-store build failed"; exit 1; }
+            python3 scripts/excel/build_audit_index.py || { echo "audit-index build failed"; exit 1; }
+            git add src/data/snapshots/audit-overlay.json data/processed/excel-values.json data/processed/excel-held-back.json src/data/snapshots/extracted-data-audit.json
+            if git diff --staged --quiet; then echo "Nothing new to fill — already current."; exit 0; fi
+            git commit -m "sahi-financials: fill full-year columns @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            if git push; then echo "published on attempt $i"; exit 0; fi
+            echo "publish retry $i"; sleep 5
           done
-          echo "ERROR: push failed"; exit 1
+          echo "ERROR: publish failed after retries"; exit 1
