@@ -553,18 +553,27 @@ export function formatValue(value: number | string | null, unit: string | undefi
   if (value === null || value === undefined || value === '') return '—'
   if (typeof value === 'string') return value
   const u = (unit ?? '').toLowerCase()
+  // Whole-number display: the grid reads as a clean, decision-grade surface (no
+  // trailing decimals). The exact figure is never lost — it stays one click away
+  // in the cell detail card and in the "As printed" (raw) view. A genuinely small
+  // value (|x| < 1, e.g. a 0.4% share) keeps a single decimal so it never
+  // collapses to a misleading "0".
+  const dp = (v: number) => (Math.abs(v) > 0 && Math.abs(v) < 1 ? 1 : 0)
   if (u === 'inr_cr') {
-    return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })} cr`
+    return `₹${value.toLocaleString('en-IN', { maximumFractionDigits: dp(value) })} cr`
   }
   if (u === 'fraction' || u === 'ratio') {
     // stored as a fraction (0.92) or ratio (1.05) → show as a percent.
-    return `${(value * 100).toLocaleString('en-IN', { maximumFractionDigits: 2 })}%`
+    const pct = value * 100
+    return `${pct.toLocaleString('en-IN', { maximumFractionDigits: dp(pct) })}%`
   }
+  // Solvency-style multiples keep 2 decimals — rounding 1.85x to "2x" would
+  // change the number's meaning.
   if (u === 'x') return `${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}x`
   if (u === 'percent' || u === '%') {
-    return `${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}%`
+    return `${value.toLocaleString('en-IN', { maximumFractionDigits: dp(value) })}%`
   }
-  return value.toLocaleString('en-IN', { maximumFractionDigits: 4 })
+  return value.toLocaleString('en-IN', { maximumFractionDigits: dp(value) })
 }
 
 /** Raw value verbatim (what the source printed) — never unit-massaged. */
