@@ -923,6 +923,33 @@ def derive_others_gwp_residual(store):
     return added
 
 
+def resolve_nl_form_urls(store):
+    """IRDAI NL-form values that name the exact form (e.g. "IRDAI NL-36/NL-40")
+    but carry no direct link get their insurer's canonical PUBLIC-DISCLOSURES
+    URL — the page where IRDAI mandates each insurer publish its NL returns. The
+    exact form is already named on the cell, so this is honest and precise, not a
+    generic fallback. Only EMPTY urls are filled; a real link is never overridden."""
+    try:
+        cm = json.loads((REPO / "src" / "data" / "snapshots" / "company-master.json").read_text())
+    except Exception:
+        return 0
+    rows = cm["data"] if isinstance(cm, dict) else cm
+    disc = {r["company_id"]: (r.get("financial_disclosure_url") or r.get("investor_relations_url"))
+            for r in rows if r.get("company_id")}
+    n = 0
+    for key, v in store.items():
+        if (v.get("source_url") or "").strip().startswith("http"):
+            continue
+        name = (v.get("source_name") or "").lower()
+        if "nl-" not in name and not ("irdai" in name and "disclosure" in name):
+            continue
+        u = disc.get(key.split("::")[0])
+        if u:
+            v["source_url"] = u
+            n += 1
+    return n
+
+
 def main():
     collect_existing()
     collect_shareholding()  # rank-1 per-holder shareholding shares (Captable tab)
@@ -934,6 +961,7 @@ def main():
     collect_workbook_seed()  # rank-8 history seed — only wins where nothing official exists
     store, conflicts, alternates = resolve()
     others_derived = derive_others_gwp_residual(store)  # Total − named insurers, where every input is present
+    nl_linked = resolve_nl_form_urls(store)  # link NL-form values to the insurer's public-disclosures page
     # Alternate-basis (ex-1/n) ratio values superseded by the statutory 1/n value
     # land on Blocked Data alongside the held company-filing values.
     held = held + alternates
@@ -957,6 +985,7 @@ def main():
     by_layer = Counter(v["source_layer"] for v in store.values())
     print(f"excel-values.json written -> {OUT}")
     print(f"  derived 'Others' health-GWP residuals (Total − named insurers): {others_derived}")
+    print(f"  NL-form values linked to insurer public-disclosures page: {nl_linked}")
     print(f"  {len(store)} resolved values  |  company-filing-sourced: {by_layer.get('company_filing', 0)}"
           f"  |  deck-sourced: {by_layer.get('company_deck', 0)}"
           f"  |  annual-report-sourced: {by_layer.get('annual_report', 0)}"
