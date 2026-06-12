@@ -48,6 +48,9 @@ interface RawBindingCell {
   source_status?: string
   /** Curated reason for a genuinely not-applicable cell (insurer not operating). */
   na_reason?: string
+  /** Short honest tag shown in-cell for a blocked/not-found blank ("1/n data not
+   *  found" / "Not in PPT" / "IRDAI"). */
+  blank_tag?: string
   /** Computed (formula) cells only: the recipe + where each number comes from. */
   formula?: string
   calc?: string
@@ -278,6 +281,9 @@ export interface AuditCell {
   qaColor: QaColor
   confidence: string | null
   note: string
+  /** Short honest in-cell tag for a blocked/not-found blank: "1/n data not found",
+   *  "Not in PPT" or "IRDAI". */
+  blankTag?: string
   /** Computed cells: the Excel formula, a plain "calculation in words", and the
    *  resolved inputs (so a reviewer can see the recipe and replicate it). */
   formula?: string
@@ -823,6 +829,7 @@ export function buildAudit(): AuditModel {
         qaColor: STATUS_META[status].color,
         confidence,
         note,
+        blankTag: b.blank_tag,
         formula: b.formula,
         calc: b.calc,
         inputs,

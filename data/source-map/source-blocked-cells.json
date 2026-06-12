@@ -1,189 +1,722 @@
 {
   "_meta": {
     "id": "source-blocked-cells",
-    "description": "Cells whose figure is genuinely published in an insurer/exchange/regulator filing but is NOT obtainable through the automated pipeline (source blocks automated download, or the document isn't machine-extractable). Rendered as an honest 'awaiting source file' state (grey) with the per-cell reason — never a fake value, never a red 'missing'. Each fills automatically the moment a real value lands for that cell. Curated 2026-06-12.",
+    "description": "Cells whose real figure isn't obtainable via the automated pipeline. Each carries a short honest tag — '1/n data not found' (statutory 1/n-basis figure not public; the headline is IFRS/adjusted), 'Not in PPT' (not broken out in the investor deck), or 'IRDAI' (IRDAI/GI-Council premium pull; portal blocks bots) — plus the full reason. Grey, never a fake value; each fills the moment a real value lands. Curated 2026-06-12.",
     "generated": "2026-06-12",
-    "count": 181
+    "count": 180
   },
   "cells": {
-    "niva-bupa::nwp::Q4FY25": "Net written premium for Niva Bupa Q4FY25 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::nwp::Q4FY26": "Net written premium for Niva Bupa Q4FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::pat_igaap::Q4FY25": "Niva Bupa headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for Q4FY25 is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "niva-bupa::pat_igaap::Q4FY26": "Niva Bupa headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for Q4FY26 is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "niva-bupa::eom_igaap::FY26": "Expense-of-management ratio for Niva Bupa FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::eom_igaap::H1FY25": "Expense-of-management ratio for Niva Bupa H1FY25 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::eom_igaap::Q4FY25": "Expense-of-management ratio for Niva Bupa Q4FY25 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::eom_igaap::H1FY26": "Expense-of-management ratio for Niva Bupa H1FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::eom_igaap::Q4FY26": "Expense-of-management ratio for Niva Bupa Q4FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_aum::FY26": "Investment book (aum) for Niva Bupa FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_yield::FY26": "Investment yield for Niva Bupa FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_yield::H1FY25": "Investment yield for Niva Bupa H1FY25 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_yield::H1FY26": "Investment yield for Niva Bupa H1FY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::total_gwp::FY26": "Gross written premium for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::FY26": "Net written premium for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::Q4FY25": "Net written premium for Star Health Q4FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::Q4FY26": "Net written premium for Star Health Q4FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::FY26": "Net earned premium for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::Q4FY25": "Net earned premium for Star Health Q4FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::Q4FY26": "Net earned premium for Star Health Q4FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::pat_igaap::Q4FY25": "Star Health headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for Q4FY25 is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "star-health::pat_igaap::Q4FY26": "Star Health headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for Q4FY26 is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "star-health::claims_ratio_igaap::Q4FY25": "Claims ratio for Star Health Q4FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::expense_ratio_igaap::Q4FY25": "Expense ratio for Star Health Q4FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::expense_ratio_igaap::Q4FY26": "Expense ratio for Star Health Q4FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::FY23": "Expense-of-management ratio for Star Health FY23 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::FY26": "Expense-of-management ratio for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::Q4FY25": "Expense-of-management ratio for Star Health Q4FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::Q4FY26": "Expense-of-management ratio for Star Health Q4FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::expense_ratio_ifrs::FY24": "expense ratio (IFRS/Ind-AS) for Star Health FY24: published in Star Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "star-health::expense_ratio_ifrs::FY25": "expense ratio (IFRS/Ind-AS) for Star Health FY25: published in Star Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "star-health::net_worth::FY26": "Net worth for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::investment_aum::FY26": "Investment book (aum) for Star Health FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::total_gwp::Q1FY25": "Gross written premium for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::total_gwp::9MFY25": "Gross written premium for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::total_gwp::Q1FY26": "Gross written premium for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::total_gwp::9MFY26": "Gross written premium for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nwp::Q1FY25": "Net written premium for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nwp::Q4FY25": "Net written premium for Care Health Q4FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nwp::Q1FY26": "Net written premium for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nep::Q1FY25": "Net earned premium for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nep::Q1FY26": "Net earned premium for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::pat_igaap::Q1FY25": "Profit after tax (igaap) for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::pat_igaap::Q1FY26": "Profit after tax (igaap) for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::FY25": "Expense-of-management ratio for Care Health FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::Q1FY25": "Expense-of-management ratio for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::Q4FY25": "Expense-of-management ratio for Care Health Q4FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::Q1FY26": "Expense-of-management ratio for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_aum::FY23": "Investment book (aum) for Care Health FY23 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_yield::Q1FY25": "Investment yield for Care Health Q1FY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_yield::Q1FY26": "Investment yield for Care Health Q1FY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::claims_ratio_igaap::FY23": "Claims ratio for Aditya Birla Health FY23 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::expense_ratio_igaap::FY23": "Expense ratio for Aditya Birla Health FY23 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::eom_igaap::FY23": "Expense-of-management ratio for Aditya Birla Health FY23 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::eom_igaap::FY24": "Expense-of-management ratio for Aditya Birla Health FY24 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::eom_igaap::FY25": "Expense-of-management ratio for Aditya Birla Health FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::pat_ifrs::FY23": "profit after tax (IFRS/Ind-AS) for Aditya Birla Health FY23: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::pat_ifrs::FY24": "profit after tax (IFRS/Ind-AS) for Aditya Birla Health FY24: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::pat_ifrs::FY25": "profit after tax (IFRS/Ind-AS) for Aditya Birla Health FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::nwp::9MFY26": "Net written premium for Niva Bupa 9MFY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::pat_igaap::9MFY26": "Niva Bupa headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for 9MFY26 is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "niva-bupa::expense_ratio_igaap::9MFY25": "Expense ratio for Niva Bupa 9MFY25 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::expense_ratio_igaap::9MFY26": "Expense ratio for Niva Bupa 9MFY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::claims_ratio_ifrs::FY23": "claims ratio (IFRS/Ind-AS) for Niva Bupa FY23: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::claims_ratio_ifrs::H1FY25": "claims ratio (IFRS/Ind-AS) for Niva Bupa H1FY25: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::claims_ratio_ifrs::9MFY25": "claims ratio (IFRS/Ind-AS) for Niva Bupa 9MFY25: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::expense_ratio_ifrs::FY23": "expense ratio (IFRS/Ind-AS) for Niva Bupa FY23: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::expense_ratio_ifrs::H1FY25": "expense ratio (IFRS/Ind-AS) for Niva Bupa H1FY25: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::expense_ratio_ifrs::9MFY25": "expense ratio (IFRS/Ind-AS) for Niva Bupa 9MFY25: published in Niva Bupa's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "niva-bupa::net_worth::9MFY26": "Net worth for Niva Bupa 9MFY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_aum::9MFY26": "Investment book (aum) for Niva Bupa 9MFY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::investment_yield::9MFY26": "Investment yield for Niva Bupa 9MFY26 is published in Niva Bupa's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::group_other_gwp::9MFY25": "Group/other gwp for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::group_other_gwp::9MFY26": "Group/other gwp for Star Health 9MFY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::H1FY25": "Net written premium for Star Health H1FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::9MFY25": "Net written premium for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::H1FY26": "Net written premium for Star Health H1FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nwp::9MFY26": "Net written premium for Star Health 9MFY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::H1FY25": "Net earned premium for Star Health H1FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::9MFY25": "Net earned premium for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::H1FY26": "Net earned premium for Star Health H1FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::nep::9MFY26": "Net earned premium for Star Health 9MFY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::H1FY25": "Expense-of-management ratio for Star Health H1FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::9MFY25": "Expense-of-management ratio for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::H1FY26": "Expense-of-management ratio for Star Health H1FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::eom_igaap::9MFY26": "Expense-of-management ratio for Star Health 9MFY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::solvency_ratio::H1FY25": "Solvency ratio for Star Health H1FY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::solvency_ratio::9MFY25": "Solvency ratio for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::net_worth::9MFY25": "Net worth for Star Health 9MFY25 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::net_worth::H1FY26": "Net worth for Star Health H1FY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "star-health::net_worth::9MFY26": "Net worth for Star Health 9MFY26 is published in Star Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::group_other_gwp::9MFY25": "Group/other gwp for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::group_other_gwp::9MFY26": "Group/other gwp for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nwp::9MFY25": "Net written premium for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nwp::9MFY26": "Net written premium for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nep::9MFY25": "Net earned premium for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::nep::9MFY26": "Net earned premium for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::pat_igaap::9MFY25": "Profit after tax (igaap) for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::pat_igaap::9MFY26": "Profit after tax (igaap) for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::expense_ratio_igaap::9MFY25": "Expense ratio for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::expense_ratio_igaap::9MFY26": "Expense ratio for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::9MFY25": "Expense-of-management ratio for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::eom_igaap::9MFY26": "Expense-of-management ratio for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::pat_ifrs::FY23": "profit after tax (IFRS/Ind-AS) for Care Health FY23: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::pat_ifrs::FY24": "profit after tax (IFRS/Ind-AS) for Care Health FY24: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::pat_ifrs::9MFY25": "profit after tax (IFRS/Ind-AS) for Care Health 9MFY25: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::pat_ifrs::Q1FY26": "profit after tax (IFRS/Ind-AS) for Care Health Q1FY26: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::pat_ifrs::9MFY26": "profit after tax (IFRS/Ind-AS) for Care Health 9MFY26: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::claims_ratio_ifrs::FY23": "claims ratio (IFRS/Ind-AS) for Care Health FY23: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::claims_ratio_ifrs::FY24": "claims ratio (IFRS/Ind-AS) for Care Health FY24: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::claims_ratio_ifrs::Q1FY25": "claims ratio (IFRS/Ind-AS) for Care Health Q1FY25: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::claims_ratio_ifrs::9MFY25": "claims ratio (IFRS/Ind-AS) for Care Health 9MFY25: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::expense_ratio_ifrs::FY23": "expense ratio (IFRS/Ind-AS) for Care Health FY23: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::expense_ratio_ifrs::FY24": "expense ratio (IFRS/Ind-AS) for Care Health FY24: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::expense_ratio_ifrs::Q1FY25": "expense ratio (IFRS/Ind-AS) for Care Health Q1FY25: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::expense_ratio_ifrs::9MFY25": "expense ratio (IFRS/Ind-AS) for Care Health 9MFY25: published in Care Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "care-health::net_worth::9MFY25": "Net worth for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::net_worth::9MFY26": "Net worth for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_aum::9MFY25": "Investment book (aum) for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_aum::9MFY26": "Investment book (aum) for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_yield::9MFY25": "Investment yield for Care Health 9MFY25 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "care-health::investment_yield::9MFY26": "Investment yield for Care Health 9MFY26 is published in Care Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::group_other_gwp::Q1FY25": "Group/other gwp for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::nwp::Q1FY25": "Net written premium for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::nwp::Q1FY26": "Net written premium for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::nep::Q1FY25": "Net earned premium for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::nep::Q1FY26": "Net earned premium for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::pat_igaap::Q1FY25": "Profit after tax (igaap) for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::pat_igaap::Q1FY26": "Profit after tax (igaap) for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::claims_ratio_igaap::Q1FY25": "Claims ratio for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::claims_ratio_igaap::Q1FY26": "Claims ratio for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::expense_ratio_igaap::Q1FY25": "Expense ratio for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::expense_ratio_igaap::Q1FY26": "Expense ratio for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::eom_igaap::Q1FY25": "Expense-of-management ratio for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::eom_igaap::Q1FY26": "Expense-of-management ratio for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::pat_ifrs::Q1FY25": "profit after tax (IFRS/Ind-AS) for Aditya Birla Health Q1FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::pat_ifrs::Q1FY26": "profit after tax (IFRS/Ind-AS) for Aditya Birla Health Q1FY26: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::claims_ratio_ifrs::FY23": "claims ratio (IFRS/Ind-AS) for Aditya Birla Health FY23: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::claims_ratio_ifrs::FY24": "claims ratio (IFRS/Ind-AS) for Aditya Birla Health FY24: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::claims_ratio_ifrs::FY25": "claims ratio (IFRS/Ind-AS) for Aditya Birla Health FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::claims_ratio_ifrs::Q1FY25": "claims ratio (IFRS/Ind-AS) for Aditya Birla Health Q1FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::claims_ratio_ifrs::Q1FY26": "claims ratio (IFRS/Ind-AS) for Aditya Birla Health Q1FY26: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::expense_ratio_ifrs::FY23": "expense ratio (IFRS/Ind-AS) for Aditya Birla Health FY23: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::expense_ratio_ifrs::FY24": "expense ratio (IFRS/Ind-AS) for Aditya Birla Health FY24: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::expense_ratio_ifrs::FY25": "expense ratio (IFRS/Ind-AS) for Aditya Birla Health FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::expense_ratio_ifrs::Q1FY25": "expense ratio (IFRS/Ind-AS) for Aditya Birla Health Q1FY25: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::expense_ratio_ifrs::Q1FY26": "expense ratio (IFRS/Ind-AS) for Aditya Birla Health Q1FY26: published in Aditya Birla Health's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "aditya-birla::solvency_ratio::Q1FY25": "Solvency ratio for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::solvency_ratio::Q1FY26": "Solvency ratio for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::net_worth::Q1FY25": "Net worth for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::net_worth::Q1FY26": "Net worth for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::investment_aum::Q1FY25": "Investment book (aum) for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::investment_aum::Q1FY26": "Investment book (aum) for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::investment_yield::Q1FY25": "Investment yield for Aditya Birla Health Q1FY25 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "aditya-birla::investment_yield::Q1FY26": "Investment yield for Aditya Birla Health Q1FY26 is published in Aditya Birla Health's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "niva-bupa::analyst_price_at_reco::Kotak Securities::2025-04-02": "Awaiting the dated broker note from Kotak Securities (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "niva-bupa::analyst_target_price::Kotak Securities::2025-04-02": "Awaiting the dated broker note from Kotak Securities (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "niva-bupa::analyst_price_at_reco::Morgan Stanley::2024-12-22": "Awaiting the dated broker note from Morgan Stanley (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "niva-bupa::analyst_target_price::Morgan Stanley::2024-12-22": "Awaiting the dated broker note from Morgan Stanley (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_price_at_reco::Motilal Oswal::2024-10-18": "Awaiting the dated broker note from Motilal Oswal (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_target_price::Motilal Oswal::2024-10-18": "Awaiting the dated broker note from Motilal Oswal (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_price_at_reco::Sharekhan::2024-08-23": "Awaiting the dated broker note from Sharekhan (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_target_price::Sharekhan::2024-08-23": "Awaiting the dated broker note from Sharekhan (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_price_at_reco::Geojit BNP Paribas::2024-08-01": "Awaiting the dated broker note from Geojit BNP Paribas (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_target_price::Geojit BNP Paribas::2024-08-01": "Awaiting the dated broker note from Geojit BNP Paribas (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_price_at_reco::IDBI Capital::2024-06-14": "Awaiting the dated broker note from IDBI Capital (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::analyst_target_price::IDBI Capital::2024-06-14": "Awaiting the dated broker note from IDBI Capital (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "godigit::analyst_price_at_reco::Emkay::2025-04-29": "Awaiting the dated broker note from Emkay (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "godigit::analyst_target_price::Emkay::2025-04-29": "Awaiting the dated broker note from Emkay (analyst-aggregator source) — not in the currently-fetched coverage set.",
-    "icici-lombard::gwp::as_on_run_date": "Gross written premium for ICICI Lombard as_on_run_date is published in ICICI Lombard's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "icici-lombard::net_worth_ifrs::as_on_run_date": "net worth (IFRS/Ind-AS) for ICICI Lombard as_on_run_date: published in ICICI Lombard's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "icici-lombard::pat_ifrs::as_on_run_date": "profit after tax (IFRS/Ind-AS) for ICICI Lombard as_on_run_date: published in ICICI Lombard's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "icici-lombard::net_worth_igaap::as_on_run_date": "Net worth (igaap) for ICICI Lombard as_on_run_date is published in ICICI Lombard's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "icici-lombard::pat_igaap::as_on_run_date": "ICICI Lombard headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for as_on_run_date is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill.",
-    "godigit::gwp::as_on_run_date": "Gross written premium for Go Digit as_on_run_date is published in Go Digit's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "godigit::net_worth_ifrs::as_on_run_date": "net worth (IFRS/Ind-AS) for Go Digit as_on_run_date: published in Go Digit's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "godigit::pat_ifrs::as_on_run_date": "profit after tax (IFRS/Ind-AS) for Go Digit as_on_run_date: published in Go Digit's IFRS/Ind-AS financial statements where available — not in the currently-fetched sources. Fills when the statement is dropped into the project.",
-    "godigit::net_worth_igaap::as_on_run_date": "Net worth (igaap) for Go Digit as_on_run_date is published in Go Digit's IRDAI NL public-disclosure filing / annual report, but isn't obtainable via the automated pipeline (source blocks automated download or isn't machine-extractable). Fills when the filing is dropped into the project.",
-    "godigit::pat_igaap::as_on_run_date": "Go Digit headlines its profit on the IFRS/Ind-AS basis in public results; the IGAAP statutory profit after tax (IGAAP) for as_on_run_date is in its IRDAI NL public-disclosure filing, which the automated pipeline can't pull. Drop the filing to fill."
+    "niva-bupa::nwp::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Niva Bupa Q4FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::nwp::Q4FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Niva Bupa Q4FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::pat_igaap::Q4FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "niva-bupa::pat_igaap::Q4FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa Q4FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "niva-bupa::eom_igaap::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::eom_igaap::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::eom_igaap::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Niva Bupa Q4FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::eom_igaap::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Niva Bupa H1FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::eom_igaap::Q4FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Niva Bupa Q4FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_aum::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_yield::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_yield::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_yield::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Niva Bupa H1FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::total_gwp::FY26": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Star Health FY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "star-health::nwp::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nwp::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nwp::Q4FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::Q4FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::pat_igaap::Q4FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "star-health::pat_igaap::Q4FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Star Health Q4FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "star-health::claims_ratio_igaap::Q4FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis claims ratio for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "star-health::expense_ratio_igaap::Q4FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "star-health::eom_igaap::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health FY23 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::Q4FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::expense_ratio_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Star Health FY24 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::expense_ratio_ifrs::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Star Health FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::net_worth::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::investment_aum::FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::total_gwp::Q1FY25": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Care Health Q1FY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::total_gwp::9MFY25": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Care Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::total_gwp::Q1FY26": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Care Health Q1FY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::total_gwp::9MFY26": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Care Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::nwp::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nwp::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Care Health Q4FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nwp::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nep::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nep::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_igaap::Q1FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::pat_igaap::Q1FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::eom_igaap::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::eom_igaap::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::eom_igaap::Q4FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health Q4FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::eom_igaap::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_aum::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_yield::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_yield::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_igaap::FY23": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health FY23 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::expense_ratio_igaap::FY23": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health FY23 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::eom_igaap::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::eom_igaap::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::eom_igaap::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_ifrs::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::nwp::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::pat_igaap::9MFY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "niva-bupa::expense_ratio_igaap::9MFY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Niva Bupa 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "niva-bupa::expense_ratio_igaap::9MFY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Niva Bupa 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "niva-bupa::claims_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Niva Bupa FY23 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::claims_ratio_ifrs::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::claims_ratio_ifrs::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Niva Bupa 9MFY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::expense_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Niva Bupa FY23 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::expense_ratio_ifrs::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::expense_ratio_ifrs::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Niva Bupa 9MFY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::net_worth::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_aum::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::investment_yield::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::group_other_gwp::9MFY25": {
+      "tag": "IRDAI",
+      "reason": "Group/other gwp for Star Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "star-health::group_other_gwp::9MFY26": {
+      "tag": "IRDAI",
+      "reason": "Group/other gwp for Star Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "star-health::nwp::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nwp::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nwp::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nwp::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::nep::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::eom_igaap::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::solvency_ratio::H1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Solvency ratio for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::solvency_ratio::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Solvency ratio for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::net_worth::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::net_worth::H1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "star-health::net_worth::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::group_other_gwp::9MFY25": {
+      "tag": "IRDAI",
+      "reason": "Group/other gwp for Care Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::group_other_gwp::9MFY26": {
+      "tag": "IRDAI",
+      "reason": "Group/other gwp for Care Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "care-health::nwp::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nwp::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nep::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::nep::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_igaap::9MFY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::pat_igaap::9MFY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::expense_ratio_igaap::9MFY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Care Health 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::expense_ratio_igaap::9MFY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Care Health 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "care-health::eom_igaap::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::eom_igaap::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_ifrs::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_ifrs::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::pat_ifrs::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::claims_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::claims_ratio_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::claims_ratio_ifrs::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::claims_ratio_ifrs::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::expense_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::expense_ratio_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::expense_ratio_ifrs::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::expense_ratio_ifrs::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::net_worth::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::net_worth::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_aum::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_aum::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_yield::9MFY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "care-health::investment_yield::9MFY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::group_other_gwp::Q1FY25": {
+      "tag": "IRDAI",
+      "reason": "Group/other gwp for Aditya Birla Health Q1FY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "aditya-birla::nwp::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::nwp::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net written premium for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::nep::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::nep::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net earned premium for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_igaap::Q1FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::pat_igaap::Q1FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::claims_ratio_igaap::Q1FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::claims_ratio_igaap::Q1FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::expense_ratio_igaap::Q1FY25": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::expense_ratio_igaap::Q1FY26": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "aditya-birla::eom_igaap::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::eom_igaap::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_ifrs::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::pat_ifrs::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_ifrs::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_ifrs::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::claims_ratio_ifrs::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Claims ratio (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::expense_ratio_ifrs::FY23": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::expense_ratio_ifrs::FY24": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::expense_ratio_ifrs::FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::expense_ratio_ifrs::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::expense_ratio_ifrs::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Expense ratio (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::solvency_ratio::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Solvency ratio for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::solvency_ratio::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Solvency ratio for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::net_worth::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::net_worth::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Net worth for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::investment_aum::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::investment_aum::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment book (aum) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::investment_yield::Q1FY25": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "aditya-birla::investment_yield::Q1FY26": {
+      "tag": "Not in PPT",
+      "reason": "Investment yield for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "niva-bupa::analyst_price_at_reco::Kotak Securities::2025-04-02": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Niva Bupa 2025-04-02 isn't in the currently-fetched analyst coverage."
+    },
+    "niva-bupa::analyst_target_price::Kotak Securities::2025-04-02": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Niva Bupa 2025-04-02 isn't in the currently-fetched analyst coverage."
+    },
+    "niva-bupa::analyst_price_at_reco::Morgan Stanley::2024-12-22": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Niva Bupa 2024-12-22 isn't in the currently-fetched analyst coverage."
+    },
+    "niva-bupa::analyst_target_price::Morgan Stanley::2024-12-22": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Niva Bupa 2024-12-22 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_price_at_reco::Motilal Oswal::2024-10-18": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-10-18 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_target_price::Motilal Oswal::2024-10-18": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-10-18 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_price_at_reco::Sharekhan::2024-08-23": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-08-23 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_target_price::Sharekhan::2024-08-23": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-08-23 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_price_at_reco::Geojit BNP Paribas::2024-08-01": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-08-01 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_target_price::Geojit BNP Paribas::2024-08-01": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-08-01 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_price_at_reco::IDBI Capital::2024-06-14": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-06-14 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::analyst_target_price::IDBI Capital::2024-06-14": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for ICICI Lombard 2024-06-14 isn't in the currently-fetched analyst coverage."
+    },
+    "godigit::analyst_price_at_reco::Emkay::2025-04-29": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Go Digit 2025-04-29 isn't in the currently-fetched analyst coverage."
+    },
+    "godigit::analyst_target_price::Emkay::2025-04-29": {
+      "tag": "Not in PPT",
+      "reason": "Broker note for Go Digit 2025-04-29 isn't in the currently-fetched analyst coverage."
+    },
+    "icici-lombard::gwp::as_on_run_date": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for ICICI Lombard as_on_run_date is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "icici-lombard::net_worth_ifrs::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Net worth (ifrs) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "icici-lombard::pat_ifrs::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "icici-lombard::net_worth_igaap::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Net worth (igaap) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "icici-lombard::pat_igaap::as_on_run_date": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for ICICI Lombard as_on_run_date isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    },
+    "godigit::gwp::as_on_run_date": {
+      "tag": "IRDAI",
+      "reason": "Gross written premium for Go Digit as_on_run_date is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+    },
+    "godigit::net_worth_ifrs::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Net worth (ifrs) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "godigit::pat_ifrs::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Profit after tax (ifrs) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "godigit::net_worth_igaap::as_on_run_date": {
+      "tag": "Not in PPT",
+      "reason": "Net worth (igaap) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+    },
+    "godigit::pat_igaap::as_on_run_date": {
+      "tag": "1/n data not found",
+      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Go Digit as_on_run_date isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+    }
   }
 }

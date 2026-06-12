@@ -504,16 +504,24 @@ def main() -> None:
         for sh in sheets:
             for cell in sh["cells"]:
                 k = f'{cell.get("entity")}::{cell.get("metric")}::{cell.get("period")}'
-                reason = blocked.get(k)
-                if not reason:
+                entry = blocked.get(k)
+                if not entry:
                     continue
                 v = store.get(k)
                 if (v and v.get("normalized_value") is not None) or cell.get("calculated_value") is not None:
                     continue
                 if cell.get("source_status") in ("not_applicable", "not_in_ppt", "web_blocked"):
                     continue
-                cell["source_status"] = "web_blocked"
+                tag = entry.get("tag") if isinstance(entry, dict) else None
+                reason = entry.get("reason") if isinstance(entry, dict) else str(entry)
+                # Short honest tag (Neha, 2026-06-12): "Not in PPT" reuses the grey
+                # not_in_ppt status; "1/n data not found" and "IRDAI" use web_blocked
+                # (also grey). The tag is what the cell shows; the reason drives the
+                # detail panel / tooltip.
+                cell["source_status"] = "not_in_ppt" if tag == "Not in PPT" else "web_blocked"
                 cell["na_reason"] = reason
+                if tag:
+                    cell["blank_tag"] = tag
 
     # --- Value store (trimmed) -------------------------------------------
     values = {key: pick(entry, VALUE_FIELDS) for key, entry in store.items()}
