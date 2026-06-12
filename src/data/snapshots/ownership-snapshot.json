@@ -4,8 +4,8 @@
     "description": "Quarterly shareholding pattern for listed insurers (promoter / FII / DII / MF / public).",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-10",
-    "last_successful_run": "2026-06-10T14:46:15.395Z",
+    "last_updated": "2026-06-12",
+    "last_successful_run": "2026-06-12T08:47:26.921Z",
     "upstream_sources": [
       "muns_agent",
       "nse_bse_shareholding"
@@ -30,8 +30,8 @@
         "source_name": "Quarterly shareholding pattern — Star Health Mar 2026 (via muns agent)",
         "source_url": null,
         "source_period": "Mar 2026",
-        "fetched_at": "2026-06-10T14:46:15.395Z",
-        "parsed_at": "2026-06-10T14:47:02.335Z",
+        "fetched_at": "2026-06-12T08:47:26.921Z",
+        "parsed_at": "2026-06-12T08:47:55.110Z",
         "parser_name": "sahi-ownership-agent",
         "confidence": "medium"
       }
@@ -52,8 +52,8 @@
         "source_name": "Quarterly shareholding pattern — Niva Bupa Mar 2026 (via muns agent)",
         "source_url": null,
         "source_period": "Mar 2026",
-        "fetched_at": "2026-06-10T14:46:15.395Z",
-        "parsed_at": "2026-06-10T14:47:02.336Z",
+        "fetched_at": "2026-06-12T08:47:26.921Z",
+        "parsed_at": "2026-06-12T08:47:55.110Z",
         "parser_name": "sahi-ownership-agent",
         "confidence": "medium"
       }
