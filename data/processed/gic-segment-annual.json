@@ -3,7 +3,7 @@
     "snapshot_id": "gic-segment-annual",
     "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
     "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "last_run_at": "2026-06-11T17:32:57.192Z",
+    "last_run_at": "2026-06-12T10:40:46.897Z",
     "files_used": [
       {
         "period": "2026-03",
@@ -30,6 +30,18 @@
         "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx"
       },
       {
+        "period": "2022-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx"
+      },
+      {
+        "period": "2021-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY21-march.xlsx",
+        "url": "https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx"
+      },
+      {
         "period": "2020-03",
         "kind": "march",
         "file": "data/raw/gicouncil/segment-annual/FY20-march.xlsx",
@@ -50,6 +62,10 @@
       "FY19": {
         "file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "basis": "current-year columns"
+      },
+      "FY21": {
+        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "basis": "prior-year comparative columns"
       },
       "FY22": {
         "file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
@@ -186,9 +202,8 @@
       "listing (wayback:20251204150025): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "listing (wayback:20251204150025): all relay routes failed or returned non-file responses",
       "listing (wayback:20251204150025): wayback listing snapshot is 190 days old — newest month links may be missing",
-      "download failed on every route (https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx): all routes failed for https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
-      "download failed on every route (https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx): all routes failed for https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
       "FY23: only 6/11 named retail rows found — \"Others\" left null.",
+      "data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
       "data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
       "FY19: found 2/4 PSU rows — PSUs/Private left null.",
       "FY19: only 7/11 named retail rows found — \"Others\" left null.",
@@ -226,7 +241,8 @@
       "Jun-FY19: found 2/4 PSU rows — PSUs/Private left null.",
       "Jun-FY19: only 7/11 named retail rows found — \"Others\" left null.",
       "Jun-FY18: found 2/4 PSU rows — PSUs/Private left null.",
-      "Jul-FY19: found 2/4 PSU rows — PSUs/Private left null."
+      "Jul-FY19: found 2/4 PSU rows — PSUs/Private left null.",
+      "Jul-FY19: only 7/11 named retail rows found — \"Others\" left null."
     ]
   }
 }
