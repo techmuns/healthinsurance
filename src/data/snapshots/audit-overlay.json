@@ -5795,6 +5795,38 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Company filing / quarterly investor presentation (2025-10-28). Fetched via munschat sahi-financials."
+    },
+    "star-health::combined_ratio_igaap::Q4FY25": {
+      "value": 98.4,
+      "source_name": "Press-reported — Star Health Q4 FY25 results (combined ratio 98.4%, standalone quarter); official NSE investor deck blocks automated download",
+      "source_url": "https://www.businessupturn.com/business/corporates/star-health-insurance-posts-rs-787-crore-profit-in-fy25-gwp-grows-10-to-rs-16781-crore/",
+      "confidence": "medium",
+      "note": "IGAAP combined ratio, standalone Q4 FY25; basis corroborated (claims+expense).",
+      "unit": "%"
+    },
+    "star-health::combined_ratio_igaap::Q4FY26": {
+      "value": 95.7,
+      "source_name": "Press-reported — Star Health Q4 FY26 results (combined ratio 95.7%, standalone quarter); official NSE investor deck blocks automated download",
+      "source_url": "https://www.investywise.com/star-health-and-allied-insurance-q4-fy26-financial-results/",
+      "confidence": "medium",
+      "note": "IGAAP combined ratio, standalone Q4 FY26; claims 65.2% + expense ~30.5% corroborate.",
+      "unit": "%"
+    },
+    "star-health::claims_ratio_igaap::Q4FY26": {
+      "value": 65.2,
+      "source_name": "Press-reported — Star Health Q4 FY26 results (loss ratio 65.2%, standalone quarter); official NSE investor deck blocks automated download",
+      "source_url": "https://www.investywise.com/star-health-and-allied-insurance-q4-fy26-financial-results/",
+      "confidence": "medium",
+      "note": "IGAAP claims/loss ratio, standalone Q4 FY26.",
+      "unit": "%"
+    },
+    "aditya-birla::combined_ratio_igaap::Q1FY25": {
+      "value": 112.0,
+      "source_name": "Press-reported — Aditya Birla Capital Q1 FY25 results, health-insurance segment (ABHI combined ratio 112%, down from 118% Q1 FY24)",
+      "source_url": "https://www.business-standard.com/companies/results/aditya-birla-capital-q1-fy25-results-net-profit-rises-16-7-to-rs-758-cr-124080101363_1.html",
+      "confidence": "medium",
+      "note": "IGAAP combined ratio, standalone Q1 FY25 (ABHI segment of listed Aditya Birla Capital).",
+      "unit": "%"
     }
   },
   "meta": {}
