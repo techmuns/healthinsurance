@@ -10,15 +10,15 @@
 // ---------------------------------------------------------------------------
 
 import { readFile, readdir } from 'node:fs/promises'
-import { extname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import * as cheerio from 'cheerio'
 import * as XLSX from 'xlsx'
 // pdf-parse ships a quirky CJS entry that tries to read a test PDF at import
 // time. Pull from its inner module to bypass.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { RAW_ROOT, ensureDir, fileExists, isOfflineMode, writeRaw } from './util'
 import { browserGet } from './browser'
+import { assertPublicUrl, isSafeHttpUrlSync } from './net-guard'
 
 // Real desktop-Chrome User-Agent + a full browser fingerprint so IRDAI /
 // CDN-fronted insurer sites stop returning 403 to the default Node fetch UA.
@@ -57,6 +57,10 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const FETCH_TIMEOUT_MS = 45_000
 
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
+  // SSRF guard: never fetch a private/loopback/link-local/reserved target. This
+  // runs LIVE in CI and commits whatever it downloads, so a poisoned upstream
+  // link or redirect must not be able to point us at an internal address.
+  await assertPublicUrl(url)
   const maxAttempts = 3
   let lastErr: unknown = null
   let blocked = false // 401/403 — a WAF block a real browser may get past
@@ -80,6 +84,9 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} for ${url}`)
       }
+      // Redirects were followed natively; re-validate the FINAL url before the
+      // body is read so a 30x to an internal host can't be read or committed.
+      await assertPublicUrl(res.url || url)
       const ab = await res.arrayBuffer()
       return { buffer: Buffer.from(ab), finalUrl: res.url }
     } catch (err) {
@@ -148,6 +155,9 @@ export function findLinks(
     const href = $(el).attr('href')?.trim()
     if (!href) return
     const abs = href.startsWith('http') ? href : new URL(href, baseUrl).toString()
+    // Drop links that point at non-HTTP(S) schemes or internal/private hosts so
+    // a poisoned page can never get an internal URL queued for fetch + commit.
+    if (!isSafeHttpUrlSync(abs)) return
     const text = $(el).text().trim()
     if (matcher(abs, text)) out.push(abs)
   })

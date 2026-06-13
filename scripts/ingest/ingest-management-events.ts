@@ -177,7 +177,8 @@ export function extractEvents(buffer: Buffer, rawFile: string): ParsedEvent[] {
 function jsonToLines(raw: string): string {
   try {
     const data = JSON.parse(raw)
-    const rows = Array.isArray(data) ? data : Array.isArray((data as any)?.data) ? (data as any).data : [data]
+    const maybe = data as { data?: unknown }
+    const rows = Array.isArray(data) ? data : Array.isArray(maybe.data) ? maybe.data : [data]
     return rows
       .map((r: unknown) =>
         typeof r === 'string' ? r : Object.values(r as Record<string, unknown>).map((v) => String(v ?? '')).join(' | '),

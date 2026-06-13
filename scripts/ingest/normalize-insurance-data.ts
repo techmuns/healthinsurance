@@ -35,7 +35,7 @@ export interface RawAnnualInput {
 
 const num = (v: unknown): number | null => {
   if (v == null || v === '') return null
-  const n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.\-]/g, '')) : Number(v)
+  const n = typeof v === 'string' ? parseFloat(v.replace(/[^0-9.-]/g, '')) : Number(v)
   return isFinite(n) ? n : null
 }
 
