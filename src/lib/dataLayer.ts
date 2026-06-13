@@ -404,6 +404,14 @@ export function getFocalCompanyId(): string {
   return master.find((c) => c.is_focal)?.company_id ?? master[0]?.company_id ?? 'niva-bupa'
 }
 
+/** Latest annual fiscal-year label actually present in the snapshot (e.g. "FY25").
+ *  Period labels must reflect the real underlying data — never a hardcoded year. */
+export function getLatestAnnualFyLabel(): string {
+  const fys = (annualSnapshot.data as Array<{ fiscal_year: string }>).map((r) => fyNum(r.fiscal_year))
+  const max = fys.length ? Math.max(...fys) : 0
+  return max ? `FY${max}` : 'FY25'
+}
+
 /** Dashboard freshness — the latest ingestion date across the snapshots the
  *  overview actually renders (company annuals + the GI Council industry feeds),
  *  so the "Updated" badge moves whenever any of them is refreshed. */

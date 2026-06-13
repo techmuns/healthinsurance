@@ -208,11 +208,11 @@ export function EarningsBridgeDrawer({ open, onClose, companyId, companyShort }:
                   ['Investment income', b.investmentIncome, 'Reported'],
                   ['Other (net)', b.otherNet, 'Derived (PAT − UW − investment)'],
                   ['Profit after tax — IGAAP', b.pat, 'Reported'],
-                  ['Profit after tax — IFRS', ifrsPat ?? 0, ifrsPat != null ? 'Reported' : 'Not disclosed'],
+                  ['Profit after tax — IFRS', ifrsPat, ifrsPat != null ? 'Reported' : 'Not disclosed'],
                 ].map(([label, val, prov]) => (
                   <tr key={label as string} className="border-b border-soft-border/50">
                     <td className="py-1 pr-2 text-[11px] text-ink-secondary">{label as string}</td>
-                    <td className="py-1 pr-2 text-right text-[11px] tabular-nums text-navy-deep">{signed(val as number)}</td>
+                    <td className="py-1 pr-2 text-right text-[11px] tabular-nums text-navy-deep">{val == null ? 'NA' : signed(val as number)}</td>
                     <td className="py-1 text-right text-[10px] text-ink-secondary/80">{prov as string}</td>
                   </tr>
                 ))}

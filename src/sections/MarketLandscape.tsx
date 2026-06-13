@@ -559,7 +559,7 @@ function SahiShiftCard() {
   const sahiDelta = sahiFirst != null && sahiLast != null ? Math.round((sahiLast - sahiFirst) * 10) / 10 : null
 
   const seriesLabel = (name: 'SAHI' | 'Private' | 'PSU', color: string, bold: boolean) =>
-    (props: any) => {
+    (props: unknown) => {
       const { x, y, index, value } = props as { x?: number; y?: number; index?: number; value?: number }
       if (index !== lastIdx || typeof x !== 'number' || typeof y !== 'number' || typeof value !== 'number') return null
       return (

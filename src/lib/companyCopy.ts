@@ -12,6 +12,7 @@
 import type { Insurer, PeerGroup, Signal, TimePeriod } from '@/data/types'
 import { insurers, PEER_GROUP_LABEL } from '@/data/mockData'
 import { getFilteredInsurers, getRankByMetric } from '@/lib/insurers'
+import { getLatestAnnualFyLabel } from '@/lib/dataLayer'
 
 export type CopyTone = 'teal' | 'positive' | 'navy' | 'warning' | 'negative'
 
@@ -36,11 +37,12 @@ export interface SectionCopy {
 
 // ─── Period formatting ─────────────────────────────────────────────────────
 
-/** Returns the latest period label ("FY26", "Q4 FY25", "Apr FY26"). */
+/** Returns the latest period label. Annual is derived from the snapshot's real
+ *  latest fiscal year (never a hardcoded year, per the honest-period-label rule). */
 export function formatPeriodLabel(period: TimePeriod): string {
   switch (period) {
     case 'Annual':
-      return 'FY26'
+      return getLatestAnnualFyLabel()
     case 'Quarterly':
       return 'Q4 FY25'
     case 'Monthly':
@@ -357,11 +359,33 @@ export function getCompanyProfitabilityCopy(company: Insurer): SectionCopy {
 // ─── Valuation ─────────────────────────────────────────────────────────────
 
 export function getCompanyValuationCopy(company: Insurer, peerGroup: PeerGroup): SectionCopy {
+  // Unlisted carriers carry no P/GWP (the model uses 0 = N/A). Never compute a
+  // "% vs median" against a zero — that would fabricate a "deep discount"/NaN
+  // read for a company that simply has no market valuation.
+  if (company.valuation <= 0) {
+    return {
+      eyebrow: 'Valuation Verdict',
+      verdict: 'Not market-listed',
+      tone: 'navy',
+      badge: 'NA',
+      summary: `${company.shortName} is not separately listed, so there is no P/GWP multiple to compare against peers.`,
+      readLines: [
+        { label: 'Why', value: `No public market price for ${company.shortName}.` },
+        { label: 'Implication', value: `Read valuation off transactions or the listed peers as a proxy.` },
+        { label: 'Watch', value: `Any listing event or primary capital raise.` },
+        { label: 'Read', value: `Operating quality vs listed peers is the cleaner lens here.` },
+      ],
+    }
+  }
   const peerList = getFilteredInsurers({ peerGroup, highlightedCompany: company.id })
-  const peerVals = peerList.filter((i) => i.valuation > 0).map((i) => i.valuation)
-  const median = peerVals.length
-    ? peerVals.slice().sort((a, b) => a - b)[Math.floor(peerVals.length / 2)]
-    : company.valuation
+  const peerVals = peerList.filter((i) => i.valuation > 0).map((i) => i.valuation).sort((a, b) => a - b)
+  const n = peerVals.length
+  const median =
+    n === 0
+      ? company.valuation
+      : n % 2
+        ? peerVals[(n - 1) / 2]
+        : (peerVals[n / 2 - 1] + peerVals[n / 2]) / 2
   const premium = ((company.valuation - median) / median) * 100
 
   let verdict: string
