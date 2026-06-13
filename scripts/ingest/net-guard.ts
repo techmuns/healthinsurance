@@ -56,6 +56,7 @@ function isBlockedIpv4(ip: string): boolean {
     inRange('192.0.0.0', 24) || // IETF protocol assignments
     inRange('192.168.0.0', 16) || // private
     inRange('198.18.0.0', 15) || // benchmarking
+    inRange('224.0.0.0', 4) || // multicast
     inRange('240.0.0.0', 4) || // reserved
     n === (ipv4ToInt('255.255.255.255') as number) // broadcast
   )
@@ -113,13 +114,19 @@ function isBlockedIpv6(ip: string): boolean {
   if (b.slice(0, 15).every((x) => x === 0) && b[15] === 1) return true // ::1 loopback
   if ((b[0] & 0xfe) === 0xfc) return true // fc00::/7 unique-local
   if (b[0] === 0xfe && (b[1] & 0xc0) === 0x80) return true // fe80::/10 link-local
-  // IPv4-mapped ::ffff:0:0/96 and IPv4-compatible ::/96 (deprecated) — validate
-  // the embedded IPv4 against the v4 deny-list so e.g. ::ffff:169.254.169.254
-  // (in any notation) is caught.
-  const first10Zero = b.slice(0, 10).every((x) => x === 0)
-  const mapped = first10Zero && b[10] === 0xff && b[11] === 0xff
+  if (b[0] === 0xfe && (b[1] & 0xc0) === 0xc0) return true // fec0::/10 site-local (deprecated)
+  if (b[0] === 0xff) return true // ff00::/8 multicast
+  // Decode an embedded IPv4 and apply the v4 deny-list for every well-known
+  // IPv4-in-IPv6 embedding an attacker could use to smuggle an internal v4:
+  //   ::ffff:0:0/96 (mapped) · ::/96 (compat) · 64:ff9b::/96 (NAT64) → bytes 12-15
+  //   2002::/16 (6to4)                                               → bytes 2-5
+  // e.g. ::ffff:169.254.169.254 (any notation) and 64:ff9b::169.254.169.254.
+  const z10 = b.slice(0, 10).every((x) => x === 0)
+  const mapped = z10 && b[10] === 0xff && b[11] === 0xff
   const compat = b.slice(0, 12).every((x) => x === 0) && !(b[12] === 0 && b[13] === 0 && b[14] === 0)
-  if (mapped || compat) return isBlockedIpv4(`${b[12]}.${b[13]}.${b[14]}.${b[15]}`)
+  const nat64 = b[0] === 0x00 && b[1] === 0x64 && b[2] === 0xff && b[3] === 0x9b
+  if (mapped || compat || nat64) return isBlockedIpv4(`${b[12]}.${b[13]}.${b[14]}.${b[15]}`)
+  if (b[0] === 0x20 && b[1] === 0x02) return isBlockedIpv4(`${b[2]}.${b[3]}.${b[4]}.${b[5]}`) // 2002::/16 6to4
   return false
 }
 
@@ -143,7 +150,7 @@ export function isSafeHttpUrlSync(raw: string): boolean {
     return false
   }
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return false
-  const host = u.hostname.replace(/^\[|\]$/g, '') // unwrap [IPv6]
+  const host = u.hostname.replace(/^\[|\]$/g, '').replace(/\.+$/, '') // unwrap [IPv6]; drop trailing dot(s) (FQDN root)
   if (!host) return false
   if (BLOCKED_HOST_RE.test(host)) return false
   if (net.isIP(host) && isBlockedAddress(host)) return false
@@ -161,7 +168,7 @@ export async function assertPublicUrl(raw: string): Promise<void> {
   if (!isSafeHttpUrlSync(raw)) {
     throw new Error(`Blocked unsafe URL (scheme/host not allowed): ${raw}`)
   }
-  const host = new URL(raw).hostname.replace(/^\[|\]$/g, '')
+  const host = new URL(raw).hostname.replace(/^\[|\]$/g, '').replace(/\.+$/, '')
   if (net.isIP(host)) return // already validated as a literal above
   let addrs: { address: string }[]
   try {
