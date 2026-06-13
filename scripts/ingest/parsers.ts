@@ -55,22 +55,44 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // the whole ingest run until the workflow's job timeout kills everything —
 // observed on the GIC chain (2026-06-11 run cancelled at the 25-min cap).
 const FETCH_TIMEOUT_MS = 45_000
+const MAX_REDIRECTS = 8
+
+/**
+ * Follow redirects MANUALLY so every hop — the initial URL and each 30x
+ * `Location` — is validated with assertPublicUrl BEFORE the request is made.
+ * `redirect: 'follow'` would connect to (and receive a response from) an
+ * internal redirect target before we could check it; this closes that. GET-only;
+ * browser headers are recomputed per hop so Referer tracks the current host.
+ */
+async function fetchFollowingSafely(url: string): Promise<{ res: Response; finalUrl: string }> {
+  let current = url
+  for (let hop = 0; ; hop++) {
+    await assertPublicUrl(current)
+    const res = await fetch(current, {
+      redirect: 'manual',
+      headers: browserHeaders(current),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get('location')
+      if (!loc) return { res, finalUrl: current } // 3xx without Location → treat as final
+      if (hop >= MAX_REDIRECTS) throw new Error(`Too many redirects starting at ${url}`)
+      current = new URL(loc, current).toString()
+      continue
+    }
+    return { res, finalUrl: current }
+  }
+}
 
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
-  // SSRF guard: never fetch a private/loopback/link-local/reserved target. This
-  // runs LIVE in CI and commits whatever it downloads, so a poisoned upstream
-  // link or redirect must not be able to point us at an internal address.
-  await assertPublicUrl(url)
   const maxAttempts = 3
   let lastErr: unknown = null
   let blocked = false // 401/403 — a WAF block a real browser may get past
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const res = await fetch(url, {
-        redirect: 'follow',
-        headers: browserHeaders(url),
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      })
+      // Each hop (initial + redirects) is SSRF-validated before the request, so
+      // a poisoned link or 30x to an internal host is never connected to.
+      const { res, finalUrl } = await fetchFollowingSafely(url)
       if (res.status >= 500 || res.status === 429) {
         lastErr = new Error(`HTTP ${res.status} for ${url}`)
         await sleep(1000 * Math.pow(2, i))
@@ -84,11 +106,8 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
       if (!res.ok) {
         throw new Error(`HTTP ${res.status} for ${url}`)
       }
-      // Redirects were followed natively; re-validate the FINAL url before the
-      // body is read so a 30x to an internal host can't be read or committed.
-      await assertPublicUrl(res.url || url)
       const ab = await res.arrayBuffer()
-      return { buffer: Buffer.from(ab), finalUrl: res.url }
+      return { buffer: Buffer.from(ab), finalUrl }
     } catch (err) {
       lastErr = err
       // Non-HTTP failure (DNS, network): brief back-off then retry.
