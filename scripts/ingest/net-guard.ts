@@ -61,17 +61,65 @@ function isBlockedIpv4(ip: string): boolean {
   )
 }
 
-function isBlockedIpv6(ip: string): boolean {
-  const s = ip.toLowerCase().split('%')[0] // strip any zone id
-  if (s === '::1' || s === '::') return true // loopback / unspecified
-  if (s.startsWith('::ffff:')) {
-    const v4 = s.slice('::ffff:'.length)
-    if (net.isIPv4(v4)) return isBlockedIpv4(v4) // IPv4-mapped
+/**
+ * Expand a (well-formed) IPv6 literal to its 16 bytes — handling `::`
+ * compression and an optional trailing dotted-quad (e.g. `::ffff:1.2.3.4`).
+ * Returns null if it can't be parsed. We parse to bytes rather than matching on
+ * text because the WHATWG URL parser normalises IPv4-mapped addresses into the
+ * hex-compressed form (`::ffff:169.254.169.254` → `::ffff:a9fe:a9fe`), so a
+ * textual `::ffff:<dotted>` check alone misses them.
+ */
+function ipv6ToBytes(addr: string): number[] | null {
+  let s = addr.toLowerCase().split('%')[0] // strip any zone id
+  // Fold a trailing dotted-quad IPv4 into two hex hextets.
+  const dotted = s.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/)
+  if (dotted) {
+    const n = ipv4ToInt(dotted[1])
+    if (n == null) return null
+    const hi = (n >>> 16) & 0xffff
+    const lo = n & 0xffff
+    s = s.slice(0, s.length - dotted[1].length).replace(/:$/, '') + `:${hi.toString(16)}:${lo.toString(16)}`
   }
-  const first = parseInt(s.split(':')[0] || '0', 16)
-  if (Number.isNaN(first)) return false
-  if ((first & 0xfe00) === 0xfc00) return true // fc00::/7 unique-local
-  if ((first & 0xffc0) === 0xfe80) return true // fe80::/10 link-local
+  const halves = s.split('::')
+  if (halves.length > 2) return null
+  const head = halves[0] ? halves[0].split(':') : []
+  const tail = halves.length === 2 ? (halves[1] ? halves[1].split(':') : []) : null
+  let hextets: string[]
+  if (tail === null) {
+    if (head.length !== 8) return null // no '::' → must be full
+    hextets = head
+  } else {
+    const missing = 8 - head.length - tail.length
+    if (missing < 0) return null
+    hextets = [...head, ...Array(missing).fill('0'), ...tail]
+  }
+  if (hextets.length !== 8) return null
+  const bytes: number[] = []
+  for (const h of hextets) {
+    if (!/^[0-9a-f]{1,4}$/.test(h || '0')) return null
+    const v = parseInt(h || '0', 16)
+    bytes.push((v >> 8) & 0xff, v & 0xff)
+  }
+  return bytes
+}
+
+function isBlockedIpv6(ip: string): boolean {
+  const b = ipv6ToBytes(ip)
+  if (!b) {
+    const s = ip.toLowerCase().split('%')[0]
+    return s === '::1' || s === '::' // conservative fallback if parsing fails
+  }
+  if (b.every((x) => x === 0)) return true // :: unspecified
+  if (b.slice(0, 15).every((x) => x === 0) && b[15] === 1) return true // ::1 loopback
+  if ((b[0] & 0xfe) === 0xfc) return true // fc00::/7 unique-local
+  if (b[0] === 0xfe && (b[1] & 0xc0) === 0x80) return true // fe80::/10 link-local
+  // IPv4-mapped ::ffff:0:0/96 and IPv4-compatible ::/96 (deprecated) — validate
+  // the embedded IPv4 against the v4 deny-list so e.g. ::ffff:169.254.169.254
+  // (in any notation) is caught.
+  const first10Zero = b.slice(0, 10).every((x) => x === 0)
+  const mapped = first10Zero && b[10] === 0xff && b[11] === 0xff
+  const compat = b.slice(0, 12).every((x) => x === 0) && !(b[12] === 0 && b[13] === 0 && b[14] === 0)
+  if (mapped || compat) return isBlockedIpv4(`${b[12]}.${b[13]}.${b[14]}.${b[15]}`)
   return false
 }
 
