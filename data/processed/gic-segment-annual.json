@@ -3,7 +3,7 @@
     "snapshot_id": "gic-segment-annual",
     "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
     "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "last_run_at": "2026-06-13T20:12:36.097Z",
+    "last_run_at": "2026-06-13T20:36:59.139Z",
     "files_used": [
       {
         "period": "2026-03",
@@ -22,6 +22,12 @@
         "kind": "march",
         "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
         "url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx"
+      },
+      {
+        "period": "2023-03",
+        "kind": "march",
+        "file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
+        "url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx"
       },
       {
         "period": "2022-03",
@@ -62,8 +68,8 @@
         "basis": "prior-year comparative columns"
       },
       "FY22": {
-        "file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
-        "basis": "current-year columns"
+        "file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
+        "basis": "prior-year comparative columns"
       },
       "FY23": {
         "file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
@@ -197,7 +203,7 @@
       "listing (wayback:20251204150025): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
       "listing (wayback:20251204150025): all relay routes failed or returned non-file responses",
       "listing (wayback:20251204150025): wayback listing snapshot is 192 days old — newest month links may be missing",
-      "download failed on every route (https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx): all routes failed for https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
+      "FY23: only 6/11 named retail rows found — \"Others\" left null.",
       "data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
       "data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
       "FY19: found 2/4 PSU rows — PSUs/Private left null.",
