@@ -5,10 +5,10 @@
     "schema_version": "1.1.0",
     "dataset": "official",
     "source_policy": "official-first (NSE). Investing.com is login-free backup only, tagged low-confidence.",
-    "last_successful_run": "2026-06-12T15:48:05.533Z",
+    "last_successful_run": "2026-06-13T07:11:50.154Z",
     "parser_status": "ready",
     "notes": "Daily close / traded / deliverable quantity per listed insurer. Workbook seed (NSE via S&P Capital IQ) for niva-bupa listing→Jul-2025; Yahoo Finance keeps it current (close + volume). Deliverable quantity is NSE-only — null where only Yahoo covers a day, until an NSE delivery file is staged.",
-    "last_updated": "2026-06-12T15:48:38.568Z",
+    "last_updated": "2026-06-13T07:11:55.464Z",
     "row_count": 1101,
     "companies": [
       "godigit",
@@ -21,7 +21,7 @@
       "to": "2026-06-12"
     },
     "seeded_from_workbook": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
-    "muns_last_run": "2026-06-12T15:48:05.533Z",
+    "muns_last_run": "2026-06-13T07:11:50.154Z",
     "nse_delivery_last_run": "2026-06-12T15:48:38.003Z"
   },
   "data": [
@@ -8070,7 +8070,7 @@
       "company_id": "icici-lombard",
       "date": "2026-06-12",
       "close": 1695.7,
-      "traded_qty": 702448,
+      "traded_qty": 702256,
       "deliverable_qty": 326869,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
@@ -14700,7 +14700,7 @@
       "company_id": "niva-bupa",
       "date": "2026-06-12",
       "close": 83.96,
-      "traded_qty": 788362,
+      "traded_qty": 788162,
       "deliverable_qty": 526946,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
@@ -18729,7 +18729,7 @@
       "company_id": "star-health",
       "date": "2026-06-12",
       "close": 519.6,
-      "traded_qty": 600719,
+      "traded_qty": 600294,
       "deliverable_qty": 393752,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
