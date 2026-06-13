@@ -51,6 +51,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 # Queue runs instead of racing: simultaneous pushes used to spawn parallel
 # ingests whose final `git push` collided (one always lost). Never cancel a
@@ -156,6 +157,55 @@ jobs:
           echo "::group::data-health.json"
           cat src/data/snapshots/data-health.json
           echo "::endgroup::"
+
+      # ─── Data-pipeline watchdog ──────────────────────────────────────────
+      # Flags sources that REGRESSED / went STALE / fetched-but-empty (a likely
+      # upstream layout change) so a break is never silent. Informational only:
+      # never fails the run — the dashboard keeps showing last-real-dated data
+      # while a source is down, and the QA gate below still guards honesty.
+      - name: Data-health watchdog
+        if: always()
+        continue-on-error: true
+        run: npx tsx scripts/ingest/health-check.ts
+
+      - name: Alert on data-health regressions (open / refresh / close issue)
+        if: always()
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const p = `${process.env.RUNNER_TEMP}/data-health-report.json`;
+            if (!fs.existsSync(p)) { core.info('no health report — skipping alert'); return; }
+            const rep = JSON.parse(fs.readFileSync(p, 'utf8'));
+            const title = '⚠️ Data-pipeline health: source(s) need attention';
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: 'open', per_page: 100 });
+            const existing = open.find((i) => i.title === title && !i.pull_request);
+            if (!rep.issues || rep.issues.length === 0) {
+              if (existing) {
+                await github.rest.issues.createComment({ owner, repo, issue_number: existing.number, body: `✅ All sources healthy again as of ${rep.generated_at} (run ${context.runId}). Auto-closing.` });
+                await github.rest.issues.update({ owner, repo, issue_number: existing.number, state: 'closed' });
+              }
+              return;
+            }
+            const lines = rep.issues.map((i) => `- **${i.kind}** · \`${i.source_id}\` (${i.cadence}) — ${i.detail}${i.last_success ? ` · last ok ${i.last_success}` : ''}`);
+            const body = [
+              `The data-pipeline watchdog flagged **${rep.issues.length}** source(s) on run [${context.runId}](${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}) (${rep.generated_at}):`,
+              '', ...lines, '',
+              '**What this means**',
+              '- *regressed / blocked* — a source that used to work now errors or is WAF/login-blocked (often an upstream redesign or a dark page).',
+              '- *stale* — a source missed its expected refresh window.',
+              '- *empty* — it fetched but parsed nothing: the classic "layout changed" signal.',
+              '',
+              'The dashboard keeps showing the last real, dated value meanwhile — nothing is fabricated. Fix the affected parser/source (or stage the official file); this issue auto-closes once every source is healthy again.',
+            ].join('\n');
+            if (existing) {
+              await github.rest.issues.update({ owner, repo, issue_number: existing.number, body });
+              await github.rest.issues.createComment({ owner, repo, issue_number: existing.number, body: `🔄 Still flagged on run ${context.runId} (${rep.generated_at}).` });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body });
+            }
 
       # ─── Excel template build (Phases 1-2-5-7) ───────────────────────────
       - name: Setup Python (Excel build)

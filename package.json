@@ -28,6 +28,7 @@
     "audit:build": "python3 scripts/excel/build_audit_index.py",
     "audit:missing": "tsx scripts/ingest/audit-fill.ts missing",
     "audit:conflicts": "tsx scripts/ingest/audit-fill.ts conflicts",
+    "health:check": "tsx scripts/ingest/health-check.ts",
     "audit:niva-bupa:inspect": "tsx scripts/ingest/niva-backfill.ts",
     "audit:niva-bupa:backfill": "tsx scripts/ingest/niva-backfill.ts && tsx scripts/ingest/audit-fill.ts fill --from data/agent-pulls/niva-backfill/cleaned.json"
   },
