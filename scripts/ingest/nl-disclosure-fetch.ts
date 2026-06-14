@@ -129,6 +129,10 @@ async function discoverDocs(companyId: string, period: string): Promise<string[]
     try { cand.add(new URL(m[1], base).href) } catch { /* skip */ }
   }
   for (const m of html.matchAll(/https?:\/\/[^\s"'<>)]+?\.(?:pdf|ashx)(?:\?[^\s"'<>)]*)?/gi)) cand.add(m[0])
+  if (RECON) {
+    console.log(`  [recon] ${cand.size} candidate PDF link(s) on the page:`)
+    ;[...cand].slice(0, 50).forEach((u) => console.log(`      ${u}`))
+  }
   const { year, hint } = periodTokens(period)
   return [...cand]
     .map((u) => {
