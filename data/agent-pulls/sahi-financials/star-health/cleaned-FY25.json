@@ -119,14 +119,14 @@
   {
     "company": "star-health",
     "year": "FY25",
-    "metric": "net_worth_ifrs",
+    "metric": "net_worth",
     "value": 6465,
-    "unit": "INR_cr",
+    "unit": "%",
     "source_name": "Star Health and Allied Insurance Company Ltd FY24-25 Annual Report",
     "source_url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
     "source_page": null,
     "confidence": "high",
     "priority": 1,
-    "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials. Net worth on IGAAP basis."
+    "note": "Company filing / quarterly investor presentation (2025-09-16). Fetched via munschat sahi-financials."
   }
 ]
