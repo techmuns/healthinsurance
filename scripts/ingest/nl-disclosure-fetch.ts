@@ -204,7 +204,18 @@ async function processCompany(companyId: string): Promise<number> {
     let text = ''
     try { text = (await parsePdf(buf)).text } catch { console.log(`  pdf-parse failed: ${basename(url)}`); continue }
     console.log(`  ${basename(url)} → ${buf.length}B pdf, ${text.length} chars text`)
-    if (RECON) { dumpRecon(text); continue }
+    if (RECON) {
+      dumpRecon(text)
+      if (text.length > 3000) {
+        // Save the full parsed text into the repo so extraction patterns can be
+        // written + tested LOCALLY against the real layout (no CI round-trips).
+        const rdir = resolve(REPO_ROOT, 'data/agent-pulls/nl-disclosures/_recon')
+        await mkdir(rdir, { recursive: true })
+        const safe = basename(url).replace(/[^A-Za-z0-9._-]+/g, '_')
+        await writeFile(resolve(rdir, `${companyId}-${PERIOD.replace(/[^A-Za-z0-9]+/g, '-')}-${safe}.txt`), text, 'utf8')
+      }
+      continue
+    }
     // Ratios via the validated NL-form extractor (quarterly "**" layout).
     const r = extractDisclosure(text)
     if (r) {
