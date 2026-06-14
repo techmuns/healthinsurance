@@ -68,12 +68,25 @@ interface ManifestEntry { filename: string; url: string; bytes: number; sha256: 
 interface Manifest { files: Record<string, ManifestEntry>; updated_at?: string }
 
 const DOC_URL = (process.env.FETCH_DOC_URL || '').trim()
+// Exact NL-return PDF link(s) discovered from the disclosures page (see
+// discoverNlReturnDocs); populated in main() before the agent call.
+let DISCOVERED_DOCS: string[] = []
+
+// Fiscal-year number (2-digit) for a period label. Reads the digits AFTER "FY"
+// so interim labels work too — "9MFY26"/"Q4FY26"/"H1FY25" → 26/26/25 (a plain
+// /\d+/ would wrongly grab the 9/4/1 from the 9M/Q4/H1 prefix).
+function fyYear(period: string): number {
+  const fm = period.match(/FY\s*'?(\d{2,4})/i)
+  if (fm) return Number(fm[1]) % 100
+  const n = period.match(/\d+/)
+  return n ? Number(n[0]) % 100 : 0
+}
 
 // Describe the requested period in plain terms + the right source/basis guidance.
 // Annual (FY26) → full-year, year ended 31 Mar; interim (H1/9M/Q1-3/Q4) →
 // the CUMULATIVE period-to-date figure that the interim deck reports.
 function periodSpec(period: string): { kind: 'annual' | 'interim'; ended: string; phrase: string; guidance: string } {
-  const yy = Number((period.match(/\d+/) || ['0'])[0]) // FY26 -> 26
+  const yy = fyYear(period) // FY26 / 9MFY26 / Q4FY26 -> 26
   const endCal = 2000 + yy
   const m = /^(FY|H1|H2|9M|Q[1-4])/i.exec(period)
   const tag = (m ? m[1] : 'FY').toUpperCase()
@@ -146,9 +159,11 @@ function buildPayload() {
       chatHistory: [], mode: 'fast',
     },
     // Integrated document-reading path: hand the agent the exact docs to open —
-    // a manually-dispatched DOC_URL first, then the insurer's public-disclosures
-    // page (NL returns). Deduped, non-empty. WEB_SEARCH stays on as a fallback.
-    autoAddUpcoming: false, urls: [...new Set([DOC_URL, DISCLOSURE_DOCS[COMPANY_ID]].filter(Boolean))],
+    // a manually-dispatched DOC_URL, then the period's discovered NL-return PDFs,
+    // then the disclosures landing page as a fallback. Deduped, non-empty.
+    // WEB_SEARCH stays on as a further fallback.
+    autoAddUpcoming: false,
+    urls: [...new Set([DOC_URL, ...DISCOVERED_DOCS, DISCLOSURE_DOCS[COMPANY_ID]].filter(Boolean))],
   }
 }
 
@@ -229,11 +244,82 @@ async function download(url: string): Promise<Buffer | null> {
   return null
 }
 
+// --- NL-return link discovery -------------------------------------------------
+// Read the insurer's public-disclosures page and pull out the exact NL-return
+// PDF link(s) for the requested period, to hand the agent via `urls`. Best-effort
+// and conservative: a candidate must match the period (year + quarter/annual
+// hint) or it is dropped — so the agent is never fed a wrong-period document.
+// If the page can't be read or nothing matches, we return [] and the caller
+// falls back to the disclosures landing page.
+async function fetchPageHtml(url: string): Promise<string | null> {
+  const looksHtml = (b: Buffer) => b.length > 200 && /<a\s|<html|<!doctype/i.test(b.slice(0, 4000).toString('latin1'))
+  const direct = await fetchOnce(url)
+  if (direct && looksHtml(direct)) return direct.toString('utf8')
+  const enc = encodeURIComponent(url)
+  for (const tmpl of relayTemplates()) {
+    const buf = await fetchOnce(tmpl.replace('{url}', enc).replace('{raw}', url))
+    if (buf && looksHtml(buf)) return buf.toString('utf8')
+  }
+  return null
+}
+
+function periodTokens(period: string): { year: string[]; hint: string[] } {
+  const yy = fyYear(period) // FY26 / 9MFY26 / Q4FY26 -> 26
+  const fyFull = 2000 + yy
+  const prev = fyFull - 1
+  const y2 = String(yy).padStart(2, '0')
+  const p2 = String(prev % 100).padStart(2, '0')
+  const year = [`fy${y2}`, `fy${fyFull}`, `fy ${y2}`, `${prev}-${y2}`, `${prev}-${fyFull}`, `${prev}_${y2}`, `${p2}-${y2}`, `${p2}_${y2}`]
+  const tag = (/(Q[1-4]|H1|9M|FY)/i.exec(period) || [, 'FY'])[1]!.toUpperCase()
+  const hints: Record<string, string[]> = {
+    Q1: ['q1', 'jun'], H1: ['h1', 'sep'], Q2: ['h1', 'sep'],
+    '9M': ['9m', 'dec'], Q3: ['9m', 'dec'], Q4: ['q4', 'mar', 'annual'], FY: ['annual', 'mar', 'q4'],
+  }
+  return { year: year.map((t) => t.toLowerCase()), hint: (hints[tag] || []).map((t) => t.toLowerCase()) }
+}
+
+async function discoverNlReturnDocs(companyId: string, period: string): Promise<string[]> {
+  const pageUrl = DISCLOSURE_DOCS[companyId]
+  if (!pageUrl) return []
+  let html: string | null = null
+  try { html = await fetchPageHtml(pageUrl) } catch { html = null }
+  if (!html) return []
+  let base: URL; try { base = new URL(pageUrl) } catch { return [] }
+  const cand = new Set<string>()
+  for (const m of html.matchAll(/(?:href|src)\s*=\s*["']([^"']+\.(?:pdf|ashx)(?:\?[^"']*)?)["']/gi)) {
+    try { cand.add(new URL(m[1], base).href) } catch { /* skip */ }
+  }
+  for (const m of html.matchAll(/https?:\/\/[^\s"'<>)]+?\.(?:pdf|ashx)(?:\?[^\s"'<>)]*)?/gi)) cand.add(m[0])
+  if (!cand.size) return []
+  const { year, hint } = periodTokens(period)
+  const scored = [...cand]
+    .map((u) => {
+      const s = u.toLowerCase()
+      const yearHit = year.some((t) => s.includes(t))
+      const hintHit = hint.some((t) => s.includes(t))
+      const formHit = /nl[-_ ]?\d|public.?disclos|revenue|balance|profit|financial|l[-_]?\d/.test(s)
+      // Require a period (year) match so we never hand the agent a wrong-period PDF.
+      const score = (yearHit ? 3 : 0) + (hintHit ? 2 : 0) + (formHit ? 1 : 0)
+      return { u, ok: yearHit, score }
+    })
+    .filter((x) => x.ok)
+    .sort((a, b) => b.score - a.score)
+  return scored.slice(0, 4).map((x) => x.u)
+}
+
 async function main(): Promise<number> {
   if (!COMPANY_NAME) { console.error(`ERROR: FETCH_COMPANY_ID must be one of: ${Object.keys(COMPANIES).join(', ')}`); return 1 }
   const token = (process.env.MUNS_API_TOKEN || '').trim()
   if (!token) { console.error('ERROR: MUNS_API_TOKEN is not set.'); return 1 }
   await mkdir(SOURCES_DIR, { recursive: true })
+
+  // Discover the period's exact NL-return PDF(s) from the disclosures page so the
+  // agent reads the precise statutory document (falls back to the landing page).
+  try {
+    DISCOVERED_DOCS = await discoverNlReturnDocs(COMPANY_ID, PERIOD)
+    if (DISCOVERED_DOCS.length) console.log(`Discovered ${DISCOVERED_DOCS.length} NL-return doc(s) for ${PERIOD}:\n  ${DISCOVERED_DOCS.join('\n  ')}`)
+    else console.log('No period-matched NL-return PDF on the disclosures page — using the landing page.')
+  } catch (e) { console.error(`NL-return discovery skipped: ${e instanceof Error ? e.message : String(e)}`) }
 
   console.log(`Calling chat-muns for ${COMPANY_NAME} ${PERIOD} financials ...`)
   let raw: string
