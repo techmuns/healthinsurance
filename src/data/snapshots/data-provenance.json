@@ -3,7 +3,7 @@
     "snapshot_id": "data-provenance",
     "description": "Per-metric provenance index. Keyed as `metric_id::company_id::period` → ProvenanceEntry. UI looks up this file to render Source / Last updated / Reported|Derived / Confidence chips.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-13"
+    "last_updated": "2026-06-14"
   },
   "entries": {
     "company.gwp::niva-bupa::Annual": {
