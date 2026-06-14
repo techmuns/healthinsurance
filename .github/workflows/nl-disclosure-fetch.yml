@@ -49,6 +49,8 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
       - run: pip install --quiet --disable-pip-version-check openpyxl
+      - name: Install OCR tools (poppler + tesseract)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils tesseract-ocr
 
       - name: Fetch + parse NL disclosures
         env:
@@ -57,6 +59,7 @@ jobs:
           FETCH_COMPANY_ID: ${{ inputs.company }}
           FETCH_PERIOD: ${{ inputs.period }}
           NL_RECON: ${{ inputs.recon == 'true' && '1' || '0' }}
+          NL_OCR: '1'
         run: npx tsx scripts/ingest/nl-disclosure-fetch.ts
 
       - name: Commit parsed recon text (recon mode)

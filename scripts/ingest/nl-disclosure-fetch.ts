@@ -18,9 +18,11 @@
 //  Leave FETCH_COMPANY_ID empty to sweep all five SAHIs.
 // ---------------------------------------------------------------------------
 
-import { mkdir, writeFile } from 'node:fs/promises'
-import { resolve, dirname, basename } from 'node:path'
+import { mkdir, writeFile, mkdtemp, readdir, rm } from 'node:fs/promises'
+import { resolve, dirname, basename, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
+import { execFile } from 'node:child_process'
 import { parsePdf } from './parsers'
 import { extractDisclosure } from './disclosure-extract'
 
@@ -30,6 +32,9 @@ const REPO_ROOT = resolve(HERE, '..', '..')
 const COMPANY_ID = (process.env.FETCH_COMPANY_ID || '').trim()
 const PERIOD = (process.env.FETCH_PERIOD || 'FY25').trim()
 const RECON = process.env.NL_RECON === '1'
+// OCR the scanned filings (audited financials are images — no text layer).
+const OCR = process.env.NL_OCR === '1'
+const OCR_MAX_PAGES = Number(process.env.NL_OCR_PAGES || 30)
 
 const BROWSER_UA =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
@@ -106,6 +111,34 @@ async function downloadPdf(url: string): Promise<Buffer | null> {
   }
   return null
 }
+// --- OCR (scanned filings) ---------------------------------------------------
+function sh(cmd: string, args: string[], timeoutMs: number): Promise<string> {
+  return new Promise((res, rej) => {
+    execFile(cmd, args, { timeout: timeoutMs, maxBuffer: 96 * 1024 * 1024 }, (err, stdout) => {
+      if (err) rej(err)
+      else res(stdout || '')
+    })
+  })
+}
+// Render PDF pages → PNG (poppler) → Tesseract OCR → concatenated text. Needs
+// poppler-utils + tesseract-ocr on PATH (installed by the workflow).
+async function ocrPdf(buf: Buffer): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), 'nlocr-'))
+  try {
+    const pdf = join(dir, 'in.pdf')
+    await writeFile(pdf, buf)
+    await sh('pdftoppm', ['-png', '-r', '220', '-f', '1', '-l', String(OCR_MAX_PAGES), pdf, join(dir, 'pg')], 360_000)
+    const pngs = (await readdir(dir)).filter((f) => f.endsWith('.png')).sort()
+    let text = ''
+    for (const png of pngs) {
+      try { text += (await sh('tesseract', [join(dir, png), 'stdout', '--psm', '6'], 90_000)) + '\n' } catch { /* skip unreadable page */ }
+    }
+    return text
+  } finally {
+    await rm(dir, { recursive: true, force: true }).catch(() => {})
+  }
+}
+
 async function fetchPageHtml(url: string): Promise<string | null> {
   const looksHtml = (b: Buffer) => b.length > 200 && /<a\s|<html|<!doctype/i.test(b.slice(0, 4000).toString('latin1'))
   const direct = await fetchOnce(url)
@@ -148,12 +181,15 @@ async function discoverDocs(companyId: string, period: string): Promise<string[]
       // Prefer machine-generated results/disclosure forms (text) over audited
       // financials / annual reports (Star scans those — no text layer).
       const resultish = /\b(fsq|frq|fr|fs|financial.?result|public.?disclos|nl[-_ ]?\d|quarterly)/.test(raw)
-      const scanrisk = /audited|annual.?report|\bar[_ ]/.test(raw)
-      return { u, ok: yh, score: (yh ? 3 : 0) + (hh ? 2 : 0) + (resultish ? 2 : 0) - (scanrisk ? 1 : 0) }
+      const auditedFin = /audited|annual.?report|\bar[_ ]/.test(raw)
+      // In OCR mode the scanned audited financials ARE the target (full Revenue
+      // Account + Balance Sheet); without OCR they're a dead end, so deprioritise.
+      const finScore = OCR ? (auditedFin ? 2 : 0) : (auditedFin ? -1 : 0)
+      return { u, ok: yh, score: (yh ? 3 : 0) + (hh ? 2 : 0) + (resultish ? 2 : 0) + finScore }
     })
     .filter((x) => x.ok)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 6)
+    .slice(0, OCR ? 8 : 6)
     .map((x) => x.u)
 }
 
@@ -202,8 +238,19 @@ async function processCompany(companyId: string): Promise<number> {
     const buf = await downloadPdf(url)
     if (!buf) { console.log(`  download failed (WAF/relay): ${basename(url)}`); continue }
     let text = ''
-    try { text = (await parsePdf(buf)).text } catch { console.log(`  pdf-parse failed: ${basename(url)}`); continue }
+    try { text = (await parsePdf(buf)).text } catch { text = '' }
+    // Scanned filing (image PDF, no text layer) → OCR it. Gated to the
+    // financials-bearing docs so we don't OCR cover letters / notices.
+    if (text.length < 600 && OCR && /audited|financial|disclos|revenue|balance|annual|nl[-_ ]?\d/i.test(basename(url))) {
+      console.log(`  ${basename(url)} looks scanned (${text.length} chars) — running OCR…`)
+      try {
+        const o = await ocrPdf(buf)
+        if (o.length > text.length) text = o
+        console.log(`  OCR → ${text.length} chars`)
+      } catch (e) { console.log(`  OCR failed: ${e instanceof Error ? e.message : String(e)}`) }
+    }
     console.log(`  ${basename(url)} → ${buf.length}B pdf, ${text.length} chars text`)
+    if (!text) continue
     if (RECON) {
       dumpRecon(text)
       if (text.length > 3000) {
