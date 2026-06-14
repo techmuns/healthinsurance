@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-14T16:56:15.366Z",
-  "last_failed_run": "2026-06-14T17:02:56.091Z",
+  "last_successful_run": "2026-06-14T17:10:41.577Z",
+  "last_failed_run": "2026-06-14T17:10:41.577Z",
   "sources_checked": 11,
   "sources_success": 4,
   "sources_failed": 1,
@@ -23560,11 +23560,11 @@
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY23-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY24-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY26-march.xlsx",
-    "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): all relay routes failed or returned non-file responses",
-    "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): wayback listing snapshot is 193 days old — newest month links may be missing",
-    "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx): all routes failed for https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
-    "[gicouncil_segmentwise_annual] FY23: only 6/11 named retail rows found — \"Others\" left null.",
+    "[gicouncil_segmentwise_annual] listing fetch failed on every route (https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/): all routes failed for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/ — direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/; all relay routes failed or returned non-file responses; no wayback snapshot available",
+    "[gicouncil_segmentwise_annual] listing fetch failed on every route (https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/): all routes failed for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/ — direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/; all relay routes failed or returned non-file responses; no wayback snapshot available",
+    "[gicouncil_segmentwise_annual] listing discovered via muns agent (98 links) — direct + relay + archive routes were all blocked",
+    "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx): all routes failed for https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx — direct fetch failed: HTTP 403 for https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx; all relay routes failed or returned non-file responses; no wayback snapshot available",
+    "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx): all routes failed for https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx — direct fetch failed: HTTP 403 for https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx; all relay routes failed or returned non-file responses; no wayback snapshot available",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY21-march.xlsx: Health Portfolio: header row not found — format changed?",
     "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
     "[gicouncil_segmentwise_annual] FY19: found 2/4 PSU rows — PSUs/Private left null.",
@@ -23757,6 +23757,7 @@
     "[gicouncil_segmentwise_annual] Feb-FY26 narayana-health: a cumulative fell vs the prior month (restatement between editions) — that field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q2FY24 national-insurance: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q4FY22 new-india: cumulative fell across the period (restatement) — field left null, not smoothed.",
+    "[gicouncil_segmentwise_annual] Q4FY21 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q2FY18 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q4FY18 reliance-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
@@ -23767,6 +23768,7 @@
     "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
     "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
     "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
+    "[moneycontrol_analyst] Broker Research page fetched but no broker cards matched (DOM may have changed).",
     "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W",
@@ -23793,7 +23795,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-14T16:58:36.007Z",
+      "last_attempt_at": "2026-06-14T17:04:37.993Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -23941,28 +23943,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T17:01:57.588Z",
+      "last_attempt_at": "2026-06-14T17:09:52.170Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T16:58:48.418Z",
+      "last_attempt_at": "2026-06-14T17:04:57.659Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-14T16:59:00.253Z",
-      "last_success_at": "2026-06-14T16:59:00.253Z",
+      "last_attempt_at": "2026-06-14T17:05:09.694Z",
+      "last_success_at": "2026-06-14T17:05:09.694Z",
       "records_fetched": 96
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T16:58:42.704Z",
+      "last_attempt_at": "2026-06-14T17:04:48.200Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -23976,42 +23978,42 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-14T17:02:00.535Z",
-      "last_success_at": "2026-06-14T17:02:00.535Z",
-      "records_fetched": 6
+      "last_attempt_at": "2026-06-14T17:09:53.075Z",
+      "last_success_at": "2026-06-14T17:09:53.075Z",
+      "records_fetched": 0
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T17:02:51.289Z",
+      "last_attempt_at": "2026-06-14T17:10:38.459Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-14T17:00:04.652Z",
-      "last_success_at": "2026-06-14T17:00:04.652Z",
-      "records_fetched": 2686
+      "last_attempt_at": "2026-06-14T17:06:19.758Z",
+      "last_success_at": "2026-06-14T17:06:19.758Z",
+      "records_fetched": 2739
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-14T17:02:18.092Z",
-      "last_success_at": "2026-06-14T17:02:18.092Z",
+      "last_attempt_at": "2026-06-14T17:10:05.789Z",
+      "last_success_at": "2026-06-14T17:10:05.789Z",
       "records_fetched": 8
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T17:02:22.220Z",
+      "last_attempt_at": "2026-06-14T17:10:09.916Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T17:02:55.513Z",
+      "last_attempt_at": "2026-06-14T17:10:40.978Z",
       "last_success_at": "2026-06-11T14:29:33.334Z",
       "records_fetched": 0
     }
