@@ -134,13 +134,22 @@ async function discoverDocs(companyId: string, period: string): Promise<string[]
     ;[...cand].slice(0, 50).forEach((u) => console.log(`      ${u}`))
   }
   const { year, hint } = periodTokens(period)
+  // Separator-agnostic match: "FSQ_4_FY_2025" / "FY 2024-25" / "fy2025" all
+  // collapse to alphanumerics so the period tokens hit regardless of _ - space.
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const ny = year.map(norm)
+  const nh = hint.map(norm)
   return [...cand]
     .map((u) => {
-      const s = u.toLowerCase()
-      const yh = year.some((t) => s.includes(t))
-      const hh = hint.some((t) => s.includes(t))
-      const fh = /nl[-_ ]?\d|public.?disclos|revenue|balance|profit|financial|audited|annual/.test(s)
-      return { u, ok: yh, score: (yh ? 3 : 0) + (hh ? 2 : 0) + (fh ? 1 : 0) }
+      const s = norm(u)
+      const raw = u.toLowerCase()
+      const yh = ny.some((t) => s.includes(t))
+      const hh = nh.some((t) => s.includes(t))
+      // Prefer machine-generated results/disclosure forms (text) over audited
+      // financials / annual reports (Star scans those — no text layer).
+      const resultish = /\b(fsq|frq|fr|fs|financial.?result|public.?disclos|nl[-_ ]?\d|quarterly)/.test(raw)
+      const scanrisk = /audited|annual.?report|\bar[_ ]/.test(raw)
+      return { u, ok: yh, score: (yh ? 3 : 0) + (hh ? 2 : 0) + (resultish ? 2 : 0) - (scanrisk ? 1 : 0) }
     })
     .filter((x) => x.ok)
     .sort((a, b) => b.score - a.score)
@@ -156,12 +165,17 @@ const RECON_LABELS = [
   'Combined Ratio', 'Solvency', 'Expenses of Management', 'Commission',
 ]
 function dumpRecon(text: string): void {
-  console.log(`    --- text ${text.length} chars; label scan ---`)
+  console.log(`    --- text ${text.length} chars ---`)
+  if (text.length > 400) {
+    // First ~1400 chars reveals the real layout for a text-based form.
+    console.log('    SAMPLE>>> ' + text.slice(0, 1400).replace(/\s+/g, ' ').trim())
+  }
+  let hits = 0
   for (const lab of RECON_LABELS) {
     const m = text.search(new RegExp(lab.replace(/[()/]/g, '.'), 'i'))
-    if (m >= 0) console.log(`    [${lab}] …${text.slice(m, m + 170).replace(/\s+/g, ' ').trim()}…`)
-    else console.log(`    [${lab}] (absent)`)
+    if (m >= 0) { console.log(`    [${lab}] …${text.slice(m, m + 170).replace(/\s+/g, ' ').trim()}…`); hits++ }
   }
+  console.log(`    --- ${hits}/${RECON_LABELS.length} labels present ---`)
 }
 
 // --- cleaned-row emit (matches sahi-financials-clean schema) ------------------
