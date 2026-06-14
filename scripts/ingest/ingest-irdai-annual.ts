@@ -96,12 +96,12 @@ export const ingestIrdaiAnnual: Fetcher = {
       // Step 3: parse and extract industry segment totals.
       const { text } = await parsePdf(buffer)
       const segments = extractByPatterns(text, {
-        total_gi_premium: /(?:Total\s+Non[\s\-]?Life|Total\s+General\s+Insurance)\s+(?:Premium|Business)[^0-9\-]*([\d,.]+)/i,
-        health_premium: /Health\s+(?:Insurance|Segment|Total)[^0-9\-]*([\d,.]+)/i,
-        motor_premium: /Motor\s+(?:Insurance|Segment|Total)[^0-9\-]*([\d,.]+)/i,
-        fire_premium: /Fire\s+(?:Insurance|Segment)[^0-9\-]*([\d,.]+)/i,
-        crop_premium: /Crop\s+(?:Insurance)?[^0-9\-]*([\d,.]+)/i,
-        marine_premium: /Marine\s+(?:Insurance)?[^0-9\-]*([\d,.]+)/i,
+        total_gi_premium: /(?:Total\s+Non[\s-]?Life|Total\s+General\s+Insurance)\s+(?:Premium|Business)[^0-9-]*([\d,.]+)/i,
+        health_premium: /Health\s+(?:Insurance|Segment|Total)[^0-9-]*([\d,.]+)/i,
+        motor_premium: /Motor\s+(?:Insurance|Segment|Total)[^0-9-]*([\d,.]+)/i,
+        fire_premium: /Fire\s+(?:Insurance|Segment)[^0-9-]*([\d,.]+)/i,
+        crop_premium: /Crop\s+(?:Insurance)?[^0-9-]*([\d,.]+)/i,
+        marine_premium: /Marine\s+(?:Insurance)?[^0-9-]*([\d,.]+)/i,
       })
 
       // Carrier-type split of HEALTH premium (Public / Private / Standalone).
@@ -110,9 +110,9 @@ export const ingestIrdaiAnnual: Fetcher = {
       // emit when coherent — never a guess. Diagnostics below print what the
       // page/PDF actually yielded so we can refine patterns from the CI log.
       const carrier = extractByPatterns(text, {
-        health_sahi_premium: /stand[\s-]?alone\s+health\s+insurers?[^0-9\-]*([\d,.]+)/i,
-        health_public_premium: /public\s+sector[^0-9\-]*([\d,.]+)/i,
-        health_private_premium: /private\s+sector[^0-9\-]*([\d,.]+)/i,
+        health_sahi_premium: /stand[\s-]?alone\s+health\s+insurers?[^0-9-]*([\d,.]+)/i,
+        health_public_premium: /public\s+sector[^0-9-]*([\d,.]+)/i,
+        health_private_premium: /private\s+sector[^0-9-]*([\d,.]+)/i,
       })
       let health_sahi_share: number | null = null
       let health_private_share: number | null = null

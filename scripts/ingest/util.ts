@@ -3,8 +3,8 @@
 //  Pure Node 18+ (uses global fetch / fs/promises).
 // ---------------------------------------------------------------------------
 
-import { mkdir, writeFile, readFile, access } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { mkdir, writeFile, readFile, access, appendFile } from 'node:fs/promises'
+import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // Repo root, resolved from this file's location.
@@ -36,7 +36,19 @@ export async function fileExists(p: string): Promise<boolean> {
 export async function writeRaw(subdir: string, filename: string, content: Buffer | string): Promise<string> {
   const dir = resolve(RAW_ROOT, subdir)
   await ensureDir(dir)
-  const path = resolve(dir, filename)
+  // Scraped filenames can carry path separators (including a literal backslash,
+  // which is a separator on Windows checkouts) and other characters that could
+  // traverse or clobber outside `dir`. Reduce to a safe basename, then assert
+  // containment as defence-in-depth before writing.
+  const safe =
+    filename
+      .replace(/[\\/]+/g, '_')
+      .replace(/[^A-Za-z0-9._-]/g, '_')
+      .replace(/^\.+/, '_') || 'file'
+  const path = resolve(dir, safe)
+  if (path !== dir && !path.startsWith(dir + sep)) {
+    throw new Error(`writeRaw: refusing to write outside ${dir}: ${filename}`)
+  }
   await writeFile(path, content)
   return path
 }
@@ -60,12 +72,9 @@ export async function appendLog(filename: string, line: Record<string, unknown>)
   await ensureDir(LOGS_ROOT)
   const path = resolve(LOGS_ROOT, filename)
   const entry = JSON.stringify({ ts: nowIso(), ...line }) + '\n'
-  // Simple append-on-write — for higher throughput, swap for createWriteStream.
-  let existing = ''
-  try {
-    existing = await readFile(path, 'utf8')
-  } catch { /* file may not exist yet */ }
-  await writeFile(path, existing + entry, 'utf8')
+  // Atomic append — avoids the read-whole-file-then-rewrite pattern (O(n²) over
+  // a run and prone to lost updates when log lines interleave).
+  await appendFile(path, entry, 'utf8')
 }
 
 /** True when the calling env opts the fetcher OUT of live network (default). */

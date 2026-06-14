@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-11T16:17:51.610Z",
-  "last_failed_run": "2026-06-11T17:35:57.281Z",
+  "last_successful_run": "2026-06-13T20:39:22.996Z",
+  "last_failed_run": "2026-06-13T22:00:32.647Z",
   "sources_checked": 6,
   "sources_success": 2,
   "sources_failed": 0,
@@ -23450,7 +23450,55 @@
     "insurer_name::Q4FY21::Others::aggregate",
     "health_retail::Q4FY21::Others::aggregate",
     "basis::Q4FY21::Others::aggregate",
-    "period_label::Q4FY21::Others::aggregate"
+    "period_label::Q4FY21::Others::aggregate",
+    "insurer_name::Q4FY22::niva-bupa::sahi",
+    "health_retail::Q4FY22::niva-bupa::sahi",
+    "health_group::Q4FY22::niva-bupa::sahi",
+    "health_govt::Q4FY22::niva-bupa::sahi",
+    "overseas_medical::Q4FY22::niva-bupa::sahi",
+    "health_total::Q4FY22::niva-bupa::sahi",
+    "basis::Q4FY22::niva-bupa::sahi",
+    "period_label::Q4FY22::niva-bupa::sahi",
+    "insurer_name::Q4FY22::aditya-birla::sahi",
+    "health_retail::Q4FY22::aditya-birla::sahi",
+    "health_group::Q4FY22::aditya-birla::sahi",
+    "health_govt::Q4FY22::aditya-birla::sahi",
+    "overseas_medical::Q4FY22::aditya-birla::sahi",
+    "health_total::Q4FY22::aditya-birla::sahi",
+    "basis::Q4FY22::aditya-birla::sahi",
+    "period_label::Q4FY22::aditya-birla::sahi",
+    "insurer_name::Q4FY22::care-health::sahi",
+    "health_retail::Q4FY22::care-health::sahi",
+    "health_group::Q4FY22::care-health::sahi",
+    "health_govt::Q4FY22::care-health::sahi",
+    "overseas_medical::Q4FY22::care-health::sahi",
+    "health_total::Q4FY22::care-health::sahi",
+    "basis::Q4FY22::care-health::sahi",
+    "period_label::Q4FY22::care-health::sahi",
+    "insurer_name::Q4FY22::manipalcigna::sahi",
+    "health_retail::Q4FY22::manipalcigna::sahi",
+    "health_group::Q4FY22::manipalcigna::sahi",
+    "health_govt::Q4FY22::manipalcigna::sahi",
+    "overseas_medical::Q4FY22::manipalcigna::sahi",
+    "health_total::Q4FY22::manipalcigna::sahi",
+    "basis::Q4FY22::manipalcigna::sahi",
+    "period_label::Q4FY22::manipalcigna::sahi",
+    "insurer_name::Q4FY22::star-health::sahi",
+    "health_retail::Q4FY22::star-health::sahi",
+    "health_group::Q4FY22::star-health::sahi",
+    "health_govt::Q4FY22::star-health::sahi",
+    "overseas_medical::Q4FY22::star-health::sahi",
+    "health_total::Q4FY22::star-health::sahi",
+    "basis::Q4FY22::star-health::sahi",
+    "period_label::Q4FY22::star-health::sahi",
+    "insurer_name::Q4FY22::SAHI::aggregate",
+    "health_retail::Q4FY22::SAHI::aggregate",
+    "health_group::Q4FY22::SAHI::aggregate",
+    "health_govt::Q4FY22::SAHI::aggregate",
+    "overseas_medical::Q4FY22::SAHI::aggregate",
+    "health_total::Q4FY22::SAHI::aggregate",
+    "basis::Q4FY22::SAHI::aggregate",
+    "period_label::Q4FY22::SAHI::aggregate"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -23489,8 +23537,7 @@
     "[yahoo_price] niva-bupa: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/NIVABUPA.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/NIVABUPA.NS/history/",
     "[yahoo_price] star-health: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/STARHEALTH.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/STARHEALTH.NS/history/",
     "[yahoo_price] icici-lombard: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/ICICIGI.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/ICICIGI.NS/history/",
-    "[yahoo_price] godigit: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/GODIGIT.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/GODIGIT.NS/history/",
-    "[nse_delivery] 2026-06-12: no NSE settlement file (MTO + bhavdata both absent — likely a non-trading day)"
+    "[yahoo_price] godigit: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/GODIGIT.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/GODIGIT.NS/history/"
   ],
   "next_expected_update": "2026-06-01T05:00:00Z",
   "per_source": [
@@ -23505,7 +23552,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-11T17:31:24.607Z",
+      "last_attempt_at": "2026-06-13T21:55:34.713Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -23653,28 +23700,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-12T08:10:23.337Z",
+      "last_attempt_at": "2026-06-14T08:04:09.386Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-11T17:31:36.885Z",
+      "last_attempt_at": "2026-06-13T21:55:47.141Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-11T17:31:49.582Z",
-      "last_success_at": "2026-06-11T17:31:49.582Z",
+      "last_attempt_at": "2026-06-13T21:55:59.444Z",
+      "last_success_at": "2026-06-13T21:55:59.444Z",
       "records_fetched": 96
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-11T17:31:30.808Z",
+      "last_attempt_at": "2026-06-13T21:55:40.642Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -23688,42 +23735,42 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-12T08:10:25.497Z",
-      "last_success_at": "2026-06-12T08:10:25.497Z",
+      "last_attempt_at": "2026-06-14T08:04:13.795Z",
+      "last_success_at": "2026-06-14T08:04:13.795Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-12T08:11:25.494Z",
+      "last_attempt_at": "2026-06-14T08:05:12.204Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-11T17:32:57.192Z",
-      "last_success_at": "2026-06-11T17:32:57.192Z",
-      "records_fetched": 2686
+      "last_attempt_at": "2026-06-13T21:56:58.810Z",
+      "last_success_at": "2026-06-13T21:56:58.810Z",
+      "records_fetched": 2657
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-12T08:10:51.628Z",
-      "last_success_at": "2026-06-12T08:10:51.628Z",
-      "records_fetched": 7
+      "last_attempt_at": "2026-06-14T08:04:39.716Z",
+      "last_success_at": "2026-06-14T08:04:39.716Z",
+      "records_fetched": 6
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-12T08:10:57.156Z",
+      "last_attempt_at": "2026-06-14T08:04:43.749Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-12T08:11:26.919Z",
+      "last_attempt_at": "2026-06-14T08:05:13.763Z",
       "last_success_at": "2026-06-11T14:29:33.334Z",
       "records_fetched": 0
     }

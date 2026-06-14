@@ -85,7 +85,8 @@ export const ingestValuation: Fetcher = {
         }
 
         // Derive any missing leg of price × shares = market cap.
-        let { share_price, market_cap, shares_outstanding } = quote
+        const { share_price, shares_outstanding } = quote
+        let market_cap = quote.market_cap
         if (market_cap == null && share_price != null && shares_outstanding != null) {
           // shares_outstanding in absolute shares, price in ₹ → market cap in ₹ → crore.
           market_cap = (share_price * shares_outstanding) / 1e7

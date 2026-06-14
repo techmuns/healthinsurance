@@ -10,15 +10,15 @@
 // ---------------------------------------------------------------------------
 
 import { readFile, readdir } from 'node:fs/promises'
-import { extname, resolve } from 'node:path'
+import { resolve } from 'node:path'
 import * as cheerio from 'cheerio'
 import * as XLSX from 'xlsx'
 // pdf-parse ships a quirky CJS entry that tries to read a test PDF at import
 // time. Pull from its inner module to bypass.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import pdfParse from 'pdf-parse/lib/pdf-parse.js'
 import { RAW_ROOT, ensureDir, fileExists, isOfflineMode, writeRaw } from './util'
 import { browserGet } from './browser'
+import { assertPublicUrl, isSafeHttpUrlSync } from './net-guard'
 
 // Real desktop-Chrome User-Agent + a full browser fingerprint so IRDAI /
 // CDN-fronted insurer sites stop returning 403 to the default Node fetch UA.
@@ -55,6 +55,34 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // the whole ingest run until the workflow's job timeout kills everything —
 // observed on the GIC chain (2026-06-11 run cancelled at the 25-min cap).
 const FETCH_TIMEOUT_MS = 45_000
+const MAX_REDIRECTS = 8
+
+/**
+ * Follow redirects MANUALLY so every hop — the initial URL and each 30x
+ * `Location` — is validated with assertPublicUrl BEFORE the request is made.
+ * `redirect: 'follow'` would connect to (and receive a response from) an
+ * internal redirect target before we could check it; this closes that. GET-only;
+ * browser headers are recomputed per hop so Referer tracks the current host.
+ */
+async function fetchFollowingSafely(url: string): Promise<{ res: Response; finalUrl: string }> {
+  let current = url
+  for (let hop = 0; ; hop++) {
+    await assertPublicUrl(current)
+    const res = await fetch(current, {
+      redirect: 'manual',
+      headers: browserHeaders(current),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+    if (res.status >= 300 && res.status < 400) {
+      const loc = res.headers.get('location')
+      if (!loc) return { res, finalUrl: current } // 3xx without Location → treat as final
+      if (hop >= MAX_REDIRECTS) throw new Error(`Too many redirects starting at ${url}`)
+      current = new URL(loc, current).toString()
+      continue
+    }
+    return { res, finalUrl: current }
+  }
+}
 
 export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalUrl: string }> {
   const maxAttempts = 3
@@ -62,11 +90,9 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
   let blocked = false // 401/403 — a WAF block a real browser may get past
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const res = await fetch(url, {
-        redirect: 'follow',
-        headers: browserHeaders(url),
-        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      })
+      // Each hop (initial + redirects) is SSRF-validated before the request, so
+      // a poisoned link or 30x to an internal host is never connected to.
+      const { res, finalUrl } = await fetchFollowingSafely(url)
       if (res.status >= 500 || res.status === 429) {
         lastErr = new Error(`HTTP ${res.status} for ${url}`)
         await sleep(1000 * Math.pow(2, i))
@@ -81,7 +107,7 @@ export async function fetchBuffer(url: string): Promise<{ buffer: Buffer; finalU
         throw new Error(`HTTP ${res.status} for ${url}`)
       }
       const ab = await res.arrayBuffer()
-      return { buffer: Buffer.from(ab), finalUrl: res.url }
+      return { buffer: Buffer.from(ab), finalUrl }
     } catch (err) {
       lastErr = err
       // Non-HTTP failure (DNS, network): brief back-off then retry.
@@ -148,6 +174,9 @@ export function findLinks(
     const href = $(el).attr('href')?.trim()
     if (!href) return
     const abs = href.startsWith('http') ? href : new URL(href, baseUrl).toString()
+    // Drop links that point at non-HTTP(S) schemes or internal/private hosts so
+    // a poisoned page can never get an internal URL queued for fetch + commit.
+    if (!isSafeHttpUrlSync(abs)) return
     const text = $(el).text().trim()
     if (matcher(abs, text)) out.push(abs)
   })

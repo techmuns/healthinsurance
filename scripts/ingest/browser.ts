@@ -17,6 +17,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { isSafeHttpUrlSync } from './net-guard'
+
 let browserPromise: Promise<any> | null = null
 let contextPromise: Promise<any> | null = null
 const warmedOrigins = new Set<string>()
@@ -46,14 +48,26 @@ async function getBrowser(): Promise<any> {
 
 async function getContext(browser: any): Promise<any> {
   if (contextPromise) return contextPromise
-  contextPromise = browser.newContext({
-    userAgent:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    locale: 'en-IN',
-    timezoneId: 'Asia/Kolkata',
-    viewport: { width: 1366, height: 768 },
-    extraHTTPHeaders: { 'Accept-Language': 'en-US,en;q=0.9' },
-  })
+  contextPromise = (async () => {
+    const ctx = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      locale: 'en-IN',
+      timezoneId: 'Asia/Kolkata',
+      viewport: { width: 1366, height: 768 },
+      extraHTTPHeaders: { 'Accept-Language': 'en-US,en;q=0.9' },
+    })
+    // SSRF guard for the browser path: abort any http(s) request the page makes
+    // to a private/internal host — this covers redirects AND subresources, which
+    // the browser would otherwise follow on its own. data:/blob:/about: are not
+    // network egress and pass through.
+    await ctx.route('**/*', (route: any) => {
+      const u = route.request().url()
+      const safe = /^(data|blob|about):/i.test(u) || (/^https?:/i.test(u) && isSafeHttpUrlSync(u))
+      return safe ? route.continue() : route.abort()
+    })
+    return ctx
+  })()
   return contextPromise
 }
 

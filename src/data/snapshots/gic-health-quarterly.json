@@ -4,8 +4,8 @@
     "description": "Quarter-end CUMULATIVE health premium by insurer and carrier type from the GI Council Segment-wise Report's June / September / December editions. One row per period × entity × carrier_group, where period is the cumulative label the workbook template uses: Q1FYxx = up to June (3 months), H1FYxx = up to September (6 months), 9MFYxx = up to December (9 months). Values are the report's printed year-to-date figures — never annualised, never delta-derived. Each edition also restates the same period of the prior year (its Previous Year rows); the newest GIC statement of a period wins. Missing is never zero.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-11",
-    "last_successful_run": "2026-06-11T14:29:34.703Z",
+    "last_updated": "2026-06-13",
+    "last_successful_run": "2026-06-13T20:39:22.469Z",
     "upstream_sources": [
       "gi_council"
     ],
@@ -17460,8 +17460,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17529,8 +17529,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17598,8 +17598,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17621,8 +17621,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17644,8 +17644,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17667,8 +17667,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17690,8 +17690,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17713,8 +17713,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17736,8 +17736,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -17759,8 +17759,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "Q4FY22",
-        "fetched_at": "2026-06-11T14:27:47.529Z",
-        "parsed_at": "2026-06-11T14:28:43.993Z",
+        "fetched_at": "2026-06-13T20:36:59.139Z",
+        "parsed_at": "2026-06-13T20:38:32.146Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -18221,6 +18221,144 @@
         "source_period": "Q4FY21",
         "fetched_at": "2026-06-11T14:27:47.529Z",
         "parsed_at": "2026-06-11T14:28:43.994Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "niva-bupa",
+      "carrier_group": "sahi",
+      "insurer_name": "Niva bupa health insurance company limited",
+      "health_retail": 699.12,
+      "health_group": 171.88,
+      "health_govt": 0,
+      "overseas_medical": 0.18,
+      "health_total": 871.18,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "aditya-birla",
+      "carrier_group": "sahi",
+      "insurer_name": "Aditya Birla Health Insurance Co Ltd",
+      "health_retail": 219.43,
+      "health_group": 294.13,
+      "health_govt": 0,
+      "overseas_medical": 0,
+      "health_total": 513.56,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "care-health",
+      "carrier_group": "sahi",
+      "insurer_name": "Care Health Insurance Ltd",
+      "health_retail": 688.18,
+      "health_group": 384.27,
+      "health_govt": 0,
+      "overseas_medical": 22.51,
+      "health_total": 1094.96,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "manipalcigna",
+      "carrier_group": "sahi",
+      "insurer_name": "ManipalCigna Health Insurance Co Ltd",
+      "health_retail": 142.65,
+      "health_group": 148.63,
+      "health_govt": 0,
+      "overseas_medical": 0.36,
+      "health_total": 291.64,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "star-health",
+      "carrier_group": "sahi",
+      "insurer_name": "Star Health & Allied Insurance Co Ltd",
+      "health_retail": 3346.04,
+      "health_group": 281.85,
+      "health_govt": 0,
+      "overseas_medical": 0.14,
+      "health_total": 3628.03,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
+        "parser_name": "ingest-gicouncil-segment-annual",
+        "confidence": "high"
+      }
+    },
+    {
+      "period": "Q4FY22",
+      "entity": "SAHI",
+      "carrier_group": "aggregate",
+      "insurer_name": "Stand-alone Health sub Total (as printed)",
+      "health_retail": 5095.42,
+      "health_group": 1280.76,
+      "health_govt": 0,
+      "overseas_medical": 23.19,
+      "health_total": 6399.37,
+      "basis": "derived: standalone Q4 = printed full-year − printed 9M cumulative",
+      "period_label": "Q4 FY22 (standalone, from printed cumulatives)",
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report — Q4 FY22 (standalone, from printed cumulatives)",
+        "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
+        "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
+        "source_period": "Q4FY22",
+        "fetched_at": "2026-06-13T19:56:25.912Z",
+        "parsed_at": "2026-06-13T20:00:11.550Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }

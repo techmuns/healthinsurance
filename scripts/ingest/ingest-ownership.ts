@@ -24,7 +24,7 @@
 import type { Fetcher, FetchResult, SnapshotRecord } from './types'
 import type { OwnershipHolder } from '../../src/data/snapshots/_schemas'
 import { appendLog, nowIso, readSnapshot } from './util'
-import { fetchOrLoadRaw, parsePdf, parseXlsx, toNumber } from './parsers'
+import { fetchOrLoadRaw, parsePdf, parseXlsx } from './parsers'
 import { extname } from 'node:path'
 
 const SOURCE_ID = 'ownership_quarterly'
@@ -272,7 +272,7 @@ function inferQuarterFy(text: string): { quarter: string; fiscal_year: string } 
   const m =
     head.match(/as\s+on[^0-9]{0,12}(\d{1,2})[\s\-./]*([A-Za-z]+|\d{1,2})[\s\-.,/]*(\d{4})/i) ??
     head.match(/(\d{1,2})[\s\-./]+([A-Za-z]{3,9})[\s\-.,/]+(\d{4})/) ??
-    head.match(/(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})/)
+    head.match(/(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/)
   if (m) {
     const monRaw = m[2]
     const month = monthNumber(monRaw)
