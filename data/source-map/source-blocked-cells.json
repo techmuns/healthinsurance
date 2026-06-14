@@ -1,722 +1,722 @@
 {
   "_meta": {
     "id": "source-blocked-cells",
-    "description": "Cells whose real figure isn't obtainable via the automated pipeline. Each carries a short honest tag — '1/n data not found' (statutory 1/n-basis figure not public; the headline is IFRS/adjusted), 'Not in PPT' (not broken out in the investor deck), or 'IRDAI' (IRDAI/GI-Council premium pull; portal blocks bots) — plus the full reason. Grey, never a fake value; each fills the moment a real value lands. Curated 2026-06-12.",
-    "generated": "2026-06-12",
-    "count": 180
+    "description": "Blank cells tagged by WHERE the real figure lives, so the grid is honest about availability (Neha, 2026-06-14): 'In NL return' = statutory figure in the insurer's IRDAI NL public-disclosure filing (the agent now pulls it — pending the next run); 'Ind-AS only' = IFRS-basis figure in the Ind-AS statements, not the IGAAP NL return; 'Broker note' = analyst coverage, not a filing. Grey; never a fake value; each fills when a real value lands.",
+    "generated": "2026-06-14",
+    "count": 178
   },
   "cells": {
     "niva-bupa::nwp::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Niva Bupa Q4FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Niva Bupa Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::nwp::Q4FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Niva Bupa Q4FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Niva Bupa Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::pat_igaap::Q4FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Niva Bupa Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::pat_igaap::Q4FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa Q4FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Niva Bupa Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::eom_igaap::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Niva Bupa FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::eom_igaap::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Niva Bupa H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::eom_igaap::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Niva Bupa Q4FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Niva Bupa Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::eom_igaap::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Niva Bupa H1FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Niva Bupa H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::eom_igaap::Q4FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Niva Bupa Q4FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Niva Bupa Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_aum::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Niva Bupa FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_yield::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Niva Bupa FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Niva Bupa FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_yield::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Niva Bupa H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_yield::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Niva Bupa H1FY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Niva Bupa H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::total_gwp::FY26": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Star Health FY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::Q4FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::Q4FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::pat_igaap::Q4FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::pat_igaap::Q4FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Star Health Q4FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Star Health Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::claims_ratio_igaap::Q4FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis claims ratio for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Claims ratio for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::expense_ratio_igaap::Q4FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Star Health Q4FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health FY23 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health FY23 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health Q4FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::Q4FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health Q4FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health Q4FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::expense_ratio_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Star Health FY24 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Star Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "star-health::expense_ratio_ifrs::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Star Health FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Star Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "star-health::net_worth::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::investment_aum::FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Star Health FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Star Health FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::total_gwp::Q1FY25": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Care Health Q1FY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::total_gwp::9MFY25": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Care Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::total_gwp::Q1FY26": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Care Health Q1FY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::total_gwp::9MFY26": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Care Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nwp::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nwp::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Care Health Q4FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Care Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nwp::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nep::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nep::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::pat_igaap::Q1FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::pat_igaap::Q1FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::Q4FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health Q4FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health Q4FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_aum::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Care Health FY23 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_yield::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Care Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_yield::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Care Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::claims_ratio_igaap::FY23": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health FY23 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Claims ratio for Aditya Birla Health FY23 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::expense_ratio_igaap::FY23": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health FY23 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Aditya Birla Health FY23 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::eom_igaap::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY23 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::eom_igaap::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY24 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::eom_igaap::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Aditya Birla Health FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::pat_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Aditya Birla Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::pat_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Aditya Birla Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::pat_ifrs::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Aditya Birla Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::nwp::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::pat_igaap::9MFY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Niva Bupa 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::expense_ratio_igaap::9MFY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Niva Bupa 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Niva Bupa 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::expense_ratio_igaap::9MFY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Niva Bupa 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::claims_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Niva Bupa FY23 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Niva Bupa FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::claims_ratio_ifrs::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Niva Bupa H1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::claims_ratio_ifrs::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Niva Bupa 9MFY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Niva Bupa 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::expense_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Niva Bupa FY23 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Niva Bupa FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::expense_ratio_ifrs::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Niva Bupa H1FY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Niva Bupa H1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::expense_ratio_ifrs::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Niva Bupa 9MFY25 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Niva Bupa 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "niva-bupa::net_worth::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_aum::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::investment_yield::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Niva Bupa 9MFY26 isn't broken out in Niva Bupa's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::group_other_gwp::9MFY25": {
-      "tag": "IRDAI",
-      "reason": "Group/other gwp for Star Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Group/other gwp for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::group_other_gwp::9MFY26": {
-      "tag": "IRDAI",
-      "reason": "Group/other gwp for Star Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Group/other gwp for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nwp::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::nep::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::eom_igaap::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::solvency_ratio::H1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Solvency ratio for Star Health H1FY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Solvency ratio for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::solvency_ratio::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Solvency ratio for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Solvency ratio for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::net_worth::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Star Health 9MFY25 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::net_worth::H1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Star Health H1FY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::net_worth::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Star Health 9MFY26 isn't broken out in Star Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::group_other_gwp::9MFY25": {
-      "tag": "IRDAI",
-      "reason": "Group/other gwp for Care Health 9MFY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Group/other gwp for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::group_other_gwp::9MFY26": {
-      "tag": "IRDAI",
-      "reason": "Group/other gwp for Care Health 9MFY26 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Group/other gwp for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nwp::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nwp::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nep::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::nep::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::pat_igaap::9MFY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::pat_igaap::9MFY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Care Health 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::expense_ratio_igaap::9MFY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Care Health 9MFY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::expense_ratio_igaap::9MFY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Care Health 9MFY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::eom_igaap::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::pat_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::pat_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::pat_ifrs::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::pat_ifrs::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Care Health Q1FY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Care Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::pat_ifrs::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Care Health 9MFY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::claims_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::claims_ratio_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::claims_ratio_ifrs::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Care Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::claims_ratio_ifrs::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::expense_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Care Health FY23 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::expense_ratio_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Care Health FY24 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::expense_ratio_ifrs::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Care Health Q1FY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Care Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::expense_ratio_ifrs::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "care-health::net_worth::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::net_worth::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_aum::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_aum::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_yield::9MFY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Care Health 9MFY25 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "care-health::investment_yield::9MFY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Care Health 9MFY26 isn't broken out in Care Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::group_other_gwp::Q1FY25": {
-      "tag": "IRDAI",
-      "reason": "Group/other gwp for Aditya Birla Health Q1FY25 is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Group/other gwp for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::nwp::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::nwp::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net written premium for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net written premium for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::nep::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::nep::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net earned premium for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net earned premium for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::pat_igaap::Q1FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::pat_igaap::Q1FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::claims_ratio_igaap::Q1FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Claims ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::claims_ratio_igaap::Q1FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis claims ratio for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Claims ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::expense_ratio_igaap::Q1FY25": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health Q1FY25 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::expense_ratio_igaap::Q1FY26": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis expense ratio for Aditya Birla Health Q1FY26 isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Expense ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::eom_igaap::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::eom_igaap::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::pat_ifrs::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::pat_ifrs::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::claims_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Aditya Birla Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::claims_ratio_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Aditya Birla Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::claims_ratio_ifrs::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Aditya Birla Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::claims_ratio_ifrs::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::claims_ratio_ifrs::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Claims ratio (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs claims ratio for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::expense_ratio_ifrs::FY23": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY23 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Aditya Birla Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::expense_ratio_ifrs::FY24": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY24 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Aditya Birla Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::expense_ratio_ifrs::FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Aditya Birla Health FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Aditya Birla Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::expense_ratio_ifrs::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::expense_ratio_ifrs::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Expense ratio (ifrs) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs expense ratio for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "aditya-birla::solvency_ratio::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Solvency ratio for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Solvency ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::solvency_ratio::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Solvency ratio for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Solvency ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::net_worth::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::net_worth::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Net worth for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::investment_aum::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::investment_aum::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment book (aum) for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment book (aum) for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::investment_yield::Q1FY25": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Aditya Birla Health Q1FY25 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "aditya-birla::investment_yield::Q1FY26": {
-      "tag": "Not in PPT",
-      "reason": "Investment yield for Aditya Birla Health Q1FY26 isn't broken out in Aditya Birla Health's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Investment yield for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::analyst_price_at_reco::Kotak Securities::2025-04-02": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Niva Bupa 2025-04-02 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Niva Bupa 2025-04-02 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "niva-bupa::analyst_target_price::Kotak Securities::2025-04-02": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Niva Bupa 2025-04-02 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Niva Bupa 2025-04-02 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "niva-bupa::analyst_price_at_reco::Morgan Stanley::2024-12-22": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Niva Bupa 2024-12-22 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Niva Bupa 2024-12-22 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "niva-bupa::analyst_target_price::Morgan Stanley::2024-12-22": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Niva Bupa 2024-12-22 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Niva Bupa 2024-12-22 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_price_at_reco::Motilal Oswal::2024-10-18": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-10-18 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-10-18 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_target_price::Motilal Oswal::2024-10-18": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-10-18 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-10-18 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_price_at_reco::Sharekhan::2024-08-23": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-08-23 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-08-23 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_target_price::Sharekhan::2024-08-23": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-08-23 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-08-23 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_price_at_reco::Geojit BNP Paribas::2024-08-01": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-08-01 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-08-01 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_target_price::Geojit BNP Paribas::2024-08-01": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-08-01 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-08-01 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_price_at_reco::IDBI Capital::2024-06-14": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-06-14 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-06-14 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::analyst_target_price::IDBI Capital::2024-06-14": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for ICICI Lombard 2024-06-14 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for ICICI Lombard 2024-06-14 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "godigit::analyst_price_at_reco::Emkay::2025-04-29": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Go Digit 2025-04-29 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Go Digit 2025-04-29 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "godigit::analyst_target_price::Emkay::2025-04-29": {
-      "tag": "Not in PPT",
-      "reason": "Broker note for Go Digit 2025-04-29 isn't in the currently-fetched analyst coverage."
+      "tag": "Broker note",
+      "reason": "Broker price target / recommendation for Go Digit 2025-04-29 — from research-house coverage, not a statutory filing; fills from the analyst-coverage feed."
     },
     "icici-lombard::gwp::as_on_run_date": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for ICICI Lombard as_on_run_date is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for ICICI Lombard as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "icici-lombard::net_worth_ifrs::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Net worth (ifrs) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs net worth for ICICI Lombard as_on_run_date is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "icici-lombard::pat_ifrs::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for ICICI Lombard as_on_run_date is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "icici-lombard::net_worth_igaap::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Net worth (igaap) for ICICI Lombard as_on_run_date isn't broken out in ICICI Lombard's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for ICICI Lombard as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "icici-lombard::pat_igaap::as_on_run_date": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for ICICI Lombard as_on_run_date isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for ICICI Lombard as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "godigit::gwp::as_on_run_date": {
-      "tag": "IRDAI",
-      "reason": "Gross written premium for Go Digit as_on_run_date is an IRDAI / GI-Council premium figure; pending the IRDAI pull (portal blocks automated download). Fills when the IRDAI file is dropped in."
+      "tag": "In NL return",
+      "reason": "Gross written premium for Go Digit as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "godigit::net_worth_ifrs::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Net worth (ifrs) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs net worth for Go Digit as_on_run_date is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "godigit::pat_ifrs::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Profit after tax (ifrs) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "Ind-AS only",
+      "reason": "Ifrs profit after tax for Go Digit as_on_run_date is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
     },
     "godigit::net_worth_igaap::as_on_run_date": {
-      "tag": "Not in PPT",
-      "reason": "Net worth (igaap) for Go Digit as_on_run_date isn't broken out in Go Digit's investor presentation; it sits in the statutory NL filing / annual report, which the pipeline can't auto-pull."
+      "tag": "In NL return",
+      "reason": "Net worth for Go Digit as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "godigit::pat_igaap::as_on_run_date": {
-      "tag": "1/n data not found",
-      "reason": "Statutory 1/n-basis profit after tax (IGAAP) for Go Digit as_on_run_date isn't in public reporting — companies headline the IFRS/Ind-AS or adjusted-basis figure, not comparable to this 1/n cell. Fills from the statutory NL filing."
+      "tag": "In NL return",
+      "reason": "Igaap profit after tax for Go Digit as_on_run_date is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     }
   }
 }
