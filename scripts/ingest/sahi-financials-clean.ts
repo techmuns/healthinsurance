@@ -57,6 +57,7 @@ const MAP: Record<string, string> = {
 const UNIT: Record<string, string> = {
   total_gwp: 'INR_cr', retail_health_gwp: 'INR_cr', nwp: 'INR_cr', nep: 'INR_cr',
   pat_igaap: 'INR_cr', pat_ifrs: 'INR_cr', net_worth_ifrs: 'INR_cr', investment_aum: 'INR_cr',
+  net_worth: 'INR_cr', net_worth_igaap: 'INR_cr',
   solvency_ratio: 'x',
 }
 
