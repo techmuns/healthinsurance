@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-06-14",
-    "last_successful_run": "2026-06-14T16:37:04.825Z",
+    "last_successful_run": "2026-06-14T16:56:14.771Z",
     "upstream_sources": [
       "gi_council"
     ],
@@ -3319,8 +3319,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3343,8 +3343,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3367,8 +3367,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3391,8 +3391,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3415,8 +3415,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3439,8 +3439,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3463,8 +3463,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3487,8 +3487,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3511,8 +3511,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3655,8 +3655,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3703,8 +3703,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3727,8 +3727,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3751,8 +3751,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3775,8 +3775,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-14T16:32:40.884Z",
-        "parsed_at": "2026-06-14T16:36:11.155Z",
+        "fetched_at": "2026-06-14T16:53:41.032Z",
+        "parsed_at": "2026-06-14T16:55:03.096Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
