@@ -1,0 +1,86 @@
+name: nl disclosure fetch (agent-free)
+
+# Agent-free statutory fetch: downloads each insurer's public-disclosure /
+# audited-financials PDFs via the ScraperAPI proxy and parses them directly —
+# no muns chat agent. RECON mode just dumps the parsed text (to build patterns);
+# EXTRACT mode writes cleaned-<period>.json, applies it, rebuilds, and commits.
+
+on:
+  workflow_dispatch:
+    inputs:
+      company:
+        description: 'SAHI (leave empty to sweep all five)'
+        required: false
+        default: 'star-health'
+        type: string
+      period:
+        description: 'Period, e.g. FY25 / 9MFY26'
+        required: false
+        default: 'FY25'
+        type: string
+      recon:
+        description: 'Recon only (dump PDF text, no extract/commit)'
+        required: false
+        default: 'true'
+        type: choice
+        options: ['true', 'false']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nl-disclosure-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: pip install --quiet --disable-pip-version-check openpyxl
+
+      - name: Fetch + parse NL disclosures
+        env:
+          SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+          FETCH_COMPANY_ID: ${{ inputs.company }}
+          FETCH_PERIOD: ${{ inputs.period }}
+          NL_RECON: ${{ inputs.recon == 'true' && '1' || '0' }}
+        run: npx tsx scripts/ingest/nl-disclosure-fetch.ts
+
+      - name: Apply + rebuild + commit (extract mode only)
+        if: ${{ inputs.recon != 'true' }}
+        run: |
+          if ! ls data/agent-pulls/nl-disclosures/*/cleaned-*.json >/dev/null 2>&1; then
+            echo "No cleaned NL files produced — nothing to apply."; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/agent-pulls/nl-disclosures
+          git diff --staged --quiet || git commit -m "nl-disclosures: parsed pulls @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5 6; do
+            git fetch origin main || { echo "fetch retry $i"; sleep 5; continue; }
+            git reset --hard origin/main
+            for f in data/agent-pulls/nl-disclosures/*/cleaned-*.json; do
+              [ -e "$f" ] && npx tsx scripts/ingest/audit-fill.ts fill --from "$f" || true
+            done
+            python3 scripts/excel/build_value_store.py || { echo "value-store build failed"; exit 1; }
+            python3 scripts/excel/build_audit_index.py || { echo "audit-index build failed"; exit 1; }
+            git add src/data/snapshots/audit-overlay.json data/processed/excel-values.json data/processed/excel-held-back.json src/data/snapshots/extracted-data-audit.json data/agent-pulls/nl-disclosures
+            if git diff --staged --quiet; then echo "Nothing new to fill."; exit 0; fi
+            git commit -m "nl-disclosures: fill statutory line items @ $(date -u +%Y-%m-%dT%H:%MZ)"
+            if git push; then echo "published on attempt $i"; exit 0; fi
+            echo "publish retry $i"; sleep 5
+          done
+          echo "ERROR: publish failed after retries"; exit 1
