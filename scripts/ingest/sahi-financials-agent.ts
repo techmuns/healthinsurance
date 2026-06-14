@@ -24,6 +24,19 @@ const COMPANIES: Record<string, string> = {
   manipalcigna: 'ManipalCigna Health Insurance Co Ltd',
 }
 
+// Canonical public-disclosures page per insurer — where IRDAI mandates each
+// insurer publish its NL returns (the statutory source for NWP/NEP/EoM/net worth/
+// investments). Passed in the agent's `urls` (the integrated document-reading
+// path) so the AUTOMATED sweep opens and reads the source instead of only
+// web-searching for it. Mirrors company-master financial_disclosure_url.
+const DISCLOSURE_DOCS: Record<string, string> = {
+  'niva-bupa': 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
+  'star-health': 'https://www.starhealth.in/investors/financial-information/',
+  'care-health': 'https://cms.careinsurance.com/cms/public/public_disclosure',
+  'aditya-birla': 'https://www.adityabirlacapital.com/healthinsurance/about-us/financials',
+  manipalcigna: 'https://www.manipalcigna.com/disclosures/financial-disclosures',
+}
+
 const COMPANY_ID = (process.env.FETCH_COMPANY_ID || '').trim()
 const PERIOD = (process.env.FETCH_PERIOD || 'FY25').trim()
 // The period is free-text (it can carry steering hints), so it must NEVER reach a
@@ -132,7 +145,10 @@ function buildPayload() {
       CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [], GET_ANNOUNCEMENTS_ENABLED: false,
       chatHistory: [], mode: 'fast',
     },
-    autoAddUpcoming: false, urls: DOC_URL ? [DOC_URL] : [],
+    // Integrated document-reading path: hand the agent the exact docs to open —
+    // a manually-dispatched DOC_URL first, then the insurer's public-disclosures
+    // page (NL returns). Deduped, non-empty. WEB_SEARCH stays on as a fallback.
+    autoAddUpcoming: false, urls: [...new Set([DOC_URL, DISCLOSURE_DOCS[COMPANY_ID]].filter(Boolean))],
   }
 }
 
