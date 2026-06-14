@@ -1,0 +1,1776 @@
+MSKA& Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+602 Floor 6, Raheja Titanium, 5D, 5 Floor, Mount Chambers,
+Western Express Highway, Geetanjali, 758, Anna Satai,
+Railway Colony, Ram Nagar, Chennai - 600002, India
+Goregaon (E), Mumbai - 400 063
+INDEPENDENT AUDITORS’ REPORT
+To
+The Members of
+Star Health And Allied Insurance Company Limited
+Report on the Audit of the Financial Statements
+Opinion
+We have audited the accompanying financial statements of Star Health And Allied Insurance Company
+Limited ("the Company”), which comprise the Balance Sheet as at March 31, 2025, the Revenue
+Accounts, the Profit and Loss Account and the Receipts and Payments Account for the year then ended,
+the schedules annexed there to and notes to the financial statements, including a summary of the
+significant accounting policies and other explanatory notes forming par. of the financial statements
+(herein after referred to as “Financial Statements”).
+In our opinion and ta the best of our information and according to the explanations given to us, the
+aforesaid financial statements give the information required by provisions of the Insurance Act, 1938,
+as amended by the insurance Laws (Amendment) Act, 2015 (the “Insurance Act") read with Insurance
+Regulatory and Development Authority Act, 1999 (the “IRDAI Act"), and other accounting principles
+generally accepted in India, to the extent considered relevant and appropriate for the purpose of these
+annual financial statements and which are not inconsistent with the accounting principles as prescribed
+in the Insurance Regulatory and Development Authority of India (Actuarial, Finance and Investment
+Functions of Insurers) Regulations, 2024 (the “IRDA Financial Statement Regulations”) and orders/
+directions / circulars issued by the Insurance Regulatory and Development Authority of india (“IRDAI"/
+the “Authority”), to the extent applicable and the Companies Act, 2013, as amended, (‘the Act’} to
+the extent applicable and in the manner so required, and give true and fair view in confarmity with
+the accounting principles generally accepted in India, as applicable to insurance companies:
+i. in the case of the Balance Sheet, of the state of affairs of the Company as at March 31, 2025;
+ji, in the case of the Revenue Accounts, of the operating profit in the Miscellaneous business for year
+ended on that date;
+ii, in the case of the Profit and Loss Account, of the profit for the year ended on that date; and
+jy. inthe case of the Receipts and Payments Account, of the receipts and payments for the year ended
+on that date,
+Basis for Opinion
+We conducted our audit of the financial statement in accordance with the Standards on Auditing (SAs)
+specified under section 143(10) of the Act. Our responsibitities under those Standards are further
+described in the ‘Auditors’ Responsibilities far the Audit of the Financial Statements’ section of our
+report. We are independent of the Company in accordance with the ‘Code of Ethics’ issued by the
+Institute of Chartered Accountants of India (“ICAI”) together with the ethical requirements that are
+relevant to our audit of the financial statements under the provisions af the Act and the Rules
+thereunder, and we have fulfilled our other ethical responsibilities in accordance with these
+requirements and the Code of Ethics. We betieve that the audit evidence we have obtained is sufficient
+and appropriate to provide a basis for our opinion on the financial statements.
+& ASSO f
+S 4)
+2 :
+v Ry
+
+MSKA& Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+Key Audit Matters
+Key audit matters are those matters that, in our professional judgement, were of most significance in
+our audit of the financial statements of the current period and include the most significant risks
+identified by us that may tead to material misstatement (whether or nat due to fraud) and assessed by
+us as part of the audit procedures. These matters included those which had the greatest effect on the
+overall audit strategy, the allocation of resources in the audit and directing the efforts of the
+engagement team.
+These matters were addressed in the context of our audit of the financial statements as a whole, and
+in forming our opinion thereon, and we do not provide a separate opinion on these matters.
+We have determined the matters described below to be the key audit matters to be communicated in
+our report.
+Sr. _ Key Audit Matters Auditors’ Response _
+| No.
+i
+In nol ‘on’ [T Controls):
+1, The Company is highty dependent on its |The audit procedures performed by us
+information technology (IT) systems for | included the following:
+carrying out its operations and due to the |. we have involved our IT speciatists in the
+large volume of transactions that are | assessment of IT systems and contrals over
+processed daily across multiple IT financial reporting |
+systems, there exists a potential risk that |. involved IT specialists as part of the audit
+gaps in the IT control environment could for the purpose of testing the IT general
+result in the financial accounting and controls and application _contrats
+reporting recards being misstated. {automated and semi-automated controls)
+- to determine the accuracy of the
+The controls implemented by the information produced by the Company's IT
+Company in its IT environment determine Seton!
+the integrity, accuracy, completeness, ys oy
+and validity of the data that is processed | * Obtained an . understanding of the
+by the applications and is ultimately used Company's IT applications, databases and
+for financiat reporting. These controls operating systems relevant to financial
+contribute to mitigating risk of potentiat reporting and the control environment,
+misstatements caused by fraud or error. including an understanding of the process,
+mapping of applications and understanding
+| On account of the extensive use of hy financial risks posed by peopte-process and
+| systems acrass varied phases of business, technology.
+es Sele! F; a - a ¢ Tested design and operating effectiveness
+in Neel reporting was denied tobe ati key) (controls! cyst (user faces:
+z audit aie 8 management, change management,
+key . program development, computer
+| operations;
+¢ Performed procedures for a selected group
+of key contrals over financial and reporting
+system to determine that these controls
+remained unchanged during the year or
+were changed following the standard
+change management process.
+e Tested key automated and manual business
+cycle controls including testing of
+ASS fe) Pls ea}
+Ss &
+ay LA
+2 m
+oa -
+&
+Ss Acco
+
+MSK A & Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+Sr. Key Audit Matters ‘Auditors’ Response
+No.
+
+7 alternate procedures to assess risks that
+would materially impact the financial
+statements.
+
+| Claim settlement: i
+2 * Claims are a significant expense for | Our audit procedures included the following:
+the Company
+* Provisioning of Outstanding Claims| * We tested the design and operating
+including Claims Incurred but Not effectiveness of controls around the due
+once at an ee Not and intimated claims recording process.
+ug eport ( are .
+significant in magnitude and requires . Fae eng f Rested nd alesis
+use of judgements and estimates effectiveness of key controls relating to
+* With regards to the claims provision, | the Claims handling process, including
+the Company makes a provision for cantrols over completeness and accuracy
+claims upon intimation, on receipt of of the claim outstanding recorded,
+documents, communication from Co- | » Tested on a sample basis, claims paid, and
+hewance omnes ee Teese | OPO creed ith’ payment pret,
+undergo a revision based on further lain oematon ocuments ane
+information and the settlement communication from co-insurer teader in
+amount could vary from the provision cases af incoming co-insurance business,
+created which are material to assess whether
+« The estimate of the claim involves a claims are appropriately paid, estimated
+high degree of judgement and recorded.
+t *° Tested the arithmetical accuracy of
+! computation of claims provision performed
+| by the Company.
+' « The actuarial valuation of liability in
+respect of Claims Incurred but Not
+Reported (IBNR) and those Incurred but Not
+Enough Reported (IBNER) is as certified by
+the Company's Appointed Actuary and we
+have relied upon on the appointed
+actuary's certificate in this regard,
+Information Other than the Financial Statements and Auditors’ Report Thereon
+The Company’s Board of Directors is responsible for the other information. The other information
+Comprises the information included in the Director's Report and Annexures there to but does not
+include the Financial Statements and our Auditors’ report thereon. The other information is expected
+to be made available to us after the date of this auditor's report thereon.
+Our opinion on the financiat statements does not cover the other Information and we do not express
+any form of assurance conclusion thereon.
+SSONN
+: a> &e uc
+& zy, ran
+Xe é
+Stores ey
+
+MSKA & Associates TR Chadha & Co LLP
+
+Chartered Accountants Chartered Accountants
+
+In connection with our audit of the financial statements, our responsibility is to read the other
+
+information when it becomes available and, in doing so, consider whether the other information is
+
+materially inconsistent with the financial statements or our knowledge obtained in the audit, or
+otherwise appears to be materially misstated. If, based on the work we have performed, we conclude
+that there is a material misstatement of this other information, we are required to report that fact.
+
+We have nothing to report in this regard,
+
+Responsibility of Management and Those Charged With Governance for the Financial Statements |
+
+The Company’s Board of Directors is responsible for the matters stated in section 134(5) of the Act
+
+with respect te the preparation of these financial statements that give a true and fair view of the
+
+financial position, financial performance and cash flows of the Company in accordance with the
+requirements of the insurance Act, the IRDAI Act, the IRDAI Financial Statements Regulations, the Act
+and in accordance with the accounting principles generally accepted in India, including the applicable
+
+Accounting Standards specified under Section 133 of the Act read with relevant rules issued thereunder.
+
+This responsibility also includes maintenance of adequate accounting records in accordance with the
+
+Provisions of the Act for safeguarding of the assets of the Company and for preventing and detecting
+
+frauds and other irregularities; selection and application of appropriate accounting policies; making
+
+judgments and estimates that are reasonable and prudent; and design, implementation and
+
+Maintenance of adequate internal financial controls, that were operating effectively for ensuring the
+
+accuracy and completeness of the accounting records, relevant to the preparation and presentation of
+
+the financial statements that give a true and fair view and are free from material misstatement,
+whether due to fraud or error.
+
+in preparing the financial statements, management is responsible for assessing the Company’s ability
+
+to continue as a going concern, disclosing, as applicable, matters related to going concern and using
+
+the going concern basis of accounting untess management either intends to liquidate the Company or
+te cease operations, or has no realistic alternative but to do so. F
+
+The Board of Directors are also responsible for overseeing the company's financial reporting process.
+Auditors’ Responsibilities for the Audit of the Financial Statements
+
+Our objectives are to obtain reasonable assurance about whether the financial statements as a whole
+are free from material misstatement, whether due to fraud or error, and to issue an auditors’ report
+that includes our opinion, Reasonable assurance is a high level of assurance but is not a guarantee that
+an audit conducted in accordance with SAs will always detect a material misstatement when it exists,
+Misstatements can arise from fraud or error and are considered material if, individually or in the
+aggregate, they could reasonably be expected to influence the economic decisions of users taken on
+the basis of these financial statements.
+
+As part of an audit in accordance with SAs, we exercise professional judgment and maintain professional
+skepticism throughout the audit. We also:
+
++ Identify and assess the risks of material misstatement of the financial statements, whether due to
+fraud or error, design and perform audit procedures responsive to those risks, and obtain audit
+evidence that is sufficient and appropriate to provide a basis for our opinion. The risk of not
+detecting a material misstatement resulting from fraud is higher than for one resulting from error,
+as fraud may involve collusion, forgery, intentional omissions, misrepresentations, or the override
+of internal control,
+$50, ff
+
+ey Yay N off
+
+| UA)
+0” »
+4\2 & ;
+targa RS .
+
+MS KA& Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+
++ Qbtain an understanding of internal control relevant to the audit in order to design audit
+procedures that are appropriate in the circumstances. Under section 143(3)(i) of the Act, we are
+also responsible for expressing aur opinion on whether the Company has adequate internal
+financial controls system with reference to Financial Statements and the operating effectiveness
+of such controls.
+
+« Evaluate the appropriateness of accounting policies used and the reasonableness of accounting
+estimates and related disclosures made by management.
+
+« Conclude on the appropriateness of management's use of the goine concern basis of accounting
+and, based on the audit evidence obtained, whether a material uncertainty exists retated to events
+or conditions that may cast significant doubt on the Company’s ability to continue as a going
+concem, if we conclude that a material uncertainty exists, we are required to draw attention in
+our auditors’ report to the related disclosures in the financial statements or, if such disclosures
+are inadequate, to modify our opinion. Our conclusions are based an the audit evidence obtained
+up to the date of our auditors’ report. However, future events or conditions may cause the
+Company to cease to continue as a going concern.
+
++ Evaluate the overall presentation, structure and content of the financial statements, including the
+disclosures, and whether the financial statements represent the underlying transactions and
+events in a manner that achieves fair presentation.
+
+Materiality is the magnitude of misstatements in the Financial Statements that, individually or in
+aggregate, makes it probable that the economic decisions of a reasonably knowledgeable user of the
+Financial Statements may be influenced. We consider quantitative materiality and qualitative factors
+in (i) planning the scope of our audit work and in evaluating the results of our work; and {ii) to evaluate
+the effect of any identified misstatements in the Financial Statements.
+We communicate with those charged with governance regarding, among other matters, the planned
+Scope and timing of the audit and significant audit findings, including any significant deficiencies in
+internal control that we identify during our audit. :
+We also provide those charged with governance with a statement that we have complied with relevant
+ethical requirements regarding independence, and te communicate with them all relationships and
+other matters that may reasonably be thought to bear on our independence, and where applicable,
+related safeguards.
+From the matters communicated with those charged with governance, we determine those matters
+that were of most significance in the audit of the financial statements for the year ended March 31,
+2025 and are therefore, the key audit matters. We describe these matters in our auditors’ report unless
+law or regulation prectudes public disclosure about the matter or when, in extremely rare
+circumstances, we determine that a matter should not be communicated in our report because the
+adverse consequences of doing so would reasonably be expected to outweigh the public interest
+benefits of such communication.
+Other Matter
+Pursuant to IRDA! (Appointed Actuary) Regulations 2017, the actuarial valuation of liabilities in respect
+of claims Incurred But Not Reported ("IBNR"), claims Incurred But Not Enough Reported (“IBNER") and
+Premium Deficiency Reserve (“PDR”) as at March 31, 2025, has been duly certified by the Appointed
+Actuary. They have also certified that assumptions used for such valuation are appropriate and in
+accordance with the guidelines and norms issued by the IRDAI and the Institute of Actuaries of India in
+é
+pos A% >) Ni
+& 7 \
+Ss %
+w *
+
+MSKA & Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+concurrence with the IRDAI. Accordingly, we have relied upon the aforesaid certificate from the
+Appointed Actuary while forming our opinion on the financial statements of the Company.
+
+Our opinion is not modified in respect of above matter.
+
+Report on Other Legal and Regulatory Requirements
+
+1. As required by the IRDA Financial Statements Regulations, we have issued a separate certificate
+dated April 29, 2025 certifying the matters specified in paragraphs 3 and 4 of Part ill to the IRDAI
+Financial Statements Regulations.
+
+2. This Report does not include a statement on the matters spécified in paragraph 3 and 4 of the
+Companies (Auditor's Report) Order, 2016 (“the Order”) issued by the Central Government of india
+in terms of sub-section 11 of Section 143 of the Act, since in our opinion and according to the
+information and explanations given to us, the said Order is not applicable to the Company.
+
+3. As required by IRDA Financial Statements Regulations, read with Section 143 (3) of the Act, we
+report that:
+
+a, We have sought and obtained all the information and explanations which to the best of our
+knowledge and belief were necessary far the purposes of our audit;
+
+b. In our opinion, proper baoks of account as required by law have been kept by the Company so
+far as it appears from our examination of those books except for the matters stated in the
+paragraph k (vii) below on reporting under Rule 11(g);
+
+c. As the Company's financial accounting system is centralized at Head Office, no returns for the
+purposes of our audit are prepared at the branches of the Company;
+
+d. The Balance Sheet, the Revenue Accounts, the Profit and Loss Account, and the Receipts and
+Payments Account dealt with by this Report are in agreement with the books of account;
+
+@. In our opinion and to the best of our information and according to the explanations given to
+uS, investments have been valued in accordance with the provisions of the Insurance Act the
+IRDA Financial Statements Regulations and / or orders / directions/circulars/guidetines issued
+by the IRDA! in this behalf;
+
+f. in our opinion and to the best of our information and according to the explanations given to
+us, the aforesaid financial statements dealt with by this report comply with the Accounting
+Standards specified under Section 133 of the Act to the extent they are not inconsistent with
+the accounting principles prescribed in the IRDAI Financial Statements Regulations and
+orders/directions issued by IRDA! in this regard;
+
+g. In our opinion and to the best of our information and according to the explanations given to
+us, the accounting policies selected by the Company are appropriate and are in compliance
+with the Accounting Standards specified under Section 133 of the Act, to the extent they are
+fot inconsistent with the accounting principles prescribed in the IRDAT Financial Statements
+Regulations and orders / directions issued by the IRDAI in this behalf;
+
+h. On the basis of the written representations received from the directors as on March 31, 2025,
+taken on records by the Board of Directors, none of the directors is disqualified as on March
+31, 2025 from being appointed as a director in terms of Section 164 (2) of the Act;
+
+AS. af
+ASA Sox ;
+2 ‘is
+T(r ja
+Co. 2
+i
+7?) cow Ly
+
+MS KA & Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+
+i. As required by the Companies (Amendment) Act, 2017, in our opinion, according to information
+and explanations given to us, the remuneration paid/ provided by the Company to its directors
+during the year is within the limits prescribed under section 197 of the Act read with Section
+34a of the insurance Act, 1938;
+
+j. With respect to the adequacy of the internal financial controls with reference to financial
+statements of the Company and the operating effectiveness of such controls, refer to our
+separate Report in “Annexure A” to this report. Our report expresses an unmodified opinion
+on the existence of internat financial control with reference to financial statements and its
+operating effectiveness in the company.
+
+k. With respect ta the other matters to be included in the Auditors’ Report in accordance with
+Rule 11 of the Companies (Audit and Auditors) Rules, 2014, in our opinion and to the best of
+our information and according to the explanations given to us:
+
+i, The Company has disclosed the impact of pending litigations on its financial position in its
+financial statements - Refer Note 5.1.1 of Schedule 16 to the financial statements;
+
+ii. Liability for insurance contracts, is determined by the Company’s Actuary referred ta in
+Other Matter paragraph above, on which we have placed reliance; and the Company did
+not have any other long-term contracts including derivative contracts for which there were
+any materia foreseeable losses - Refer Note 5.2.16 of Schedule 16 to the financial
+statements;
+
+iii, There are no amounts which are required to be transferred, to the Investor Education and
+
+Protection Fund by the Company.
+
+iv.
+
+(a) The Management has represented that, to the best of its knowledge and belief, other
+than as disclosed in the Note 5.2.22 of Schedule 16 to the Financial Statements, no
+funds (which are material either individually or in the aggregate) have been advanced
+or loaned or invested (either from borrowed funds or share premium or any other
+sources or kind of funds) by the Company to or in any other person or entity, including
+foreign entity ("Intermediaries"), with the understanding, whether recorded in writing
+or otherwise, that the Intermediary shatl, whether, directly or indirectly lend or invest
+in other persons or entities identified in any manner whatsoever by or on behalf of the
+Company (“Ultimate Beneficiaries”) or provide any guarantee, security or the like on
+behalf of the Ultimate Beneficiaries;
+
+(b) The Management has represented, that, to the best of its knowledge and belief, other
+than as disclosed in the Note 5.2.23 of Schedule 16 to the Financial Statements, no
+funds (which are material either individually or in the aggregate) have been received
+by the Company from any person or entity, including foreign entity (“Funding Parties”),
+with the understanding, whether recorded in writing or otherwise, that the Company
+shall, whether, directly or indirectly, tend or invest in other persons or entities
+identified in any manner whatsoever by or on behalf of the Funding Party (“Ultimate
+S8eneficiaries”) or provide any guarantee, security or the like on behalf of the Ultimate
+Beneficiaries;
+
+$s
+
+aS pSSO >
+by 2A 3
+4 m
+= a
+6G ;
+ere ay
+
+MS KA & Associates T R Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+(c) Based on the audit procedures that have been considered reasonable and appropriate
+in the circumstances, nothing has come to our notice that has caused us to believe that
+the representations under sub-clause (i) and (ii) of Rule 11(e), as provided under (a)
+and (b) above, contain any material misstatement.
+v. The Company has not declared or paid any dividend during the year and accordingly no
+comptiance with respect to section 123 of the Act is required to be followed.
+vi. The reservation relating to the maintenance of accounts and other matters connected
+therewith are as stated in paragraph 3(b) above on reporting under Section 143(3)(b) and
+paragraph 3(k)(vil) betaw on reporting under Rule 11(g).
+vii. Based on our examination, which included test checks, the Company has used accounting
+software for maintaining its books of account which has a feature of recording audit trail
+(edit log) facility and the same has operated throughout the year for all relevant
+transactions recorded in the software. Further, during the caurse of our audit, we did not
+come across any instance of audit trail feature being tampered with. Additionally, the audit
+trail of prior year has been preserved by the Company as per the statutory requirements
+for record retention, except for SAP HANA where there is no SOC Type Il report available
+to provide us comfort as to whether the Audit trail feature is available, enabled and
+preserved throughout the year.
+For MS K A & Associates For T R Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+ICAI Firm Registration No: 105047W ICAI Firm Registration No: 006711N/N500028
+mi
+= \ -
+vi — eS S80 hues ;
+- ay 2 /
+Vaibhav Naik = ” Sheshu Samudrala
+Partner 7 : Partner .
+Membership No: 138302 erage Membership No: 235031
+UDIN: 25138302BNUIEY1901 UDIN: 25235031BMNRBF8166
+Chennai Chennai
+April 29, 2025 April 29, 2025
+
+MS KA& Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+ANNEXURE A TO THE INDEPENDENT AUDITORS’ REPORT OF EVEN DATE ON THE FINANCIAL
+STATEMENTS OF STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+
+(Referred to in paragraph 3(j) under ‘Report on Other Legal and Regulatory Requirements’ of the
+
+Independent Auditors’ Report of even date to the members of Star Health and Allied Insurance Company
+
+Limited on the financial statements for the year ended March 31, 2025)
+
+Report on the internal Financial Contrats under Clause (i) of Sub-section 3 of Section 143 of the
+
+Companies Act, 2013 (the “Act”
+
+1. We have audited the internal financial controls with reference to financial statements of Star
+Health and Allied Insurance Company Limited (“the Company”) as of March 31, 2025 in
+conjunction with our audit of the financial statements of the Company for the year ended on that
+date.
+
+Management’s Responsibility for Internal Financial Controls
+
+2, The Company’s Management is responsible for establishing and maintaining internal financial
+controts based on the internal control with reference to financial statements criteria established
+by the Company considering the essential components of internal control stated in the Guidance
+Note on Audit of Internal Financial Contrats Over Financial Reporting issued by the Institute of
+Chartered Accountants of India (ICAI) (the “Guidance Note"). These responsibilities include the
+design, implementation and maintenance of adequate internal financial controls that were
+operating effectively for ensuring the orderly and efficient conduct of its business, including
+adherence to Company's policies, the safeguarding of its assets, the prevention and detection of
+frauds and errors, the accuracy and completeness of the accounting records, and the timely
+preparation of retiable financial information, as required under the Act including the provisfons of
+the Insurance Act, 1938 as amended by the Insurance Laws (Amendment) Act, 2015 (the “Insurance
+Act”), the insurance Regulatory and Development Authority Act, 1999 (the “IRDA Act"), the IRDA
+Financial Statements Regulations, orders/directions issued by the insurance Regulatory and
+Development Authority of India (the “IRDAI”) in this regard.
+
+Auditors’ Responsibility
+
+3. Our responsibility is to express an opinion on the Company's internal financial controls with
+reference to financial statements based on our audit. We conducted our audit in accordance with
+the Guidance Note issued by the {CAI and the Standards on Auditing deemed te be prescribed under
+section 143(10) of the Act, to the extent applicable to an audit of internal financiat controls. Those
+Standards and the Guidance Note require that we comply with ethical requirements and plan and
+perform the audit to obtain reasonable assurance about whether adequate internal financial
+controls with reference to financial statements was established and maintained and if such controls
+operated effectively in all material respects.
+
+4. Our audit involves performing procedures to obtain audit evidence about the adequacy of the
+internat financial controls with reference to financial statements and their operating effectiveness.
+Our audit of internal financial controls with reference to financial statements included obtaining
+an understanding of internal financial controls with reference to financial statements, assessing
+the risk that a material weakness exists, and testing and evaluating the design and operating
+
+‘Ss Van
+oO | ¥
+2 is
+{if
+viered acta :
+
+MSKA& Assaciates TR Chadha & Co LLP
+
+Chartered Accountants Chartered Accountants
+effectiveness of internal control based on the assessed risk. The procedures selected depend on
+the auditor’s judgment, including the assessment of the risks of material misstatement of the
+financial statements, whether due to fraud or error.
+
+5. We believe that the audit evidence we have obtained is sufficient and appropriate to provide a
+basis for our audit opinion on the Company’s internat financial controls with reference to financial
+statements.
+
+Meaning of Internal Financial Controls With reference to Financial Statements
+
+6. A company’s internal financial control with reference to financial statements is a Process designed
+to provide reasonable assurance regarding the reliability of financial reporting and the preparation
+of financial statements for external purposes in accordance with generally accepted accounting
+principles. A company’s internal financial control with reference to financiat statements includes
+those policies and procedures that (1) pertain to the maintenance of records that, in reasonable
+detait, accurately and fairly reflect the transactions and dispositions of the assets of the company;
+(2) provide reasonable assurance that transactions are recorded as necessary to permit preparation
+of financial statements in accordance with generally accepted accounting principles, and that
+receipts and expenditures of the company are being made only in accordance with authorizations
+of management and directors of the company; and (3) provide reasonable assurance regarding
+prevention or timely detection of unauthorized acquisition, use, or disposition of the company’s
+assets that could have a material effect on the financial statements.
+
+Inherent Limitations of Internal Financial Controls With reference to Financial Statements
+
+7. Because of the inherent limitations of internal financial controls with reference to Financial
+Statements, including the possibility of collusion or improper management override of contrats,
+material misstatements due to error or fraud may occur and not be detected. Also, projections of
+any evaluation of the internal financial controts with reference to financial statements to future
+periods are subject to the risk that the internal financial control with reference to financial
+statements may become inadequate because of changes in conditions, or that the degree of
+compliance with the policies or procedures may deteriorate.
+
+Opinion
+
+8. In our opinion, to the best of our information and according to the explanations given ta us, the
+Company has, in all material respects, an adequate internal financ‘al controls with reference to
+financial statements and such internal financial controls with reference to financial statements
+were aperating effectively as at March, 31, 2025, based on the internat control with reference to
+financial statements criteria established by the Company considering the essential components of
+internat control stated in the Guidance Note issued by the ICAI.
+
+Other Matters
+
+9. Pursuant to IRDA! (Appointed Actuary) Regulations 2017, the actuarial valuation of liabilities in
+respect of claims Incurred But Not Reported (“IBNR”), claims Incurred But Not Enough Reported
+(“IBNER"”) and Premium-Deficiency Reserve (“PDR”) as at March 31, 2025, has been duly certified
+by the Appointed Actuary. They have also certified that assumptions used for such valuation are
+appropriate and in accordance with the guidelines and norms issued by the IRDAI and the Institute
+of Actuaries of India in concurrence with the IRDAI. We have relied upon the aforesaid certificate
+while forming our opinion on the financial statements of the Company as mentioned in Other Matter
+paragraph in our Audit Report on the financial statements for the year ended March 31, 2025.
+
+MED a }
+Gar
+; y
+Bred accoSZ
+
+MS KA& Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+Accordingly, our opinion on the internal financial controts with reference to financial statements
+does not include reporting on the adequacy and operating effectiveness of the internal controls
+over the valuation and accuracy of the aforesaid actuarial tiabilities.
+Our opinion is not modified in respect of the above matter.
+For MS K A & Associates For T R Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+ICAI Firm Registration No: 105047w (CAI Firm Registration No: 006711N/N500028
+‘
+pope ry BSSON Aube
+‘
+— ‘ 7, Z
+Vaibhav Naik = tafe Sheshu Samudrata
+Partner SS ‘ey Partner
+Membership No: 138302 TS sf Membership No: 235031
+UDIN: 25138302BNUIEY1901 yvs UDIN: 2523503 1BMNRBF8166
+Chennai Chennai
+April 29, 2025 April 29, 2025
+. {
+
+MS KA & Associates TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+602 Floor 6, Raheja Titanium, 5D, 5 Floor, Mount Chambers,
+Western Express Highway, Geetanjali, 758, Anna Salai,
+Railway Colony, Ram Nagar, Chennai — 600002, India
+Goregaon (E), Mumbai — 400 063
+Independent Auditors’ Certificate
+To
+The Members of
+Star Health And Allied Insurance Company Limited
+(Referred to in paragraph 1 of “Report on Other Legal and Regulatory Requirements” forming part of the
+Independent Auditors’ Report dated April 29, 2025)
+This certificate is issued to comply with the provisions of paragraphs 3 and 4 of Part Ill: Auditor’s Report
+of the Insurance Regulatory and Development Authority of India (Actuarial, Finance and Investment
+Functions of Insurers) Regulations, 2024 (the “Regulations”) to be read master circular.
+Management’s Responsibility
+The Management is responsible for ensuring that the Company complies with the requirements of The
+Insurance Act, 1938 as amended by Insurance Laws (Amendment) Act, 2015 (the “Insurance Act”), the
+Insurance Regulatory and Development Authority Act, 1999 (the “IRDA Act”), and other accounting
+principles generally accepted in India, to the extent considered relevant and appropriate for the purpose
+of the annual financial result and which are not inconsistent with the accounting principles as prescribed
+in the Insurance Regulatory and Development Authority of India (Actuarial, Finance and Investment
+Functions of Insurers) Regulations, 2024 (the “IRDA Financial Statement Regulations”) and orders/
+directions / circulars issued by the Insurance Regulatory and Development Authority of India (“IRDA”/
+the “Authority”), to the extent applicable, which includes preparation of the Management Report. The
+responsibility includes collecting, collating, validating data, designing, implementing and monitoring of
+internal controls relevant for ensuring compliance as stated above and provide all relevant information
+to IRDAI and making estimates that are reasonable in the circumstances
+Auditors’ Responsibility
+Pursuant to the requirements of the Regulations, our responsibility, for the purpose of this certificate,
+is to provide reasonable assurance on matters contained in paragraphs 10 of Schedule Il, read with Master
+Circular, of the IRDA Financial Statements Regulations.
+We have performed the following procedures: -
+
+a) Reviewed the management report attached to the financial statements for the year ended March
+31, 2025, to ensure that there is no apparent mistake or material inconsistency with the financial
+statements;
+
+b) We have verified the cash balances, to the extent considered necessary, and securities relating to
+the Company’s loans and investments as at March 31, 2025, by actual inspection or on the basis of
+certificates/ confirmations received from the Custodian and/or Depository Participants appointed
+by the Company, as the case may be; _
+
+“4 DHA ES
+—— ny
+ASS, e \
+7 <eN a \,)
+a
+a m I}
+\: 2 } >) yy
+C y
+\S 2, IA
+Me, SS y
+Necsntife al al ,
+
+MS KA & Associates T R Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+c) Read the compliance certificate submitted to the Board of Directors; and
+d) Relied on Management representation;
+¢ that the Company is not a trustee of any trust; and
+« that no part of the assets of the policyholder’s funds has been directly or indirectly applied in
+contravention to the provisions of the Insurance Act relating to the application and investments
+of the policyholder’s funds.
+We have audited the financial statements of the Company as of and for the financial year ended March
+31, 2025, on which we issued an unmodified audit opinion vide our reports dated April 29, 2025. Our
+audit of these financial statements was conducted in accordance with the Standards on Auditing as
+prescribed under Section 143(10) of the Companies Act, 2013 and other applicable authoritative
+pronouncements issued by the Institute of Chartered Accountants of India (“ICAI’’). Those Standards
+require that we plan and perform the audit to obtain reasonable assurance about whether the financial
+statements are free from material misstatement. Our audits were not planned and performed in
+connection with any transactions to identify matters that may be of potential interest to third parties.
+
+We conducted our examination in accordance with the Guidance Note on Reports or Certificates for
+
+Special Purposes (Revised 2016) issued by the ICAI, which includes the concepts of test checks and
+
+materiality. The Guidance Note requires that we comply with the ethical requirements of the Code of
+
+Ethics issued by the ICAI. We have not performed an audit, the objective of which would be the expression
+
+of an opinion on the financial statements, specified elements, accounts or items thereof, for the purpose
+
+of this Certificate.
+
+We have complied with the relevant applicable requirements of the Standard on Quality Control (SQC)
+
+1, Quality Control for Firms that Perform Audits and Reviews of Historical Financial Information, and
+
+Other Assurance and Related Services Engagements issued by ICAI.
+
+Opinion
+
+Based on our examination, as above, the information and explanations and representation given to us,
+
+we certify that:
+
+1. We have reviewed the Management Report attached to the financial statements for the year ended
+March 31, 2025, and on the basis of our review, there are no apparent mistakes or material
+inconsistencies with the financial statements;
+
+2. The Company has complied with the terms and conditions of registration as per sub section 4 of
+section 3 of the Insurance Act, 1938;
+
+3. We have reviewed the cash balances and cheques on hand from the certificate and confirmations
+provided by the management and securities relating to Company’s loans and investments as at
+March 31, 2025, by actual inspection and on the basis of certificates/confirmations received from
+the third parties/Custodians and/Depository Participants appointed by the Company, as the case
+may be;
+
+4, The Company is not a trustee of any trust; and
+
+qa) HA
+fA
+~% ASSO, a
+&
+(ey) y
+= wv } % \D
+Sree nec s)
+
+MS KA & Associates T R Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+5. No part of the assets of the Policyholders’ Funds has been directly or indirectly applied in
+contravention of the provisions of the Insurance Act, relating to the application and investments
+of the Policyholders’ Funds.
+Restriction on use
+This certificate is issued at the request of the Company solely for use of the Company for inclusion in the
+annual accounts in order to comply with the provisions of paragraph 3 and 4 of Schedule C of Part Ill of
+the IRDAI Financial Statements Regulations read with Regulation 3 of the IRDAI Financial Statements
+Regulations and is not intended for and should not be used for any other purpose. without our prior
+consent. Auditors’ shall not be liable to the Company or to any other concerned for any claims, liabilities
+or expenses relating to this assignment. We have no responsibility to update this certificate for events
+and circumstances occurring after the date of this certificate. Accordingly, we do not accept or assume
+any liability or any duty of care for any other purpose or to any other person to whom this Certificate is
+shown or into whose hands it may come without our prior consent in writing.
+For MS KA & Associates For TR Chadha & Co LLP
+Chartered Accountants Chartered Accountants
+(CAI Firm Registration No: 105047W ICAI Firm Registration No: 006711N/N500028
+Ye ‘Sr =) YO _ SDE
+yw 2 al yt ; fy
+on * 7.) F }
+Vaibhav Naik OE Sheshu Samudrala i Sy
+Partner Partner S=
+Membership No: 138302 Membership No: 235031
+UDIN: 25138302BNUIFA8266 UDIN: 25235031BMNRBH2639
+Chennai Chennai
+April 29, 2025 April 29, 2025 7
+
+Form B- RA
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No. and Date of Registration with the IRDAI : 129/16.03.2006
+REVENUE ACCOUNT FOR THE YEAR ENDED MARCH 31, 2025
+FIRE BUSINESS
+(Rs.in Lakhs)
+TortheYearEnded forthe YearEndedl
+Particulars Schedule “arch 31,2025 March 34, 2024
+1 Premiums earned (Net) 1A - =
+2 Profit/ (Loss) on sale/redemption of Investments - -
+3 Interest, Dividend & Rent — (Gross) - -
+TOTAL (A) . s
+1. Claims Incurred (Net) 2A - -
+2 Commission 3A = =
+3 Operating Expenses related to Insurance Business 4 : 2
+4 Premium Deficiency a o
+i TOTAL (B) . -
+Operating Profit/{Loss) from Fire Business C= (A - B) = 2
+APPROPRIATIONS
+Transfer to Shareholders’ Account = =
+Transfer to Catastrophe Reserve - -
+Transfer to Other Reserves - :
+TOTAL (C)
+‘S Niled LO
+v And On Behalf of Board 2,
+LJ
+tf #/ STAR \o
+z\conPopaTE g. panko’
+BACO FOE He
+Anand Roy £5, ae OSS Deepak Ramineedi
+Managing Director & Chief Executivé Officer oe Director
+DIN: 08602245 DIN: 07631768
+pre %, 7
+Nilesh Kambli Jayasiiree Sethuraman
+Chief Financial Officer Col ny Secretary
+As Per Our Report of Even Date attached
+For M/s M SKA& Associates., For M/s TR Chadha & Co LLP.,
+Chartered Accountants Chartered Accountants
+Firm Reg No.: 105047W pees ’ Firm Reg No.: 006711N/N500028
+oo & ASN DNA
+JerX Mi, EBSD
+am, = ra) Ay o%
+i <i* > hay a
+Vaibfiav Naik sO > Sheshu Samudrala 7)
+Partner Be P= Partner | je)
+MNo: 138302 “Xe, oy. M.No.: 235031 3 \ iS
+& Foca yes < CY,
+Place: Chennai ya LOTS »~
+Date: April 29, 2025 if
+4 a
+
+Form B-RA
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No. and Date of Registration with the IRDAI : 129/16.03.2006
+REVENUE ACCOUNT FOR THE YEAR ENDED MARCH 31, 2025
+MARINE BUSINESS
+(Rs.in Lakhs)
+Particulars Schedute Forthe¥earEnded For the Year Ended
+March 31,2025 March 91,2024
+1 Premiums earned (Net) 1B - =
+2 Profit/ (Loss) on sale/redemption of Investments : =
+3 Interest, Dividend & Rent - (Gross) : cS
+TOTAL (A) : -
+1. Claims Incurred (Net) 2B - -
+2 Commission 3B = =
+3 Operating Expenses related to Insurance Business 4 = =
+4 Premium Deficiency -
+TOTAL (B) : :
+Operating Profit/{Lass) from Marine Business C= (A - B) : :
+APPROPRIATIONS
+Transfer to Shareholders’ Account = =
+Transfer to Catastrophe Reserve = =
+Transfer to Other Reserves = .
+TOTAL (C)
+3 Niied Ing 5
+r Arfd On Behalf of Boayd BPBigectors\o
+( S %
+: 2/ LSTAR\e £. peyn
+8 ~
+Anand Roy Cy CORPORA TE iy Deepak Ramineedi
+Managing Director & Chie Exe wiveGin < Director
+DIN: 08602245 enn 21-00. v DIN: 07631768
+ran —
+5) el fs
+Jayash: ethuraman
+Nilesh Kambli Compa: jecretary
+Chief Financial Officer
+As Per Our Report of Even Date attached
+For M/s MS KA& Associates., For M/s TR Chadha & Co LLP.,
+Chartered Accountants Chartered Accountants
+Firm Reg No.: 105047W z Firm Reg No.: 006711N/N500028 ©
+&A
+‘ cS S35 . Ry DHA gS
+cs Ey oO Brves a fe} £0"
+Vaibhav Naik fis > Sheshu Sama@rala {Pa o]
+Partner PASS Hy Partner | O)
+M.No.: 138302 é NC * M.No.: 235031 \\3 3
+es Acenynta he \ Ow C Ss
+Place: Chennai Pie Ca Acco
+Date: April 29, 2025 ———
+4
+4 4
+
+Form B- RA
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No. and Date of Registration with the IRDAl : 129/16.03.2006
+REVENUE ACCOUNT FOR THE YEAR ENDED MARCH 31,2025
+MISCELLANEGUS BUSINESS
+(Rs. in Lakhs)
+ee a eee TIE Ym Ime. C5, meee nay 5
+ Paetcettars a (Schedule: Serta tea Setel) Sandie Ended:
+1 Premiums earned (Net) 1D 14,82,220 12,93,827
+2 Profit/ (Loss) on sale/redemption of Investments 9,846 4992
+3. Interest, Dividend & Rent~ (Gross) 66,707 59,017
+4 Other
+(a) Other Income(ta be specified)
+(b) Contribution from Shareholders’ Account
+(i) Towards excess Expense of Management : :
+(it) Towards remuneration of MD/CEO/WTD/Other KMPs 546 192
+(iii) Foreign Exchange gain / (loss) 83 .
+{iv) Others : -
+TOTAL (A) 15,59,402 13,58,029
+5 Claims Incurred (Net) 2D 10,41,937 8,59,396
+6 Commission 3D 2,24,072 1,85,964
+7 Operating Expenses related to Insurance Business 4 2,54,061 239,536
+8 Premium Deficiency : :
+TOTAL (B) 15,20,070 12,84,695
+9 Operating Profit/(Loss) from Miscellaneous Business C= (A - B) 39,332 73,134
+APPROPRIATIONS
+‘Transfer to Shareholders’ Account 39,332 73,134
+‘Transfer to Catastrophe Reserve -
+Transfer to Other Reserves (to be specified) - -
+TOTAL (C) 39,332 73,134
+Note~-1
+a ae
+= | Sertciamet batlephalderstuals_ For the Year Ended For the Year Ended
+Interest, Dividend & Rent z aalt 7) 54,824
+Add/Less:-
+Investment Expenses, (ao7) (124)
+Amortisation of Premium/ Discount on Investments 7372 4,317
+Amount written off in respect of depreciated investments
+Provision for Bad and Doubtful Debts
+Provision for diminution in the value of other than actively traded Equities
+Investment income from Pool
+Interest, Dividend & Rent-Gross* 66,707 59,017
+* Term gross implies inclusive of TDS
+< Niied Lhsy
+For And On Behalf of Board of Diyea <2
+: @
+cy
+( $( LSTAR |e R . peopel
+- = ~
+s3\ CORPORATE =
+‘Anand Roy iy OFFICE Deepak Ramineedi
+Managing Director & Chief Executive Qifice ay Director
+DIN: 08602245 <i y DIN: 07631768
+SAS
+N an on ae
+al . °
+Nilesh Kamblt Jayashree raman
+Chief Financial Officer Company
+As Per Our Report of Even Date attached
+ForM/s MSKA &Assoclates., For M/s T RChadha & Co LLP., , =
+Chartered Accountants PLEA 4 Chartered Accountants EDDHA 2
+Firm Reg No: 105047 Re in BAs Firm Reg No: 006711N/N590028 key - 5.
+. SS . <C
+s Y 2, ON Va 7h ec
+ais ary ‘Sheshu Samudi a
+Partner alo PR Partner : js]
+MNo: 138302 A\2. Px 5 MNo.: 235031 \3 >» J
+3, © ff .% Y
+" PU —<Aey
+? ‘ oy
+Place: Chennai Bxteco uso NOT Keer Y 7
+Date: April 29, 2025 P Seary t
+,
+d 4
+
+Form B-PL
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No, and Date of Registration with the IRDAI : 129/16.03.2006
+PROFIT AND LOSS ACCOUNT FOR THE YEAR ENDED MARCH 31, 2025
+(Rs. in Lakhs}
+i FortheYearEnded For the Year Ended
+mareceaets Schedule “March 31,2025 March 31,2024
+1 OPERATING PROFIT/(LOSS)
+(3) Fire Insurance : -
+(b) Marine Insurance : -
+(c) Miscellaneous Insurance 39,332 73,134
+2 INCOME FROM INVESTMENTS
+(2) Interest, Dividend & Rent - (Gross) 39,800 37,859
+(b) Profit on sale of investments 6,605 3455
+(©) (Loss on sale/ redemption of investments) : -
+(d) Amortization of Premium / Discount on Investments 4945 2,988
+3 OTHER INCOME
+fa) Provision written back 44 v7
+(b) Interest on Income Tax Refund 125 47
+(c) Others{Other income) 377 182
+TOTAL (A) 91,228 1,17,B41
+4 PROVISIONS (Other than taxation)
+{a] For diminution in the value of investments *. -
+(b) For doubtful debts 20 ca
+(c) Others : 2
+5 OTHER EXPENSES
+(@) Expenses other than thase related to Insurance Business : :
+(b) Bad Debts written off 28 182
+(c} Interest on subordinated debt 4,093 4,421
+{a} Expenses towards CSR activities 168 167
+{e) Penalties 15 6
+{8 Contribution to Policyholders' A/c
+(i) Towards Excess Expenses of Management . 5
+(ii) Towards remuneration of MD/CEO/WTD/Other KMPs 546 192
+(lif) Others (to be specified) - :
+(g) Others
+i) Remuneration To Non-Executive Directors - Profit Related Commission 120 135
+if) Listing Fees / Other Charges 19 20
+iif) Donation 56 6
+iv) Loss/(Gain) on sale / Discard of Fixed Assets 58 18
+TOTAL (B) 5,123 4,956
+Profit/(Loss) Before Tax (A-B) 86,105 112,885
+Provision for Taxation
+(a) Current Tax 20,817 7312
+(b) Deferred Tax 699 21,072
+(c) Tax relating to earlier years 3 :
+Profit/(Loss) After Tax 64,586 94,501
+APPROPRIATIONS
+{a} Interim dividends paid during the year - *
+(b) Final dividend paid - :
+{c) Transfer to any Reserves or Other Accounts : :
+Balance of profit/ {loss} brought forward from last year (28,660) (123,161)
+Balance carried forward to Balance Sheet 35,926 (28,660)
+Earnings per share - Basic 14.01 14.48
+~ Diluted 1 1086 14.19
+Niied /p,
+NY
+CG
+lor ‘i t Behalf of Board of Di CA
+> o
+2
+Le 2/ LSTAR\o p. DEB
+Anand Roy S2\ CORPORATE /S Deepak Ramineedi
+Managing Director & Chief Executive. leas ICE = Director
+" ON FPICE 2
+DIN: 08602245 ee DIN: 07631768
+ws Be WS
+ya
+= ie
+Nilesh Kaabii Jayashree Jeghuraman
+Chief Financial Officer Company fedretary
+As Per Our Report of Evan Date attached
+For M/s MSKA& Assaciates,, For M/s TRChadha & Ca LLP., =
+Chartered Accountants Chartered Accountants <ROHA eS
+Firm Reg No.: 105047W Ss & ASS Firm Reg No.: 006711N/N500028 Or Ce
+. yt oo oy
+2 t > ff \\
+~ IS > 2 CHENNay
+Vaibhav Naik 45 ~ ‘Sheshu Samudfala \fey of
+Partner Ve oO Partner \Z
+Mo. 136302 aX%, * M.No.: 235031 NG
+ON oy ; 7
+Py Aecoun®
+Place: Chennai ¥, Pry =
+Date: April 29,2025 i :
+aq 4 4
+
+Form B- BS
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No. and Date of Registration with the IRDAI : 129/16.03.2006
+BALANCE SHEET AS AT MARCH 31, 2025
+(Rsin Lakhs)
+Roe ‘Schedule ASAL AsAt
+Ref. March 31,2025 March 31,2024
+SOURCES OF FUNDS
+SHARE CAPITAL 5&5A 58,779 58,528
+SHARE APPLICATION MONEY : 2
+RESERVES AND SURPLUS 6 643,585 604,294
+FAIR VALUE CHANGE ACCOUNT
+- SHAREHOLDERS’ FUNDS 3,553 4,236
+- POLICYHOLDERS' FUNDS 5,297 6121
+BORROWINGS 7 47,000 47,000
+TOTAL 758,214 7,20,180
+APPLICATION OF FUNDS
+INVESTMENTS - SHAREHOLDERS 8 718,573 633,611
+INVESTMENTS - POLICYHOLDERS BA 10,71,264 915,477
+LOANS 9 : :
+FIXED ASSETS 10 18,494 17,513
+DEFERRED TAX ASSET (NET) 35,120 35,818
+CURRENT ASSETS
+Cash and Bank Balances roe 66,843 44,458
+Advances and Other Assets 12 168,168 1,29,896
+Sub-Total (A) 2,35,011 1,74,354
+DEFERRED TAX LIABILITY (NET) ‘ -
+CURRENT LIABILITIES 13 412,106 247,785
+~
+PROVISIONS 14 9,08,142 837,469
+Sub-Total {B) 13,20,248 10,85,254
+NET CURRENT ASSETS (C) = (A- B) (10,85,2371 £9,10,900)
+MISCELLANEOUS EXPENDITURE (to the extent not written off or adjusted) 415 - >
+DEBIT BALANCE IN PROFIT AND LOSS ACCOUNT : 28,660
+TOTAL 758,214 720,180
+CONTINGENT LIABILITIES
+‘Particulars ABAL ASAE
+= ——— a = March 92,2025. March 31,2024
+1. Partly paid-up investments - :
+2. Claims, other than against policies, not acknowledged as debts by the
+company 2 -
+3, Underwriting commitments outstanding (in respect of shares and
+securities) - -
+4, Guarantees given by or on behalf of the Company .
+5.Statutory demands/ labilities in dispute, not pravided for 29,813 28,553
+6, Reinsurance obligations to the extent not provided for in accounts - «
+7 Others (to be specified) - 5 =
+TOTAL 28,613 28,553
+‘ S Ly
+And On Behalf of Board of DirfeRy <a
+'3/ LSTAR\o
+%\ CORPORATE JS; £ -Deefo+
+Anand Roy *\ OFFICE Ax Deepak Ramineedi
+Managing Director & Chief Executive Otfrge > Director
+DIN: 08602245 ~ANai-600 DIN: 07631768
+ae
+7
+Nilesh Kambli Jayashi uraman
+Chief Financial Officer Compa ry
+As Per Our Report of Even Date attached
+For M/s MSKA & Associates., DA -- For M/s TR Chadha & CoLLP., a
+Chartered Accountants é Chartered Accountants i qv HA
+Firm Reg No: 3050470 G & ASS; Al Firm Reg No.: i. ee Ve Ae
+2 ON’ ff a
+ext a = va 3 ‘] |
+Vaibhav Naik al * > iz Sheshu Samud |
+Partner ANS mo IB Partuer
+M.No.: 138302 ix 2) M.No.: 235031 ea ¢
+ANS, * ~
+ENG, 2 fa X% g
+Place: Chennai PS Account as NOOO,
+Date: April 29, 2025 Poe St
+‘
+4 4 d
+
+STAR HEALTH AND ALLIED INSURANCE COMPANY LIMITED
+Registration No.and Date of Registration with the IRDA:129/16.03.2006
+RECEIPTS AND PAYMENTS ACCOUNT FOR THE YEAR ENDED MARCH 31, 2025
+(Rs in Lakhs)
+Forthe YearEndedMar —_ For the Year Ended
+patueuers 31,2025 Mar 31, 2024
+Premium received from policyholders, including advance receipts & payables to policy holders 20,18,200 17,72,209
+Other receipts - -
+Receipts/(Payments) from other entities carrying on insurance business (including reinsurers) (75,181) (37,829)
+Receipts/(Payments) to co-insurers, net of claims recovery 4,122 2,238
+Payments of claims (9,93,608) (6,92,347)
+Payments of commission and brokerage (2,71,865) (2,07,286)
+Deposits, advances and staff loans (2,503) (3,491)
+Payments of other operating expenses (2,59,903) (2,59,901)
+tncome Tax (Net off Refund) (18,873) (9,824)
+GST (Net off GST-ITC) (2,62,528) (2,32,772)
+Other payments. - -
+Cash flows before extraordinary items = -
+Cash flow [rom extraordinary operations - =
+Cash flows from Operating Activities 1,37,862 1,30,996
+Purchase of fixed assets (8,271) (12,349)
+Proceeds from sale of fixed assets B86 90
+Purchases of investments (1,85,76,074} (1,78,54,066)
+Loans disbursed : :
+Sales of investments 1,83,56,910 1,76,50,928
+Investments in money market instruments and in liquid mutual funds (Net) 2 e
+Repayments received - -
+Rents/Interests/Dividends received 112,471 97,936
+Investments in money market instruments and in liquid mutual funds (Net) of -
+Expenses related to investments (179) (209)
+Loans disbursed - .
+Repayments received + -
+Cash flows from Investment Activities (1,15,058) (117,671)
+Proceeds from issuance of share capital 3,693 6,410
+Praceeds from borrowing - s
+Repayments of borrowing . .
+Interest/dividends paid (4,112) (4,112)
+Cash flows from Financing Activities (420) 2,297
+Net increase/ (decrease) in cash and cash equivalents 22,385 15,623
+Cash and cash equivalents at the beginning of the year 44,458 28,836
+Cash and cash equivalents at end of the period 66,843 44,458
+Payments of other operating expenses includes payment towards Corporate Social] Responsibility of Rs. 168 Lakhs ( Previous year: Rs. 167 Lakhs}
+Receipt and Payment Accaunt is prepared under ‘Dire hod’
+Wied Ins
+Fog And On Behalf of Board of Direg as 4,
+S ee
+#[ LSTAR g.. peo
+= lex
+%\ CORPORATE /& .
+ind Roy A 0 FFICE / x Deepak Ramineedi
+Managing Director & Chief Executive Off SS Director
+DIN: 08602245 y Ennai-BW. DIN: 07631768
+s
+peren
+Nilesh Kambli Jayash: ethuraman . °
+Chief Financial Officer Compa! cretary
+As Per Our Report of Even Date attached
+For M/s MSKA& Associates., For M/s T R Chadha & Co LLP., ¢
+Chartered Accountants Chartered Accountants
+Firm Reg No.: 1050: i a =
+keg o. 47W a & ASS. Firm Reg No.: 006711N/N500028 Za DHA RS
+x Ce ‘Ne Gon oN
+= 2 ta C7
+Vaibhav Naik = % Sheshu Samu@rala (Pai si
+Partner LO Partner | s)
+M.No.: 138302 ZN. * M.No.: 235031 \o
+EN, GS \o ox
+Ber cca NO AY
+' Place: Chennai Sc Aces
+Date: April 29, 2025 ‘
+d 4
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 1A
+PREMIUM EARNED [NET]
+FIRE BUSINESS ACCOUNT
+Paciiawiaa Forthe Yearfnded For the Year Ended
+Fanon March 31, 2025 March 31, 2024
+Gross Direct Premium - -
+Add: Premium on reinsurance accepted = -
+Less : Premium on reinsurance ceded a =
+Net Written Premium - -
+Adjustment for change in reserve for unexpired risks 2 2
+Net Earned Premium 7 =
+Gross Direct Premium
+- In India
+- Outside India
+SCHEDULE - 1B
+PREMIUM EARNED [NET]
+MARINE CARGO BUSINESS ACCOUNT
+Particular Forthe YearEnded Fer the Year Ended
+March 31, 2025 March 31, 2024
+Gross Direct Premium = é
+Add: Premium on reinsurance accepted - -
+Less : Premium on reinsurance ceded = =
+Net Written Premium = -
+Add: Opening balance of Unearned Premium Reserve (UPR)
+Less: Closing balance of Unearned Premium Reserve (UPR)
+Adjustment for change in reserve for unexpired risks : -
+Net Earned Premium - -
+Gross Direct Premium
+- In India
+- Outside India
+SCHEDULE - 1D
+PREMIUM EARNED [NET]
+MISCELLANEOUS BUSINESS (Rs.in Lakhs)
+pune Forthe YearEnded _ For the Year Ended
+ATES March 31, 2025 March 31, 2024
+Gross Direct Premium 16,71,620 15,25,445
+Add: Premium on reinsurance accepted 6,516 =
+Less : Premium on reinsurance ceded 1,25,614 1,18,709
+Net Written Premium 15,52,522 14,06,736
+Add: Opening balance of Unearned Premium Reserve (UPR) 8,35,999 7,23,091
+Less: Closing balance of Unearned Premium Resefqui¢@nR) 9,06,302 8,35,999
+Net Earned Premium A ON —— 14,82,220 12,93,827
+Sy DL OHA BS
+. . pBAss 2 LSTARY oS
+Gross Direct Premium 2 ch °. Ve =\ CORPOR fre) %
+- In India = Nae 2 ihe 16,71,620 4 15,25,445
+: ; Bs 2 > OFFICE + :
+- Outside India ay Ji Ser - S z -
+%K. ae As Ve nai-BOY xe
+Pp iccoun pa SACL
+alt ome 1 | =
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 2A
+CLAIMS INCURRED [NET]
+FIRE BUSINESS ACCOUNT
+Pavticul forthe YearEnded Fer the Year Ended
+ae March 31, 2025 March 31, 2024
+Claims Paid (Direct) : 7
+Add :Re-insurance accepted to direct claims = =
+Less :Re-insurance Ceded to claims paid > :
+Net Claims paid - -
+Add Claims Outstanding at the end of the year =
+Less Claims Outstanding at the beginning : é
+Net Incurred Claims a -
+Claims Paid (Direct)
+-In India
+-Outside India
+Estimates of IBNR and IBNER at the end of the period (net)
+Estimates of IBNR and IBNER at the beginning of the period
+(net)
+SCHEDULE - 2B
+CLAIMS INCURRED [NET]
+MARINE CARGO BUSINESS ACCOUNT
+Particala Forthe YearEnded ‘For the Year Fnded
+: March 31, 2025 Mareh 31, 2024
+Claims Paid (Direct) - =
+Add :Re-insurance accepted to direct claims S =
+Less :Re-insurance Ceded to claims paid -
+Net Claims paid 2 =
+Add Claims Outstanding at the end of the year - =
+Less Claims Outstanding at the beginning = =
+Net Incurred Claims < 7
+Claims Paid (Direct)
+-In India
+-Outside India
+Estimates of IBNR and IBNER at the end of the period (net)
+Estimates of IBNR and IBNER at the beginning of the period
+(net)
+SCHEDULE - 2D
+CLAIMS INCURRED [NET]
+MISCELLANEOUS BUSINESS (Rs.in Lakhs)
+Parueplars Forthe YearEnded Fer the Year Ended
+. March 31, 2025 March 31, 2024
+Claims Paid (Direct) 10,35,327 8,91,360
+Add :Re-insurance accepted to direct claims 1,810 >
+Less :Re-insurance Ceded to claims paid 51,765 38,476
+Net Claims paid 9,85,372 8,52,884
+Add Claims Outstanding at the end of the year 1,47,306 90,741
+Less Claims Outstanding at the beginning of the year 90,741 84,229
+Net Incurred Claims 10,41,937 8,59,396
+Claims Paid (Direct}
+-In India 10,35,182 8,91,245
+-Outside India 145 115 ——
+Estimates of IBNR and IBNER at the end of the period (net) - 44,650 28,130 y Apo Hae
+Estimates of I nd IBNER at the beginning of the pep@@ Nilled Lisp Ay) o
+Yo 28,130 31,875 [[& ,
+(net) ~ & AS S ee h tm)
+Bs ,
+; ey SONG 2( LSTAR \o ; \ Ks }
+2 fof = ¢ \3
+~ Pp S\ CORPORATE /= <2 Y
+Pes ‘S on ES
+“ea Sy nai-609
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE ~ 3A.
+COMMISSION
+FIRE BUSINESS ACCOUNT
+For the Year Ended For the Year Ended
+Fardicalars March 31,2025 March 31,2024
+Gross Commission . :
+Add: Commission on Re-insurance Accepted : :
+Less: Commission on Re-insurance Ceded . :
+Net Commission : :
+Channel wise break-up of the Commission (Gross):
+Individual Agents - -
+Corporate Agents-Banks/FIl/HFC : :
+Corporate Agents-Others : -
+Insurance Brokers : :
+Direct Business - Online : 3
+MISP (Direct) : °
+Web Aggregators . - .
+Insurance Marketing Firm - :
+Common Service Centers : :
+Micro Agents - -
+Point of Sales (Direct) - -
+Other (to be specified) . :
+TOTAL . -
+Commission (Excluding Reinsurance) Business written ;
+In India
+Outside India
+SCHEDULE- 3B
+COMMISSION
+MARINE CARGO BUSINESS ACCOUNT
+Forthe Year Ended Foy the Year Ended
+Eee March 31, 2025 March 31, 2024
+Gross Commission . :
+Add: Commission on Re-insurance Accepted - .
+Less: Commission on Re-insurance Ceded . =
+Net Commussion
+Channel wise break-up of the Commission (Gross):
+Individual Agents . -
+Corporate Agents-Banks/FII/HFC
+Corporate Agents-Others . -
+Insurance Brokers . -
+Direct Business - Online . .
+MISP (Direct) . =
+Web Aggregators .
+Insurance Marketing Firm . -
+Common Service Centers . *
+Micro Agents . -
+Point of Sales (Direct) . -
+Other (to be specified) . -
+TOTAL . >
+Commission (Excluding Reinsurance) Business written :
+In India
+Outside India
+SCHEDULE- 3D
+COMMISSION
+MISCELLANEOUS BUSINESS {Rs.in Lakhs}
+: For the Year Ended For the Year Ended
+wercicnles Mareh 3, 2025 ‘Maich 31, 2024
+Gross Commission 2,67,297 2,28,144
+Add: Commission on Re-insurance Accepted 328 :
+Less: Commission on Re-insurance Ceded 43,553 42,181
+Net Commission 2,24,072 1,85,964
+Channel wise break-up of the Commission (Gross):
+Individual Agents 2,20,403 1,93,266
+Corporate Agents-Banks/FII/HFC 23,360 16,597
+Corporate Agents-Others 700 618
+Insurance Brokers 22,237 17,279
+Direct Business - Online - a
+MISP (Direct) e -
+Web Aggregators bbe 273 285
+Insurance Marketing Firm rn & 4 214 53
+Common Service Centers Yr Sp 53 11
+Micro Agents / - [2] - 5
+Point of Sales (Direct) io t3 57 35
+Other (to be specified) <\ Ee > - -
+TOTAL _ < = bey — 2,67,297 2,286,144
+EN ae ~
+Commission (Excluding Reinsu! piled; ns ee, / ASS mM \
+In India SS Ys ON 267,297 2,28,144
+Outside India SS <a i} - \\ - =
+'8( STAR \s\ 4 \c\ by) 4
+= \ ij
+3\ CORPORATE /& e ey
+aN OFFICE Ax LOTR SY
+% CS) —
+Onn: aN) =
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 4
+OPERATING EXPENSES RELATED TO INSURANCE BUSINESS (Rs.in Lakhs)
+: Forthe YearEnded For the Year Ended
+ae March 31,2025 March 31,2024
+1 Employees’ remuneration & welfare benefits 1,69,286 1,66,799
+2 Travel, conveyance and vehicle running expenses 4,605 4,737
+3 Training expenses 835 800
+4 Rents, rates & taxes 12,562 10,804
+5 Repairs . 3,822 3,473
+6 Printing & Stationery 452 1,596
+7 Communication expenses 4,166 4,123
+8 Legal & professional charges 4,890 2,526
+9  Auditors' fees, expenses etc
+(a) as auditor 105 100
+(b) as adviser or in any other capacity, in respect of =
+(i) Taxation matters AIS} 27
+(ii) Insurance matters =
+(iii) Management services; and :
+(c) in any other capacity 35 8
+(d) Out of Pocket Expenses 5 9
+10 Advertisement and publicity 17,029 17,744
+11 Interest & Bank Charges 2,449 3,893
+12 Depreciation 7,148 5,871
+13. Brand/Trade Mark usage fee/charges Ss =
+14 Business Development and Sales Promotion Expenses 3,518 2,252
+15 Information Technology Expenses 19,498 16,795
+16 Goods and Services Tax (GST) = =
+17 Others
+- Remuneration of MD / CEO 919 739
+- Director's Sitting Fees 120 132
+- Online and Tele marketing Expenses 16,139 10,863
+- Miscellaneous Expenses 2,599 1,413
+- In House Claim Processing Cost (16,137) (15,168)
+TOTAL 2,54,061 2,39,536
+In India 2,53,809 2,39,378
+Outside India 252 158
+\ ~ js Vs is @ !
+eee”. > es 2 \- by)
+Diane £( LSTAR\s QZ
+s fg X y
+i OFFER eS air
+OPES : |
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 5
+SHARE CAPITAL (Rs.in Lakhs)
+~ As At As AL
+Particulays March 31,2025 March 31, 2024
+1 Authorised Capital 80,000 80,000
+80,00,00,000 (For Mar 24 - 80,00,00,000)
+Equity Shares of Rs10/- each
+2 Issued Capital 58,779 58,528
+58,77,86,459 (For Mar 24 - 58,52,83,381)
+Equity Shares of Rs10/- each
+3. Subscribed Capital 58,779 58,528
+58,77,86,459 (For Mar 24 - 58,52,83,381)
+Equity Shares of Rs10/- each
+4  Called-up / paid up Capital 58,779 58,528
+58,77,86,459 (For Mar 24 - 58,52,83,381) .
+Equity Shares of Rs10/- each
+(Out of above 57,14,199 (previous period 57,14,199) equity
+shares of Rs.10/- each issued for consideration other than
+cash.}
+Add : Equity Shares forfeited (Amount originally - -
+paid up)
+Less : Par Value of Equity Shares bought back - -
+Less : Preliminary Expenses =
+TOTAL 58,779 58,528
+SCHEDULE - 5A
+SHARE CAPITAL
+PATTERN OF SHAREHOLDING
+[As certified by the Management] -
+As At March 31, 2025 ‘As At March 31, 2024
+Shareholder NumberofShares  %ofHolding | NumberofShares  % ofHolding
+Promoters — i
+Indian 31,93,37,076 54.33% 31,93,37,076 54.56%
+Foreign - 0.00% - 0.00%
+Investors
+Indian 13,78,44,729 23.45% 9,38,30,911 16.03%
+Foreign 11,22,63,907 19.10% 15,63,90,061 26.72%
+Others
+Indian 1,82,28,411 3.10% 1,56,41,081 2.68%
+Foreign 1,12,336 0.02% 84,252 0.01%
+TOTAL 58,77,86,459 100.00% 58,52,83,381 100.00%
+wy. As. SX
+hy SNS —
+ore P KeDHA g
+> ea le fir <Q
+alo —~ Jet Iie [/ \
+NG o/s i
+i oy £Y ea " }
+~ Aecoum® \ NN ’ y
+Niied Ing Od Ages
+SS Up. Kal
+LS CG
+S Xe j
+2/ LSTAR \¢
+d 5) CORPORATE /&, a
+*» OFFICE A*
+Ss, SS
+Lan gi-BWO
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 6
+RESERVES AND SURPLUS (Rs.in Lakhs)
+4 As At As At
+Parculars March 31, 2025 March 31, 2024
+
+1 Capital Reserve = =
+
+2 Capital Redemption Reserve > -
+
+3. Share Premium at the beginning of the year 6,04,056 5,98,007
+Add: Share premium due to issue of share capital 3,442 6,049
+Less: Utilized for share issue expenses =
+Share premium at the end of the Period 6,07,498 6,04,056
+
+4 Revaluation Reserve = *
+
+5 General Reserves - -
+Less: Amount utilized for Buy-back . =
+Less: Amount utilized for issue of Bonus 7
+shares e
+
+6 Catastrophe Reserve - -
+
+7 Other Reserves
+
+Debenture Redemption Reserve at the beginning of the year : =
+Add: Debenture redemption reserve created = -
+Less: Debenture redemption reserve reversed = -
+Debenture redemption reserve at the end of the Period - -
+
+8 Employee Stock Option Outstanding 161 238
+
+9 Balance of Profit in Profit & Loss Account 35,926 -
+TOTAL 6,43,585 6,04,294
+
+we Aas. —~
+WS Se Zana SS
+fs % for Aga
+pe = fy <\
+E3 {7
+\3, ‘o i | >}
+<E ne 3 :
+countas ON fs)
+<ENlied ney Wega
+AS 3, —F
+&S > ‘ :
+KY Torar °
+S\ CORPORATE /S;
+RN OFFICE ey
+nna OOS
+4 d
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 7
+BORROWINGS
+(Rs.in Lakhs)
+x. As At As At
+Fortieelars March 31,2025 March 31,2024
+1 Debentures/ Bonds 47,000 47,000
+2 Banks c 5
+3 Financial Institutions 5 -
+4 Others (to be specified) - 7
+TOTAL 47,000 47,000
+DISCLOSURE FOR SECURED BORROWINGS
+s Amount Amount Of
+SI.No Source / Instrument B d $ ity
+1 NA NA NA
+oF ASS0N =
+¥ e ‘eB ESLEIN
+Py 7 | ay o'"
+3, oe al is)
+Ee” 3) ©
+we QO _K/
+aS Nlied lhs oa heed
+yy, en ‘
+3/TStar\
+=\ CORPORATE /&
+Yo OFFICE Ax)
+Lina GUS
+4 d
+
+Sch -8 & 8A -INVESTMENT SCHEDULE
+(Rs, in Lakhs)
+Sch-8 Sch-BA
+Shareholders Policyholders Total
+Particul As At As At AsAt ASAt AsAt As At
+March 31,2025 March 31,2024 March31,2025 March31,2024 March31,2025 March 31,2024
+LONG TERM INVESTMENTS
+1 Government securities and Government
+puaranteed bonds including Treasury Bills 2,40,013 1,89,464 3,57,B16 2,73,748 5,97,829 4,63,213
+2 Other Approved Securities 2,23,373 2,37,078 3,33,009 3,42,544 5,56,382 5,79,622
+3 Other Investments - - : : : :
+(a) Shares - - : - - S
+{aa} Equity - - - - - -
+(bb) Preference : : : : : -
+(b) Mutuat Funds : 2, : . : :
+{c) Derivative Instruments : - - - - .
+(d) Debentures/ Bonds : : - : = :
+{e) Other Securities
+(i) Alternative Investment Funds 3,840 1,089 5,725 1,574 9,565 2,663
+(ii) Triparty Repo - - - - - .
+(fF) Subsidiaries - - - - : =
+{c) Investment Properties-Real Estate : - : - - .
+{aa) REIT 7,857 8,608 11,714 12,437 19,S71 21,045
+4 Investments in Infrastructure and Social Sector 68,148 66,273 1,01,597 95,754 1,69,744 1,62,027
+5 Other than Approved Investments 17,371 17,772 25,897 25,678 43,268 43,449
+SHORT TERM INVESTMENTS
+1 Government securities and Government
+guaranteed bonds including Treasury Bills 13,262 20,990 19,771 30,327 33,033 $1,317
+2 Other Approved Securities 27,527 17,104 41,037 24,714 68,564 41,818
+3 Other Investments - - - -
+(a) Shares - : - - -
+(aa) Equity 36,883 : 54,986, - 91,869 :
+(bb) Preference - - - - : 5
+(b) Mutual Funds 62,017 29,621 92,456 42,799 1,54,473 72,420
+(c) Derivative Instruments : - : : 4 >
+(d) Debentures / Bonds 2 : * - =] :
+(e) Other Securities
+(i) Alternative Investment Funds : : > : : :
+(ii) Triparty Repo 14,300 33,164 21,319 47,917 35,619 81,081
+(f) Subsidiaries - - - - . s
+(g) Investment Properties-Real Estate Short = = > C s <i
+4 Investments in Infrastructure and Social Sector 3,982 8,611 5,937 12,442 9,920 21,053
+5 Other than Approved Investments = 3,837 : 5,543 = 9,380
+TOTAL _ 7,148,573 633,611 10,71,264 9,15,477 17,89,837_15,49,088
+“GRAND TOTAL 7A8S73 653,611 10,71,264 ‘SA5477 41789.837 15A49,068
+Aggregate value of Investments other than Listed Equity Securities and Derivative Instruments
+h z=: Sg ne Le ae emebiolders ay _ Policyholders 2 See eae
+Sa ‘Particulars SALAS AL ASAL ASAE SM ae Ga can
+> F browne oe a ioe 2 a eae Sey. =a e ==
+Maret 81,2025 March 54,2024 March 34,2025 march31,2024 March 34,2025 March31,2024
+Long Term Investments
+Book Value 5,41,238 5,03,722 B,06,889 7,27,806 13,48,127 12,31,529
+Market Value 5,42,434 4,95,827 808,672 716,398 13,51,106 12,12,225
+Short Term Investments
+Book Value 59,071 83,706 88,064 1,20,943 1,47,135 2,04,649
+Market Value 59,108 83,720 88,119 1,20,964 1,47,227 2,04,684
+aASs,
+& o, =
+y, ws DOHA g
+2) pee ;
+= ZV og <
+* nm
+4 ; a
+3, * iS 6S Nlied Ing, | }
+ete x 3 2
+cy . %
+Q NG
+{ LSTAR \o Oy
+r= ~ z
+S\ CORPORATE Ey —
+*\ OFFICE Ax :
+4p <<
+Lnai-G00
+4 d a
+
+SCHEDULES FORMING PART OF FINANCIAL STATEMENTS
+SCHEDULE - 9
+LOANS
+(Rs.in Lakhs)
+: As At As At
+Panuicalars March 31,2025 March 31, 2024
+1 SECURITY-WISE CLASSIFICATION
+Secured
+(a) On mortgage of property . i
+(aa) In India : s
+(bb) Outside India - -
+(b) On Shares, Bonds, Govt. Securities - -
+(c) Others (to be specified) : 3
+Unsecured - -
+TOTAL - 7
+2  BORROWER-WISE CLASSIFICATION
+(a) Central and State Governments = .
+(b) Banks and Financial Institutions = #
+(c) Subsidiaries - -
+(d) Industrial Undertakings = J
+(e) Others (Inter Corporate Deposit) = -
+TOTAL = s:
+3 PERFORMANCE-WISE CLASSIFICATION
+(a) Loans classified as standard - fi
+(aa) In India e =
+(bb) Outside India : =
+(b) Non-performing loans less provisions = =
+(aa) In India = *
+(bb) Outside India 2 cs
+TOTAL - *
+4 MATURITY-WISE CLASSIFICATION
+(a) Short Term = a
+(b) Long Term | a a
+TOTAL s i
+Bh ee, = ‘Loan Ar t vision
+NON-PERFORMING LOANS aes ey ee
+Sub-standard an @ 2
+Doubtful ° =
+Loss * a
+TOTAL * °
+ate OHA T
+S77 Sen CMied Ing fen Ag®
+= R CY x fa/ ta)
+3 5 Fy VSTAR 8 a y
+re” 3\ CORPORATE /& WS
+*0 OFFICE ay QS
+Lenmar 50>
+4 4
+
+‘ee WWWom Aw tally
+a a), BASSe 2 Hs so] |
+3 SB AABon G Am &] ST]
+3 =) wn a a + a alse
+S op a ke
+3 (2S
+el 13a
+si5 0
+a
+Sle AeMOnK N DH alelala| [mo
+2\6u). G2a88 8 #8 “lesa! |e
+29 w hal N + a S| og 5
+J
+ba
+ae
+2
+les
+| a wno +t OM nleo o bn
+Sy2.5°8 8 82 8) .18 |B
+2c nS oS) N ol a nd
+wo + + mm
+ze
+Deira
+S
+g yn fon) in} jin
+mee RB 8 ele
+oo ; el
+as al a] ia -
+a
+Al LP >
+g|°2 Sea
+SL iy aX
+2) 2 + 2OoO + aa ole lal la By Ye)
+om mnAN ivi on ot = Yt ist &)
+> | ee ee bla abe = =|
+al & + G nm} [sy [a oN As
+o oy G
+~ Rey
+E UTS
+2
+= ie) Onn Dina olin id f—]
+i
+gg 8 T° 8 8 82 S81 |g
+sc} 8 Gl. & G ws} |S} [oO
+BS ey fea} [oa
+a5
+MN,
+Al
+il pan © ©
+hole Ad9Se 8 &a Als s
+Ew A748 G Fas = S
+lS al ra Nv oo 19 + Nn mI
+j2g z
+| es
+és
+ies
+pele:
+[=| |
+| earl a o ° a
+we oO i] a
+eae m8 13 ga
+S wl 6
+Bee Co.L
+als. <2 Ltd +>
+a 1"D S
+242 Sf GE A
+ic || SY gg =n\B
+oan 3 & Se\e
+Oye o ~ Dp mn ° on n 3 Sls
+Be, 8: S- Sa Ss oA IR Ash BF
+S| 2 a “ n|* oy <P> SKY
+Hy *
+i Ura OS
+eoeena FO on R=} 2
+iE 6) S2888 28S WAT |B
+Zz Sst ao a om fF SS} |S
+=| 2a; Nn =) bal bs
+= 26 in| |e
+iz) oo
+& jE
+< 2
+BE a
+E ge
+< a |
+5 je {aw
+e
+s 7
+& ih] OCr,
+S 2 x oon
+2 te g B | |8 fy fay SD
+fe wet iJ a S br is s
+< 4 é as e = < z
+cy "ick ro] P oS 5 = ' = =!
+io] ae A G&G £4 ¢ oa f¢ =] oS ES
+Zz De] egs £3 a 4 |s g ZS
+= os TSE &e —& S| |#la| |S BN Char ett g
+4 143 gee Be, & s/s] |& booed
+ogc asp tsaegese eS a 5/8 a v
+naan Sees Psrt sa 4 a 3
+aif je R GESEED so g-lSi3 2
+fa ty ISVRZEESES I aSSE
+338 SESSSSLCRSES asa el] |e
+Bas |SERABLESSOSAS|S la t
+ow
+mame ANMtNO KR DHS
+oor =
+AWM &
+
