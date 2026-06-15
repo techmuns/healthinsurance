@@ -25,6 +25,7 @@ import distributionMixSnapshot from '@/data/snapshots/distribution-channel-mix.j
 import distributionReachSnapshot from '@/data/snapshots/distribution-reach-depth.json'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
+import shareholdingPatternSnapshot from '@/data/snapshots/shareholding-pattern-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
 import { peerValuation } from '@/data/valuationData'
@@ -236,8 +237,57 @@ export function getValuationData(companyId: string) {
   return { row, meta: (valuationSnapshot as MetaBlock)._meta }
 }
 
+// ─── Named-holder shareholding (per-holder stakes from the detailed filing) ──
+interface ShareholdingPatternRow {
+  company_id: string
+  holder: string
+  period?: string
+  filing_period?: string
+  shares: number | null
+  pct: number | null
+}
+
+/** Classify a named holder into a holder-class label for the cap-table view. */
+function inferHolderType(name: string): string {
+  const n = name.toLowerCase()
+  if (n.includes('bupa')) return 'Promoter'
+  if (n.includes('mutual fund')) return 'MF'
+  if (n.includes('temasek')) return 'FII / Sovereign'
+  if (n.includes('insurance compan')) return 'Insurer (DII)'
+  if (n.includes('private equity')) return 'PE'
+  if (/(llp|holdings|a91|amansa|paragon|pallonji|fettle)/.test(n)) return 'PE / Investor'
+  return 'Public / Other'
+}
+
+export interface NamedHolder {
+  name: string
+  type: string
+  share: number | null
+  change: number | null
+}
+
+/** Named holders for a listed insurer from the latest shareholding-pattern
+ *  filing, largest first. `change` is null — a single filing carries no
+ *  quarter-on-quarter movement (never fabricated). */
+export function getNamedHolders(companyId: string): NamedHolder[] {
+  return ((shareholdingPatternSnapshot as { data?: ShareholdingPatternRow[] }).data ?? [])
+    .filter((r) => r.company_id === companyId && r.pct != null)
+    .sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0))
+    .map((r) => ({ name: r.holder, type: inferHolderType(r.holder), share: r.pct, change: null }))
+}
+
 export function getOwnershipData(companyId: string) {
-  const row = (ownershipSnapshot.data as Array<{ company_id: string }>).find((r) => r.company_id === companyId) ?? null
+  const base =
+    (ownershipSnapshot.data as Array<{ company_id: string; top_holders?: unknown[] }>).find(
+      (r) => r.company_id === companyId,
+    ) ?? null
+  // Surface the per-named-holder stakes from the detailed shareholding-pattern
+  // filing when the ownership snapshot itself doesn't carry them.
+  let row = base
+  if (base && (!base.top_holders || base.top_holders.length === 0)) {
+    const named = getNamedHolders(companyId)
+    if (named.length) row = { ...base, top_holders: named }
+  }
   return { row, meta: (ownershipSnapshot as MetaBlock)._meta }
 }
 
