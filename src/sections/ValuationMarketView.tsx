@@ -12,6 +12,7 @@ import {
   type PeerValuationRow,
 } from '@/data/valuationData'
 import { srcTag } from '@/data/valuationSources'
+import { getAnalystCoverage, getMarketQuote } from '@/lib/analystCoverage'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
 import type { Insurer } from '@/data/types'
@@ -321,15 +322,28 @@ function JourneyConnector() {
 // Shown when the selected company is NOT the focal listed name. We never render
 // the focal company's price / targets / multiples under another company's label.
 function ValuationPending({ company, peerRow }: { company: Insurer; peerRow: PeerValuationRow | null }) {
-  const listed = peerRow?.listingStatus === 'Listed'
-  const hasMultiples = peerRow != null && peerRow.pGwp != null
+  const quote = getMarketQuote(company.id)
+  const coverage = getAnalystCoverage(company.id)
+  const listed = peerRow?.listingStatus === 'Listed' || quote != null
+  // P/GWP prefers the curated FY26 basis (peer table) for cross-tab consistency;
+  // P/E, P/B, price, market cap come from the daily valuation feed.
+  const pGwp = peerRow?.pGwp ?? quote?.pGwp ?? null
+  const ac = coverage?.consensus
+  const target = ac?.consensusTargetPrice ?? null
+  const price = quote?.price ?? ac?.currentPrice ?? null
+  const upside = target != null && price ? (target / price - 1) * 100 : null
+  const hasMultiples = pGwp != null || quote?.pe != null || quote?.pb != null
+  const hasReal = hasMultiples || ac != null
+
   return (
     <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)]">
       <Eyebrow
         label="Valuation"
-        title={`Sourced valuation pending for ${company.shortName}`}
-        note="Live, source-backed valuation is wired for the focal listed name today — never shown under another company's label."
-        right={<ValPill c="pending" />}
+        title={hasReal ? `${company.shortName} · market valuation` : `Sourced valuation pending for ${company.shortName}`}
+        note={hasReal
+          ? 'Live multiples & analyst consensus from the market feed. The curated narrative (verdict, since-listing path, thesis) stays with the focal name.'
+          : 'Live, source-backed valuation is wired for the listed names with coverage — never shown under another company’s label.'}
+        right={<ValPill c={hasReal ? 'secondary' : 'pending'} />}
       />
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.05fr_1fr]">
         <div className="card-surface p-5">
@@ -337,22 +351,32 @@ function ValuationPending({ company, peerRow }: { company: Insurer; peerRow: Pee
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-ink-secondary">What we have for {company.shortName}</p>
             <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${listed ? 'bg-soft-blue text-navy-primary' : 'border border-dashed border-[#C9CFD9] text-ink-secondary'}`}>{listed ? 'Listed' : 'Unlisted'}</span>
           </div>
-          {hasMultiples ? (
+          {hasReal ? (
             <>
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                <Tile k="P / GWP" v={xMult(peerRow!.pGwp)} sub="FY26" />
-                <Tile k="P / E" v={xMult(peerRow!.pe, 1)} sub="FY26" />
-                <Tile k="GWP" v={fmtCr(peerRow!.gwp)} sub="FY26" />
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <Tile k="Current price" v={px(price)} sub={quote?.asOf ?? '—'} />
+                <Tile k="Market cap" v={fmtCr(quote?.marketCap ?? null)} sub="latest" />
+                <Tile k="P / GWP" v={xMult(pGwp)} sub="FY26" tone="amber" />
+                <Tile k="P / E" v={xMult(quote?.pe ?? null, 1)} sub="TTM" />
+                <Tile k="P / B" v={xMult(quote?.pb ?? null, 1)} sub="latest" />
+                {ac != null && (
+                  <Tile k="Cons. target" v={px(target)} sub={`${ac.analystCount} analysts`} tone={upside == null ? 'navy' : upside >= 0 ? 'teal' : 'red'} />
+                )}
               </div>
+              {ac != null && (
+                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ice px-2.5 py-1 text-[11px]">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: ratingTone[ac.ratingLabel]?.fg ?? NAVY }} />
+                  {ac.ratingLabel}-skewed · {ac.buyCount} Buy · {ac.holdCount} Hold · {ac.sellCount} Sell · {upPct(upside)} to consensus
+                </p>
+              )}
               <p className="mt-3 text-[11.5px] leading-relaxed text-ink-secondary">
-                {company.shortName}'s own market multiples are sourced. The full valuation story — analyst targets, price history and the verdict — is wired for the focal name and will extend to {company.shortName} as its coverage is sourced.
+                {company.shortName}&rsquo;s market multiples{ac != null ? ' and analyst consensus are' : ' are'} sourced live. The full curated story — the verdict, since-listing path and bull/bear thesis — is authored for the focal name today.
               </p>
-              <div className="mt-3 flex justify-end"><OpenSource id={peerRow!.sourceId} /></div>
             </>
           ) : (
             <p className="mt-3 text-[12px] leading-relaxed text-ink-secondary">
               {listed
-                ? `${company.shortName} is listed — market multiples will populate here once its price and FY26 GWP are sourced.`
+                ? `${company.shortName} is listed — market multiples will populate here once its price feed is sourced.`
                 : `${company.shortName} is unlisted: there is no public market price, so we don't publish an equity value. Marked source pending — never estimated.`}
             </p>
           )}
@@ -364,10 +388,10 @@ function ValuationPending({ company, peerRow }: { company: Insurer; peerRow: Pee
             <p className="text-[10px] font-bold uppercase tracking-[0.16em]">Coverage</p>
           </div>
           <p className="mt-2 text-[11.5px] leading-relaxed">
-            Full live valuation — current price, analyst consensus, multiples and the peer verdict — is sourced for <b>Niva Bupa (NSE: NIVABUPA)</b>. Every other company shows its own real figures where available and an honest <b>source pending</b> otherwise. We never display one company's numbers under another's name.
+            Live multiples are sourced for the listed insurers (Niva Bupa, Star Health, ICICI Lombard, Go Digit); analyst consensus for the names brokers cover. The fully curated valuation narrative is authored for <b>Niva Bupa (NSE: NIVABUPA)</b>. We never display one company&rsquo;s numbers under another&rsquo;s name.
           </p>
           <p className="mt-2 text-[10.5px] leading-relaxed opacity-90">
-            The operating-quality view below is computed from {company.shortName}'s own reported metrics, so it stays meaningful for every company.
+            The operating-quality view below is computed from {company.shortName}&rsquo;s own reported metrics, so it stays meaningful for every company.
           </p>
         </div>
       </div>
