@@ -171,13 +171,18 @@ async function callAgent(token: string): Promise<string> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), API_TIMEOUT_MS)
   try {
+    const payload = buildPayload()
+    const t0 = Date.now()
+    console.log(`→ POST ${API_URL}  (token ${token.length}c, urls=${(payload as { urls?: unknown[] }).urls?.length ?? 0})`)
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { accept: '*/*', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(buildPayload()), signal: ctrl.signal,
+      body: JSON.stringify(payload), signal: ctrl.signal,
     })
+    const body = await res.text()
+    console.log(`← HTTP ${res.status} ${res.statusText} in ${Date.now() - t0}ms; ${body.length} bytes; head: ${body.slice(0, 400).replace(/\s+/g, ' ')}`)
     if (!res.ok) throw new Error(`agent call failed: HTTP ${res.status} ${res.statusText}`)
-    return await res.text()
+    return body
   } finally { clearTimeout(timer) }
 }
 
