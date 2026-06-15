@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Bar, CartesianGrid, Cell, ComposedChart, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { Info, Landmark, ShieldCheck } from 'lucide-react'
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Landmark, ShieldCheck } from 'lucide-react'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { fyLabelsInRange } from '@/lib/dateRange'
 import { SourceTag } from '@/components/SourceTag'
@@ -55,6 +55,11 @@ interface MetricDef {
   /** Trend is "good" when the value rises (premium, profit, solvency) vs falls
    *  (cost / combined ratios). Drives the sparkline colour. */
   goodWhenUp: boolean
+  /** True for statutory/regulatory measures that are NOT restated by accounting
+   *  basis (net worth, solvency, the investment book, statutory RoE). They carry
+   *  the same figure on both the IFRS and IGAAP tables — tagged so the identical
+   *  values read as intentional, not a duplication. */
+  basisNeutral?: boolean
   get: (period: BasisPeriod) => number | null
 }
 
@@ -159,7 +164,17 @@ function FrameworkTable({ theme, metrics, years }: { theme: FrameworkTheme; metr
           <tbody>
             {rows.map((r) => (
               <tr key={r.label} className="border-t border-soft-border/70 transition-colors hover:bg-ice/40">
-                <td className="px-4 py-2.5 text-left font-medium text-navy-deep">{r.label}</td>
+                <td className="px-4 py-2.5 text-left font-medium text-navy-deep">
+                  {r.label}
+                  {r.basisNeutral && (
+                    <span
+                      className="ml-1.5 align-middle rounded-full bg-ice px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary"
+                      title="Statutory / regulatory measure — reported on a single basis (not restated under IFRS vs IGAAP), so it shows the same figure on both tables."
+                    >
+                      statutory
+                    </span>
+                  )}
+                </td>
                 {r.values.map((v, i) => {
                   const negative = r.kind === 'cr' && v != null && v < 0
                   return (
@@ -229,277 +244,6 @@ function FrameworkCharts({ theme, basis, companyId, years }: { theme: FrameworkT
   )
 }
 
-// ── PAT Quality Split — operating vs investment contribution to reported PAT ──
-// Per year, a stacked column (per basis) splits the REPORTED PAT into two quality
-// buckets — operating profit (underwriting) and investment profit — that sum to
-// PAT, with PAT printed as a label at the top. "Compare Both" puts the IFRS and
-// IGAAP columns side by side per year. No tax/other residual, no floating PAT
-// line: the chart answers one question — how much of profit is operating vs
-// investment.
-//
-// Honesty: the TOTAL is the real reported PAT (and the label). The operating vs
-// investment SPLIT is illustrative (mock) — the dual-basis filing model carries
-// reported PAT but not a clean per-year operating-vs-investment breakdown for
-// every year (e.g. FY26 investment income isn't separately available). The split
-// is grounded in real investment income vs the real underwriting result where
-// both exist, and the card says "Illustrative split" plainly in four places.
-const Q = {
-  op: '#2B8C86', // muted teal — operating profit contribution
-  inv: '#E3C27E', // soft gold — investment profit contribution
-  pat: '#27457E', // navy — Total PAT label
-  neg: '#C58B84', // muted rose — only ever used for a negative contribution
-}
-
-function investmentIncome(id: string, p: BasisPeriod): number | null {
-  const inv = getInvestment(id, p)
-  if (!inv || inv.aum == null || inv.yield == null) return null
-  return Math.round((inv.aum * inv.yield) / 100)
-}
-
-// Illustrative investment share of PAT (0–1). Grounded in real investment income
-// vs the real underwriting result where both exist; a neutral 0.5 otherwise.
-// Clamped so neither slice vanishes — a readable split, not a precise claim.
-function investmentShare(id: string, basis: AccountingBasis, p: BasisPeriod): number {
-  const inv = investmentIncome(id, p)
-  const op = uw(getBasisNep(id, p), getBasisProfit(id, basis, p)?.combinedRatio ?? null)
-  if (inv != null && op != null) {
-    const denom = inv + Math.max(op, 0)
-    if (denom > 0) return Math.min(0.72, Math.max(0.3, inv / denom))
-  }
-  return 0.5
-}
-
-// One year's PAT quality split on a basis: real PAT as the total, illustrative
-// operating/investment slices that sum to it. Null PAT → no bar (honest gap).
-function patSplit(id: string, basis: AccountingBasis, p: BasisPeriod): { pat: number | null; op: number | null; inv: number | null } {
-  const pat = getBasisProfit(id, basis, p)?.pat ?? null
-  if (pat == null) return { pat: null, op: null, inv: null }
-  const inv = Math.round(pat * investmentShare(id, basis, p))
-  return { pat, op: pat - inv, inv }
-}
-
-// PAT total printed above each stacked column (LabelList content).
-function PatLabel(props: { x?: number; y?: number; width?: number; value?: number | string | null }) {
-  const x = Number(props.x ?? 0)
-  const y = Number(props.y ?? 0)
-  const width = Number(props.width ?? 0)
-  const value = typeof props.value === 'number' ? props.value : null
-  if (value == null) return null
-  return (
-    <text x={x + width / 2} y={y - 6} textAnchor="middle" fontSize={10.5} fontWeight={700} fill={Q.pat}>
-      ₹{value.toLocaleString('en-IN')}
-    </text>
-  )
-}
-
-const INFO_TEXT =
-  'PAT quality split: how much of reported profit (PAT) each year came from operating (underwriting) vs investment. Each bar stacks the two contributions up to the reported PAT total shown as a label. The operating vs investment split is illustrative; the PAT total is as reported. Use the toggle for IFRS, IGAAP, or both side by side.'
-
-function InfoIcon() {
-  const [open, setOpen] = useState(false)
-  return (
-    <span className="relative inline-flex">
-      <button
-        type="button"
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onClick={() => setOpen((o) => !o)}
-        aria-label="About this chart"
-        className="grid h-4 w-4 place-items-center rounded-full text-ink-secondary transition-colors hover:text-navy-primary"
-      >
-        <Info className="h-3.5 w-3.5" />
-      </button>
-      {open && (
-        <span className="absolute left-1/2 top-[calc(100%+6px)] z-30 w-64 -translate-x-1/4 rounded-lg border border-soft-border bg-white px-3 py-2 text-[11px] font-normal leading-snug text-ink-primary shadow-[0_8px_30px_rgba(23,43,77,0.16)]">
-          {INFO_TEXT}
-        </span>
-      )}
-    </span>
-  )
-}
-
-type FwMode = 'ifrs' | 'igaap' | 'both'
-const FW_TABS: { id: FwMode; label: string }[] = [
-  { id: 'ifrs', label: 'IFRS' },
-  { id: 'igaap', label: 'IGAAP' },
-  { id: 'both', label: 'Compare Both' },
-]
-
-function ProfitQualityBand({ companyId, years }: { companyId: string; years: BasisPeriod[] }) {
-  const [mode, setMode] = useState<FwMode>('ifrs')
-  const data = useMemo(
-    () =>
-      years.map((p) => {
-        const f = patSplit(companyId, 'ifrs', p)
-        const g = patSplit(companyId, 'igaap', p)
-        return {
-          fy: p,
-          ifrsOp: f.op, ifrsInv: f.inv, ifrsPat: f.pat,
-          igaapOp: g.op, igaapInv: g.inv, igaapPat: g.pat,
-        }
-      }),
-    [companyId, years],
-  )
-  const hasAny = data.some((d) => d.ifrsPat != null || d.igaapPat != null)
-  if (!hasAny) return null
-
-  // Per-segment colour: positive → theme colour, negative → muted rose (labelled).
-  const seg = (key: 'ifrsOp' | 'ifrsInv' | 'igaapOp' | 'igaapInv', base: string) =>
-    data.map((d, i) => <Cell key={i} fill={(d[key] ?? 0) < 0 ? Q.neg : base} />)
-
-  const single = mode !== 'both'
-  const opKey = mode === 'igaap' ? 'igaapOp' : 'ifrsOp'
-  const invKey = mode === 'igaap' ? 'igaapInv' : 'ifrsInv'
-  const patKey = mode === 'igaap' ? 'igaapPat' : 'ifrsPat'
-
-  // Latest year carrying both bases — for the Compare-Both gap caption only.
-  const gapRow = [...data].reverse().find((d) => d.ifrsPat != null && d.igaapPat != null)
-  const gap = gapRow ? (gapRow.ifrsPat as number) - (gapRow.igaapPat as number) : null
-
-  return (
-    <div className="rounded-[18px] border border-soft-border bg-white p-4 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">PAT Quality Split (₹ Cr)</p>
-            <InfoIcon />
-            <span
-              className="rounded-full bg-champagne-soft/70 px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide text-champagne-deep"
-              title="The operating vs investment split is illustrative; the PAT total is as reported."
-            >
-              Illustrative split
-            </span>
-          </div>
-          <p className="mt-0.5 text-[10.5px] text-ink-secondary">PAT quality split: operating vs investment contribution</p>
-        </div>
-        {/* Framework toggle */}
-        <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice/60 p-0.5">
-          {FW_TABS.map((t) => {
-            const on = mode === t.id
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setMode(t.id)}
-                aria-pressed={on}
-                className={['rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all', on ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}
-              >
-                {t.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Clean legend — operating, investment, PAT label */}
-      <QualityLegend />
-
-      <div style={{ width: '100%', height: 224 }}>
-        <ResponsiveContainer>
-          <ComposedChart data={data} margin={{ top: 18, right: 8, left: -10, bottom: 0 }} barCategoryGap={single ? '38%' : '24%'} barGap={4}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0F2F7" vertical={false} />
-            <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: '#E5E8EF' }} />
-            <YAxis tick={{ fontSize: 10.5, fill: '#6B7280' }} tickLine={false} axisLine={false} width={44} />
-            <ReferenceLine y={0} stroke="#9FACC0" strokeWidth={1} />
-            <Tooltip
-              content={(props) => {
-                const p = props as unknown as { active?: boolean; payload?: Array<{ dataKey?: string | number; value?: number | null }>; label?: string }
-                return <QualityTooltip active={p.active} payload={p.payload} label={p.label} mode={mode} />
-              }}
-              cursor={{ fill: 'rgba(23,43,77,0.04)' }}
-            />
-            {single ? (
-              <>
-                <Bar dataKey={opKey} stackId="x" maxBarSize={42} isAnimationActive={false}>{seg(opKey as 'ifrsOp', Q.op)}</Bar>
-                <Bar dataKey={invKey} stackId="x" maxBarSize={42} isAnimationActive={false}>
-                  {seg(invKey as 'ifrsInv', Q.inv)}
-                  <LabelList dataKey={patKey} content={<PatLabel />} />
-                </Bar>
-              </>
-            ) : (
-              <>
-                <Bar dataKey="ifrsOp" stackId="ifrs" maxBarSize={26} isAnimationActive={false}>{seg('ifrsOp', Q.op)}</Bar>
-                <Bar dataKey="ifrsInv" stackId="ifrs" maxBarSize={26} isAnimationActive={false}>
-                  {seg('ifrsInv', Q.inv)}
-                  <LabelList dataKey="ifrsPat" content={<PatLabel />} />
-                </Bar>
-                <Bar dataKey="igaapOp" stackId="igaap" maxBarSize={26} isAnimationActive={false}>{seg('igaapOp', Q.op)}</Bar>
-                <Bar dataKey="igaapInv" stackId="igaap" maxBarSize={26} isAnimationActive={false}>
-                  {seg('igaapInv', Q.inv)}
-                  <LabelList dataKey="igaapPat" content={<PatLabel />} />
-                </Bar>
-              </>
-            )}
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-ink-secondary/80">
-        <span>Total PAT is as reported; the operating vs investment split is illustrative.</span>
-        {mode === 'both' && (
-          <span className="inline-flex items-center gap-1.5">
-            <span>Each year: IFRS (left) · IGAAP (right)</span>
-            {gap != null && gapRow && (
-              <span className="font-medium text-navy-deep">· {gapRow.fy} IFRS−IGAAP PAT gap ₹{gap.toLocaleString('en-IN')} Cr</span>
-            )}
-          </span>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function QualityLegend() {
-  const bar = (c: string) => <span className="h-2 w-3 shrink-0 rounded-[2px]" style={{ background: c }} />
-  return (
-    <div className="mb-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10.5px] text-ink-secondary">
-      <span className="inline-flex items-center gap-1.5">{bar(Q.op)} Operating profit contribution</span>
-      <span className="inline-flex items-center gap-1.5">{bar(Q.inv)} Investment profit contribution</span>
-      <span className="inline-flex items-center gap-1.5">
-        <span className="rounded-[3px] px-1 text-[8.5px] font-bold leading-tight text-white" style={{ background: Q.pat }}>₹</span>
-        Total PAT (reported)
-      </span>
-    </div>
-  )
-}
-
-function QualityTooltip({ active, payload, label, mode }: { active?: boolean; payload?: Array<{ dataKey?: string | number; value?: number | null }>; label?: string; mode: FwMode }) {
-  if (!active || !payload?.length) return null
-  const v = (k: string): number | null => {
-    const found = payload.find((p) => String(p.dataKey) === k)?.value
-    return typeof found === 'number' ? found : null
-  }
-  const Row = ({ c, name, val, bold }: { c: string; name: string; val: number | null; bold?: boolean }) =>
-    val == null ? null : (
-      <div className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-ink-secondary"><span className="h-1.5 w-1.5 rounded-full" style={{ background: val < 0 ? Q.neg : c }} />{name}</span>
-        <span className={['tabular-nums', bold ? 'font-semibold text-navy-deep' : 'font-medium'].join(' ')} style={bold ? undefined : { color: val < 0 ? Q.neg : '#1F2937' }}>₹{val.toLocaleString('en-IN')}</span>
-      </div>
-    )
-  const Group = ({ pre, title }: { pre: 'ifrs' | 'igaap'; title?: string }) => (
-    <div className="space-y-0.5">
-      {title && <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary/80">{title}</p>}
-      <Row c={Q.op} name="Operating" val={v(`${pre}Op`)} />
-      <Row c={Q.inv} name="Investment" val={v(`${pre}Inv`)} />
-      <Row c={Q.pat} name="Total PAT" val={v(`${pre}Pat`)} bold />
-    </div>
-  )
-  return (
-    <div className="min-w-[168px] rounded-lg border border-soft-border bg-white/97 px-2.5 py-1.5 text-[11px] shadow-soft">
-      <p className="mb-1 font-semibold text-navy-deep">{label} · PAT quality split</p>
-      {mode === 'both' ? (
-        <div className="space-y-1.5">
-          <Group pre="ifrs" title="IFRS" />
-          <Group pre="igaap" title="IGAAP" />
-        </div>
-      ) : (
-        <Group pre={mode === 'igaap' ? 'igaap' : 'ifrs'} />
-      )}
-      <p className="mt-1 border-t border-soft-border/70 pt-1 text-[9.5px] text-ink-secondary/80">Split illustrative · PAT as reported</p>
-    </div>
-  )
-}
-
 export function ProfitabilityReview() {
   const company = useActiveCompany()
   const [view, setView] = useState<'table' | 'chart'>('table')
@@ -522,10 +266,10 @@ export function ProfitabilityReview() {
     // Balance-sheet & investment-book metrics — statutory basis, shown on both
     // tables for reference. Investment leverage is the calculation-based row.
     const capital: MetricDef[] = [
-      { label: 'Net Worth (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getNetWorth(id, p) },
-      { label: 'Investment AUM (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getInvestment(id, p)?.aum ?? null },
-      { label: 'Investment Yield (%)', kind: 'pct', goodWhenUp: true, get: (p) => getInvestment(id, p)?.yield ?? null },
-      { label: 'Investment Leverage (x)', kind: 'x', goodWhenUp: true, get: (p) => getInvestmentLeverage(id, p) },
+      { label: 'Net Worth (₹ Cr)', kind: 'cr', goodWhenUp: true, basisNeutral: true, get: (p) => getNetWorth(id, p) },
+      { label: 'Investment AUM (₹ Cr)', kind: 'cr', goodWhenUp: true, basisNeutral: true, get: (p) => getInvestment(id, p)?.aum ?? null },
+      { label: 'Investment Yield (%)', kind: 'pct', goodWhenUp: true, basisNeutral: true, get: (p) => getInvestment(id, p)?.yield ?? null },
+      { label: 'Investment Leverage (x)', kind: 'x', goodWhenUp: true, basisNeutral: true, get: (p) => getInvestmentLeverage(id, p) },
     ]
 
     const ifrs: MetricDef[] = [
@@ -534,8 +278,8 @@ export function ProfitabilityReview() {
       { label: 'Expense Ratio (%)', kind: 'pct', goodWhenUp: false, get: (p) => getBasisProfit(id, 'ifrs', p)?.expenseRatio ?? null },
       { label: 'Underwriting Result (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => uw(nep(p), ifrsCr(p)) },
       { label: 'PAT (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getBasisProfit(id, 'ifrs', p)?.pat ?? null },
-      { label: 'RoE (%)', kind: 'pct', goodWhenUp: true, get: (p) => getStatutoryRoe(id, p) }, // statutory — no IFRS equity reported
-      { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, get: (p) => getBasisSolvency(id, p) },
+      { label: 'RoE (%)', kind: 'pct', goodWhenUp: true, basisNeutral: true, get: (p) => getStatutoryRoe(id, p) }, // statutory — no IFRS equity reported
+      { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, basisNeutral: true, get: (p) => getBasisSolvency(id, p) },
       ...capital,
     ]
     const igaap: MetricDef[] = [
@@ -544,7 +288,7 @@ export function ProfitabilityReview() {
       { label: 'Expense Ratio (%)', kind: 'pct', goodWhenUp: false, get: (p) => getBasisProfit(id, 'igaap', p)?.expenseRatio ?? null },
       { label: 'Underwriting Result (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => uw(nep(p), igaapCr(p)) },
       { label: 'PAT (₹ Cr)', kind: 'cr', goodWhenUp: true, get: (p) => getBasisProfit(id, 'igaap', p)?.pat ?? null },
-      { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, get: (p) => getBasisSolvency(id, p) },
+      { label: 'Solvency Ratio (x)', kind: 'x', goodWhenUp: true, basisNeutral: true, get: (p) => getBasisSolvency(id, p) },
       ...capital,
     ]
     return { ifrsMetrics: ifrs, igaapMetrics: igaap }
@@ -580,7 +324,6 @@ export function ProfitabilityReview() {
         />
       ) : view === 'table' ? (
         <div className="space-y-5 animate-fade-in">
-          <ProfitQualityBand companyId={id} years={periods} />
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
             <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} years={periods} />
             <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} years={periods} />
