@@ -163,6 +163,20 @@ export function StreetView() {
     (r, i) => analystReports.findIndex((x) => x.brokerage === r.brokerage) === i,
   )
 
+  // Attributions for the takeaway cards, derived from the live coverage (never
+  // hardcoded): the highest target = most bullish, the lowest = most
+  // conservative, and the newest note = latest update.
+  const withTarget = latestByBroker.filter((r) => r.targetPrice != null)
+  const mostBullish = withTarget.reduce<(typeof withTarget)[number] | null>(
+    (best, r) => (best == null || (r.targetPrice as number) > (best.targetPrice as number) ? r : best),
+    null,
+  )
+  const mostConservative = withTarget.reduce<(typeof withTarget)[number] | null>(
+    (worst, r) => (worst == null || (r.targetPrice as number) < (worst.targetPrice as number) ? r : worst),
+    null,
+  )
+  const latestNote = latestByBroker[0] ?? null
+
   // Takeaways (all source-backed; unattributed figures marked source-pending).
   const dom = { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
 
@@ -253,9 +267,30 @@ export function StreetView() {
         <div className="card-surface p-5">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Top Analyst Takeaways</p>
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Takeaway icon={<TrendingUp className="h-3.5 w-3.5" />} tone="teal" head="Most bullish" name="Motilal Oswal" detail={`Buy · ${px(hi)} · ${upPct(up(hi))}`} pending={false} />
-            <Takeaway icon={<TrendingDown className="h-3.5 w-3.5" />} tone="slate" head="Most conservative" name="JM Financial" detail={`Add · ${px(lo)} · ${upPct(up(lo))}`} pending={false} />
-            <Takeaway icon={<CalendarClock className="h-3.5 w-3.5" />} tone="navy" head="Latest update" name={`Motilal Oswal · ${ac.lastUpdated}`} detail={`Buy ${px(hi)} · ${px(target)} consensus`} pending={false} />
+            <Takeaway
+              icon={<TrendingUp className="h-3.5 w-3.5" />}
+              tone="teal"
+              head="Most bullish"
+              name={mostBullish?.brokerage ?? '—'}
+              detail={mostBullish ? `${mostBullish.rating ?? '—'} · ${px(mostBullish.targetPrice as number)} · ${upPct(up(mostBullish.targetPrice))}` : 'Source pending'}
+              pending={mostBullish == null}
+            />
+            <Takeaway
+              icon={<TrendingDown className="h-3.5 w-3.5" />}
+              tone="slate"
+              head="Most conservative"
+              name={mostConservative?.brokerage ?? '—'}
+              detail={mostConservative ? `${mostConservative.rating ?? '—'} · ${px(mostConservative.targetPrice as number)} · ${upPct(up(mostConservative.targetPrice))}` : 'Source pending'}
+              pending={mostConservative == null}
+            />
+            <Takeaway
+              icon={<CalendarClock className="h-3.5 w-3.5" />}
+              tone="navy"
+              head="Latest update"
+              name={latestNote ? `${latestNote.brokerage} · ${latestNote.reportDate}` : '—'}
+              detail={latestNote ? `${latestNote.rating ?? '—'}${latestNote.targetPrice != null ? ` ${px(latestNote.targetPrice)}` : ''} · ${px(target)} consensus` : 'Source pending'}
+              pending={latestNote == null}
+            />
           </div>
         </div>
       </div>
