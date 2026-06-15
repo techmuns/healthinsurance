@@ -1,5 +1,19 @@
 {
   "files": {
+    "https://d28c6jni2fmamz.cloudfront.net/1_Audited_Financials_FY_2024_25_ca37f8464b.pdf": {
+      "filename": "1_Audited_Financials_FY_2024_25_ca37f8464b.pdf",
+      "url": "https://d28c6jni2fmamz.cloudfront.net/1_Audited_Financials_FY_2024_25_ca37f8464b.pdf",
+      "bytes": 7072736,
+      "sha256": "9ea3f540f6854d967a2e3e5ed0bb94c1dfd038dd305675cf69899701a72f661a",
+      "fetched_at": "2026-06-15T07:42:17.715Z"
+    },
+    "https://d28c6jni2fmamz.cloudfront.net/IND_AS_Financials_FY_2024_25_fcf1335441.pdf": {
+      "filename": "IND_AS_Financials_FY_2024_25_fcf1335441.pdf",
+      "url": "https://d28c6jni2fmamz.cloudfront.net/IND_AS_Financials_FY_2024_25_fcf1335441.pdf",
+      "bytes": 6989437,
+      "sha256": "9bfc1c375ef1dd66a12f1929bfe575f698ea9085c75599d4ddb3782f4c9c371c",
+      "fetched_at": "2026-06-15T07:42:19.946Z"
+    },
     "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf": {
       "filename": "AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
@@ -43,5 +57,5 @@
       "fetched_at": "2026-06-10T21:52:31.882Z"
     }
   },
-  "updated_at": "2026-06-15T07:18:50.969Z"
+  "updated_at": "2026-06-15T07:42:19.947Z"
 }
