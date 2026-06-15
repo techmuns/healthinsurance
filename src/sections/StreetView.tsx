@@ -2,7 +2,8 @@ import { ArrowUpRight, CalendarClock, Gauge, Lock, TrendingDown, TrendingUp } fr
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
-import { analystConsensus, analystReports, FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
+import { FOCAL_VALUATION_ID, marketSnapshot } from '@/data/valuationData'
+import { getAnalystCoverage, getMarketQuote } from '@/lib/analystCoverage'
 import { srcTag } from '@/data/valuationSources'
 import { OpenSource, px, ratingTone, upPct, ValPill } from './valuationShared'
 
@@ -125,19 +126,20 @@ function ScaledRange({
 
 export function StreetView() {
   const company = useActiveCompany()
+  const coverage = getAnalystCoverage(company.id)
   const isFocal = company.id === FOCAL_VALUATION_ID
 
-  if (!isFocal) {
+  if (!coverage) {
     return (
       <div className="space-y-5">
         <header>
-          <h2 className="font-display text-[22px] leading-tight text-navy-deep">Street View</h2>
+          <h2 className="font-display text-[22px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
           <p className="mt-0.5 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
         </header>
         <div className="card-surface p-5">
           <EmptyState
             title={`Analyst coverage not tracked for ${company.shortName}`}
-            body={`Street estimates, broker targets and consensus are tracked for ${marketSnapshot.company} (listed) today. Other insurers populate here once citable analyst notes are ingested.`}
+            body={`Broker targets and consensus are tracked for the listed insurers with citable analyst notes (Niva Bupa, Star Health, ICICI Lombard). ${company.shortName} populates here once such notes are ingested.`}
             height={300}
           />
         </div>
@@ -145,22 +147,23 @@ export function StreetView() {
     )
   }
 
-  const ac = analystConsensus
-  const price = marketSnapshot.currentPrice
+  const quote = getMarketQuote(company.id)
+  const ac = coverage.consensus
+  const reports = coverage.reports
+  const price = ac.currentPrice ?? quote?.price ?? 0
+  const priceAsOf = isFocal ? marketSnapshot.priceAsOf : quote?.asOf ?? '—'
+  const has52 = isFocal // 52-week range / daily price history curated for the focal name only
   const target = ac.consensusTargetPrice
   const lo = ac.lowestTargetPrice
   const hi = ac.highestTargetPrice
-  const upside = target != null ? (target / price - 1) * 100 : 0
+  const upside = target != null && price ? (target / price - 1) * 100 : 0
   const { score, kind } = computeSignal(ac.buyCount, ac.holdCount, ac.sellCount, ac.analystCount, upside)
   const reason = `${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell · ${upPct(upside)} upside`
-  const up = (t: number | null) => (t != null ? (t / price - 1) * 100 : null)
+  const up = (t: number | null) => (t != null && price ? (t / price - 1) * 100 : null)
 
-  // One row per broker: hide duplicate/older notes and keep each broker's most
-  // recent call (the latest note is the Moneycontrol-sourced one for the brokers
-  // that issued several). analystReports is ordered newest-first, so the first
-  // occurrence of each broker is the one to keep.
-  const latestByBroker = analystReports.filter(
-    (r, i) => analystReports.findIndex((x) => x.brokerage === r.brokerage) === i,
+  // One row per broker: keep each broker's most recent note (newest-first).
+  const latestByBroker = reports.filter(
+    (r, i) => reports.findIndex((x) => x.brokerage === r.brokerage) === i,
   )
 
   // Attributions for the takeaway cards, derived from the live coverage (never
@@ -177,8 +180,11 @@ export function StreetView() {
   )
   const latestNote = latestByBroker[0] ?? null
 
-  // Takeaways (all source-backed; unattributed figures marked source-pending).
-  const dom = { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
+  // Shared ₹ domain for the range bars. The 52-week range exists for the focal
+  // name only; other names scale to their analyst target range.
+  const dom = has52
+    ? { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
+    : { lo: lo ?? price, hi: hi ?? price }
 
   return (
     <div className="space-y-5">
@@ -186,7 +192,7 @@ export function StreetView() {
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Street View</p>
-          <h2 className="mt-0.5 font-display text-[23px] leading-tight text-navy-deep">{marketSnapshot.company} · Street View</h2>
+          <h2 className="mt-0.5 font-display text-[23px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
           <p className="mt-1 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
         </div>
         <StreetSignal kind={kind} score={score} reason={reason} />
@@ -195,13 +201,13 @@ export function StreetView() {
       {/* ── Row 1: KPI cards ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Consensus Target" value={px(target)} sub={`${upPct(upside)} vs current`} tone={upside >= 0 ? 'teal' : 'coral'} />
-        <Kpi label="Current Price" value={px(price)} sub={`as of ${marketSnapshot.priceAsOf}`} tone="navy" />
+        <Kpi label="Current Price" value={px(price)} sub={`as of ${priceAsOf}`} tone="navy" />
         <Kpi label={upside >= 0 ? 'Implied Upside' : 'Implied Downside'} value={upPct(upside)} sub="to consensus target" tone={upside >= 0 ? 'teal' : 'coral'} />
         <Kpi label="Analysts Covering" value={`${ac.analystCount}`} sub={`${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell`} tone="slate" />
       </div>
 
       {/* ── Row 2: Target range + Price vs target ─────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className={`grid grid-cols-1 gap-4 ${has52 ? 'lg:grid-cols-2' : ''}`}>
         {/* Target range with current-price marker */}
         <div className="card-surface flex flex-col p-5">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Target Range</p>
@@ -227,22 +233,25 @@ export function StreetView() {
           </div>
         </div>
 
-        {/* Price vs target — 52-week trading range vs analyst target range */}
-        <div className="card-surface flex flex-col p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Price vs Target</p>
-          <p className="mt-0.5 text-[11.5px] text-ink-secondary">52-week trading range vs the analyst target range.</p>
-          <div className="mt-5 flex flex-1 flex-col justify-center gap-5">
-            <ScaledRange label="52-week trading range" lo={marketSnapshot.weekLow52} hi={marketSnapshot.weekHigh52} domainLo={dom.lo} domainHi={dom.hi} trackColor={SLATE} marker={{ value: price, color: GOLD, caption: `Current ${px(price)}` }} />
-            {lo != null && hi != null && (
-              <ScaledRange label="Analyst target range" lo={lo} hi={hi} domainLo={dom.lo} domainHi={dom.hi} trackColor={TEAL} marker={target != null ? { value: target, color: NAVY, caption: `Consensus ${px(target)}` } : undefined} />
-            )}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-ink-secondary">
-              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: GOLD }} />Current price</span>
-              <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: NAVY }} />Consensus target</span>
-              <span className="italic text-ink-secondary/70">Daily price history not yet ingested — shown as ranges.</span>
+        {/* Price vs target — 52-week trading range vs analyst target range
+            (52-week range is curated for the focal name only). */}
+        {has52 && (
+          <div className="card-surface flex flex-col p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Price vs Target</p>
+            <p className="mt-0.5 text-[11.5px] text-ink-secondary">52-week trading range vs the analyst target range.</p>
+            <div className="mt-5 flex flex-1 flex-col justify-center gap-5">
+              <ScaledRange label="52-week trading range" lo={marketSnapshot.weekLow52} hi={marketSnapshot.weekHigh52} domainLo={dom.lo} domainHi={dom.hi} trackColor={SLATE} marker={{ value: price, color: GOLD, caption: `Current ${px(price)}` }} />
+              {lo != null && hi != null && (
+                <ScaledRange label="Analyst target range" lo={lo} hi={hi} domainLo={dom.lo} domainHi={dom.hi} trackColor={TEAL} marker={target != null ? { value: target, color: NAVY, caption: `Consensus ${px(target)}` } : undefined} />
+              )}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-ink-secondary">
+                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: GOLD }} />Current price</span>
+                <span className="inline-flex items-center gap-1"><span className="h-2 w-2 rounded-full" style={{ background: NAVY }} />Consensus target</span>
+                <span className="italic text-ink-secondary/70">Daily price history not yet ingested — shown as ranges.</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── Row 3: Rating split + Top analyst takeaways ───────────────────── */}
@@ -302,7 +311,20 @@ export function StreetView() {
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">All Analyst Views</p>
             <p className="mt-0.5 text-[11.5px] text-ink-secondary">Each broker&rsquo;s most recent call — one row per broker, every row with a live source.</p>
           </div>
-          <SourceTag {...srcTag('niva-consensus')} />
+          {isFocal ? (
+            <SourceTag {...srcTag('niva-consensus')} />
+          ) : (
+            <SourceTag
+              source="Broker research"
+              period={ac.lastUpdated}
+              confidence="medium"
+              provenance={{
+                source_name: 'Dated broker reports (rating + target + price-at-reco) via the Trendlyne research aggregator.',
+                source_url: reports.find((r) => r.sourceUrl)?.sourceUrl ?? '',
+                fetched_at: '',
+              }}
+            />
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[11.5px]">
