@@ -405,6 +405,27 @@ def main() -> None:
                         if info.get("value") is not None:
                             cell["calculated_value"] = info["value"]
                         formula_resolved += 1
+                # Shareholding %: the in-sheet formula divides by a Total cell the
+                # template leaves blank, so the resolver can't compute it. Fill it
+                # straight from the source-backed share counts: holder ÷ Σ holders
+                # (the named holders already sum to the whole register, incl.
+                # "Others"). Stored as a fraction to match the cell's 'ratio' unit.
+                metric = b.get("metric") or ""
+                if cell.get("calculated_value") is None and metric.startswith("shareholding_pct::"):
+                    ent, per = b.get("entity"), b.get("period")
+                    holder = metric.split("::", 1)[1]
+                    num = store.get(f"{ent}::shareholding_shares::{holder}::{per}")
+                    if num and num.get("normalized_value") is not None:
+                        total = sum(
+                            v["normalized_value"]
+                            for k, v in store.items()
+                            if k.startswith(f"{ent}::shareholding_shares::")
+                            and k.endswith(f"::{per}")
+                            and v.get("normalized_value") is not None
+                        )
+                        if total:
+                            cell["calculated_value"] = round(num["normalized_value"] / total, 6)
+                            formula_resolved += 1
             cells.append(cell)
         if not cells and not computed:
             continue
