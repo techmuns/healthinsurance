@@ -30,17 +30,22 @@ const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
 // ── Source pipelines ─────────────────────────────────────────────────────────
 // Every template cell is fed by one of these acquisition pipelines. When a cell
 // is empty, this tells the reviewer which pipeline should have filled it.
-type PipelineKey = 'irdai' | 'company' | 'screener' | 'capitaliq'
+type PipelineKey = 'irdai' | 'company' | 'exchange' | 'computed' | 'aggregator' | 'capitaliq'
 const PIPELINE: Record<PipelineKey, { label: string; short: string; color: string; what: string }> = {
   irdai: { label: 'IRDAI portal', short: 'IRDAI', color: '#27457E', what: 'Industry & regulatory disclosures (GI Council / IRDAI NL forms, monthly business figures)' },
   company: { label: 'Company website · PPT', short: 'PPT', color: '#168E8E', what: 'Company investor presentations & annual reports' },
-  screener: { label: 'Screener', short: 'Screener', color: '#B68B3A', what: 'Market price, valuation, shareholding & analyst data' },
+  exchange: { label: 'NSE / BSE', short: 'Exchange', color: '#3D7DD6', what: 'Stock-exchange filings & quotes — market price, market cap and the quarterly shareholding pattern (the official register, not a third-party copy).' },
+  computed: { label: 'Computed in-sheet', short: 'Computed', color: '#6E7BD6', what: 'Calculated from other cells in the sheet (e.g. P/E = market cap ÷ profit, P/GWP = market cap ÷ GWP). Not fetched — derived from the sourced inputs.' },
+  aggregator: { label: 'Broker aggregator', short: 'Aggregator', color: '#B68B3A', what: 'Analyst targets & ratings from a public research aggregator (Trendlyne) — no official equivalent exists.' },
   // Enterprise value & long-run average P/E were built with the S&P Capital IQ
   // Excel plug-in in the source workbook (the CIQ() / CIQAVG() formulas). There
-  // is no login-free public equivalent, so these stay blank by design — labelled
-  // "Capital IQ" rather than counted as a fetch gap we could close.
-  capitaliq: { label: 'S&P Capital IQ', short: 'Capital IQ', color: '#7A6CA6', what: 'Enterprise value & 3-year average P/E — from the S&P Capital IQ Excel plug-in in the source workbook. No login-free public source, so these are not auto-fetched.' },
+  // is no login-free public equivalent, so these stay blank by design. A cell
+  // that is blank ONLY because one of these CIQ inputs is missing is attributed
+  // here too — labelled "Capital IQ", not counted as a fetch gap we could close.
+  capitaliq: { label: 'S&P Capital IQ', short: 'Capital IQ', color: '#7A6CA6', what: 'Enterprise value & 3-year average P/E — from the S&P Capital IQ Excel plug-in in the source workbook. No login-free public source, so these (and any cell that needs them) are not auto-fetched.' },
 }
+// Fallback acquisition pipeline by sheet role — used only when the metric itself
+// doesn't pin a more precise source (handled first in pipelineOf).
 const ROLE_PIPELINE: Record<string, PipelineKey> = {
   industry_premium: 'irdai',
   company_premium_quarterly: 'irdai',
@@ -48,17 +53,31 @@ const ROLE_PIPELINE: Record<string, PipelineKey> = {
   distribution: 'irdai',
   company_financials: 'company',
   management_commentary: 'company',
-  analyst_coverage: 'screener',
-  valuation: 'screener',
-  shareholding: 'screener',
-  market_quote: 'screener',
-  market_cap: 'screener',
+  analyst_coverage: 'aggregator',
+  valuation: 'company', // Comps financial inputs; market/multiples/EV pinned by metric below
+  shareholding: 'exchange',
+  market_quote: 'exchange',
+  market_cap: 'exchange',
 }
-// The two valuation metrics the source workbook pulled from the Capital IQ
-// plug-in and we have no free source for — they read "Capital IQ", not "Screener".
+// Metrics built with the S&P Capital IQ plug-in — no login-free public source.
 const CAPITALIQ_METRICS = new Set(['enterprise_value', 'pe_3yr_avg'])
+// Exchange-sourced market data (NSE/BSE quotes).
+const EXCHANGE_METRICS = new Set(['market_cap', 'share_price', 'close_price', 'traded_quantity', 'deliverable_quantity'])
+// Valuation multiples computed in-sheet from market cap + reported financials.
+const COMPUTED_RATIO_RE = /^(price_to_|pe_|pb_|roe_)/
 function pipelineOf(cell: AuditCell): PipelineKey {
-  if (CAPITALIQ_METRICS.has(cell.metricId)) return 'capitaliq'
+  const m = cell.metricId
+  // Capital IQ: the CIQ-plug-in metrics themselves, or a cell left blank ONLY
+  // because one of its inputs is a Capital-IQ-only metric (attribute the gap to
+  // CIQ, not to a public source we could otherwise fetch).
+  if (CAPITALIQ_METRICS.has(m)) return 'capitaliq'
+  if (!isFetched(cell) && (cell.inputs ?? []).some((i) => i.metricId && CAPITALIQ_METRICS.has(i.metricId))) return 'capitaliq'
+  // Official stock-exchange filings & quotes (shareholding register, market cap/price).
+  if (m.startsWith('shareholding_') || EXCHANGE_METRICS.has(m)) return 'exchange'
+  // Broker aggregator (analyst coverage).
+  if (m.startsWith('analyst_')) return 'aggregator'
+  // Valuation multiples are computed in-sheet, not fetched from anywhere.
+  if (cell.cellKind === 'formula' && COMPUTED_RATIO_RE.test(m)) return 'computed'
   return ROLE_PIPELINE[cell.role] ?? 'irdai'
 }
 // A cell is "fetched & verified" when it carries a value.
@@ -464,7 +483,8 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
   const pipeStats = useMemo(() => {
     const pipes: Record<PipelineKey, { fetched: number; total: number }> = {
       irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 },
-      screener: { fetched: 0, total: 0 }, capitaliq: { fetched: 0, total: 0 },
+      exchange: { fetched: 0, total: 0 }, computed: { fetched: 0, total: 0 },
+      aggregator: { fetched: 0, total: 0 }, capitaliq: { fetched: 0, total: 0 },
     }
     let notInDeck = 0
     for (const c of group?.cells ?? []) {
@@ -555,7 +575,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
           how much of it has been fetched. */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-soft-border bg-ice/40 px-3 py-2">
         <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Source pipelines</span>
-        {(['irdai', 'company', 'screener', 'capitaliq'] as PipelineKey[]).map((k) => {
+        {(['irdai', 'company', 'exchange', 'computed', 'aggregator', 'capitaliq'] as PipelineKey[]).map((k) => {
           const p = PIPELINE[k]
           const st = pipeStats.pipes[k]
           if (!st.total) return null
