@@ -74,7 +74,7 @@ jobs:
           DISPATCH_PERIOD: ${{ inputs.period }}
           DISPATCH_DOC_URL: ${{ inputs.doc_url }}
           # The full-year columns the SAHI-comparison sheet shows.
-          FY_PERIODS: 'FY25 FY26'
+          FY_PERIODS: 'FY23 FY24 FY25 FY26'
         run: |
           set +e
           # Manual dispatch with a company → just that company/period (+ optional

@@ -109,8 +109,38 @@ for (const line of ans.split('\n')) {
   })
 }
 
+// --- sanity gate (Neha, 2026-06-15): a misread must never fill a blank cell.
+// Out-of-band values are dropped; identity violations (claims > combined, or the
+// NEP ≤ NWP ≤ GWP chain) drop the offending value. Nothing is "corrected"
+// silently — the impossible read is simply withheld, the rest keep their proof.
+const BAND: Record<string, [number, number]> = {
+  claims_ratio_igaap: [0, 200], claims_ratio_ifrs: [0, 200],
+  expense_ratio_igaap: [0, 120], expense_ratio_ifrs: [0, 120], eom_igaap: [0, 120],
+  commission_ratio_igaap: [0, 60], combined_ratio_igaap: [0, 260],
+  solvency_ratio: [0.3, 15], investment_yield: [-5, 40], retail_health_market_share: [0, 100],
+  total_gwp: [0, 1_000_000], retail_health_gwp: [0, 1_000_000], nwp: [0, 1_000_000], nep: [0, 1_000_000],
+  net_worth: [-1_000_000, 1_000_000], net_worth_ifrs: [-1_000_000, 1_000_000], net_worth_igaap: [-1_000_000, 1_000_000],
+  investment_aum: [0, 5_000_000], pat_igaap: [-200_000, 200_000], pat_ifrs: [-200_000, 200_000],
+}
+function sane(rows: CleanRow[]): CleanRow[] {
+  const drop = new Set<CleanRow>()
+  for (const r of rows) {
+    const b = BAND[r.metric]
+    if (b && (r.value < b[0] || r.value > b[1])) { console.warn(`  drop out-of-band: ${r.metric}=${r.value}`); drop.add(r) }
+  }
+  const get = (k: string) => { const r = rows.find((x) => x.metric === k && !drop.has(x)); return r ? r.value : null }
+  const dropM = (k: string, why: string) => { const r = rows.find((x) => x.metric === k); if (r && !drop.has(r)) { console.warn(`  drop ${why}: ${k}=${r.value}`); drop.add(r) } }
+  const cl = get('claims_ratio_igaap'), comb = get('combined_ratio_igaap')
+  if (cl != null && comb != null && cl > comb + 1.5) dropM('claims_ratio_igaap', `claims exceeds combined ${comb}`)
+  const gwp = get('total_gwp'), nwp = get('nwp'), nep = get('nep')
+  if (nwp != null && gwp != null && nwp > gwp * 1.02) dropM('nwp', `nwp exceeds gwp ${gwp}`)
+  if (nep != null && nwp != null && nep > nwp * 1.02) dropM('nep', `nep exceeds nwp ${nwp}`)
+  return rows.filter((r) => !drop.has(r))
+}
+const cleaned = sane(out)
+
 const outPath = resolve(DIR, `cleaned-${period}.json`)
-writeFileSync(outPath, JSON.stringify(out, null, 2) + '\n', 'utf8')
-console.log(`Mapped ${out.length} value(s) for ${companyId} ${period}:`)
-for (const r of out) console.log(`  ${r.metric.padEnd(24)} = ${r.value} ${r.unit}`)
+writeFileSync(outPath, JSON.stringify(cleaned, null, 2) + '\n', 'utf8')
+console.log(`Mapped ${cleaned.length} value(s) for ${companyId} ${period} (of ${out.length} read):`)
+for (const r of cleaned) console.log(`  ${r.metric.padEnd(24)} = ${r.value} ${r.unit}`)
 console.log(`\nWrote ${outPath}\nIngest with: npm run ingest:audit -- --from ${outPath.replace(REPO + '/', '')}`)
