@@ -239,6 +239,9 @@ export interface FormulaInput {
   sheet?: string
   entityLabel?: string
   metricLabel?: string
+  /** Raw metric id of the referenced input — lets a caller tell when a blank is
+   *  blank because it depends on a specific (e.g. Capital-IQ-only) input. */
+  metricId?: string
   period?: string
   /** Source-backed value of this input (null when it isn't itself fetched). */
   value: number | string | null
@@ -778,6 +781,7 @@ export function buildAudit(): AuditModel {
           sheet: inp.sheet,
           entityLabel: inp.entity ? entityLabel(inp.entity) : undefined,
           metricLabel: inp.metric ? metricLabel(inp.metric) : undefined,
+          metricId: inp.metric ?? undefined,
           period: inp.period,
           value: v?.normalized_value ?? null,
           unit: v?.unit ?? undefined,
