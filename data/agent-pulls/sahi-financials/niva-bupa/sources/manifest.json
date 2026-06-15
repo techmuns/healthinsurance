@@ -112,6 +112,13 @@
       "sha256": "a044d040e01bb00e0109a93bf87a3d2701ec283699f51be91466412a9d526249",
       "fetched_at": "2026-06-09T13:22:20.256Z"
     },
+    "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Dec-2024.pdf": {
+      "filename": "Website-Public-Disclosures-Dec-2024.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/pub-dis/quarterly-reports/Website-Public-Disclosures-Dec-2024.pdf",
+      "bytes": 1207498,
+      "sha256": "8eea4d91a3febb3e3a314e28e10b1a6a28b59b7f47b22523c388fa1c32970bbe",
+      "fetched_at": "2026-06-15T11:22:16.602Z"
+    },
     "https://www.bseindia.com/xml-data/corpfiling/AttachHis/833d6359-951e-48ae-83c6-49f22ec36242.pdf": {
       "filename": "833d6359-951e-48ae-83c6-49f22ec36242.pdf",
       "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/833d6359-951e-48ae-83c6-49f22ec36242.pdf",
@@ -134,5 +141,5 @@
       "fetched_at": "2026-06-10T21:43:10.611Z"
     }
   },
-  "updated_at": "2026-06-15T08:06:16.174Z"
+  "updated_at": "2026-06-15T11:24:12.900Z"
 }
