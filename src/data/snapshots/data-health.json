@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-14T18:18:09.277Z",
-  "last_failed_run": "2026-06-14T18:18:09.277Z",
+  "last_successful_run": "2026-06-15T08:04:39.163Z",
+  "last_failed_run": "2026-06-15T08:04:39.163Z",
   "sources_checked": 11,
   "sources_success": 4,
   "sources_failed": 1,
@@ -23563,10 +23563,9 @@
     "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): direct fetch failed: HTTP 403 for https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
     "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): all relay routes failed or returned non-file responses",
     "[gicouncil_segmentwise_annual] listing (wayback:20251204150025): wayback listing snapshot is 193 days old — newest month links may be missing",
-    "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx): all routes failed for https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
     "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx): all routes failed for https://www.gicouncil.in/media/4298/segment-wise-premiums-for-fy-2020-21_updated-2.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
-    "[gicouncil_segmentwise_annual] download failed on every route (https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx): all routes failed for https://www.gicouncil.in/media/3881/segment-wise-report-upto-march-2020_revised.xlsx — all relay routes failed or returned non-file responses; no wayback snapshot available",
     "[gicouncil_segmentwise_annual] FY23: only 6/11 named retail rows found — \"Others\" left null.",
+    "[gicouncil_segmentwise_annual] data/raw/gicouncil/segment-annual/FY20-march.xlsx: Health Portfolio: header row not found — format changed?",
     "[gicouncil_segmentwise_annual] FY19: found 2/4 PSU rows — PSUs/Private left null.",
     "[gicouncil_segmentwise_annual] FY19: only 7/11 named retail rows found — \"Others\" left null.",
     "[gicouncil_segmentwise_annual] FY18: found 2/4 PSU rows — PSUs/Private left null.",
@@ -23757,6 +23756,7 @@
     "[gicouncil_segmentwise_annual] Feb-FY26 narayana-health: a cumulative fell vs the prior month (restatement between editions) — that field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q2FY24 national-insurance: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q4FY22 new-india: cumulative fell across the period (restatement) — field left null, not smoothed.",
+    "[gicouncil_segmentwise_annual] Q4FY21 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q2FY18 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q4FY18 reliance-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
@@ -23774,6 +23774,7 @@
     "[yahoo_price] star-health: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/STARHEALTH.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/STARHEALTH.NS/history/",
     "[yahoo_price] icici-lombard: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/ICICIGI.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/ICICIGI.NS/history/",
     "[yahoo_price] godigit: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/GODIGIT.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/GODIGIT.NS/history/",
+    "[nse_delivery] 2026-06-15: no NSE settlement file (MTO + bhavdata both absent — likely a non-trading day)",
     "[validation-rejected] gic-health-quarterly 9MFY21/new-india/general: health_govt (-0.23) is negative — premium cannot be negative.",
     "[validation-rejected] gic-health-quarterly H1FY21/bajaj-general/general: health_govt (-5.07) is negative — premium cannot be negative.",
     "[validation-rejected] gic-health-quarterly Q1FY21/bajaj-general/general: health_govt (-6.03) is negative — premium cannot be negative.",
@@ -23793,7 +23794,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-14T18:13:19.668Z",
+      "last_attempt_at": "2026-06-15T08:00:39.749Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -23941,28 +23942,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:17:17.565Z",
+      "last_attempt_at": "2026-06-15T08:03:48.847Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:13:31.988Z",
+      "last_attempt_at": "2026-06-15T08:00:52.826Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-14T18:13:43.147Z",
-      "last_success_at": "2026-06-14T18:13:43.147Z",
+      "last_attempt_at": "2026-06-15T08:01:05.619Z",
+      "last_success_at": "2026-06-15T08:01:05.619Z",
       "records_fetched": 96
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:13:25.905Z",
+      "last_attempt_at": "2026-06-15T08:00:45.899Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -23976,42 +23977,42 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-14T18:17:20.063Z",
-      "last_success_at": "2026-06-14T18:17:20.063Z",
+      "last_attempt_at": "2026-06-15T08:03:49.955Z",
+      "last_success_at": "2026-06-15T08:03:49.955Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:18:06.664Z",
+      "last_attempt_at": "2026-06-15T08:04:36.509Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-14T18:14:53.819Z",
-      "last_success_at": "2026-06-14T18:14:53.819Z",
-      "records_fetched": 2686
+      "last_attempt_at": "2026-06-15T08:02:09.115Z",
+      "last_success_at": "2026-06-15T08:02:09.115Z",
+      "records_fetched": 2748
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-14T18:17:34.530Z",
-      "last_success_at": "2026-06-14T18:17:34.530Z",
+      "last_attempt_at": "2026-06-15T08:04:03.826Z",
+      "last_success_at": "2026-06-15T08:04:03.826Z",
       "records_fetched": 8
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:17:38.233Z",
+      "last_attempt_at": "2026-06-15T08:04:08.096Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-14T18:18:08.692Z",
+      "last_attempt_at": "2026-06-15T08:04:37.776Z",
       "last_success_at": "2026-06-11T14:29:33.334Z",
       "records_fetched": 0
     }
