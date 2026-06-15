@@ -106,12 +106,12 @@ const NIVA_IFRS: BasisTable = {
 
 // ── Star Health ───────────────────────────────────────────────────────────--
 const STAR_IGAAP: BasisTable = {
-  FY23: { pat: 619, patMarginGwp: 4.8, claimsRatio: 65.0, expenseRatio: 30.3, combinedRatio: 95.3, eom: 30.2 },
+  FY23: { pat: 619, patMarginGwp: 4.8, claimsRatio: 65.0, expenseRatio: 30.3, combinedRatio: 96.6, eom: 30.2 },
   FY24: { pat: 845, patMarginGwp: 5.5, claimsRatio: 65.0, expenseRatio: 30.2, combinedRatio: 96.7, eom: 30.7 },
   FY25: { pat: 646, patMarginGwp: 3.9, claimsRatio: 70.3, expenseRatio: 30.8, combinedRatio: 101.1, eom: 31.1 },
   FY26: { pat: 557, patMarginGwp: 3.0, claimsRatio: 68.5, expenseRatio: 31.9, combinedRatio: 100.4, eom: 30.2 },
-  Q4FY25: { pat: 1, patMarginGwp: 0.0, claimsRatio: 68.5, expenseRatio: 29.9, combinedRatio: 99.2, eom: 28.1 },
-  Q4FY26: { pat: 111, patMarginGwp: 1.9, claimsRatio: 64.8, expenseRatio: 29.9, combinedRatio: 94.7, eom: 28.1 },
+  Q4FY25: { pat: 1, patMarginGwp: 0.0, claimsRatio: 68.5, expenseRatio: 29.9, combinedRatio: 98.4, eom: 28.1 },
+  Q4FY26: { pat: 111, patMarginGwp: 1.9, claimsRatio: 64.8, expenseRatio: 29.9, combinedRatio: 95.7, eom: 28.1 },
 }
 const STAR_IFRS: BasisTable = {
   FY23: na(),

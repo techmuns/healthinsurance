@@ -7,9 +7,9 @@
 //  strength tone, and an investor signal. NA-aware (missing ≠ zero) and fully
 //  driven by the selected company + peer group, so it works for any selection.
 //
-//  No fabrication: every value reads from the (currently mock) `insurers`
-//  model. When the model is swapped for ingested data the page lights up with
-//  no UI change — only the source tag flips from "Mock dataset".
+//  No fabrication: every value reads from the snapshot-built `insurers` model
+//  (company-master + insurer-annual-snapshot) and the daily valuation feed.
+//  All source-backed — the page carries a "Source-backed" tag, never mock.
 // ---------------------------------------------------------------------------
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'

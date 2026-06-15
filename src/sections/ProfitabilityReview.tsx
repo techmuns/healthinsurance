@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Bar, CartesianGrid, Cell, ComposedChart, LabelList, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Info, Landmark, ShieldCheck } from 'lucide-react'
-import { useActiveCompany } from '@/state/filters'
+import { useActiveCompany, useFilters } from '@/state/filters'
+import { fyLabelsInRange } from '@/lib/dateRange'
 import { SourceTag } from '@/components/SourceTag'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import {
   ANNUAL_PERIODS,
+  Q4_PERIODS,
   BASIS_TRACKED_COMPANIES,
   getBasisNep,
   getBasisProfit,
@@ -28,7 +30,22 @@ import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 //  render as a quiet "—" (never fabricated).
 // ---------------------------------------------------------------------------
 
-const YEARS = ANNUAL_PERIODS // ['FY23','FY24','FY25','FY26']
+// The visible periods now follow the header controls — the Annual/Quarterly
+// toggle (annual FYs vs the reported Q4 standalones) clipped to the Data Range.
+// Computed in ProfitabilityReview and threaded down so every table, chart and
+// takeaway reacts to the selection.
+function useVisiblePeriods(): BasisPeriod[] {
+  const { profitabilityFrequency, range } = useFilters()
+  return useMemo(() => {
+    const base = profitabilityFrequency === 'Quarterly' ? Q4_PERIODS : ANNUAL_PERIODS
+    const fysInRange = new Set(fyLabelsInRange(range))
+    const clipped = base.filter((p) => {
+      const fy = /FY\d{2}/.exec(p)?.[0]
+      return fy ? fysInRange.has(fy) : true
+    })
+    return clipped
+  }, [profitabilityFrequency, range])
+}
 
 type MetricKind = 'cr' | 'pct' | 'x'
 
@@ -120,8 +137,8 @@ const IGAAP_THEME: FrameworkTheme = {
   fyClass: 'text-champagne-deep',
 }
 
-function FrameworkTable({ theme, metrics }: { theme: FrameworkTheme; metrics: MetricDef[] }) {
-  const rows = metrics.map((m) => ({ ...m, values: YEARS.map((p) => m.get(p)) }))
+function FrameworkTable({ theme, metrics, years }: { theme: FrameworkTheme; metrics: MetricDef[]; years: BasisPeriod[] }) {
+  const rows = metrics.map((m) => ({ ...m, values: years.map((p) => m.get(p)) }))
   return (
     <div className="overflow-hidden rounded-[18px] border border-[rgba(23,43,77,0.08)] bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
       <div className={`flex items-center justify-center gap-2 py-3 text-white ${theme.headerClass}`}>
@@ -133,7 +150,7 @@ function FrameworkTable({ theme, metrics }: { theme: FrameworkTheme; metrics: Me
           <thead>
             <tr className={`${theme.theadClass} text-[10.5px] font-semibold uppercase tracking-wide`}>
               <th className="px-4 py-2.5 text-left text-ink-secondary">Metric</th>
-              {YEARS.map((y) => (
+              {years.map((y) => (
                 <th key={y} className={`px-2 py-2.5 text-right ${theme.fyClass}`}>{y}</th>
               ))}
               <th className="px-3 py-2.5 text-center text-ink-secondary">Trend</th>
@@ -194,9 +211,9 @@ function MiniSeriesChart({ title, data, unit, color }: { title: string; data: { 
   )
 }
 
-function FrameworkCharts({ theme, basis, companyId }: { theme: FrameworkTheme; basis: AccountingBasis; companyId: string }) {
-  const cr = YEARS.map((p) => ({ fy: p, v: getBasisProfit(companyId, basis, p)?.combinedRatio ?? null }))
-  const pat = YEARS.map((p) => ({ fy: p, v: getBasisProfit(companyId, basis, p)?.pat ?? null }))
+function FrameworkCharts({ theme, basis, companyId, years }: { theme: FrameworkTheme; basis: AccountingBasis; companyId: string; years: BasisPeriod[] }) {
+  const cr = years.map((p) => ({ fy: p, v: getBasisProfit(companyId, basis, p)?.combinedRatio ?? null }))
+  const pat = years.map((p) => ({ fy: p, v: getBasisProfit(companyId, basis, p)?.pat ?? null }))
   const lineColor = basis === 'ifrs' ? '#27457E' : '#9C7430'
   return (
     <div className="overflow-hidden rounded-[18px] border border-[rgba(23,43,77,0.08)] bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
@@ -308,11 +325,11 @@ const FW_TABS: { id: FwMode; label: string }[] = [
   { id: 'both', label: 'Compare Both' },
 ]
 
-function ProfitQualityBand({ companyId }: { companyId: string }) {
+function ProfitQualityBand({ companyId, years }: { companyId: string; years: BasisPeriod[] }) {
   const [mode, setMode] = useState<FwMode>('ifrs')
   const data = useMemo(
     () =>
-      YEARS.map((p) => {
+      years.map((p) => {
         const f = patSplit(companyId, 'ifrs', p)
         const g = patSplit(companyId, 'igaap', p)
         return {
@@ -321,7 +338,7 @@ function ProfitQualityBand({ companyId }: { companyId: string }) {
           igaapOp: g.op, igaapInv: g.inv, igaapPat: g.pat,
         }
       }),
-    [companyId],
+    [companyId, years],
   )
   const hasAny = data.some((d) => d.ifrsPat != null || d.igaapPat != null)
   if (!hasAny) return null
@@ -488,6 +505,13 @@ export function ProfitabilityReview() {
   const [view, setView] = useState<'table' | 'chart'>('table')
   const gwpByFy = useGwpByFy(company.id)
   const id = company.id
+  // Periods follow the header's Annual/Quarterly toggle + Data Range.
+  const periods = useVisiblePeriods()
+  const periodSpan = periods.length
+    ? periods.length === 1
+      ? periods[0]
+      : `${periods[0]}–${periods[periods.length - 1]}`
+    : '—'
 
   // Per-basis metric definitions, wired to the real model.
   const { ifrsMetrics, igaapMetrics } = useMemo(() => {
@@ -527,7 +551,7 @@ export function ProfitabilityReview() {
   }, [id, gwpByFy])
 
   // Honest, data-driven key takeaways (IGAAP/Statutory series).
-  const takeaways = useMemo(() => buildTakeaways(id), [id])
+  const takeaways = useMemo(() => buildTakeaways(id, periods), [id, periods])
 
   if (!hasBasisData(id)) {
     return (
@@ -547,18 +571,25 @@ export function ProfitabilityReview() {
     <div className="space-y-5">
       <ReviewHeader name={company.shortName} view={view} onView={setView} />
 
-      {view === 'table' ? (
+      {periods.length === 0 ? (
+        <DataEmptyState
+          kind="pending"
+          title="No profitability periods in the selected range"
+          body="Profitability is reported on annual (FY23–FY26) and Q4 standalone bases. Widen the Data Range — or switch the Annual/Quarterly toggle — to bring a reported period into view."
+          height={240}
+        />
+      ) : view === 'table' ? (
         <div className="space-y-5 animate-fade-in">
-          <ProfitQualityBand companyId={id} />
+          <ProfitQualityBand companyId={id} years={periods} />
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start">
-            <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} />
-            <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} />
+            <FrameworkTable theme={IFRS_THEME} metrics={ifrsMetrics} years={periods} />
+            <FrameworkTable theme={IGAAP_THEME} metrics={igaapMetrics} years={periods} />
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:items-start animate-fade-in">
-          <FrameworkCharts theme={IFRS_THEME} basis="ifrs" companyId={id} />
-          <FrameworkCharts theme={IGAAP_THEME} basis="igaap" companyId={id} />
+          <FrameworkCharts theme={IFRS_THEME} basis="ifrs" companyId={id} years={periods} />
+          <FrameworkCharts theme={IGAAP_THEME} basis="igaap" companyId={id} years={periods} />
         </div>
       )}
 
@@ -574,7 +605,7 @@ export function ProfitabilityReview() {
         </div>
         <SourceTag
           source="Company filing"
-          period="FY23–FY26"
+          period={periodSpan}
           confidence="high"
           provenance={{ source_name: 'Company Annual Reports / Statutory Filings — IGAAP statutory accounts & IFRS / Ind AS accounts.' }}
         />
@@ -619,20 +650,21 @@ function ReviewHeader({ name, view, onView }: { name: string; view: 'table' | 'c
   )
 }
 
-// Build up to four short, real takeaways from the IGAAP/Statutory series.
-function buildTakeaways(id: string): string[] {
+// Build up to four short, real takeaways from the IGAAP/Statutory series,
+// scoped to the periods currently in view.
+function buildTakeaways(id: string, years: BasisPeriod[]): string[] {
   const out: string[] = []
-  const cr = YEARS.map((p) => getBasisProfit(id, 'igaap', p)?.combinedRatio ?? null).filter((v): v is number => v != null)
+  const cr = years.map((p) => getBasisProfit(id, 'igaap', p)?.combinedRatio ?? null).filter((v): v is number => v != null)
   if (cr.length >= 2) {
     const d = cr[cr.length - 1] - cr[0]
     out.push(d <= 0 ? `Combined ratio improved ${Math.abs(d).toFixed(1)} pp` : `Combined ratio up ${d.toFixed(1)} pp`)
   }
-  const pats = YEARS.map((p) => getBasisProfit(id, 'igaap', p)?.pat ?? null).filter((v): v is number => v != null)
+  const pats = years.map((p) => getBasisProfit(id, 'igaap', p)?.pat ?? null).filter((v): v is number => v != null)
   if (pats.length >= 2 && pats[0] !== 0) {
     const turned = pats[0] <= 0 && pats[pats.length - 1] > 0
     out.push(turned ? 'PAT turned positive' : `PAT ${pats[pats.length - 1] >= pats[0] ? 'rising' : 'softening'} to ₹${pats[pats.length - 1].toLocaleString('en-IN')} Cr`)
   }
-  const solv = YEARS.map((p) => getBasisSolvency(id, p)).filter((v): v is number => v != null)
+  const solv = years.map((p) => getBasisSolvency(id, p)).filter((v): v is number => v != null)
   if (solv.length) {
     const latest = solv[solv.length - 1]
     out.push(`Solvency ${latest >= 1.5 ? 'comfortable' : 'tight'} at ${latest.toFixed(2)}x`)

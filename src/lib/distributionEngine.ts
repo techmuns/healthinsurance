@@ -1,21 +1,27 @@
 // ---------------------------------------------------------------------------
 //  Distribution Engine — data + per-company helpers.
 //
-//  Channel mix per company; the Niva Bupa row holds real FY22–FY25 figures from
-//  the company's filings (DRHP for FY22–FY24, FY2024-25 annual report for FY25),
-//  fetched via GitHub Actions. Other insurers are absent — Distribution Engine
-//  surfaces only what is source-backed rather than fabricating history.
+//  Channel mix per company is read live from the source-backed channel-mix
+//  snapshot (`distribution-channel-mix.json`), built by the IRDAI NL-36/NL-40
+//  business-acquisition pipeline (DRHP + annual-report + public-disclosure
+//  forms, fetched via GitHub Actions). Each company surfaces exactly the fiscal
+//  years the source reports — Niva Bupa FY22→FY25, Care Health FY13→FY26 —
+//  and new years appear automatically as the snapshot refreshes. Insurers the
+//  source does not yet split show an explicit "not wired" state rather than
+//  fabricated history.
 //
-//  Reach-depth (region / tier / city) data is not in this mock model — the
+//  Reach-depth (region / tier / city) data is not in the snapshot yet — the
 //  reach-depth panel renders an EmptyState until source-backed numbers are
 //  wired through this file.
 // ---------------------------------------------------------------------------
 
 import { insurers, PEER_GROUP_LABEL } from '@/data/mockData'
+import channelMixSnapshot from '@/data/snapshots/distribution-channel-mix.json'
 import type { Insurer, PeerGroup } from '@/data/types'
 import { getFilteredInsurers } from '@/lib/insurers'
 
-export type DistPeriodKey = 'FY22' | 'FY23' | 'FY24' | 'FY25'
+/** A fiscal-year label present in the channel-mix snapshot, e.g. "FY25". */
+export type DistPeriodKey = string
 
 export const DIST_CHANNELS = [
   'Banca',
@@ -37,22 +43,53 @@ export interface ChannelMixRow {
   Others: number
 }
 
-// Per-company channel mix (% of GWP by GDPI). Only Niva Bupa is populated —
-// values are the real figures from the company's own filings, fetched via
-// GitHub Actions (scripts/ingest/fetch-distribution-mix.ts → the committed
-// data/raw/distribution/ extract): FY22–FY24 from the DRHP distribution table
-// (Corporate Agents split into Banks = Banca, and Others), FY25 from the
-// FY2024-25 annual report. Direct is the residual to 100% (the balancing
-// channel). Other insurers are intentionally absent; the UI shows an explicit
-// "not ingested" state until their tables are extracted the same way.
-export const distributionEngineMix: Record<string, ChannelMixRow[]> = {
-  'niva-bupa': [
-    { period: 'FY22', Banca: 18.6, Brokers: 13.4, Agents: 37.3, 'Corporate Agents': 8.8, Direct: 21.1, Others: 0.8 },
-    { period: 'FY23', Banca: 17.6, Brokers: 21.8, Agents: 36.0, 'Corporate Agents': 8.3, Direct: 16.0, Others: 0.3 },
-    { period: 'FY24', Banca: 19.6, Brokers: 27.0, Agents: 32.1, 'Corporate Agents': 7.7, Direct: 13.1, Others: 0.5 },
-    { period: 'FY25', Banca: 20.1, Brokers: 30.6, Agents: 29.7, 'Corporate Agents': 7.5, Direct: 11.5, Others: 0.6 },
-  ],
+// Per-company channel mix (% of GWP), read live from the source-backed
+// `distribution-channel-mix.json` snapshot. We take the full-fiscal-year
+// ("annual") rows so the trend reads on a clean FY axis; the snapshot's
+// cumulative (9M/H1/Q) rows are left to other views. Each company carries
+// exactly the years the official forms report — no fabricated history.
+interface ChannelMixSnapshotRow {
+  company_id: string
+  period: string
+  fiscal_year: string
+  period_type: string
+  banca_share: number | null
+  broker_share: number | null
+  agent_share: number | null
+  corporate_agent_share: number | null
+  direct_share: number | null
+  online_share: number | null
+  others_share: number | null
 }
+
+function fyNum(period: string): number {
+  const m = /FY(\d{2,4})/.exec(period)
+  return m ? Number(m[1]) : 0
+}
+
+function buildChannelMix(): Record<string, ChannelMixRow[]> {
+  const out: Record<string, ChannelMixRow[]> = {}
+  const rows = (channelMixSnapshot.data as ChannelMixSnapshotRow[]).filter(
+    (r) => r.period_type === 'annual',
+  )
+  for (const r of rows) {
+    // Require the core share fields — never coerce a missing split to a fake 0.
+    if (r.banca_share == null || r.broker_share == null || r.agent_share == null) continue
+    ;(out[r.company_id] ??= []).push({
+      period: r.fiscal_year,
+      Banca: r.banca_share,
+      Brokers: r.broker_share,
+      Agents: r.agent_share,
+      'Corporate Agents': r.corporate_agent_share ?? 0,
+      Direct: r.direct_share ?? 0,
+      Others: (r.others_share ?? 0) + (r.online_share ?? 0),
+    })
+  }
+  for (const id of Object.keys(out)) out[id].sort((a, b) => fyNum(a.period) - fyNum(b.period))
+  return out
+}
+
+export const distributionEngineMix: Record<string, ChannelMixRow[]> = buildChannelMix()
 
 // ─── Public helpers ────────────────────────────────────────────────────────
 

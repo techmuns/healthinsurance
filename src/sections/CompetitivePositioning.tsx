@@ -407,7 +407,6 @@ export function CompetitivePositioning() {
   // figures snapshot — so the range reads in stable Annual (FY) vocabulary and
   // never flips with the global period control.
   const rangeLabel = formatRange(filters.range, 'Annual')
-  const isMock = filters.dataset === 'mock'
 
   const explainGrowth = focalRow.cells.growth.tone === 'leader' || focalRow.cells.growth.tone === 'strong'
     ? `Strong GWP growth${focalRow.cells.retailMix.tone === 'leader' || focalRow.cells.retailMix.tone === 'strong' ? ' + retail-mix lead' : ''}`
@@ -506,9 +505,13 @@ export function CompetitivePositioning() {
 
       {/* Source row */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-soft-border pt-3 text-[10.5px] text-ink-secondary">
-        <span className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold" style={isMock ? { background: hexA(GOLD, 0.12), color: '#8A6516' } : { background: hexA(TEAL, 0.12), color: TEAL_DEEP }}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: isMock ? GOLD : TEAL }} />
-          {isMock ? 'Mock dataset' : 'Official dataset'}
+        <span
+          className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold"
+          style={{ background: hexA(TEAL, 0.12), color: TEAL_DEEP }}
+          title="Official filings (IRDAI disclosures &amp; annual reports) plus the daily market feed for P/E &amp; P/B; growth and signal fields are derived from those figures. No mock data."
+        >
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: TEAL }} />
+          Source-backed
         </span>
         <span>{rangeLabel} · scorecard basis · {card.groupLabel} peers · Updated {filters.updatedAsOf}</span>
       </div>
