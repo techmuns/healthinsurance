@@ -14,6 +14,13 @@
       "sha256": "9bfc1c375ef1dd66a12f1929bfe575f698ea9085c75599d4ddb3782f4c9c371c",
       "fetched_at": "2026-06-15T07:42:19.946Z"
     },
+    "https://d28c6jni2fmamz.cloudfront.net/IND_AS_Financials_Q1_FY_2025_26_4587547f05.pdf": {
+      "filename": "IND_AS_Financials_Q1_FY_2025_26_4587547f05.pdf",
+      "url": "https://d28c6jni2fmamz.cloudfront.net/IND_AS_Financials_Q1_FY_2025_26_4587547f05.pdf",
+      "bytes": 4316983,
+      "sha256": "3f946d84ebf6b7e36877849573db6f89be902d30b19cd5b884993fb2f53787da",
+      "fetched_at": "2026-06-15T08:08:47.677Z"
+    },
     "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf": {
       "filename": "AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
       "url": "https://nsearchives.nseindia.com/annual_reports/AR_29055_STARHEALTH_2024_2025_A_9557588_16092025102547.pdf",
@@ -57,5 +64,5 @@
       "fetched_at": "2026-06-10T21:52:31.882Z"
     }
   },
-  "updated_at": "2026-06-15T07:42:19.947Z"
+  "updated_at": "2026-06-15T08:09:37.969Z"
 }

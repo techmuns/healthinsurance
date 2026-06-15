@@ -63,6 +63,48 @@
       "sha256": "7b9136a33fa176aa93cdeb54cd3f0f72c65900ef7c142e7b141b7866bb1082ad",
       "fetched_at": "2026-06-09T12:47:48.662Z"
     },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/December-31-2024.pdf": {
+      "filename": "December-31-2024.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/December-31-2024.pdf",
+      "bytes": 607694,
+      "sha256": "b93c2a61e68237199b206674795c909983af613c8c4c4907b1f7a936d2eb73db",
+      "fetched_at": "2026-06-15T08:03:27.695Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/September-30-2024.pdf": {
+      "filename": "September-30-2024.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/September-30-2024.pdf",
+      "bytes": 1840882,
+      "sha256": "586eda6280ea254840e72ed52714aace529f84807c938597de8b4885bbfb93f0",
+      "fetched_at": "2026-06-15T08:02:10.377Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/Financial-Results-September-2025.pdf?v=1.0": {
+      "filename": "Financial-Results-September-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/Financial-Results-September-2025.pdf?v=1.0",
+      "bytes": 2747633,
+      "sha256": "82bc680ef8b726c442be8a1d86d59f9aaaa46951e9961fba8b5ee1b16443d609",
+      "fetched_at": "2026-06-15T08:04:48.395Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/IFRS-Financials-as-December-31-2025.pdf?v=1.0": {
+      "filename": "IFRS-Financials-as-December-31-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/IFRS-Financials-as-December-31-2025.pdf?v=1.0",
+      "bytes": 23264591,
+      "sha256": "1f2d0812348ef6e05d907a1646d3e4a22c7eeb2fd2fd6eea457dfda948929914",
+      "fetched_at": "2026-06-15T08:06:13.874Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/IFRS-Financials-as-at-September-30-2025.pdf?v=1.0": {
+      "filename": "IFRS-Financials-as-at-September-30-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/IFRS-Financials-as-at-September-30-2025.pdf?v=1.0",
+      "bytes": 7545598,
+      "sha256": "3986391620e80dc48b7ef8dfe9e35fb38485bfcf598bff4b81b3c9fcfe22c201",
+      "fetched_at": "2026-06-15T08:04:45.174Z"
+    },
+    "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/Outcome-financial-results-December-2025.pdf?v=1.0": {
+      "filename": "Outcome-financial-results-December-2025.pdf",
+      "url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/Outcome-financial-results-December-2025.pdf?v=1.0",
+      "bytes": 457425,
+      "sha256": "f270c8742a0ffbbd068e8d7f22c322cd0e0bd0160c0ba5d5ee305b9e642e1ade",
+      "fetched_at": "2026-06-15T08:06:09.732Z"
+    },
     "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2023-24.pdf": {
       "filename": "Annual-Report-FY-2023-24.pdf",
       "url": "https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2023-24.pdf",
@@ -92,5 +134,5 @@
       "fetched_at": "2026-06-10T21:43:10.611Z"
     }
   },
-  "updated_at": "2026-06-11T16:17:54.917Z"
+  "updated_at": "2026-06-15T08:06:16.174Z"
 }

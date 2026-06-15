@@ -14,6 +14,13 @@
       "sha256": "5dd5f3dee099ae863e7d9ea41cddf5c19e7786ea0a4dbc75554c72b143c020b6",
       "fetched_at": "2026-06-10T22:10:05.699Z"
     },
+    "https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf": {
+      "filename": "AnnualReport_2024-25.pdf",
+      "url": "https://www.manipalcigna.com/documents/20124/0/Annual+Report_2024-25.pdf",
+      "bytes": 6159818,
+      "sha256": "29c67ea7cf3dfce312f179b20b8e182c335d4fda7dc734df3007beac91864f2f",
+      "fetched_at": "2026-06-15T08:15:39.313Z"
+    },
     "https://www.manipalcigna.com/documents/20124/0/Public+Disclosure+March+23-Final-2.pdf/3499c565-881c-1871-d727-04b216e4f3ff?t=1688133094984": {
       "filename": "3499c565-881c-1871-d727-04b216e4f3ff",
       "url": "https://www.manipalcigna.com/documents/20124/0/Public+Disclosure+March+23-Final-2.pdf/3499c565-881c-1871-d727-04b216e4f3ff?t=1688133094984",
@@ -22,5 +29,5 @@
       "fetched_at": "2026-06-10T22:05:17.184Z"
     }
   },
-  "updated_at": "2026-06-10T22:41:47.154Z"
+  "updated_at": "2026-06-15T08:16:01.705Z"
 }

@@ -112,12 +112,54 @@
       "sha256": "21d08abb13944c0b58045d4d7519e6bb2dd16c52d8fbb9b748a53712cd39bafa",
       "fetched_at": "2026-06-09T12:42:44.283Z"
     },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%201%2024-25/PublicDisclosure_1723641609.pdf": {
+      "filename": "PublicDisclosure_1723641609.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%201%2024-25/PublicDisclosure_1723641609.pdf",
+      "bytes": 3310778,
+      "sha256": "03bf373b414669b3c88ba8a69ee755de55a5130a59d8c1ade7c1e9835c01da54",
+      "fetched_at": "2026-06-15T08:10:28.146Z"
+    },
     "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf": {
       "filename": "Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf",
       "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/Financial-Disclosure-upto-the-Quarter-Ended-30th-Sep-2024_1731493522.pdf",
       "bytes": 3700391,
       "sha256": "27ad9dcedadcf5cf946906de71eb4bc7760a1feede097b9530b1b39455582b61",
       "fetched_at": "2026-06-09T12:42:47.964Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf": {
+      "filename": "PublicDisclosuresDecember2024_1738647983.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf",
+      "bytes": 2492002,
+      "sha256": "147ab9d00462c02645cac6c3338bc383ce77a9ba71b536e1cf78e8492f3f9bee",
+      "fetched_at": "2026-06-15T08:11:30.927Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%201%2025-26/PublicDisclosure_1755066696.pdf": {
+      "filename": "PublicDisclosure_1755066696.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%201%2025-26/PublicDisclosure_1755066696.pdf",
+      "bytes": 2588633,
+      "sha256": "202e8570720b0c31a4285aa08af5a599973ca541ad0b2733d75e3bd7cd2f9d02",
+      "fetched_at": "2026-06-15T08:12:24.379Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%202%2025-26/Public_Disclosures_Sep25_1763462080.pdf": {
+      "filename": "Public_Disclosures_Sep25_1763462080.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%202%2025-26/Public_Disclosures_Sep25_1763462080.pdf",
+      "bytes": 3978725,
+      "sha256": "ef61e3e96f5081f6dc641d872fb71c319d1430196c42528b3ca6585e33a3cebc",
+      "fetched_at": "2026-06-15T08:13:10.912Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%203%2025-26/PublicDisclosure_1771143266.pdf": {
+      "filename": "PublicDisclosure_1771143266.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%203%2025-26/PublicDisclosure_1771143266.pdf",
+      "bytes": 3194276,
+      "sha256": "b17afe0fa3680ea6bc60a3a81a18ef1077d49c1867c2dada90d1cb813abd9989",
+      "fetched_at": "2026-06-15T08:13:11.790Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%204%2025-26/Public_Disclosure_1780465863.pdf": {
+      "filename": "Public_Disclosure_1780465863.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%204%2025-26/Public_Disclosure_1780465863.pdf",
+      "bytes": 2251002,
+      "sha256": "85578e83970de18f607b380a3689cec42cedd3b3afb92be776d985b1bb1bbe5f",
+      "fetched_at": "2026-06-15T08:13:12.457Z"
     },
     "https://doc-files-donotdelete.s3.ap-south-1.amazonaws.com/cmsdocs/Investor%20Presentation%20Q1%20FY25.pdf": {
       "filename": "Investor Presentation Q1 FY25.pdf",
@@ -140,12 +182,26 @@
       "sha256": "d6849dc8afb470946ce9000719b8e8c85940100b55ffaf9cfcd831c472e8cdf6",
       "fetched_at": "2026-06-10T21:30:38.070Z"
     },
+    "https://filecache.investorroom.com/mr5ir_heritage/338/HRTG_Q3_25_Earnings_Presentation_vF.pdf": {
+      "filename": "HRTG_Q3_25_Earnings_Presentation_vF.pdf",
+      "url": "https://filecache.investorroom.com/mr5ir_heritage/338/HRTG_Q3_25_Earnings_Presentation_vF.pdf",
+      "bytes": 3787145,
+      "sha256": "27c23f56b9bbad61d1872a104009421376f86418d0383b03a3a18f711cd60625",
+      "fetched_at": "2026-06-15T08:13:17.633Z"
+    },
     "https://hudco.org.in/writereaddata/PublicNotice/MPQ3FY25.pdf": {
       "filename": "MPQ3FY25.pdf",
       "url": "https://hudco.org.in/writereaddata/PublicNotice/MPQ3FY25.pdf",
       "bytes": 3372295,
       "sha256": "53a0de377dc435f68245a3e0a0487085ab54c4551937c5d0e90cf297b74dedc9",
       "fetched_at": "2026-06-10T21:54:54.192Z"
+    },
+    "https://investor.accenture.com/~/media/Files/A/accenture-v4/investors/earnings-reports/2026/first-quarter-fiscal-2026-earnings-presentation.pdf": {
+      "filename": "first-quarter-fiscal-2026-earnings-presentation.pdf",
+      "url": "https://investor.accenture.com/~/media/Files/A/accenture-v4/investors/earnings-reports/2026/first-quarter-fiscal-2026-earnings-presentation.pdf",
+      "bytes": 1605756,
+      "sha256": "a49cccda41030591184516e77065b6dddde7f364521831f5f5cc341d031e06d9",
+      "fetched_at": "2026-06-15T08:13:17.280Z"
     },
     "https://radiuscare.co.nz/wp-content/uploads/2025/05/FY25-Investor-Presentation.pdf": {
       "filename": "FY25-Investor-Presentation.pdf",
@@ -189,6 +245,13 @@
       "sha256": "74bcf680ec2907da7ef02ee7615b2717b66672660a63b58340eba7875b820970",
       "fetched_at": "2026-06-10T21:30:30.718Z"
     },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/5d3846e2-2e99-48ff-8aae-3095f41dd703.pdf": {
+      "filename": "5d3846e2-2e99-48ff-8aae-3095f41dd703.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/5d3846e2-2e99-48ff-8aae-3095f41dd703.pdf",
+      "bytes": 2285911,
+      "sha256": "1de93f6867ef7f94e5d1ffec5ef9b7ed3449ff7d73184c395f00c8367563db19",
+      "fetched_at": "2026-06-15T08:13:17.173Z"
+    },
     "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf": {
       "filename": "Financial Ratios _Insurance Sector_November2020.pdf",
       "url": "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf",
@@ -202,6 +265,13 @@
       "bytes": 424788,
       "sha256": "1699ae5b73bfb4cba1e3292d4ecdfcb6ee736bebbaedc4457af8a74cf2b1ee06",
       "fetched_at": "2026-06-10T22:30:35.817Z"
+    },
+    "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/about-us/financial-results/2025-2026/quarter-4/q4fy26-earnings-presentation.pdf": {
+      "filename": "q4fy26-earnings-presentation.pdf",
+      "url": "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/about-us/financial-results/2025-2026/quarter-4/q4fy26-earnings-presentation.pdf",
+      "bytes": 815196,
+      "sha256": "d5d998e80f1210a082f717f0a7b3e128c60089cb94fe106d32d98300054905a6",
+      "fetched_at": "2026-06-15T08:13:12.805Z"
     },
     "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/pdf/financial-results/2025-2026/quarter-3/Q3FY26-earnings-presentation.pdf": {
       "filename": "Q3FY26-earnings-presentation.pdf",
@@ -231,6 +301,13 @@
       "sha256": "4ff6f18556d56600b230390ac5148bfe3ed8b7dc6687c3a09586292f430acb43",
       "fetched_at": "2026-06-10T21:30:34.141Z"
     },
+    "https://www.infoedge.in/pdfs/corporatePresentations_pdfs/Info-Edge-Feb25-Presentation.pdf": {
+      "filename": "Info-Edge-Feb25-Presentation.pdf",
+      "url": "https://www.infoedge.in/pdfs/corporatePresentations_pdfs/Info-Edge-Feb25-Presentation.pdf",
+      "bytes": 2343387,
+      "sha256": "bf3e0801e4738813e8e9cd73b45fefd93699fba878c8b66e40e03777d559aee3",
+      "fetched_at": "2026-06-15T08:13:15.855Z"
+    },
     "https://www.moneycontrol.com/financials/careratings/balance-sheetVI/car": {
       "filename": "car",
       "url": "https://www.moneycontrol.com/financials/careratings/balance-sheetVI/car",
@@ -253,5 +330,5 @@
       "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-11T16:23:48.138Z"
+  "updated_at": "2026-06-15T08:13:17.633Z"
 }
