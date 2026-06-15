@@ -27,6 +27,7 @@ import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
+import { peerValuation } from '@/data/valuationData'
 import irdaiFlashLatestJson from '@/data/snapshots/irdai-nonlife-flash-latest.json'
 import irdaiFlashMonthlyJson from '@/data/snapshots/irdai-nonlife-flash-monthly.json'
 import irdaiFlashSourcesJson from '@/data/snapshots/irdai-nonlife-flash-sources.json'
@@ -325,10 +326,21 @@ function round1(v: number): number {
   return Math.round(v * 10) / 10
 }
 
-// Real fetched P/GWP per company from the live valuation feed (listed insurers).
-// Prefer this over the annual snapshot's stored multiple so the scorecard /
-// builder reflect the latest market price, not a stale figure.
+// Curated FY26-basis P/GWP (market cap ÷ latest full-year GWP), hand-verified
+// for the listed SAHIs in valuationData.ts. We prefer this over the daily feed
+// so the scorecard's P/GWP is shown on the SAME basis as the Valuation tab —
+// e.g. Niva Bupa 1.65x (FY26), not the feed's 2.26x (older FY25 direct-premium
+// base). Companies without a curated figure fall back to the daily feed.
+// (Standing decision, Neha 2026-06-15: standardise on the FY26 latest-year basis.)
+const CURATED_PRICE_TO_GWP: Record<string, number> = Object.fromEntries(
+  peerValuation.filter((r) => r.pGwp != null).map((r) => [r.companyId, r.pGwp as number]),
+)
+
+// Real fetched P/GWP per company. Prefer the curated latest-year (FY26) basis
+// where verified, else the live valuation feed (listed insurers) — so the
+// scorecard/builder reflect a current, consistent multiple, not a stale one.
 function realPriceToGwp(companyId: string): number | null {
+  if (companyId in CURATED_PRICE_TO_GWP) return CURATED_PRICE_TO_GWP[companyId]
   const row = (valuationSnapshot.data as Array<{ company_id: string; price_to_gwp: number | null }>).find(
     (r) => r.company_id === companyId,
   )
