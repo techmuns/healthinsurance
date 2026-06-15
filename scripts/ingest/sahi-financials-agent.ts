@@ -110,9 +110,14 @@ function periodSpec(period: string): { kind: 'annual' | 'interim'; ended: string
 
 function buildPayload() {
   const ps = periodSpec(PERIOD)
-  const docLine = DOC_URL
-    ? `PRIMARY SOURCE — open and READ this exact document, and take the values from it: ${DOC_URL}\n` +
-      `It is the ${ps.kind === 'annual' ? 'full-year statutory / financial-results' : 'interim / quarterly results'} document for ${PERIOD}. Extract the figures from this PDF.\n\n`
+  // Neha (2026-06-15): pass the documents to read INSIDE the prompt and keep the
+  // payload `urls` field EMPTY (the populated urls field correlated with the
+  // agent's empty reply). Agent reads each PDF directly, scanned ones via OCR.
+  const allDocs = [...new Set([DOC_URL, ...DISCOVERED_DOCS, DISCLOSURE_DOCS[COMPANY_ID]].filter(Boolean))]
+  const docLine = allDocs.length
+    ? 'OPEN AND READ THESE EXACT DOCUMENTS and take the values from them — read each PDF directly (including scanned / image PDFs, via OCR):\n' +
+      allDocs.map((u, i) => `  ${i + 1}. ${u}`).join('\n') +
+      '\n(These are the statutory audited financials / IRDAI public-disclosure pages for this company & period.)\n\n'
     : ''
   const task =
     docLine +
@@ -158,12 +163,11 @@ function buildPayload() {
       CONTEXT_EMAIL: 'nadamsaluja@gmail.com', CONTEXT_COMPANY_NAME: [], GET_ANNOUNCEMENTS_ENABLED: false,
       chatHistory: [], mode: 'fast',
     },
-    // Integrated document-reading path: hand the agent the exact docs to open —
-    // a manually-dispatched DOC_URL, then the period's discovered NL-return PDFs,
-    // then the disclosures landing page as a fallback. Deduped, non-empty.
-    // WEB_SEARCH stays on as a further fallback.
+    // Neha test (2026-06-15): keep the payload `urls` field EMPTY — the documents
+    // are listed in the prompt (docLine) instead, since the populated `urls` field
+    // correlated with the agent returning a 0-byte body.
     autoAddUpcoming: false,
-    urls: [...new Set([DOC_URL, ...DISCOVERED_DOCS, DISCLOSURE_DOCS[COMPANY_ID]].filter(Boolean))],
+    urls: [],
   }
 }
 
