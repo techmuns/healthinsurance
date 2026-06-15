@@ -3,10 +3,10 @@
     "snapshot_id": "sectoral-news-snapshot",
     "description": "Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-11",
-    "last_successful_run": "2026-06-11T10:26:37.552Z",
+    "last_updated": "2026-06-15",
+    "last_successful_run": "2026-06-15T12:16:30.049Z",
     "seed_count": 31,
-    "agent_count": 19,
+    "agent_count": 29,
     "generated_by": "Seed: investor portfolio pack. Updates: AI (muns agent, web search).",
     "notes": "Seed floor can never be lost. Agent items are de-duped by subject+date and verified-before-acting."
   },
@@ -111,6 +111,28 @@
       "added_at": "2026-06-11"
     },
     {
+      "sn": 52,
+      "category": "General",
+      "date": "2026-04-29",
+      "subject": "Long-term health covers gain traction as treatment costs rise",
+      "summary": "A BusinessLine report said higher healthcare costs are driving more demand for long-duration health insurance policies. That matters because it supports premium growth for standalone health insurers, though longer-tenor products also increase reserving and claims-pricing complexity.",
+      "reference": "https://thehindubusinessline.com/money-and-banking/as-healthcare-costs-continue-to-rise-long-term-health-cover-policies-gain-traction/article71100917.ece",
+      "id": "028abdf318ab0d",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 51,
+      "category": "Profitability",
+      "date": "2026-04-29",
+      "subject": "Star Health flags medical inflation pressure but underwriting improves",
+      "summary": "Star Health said rising healthcare costs are pushing claims higher, but it also reported 14% YoY growth in net earned premium and narrower underwriting losses. For investors, that keeps the core debate on whether pricing and claims management can offset medical inflation.",
+      "reference": "https://economictimes.indiatimes.com/topic/star-health-insurance",
+      "id": "0d1e2e39710a85",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
       "sn": 37,
       "category": "Profitability",
       "date": "2026-04-29",
@@ -131,6 +153,28 @@
       "id": "1771b0d9c68125",
       "origin": "agent",
       "added_at": "2026-06-11"
+    },
+    {
+      "sn": 54,
+      "category": "GST",
+      "date": "2026-04-01",
+      "subject": "Installment-premium treatment clarified under post-exemption GST regime",
+      "summary": "The Department of Financial Services note clarifies that installments paid on or after September 22, 2025 are exempt, while installments paid earlier still attracted 18% GST. This remains relevant for customer communication, renewal processing, and insurer billing systems in 2026.",
+      "reference": "https://financialservices.gov.in/beta/en/exemption-on-gst",
+      "id": "0fde5079e10041",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 53,
+      "category": "GST",
+      "date": "2026-04-01",
+      "subject": "GST exemption on individual health policies continues to reshape pricing",
+      "summary": "Government guidance and tax explainers continue to reflect the September 2025 GST exemption for individual health insurance policies, including senior citizen and family floater plans. For insurers and distributors, the key implication is improved affordability and potentially stronger retail demand, though product mix and commission economics may shift.",
+      "reference": "https://financialservices.gov.in/beta/en/exemption-on-gst",
+      "id": "0796314855d0d0",
+      "origin": "agent",
+      "added_at": "2026-06-15"
     },
     {
       "sn": 42,
@@ -188,6 +232,28 @@
       "added_at": "2026-06-10"
     },
     {
+      "sn": 56,
+      "category": "Regulatory",
+      "date": "2026-03-31",
+      "subject": "2024 health-insurance master circular remains the operating baseline",
+      "summary": "IRDAI’s health insurance master circular continues to be the core reference point for product design, claims handling and policyholder servicing in the sector. While not new, it still frames how insurers such as Star Health, Niva Bupa, Care Health, Aditya Birla Health and ManipalCigna operate pending any newer circular-level changes.",
+      "reference": "https://irdai.gov.in/documents/37343/991022/%E0%A4%B8%E0%A5%8D%E0%A4%B5%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%A5%E0%A5%8D%E0%A4%AF+%E0%A4%AC%E0%A5%80%E0%A4%AE%E0%A4%BE+%E0%A4%B5%E0%A5%8D%E0%A4%AF%E0%A4%B5%E0%A4%B8%E0%A4%BE%E0%A4%AF+%E0%A4%AA%E0%A4%B0+%E0%A4%AE%E0%A4%BE%E0%A4%B8%E0%A5%8D%E0%A4%9F%E0%A4%B0+%E0%A4%AA%E0%A4%B0%E0%A4%BF%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%B0-%E0%A4%85%E0%A4%82%E0%A4%97%E0%A5%8D%E0%A4%B0%E0%A5%87%E0%A4%9C%E0%A5%80+_+Master+Circular+on+Health+Insurance+Business+-English.pdf/08a32828-dc1d-116f-0549-6db86d448651?version=1.0&t=1719833433399&download=true",
+      "id": "1909b23a8703a9",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 55,
+      "category": "Regulatory",
+      "date": "2026-03-31",
+      "subject": "IRDAI circular pipeline remains the key watchpoint for health insurers",
+      "summary": "IRDAI’s circulars and “what’s new” pages remain the main source for fresh compliance changes affecting health products, claims practices and insurer operations. Investors in health insurers should keep tracking these pages closely because even seemingly technical circulars can alter product filings, expenses, or claims processes.",
+      "reference": "https://irdai.gov.in/circulars",
+      "id": "1383370f6d4d15",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
       "sn": 48,
       "category": "Regulatory",
       "date": "2026-03-25",
@@ -197,6 +263,50 @@
       "id": "1d1702ee5d84f0",
       "origin": "agent",
       "added_at": "2026-06-11"
+    },
+    {
+      "sn": 58,
+      "category": "Competition / Peers",
+      "date": "2026-03-15",
+      "subject": "Competitive positioning highlights differing claims profiles across insurers",
+      "summary": "Sector comparison content in 2026 continues to emphasize claim ratios, network breadth and product targeting across insurers including Niva Bupa, ManipalCigna, Aditya Birla Health and Star Health. For investors, these differences matter because they often foreshadow pricing power, growth quality and margin resilience.",
+      "reference": "https://www.policyx.com/health-insurance/companies/",
+      "id": "1733cfcd93f72a",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 57,
+      "category": "Competition / Peers",
+      "date": "2026-03-15",
+      "subject": "Standalone health insurers remain highly visible in 2026 rankings and comparisons",
+      "summary": "Consumer-facing 2026 market roundups continue to feature Star Health, Niva Bupa, Care Health, Aditya Birla Health and ManipalCigna prominently in health-insurance comparisons. While these are not regulatory documents, they signal competitive intensity in retail acquisition and brand visibility.",
+      "reference": "https://www.policyx.com/health-insurance/articles/top-10-health-insurance-companies-in-india/",
+      "id": "18567e1b92ad5a",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 60,
+      "category": "Profitability",
+      "date": "2026-03-01",
+      "subject": "Post-GST product economics may shift across health-insurance portfolios",
+      "summary": "The removal of GST on individual health policies improves end-customer affordability, but it can also alter renewal behavior, channel incentives and the profitability mix between individual and group business. Investors should watch whether insurers use the benefit for volume growth, pricing discipline, or competitive discounting.",
+      "reference": "https://www.dmifinance.in/gst/gst-on-insurance-premiums/",
+      "id": "12b4e58dd43344",
+      "origin": "agent",
+      "added_at": "2026-06-15"
+    },
+    {
+      "sn": 59,
+      "category": "General",
+      "date": "2026-03-01",
+      "subject": "Health cover affordability remains a central retail demand driver",
+      "summary": "Multiple 2026 consumer explainers continue to frame health insurance buying around premium affordability, plan design and tax treatment. That matters for listed and private insurers alike because retail demand growth is increasingly tied to product simplicity and perceived value rather than just headline brand scale.",
+      "reference": "https://cleartax.in/s/gst-on-health-insurance",
+      "id": "1670caad63b22e",
+      "origin": "agent",
+      "added_at": "2026-06-15"
     },
     {
       "sn": 49,
