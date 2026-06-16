@@ -1,6 +1,6 @@
 import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
-import { Radar } from 'lucide-react'
-import { FilterProvider, useFilters, useActiveCompany } from '@/state/filters'
+import { UploadCloud } from 'lucide-react'
+import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
@@ -16,8 +16,7 @@ import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 import { SectoralNews } from '@/sections/SectoralNews'
-import { SourceAutomationPanel } from '@/components/SourceAutomationPanel'
-import { STATE_META, MOCK_CELL_STATUS } from '@/data/sourceAutomation'
+import { SourceUploadDrawer } from '@/components/SourceUploadDrawer'
 
 // Lazy — the audit tab carries a ~1 MB cell-level index that should only load
 // when a reviewer actually opens the QA surface, never on first paint.
@@ -28,30 +27,24 @@ const ExtractedDataAudit = lazy(() =>
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
 /**
- * Header entry to the Source Automation & Fallback cockpit. Lives inside the
- * FilterProvider so it can default-scope to the active insurer. Understated by
- * design — official-first acquisition is the norm; the small count flags how
- * many cells currently need a manual upload fallback.
+ * Header affordance to hand the dashboard an official source document. Lean by
+ * design — official sources are acquired automatically; this is just the manual
+ * "I have a file" option (annual report / disclosure / results / deck).
  */
-function SourceStatusButton() {
+function SourceUploadButton() {
   const [open, setOpen] = useState(false)
-  const active = useActiveCompany()
-  const blocked = MOCK_CELL_STATUS.filter((r) => STATE_META[r.state].fallback).length
   return (
     <div className="ml-auto shrink-0">
       <button
         type="button"
         onClick={() => setOpen(true)}
         className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary"
-        title="Source automation & fallback — official-first acquisition status"
+        title="Upload an official document as a source for the dashboard"
       >
-        <Radar className="h-3.5 w-3.5" />
-        Source Status
-        {blocked > 0 && (
-          <span className="grid h-4 min-w-4 place-items-center rounded-full bg-gold-soft px-1 text-[10px] font-bold text-gold">{blocked}</span>
-        )}
+        <UploadCloud className="h-3.5 w-3.5" />
+        Add source
       </button>
-      <SourceAutomationPanel open={open} onClose={() => setOpen(false)} focusCompanyId={active?.id} />
+      <SourceUploadDrawer open={open} onClose={() => setOpen(false)} />
     </div>
   )
 }
@@ -214,7 +207,7 @@ export default function App() {
                   <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
                 </div>
               )}
-              <SourceStatusButton />
+              <SourceUploadButton />
             </div>
           </header>
 
