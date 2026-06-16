@@ -1397,18 +1397,12 @@
       "note": "Audited IND AS net incurred loss ratio (claims ÷ NEP, 1/365 URR) from the Q4 FY26 KPI table."
     },
     "star-health::total_gwp::FY26": {
-      "value": null,
-      "unit": "",
-      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
+      "value": 18605.53,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
-      "priority": 1,
-      "layer": "annotation",
-      "note": "FY26 Gross Written Premium (1/n; FY25 = ₹16,781 Cr — not the deck’s ₹20,369 ‘n’-basis figure) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
-      "display_tag": "In audited statements — site blocks bots"
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     },
     "star-health::gross_direct_premium::FY26": {
       "value": null,
@@ -1425,32 +1419,20 @@
       "display_tag": "In audited statements — site blocks bots"
     },
     "star-health::nwp::FY26": {
-      "value": null,
-      "unit": "",
-      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
+      "value": 17650.25,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
-      "priority": 1,
-      "layer": "annotation",
-      "note": "FY26 Net Written Premium (FY25 = ₹15,525 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
-      "display_tag": "In audited statements — site blocks bots"
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     },
     "star-health::nep::FY26": {
-      "value": null,
-      "unit": "",
-      "source_name": "Star FY26 — needs the audited financial statements (site blocks automated fetch)",
+      "value": 16597,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
-      "priority": 1,
-      "layer": "annotation",
-      "note": "FY26 Net Earned Premium (FY25 = ₹14,822 Cr) is not in the Q4 FY26 investor presentation (the deck carries only the ratios, the IND-AS→IGAAP profit reconciliation, and GWP on the ‘n’ basis of ₹20,369 Cr — verified down to the raw text: no Net Written/Earned Premium and no Net Worth appear). It exists only in Star’s audited financial statements (revenue account + balance sheet) on the ‘Financial Information – Debt & Equity’ page, which actively blocks automated fetching — the site returns HTTP 499/404 even to a real headless browser through the India-IP proxy. Needs the direct PDF link or the figure pasted once (then it becomes a permanent source).",
-      "display_tag": "In audited statements — site blocks bots"
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     },
     "star-health::pat_igaap::FY26": {
       "value": 557,
@@ -3148,32 +3130,20 @@
       "note": "NEP is not a stated line in the 5-year summary; reconstructed as Net Premium Income (NWP) − change in unearned premium reserve, both stated in the same audited table (last resort). [Exact file link not captured at transcription; the named document is accessible from this official disclosures page.]"
     },
     "aditya-birla::claims_ratio_igaap::FY23": {
-      "value": null,
-      "unit": "",
-      "source_name": "FY23 detail needs the FY24 report",
+      "value": 64.6762,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
-      "priority": 1,
-      "layer": "annotation",
-      "note": "The ABCL FY25 report carries FY24/FY25 for ABHI; FY23 ratios/NEP need the FY24 subsidiaries report, not on file.",
-      "display_tag": "FY24 report needed"
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     },
     "aditya-birla::expense_ratio_igaap::FY23": {
-      "value": null,
-      "unit": "",
-      "source_name": "FY23 detail needs the FY24 report",
+      "value": 44.9633,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
       "source_url": null,
-      "source_file": null,
-      "source_page": null,
-      "fetched_at": "2026-06-09",
-      "confidence": null,
-      "priority": 1,
-      "layer": "annotation",
-      "note": "The ABCL FY25 report carries FY24/FY25 for ABHI; FY23 ratios/NEP need the FY24 subsidiaries report, not on file.",
-      "display_tag": "FY24 report needed"
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     },
     "aditya-birla::combined_ratio_igaap::FY23": {
       "value": null,
@@ -5850,7 +5820,7 @@
       "note": "Company filing / quarterly investor presentation (2025-04-29). Fetched via munschat sahi-financials."
     },
     "star-health::eom_igaap::FY25": {
-      "value": 30.8,
+      "value": 0.308,
       "unit": "%",
       "source_name": "Star Health and Allied Insurance Co. Ltd Audited Financial Statements FY 2024-25",
       "source_url": "https://d28c6jni2fmamz.cloudfront.net/1_Audited_Financials_FY_2024_25_ca37f8464b.pdf",
@@ -5928,7 +5898,7 @@
       "note": "Company filing / quarterly investor presentation (2025-02-04). Fetched via munschat sahi-financials."
     },
     "niva-bupa::eom_igaap::9MFY25": {
-      "value": 39,
+      "value": 0.39,
       "unit": "%",
       "source_name": "Statement of Unaudited Financial Results for the Quarter and Year to date ended December 31, 2024",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/December-31-2024.pdf",
@@ -6071,7 +6041,7 @@
       "note": "Company filing / quarterly investor presentation (2026-01-29). Fetched via munschat sahi-financials."
     },
     "niva-bupa::eom_igaap::9MFY26": {
-      "value": 46.02,
+      "value": 0.4602,
       "unit": "%",
       "source_name": "Outcome financial results December 2025",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2025-2026/Outcome-financial-results-December-2025.pdf?v=1.0",
@@ -6123,7 +6093,7 @@
       "note": "Company filing / quarterly investor presentation (2026-01-29). Fetched via munschat sahi-financials."
     },
     "niva-bupa::eom_igaap::H1FY25": {
-      "value": 50.95,
+      "value": 0.5095,
       "unit": "%",
       "source_name": "Niva Bupa Health Insurance Company Limited Statement of Unaudited Financial Results for the Quarter and Year to date ended September 30, 2024",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/financial-results/2024-2025/September-30-2024.pdf",
@@ -6149,7 +6119,7 @@
       "note": "Company filing / quarterly investor presentation (2024-11-25). Fetched via munschat sahi-financials."
     },
     "niva-bupa::eom_igaap::H1FY26": {
-      "value": 36.3,
+      "value": 0.363,
       "unit": "%",
       "source_name": "Investor Presentation H1'FY2026",
       "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/earning-presentation/2025-2026/Niva-Bupa-Investor-Presentation-H1-FY26.pdf?v=1.0",
@@ -6212,6 +6182,406 @@
       "priority": 1,
       "layer": "official_filing",
       "note": "Company filing / quarterly investor presentation (2025-02-04). Fetched via munschat sahi-financials."
+    },
+    "niva-bupa::nwp::Q4FY25": {
+      "value": 1672.1,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::nwp::Q4FY26": {
+      "value": 2301.7,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::pat_igaap::Q4FY25": {
+      "value": 206.1,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::pat_igaap::Q4FY26": {
+      "value": 345.2,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::eom_igaap::FY26": {
+      "value": 0.337,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::eom_igaap::Q4FY25": {
+      "value": 0.3633,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::eom_igaap::Q4FY26": {
+      "value": 0.2849,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::investment_aum::FY26": {
+      "value": 9669.7,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "niva-bupa::investment_yield::FY26": {
+      "value": 7.2,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::nwp::Q4FY25": {
+      "value": 4360.91,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::nwp::Q4FY26": {
+      "value": 5598.57,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::nep::Q4FY25": {
+      "value": 4250.44,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::nep::Q4FY26": {
+      "value": 4327.15,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::pat_igaap::Q4FY25": {
+      "value": 1,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::pat_igaap::Q4FY26": {
+      "value": 111,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::claims_ratio_igaap::Q4FY25": {
+      "value": 68.5,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::expense_ratio_igaap::Q4FY25": {
+      "value": 29.9,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::eom_igaap::FY23": {
+      "value": 0.302,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::eom_igaap::FY26": {
+      "value": 0.3021,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::eom_igaap::Q4FY25": {
+      "value": 0.2805,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::eom_igaap::Q4FY26": {
+      "value": 0.2805,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::net_worth::FY26": {
+      "value": 7588.66,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "star-health::investment_aum::FY26": {
+      "value": 21007,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::total_gwp::Q1FY25": {
+      "value": 1931,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::total_gwp::9MFY25": {
+      "value": 5996.67,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::total_gwp::Q1FY26": {
+      "value": 2049,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::total_gwp::9MFY26": {
+      "value": 6878.91,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::nwp::Q1FY25": {
+      "value": 1716,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::nwp::Q4FY25": {
+      "value": 1805.54,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::nwp::Q1FY26": {
+      "value": 1652,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::nep::Q1FY25": {
+      "value": 1445,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::nep::Q1FY26": {
+      "value": 1581,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::pat_igaap::Q1FY25": {
+      "value": 20,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::pat_igaap::Q1FY26": {
+      "value": -15,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::eom_igaap::FY25": {
+      "value": 0.36,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::eom_igaap::Q1FY25": {
+      "value": 0.35,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::eom_igaap::Q4FY25": {
+      "value": 0.35,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::eom_igaap::Q1FY26": {
+      "value": 0.34,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::investment_aum::FY23": {
+      "value": 5176.1,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::investment_yield::Q1FY25": {
+      "value": 7.84,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "care-health::investment_yield::Q1FY26": {
+      "value": 7.6,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "aditya-birla::eom_igaap::FY23": {
+      "value": 0.43,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "aditya-birla::eom_igaap::FY24": {
+      "value": 0.41,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "aditya-birla::eom_igaap::FY25": {
+      "value": 0.39,
+      "unit": "%",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "icici-lombard::gwp::as_on_run_date": {
+      "value": 28712.47,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "icici-lombard::net_worth_igaap::as_on_run_date": {
+      "value": 16843,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "icici-lombard::pat_igaap::as_on_run_date": {
+      "value": 2772,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "godigit::gwp::as_on_run_date": {
+      "value": 9846.11,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "godigit::net_worth_igaap::as_on_run_date": {
+      "value": 4586,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
+    },
+    "godigit::pat_igaap::as_on_run_date": {
+      "value": 544,
+      "unit": "INR_cr",
+      "source_name": "Compiled in the shared portfolio-review workbook (analyst-entered)",
+      "source_url": null,
+      "confidence": "medium",
+      "note": "Value taken from the shared source workbook (SAHIs comparison sheet); analyst-compiled."
     }
   },
   "meta": {}
