@@ -6,8 +6,18 @@ import { SignalBadge } from '@/components/SignalBadge'
 import { HeaderRibbonArt } from '@/components/HeaderRibbonArt'
 import { useFilters } from '@/state/filters'
 import { DATA_FRESHNESS } from '@/data/mockData'
+import { industryDataLastUpdated } from '@/lib/industryStructure'
 
 const FY = 'FY25'
+
+// The hero's "Updated" stamp should reflect THIS page's data — the industry-
+// structure snapshots sweep every 3 days, fresher than the app-wide annual
+// freshness. Show the later of the two so the date is never behind what's on screen.
+const INDUSTRY_UPDATED =
+  [DATA_FRESHNESS.lastUpdated, industryDataLastUpdated]
+    .filter((d): d is string => !!d)
+    .sort()
+    .pop() ?? DATA_FRESHNESS.lastUpdated
 
 // Industry Insights homepage layer: hero + market-structure snapshot + the
 // premium-pool shift. No peer/company cards, no selectors — the company-specific
@@ -52,7 +62,7 @@ function HeroHeader({
       {/* About this view — floating top-right. Must stack above the status
           chips (z-20) or the open popover gets painted over by them. */}
       <div className="absolute right-5 top-5 z-30 sm:right-6 sm:top-6">
-        <AboutView text="Standalone health insurers vs the selected peer group — market leadership, premium and quality rankings on an FY25 annual basis." />
+        <AboutView text="The structure of the Indian insurance market — segment mix (life, general, health), standalone vs general health insurers, and public vs private — each on a total-premium basis and labelled with its own reported year." />
       </div>
 
       {/* Left content */}
@@ -78,7 +88,7 @@ function HeroHeader({
         <div className="flex items-center gap-1.5 rounded-lg border border-[#D6E2FA] bg-white/85 px-3 py-1.5 text-[12px] shadow-soft backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5">
           <Clock className="h-3.5 w-3.5 text-navy-primary" />
           <span className="text-ink-secondary">Updated</span>
-          <span className="font-semibold text-navy-deep">{DATA_FRESHNESS.lastUpdated}</span>
+          <span className="font-semibold text-navy-deep">{INDUSTRY_UPDATED}</span>
         </div>
         {annualBasisNote ? (
           <div

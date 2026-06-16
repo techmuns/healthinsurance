@@ -44,10 +44,10 @@ interface GicPortfolioRow {
 
 interface LifeRow {
   fiscal_year: string
-  life_total_premium: number | null
-  lic_share_of_life: number | null
-  psu_total_premium: number | null
-  private_total_premium: number | null
+  life_total_premium: number | null // industry total LIFE premium (IRDAI)
+  lic_total_premium: number | null // LIC total premium = public-sector life
+  public_gi_premium: number | null // four PSU general insurers = public-sector general
+  lic_share_of_life_total?: number | null // informational
   provenance?: { source_name?: string; source_url?: string; fetched_at?: string }
 }
 
@@ -208,28 +208,41 @@ function sahiSplitCard(): StructureCard | null {
   }
 }
 
-/** Card 3 — PSU vs private on TOTAL premium (life + GI), from the annual IRDAI seed. */
+/** Card 3 — PSU vs private on TOTAL premium (life + GI), COMPOSED from published
+ *  components: PSU = LIC total premium + the four PSU general insurers; Private =
+ *  (industry life − LIC) + (industry GI − public GI). The GI total comes live from
+ *  the GI Council segment series; the life total, LIC total and public-GI figure are
+ *  the annual IRDAI/LIC components. Resolves to the LATEST fiscal year where EVERY
+ *  component is sourced, so it advances on its own as each year's figures land — and
+ *  never fabricates a year whose life side hasn't been published (missing ≠ zero). */
 function psuPrivateCard(): StructureCard | null {
-  const row = [...LIFE_ROWS].reverse().find((l) => l.psu_total_premium != null && l.private_total_premium != null)
-  if (!row) return null
-  const psu = Math.round(row.psu_total_premium!)
-  const priv = Math.round(row.private_total_premium!)
-  const [privS, psuS] = pctShares([priv, psu])
-  return {
-    key: 'psu-private',
-    fy: row.fiscal_year,
-    provisional: false,
-    segments: [
-      { name: 'Private Insurers', premium: priv, share: privS },
-      { name: 'PSU Insurers', premium: psu, share: psuS },
-    ],
-    insight:
-      Math.abs(privS - psuS) <= 6
-        ? 'On total premium, public and private are roughly level — LIC’s scale offsets private’s lead in general insurance.'
-        : privS > psuS
-          ? 'On total premium, private insurers now write the larger share — even against LIC’s scale.'
-          : 'On total premium, the public sector still writes the larger share — LIC’s scale outweighs private’s lead in general insurance.',
+  for (const row of [...LIFE_ROWS].reverse()) {
+    if (row.life_total_premium == null || row.lic_total_premium == null || row.public_gi_premium == null) continue
+    const seg = SEG_ANNUAL.find((r) => r.fiscal_year === row.fiscal_year && r.total_gi_premium != null)
+    if (!seg) continue
+    const psu = Math.round(row.lic_total_premium + row.public_gi_premium)
+    const priv = Math.round(row.life_total_premium - row.lic_total_premium + (seg.total_gi_premium! - row.public_gi_premium))
+    if (psu <= 0 || priv <= 0) continue
+    const [privS, psuS] = pctShares([priv, psu])
+    return {
+      key: 'psu-private',
+      fy: row.fiscal_year,
+      // Audited annual basis (IRDAI Annual Report + LIC full-year results), not a
+      // provisional GI-council print — so this card is not flagged provisional.
+      provisional: false,
+      segments: [
+        { name: 'Private Insurers', premium: priv, share: privS },
+        { name: 'PSU Insurers', premium: psu, share: psuS },
+      ],
+      insight:
+        Math.abs(privS - psuS) <= 6
+          ? 'On total premium, public and private are now neck-and-neck — LIC’s scale nearly offsets private’s lead across general insurance.'
+          : privS > psuS
+            ? 'On total premium, private insurers now write the larger share — even against LIC’s scale.'
+            : 'On total premium, the public sector still writes the larger share — LIC’s scale outweighs private’s lead in general insurance.',
+    }
   }
+  return null
 }
 
 export function industrySnapshotCards(): StructureCard[] {
@@ -251,7 +264,7 @@ export function industrySnapshotSourceLine(cards: StructureCard[]): string {
   const parts: string[] = []
   if (lifeFy) parts.push(`IRDAI Annual Report (life, ${lifeFy})`)
   if (sahiCard) parts.push(`GI Council segment report (GI & SAHI, ${sahiCard.fy}${sahiCard.provisional ? ', provisional' : ''})`)
-  if (psuFy) parts.push(`PSU/private on a total-premium basis (${psuFy})`)
+  if (psuFy) parts.push(`public vs private on total premium — public = LIC + 4 PSU general insurers (${psuFy})`)
   return `Source: ${parts.join(' · ')}.`
 }
 

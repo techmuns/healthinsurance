@@ -1,26 +1,41 @@
 {
   "_meta": {
     "snapshot_id": "life-industry-premium",
-    "description": "Industry-wide LIFE insurance totals per fiscal year — total premium (new business + renewal), LIC share of life, and the PSU vs private split of TOTAL insurance premium (life + general). The life side of the Industry Snapshot ring cards. The GI side comes live from industry-segment-premium.json (GI Council); this file carries the annual IRDAI figures that have no monthly source.",
-    "schema_version": "1.0.0",
+    "description": "Per-fiscal-year COMPONENTS for the Industry Snapshot ring cards (segment-mix + PSU-vs-private). Three sourced figures per year: industry total LIFE premium (IRDAI), LIC total premium (= public-sector life), and the four PSU general insurers' premium (= public-sector general). The card derives the rest live: private life = life_total − LIC; private GI = total_gi − public_gi (total_gi comes live from industry-segment-premium.json, GI Council, swept every 3 days). PSU = LIC + public-GI; Private = everything else. Public sector follows the STANDARD definition: LIC + New India + National + Oriental + United India. The two state-owned specialised insurers (AIC crop, ECGC export-credit) are NOT counted as public.",
+    "schema_version": "2.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-04",
-    "refresh_cadence": "annual — IRDAI Annual Report (published ~Dec). The December annual ingest cadence refreshes this file; an official source file dropped into data/raw/irdai/ also auto-triggers ingestion (insurance-data-ingest.yml push path).",
+    "last_updated": "2026-06-16",
+    "refresh_cadence": "annual. Each year add ONE row with that year's three components and the card advances on its own (the GI total is already live). Sources by component: life_total_premium — IRDAI Annual Report (~Dec); lic_total_premium — LIC full-year results press release (~May); public_gi_premium — GI Council / IRDAI year-end public-sector general figure. Until ALL three are sourced for a year, the card stays on the last fully-sourced year — missing is never zero, never fabricated.",
     "metric_basis": "total premium (first-year + renewal), Rs crore — a premium metric, not profit",
-    "notes": "psu_total_premium / private_total_premium are on a TOTAL-insurance basis (life + GI combined): IRDAI life totals with LIC = 57% of life, composed with the GI Council FY25 public/private GI mix. Marked best-estimate; refresh from the next IRDAI Annual Report."
+    "notes": "Replaces the earlier BEST-ESTIMATE composition, which wrongly applied LIC's ~57% NEW-BUSINESS (first-year) share to TOTAL premium. LIC's share of TOTAL life premium is ~55% (488148 / 886000), not 57%. Now built from published figures: LIC's own total-premium disclosure and the government-confirmed public-sector general premium (four PSU general insurers, ~Rs 1.06 lakh cr in FY25). Resulting FY25 split: Private 50.2% (Rs 5,99,513 cr) vs PSU 49.8% (Rs 5,94,148 cr); the totals now reconcile exactly with the segment-mix card. FY26 STATUS (as of 2026-06): LIC's FY26 total premium is published (Rs 5,35,984 cr) and staged below; the whole-industry FY26 life total on a TOTAL-premium basis is NOT out yet (only the new-business figure ~Rs 4.59 lakh cr is), and the exact FY26 public-sector general figure isn't published yet either — so those stay null and the card correctly holds at FY25 until they land (missing ≠ zero)."
   },
   "data": [
     {
+      "fiscal_year": "FY26",
+      "life_total_premium": null,
+      "lic_total_premium": 535984,
+      "public_gi_premium": null,
+      "basis": "FY26 in progress. LIC total premium published; industry life total (total-premium basis) and the four PSU general insurers' FY26 figure not yet published — kept null, not estimated.",
+      "provenance": {
+        "source_name": "LIC FY26 results (year ended 31-Mar-2026): total premium income Rs 5,35,984 cr, +9.80% YoY. Industry life total and public-sector general FY26 pending publication (Life Council / IRDAI / GI Council).",
+        "source_url": "https://licindia.in/web/guest/press-releases",
+        "fetched_at": "2026-06-16",
+        "confidence": "high"
+      }
+    },
+    {
       "fiscal_year": "FY25",
       "life_total_premium": 886000,
-      "lic_share_of_life": 0.57,
-      "psu_total_premium": 600000,
-      "private_total_premium": 593000,
-      "basis": "life total premium per IRDAI Annual Report 2024-25; PSU/private split best-estimate composition (life via LIC share + GI Council FY25 GI mix)",
+      "lic_total_premium": 488148,
+      "public_gi_premium": 106000,
+      "lic_share_of_life_total": 0.551,
+      "basis": "Total premium (first-year + renewal), Rs crore. Public sector = LIC + the four PSU general insurers (New India, National, Oriental, United India). Private = all private life insurers + private general insurers + standalone health insurers. Specialised public insurers (AIC, ECGC) excluded from public, per the standard definition.",
       "provenance": {
-        "source_name": "IRDAI Annual Report 2024-25 (life total premium, LIC share); GI Council FY25 segment report (GI composition)",
+        "source_name": "IRDAI Annual Report 2024-25 (industry total life premium, Rs 8.86 lakh cr); LIC FY25 results press release 27-May-2025 (LIC total premium income Rs 4,88,148 cr); GI Council / IRDAI FY25 (public-sector general premium ~Rs 1.06 lakh cr — four PSU general insurers, per the 29-May-2025 PSGIC review)",
         "source_url": "https://irdai.gov.in/annual-reports",
-        "fetched_at": "2026-06-04",
+        "lic_source_url": "https://licindia.in/web/guest/press-releases",
+        "public_gi_source_url": "https://www.gicouncil.in/statistics/industry-statistics/",
+        "fetched_at": "2026-06-16",
         "confidence": "high"
       }
     }
