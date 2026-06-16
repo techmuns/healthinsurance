@@ -16,6 +16,7 @@ import { ValuationMarketView } from '@/sections/ValuationMarketView'
 import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 import { SectoralNews } from '@/sections/SectoralNews'
+import { Insights } from '@/sections/Insights'
 import { SourceUploadDrawer } from '@/components/SourceUploadDrawer'
 
 // Lazy — the audit tab carries a ~1 MB cell-level index that should only load
@@ -85,6 +86,8 @@ const SECTION_AURA: Record<string, { a: string; b: string; c: string }> = {
   'sector-news': { a: '#27457E', b: '#B68B3A', c: '#168E8E' },
   // Calm, neutral field for the QA surface — navy / slate / muted gold.
   audit: { a: '#27457E', b: '#8C97A8', c: '#B68B3A' },
+  // Analytical / editorial field for Insights — gold (edge) / navy / teal.
+  insights: { a: '#B68B3A', b: '#27457E', c: '#168E8E' },
 }
 
 /** Wraps a section that manages internal tabs so its routing stays local. */
@@ -166,7 +169,7 @@ export default function App() {
   const [sahiTab, setSahiTab] = useState('companies')
   const [navOpen, setNavOpen] = useState(false)
 
-  const auraKey = page === 'industry' ? 'overview' : page === 'audit' ? 'audit' : AURA_KEY[sahiTab] ?? 'peers'
+  const auraKey = page === 'industry' ? 'overview' : page === 'insights' ? 'insights' : page === 'audit' ? 'audit' : AURA_KEY[sahiTab] ?? 'peers'
   const aura = SECTION_AURA[auraKey] ?? SECTION_AURA.overview
 
   const selectPage = (p: TopPage) => {
@@ -175,9 +178,9 @@ export default function App() {
   }
   // Sidebar mirrors the top-level pages as app-level icon nav (ids match TopPage).
   const onSidebarNavigate = (id: string) =>
-    selectPage(id === 'sahi' || id === 'audit' ? id : 'industry')
+    selectPage(id === 'sahi' || id === 'audit' || id === 'insights' ? id : 'industry')
 
-  const viewKey = page === 'industry' ? 'industry' : page === 'audit' ? 'audit' : `sahi-${sahiTab}`
+  const viewKey = page === 'industry' ? 'industry' : page === 'insights' ? 'insights' : page === 'audit' ? 'audit' : `sahi-${sahiTab}`
 
   return (
     <FilterProvider>
@@ -225,10 +228,12 @@ export default function App() {
               <div key={viewKey} className="w-full animate-page-enter">
                 <SectionErrorBoundary
                   resetKey={viewKey}
-                  sectionLabel={page === 'industry' ? 'Industry Insights' : page === 'audit' ? 'Extracted Data Audit' : 'SAHI Analysis'}
+                  sectionLabel={page === 'industry' ? 'Industry Insights' : page === 'insights' ? 'Insights' : page === 'audit' ? 'Extracted Data Audit' : 'SAHI Analysis'}
                 >
                   {page === 'industry' ? (
                     <IndustryInsightsPage />
+                  ) : page === 'insights' ? (
+                    <Insights />
                   ) : page === 'audit' ? (
                     <Suspense fallback={<div className="py-16 text-center text-[12.5px] text-ink-secondary">Loading the audit index…</div>}>
                       <ExtractedDataAudit />

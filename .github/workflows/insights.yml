@@ -1,0 +1,70 @@
+name: insights generate
+
+# Regenerates the Insights tab's ranked feed. The deterministic signal layer is
+# recomputed from the live snapshots and handed to the Anthropic API, which
+# writes only what the numbers support (a code validator enforces numeric
+# grounding + the source firewall). A fresh filing -> fresh insights, no manual
+# authoring. The committed JSON auto-deploys via the existing Pages build.
+#
+# One-time setup: add repo secret ANTHROPIC_API_KEY (+ optional variable
+# INSIGHTS_MODEL). That is the entire manual surface.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 5 * * 1' # weekly, Monday 05:00 UTC
+  push:
+    branches: [main]
+    paths:
+      - 'src/data/snapshots/**'
+      - 'src/data/valuationData.ts'
+      - 'src/insights/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: insights-generate
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Signal + grounding checks
+        run: npm run insights:check
+
+      - name: Generate insights (Anthropic)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          INSIGHTS_MODEL: ${{ vars.INSIGHTS_MODEL }}
+        run: npm run insights:generate
+
+      - name: Commit refreshed insights
+        run: |
+          git config user.name "insights-bot"
+          git config user.email "insights-bot@users.noreply.github.com"
+          git add src/data/insights.generated.json
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: regenerate insights @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1
