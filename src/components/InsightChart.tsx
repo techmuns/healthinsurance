@@ -11,6 +11,13 @@ import { buildPanel, type InsurerPanel } from '@/insights/panel'
 const PANEL = buildPanel()
 const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 
+// Standalone charts sit in their own bordered card; "embedded" charts live
+// inside a larger insight card, so they drop the heavy border for a calm,
+// airy tint that lets the surrounding white space breathe.
+const SHELL = 'rounded-xl border border-soft-border bg-card p-3 shadow-soft'
+const SHELL_EMBEDDED = 'rounded-xl bg-gradient-to-br from-ice/70 to-white/40 p-3 ring-1 ring-soft-border/60'
+const shell = (embedded: boolean) => (embedded ? SHELL_EMBEDDED : SHELL)
+
 const COLORS = ['#27457E', '#168E8E', '#8061B8', '#3D5F9F', '#A8443B']
 const GRID = '#ECEFF5'
 const FOCAL = '#C99736' // gold — the insight's subject; pulls the eye to what matters
@@ -20,6 +27,15 @@ const PEER = '#9FB1C9'  // calm slate-blue — the supporting cast
 const colorFor = (id: string, i: number, focal?: string) =>
   focal ? (id === focal ? FOCAL : PEER) : COLORS[i % COLORS.length] || '#27457E'
 const labelFor = (id: string) => byId.get(id)?.label ?? id
+
+// Plain-English axis labels — never show raw dataset keys to the viewer.
+const METRIC_LABEL: Record<string, string> = {
+  roe: 'ROE %', pGwp: 'P/GWP (x)', pb: 'P/B (x)', pe: 'P/E (x)',
+  combined_ratio: 'Combined ratio %', solvency_ratio: 'Solvency (x)',
+  claims_ratio: 'Claims ratio %', expense_ratio: 'Expense ratio %',
+  retail: 'Retail', group: 'Group', health_retail_mix: 'Retail mix %',
+}
+const axisLabel = (k: string) => METRIC_LABEL[k] ?? k
 
 type Num = number | null
 const lastDefined = (xs: { fy: string; v: Num }[]): Num => {
@@ -44,16 +60,16 @@ function latest(p: InsurerPanel, key: string): Num {
   return lastDefined(series(p, key))
 }
 
-function Pending({ title }: { title: string }) {
+function Pending({ title, embedded = false }: { title: string; embedded?: boolean }) {
   return (
-    <div className="flex h-full min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 text-center">
+    <div className={`flex h-full flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 text-center ${embedded ? 'min-h-[208px]' : 'min-h-[180px]'}`}>
       <p className="text-[12px] font-semibold text-navy-deep">{title}</p>
       <p className="mt-0.5 text-[11px] text-ink-secondary">Series not available yet — data pending.</p>
     </div>
   )
 }
 
-export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string }) {
+export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpec; focal?: string; embedded?: boolean }) {
   const insurers = spec.insurers.filter((id) => byId.has(id))
   const thresholds = (spec.annotations ?? []).filter((a) => a.kind === 'threshold' && typeof a.value === 'number')
 
@@ -61,14 +77,14 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   if (spec.type === 'timeseries') {
     const key = spec.seriesKeys[0]
     const fys = [...new Set(insurers.flatMap((id) => series(byId.get(id)!, key).map((s) => s.fy)))].sort()
-    if (!fys.length) return <Pending title={spec.title} />
+    if (!fys.length) return <Pending title={spec.title} embedded={embedded} />
     const rows = fys.map((fy) => {
       const row: Record<string, string | number | null> = { fy }
       for (const id of insurers) row[id] = series(byId.get(id)!, key).find((s) => s.fy === fy)?.v ?? null
       return row
     })
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} embedded={embedded}>
         <LineChart data={rows} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: GRID }} />
@@ -85,9 +101,9 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   if (spec.type === 'ranking_bar') {
     const key = spec.seriesKeys[0]
     const data = insurers.map((id, i) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, i, focal) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
-    if (!data.length) return <Pending title={spec.title} />
+    if (!data.length) return <Pending title={spec.title} embedded={embedded} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} embedded={embedded}>
         <BarChart data={data} layout="vertical" margin={{ top: 6, right: 28, left: 6, bottom: 4 }}>
           <CartesianGrid stroke={GRID} horizontal={false} strokeDasharray="2 4" />
           <XAxis type="number" tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
@@ -106,13 +122,13 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   if (spec.type === 'scatter_dislocation') {
     const [xk, yk] = spec.seriesKeys
     const pts = insurers.map((id, i) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, i, focal) })).filter((p) => p.x != null && p.y != null)
-    if (!pts.length) return <Pending title={spec.title} />
+    if (!pts.length) return <Pending title={spec.title} embedded={embedded} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} embedded={embedded}>
         <ScatterChart margin={{ top: 10, right: 16, left: 0, bottom: 14 }}>
           <CartesianGrid stroke={GRID} strokeDasharray="2 4" />
-          <XAxis type="number" dataKey="x" name={xk} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={{ stroke: GRID }} label={{ value: xk, position: 'insideBottom', offset: -8, fontSize: 10, fill: '#6B7280' }} />
-          <YAxis type="number" dataKey="y" name={yk} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} width={36} label={{ value: yk, angle: -90, position: 'insideLeft', fontSize: 10, fill: '#6B7280' }} />
+          <XAxis type="number" dataKey="x" name={axisLabel(xk)} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={{ stroke: GRID }} label={{ value: axisLabel(xk), position: 'insideBottom', offset: -8, fontSize: 10, fill: '#6B7280' }} />
+          <YAxis type="number" dataKey="y" name={axisLabel(yk)} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} width={36} label={{ value: axisLabel(yk), angle: -90, position: 'insideLeft', fontSize: 10, fill: '#6B7280' }} />
           <ZAxis range={[120, 120]} />
           <Tooltip contentStyle={TT} formatter={(v: number, n: string) => [v, n]} labelFormatter={() => ''} />
           <Scatter data={pts} isAnimationActive={false}>
@@ -130,9 +146,9 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
       const last = hm[hm.length - 1]
       return { label: labelFor(id), retail: last?.retail ?? null, group: last?.group ?? null }
     }).filter((d) => d.retail != null || d.group != null)
-    if (!data.length) return <Pending title={spec.title} />
+    if (!data.length) return <Pending title={spec.title} embedded={embedded} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} embedded={embedded}>
         <BarChart data={data} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#26303F' }} tickLine={false} axisLine={{ stroke: GRID }} />
@@ -152,13 +168,13 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
     if (s.length < 2) return null
     return { id, label: labelFor(id), from: s[0], to: s[s.length - 1], color: colorFor(id, i, focal) }
   }).filter((r): r is NonNullable<typeof r> => r != null)
-  if (!rows.length) return <Pending title={spec.title} />
+  if (!rows.length) return <Pending title={spec.title} embedded={embedded} />
   const all = rows.flatMap((r) => [r.from.v as number, r.to.v as number])
   const lo = Math.min(...all, ...(thresholds.map((t) => t.value as number)))
   const hi = Math.max(...all, ...(thresholds.map((t) => t.value as number)))
   const pos = (v: number) => (hi === lo ? 50 : ((v - lo) / (hi - lo)) * 100)
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
+    <div className={shell(embedded)}>
       <p className="mb-3 text-[11px] font-semibold text-navy-deep">{spec.title}</p>
       <div className="space-y-3">
         {rows.map((r) => (
@@ -181,11 +197,11 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
 
 const TT = { borderRadius: 10, border: '1px solid #E5E8EF', fontSize: 11, boxShadow: '0 8px 22px rgba(23,43,77,0.1)' } as const
 
-function Wrap({ title, children }: { title: string; children: React.ReactElement }) {
+function Wrap({ title, children, embedded = false }: { title: string; children: React.ReactElement; embedded?: boolean }) {
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
+    <div className={shell(embedded)}>
       <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{title}</p>
-      <div style={{ width: '100%', height: 200 }}>
+      <div style={{ width: '100%', height: embedded ? 212 : 200 }}>
         <ResponsiveContainer>{children}</ResponsiveContainer>
       </div>
     </div>
