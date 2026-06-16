@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts'
-import { ArrowRight, ArrowUpRight, Info, Search, TrendingDown, TrendingUp } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Info, Lightbulb, Search, TrendingDown, TrendingUp } from 'lucide-react'
 import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
@@ -68,6 +68,24 @@ export function ValuationMarketView() {
   const shownPeers = peerView === 'All' ? peerRows : peerRows.filter((r) => r.listingStatus === peerView)
   const peerVerdict = premiumVsStar == null ? 'Valuation pending' : premiumVsStar > 5 ? 'Premium to listed peer' : premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with listed peer'
 
+  // "What this means" reads — honest one-line summaries of values already shown
+  // above (premium vs the listed benchmark; operating quality vs peers). No new
+  // numbers, no basis change: just the so-what that turns the table into a call.
+  const peerRead: { tone: WtmTone; text: ReactNode } =
+    premiumVsStar == null
+      ? { tone: 'navy', text: <>The listed-peer comparison is pending a citable P/GWP for the benchmark.</> }
+      : premiumVsStar > 5
+        ? { tone: 'gold', text: <><b className="text-champagne-deep">~{Math.abs(premiumVsStar).toFixed(0)}% premium</b> to Star Health on P/GWP — a premium the operating quality below has to earn.</> }
+        : premiumVsStar < -5
+          ? { tone: 'teal', text: <><b className="text-teal">~{Math.abs(premiumVsStar).toFixed(0)}% discount</b> to the listed peer on P/GWP — the market is pricing in less, not more.</> }
+          : { tone: 'navy', text: <>Broadly <b className="text-navy-deep">in line</b> with the listed peer on P/GWP.</> }
+  const qualityRead: { tone: WtmTone; text: ReactNode } =
+    position === 'Above Average'
+      ? { tone: 'teal', text: <>Operating quality screens <b className="text-teal">above the peer average</b> — supportive of a valuation premium.</> }
+      : position === 'Weak vs peers'
+        ? { tone: 'coral', text: <>Operating quality screens <b style={{ color: CORAL }}>below peers</b> — a premium is harder to justify on fundamentals alone.</> }
+        : { tone: 'navy', text: <>Operating quality is <b className="text-navy-deep">broadly in line</b> with peers.</> }
+
   return (
     <div className="space-y-5">
       {isFocal ? (
@@ -131,7 +149,7 @@ export function ValuationMarketView() {
                 </div>
               }
             />
-            <div className="card-surface p-5">
+            <div className="card-surface card-tint-slate p-5">
               {/* Verdict strip — one line, not a repeated focal point */}
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-soft-border bg-gradient-to-r from-[#F7FAFD] to-[#F4F7FB] px-4 py-3">
                 <div className="flex flex-wrap items-center gap-2.5">
@@ -149,14 +167,14 @@ export function ValuationMarketView() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[11.5px]">
                   <thead>
-                    <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
-                      <th className="py-1.5 pr-2 font-semibold">Company</th>
-                      <th className="py-1.5 pr-2 font-semibold">Status</th>
-                      <th className="py-1.5 pr-2 text-right font-semibold">GWP (FY26)</th>
-                      <th className="py-1.5 pr-2 text-right font-semibold">P/GWP</th>
-                      <th className="py-1.5 pr-2 text-right font-semibold">Equity value</th>
-                      <th className="py-1.5 pr-2 font-semibold">Source</th>
-                      <th className="py-1.5 font-semibold">Confidence</th>
+                    <tr className="border-b border-soft-border bg-[#EAF0FA] text-[10px] uppercase tracking-wide text-ink-secondary">
+                      <th className="rounded-l-lg py-2 pl-2 pr-2 font-semibold">Company</th>
+                      <th className="py-2 pr-2 font-semibold">Status</th>
+                      <th className="py-2 pr-2 text-right font-semibold">GWP (FY26)</th>
+                      <th className="py-2 pr-2 text-right font-semibold">P/GWP</th>
+                      <th className="py-2 pr-2 text-right font-semibold">Equity value</th>
+                      <th className="py-2 pr-2 font-semibold">Source</th>
+                      <th className="rounded-r-lg py-2 pr-2 font-semibold">Confidence</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -180,6 +198,7 @@ export function ValuationMarketView() {
                   </tbody>
                 </table>
               </div>
+              <WhatThisMeans tone={peerRead.tone}>{peerRead.text}</WhatThisMeans>
               {peerView !== 'Listed' && (
                 <p className="mt-3 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]">
                   <Info className="mt-px h-3 w-3 shrink-0" />
@@ -202,9 +221,9 @@ export function ValuationMarketView() {
           note={`Relative scores on the operating metrics behind the multiple · vs ${company.peerGroup} peer average.`}
           right={<ValPill c="secondary" />}
         />
-        <div className="card-surface p-5">
+        <div className="card-surface card-tint-slate p-5">
           <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1.1fr_1fr]">
-            <div style={{ width: '100%', height: 210 }}>
+            <div className="rounded-xl bg-gradient-to-br from-[#F6F9FD] to-[#ECF1F8] ring-1 ring-[rgba(39,69,126,0.06)]" style={{ width: '100%', height: 210 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={compassData} outerRadius="76%" margin={{ top: 8, right: 30, bottom: 8, left: 30 }}>
                   <PolarGrid stroke="#E3E8F0" />
@@ -240,6 +259,7 @@ export function ValuationMarketView() {
               </p>
             </div>
           </div>
+          <WhatThisMeans tone={qualityRead.tone}>{qualityRead.text}</WhatThisMeans>
         </div>
       </section>
 
@@ -426,6 +446,30 @@ function Tile({ k, v, sub, tone = 'navy' }: { k: string; v: string; sub?: string
       <p className="whitespace-nowrap pl-1 text-[8.5px] font-semibold uppercase text-ink-secondary">{k}</p>
       <p className={`mt-0.5 pl-1 font-display text-[16px] leading-none ${t.text}`}>{v}</p>
       {sub && <p className="mt-0.5 pl-1 text-[8.5px] text-ink-secondary/80">{sub}</p>}
+    </div>
+  )
+}
+
+// ── "What this means" — a compact, tone-coded decision read that ties a section's
+//    numbers back to the valuation question (the so-what). Colour psychology:
+//    gold = premium / importance, teal = supportive / positive, coral = stretch /
+//    caution, navy = neutral peer context.
+type WtmTone = 'teal' | 'gold' | 'navy' | 'coral'
+function WhatThisMeans({ tone, children }: { tone: WtmTone; children: ReactNode }) {
+  const t =
+    tone === 'teal' ? { bg: '#F1FAF8', ring: '#CFE7E3', fg: '#0E6F6D', ic: TEAL }
+    : tone === 'gold' ? { bg: '#FBF6EA', ring: '#EAD9A8', fg: '#8A6A1E', ic: GOLD }
+    : tone === 'coral' ? { bg: '#F8ECEC', ring: '#EAD2CD', fg: '#A8443B', ic: CORAL }
+    : { bg: '#EEF3FB', ring: '#D6E2FA', fg: '#27457E', ic: NAVY }
+  return (
+    <div className="mt-4 flex items-start gap-2.5 rounded-xl border px-3.5 py-2.5" style={{ background: t.bg, borderColor: t.ring }}>
+      <span className="mt-px grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/80" style={{ color: t.ic, boxShadow: `inset 0 0 0 1px ${t.ring}` }}>
+        <Lightbulb className="h-3.5 w-3.5" strokeWidth={2} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: t.fg }}>What this means</p>
+        <p className="mt-0.5 text-[12px] leading-snug text-navy-deep">{children}</p>
+      </div>
     </div>
   )
 }
