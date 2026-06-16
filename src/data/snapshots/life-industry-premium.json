@@ -7,7 +7,12 @@
     "last_updated": "2026-06-16",
     "refresh_cadence": "annual. Each year add ONE row with that year's three components and the card advances on its own (the GI total is already live). Sources by component: life_total_premium — IRDAI Annual Report (~Dec); lic_total_premium — LIC full-year results press release (~May); public_gi_premium — GI Council / IRDAI year-end public-sector general figure. Until ALL three are sourced for a year, the card stays on the last fully-sourced year — missing is never zero, never fabricated.",
     "metric_basis": "total premium (first-year + renewal), Rs crore — a premium metric, not profit",
-    "notes": "Replaces the earlier BEST-ESTIMATE composition, which wrongly applied LIC's ~57% NEW-BUSINESS (first-year) share to TOTAL premium. LIC's share of TOTAL life premium is ~55% (488148 / 886000), not 57%. Now built from published figures: LIC's own total-premium disclosure and the government-confirmed public-sector general premium (four PSU general insurers, ~Rs 1.06 lakh cr in FY25). Resulting FY25 split: Private 50.2% (Rs 5,99,513 cr) vs PSU 49.8% (Rs 5,94,148 cr); the totals now reconcile exactly with the segment-mix card. FY26 STATUS (as of 2026-06): LIC's FY26 total premium is published (Rs 5,35,984 cr) and staged below; the whole-industry FY26 life total on a TOTAL-premium basis is NOT out yet (only the new-business figure ~Rs 4.59 lakh cr is), and the exact FY26 public-sector general figure isn't published yet either — so those stay null and the card correctly holds at FY25 until they land (missing ≠ zero)."
+    "notes": "Replaces the earlier BEST-ESTIMATE composition, which wrongly applied LIC's ~57% NEW-BUSINESS (first-year) share to TOTAL premium. LIC's share of TOTAL life premium is ~55% (488148 / 886000), not 57%. Now built from published figures: LIC's own total-premium disclosure and the government-confirmed public-sector general premium (four PSU general insurers, ~Rs 1.06 lakh cr in FY25). Resulting FY25 split: Private 50.2% (Rs 5,99,513 cr) vs PSU 49.8% (Rs 5,94,148 cr); the totals now reconcile exactly with the segment-mix card. FY26 STATUS (as of 2026-06): LIC's FY26 total premium is published (Rs 5,35,984 cr) and staged below; the whole-industry FY26 life total on a TOTAL-premium basis is NOT out yet (only the new-business figure ~Rs 4.59 lakh cr is), and the exact FY26 public-sector general figure isn't published yet either — so those stay null and the card correctly holds at FY25 until they land (missing ≠ zero).",
+    "last_successful_run": null,
+    "agent_target_fys": [
+      "FY26",
+      "FY25"
+    ]
   },
   "data": [
     {

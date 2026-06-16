@@ -1,0 +1,66 @@
+name: life-industry components fetch
+
+# Fills the three ANNUAL life-side figures behind the Industry page's
+# "Market Size by Segment" and "PSU vs Private" cards — all-India life total
+# premium, LIC total premium, and the four PSU general insurers' premium. These
+# have no monthly feed (the GI total is swept separately every 3 days), so the
+# muns web agent sources them for the latest COMPLETED fiscal year(s). The merge
+# is ADD-ONLY — the audited seed is never overwritten — and honest: a figure the
+# agent can't source, or that fails the sanity gate, stays null. The two ring
+# cards then advance to the new year on their own.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 6 months, timed to publication: 1 June (after the ~May full-year
+    # company results / Life Council full-year figures) and 1 December (the IRDAI
+    # annual-report window). New fiscal years self-enter — the script targets the
+    # latest completed FY from the date, so there is no edit per year.
+    - cron: '0 6 1 6,12 *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: life-industry-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch life-industry components (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
+        run: npx tsx scripts/ingest/life-industry-agent.ts
+
+      - name: Commit refreshed components
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/life-industry-premium.json
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: life-industry components @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Land on latest main; retry on races with the other data workflows.
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1
