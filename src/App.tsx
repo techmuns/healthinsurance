@@ -247,7 +247,7 @@ export default function App() {
               </div>
 
               <footer className="mt-auto border-t border-soft-border pt-4 text-center text-[11px] text-ink-secondary">
-                Insurance Investment Dashboard · Figures sourced from company filings, IRDAI &amp; GI Council disclosures · Some profit-quality splits indicative where noted
+                Insurance Investment Dashboard · Figures sourced from company filings, IRDAI &amp; GI Council disclosures · management guidance &amp; AI-gathered items are labelled indicative
               </footer>
             </div>
           </main>
