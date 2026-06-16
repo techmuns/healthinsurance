@@ -124,13 +124,13 @@ export function SahiAnalysisHeader({
               onClick={() => onSelectTab(t.id)}
               aria-current={on ? 'page' : undefined}
               className={[
-                'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-200',
+                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all duration-200',
                 on
-                  ? 'bg-navy-primary text-white shadow-soft'
-                  : 'bg-white/70 text-ink-secondary ring-1 ring-soft-border hover:text-navy-primary',
+                  ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-[0_3px_10px_rgba(23,43,77,0.22)] ring-1 ring-[#B68B3A]/40'
+                  : 'bg-soft-blue/50 text-navy-deep/70 ring-1 ring-soft-border hover:bg-soft-blue hover:text-navy-primary',
               ].join(' ')}
             >
-              {on && <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_5px_rgba(182,139,58,0.7)]" />}
+              {on && <span className="h-1.5 w-1.5 rounded-full bg-champagne shadow-[0_0_6px_rgba(182,139,58,0.85)]" />}
               {t.label}
             </button>
           )

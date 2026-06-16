@@ -35,8 +35,8 @@ export function SectionTabs({
             className={[
               'relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ease-out',
               on
-                ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-[0_4px_12px_rgba(23,43,77,0.18)]'
-                : 'text-ink-secondary hover:bg-ice hover:text-navy-primary',
+                ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-[0_4px_12px_rgba(23,43,77,0.18)] ring-1 ring-[#B68B3A]/35'
+                : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary',
             ].join(' ')}
             title={t.locked ? 'Pending data integration' : undefined}
           >
