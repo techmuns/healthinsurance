@@ -51,6 +51,14 @@ export function SahiAnalysisHeader({
   const companyOptions = peerGroup === 'All' ? insurers : insurers.filter((c) => c.peerGroup === peerGroup)
   const quarterly = period === 'Quarterly'
 
+  // The year / quarter range only reshapes the data on the period-driven tabs
+  // (Premium & Distribution, Profitability). The other tabs are latest-figures
+  // snapshots, current-market views, point-in-time filings or an event feed — the
+  // year can't change them — so the control is shown disabled there (with a note)
+  // rather than pretending it applies. Company selection still applies everywhere.
+  const periodApplies = activeTab === 'distribution' || activeTab === 'profitability'
+  const offCls = periodApplies ? '' : 'pointer-events-none opacity-40'
+
   // Local source-of-truth so flipping Annual ↔ Quarterly keeps the chosen years.
   const [startFY, setStartFY] = useState(() => fyOfIdx(range.from))
   const [endFY, setEndFY] = useState(() => fyOfIdx(range.to))
@@ -150,10 +158,10 @@ export function SahiAnalysisHeader({
         <Divider />
 
         {/* Year range */}
-        <div className="flex items-center gap-1">
+        <div className={`flex items-center gap-1 ${offCls}`}>
           <L>FY</L>
           <span className="relative">
-            <select aria-label="Start year" value={startFY} onChange={(e) => onStartFY(+e.target.value)} className={SELECT_CLS}>
+            <select aria-label="Start year" disabled={!periodApplies} value={startFY} onChange={(e) => onStartFY(+e.target.value)} className={SELECT_CLS}>
               {FYS.filter((fy) => fy <= endFY).map((fy) => (
                 <option key={fy} value={fy}>
                   {fyLabel(fy)}
@@ -164,7 +172,7 @@ export function SahiAnalysisHeader({
           </span>
           <span className="text-[11px] text-ink-secondary" aria-hidden>→</span>
           <span className="relative">
-            <select aria-label="End year" value={endFY} onChange={(e) => onEndFY(+e.target.value)} className={SELECT_CLS}>
+            <select aria-label="End year" disabled={!periodApplies} value={endFY} onChange={(e) => onEndFY(+e.target.value)} className={SELECT_CLS}>
               {FYS.filter((fy) => fy >= startFY).map((fy) => (
                 <option key={fy} value={fy}>
                   {fyLabel(fy)}
@@ -178,13 +186,14 @@ export function SahiAnalysisHeader({
         <Divider />
 
         {/* Period toggle */}
-        <div className="inline-flex h-[30px] items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
+        <div className={`inline-flex h-[30px] items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5 ${offCls}`}>
           {[{ label: 'Annual', q: false }, { label: 'Quarterly', q: true }].map((m) => {
             const active = quarterly === m.q
             return (
               <button
                 key={m.label}
                 type="button"
+                disabled={!periodApplies}
                 onClick={() => setMode(m.q)}
                 aria-pressed={active}
                 className={[
@@ -202,12 +211,12 @@ export function SahiAnalysisHeader({
 
         {/* Quarter range — always rendered (faint + disabled in Annual) so the
             layout never shifts when toggling. Constrained to the year range. */}
-        <div className={`flex items-center gap-1 transition-opacity duration-200 ${quarterly ? '' : 'opacity-40'}`}>
+        <div className={`flex items-center gap-1 transition-opacity duration-200 ${!periodApplies ? 'pointer-events-none opacity-40' : quarterly ? '' : 'opacity-40'}`}>
           <L>Qtr</L>
           <span className="relative">
             <select
               aria-label="Start quarter"
-              disabled={!quarterly}
+              disabled={!quarterly || !periodApplies}
               value={`${qs.fy}-${qs.q}`}
               onChange={(e) => onQStart(e.target.value)}
               className={SELECT_CLS}
@@ -224,7 +233,7 @@ export function SahiAnalysisHeader({
           <span className="relative">
             <select
               aria-label="End quarter"
-              disabled={!quarterly}
+              disabled={!quarterly || !periodApplies}
               value={`${qe.fy}-${qe.q}`}
               onChange={(e) => onQEnd(e.target.value)}
               className={SELECT_CLS}
@@ -238,6 +247,12 @@ export function SahiAnalysisHeader({
             <Caret />
           </span>
         </div>
+
+        {!periodApplies && (
+          <span className="text-[10px] italic text-ink-secondary/70">
+            Latest figures — the year filter applies on Premium &amp; Distribution and Profitability
+          </span>
+        )}
       </div>
     </div>
   )
