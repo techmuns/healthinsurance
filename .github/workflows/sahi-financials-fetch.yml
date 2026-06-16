@@ -73,10 +73,13 @@ jobs:
           DISPATCH_COMPANY: ${{ inputs.company }}
           DISPATCH_PERIOD: ${{ inputs.period }}
           DISPATCH_DOC_URL: ${{ inputs.doc_url }}
-          # The full-year columns the SAHI-comparison sheet shows.
-          FY_PERIODS: 'FY23 FY24 FY25 FY26'
         run: |
           set +e
+          # DYNAMIC fiscal-year window — advances itself every year (Indian FY ends
+          # 31 Mar), so genuinely new years (FY27, FY28 …) enter the sweep with ZERO
+          # edits. Rolling last 4 completed FYs.
+          NOWY=$(date -u +%Y); NOWM=$(date -u +%m); BASEFY=$NOWY; [ "$((10#$NOWM))" -ge 4 ] && BASEFY=$((NOWY+1))
+          FY_PERIODS=""; for off in 1 2 3 4; do FY_PERIODS="$FY_PERIODS FY$(printf '%02d' $(((BASEFY-off)%100)))"; done
           # Manual dispatch with a company → just that company/period (+ optional
           # doc URL). Schedule (or dispatch with no company) → sweep every SAHI.
           if [ -n "$DISPATCH_COMPANY" ]; then

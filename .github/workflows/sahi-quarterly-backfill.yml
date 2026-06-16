@@ -65,14 +65,22 @@ jobs:
           MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
           SCRAPERAPI_KEY: ${{ secrets.SCRAPER_KEY }}
           INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
-          PERIODS_NIVA_STAR: ${{ inputs.periods_niva_star || 'H1FY25 9MFY25 H1FY26 9MFY26' }}
-          PERIODS_CARE: ${{ inputs.periods_care || 'Q1FY25 9MFY25 Q1FY26 9MFY26' }}
-          PERIODS_Q1: ${{ inputs.periods_q1 || 'Q1FY25 Q1FY26' }}
+          PERIODS_NIVA_STAR: ${{ inputs.periods_niva_star }}
+          PERIODS_CARE: ${{ inputs.periods_care }}
+          PERIODS_Q1: ${{ inputs.periods_q1 }}
         run: |
           set +e
           # Per-insurer interim columns mirror the SAHI-comparison sheet: niva/star
           # report H1 + 9M; care reports Q1 + 9M; aditya/manipal report Q1 only.
           # (Q4 columns are derived = full year - 9M, so they are never fetched.)
+          # DYNAMIC interim window — the last two fiscal years; advances itself every
+          # year (Indian FY ends 31 Mar) so new years flow in with ZERO edits. A
+          # manual dispatch can still override via the workflow inputs.
+          NOWY=$(date -u +%Y); NOWM=$(date -u +%m); BASEFY=$NOWY; [ "$((10#$NOWM))" -ge 4 ] && BASEFY=$((NOWY+1))
+          fa=FY$(printf '%02d' $(((BASEFY-1)%100))); fb=FY$(printf '%02d' $(((BASEFY-2)%100)))
+          PERIODS_NIVA_STAR="${PERIODS_NIVA_STAR:-H1$fb 9M$fb H1$fa 9M$fa}"
+          PERIODS_CARE="${PERIODS_CARE:-Q1$fb 9M$fb Q1$fa 9M$fa}"
+          PERIODS_Q1="${PERIODS_Q1:-Q1$fb Q1$fa}"
           declare -A PERIODS
           PERIODS[niva-bupa]="$PERIODS_NIVA_STAR"
           PERIODS[star-health]="$PERIODS_NIVA_STAR"
