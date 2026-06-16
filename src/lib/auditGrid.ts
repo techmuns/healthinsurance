@@ -157,8 +157,10 @@ export interface GridSummary {
   missing: number
   notAvailable: number
   needsReview: number
-  conflicts: number
-  sourceNotFetched: number
+  /** Cells where sources DISAGREED but the policy resolved it automatically
+   *  (investor-presentation-first, or directly-sourced over a derived estimate).
+   *  Distinct from needsReview — these need no action, the conflict is settled. */
+  autoResolved: number
   coverage: number // filled / expected, 0..1
 }
 
@@ -428,9 +430,12 @@ export function buildAuditGrid(): GridModel {
     }
   }
   const filled = cells.filter((c) => c.status === 'filled' || c.status === 'basis_mismatch').length
-  const missing = cells.filter((c) => c.status === 'missing_in_source' || c.status === 'source_not_fetched').length
+  const missing = cells.filter((c) => c.status === 'missing_in_source').length
   const needsReview = cells.filter((c) => c.status === 'needs_review').length
-  const conflicts = cells.filter((c) => c.competing.length > 0).length
+  // Disagreements the policy auto-settled (competing values kept for the record,
+  // but the cell is not a review item) — counted separately from needsReview so
+  // the "needs attention" number is never inflated by already-resolved conflicts.
+  const autoResolved = cells.filter((c) => c.competing.length > 0 && c.status !== 'needs_review').length
   const notAvailable = cells.filter((c) => c.status === 'not_available').length
   const summary: GridSummary = {
     expected: cells.length,
@@ -438,8 +443,7 @@ export function buildAuditGrid(): GridModel {
     missing,
     notAvailable,
     needsReview,
-    conflicts,
-    sourceNotFetched: cells.filter((c) => c.status === 'source_not_fetched').length,
+    autoResolved,
     coverage: cells.length ? filled / cells.length : 0,
   }
   return { cells, summary }

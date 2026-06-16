@@ -209,7 +209,7 @@ export function AuditDataGrid() {
         <SummaryCard label="Missing" value={s.missing} tone="red" />
         <SummaryCard label="Not available" value={s.notAvailable} tone="grey" />
         <SummaryCard label="Needs review" value={s.needsReview} tone="amber" />
-        <SummaryCard label="Source conflicts" value={s.conflicts} tone="navy" />
+        <SummaryCard label="Auto-resolved" value={s.autoResolved} tone="navy" />
         <SummaryCard label="Coverage" value={`${(s.coverage * 100).toFixed(0)}%`} tone="plain" />
       </div>
 
