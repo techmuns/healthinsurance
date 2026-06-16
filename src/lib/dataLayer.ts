@@ -20,6 +20,7 @@ import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import quarterlySnapshot from '@/data/snapshots/insurer-quarterly-financials.json'
 import monthlySnapshot from '@/data/snapshots/insurer-monthly-premium.json'
 import industrySegmentSnapshot from '@/data/snapshots/industry-segment-premium.json'
+import gicHealthPortfolio from '@/data/snapshots/gic-health-portfolio.json'
 import sahiPeerSnapshot from '@/data/snapshots/sahi-peer-comparison.json'
 import distributionMixSnapshot from '@/data/snapshots/distribution-channel-mix.json'
 import distributionReachSnapshot from '@/data/snapshots/distribution-reach-depth.json'
@@ -466,22 +467,27 @@ export function getFocalCompanyId(): string {
   return master.find((c) => c.is_focal)?.company_id ?? master[0]?.company_id ?? 'niva-bupa'
 }
 
-/** Fiscal years (newest first) for which at least one insurer reports a
- *  retail/individual health-premium mix. Lets a per-year view resolve to a year
- *  that actually has data — never showing one year's split under another. */
+// Retail-vs-group HEALTH mix per insurer, from the GI Council health portfolio
+// (retail health premium ÷ total health premium). This is the correct basis for
+// "share of health GWP" and is reported across many fiscal years (FY18→FY26), so
+// the product-mix view is genuinely multi-year — not frozen on one year.
+interface GicHealthPortfolioRow { fiscal_year: string; entity: string; health_retail: number | null; health_total: number | null }
+const GIC_HEALTH_ROWS = (gicHealthPortfolio.data as GicHealthPortfolioRow[]) ?? []
+const hasHealthMix = (r: GicHealthPortfolioRow): boolean =>
+  typeof r.health_retail === 'number' && typeof r.health_total === 'number' && r.health_total > 0
+
+/** Fiscal years (newest first) that report a per-insurer retail/group health split. */
 export function retailMixYears(): string[] {
-  const rows = annualSnapshot.data as Array<{ fiscal_year: string; retail_mix: number | null }>
-  return [...new Set(rows.filter((r) => typeof r.retail_mix === 'number' && r.retail_mix > 0).map((r) => r.fiscal_year))]
-    .sort((a, b) => fyNum(b) - fyNum(a))
+  return [...new Set(GIC_HEALTH_ROWS.filter(hasHealthMix).map((r) => r.fiscal_year))].sort((a, b) => fyNum(b) - fyNum(a))
 }
 
-/** company_id → retail-mix % for one fiscal year (only companies that report it). */
+/** company_id → retail-health-mix % for one fiscal year (retail ÷ total health premium). */
 export function retailMixForYear(fy: string): Map<string, number> {
-  const rows = annualSnapshot.data as Array<{ company_id: string; fiscal_year: string; retail_mix: number | null }>
   return new Map(
-    rows
-      .filter((r) => r.fiscal_year === fy && typeof r.retail_mix === 'number' && r.retail_mix > 0)
-      .map((r) => [r.company_id, r.retail_mix as number]),
+    GIC_HEALTH_ROWS.filter((r) => r.fiscal_year === fy && hasHealthMix(r)).map((r) => [
+      r.entity,
+      Math.round(((r.health_retail as number) / (r.health_total as number)) * 100),
+    ]),
   )
 }
 
