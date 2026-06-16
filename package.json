@@ -33,7 +33,8 @@
     "audit:conflicts": "tsx scripts/ingest/audit-fill.ts conflicts",
     "health:check": "tsx scripts/ingest/health-check.ts",
     "audit:niva-bupa:inspect": "tsx scripts/ingest/niva-backfill.ts",
-    "audit:niva-bupa:backfill": "tsx scripts/ingest/niva-backfill.ts && tsx scripts/ingest/audit-fill.ts fill --from data/agent-pulls/niva-backfill/cleaned.json"
+    "audit:niva-bupa:backfill": "tsx scripts/ingest/niva-backfill.ts && tsx scripts/ingest/audit-fill.ts fill --from data/agent-pulls/niva-backfill/cleaned.json",
+    "ingest:quarterly-premium": "tsx scripts/ingest/insurer-quarterly-premium-agent.ts"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

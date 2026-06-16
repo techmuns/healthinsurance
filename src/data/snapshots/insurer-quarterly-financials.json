@@ -4,7 +4,7 @@
     "description": "Quarterly company financials — GWP, NWP, NEP, PAT, combined ratio, solvency, ROE — drawn from quarterly disclosures.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-02",
+    "last_updated": "2026-06-16",
     "last_successful_run": "2026-06-02T17:46:12.494Z",
     "upstream_sources": [
       "irdai_public_disclosures",
@@ -733,6 +733,13 @@
         "parsed_at": "2026-05-30T17:01:25.153Z",
         "parser_name": "ingest-quarterly-disclosures",
         "confidence": "high"
+      },
+      "nep": 1971.95,
+      "premium_provenance": {
+        "source_name": "Niva Bupa Q4 FY26 results (8-May-2026): net premium earned Rs 1,971.95 cr",
+        "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "fetched_at": "2026-06-16",
+        "confidence": "high"
       }
     },
     {
@@ -795,6 +802,13 @@
         "fetched_at": "2026-05-30T17:00:01.796Z",
         "parsed_at": "2026-05-30T17:01:34.510Z",
         "parser_name": "ingest-quarterly-disclosures",
+        "confidence": "high"
+      },
+      "nep": 1527.42,
+      "premium_provenance": {
+        "source_name": "Niva Bupa Q4 FY25 results: net premium earned Rs 1,527.42 cr",
+        "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+        "fetched_at": "2026-06-16",
         "confidence": "high"
       }
     },

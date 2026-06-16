@@ -1,0 +1,60 @@
+name: insurer quarterly premium fetch
+
+# Fills the Premium Engine's quarterly NET WRITTEN / NET EARNED premium for the
+# listed health insurers (Niva Bupa, Star Health) from their quarterly results /
+# IRDAI Revenue Account. Gross premium per quarter already comes live from the GI
+# Council quarterly health filing; this adds net/earned, ADD-ONLY (never wipes a
+# value), bounds-checked, honest blanks where a quarter isn't filed.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Quarterly, ~3 weeks after each Indian quarter-end (results published):
+    # 20 Feb (Q3), 20 May (Q4 + full-year), 20 Aug (Q1), 20 Nov (Q2).
+    - cron: '0 7 20 2,5,8,11 *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: insurer-quarterly-premium-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch quarterly net/earned premium (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
+        run: npx tsx scripts/ingest/insurer-quarterly-premium-agent.ts
+
+      - name: Commit filled quarters
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/insurer-quarterly-financials.json
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: insurer quarterly premium @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1
