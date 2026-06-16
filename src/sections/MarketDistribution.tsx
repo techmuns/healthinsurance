@@ -34,12 +34,15 @@ export function MarketDistribution() {
   const company = useActiveCompany()
   return (
     <div className="grid grid-cols-1 gap-6">
-      {/* Premium engine — GWP / NWP / NEP bars for the active insurer. The
-          'Premium & Distribution' view leads with the premium waterfall, then
-          the product mix (retail vs group), then the channel mix over time. */}
+      {/* Premium engine — GWP / NWP / NEP bars for the active insurer, full width
+          above the business-mix module. */}
       <PremiumFlowQuality focalId={company.id} />
-      <RetailGroupMixCard />
-      <ChannelMixCard />
+      {/* Business-mix module — Retail/Group split (left) + Channel mix (right) as
+          one equal-width, equal-height row on large screens; stacked on small. */}
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+        <RetailGroupMixCard />
+        <ChannelMixCard />
+      </div>
     </div>
   )
 }
@@ -841,7 +844,7 @@ function RetailGroupMixCard() {
         </>
       )}
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-auto flex justify-end pt-3">
         <SourceTag source={RETAIL_MIX_SOURCE.source} confidence={RETAIL_MIX_SOURCE.confidence} provenance={RETAIL_MIX_SOURCE.provenance} period={spanLabel ?? fullSpan ?? undefined} frequency="Annual" />
       </div>
     </section>
@@ -931,7 +934,7 @@ function ChannelMixCard() {
         </InsightLine>
       )}
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-auto flex justify-end pt-3">
         <SourceTag source={DIST_SOURCE.source} confidence={DIST_SOURCE.confidence} provenance={DIST_SOURCE.provenance} period={last?.period ?? span} />
       </div>
     </section>
