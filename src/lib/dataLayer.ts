@@ -28,6 +28,7 @@ import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
 import shareholdingPatternSnapshot from '@/data/snapshots/shareholding-pattern-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
+import bulkBlockDeals from '@/data/snapshots/bulk-block-deals-snapshot.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
 import { peerValuation } from '@/data/valuationData'
 import irdaiFlashLatestJson from '@/data/snapshots/irdai-nonlife-flash-latest.json'
@@ -295,6 +296,38 @@ export function getOwnershipData(companyId: string) {
 export function getManagementEvents(companyId: string) {
   const rows = (managementEventsSnapshot.data as Array<{ company_id: string }>).filter((r) => r.company_id === companyId)
   return { rows, meta: (managementEventsSnapshot as MetaBlock)._meta }
+}
+
+// ─── Bulk / block deals (exchange-reported large trades) ────────────────────
+export interface BulkBlockDeal {
+  company_id: string
+  deal_kind: 'bulk' | 'block'
+  date: string
+  client: string
+  side: 'buy' | 'sell'
+  quantity: number
+  price: number
+}
+
+/** Exchange-reported bulk & block deals for a listed insurer, newest first.
+ *  Never fabricated — an insurer with no deal on record returns []. */
+export function getBulkBlockDeals(companyId: string): {
+  deals: BulkBlockDeal[]
+  sourceName: string
+  sourceUrl: string
+  lastUpdated: string | null
+} {
+  const all = (bulkBlockDeals as { data?: BulkBlockDeal[] }).data ?? []
+  const deals = all
+    .filter((d) => d.company_id === companyId)
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.quantity - a.quantity))
+  const m = (bulkBlockDeals as { _meta?: { source?: { source_name?: string; source_url?: string }; last_updated?: string } })._meta
+  return {
+    deals,
+    sourceName: m?.source?.source_name ?? 'NSE / BSE bulk & block deals',
+    sourceUrl: m?.source?.source_url ?? 'https://www.nseindia.com',
+    lastUpdated: m?.last_updated ?? null,
+  }
 }
 
 // ─── Provenance ────────────────────────────────────────────────────────────

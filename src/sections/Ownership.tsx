@@ -1,11 +1,71 @@
-import { Sparkles, ShieldAlert, ArrowLeftRight } from 'lucide-react'
+import { Sparkles, ShieldAlert, ArrowLeftRight, ArrowUpRight } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { LockedPanel } from '@/components/LockedPanel'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany } from '@/state/filters'
-import { getCompanyMaster, getOwnershipData } from '@/lib/dataLayer'
+import { getCompanyMaster, getOwnershipData, getBulkBlockDeals, type BulkBlockDeal } from '@/lib/dataLayer'
+
+// ── Bulk / block deal formatting + timeline ─────────────────────────────────
+const dealQty = (q: number): string =>
+  q >= 1e7 ? `${(q / 1e7).toFixed(2)} Cr` : q >= 1e5 ? `${(q / 1e5).toFixed(1)} L` : q.toLocaleString('en-IN')
+const dealValue = (q: number, p: number): string => {
+  const v = q * p
+  return v >= 1e7 ? `₹${(v / 1e7).toFixed(0)} Cr` : v >= 1e5 ? `₹${(v / 1e5).toFixed(1)} L` : `₹${Math.round(v).toLocaleString('en-IN')}`
+}
+const dealDate = (iso: string): string =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
+
+/** Real exchange-reported bulk/block deals as a compact chip timeline. */
+function BulkBlockTimeline({ deals, sourceName, sourceUrl }: { deals: BulkBlockDeal[]; sourceName: string; sourceUrl: string }) {
+  const buyQty = deals.filter((d) => d.side === 'buy').reduce((s, d) => s + d.quantity, 0)
+  const sellQty = deals.filter((d) => d.side === 'sell').reduce((s, d) => s + d.quantity, 0)
+  const byDate: { date: string; rows: BulkBlockDeal[] }[] = []
+  for (const d of deals) {
+    const g = byDate.find((x) => x.date === d.date)
+    if (g) g.rows.push(d)
+    else byDate.push({ date: d.date, rows: [d] })
+  }
+  return (
+    <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
+        <a href={sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
+          {sourceName} <ArrowUpRight className="h-3 w-3" />
+        </a>
+      </div>
+      <div className="mb-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+        <span className="rounded-full bg-teal-soft px-2 py-0.5 font-semibold text-teal">Bought {dealQty(buyQty)}</span>
+        <span className="rounded-full bg-[#FBEDEA] px-2 py-0.5 font-semibold text-[#A8443B]">Sold {dealQty(sellQty)}</span>
+        <span className="text-ink-secondary">· {deals.length} large trades on record</span>
+      </div>
+      <div className="space-y-3">
+        {byDate.map(({ date, rows }) => (
+          <div key={date}>
+            <p className="mb-1.5 text-[10.5px] font-semibold text-navy-deep">{dealDate(date)}</p>
+            <div className="space-y-1.5">
+              {rows.map((d, i) => {
+                const buy = d.side === 'buy'
+                return (
+                  <div key={i} className="flex items-center gap-2 rounded-lg border border-soft-border bg-ice/40 px-2.5 py-1.5">
+                    <span className={['inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide', buy ? 'bg-teal-soft text-teal' : 'bg-[#FBEDEA] text-[#A8443B]'].join(' ')}>
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ background: buy ? '#168E8E' : '#C08680' }} />
+                      {buy ? 'Buy' : 'Sell'}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-navy-deep" title={d.client}>{d.client}</span>
+                    <span className="shrink-0 text-[11px] tabular-nums text-ink-secondary">{dealQty(d.quantity)} @ ₹{d.price.toFixed(1)}</span>
+                    <span className="hidden w-16 shrink-0 text-right text-[11px] font-semibold tabular-nums text-navy-deep sm:inline">{dealValue(d.quantity, d.price)}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 // ---------------------------------------------------------------------------
 //  Ownership — shareholding pattern for the LISTED standalone-health insurers
@@ -248,6 +308,9 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
   const holders = (row.top_holders ?? []).filter((h) => h.share != null)
   const hasNamed = holders.length > 0
 
+  // Real exchange-reported bulk/block deals for the timeline below.
+  const bulk = getBulkBlockDeals(row.company_id)
+
   // Large-holder rows: named holders when available, else the real class
   // aggregates (signal Unknown — movement isn't tracked from a single filing).
   const signalFor = (change: number | null): Signal =>
@@ -344,16 +407,20 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
         )}
       </div>
 
-      {/* Bulk / Block Deal mini timeline */}
-      <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
-        <DataEmptyState
-          kind="pending"
-          height={92}
-          title="No bulk / block deals on record"
-          body={`Large buys, sells, PE/strategic exits and institutional accumulation for ${companyName} appear here as a chip timeline once a bulk/block-deal feed is connected.`}
-        />
-      </div>
+      {/* Bulk / Block Deal timeline — real exchange-reported large trades */}
+      {bulk.deals.length > 0 ? (
+        <BulkBlockTimeline deals={bulk.deals} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} />
+      ) : (
+        <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
+          <DataEmptyState
+            kind="pending"
+            height={92}
+            title="No bulk / block deals on record"
+            body={`Large buys, sells, PE/strategic exits and institutional accumulation for ${companyName} appear here once the exchange's bulk/block-deal feed reports one.`}
+          />
+        </div>
+      )}
     </section>
   )
 }

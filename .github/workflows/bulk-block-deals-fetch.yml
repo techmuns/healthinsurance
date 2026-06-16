@@ -1,0 +1,58 @@
+name: bulk block deals fetch
+
+# Keeps the Governance tab's Bulk / Block Deal Timeline current. NSE & BSE publish
+# bulk and block deals each trading day; the muns agent pulls the latest deals for
+# the listed insurers (Niva Bupa, Star Health) from the authentic exchange feed
+# and appends genuinely-new ones (add-only, de-duped, sanity-gated).
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every weekday evening (IST night) — after the exchanges post the day's deals.
+    - cron: '0 16 * * 1-5'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bulk-block-deals-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch bulk / block deals (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
+        run: npx tsx scripts/ingest/bulk-block-deals-agent.ts
+
+      - name: Commit new deals
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/bulk-block-deals-snapshot.json
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: bulk/block deals @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1

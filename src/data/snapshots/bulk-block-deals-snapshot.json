@@ -1,0 +1,91 @@
+{
+  "_meta": {
+    "snapshot_id": "bulk-block-deals",
+    "description": "Exchange-reported BULK and BLOCK deals per LISTED insurer (date, client, buy/sell side, quantity, price), from the NSE/BSE bulk & block deal disclosures (the authentic source; aggregated by Screener). Drives the Bulk / Block Deal Timeline on the Governance tab. Listed names only; missing = no deal on record, never fabricated.",
+    "schema_version": "1.0.0",
+    "dataset": "official",
+    "last_updated": "2026-06-16",
+    "refresh_cadence": "daily/weekly — NSE & BSE publish bulk and block deals each trading day. The agent pulls the latest deals per listed insurer and appends new ones (add-only, de-duped by date+client+side+qty).",
+    "source": {
+      "source_name": "NSE / BSE bulk & block deals (via Screener)",
+      "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA",
+      "aggregator_url": "https://www.screener.in/company/NIVABUPA/#shareholding"
+    },
+    "last_successful_run": null,
+    "notes": "Quantity in shares; price in Rs/share. side = buy | sell. deal_kind = bulk | block."
+  },
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "M Pallonji And Co Pvt Ltd",
+      "side": "buy",
+      "quantity": 13560000,
+      "price": 84
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Share India Securities Limited",
+      "side": "sell",
+      "quantity": 11196723,
+      "price": 82.9
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Irage Broking Services LLP",
+      "side": "sell",
+      "quantity": 10919157,
+      "price": 83.5
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Patronus Tradetech LLP",
+      "side": "sell",
+      "quantity": 10184741,
+      "price": 83.9
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Share India Securities Limited",
+      "side": "buy",
+      "quantity": 9174947,
+      "price": 82.6
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Share India Securities Limited",
+      "side": "buy",
+      "quantity": 4745711,
+      "price": 83
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Irage Broking Services LLP",
+      "side": "buy",
+      "quantity": 3207665,
+      "price": 83
+    },
+    {
+      "company_id": "niva-bupa",
+      "deal_kind": "bulk",
+      "date": "2025-06-02",
+      "client": "Patronus Tradetech LLP",
+      "side": "buy",
+      "quantity": 436918,
+      "price": 83
+    }
+  ]
+}
