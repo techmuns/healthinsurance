@@ -48,8 +48,11 @@ const latestAnnualFy = Math.max(
   ...SEG_ROWS.filter((r) => r.period_type === 'annual').map((r) => fyNumOf(r.fiscal_year)),
   ...ANNUAL_ROWS.map((r) => fyNumOf(r.fiscal_year)),
 )
-const now = new Date()
-const clockFy = (now.getUTCMonth() >= 3 ? now.getUTCFullYear() + 1 : now.getUTCFullYear()) - 2000
+// Current Indian fiscal year, evaluated in IST (UTC+5:30) so the year rolls at
+// midnight India time, not 05:30 IST — otherwise FY_MAX could trail by a year
+// for ~5.5h around 1 April.
+const nowIst = new Date(Date.now() + 5.5 * 60 * 60 * 1000)
+const clockFy = (nowIst.getUTCMonth() >= 3 ? nowIst.getUTCFullYear() + 1 : nowIst.getUTCFullYear()) - 2000
 export const FY_MAX = Math.max(26, latestSourcedFy, clockFy)
 
 /** Largest valid month index (FY_MIN..FY_MAX, inclusive). */

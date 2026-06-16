@@ -74,8 +74,11 @@ const round1 = (n: number) => Math.round(n * 10) / 10
 // in automatically the moment the next March edition ingests, and the gap tick
 // then advances to the following year by itself. Nothing here is hardcoded.
 const CLOCK_FY = (() => {
-  const d = new Date()
-  return (d.getUTCMonth() >= 3 ? d.getUTCFullYear() + 1 : d.getUTCFullYear()) - 2000
+  // Indian fiscal year (Apr 1 – Mar 31), evaluated in IST (UTC+5:30) so the
+  // year rolls at midnight India time — not 05:30 IST (midnight UTC), which
+  // otherwise mislabels the trailing "not yet reported" gap for ~5.5h on Apr 1.
+  const ist = new Date(Date.now() + 5.5 * 60 * 60 * 1000)
+  return (ist.getUTCMonth() >= 3 ? ist.getUTCFullYear() + 1 : ist.getUTCFullYear()) - 2000
 })()
 
 // ── A single (company × metric) line, with its absolute series + index base. ──
