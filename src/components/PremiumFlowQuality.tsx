@@ -4,11 +4,13 @@ import { useFilters } from '@/state/filters'
 import { EmptyState } from './EmptyState'
 import { SourceTag } from './SourceTag'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
-import { formatRange, fyLabelsInRange } from '@/lib/dateRange'
+import quarterlyFinancials from '@/data/snapshots/insurer-quarterly-financials.json'
+import gicHealthQuarterly from '@/data/snapshots/gic-health-quarterly.json'
+import { formatRange, fyLabelsInRange, periodLabelsInRange } from '@/lib/dateRange'
 
 // Color meaning (financial story): deep navy = gross written premium / the
 // foundation (GWP); rich teal = retained / healthy quality (NWP); steel blue =
-// earned / realized (NEP). Three measures, three bars, side by side per year.
+// earned / realized (NEP). Three measures, three bars, side by side per period.
 const GWP_COLOR = '#234A84'
 const NWP_COLOR = '#148A87'
 const NEP_COLOR = '#4D7EA8'
@@ -29,6 +31,38 @@ const SERIES: { key: 'gwp' | 'nwp' | 'nep'; name: string; abbr: string; color: s
   { key: 'nwp', name: 'Net written', abbr: 'NWP', color: NWP_COLOR },
   { key: 'nep', name: 'Net earned', abbr: 'NEP', color: NEP_COLOR },
 ]
+
+// ── Quarterly premium (₹ Cr) per "Qx FYyy" label ────────────────────────────
+// GWP comes from the GI Council quarterly health filing (`health_total`) — for a
+// STANDALONE health insurer that is the total written premium. NWP / NEP come
+// from the company's quarterly results when filed (insurer-quarterly-financials),
+// else null → an honest "n/a", never zero.
+interface GicHealthQRow { period: string; entity: string; health_total: number | null }
+interface QuarterlyFinRow { company_id: string; quarter: string; fiscal_year: string; nwp: number | null; nep: number | null }
+const Q_FY = /^Q([1-4])FY(\d{2})$/
+
+function quarterlyPremiumMap(companyId: string): Map<string, { gwp: number | null; nwp: number | null; nep: number | null }> {
+  const map = new Map<string, { gwp: number | null; nwp: number | null; nep: number | null }>()
+  const at = (label: string) => map.get(label) ?? { gwp: null, nwp: null, nep: null }
+  for (const r of gicHealthQuarterly.data as GicHealthQRow[]) {
+    if (r.entity !== companyId) continue
+    const m = Q_FY.exec(r.period)
+    if (!m) continue
+    const label = `Q${m[1]} FY${m[2]}`
+    const e = at(label)
+    if (typeof r.health_total === 'number') e.gwp = r.health_total
+    map.set(label, e)
+  }
+  for (const r of quarterlyFinancials.data as QuarterlyFinRow[]) {
+    if (r.company_id !== companyId) continue
+    const label = `${r.quarter} ${r.fiscal_year}`
+    const e = at(label)
+    if (typeof r.nwp === 'number') e.nwp = r.nwp
+    if (typeof r.nep === 'number') e.nep = r.nep
+    map.set(label, e)
+  }
+  return map
+}
 
 /** Multi-series tooltip — period, each reported measure, and the retention ratio.
  *  Null (not disclosed) measures are dropped so a missing value never reads as 0. */
@@ -81,96 +115,100 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
   const rangeLabel = formatRange(range, globalPeriod)
   const company = insurers.find((c) => c.id === focalId) ?? insurers[0]
   const name = company?.shortName ?? 'Company'
+  const quarterly = globalPeriod === 'Quarterly'
+  const unit = quarterly ? 'quarter' : 'year'
 
-  // Premium written / retained / earned is reported per fiscal year, not per
-  // quarter or month. Honour the global Period toggle with an explicit state.
-  if (globalPeriod !== 'Annual') {
-    return (
-      <div className="card-surface p-4 sm:p-5">
-        <EmptyState
-          title={`${globalPeriod} premium not reported from source`}
-          body={`Gross / net / earned premium for ${name} is disclosed annually. Switch Period to Annual; use the Data Range to narrow the years.`}
-          height={300}
-        />
-      </div>
-    )
-  }
-
-  // Real annual rows for this company, range-filtered. Years with no sourced row
+  // Build the per-period rows for the active Period. Periods with no sourced row
   // stay null-valued (a labelled gap) rather than dropped, so the axis never
-  // implies a value where the source is silent. Never fabricates a missing year.
-  const allCompanyRows = (annualSnapshot.data as Array<{
-    company_id: string
-    fiscal_year: string
-    gwp: number | null
-    gross_direct_premium?: number | null
-    nwp: number | null
-    nep: number | null
-  }>)
-    .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
-    .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
+  // implies a value where the source is silent. Never fabricates a missing one.
+  let rows: Row[]
+  let basisNote: string | undefined
+  let noHistory = false
 
-  const yearsInRange = fyLabelsInRange(range)
-  const reportedByFy = new Map(allCompanyRows.map((r) => [r.fiscal_year, r]))
+  if (quarterly) {
+    // Quarterly: GWP from the GI Council quarterly health filing (= total written
+    // for a standalone health insurer); NWP / NEP from the quarterly results.
+    const labels = periodLabelsInRange(range, 'Quarterly')
+    const qmap = quarterlyPremiumMap(focalId)
+    rows = labels.map((l) => {
+      const e = qmap.get(l)
+      return { period: l, gwp: e?.gwp ?? null, nwp: e?.nwp ?? null, nep: e?.nep ?? null }
+    })
+    noHistory = quarterlyPremiumMap(focalId).size === 0
+    basisNote = `Quarterly gross premium from GI Council health filings (= total written premium for a standalone health insurer). Net / earned shown where the company has filed the quarter.`
+  } else {
+    // Annual: per-year GWP / NWP / NEP from the company's annual disclosures.
+    const allCompanyRows = (annualSnapshot.data as Array<{
+      company_id: string
+      fiscal_year: string
+      gwp: number | null
+      gross_direct_premium?: number | null
+      nwp: number | null
+      nep: number | null
+    }>)
+      .filter((r) => r.company_id === focalId && typeof r.gwp === 'number')
+      .sort((a, b) => a.fiscal_year.localeCompare(b.fiscal_year))
+    noHistory = allCompanyRows.length === 0
+    const reportedByFy = new Map(allCompanyRows.map((r) => [r.fiscal_year, r]))
+    // The "Gross" bar uses the Revenue-Account gross direct premium when present,
+    // so gross ≥ net ≥ earned stay on one consistent basis (cession reads true).
+    // Where that differs materially from headline GWP (IRDAI 1/n long-term rule,
+    // e.g. Niva Bupa FY25) we surface a compact note.
+    const oneByN: string[] = []
+    rows = fyLabelsInRange(range).map((fy) => {
+      const r = reportedByFy.get(fy)
+      if (!r) return { period: fy, gwp: null, nwp: null, nep: null }
+      const gross = typeof r.gross_direct_premium === 'number' ? r.gross_direct_premium : r.gwp
+      if (
+        typeof r.gross_direct_premium === 'number' &&
+        typeof r.gwp === 'number' &&
+        Math.abs(r.gwp - r.gross_direct_premium) > Math.max(50, r.gwp * 0.02)
+      ) {
+        oneByN.push(fy)
+      }
+      return { period: fy, gwp: gross, nwp: r.nwp, nep: r.nep }
+    })
+    basisNote = oneByN.length >= 1 ? `${oneByN.join(', ')} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.` : undefined
+  }
 
-  // The "Gross" bar uses the Revenue-Account gross direct premium when present,
-  // so gross ≥ net ≥ earned stay on one consistent basis (cession reads true).
-  // Where that differs materially from headline GWP (IRDAI 1/n long-term rule,
-  // e.g. Niva Bupa FY25) we surface a compact note.
-  const oneByN: string[] = []
-  const rows: Row[] = yearsInRange.map((fy) => {
-    const r = reportedByFy.get(fy)
-    if (!r) return { period: fy, gwp: null, nwp: null, nep: null }
-    const gross = typeof r.gross_direct_premium === 'number' ? r.gross_direct_premium : r.gwp
-    if (
-      typeof r.gross_direct_premium === 'number' &&
-      typeof r.gwp === 'number' &&
-      Math.abs(r.gwp - r.gross_direct_premium) > Math.max(50, r.gwp * 0.02)
-    ) {
-      oneByN.push(fy)
-    }
-    return { period: fy, gwp: gross, nwp: r.nwp, nep: r.nep }
-  })
-
-  if (allCompanyRows.length === 0) {
+  if (noHistory) {
     return (
       <div className="card-surface p-4 sm:p-5">
         <EmptyState
-          title={`Annual premium history not yet ingested for ${name}`}
-          body="ingest-company-disclosures.ts will populate per-year GWP / NWP / NEP from the company's annual report on the next scheduled run."
+          title={`${quarterly ? 'Quarterly' : 'Annual'} premium not yet ingested for ${name}`}
+          body={
+            quarterly
+              ? `Per-quarter premium for ${name} will populate from the GI Council quarterly filing + the company's quarterly results on the next scheduled run.`
+              : `Per-year GWP / NWP / NEP for ${name} will populate from the company's annual report on the next scheduled run.`
+          }
           height={300}
         />
       </div>
     )
   }
-  if (rows.every((r) => r.gwp == null)) {
+  if (rows.every((r) => r.gwp == null && r.nwp == null && r.nep == null)) {
     return (
       <div className="card-surface p-4 sm:p-5">
         <EmptyState
           title="Data not available from source"
-          body={`No reported premium years for ${name} fall inside ${rangeLabel}. Widen the Data Range in the top bar.`}
+          body={`No reported premium ${unit}s for ${name} fall inside ${rangeLabel}. Widen the Data Range in the top bar.`}
           height={300}
         />
       </div>
     )
   }
 
-  const basisNote =
-    oneByN.length >= 1
-      ? `${oneByN.join(', ')} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.`
-      : undefined
-
-  // Missing years carry a small italic "n/a" under the axis label so an empty
+  // Missing periods carry a small italic "n/a" under the axis label so an empty
   // slot reads as "source silent", never as zero.
-  const missingYears = new Set(rows.filter((r) => r.gwp == null).map((r) => r.period))
+  const missingPeriods = new Set(rows.filter((r) => r.gwp == null && r.nwp == null && r.nep == null).map((r) => r.period))
   const PeriodTick = ({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) => {
-    const fy = payload?.value ?? ''
+    const p = payload?.value ?? ''
     return (
       <g transform={`translate(${x ?? 0},${y ?? 0})`}>
         <text x={0} y={0} dy={12} textAnchor="middle" fontSize={11.5} fontWeight={600} fill="#26303F">
-          {fy}
+          {p}
         </text>
-        {missingYears.has(fy) && (
+        {missingPeriods.has(p) && (
           <text x={0} y={0} dy={25} textAnchor="middle" fontSize={9} fontStyle="italic" fill="#9AA6B6">
             n/a
           </text>
@@ -184,7 +222,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
       {/* Clean chart title — no toggles. */}
       <div className="flex items-center gap-2.5">
         <span className="h-5 w-1.5 rounded-full" style={{ background: GWP_COLOR }} />
-        <h3 className="font-display text-[18px] leading-tight text-navy-deep">Gross → Net → Earned premium by year</h3>
+        <h3 className="font-display text-[18px] leading-tight text-navy-deep">Gross → Net → Earned premium by {unit}</h3>
       </div>
       <p className="mt-1 pl-4 text-[12px] text-ink-secondary">
         <span className="font-semibold text-navy-deep">{name}</span> · {rangeLabel} · ₹ Cr
@@ -246,8 +284,10 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             confidence="high"
             period={rangeLabel}
             provenance={{
-              source_name: `${name} annual disclosures — written / retained / earned premium per year`,
-              source_url: 'https://transactions.nivabupa.com/pages/doc/pub-dis/annual-reports/Annual-Report-FY-2024-25.pdf',
+              source_name: quarterly
+                ? `${name} quarterly results + GI Council quarterly health filings — written / earned premium per quarter`
+                : `${name} annual disclosures — written / retained / earned premium per year`,
+              source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
             }}
           />
         </span>
