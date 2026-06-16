@@ -79,10 +79,15 @@ export const METRICS: MetricDef[] = [
   {
     key: 'roe', field: 'roe', label: 'ROE', short: 'ROE', group: 'Quality', unit: '%', polarity: 'higher',
     whyItMatters: 'Return on equity shows how well growth converts into shareholder returns — the ultimate quality test.',
+    // 0 is the model's "missing" sentinel (no operating insurer reports exactly 0%
+    // ROE) — render an honest N/A, never a fake zero that ranks the company last.
+    naWhen: (i) => i.roe === 0,
   },
   {
     key: 'solvency', field: 'solvency', label: 'Solvency', short: 'Solvency', group: 'Capital', unit: 'x', polarity: 'higher',
     whyItMatters: 'Solvency above the 1.5x regulatory floor is the cushion that lets a company grow safely without raising equity.',
+    // 0 = missing (regulatory floor is 1.5x; a real reading is never 0) → N/A, not zero.
+    naWhen: (i) => i.solvency === 0,
   },
   {
     key: 'priceToEarnings', resolve: (i) => valuationMultiple(i, 'pe'), label: 'P/E', short: 'P/E', group: 'Valuation', unit: 'x', polarity: 'rich',

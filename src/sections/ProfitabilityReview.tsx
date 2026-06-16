@@ -347,7 +347,7 @@ export function ProfitabilityReview() {
           ))}
         </div>
         <SourceTag
-          source="Company filing"
+          source="Annual reports & filings"
           period={periodSpan}
           confidence="high"
           provenance={{ source_name: 'Company Annual Reports / Statutory Filings — IGAAP statutory accounts & IFRS / Ind AS accounts.' }}
