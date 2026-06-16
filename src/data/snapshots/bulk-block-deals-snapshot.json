@@ -11,10 +11,73 @@
       "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA",
       "aggregator_url": "https://www.screener.in/company/NIVABUPA/#shareholding"
     },
-    "last_successful_run": null,
+    "last_successful_run": "2026-06-16T19:39:31.945Z",
     "notes": "Quantity in shares; price in Rs/share. side = buy | sell. deal_kind = bulk | block."
   },
   "data": [
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-05-29",
+      "client": "MORGAN STANLEY ASIA (SINGAPORE) PTE. - ODI",
+      "side": "buy",
+      "quantity": 793511,
+      "price": 443.42
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-05-29",
+      "client": "MORGAN STANLEY ASIA (SINGAPORE) PTE. - ODI",
+      "side": "sell",
+      "quantity": 793511,
+      "price": 443.42
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-01-14",
+      "client": "NIPPON INDIA MUTUAL FUND",
+      "side": "sell",
+      "quantity": 543792,
+      "price": 441.32
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-01-14",
+      "client": "RUSSELL INVESTMENTS LIMITED",
+      "side": "buy",
+      "quantity": 536647,
+      "price": 441.32
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-01-14",
+      "client": "HSBC MUTUAL FUND",
+      "side": "sell",
+      "quantity": 489527,
+      "price": 441.32
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-01-14",
+      "client": "KOTAK MAHINDRA LIFE INSURANCE COMPANY LIMITED",
+      "side": "sell",
+      "quantity": 239153,
+      "price": 441.32
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "bulk",
+      "date": "2026-01-14",
+      "client": "KOTAK MAHINDRA ASSET MANAGEMENT COMPANY LIMITED",
+      "side": "sell",
+      "quantity": 109157,
+      "price": 441.32
+    },
     {
       "company_id": "niva-bupa",
       "deal_kind": "bulk",
