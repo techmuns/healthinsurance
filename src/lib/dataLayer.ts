@@ -321,11 +321,13 @@ export function getBulkBlockDeals(companyId: string): {
   const deals = all
     .filter((d) => d.company_id === companyId)
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.quantity - a.quantity))
-  const m = (bulkBlockDeals as { _meta?: { source?: { source_name?: string; source_url?: string }; last_updated?: string } })._meta
+  const m = (bulkBlockDeals as { _meta?: { source?: { source_name?: string; source_url?: string; aggregator_url?: string }; last_updated?: string } })._meta
   return {
     deals,
     sourceName: m?.source?.source_name ?? 'NSE / BSE bulk & block deals',
-    sourceUrl: m?.source?.source_url ?? 'https://www.nseindia.com',
+    // Link to the aggregator page that reliably opens and shows these deals
+    // (the exchange's own get-quote URL blocks direct navigation).
+    sourceUrl: m?.source?.aggregator_url ?? m?.source?.source_url ?? 'https://www.screener.in',
     lastUpdated: m?.last_updated ?? null,
   }
 }

@@ -18,7 +18,7 @@ const dealDate = (iso: string): string =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
 
 /** Real exchange-reported bulk/block deals as a compact chip timeline. */
-function BulkBlockTimeline({ deals, sourceName, sourceUrl }: { deals: BulkBlockDeal[]; sourceName: string; sourceUrl: string }) {
+function BulkBlockTimeline({ deals, sourceName, sourceUrl, lastUpdated }: { deals: BulkBlockDeal[]; sourceName: string; sourceUrl: string; lastUpdated: string | null }) {
   const buyQty = deals.filter((d) => d.side === 'buy').reduce((s, d) => s + d.quantity, 0)
   const sellQty = deals.filter((d) => d.side === 'sell').reduce((s, d) => s + d.quantity, 0)
   const byDate: { date: string; rows: BulkBlockDeal[] }[] = []
@@ -35,11 +35,14 @@ function BulkBlockTimeline({ deals, sourceName, sourceUrl }: { deals: BulkBlockD
           {sourceName} <ArrowUpRight className="h-3 w-3" />
         </a>
       </div>
-      <div className="mb-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+      <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
         <span className="rounded-full bg-teal-soft px-2 py-0.5 font-semibold text-teal">Bought {dealQty(buyQty)}</span>
         <span className="rounded-full bg-[#FBEDEA] px-2 py-0.5 font-semibold text-[#A8443B]">Sold {dealQty(sellQty)}</span>
         <span className="text-ink-secondary">· {deals.length} large trades on record</span>
       </div>
+      <p className="mb-3 text-[10px] leading-snug text-ink-secondary/80">
+        Reported only on large trades — this is the latest on record{lastUpdated ? `, checked ${dealDate(lastUpdated)}` : ''}. New deals appear here automatically.
+      </p>
       <div className="space-y-3">
         {byDate.map(({ date, rows }) => (
           <div key={date}>
@@ -409,7 +412,7 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
 
       {/* Bulk / Block Deal timeline — real exchange-reported large trades */}
       {bulk.deals.length > 0 ? (
-        <BulkBlockTimeline deals={bulk.deals} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} />
+        <BulkBlockTimeline deals={bulk.deals} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
       ) : (
         <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
