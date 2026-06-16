@@ -66,7 +66,7 @@ export function validateInsightsFile(file: InsightsFile, run: SignalRun): Valida
     for (const e of ins.evidence) {
       if (e.value != null && !isGrounded(e.value)) errors.push(`${id}: evidence ${e.value} (${e.insurer}/${e.metric}) not grounded in signals`)
     }
-    for (const text of [ins.headline, ins.thesis, ins.whatConsensusMisses]) {
+    for (const text of [ins.headline, ins.shortHeadline, ins.summary, ins.thesis, ins.whatConsensusMisses]) {
       for (const n of numbersIn(text)) if (!isGrounded(n)) errors.push(`${id}: orphan number ${n} in prose ("${text.slice(0, 40)}…")`)
     }
     // chart series must reference keys, not inlined values (sanity).

@@ -52,15 +52,18 @@ function sourceLine(ins: Insight): string {
   return words.length ? `Backed by ${words.join(', ')}` : 'Backed by the dashboard data'
 }
 
+// The insight card template: a calm two-column read. LEFT carries the story —
+// a category accent, a ≤7-word headline, the surprising "so what", and the one
+// number that proves it. RIGHT carries a single live chart. Generous white
+// space and one idea per card keep it scannable: head turns, eye lands, "I get it".
 function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
   const cat = CATCH[ins.category]
   const tone = TONE[cat.tone]
   const Icon = cat.Icon
-  // Single-subject catch → spotlight that company in gold; comparisons stay multi-tone.
+  // Single-subject insight → spotlight that company in gold; comparisons stay multi-tone.
   const focal = ins.affectedInsurers.length === 1 ? ins.affectedInsurers[0] : undefined
-  // The one number that makes the catch concrete + a couple of supporting figures.
+  // The one number that makes the insight concrete — the proof under the claim.
   const stat = ins.evidence.find((e) => e.value != null) ?? ins.evidence[0]
-  const more = ins.evidence.filter((e) => e !== stat && e.value != null).slice(0, 2)
   return (
     <article
       className={[
@@ -70,63 +73,53 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
           : 'border-soft-border shadow-card hover:shadow-[0_12px_32px_rgba(23,43,77,0.11)]',
       ].join(' ')}
     >
-      {/* Tone spine down the left — an instant read of the catch's character. */}
+      {/* Category accent rail — an instant, colour-coded read of the insight's character. */}
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: hero ? `linear-gradient(${tone.fg},${GOLD})` : tone.fg }} />
 
-      <div className="py-3.5 pl-5 pr-4">
-        {/* type chip · rank · (top read) · quiet conviction */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold" style={{ color: tone.fg, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
-            <Icon className="h-3.5 w-3.5" strokeWidth={2.4} /> {cat.label}
-          </span>
-          <span className="text-[10.5px] font-semibold text-ink-secondary">Catch #{ins.rank}</span>
-          {hero && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-champagne-deep"><Sparkles className="h-3 w-3" />Start here</span>}
-          <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] text-ink-secondary">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: CONVICTION_DOT[ins.conviction] }} />
-            {CONVICTION_LABEL[ins.conviction]} · {HORIZON[ins.horizon]}
-          </span>
-        </div>
-
-        {/* the catch, in plain words */}
-        <h3 className="mt-2 font-display text-[17.5px] leading-snug text-navy-deep">{ins.headline}</h3>
-
-        {/* punch row: the one number + the picture */}
-        <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="flex flex-col justify-center gap-2">
-            {stat && (
-              <div className="rounded-xl px-3.5 py-3" style={{ background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">{pretty(stat.insurer)} · {stat.metric}</p>
-                <p className="font-display text-[30px] leading-none text-navy-deep" style={focal && stat.insurer === focal ? { color: GOLD } : undefined}>{fmtVal(stat.value, stat.unit)}</p>
-                <p className="mt-1 text-[11px] leading-snug text-ink-secondary">{stat.context} · {stat.period}</p>
-              </div>
-            )}
-            {more.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {more.map((e, i) => (
-                  <span key={i} className="inline-flex items-baseline gap-1 rounded-md bg-ice px-2 py-0.5 text-[10.5px] text-ink-secondary ring-1 ring-soft-border">
-                    {pretty(e.insurer)} <strong className="tabular-nums text-navy-deep">{fmtVal(e.value, e.unit)}</strong>
-                  </span>
-                ))}
-              </div>
-            )}
+      <div className="grid grid-cols-1 items-center gap-6 py-5 pl-6 pr-5 lg:grid-cols-[1fr_1.04fr] lg:gap-9 lg:py-7">
+        {/* ── LEFT · the story ── */}
+        <div className="min-w-0">
+          {/* category tag · rank · (start here) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold" style={{ color: tone.fg, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+              <Icon className="h-3.5 w-3.5" strokeWidth={2.4} /> {cat.label}
+            </span>
+            <span className="text-[10.5px] font-semibold text-ink-secondary">Insight #{ins.rank}</span>
+            {hero && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-champagne-deep"><Sparkles className="h-3 w-3" />Start here</span>}
           </div>
-          <div className="flex flex-col"><InsightChart spec={ins.chart} focal={focal} /></div>
+
+          {/* the ≤7-word headline — bold and scannable */}
+          <h3 className="mt-3 font-display text-[22px] font-semibold leading-[1.16] tracking-[-0.01em] text-navy-deep lg:text-[25px]">{ins.shortHeadline}</h3>
+
+          {/* the aha, then the impact */}
+          <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: tone.fg }}>The overlooked angle</p>
+          <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-primary">{ins.summary}</p>
+
+          {/* the single number that proves it */}
+          {stat && (
+            <div className="mt-5 flex items-baseline gap-3">
+              <span className="font-display text-[28px] leading-none text-navy-deep" style={focal && stat.insurer === focal ? { color: GOLD } : undefined}>{fmtVal(stat.value, stat.unit)}</span>
+              <span className="text-[11px] leading-snug text-ink-secondary">
+                <strong className="font-semibold text-navy-deep">{pretty(stat.insurer)}</strong> · {stat.metric}
+                <br />{stat.context} · {stat.period}
+              </span>
+            </div>
+          )}
+
+          {/* quiet credibility line — conviction, what flips the call, and the source */}
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-soft-border pt-3 text-[10.5px] text-ink-secondary">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-semibold text-navy-deep">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: CONVICTION_DOT[ins.conviction] }} />
+              {CONVICTION_LABEL[ins.conviction]} · {HORIZON[ins.horizon]}
+            </span>
+            <span className="hidden text-soft-border sm:inline">|</span>
+            <span className="inline-flex items-start gap-1.5"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span><strong className="text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
+            <span className="ml-auto whitespace-nowrap">{sourceLine(ins)}</span>
+          </div>
         </div>
 
-        {/* the analyst read */}
-        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-primary">{ins.thesis}</p>
-
-        {/* the non-obvious bit, tone-coloured */}
-        <div className="mt-2.5 rounded-lg py-1.5 pl-3 pr-3" style={{ background: tone.bg, boxShadow: `inset 2px 0 0 ${tone.fg}` }}>
-          <p className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}>The catch the market's missing</p>
-          <p className="mt-0.5 text-[12px] leading-snug text-navy-deep">{ins.whatConsensusMisses}</p>
-        </div>
-      </div>
-
-      {/* quiet footer: what flips the call + where it comes from */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-soft-border bg-ice/30 px-5 py-2 text-[10.5px] text-ink-secondary">
-        <span className="inline-flex items-start gap-1.5"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span><strong className="text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
-        <span className="ml-auto whitespace-nowrap">{sourceLine(ins)}</span>
+        {/* ── RIGHT · one visualization ── */}
+        <div className="lg:pl-1"><InsightChart spec={ins.chart} focal={focal} embedded /></div>
       </div>
     </article>
   )
@@ -161,12 +154,12 @@ export function Insights() {
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Advisor's read</p>
             <h1 className="font-display text-[22px] leading-tight text-navy-deep">What stands out across the dashboard</h1>
-            <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-ink-secondary">I went through all five health insurers — every chart, filing and price — and pulled out the catches worth your attention, sharpest first. Each one names the single number behind it and what would flip the call.</p>
+            <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-ink-secondary">I went through all five health insurers — every chart, filing and price — and pulled out the insights worth acting on, sharpest first. Each one challenges the obvious read, names the single number behind it, and says what would flip the call.</p>
           </div>
           <div className="rounded-xl border border-soft-border bg-white/70 px-3 py-2 text-right">
             <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">Updated</p>
             <p className="font-display text-[15px] text-navy-deep">{FILE.meta.dataAsOf}</p>
-            <p className="mt-0.5 text-[10px] text-ink-secondary">{FILE.insights.length} catches · {avgReady}% source-backed</p>
+            <p className="mt-0.5 text-[10px] text-ink-secondary">{FILE.insights.length} insights · {avgReady}% source-backed</p>
           </div>
         </div>
       </header>
@@ -176,7 +169,7 @@ export function Insights() {
         <Filter label="Insurer" value={insurer} onChange={setInsurer} options={[['all', 'All'], ...ALL_INSURERS.map((i) => [i, pretty(i)] as [string, string])]} />
         <Filter label="Type" value={category} onChange={setCategory} options={[['all', 'All'], ...ALL_CATEGORIES.map((c) => [c, CATCH[c].label] as [string, string])]} />
         <Filter label="Conviction" value={conviction} onChange={setConviction} options={[['all', 'All'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]} />
-        <span className="text-ink-secondary">· {filtered.length} catch{filtered.length === 1 ? '' : 'es'}</span>
+        <span className="text-ink-secondary">· {filtered.length} insight{filtered.length === 1 ? '' : 's'}</span>
       </div>
 
       {/* Feed */}

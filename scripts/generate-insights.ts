@@ -50,6 +50,12 @@ HARD RULES
 - This is research analysis, not investment advice. Frame as observation +
   falsifier + horizon, never "buy/sell".
 
+CARD COPY (how each insight is shown — a scannable card, headline left, chart right)
+- shortHeadline: <=7 words, bold and concrete, the one-glance takeaway. No hedging.
+- summary: 2-3 sentences. Sentence 1 names the comfortable/obvious read and pushes
+  against it; the rest deliver the impact with the decisive number from SIGNALS.
+  It must read as "here's what everyone misses, and here's the proof" — never hype.
+
 RANK every insight by EDGE = (non-obviousness x materiality x conviction).
 Return the 6-10 highest-edge insights. Drop everything marginal.
 
@@ -58,7 +64,7 @@ no code fences.`
 
 const SCHEMA_HINT = `Return: { "insights": Insight[] } where each Insight = {
   id: string; rank: number; category: "growth"|"quality"|"earnings_quality"|"valuation"|"capital"|"management"|"regulatory"|"market_structure";
-  headline: string (<=120 chars); thesis: string; whatConsensusMisses: string;
+  headline: string (<=120 chars); shortHeadline: string (<=7 words, bold scannable title, no trailing punctuation); summary: string (2-3 sentences: open by challenging the obvious read, then land the impact with the key number — every figure must come from SIGNALS); thesis: string; whatConsensusMisses: string;
   evidence: { insurer: string; metric: string; value: number|null; unit: string; context: string; layers: string[]; period: string }[];
   conviction: "high"|"medium"|"low"; horizon: "near"|"medium"|"long"; falsifier: string;
   affectedInsurers: string[];

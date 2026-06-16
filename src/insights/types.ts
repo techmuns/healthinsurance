@@ -95,7 +95,9 @@ export interface Insight {
   id: string
   rank: number // 1 = highest edge
   category: InsightCategory
-  headline: string
+  headline: string // the full claim (canonical; also the audit/grounding anchor)
+  shortHeadline: string // <=7 words — the scannable, bold card title
+  summary: string // 2-3 sentences: the surprise/belief-challenge, then the data behind it
   thesis: string
   whatConsensusMisses: string
   evidence: InsightEvidence[]
