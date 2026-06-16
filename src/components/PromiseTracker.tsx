@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { SignalBadge } from './SignalBadge'
 import { SegmentedControl } from './SegmentedControl'
-import type { PromiseCategory, PromiseItem } from '@/data/mockData'
+import type { PromiseCategory, PromiseItem } from '@/lib/promiseTracker'
 
 const categories: ('All' | PromiseCategory)[] = [
   'All',
@@ -44,6 +44,7 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
     items.find((p) => p.status === 'Not Measurable')
 
   const filtered = category === 'All' ? items : items.filter((p) => p.category === category)
+  const actualFy = items.find((p) => p.actualFy)?.actualFy ?? null
 
   return (
     <div className="space-y-4">
@@ -72,9 +73,7 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
               <th className="px-3 py-2.5 font-semibold">Date</th>
               <th className="px-3 py-2.5 font-semibold">Metric</th>
               <th className="px-3 py-2.5 font-semibold">Target</th>
-              <th className="px-3 py-2.5 font-semibold">
-                Current<span className="ml-0.5 align-top text-[8px] font-bold text-gold" title="Indicative — anchored to audited FY25 disclosures + management commentary; source-backed feed pending">▲</span>
-              </th>
+              <th className="px-3 py-2.5 font-semibold">Current</th>
               <th className="px-3 py-2.5 font-semibold">Status</th>
               <th className="px-3 py-2.5 font-semibold">Source</th>
             </tr>
@@ -93,19 +92,22 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
                 <td className="px-3 py-2.5">
                   <SignalBadge label={p.status} size="sm" />
                 </td>
-                <td className="px-3 py-2.5 text-[11px] text-ink-secondary">{p.source}</td>
+                <td className="px-3 py-2.5 text-[11px]">
+                  {p.sourceUrl ? (
+                    <a href={p.sourceUrl} target="_blank" rel="noreferrer" className="text-navy-primary hover:underline">{p.source}</a>
+                  ) : (
+                    <span className="text-ink-secondary">{p.source}</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {/* Honest framing: the "Current" column is not a source-pulled feed yet. */}
-      <p className="flex items-start gap-1.5 text-[10.5px] leading-snug text-ink-secondary">
-        <span className="mt-px font-bold text-gold">▲</span>
-        <span>
-          <span className="font-semibold text-navy-deep">Current values are indicative.</span> They are anchored to {companyName}&apos;s audited FY25
-          disclosures and management commentary, not yet pulled from a source-backed feed — promises, targets, dates and sources are as stated by management.
-        </span>
+      {/* Source-backed: actuals read live from the audited annual snapshot. */}
+      <p className="text-[10.5px] leading-snug text-ink-secondary">
+        <span className="font-semibold text-navy-deep">Current</span> = {companyName}&apos;s latest audited full-year figure{actualFy ? ` (${actualFy})` : ''}, read live from the
+        annual disclosures and advancing on its own. Promises, targets and dates are management&apos;s own stated guidance — each links its source.
       </p>
     </div>
   )

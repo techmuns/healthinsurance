@@ -3,7 +3,7 @@ import { ModuleCard } from '@/components/ModuleCard'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { PromiseTracker } from '@/components/PromiseTracker'
 import { VerdictStrip } from '@/components/VerdictStrip'
-import { promiseTracker } from '@/data/mockData'
+import { getPromises } from '@/lib/promiseTracker'
 import { useActiveCompany } from '@/state/filters'
 import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
 
@@ -17,7 +17,7 @@ import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
  */
 export function ManagementEvents() {
   const company = useActiveCompany()
-  const promises = promiseTracker.filter((p) => p.company === company.id)
+  const promises = getPromises(company.id)
 
   return (
     <div className="space-y-6">

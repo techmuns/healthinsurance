@@ -182,50 +182,7 @@ export const peerRows: PeerRow[] = insurers.map((i) => ({
   focal: i.id === FOCAL_COMPANY,
 }))
 
-// =========================================================================
-//  MANAGEMENT COMMENTARY & EVENTS — Promise Tracker
-//
-//  Kept by request: management's public guidance vs audited FY25 results.
-//  The UI labels the "current" column "indicative" (anchored to audited FY25
-//  disclosures + management commentary) until a source-backed feed is ingested.
-// =========================================================================
-
-export type PromiseCategory =
-  | 'Growth'
-  | 'Profitability'
-  | 'Distribution'
-  | 'Capital'
-  | 'Valuation'
-  | 'Regulation'
-
-export type PromiseStatus = 'Delivered' | 'On Track' | 'Delayed' | 'Missed' | 'Not Measurable'
-
-export interface PromiseItem {
-  /** Insurer id the promise belongs to. */
-  company: string
-  category: PromiseCategory
-  promise: string
-  /** When it was promised. */
-  date: string
-  metric: string
-  /** Guidance / target. */
-  target: string
-  /** Current result, or "Data pending". */
-  current: string
-  status: PromiseStatus
-  source: string
-}
-
-// Management promises for the focal company. Other companies show an empty
-// state — promise tracking is not wired for them in this dataset.
-export const promiseTracker: PromiseItem[] = [
-  { company: 'niva-bupa', category: 'Growth', promise: 'Grow GWP in the low-20s', date: 'Q2 FY25 call', metric: 'GWP growth', target: '~20% YoY', current: '23.4%', status: 'Delivered', source: 'Earnings call' },
-  { company: 'niva-bupa', category: 'Profitability', promise: 'Hold combined ratio below 98%', date: 'Q2 FY25 call', metric: 'Combined ratio', target: '<98%', current: '96.8%', status: 'Delivered', source: 'Investor presentation' },
-  { company: 'niva-bupa', category: 'Profitability', promise: 'Expand ROE toward high-teens', date: 'FY24 annual report', metric: 'ROE', target: '~17%', current: '17.2%', status: 'Delivered', source: 'Annual report' },
-  { company: 'niva-bupa', category: 'Growth', promise: 'Lift retail mix above 60%', date: 'FY24 annual report', metric: 'Retail mix', target: '60%+ by FY25', current: '64%', status: 'Delivered', source: 'Annual report' },
-  { company: 'niva-bupa', category: 'Distribution', promise: 'Hold banca concentration near 25%', date: 'Q3 FY25 call', metric: 'Banca share', target: '~25%', current: '31%', status: 'Missed', source: 'Earnings call' },
-  { company: 'niva-bupa', category: 'Distribution', promise: 'Scale the digital channel', date: 'FY24 annual report', metric: 'Digital mix', target: '8% by FY25', current: '5%', status: 'Delayed', source: 'Annual report' },
-  { company: 'niva-bupa', category: 'Capital', promise: 'Fund FY26 growth without an equity raise', date: 'Q4 FY25 call', metric: 'Solvency', target: 'No raise; >1.8x', current: '2.18x', status: 'On Track', source: 'Earnings call' },
-  { company: 'niva-bupa', category: 'Regulation', promise: 'Stay within revised EOM limits', date: 'Q4 FY25 call', metric: 'EOM', target: 'Within glide path', current: '28.4%', status: 'On Track', source: 'Earnings call' },
-  { company: 'niva-bupa', category: 'Valuation', promise: 'Sustain premium re-rating via delivery', date: 'Q4 FY25 call', metric: 'P/GWP', target: 'Earn the premium', current: '3.4x (13% > peer median)', status: 'Not Measurable', source: 'Management commentary' },
-]
+// The Promise Tracker moved to a REAL, source-backed model in
+// src/lib/promiseTracker.ts: the "current" actual resolves live from the audited
+// insurer-annual-snapshot, and each promise/target carries a citable source URL.
+// (The old hand-typed array — with estimated "current" values — was removed.)
