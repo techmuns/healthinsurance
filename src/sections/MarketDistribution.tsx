@@ -15,6 +15,7 @@ import { GI_SEGMENT_SOURCE } from '@/lib/industryStructure'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
+import { retailMixYears, retailMixForYear } from '@/lib/dataLayer'
 import { getCompanyDistributionData, type DistChannel } from '@/lib/distributionEngine'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
@@ -545,55 +546,78 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
 }
 
 // ─── Retail Health vs Group premium mix ──────────────────────────────────────
-// A horizontal 100% split per insurer, built from each one's existing retailMix
-// (% individual/retail); group share = 100 − retail. UI-only view of data that
-// already exists — no new series, no pipeline/calculation changes.
+// A horizontal 100% split per insurer (retail/individual vs group), for the
+// LATEST fiscal year within the selected Data Range that actually reports the
+// split. Year-aware: it advances/recedes with the range and is labelled with
+// the year shown — never one year's mix presented under another. Where a year
+// has no reported split, it says so honestly rather than borrowing FY25's.
 const RETAIL_COLOR = '#168E8E' // teal — retail/individual health
 const GROUP_COLOR = '#B68B3A' // gold — group
 
 function RetailGroupMixCard() {
   const active = useActiveCompany()
+  const { range } = useFilters()
+  const inRange = new Set(fyLabelsInRange(range))
+  const years = retailMixYears() // newest first; only years that report the split
+  const targetFy = years.find((fy) => inRange.has(fy)) ?? null
+  const mix = targetFy ? retailMixForYear(targetFy) : new Map<string, number>()
   const rows = insurers
-    .filter((i) => typeof i.retailMix === 'number' && i.retailMix > 0)
-    .map((i) => ({ id: i.id, name: i.shortName, retail: i.retailMix, group: Math.max(0, 100 - i.retailMix), focal: i.id === active.id }))
+    .filter((i) => mix.has(i.id))
+    .map((i) => {
+      const retail = mix.get(i.id) as number
+      return { id: i.id, name: i.shortName, retail, group: Math.max(0, 100 - retail), focal: i.id === active.id }
+    })
     .sort((a, b) => b.retail - a.retail)
+  const reportedLabel = years.length ? (years.length === 1 ? years[0] : `${years[years.length - 1]}–${years[0]}`) : null
 
   return (
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
       <header className="mb-4 border-b border-[#EEF1F7] pb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
         <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
-        <p className="mt-1 text-[12px] text-ink-secondary">Share of health GWP — individual/retail vs group — across the standalone insurers</p>
+        <p className="mt-1 text-[12px] text-ink-secondary">
+          Share of health GWP — individual/retail vs group — across the leading health insurers{targetFy ? ` · ${targetFy}` : ''}
+        </p>
       </header>
 
-      <div className="mb-3 flex items-center gap-4 text-[11px] text-ink-secondary">
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: RETAIL_COLOR }} /> Retail (individual)</span>
-        <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: GROUP_COLOR }} /> Group</span>
-      </div>
-
-      <div className="space-y-2.5">
-        {rows.map((r) => (
-          <div key={r.id} className="flex items-center gap-3">
-            <span className={['w-24 shrink-0 truncate text-[11.5px]', r.focal ? 'font-bold text-navy-deep' : 'text-ink-primary'].join(' ')} title={r.name}>{r.name}</span>
-            <div
-              className="relative flex h-5 flex-1 overflow-hidden rounded-md ring-1 ring-soft-border"
-              style={r.focal ? { boxShadow: 'inset 0 0 0 1.5px rgba(39,69,126,0.45)' } : undefined}
-              title={`${r.name}: retail ${r.retail.toFixed(0)}% · group ${r.group.toFixed(0)}%`}
-            >
-              <div className="flex items-center justify-end pr-1.5" style={{ width: `${r.retail}%`, background: RETAIL_COLOR }}>
-                {r.retail >= 18 && <span className="text-[10px] font-semibold text-white">{r.retail.toFixed(0)}%</span>}
-              </div>
-              <div className="flex items-center pl-1.5" style={{ width: `${r.group}%`, background: GROUP_COLOR }}>
-                {r.group >= 18 && <span className="text-[10px] font-semibold text-white">{r.group.toFixed(0)}%</span>}
-              </div>
-            </div>
+      {rows.length === 0 ? (
+        <EmptyState
+          title="Retail vs group split not reported for the selected years"
+          body={reportedLabel ? `The retail/group split is reported for ${reportedLabel}. Widen the Data Range to include it.` : 'No retail vs group split is reported in the source yet.'}
+          height={220}
+        />
+      ) : (
+        <>
+          <div className="mb-3 flex items-center gap-4 text-[11px] text-ink-secondary">
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: RETAIL_COLOR }} /> Retail (individual)</span>
+            <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: GROUP_COLOR }} /> Group</span>
           </div>
-        ))}
-      </div>
 
-      <p className="mt-4 text-[11px] leading-snug text-ink-secondary">
-        A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
-      </p>
+          <div className="space-y-2.5">
+            {rows.map((r) => (
+              <div key={r.id} className="flex items-center gap-3">
+                <span className={['w-24 shrink-0 truncate text-[11.5px]', r.focal ? 'font-bold text-navy-deep' : 'text-ink-primary'].join(' ')} title={r.name}>{r.name}</span>
+                <div
+                  className="relative flex h-5 flex-1 overflow-hidden rounded-md ring-1 ring-soft-border"
+                  style={r.focal ? { boxShadow: 'inset 0 0 0 1.5px rgba(39,69,126,0.45)' } : undefined}
+                  title={`${r.name} (${targetFy}): retail ${r.retail.toFixed(0)}% · group ${r.group.toFixed(0)}%`}
+                >
+                  <div className="flex items-center justify-end pr-1.5" style={{ width: `${r.retail}%`, background: RETAIL_COLOR }}>
+                    {r.retail >= 18 && <span className="text-[10px] font-semibold text-white">{r.retail.toFixed(0)}%</span>}
+                  </div>
+                  <div className="flex items-center pl-1.5" style={{ width: `${r.group}%`, background: GROUP_COLOR }}>
+                    {r.group >= 18 && <span className="text-[10px] font-semibold text-white">{r.group.toFixed(0)}%</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-[11px] leading-snug text-ink-secondary">
+            A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
+          </p>
+        </>
+      )}
     </section>
   )
 }

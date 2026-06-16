@@ -466,6 +466,25 @@ export function getFocalCompanyId(): string {
   return master.find((c) => c.is_focal)?.company_id ?? master[0]?.company_id ?? 'niva-bupa'
 }
 
+/** Fiscal years (newest first) for which at least one insurer reports a
+ *  retail/individual health-premium mix. Lets a per-year view resolve to a year
+ *  that actually has data — never showing one year's split under another. */
+export function retailMixYears(): string[] {
+  const rows = annualSnapshot.data as Array<{ fiscal_year: string; retail_mix: number | null }>
+  return [...new Set(rows.filter((r) => typeof r.retail_mix === 'number' && r.retail_mix > 0).map((r) => r.fiscal_year))]
+    .sort((a, b) => fyNum(b) - fyNum(a))
+}
+
+/** company_id → retail-mix % for one fiscal year (only companies that report it). */
+export function retailMixForYear(fy: string): Map<string, number> {
+  const rows = annualSnapshot.data as Array<{ company_id: string; fiscal_year: string; retail_mix: number | null }>
+  return new Map(
+    rows
+      .filter((r) => r.fiscal_year === fy && typeof r.retail_mix === 'number' && r.retail_mix > 0)
+      .map((r) => [r.company_id, r.retail_mix as number]),
+  )
+}
+
 /** Latest annual fiscal-year label actually present in the snapshot (e.g. "FY25").
  *  Period labels must reflect the real underlying data — never a hardcoded year. */
 export function getLatestAnnualFyLabel(): string {
