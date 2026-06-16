@@ -14,16 +14,18 @@ import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 //    Company | Broker | Date | Recommendation | CMP | Price at reco | Target |
 //    Upside/(downside) % from reco | Upside/(downside) % from CMP
 //
-//  …grouped into the four company blocks (Niva Bupa, Star Health, ICICI Lombard,
-//  Go Digit), each closed by an Average row.
+//  …grouped into a block per covered insurer (Niva Bupa, Star Health, ICICI
+//  Lombard; Go Digit appears once broker coverage lands), each closed by an
+//  Average row.
 //
 //  SOURCES (honest, per CLAUDE.md):
 //   • Broker, date, target price, price at reco, recommendation → dated broker
 //     notes harvested from a public aggregator (Moneycontrol / Trendlyne). Broker
 //     targets have NO official feed, so this is the sanctioned, clearly-labelled
 //     low-confidence BACKUP for exactly this sheet. Missing is never zero.
-//   • CMP (current market price) → the live market quote. Not wired into this tab
-//     yet — shown as an honest "fetches next" marker until the feed is connected.
+//   • CMP (current market price) → the live market quote from the daily price feed
+//     (price-history-snapshot); an honest "fetches next" marker shows only where a
+//     name has no live quote yet.
 //   • Upside %s and the Average rows are CALCULATED here, exactly as the workbook
 //     computes them (target ÷ price − 1; block means over the values we hold).
 //
@@ -112,7 +114,7 @@ interface BrokerRow {
   targetCell: AuditCell | null
   priceAtReco: number | null
   target: number | null
-  cmp: number | null // not wired yet (live price) — always null in this pass
+  cmp: number | null // live market price from the daily feed; null only where no quote yet
   upsideReco: number | null
   upsideCmp: number | null
 }
@@ -337,9 +339,11 @@ function Detail({ cell, onClose }: { cell: AuditCell; onClose: () => void }) {
             <p className="mt-0.5 text-[12px] capitalize text-ink-primary">{cell.confidence}</p>
           </div>
         )}
-        {cell.note && (
+        {/* A note is viewer content only when it explains why a value is ABSENT
+            (CLAUDE.md: internal lineage notes never surface on a filled cell). */}
+        {v == null && cell.note && (
           <div>
-            <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Note</p>
+            <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Why it&apos;s blank</p>
             <p className="mt-0.5 text-[11px] text-ink-secondary">{cell.note}</p>
           </div>
         )}
