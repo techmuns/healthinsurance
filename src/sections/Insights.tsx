@@ -56,76 +56,76 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
   const cat = CATCH[ins.category]
   const tone = TONE[cat.tone]
   const Icon = cat.Icon
-  // Single-subject catch → spotlight that company in gold; comparisons stay multi-tone.
+  const accent = tone.fg
+  // Single-subject catch → spotlight that company in the category colour; a
+  // panel-wide catch paints every series the same accent (one story, one hue).
   const focal = ins.affectedInsurers.length === 1 ? ins.affectedInsurers[0] : undefined
-  // The one number that makes the catch concrete + a couple of supporting figures.
-  const stat = ins.evidence.find((e) => e.value != null) ?? ins.evidence[0]
-  const more = ins.evidence.filter((e) => e !== stat && e.value != null).slice(0, 2)
+  // The one number that anchors the catch: the focal company's figure, else the
+  // panel / peer figure, else the first real datum — always source-backed.
+  const withVal = ins.evidence.filter((e) => e.value != null)
+  const anchor =
+    (focal ? withVal.find((e) => e.insurer === focal) : undefined) ??
+    withVal.find((e) => e.insurer === 'panel') ??
+    withVal[0] ??
+    ins.evidence[0]
+
   return (
     <article
       className={[
         'group relative overflow-hidden rounded-2xl border bg-card transition-shadow duration-200',
         hero
           ? 'border-[#E7D29B] shadow-[0_2px_6px_rgba(23,43,77,0.05),0_18px_44px_rgba(23,43,77,0.11)]'
-          : 'border-soft-border shadow-card hover:shadow-[0_12px_32px_rgba(23,43,77,0.11)]',
+          : 'border-soft-border shadow-card hover:shadow-[0_12px_32px_rgba(23,43,77,0.10)]',
       ].join(' ')}
     >
-      {/* Tone spine down the left — an instant read of the catch's character. */}
-      <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: hero ? `linear-gradient(${tone.fg},${GOLD})` : tone.fg }} />
+      {/* Category accent spine — an instant read of the catch's character. */}
+      <span className="absolute inset-y-0 left-0 w-1" style={{ background: hero ? `linear-gradient(${accent},${GOLD})` : accent }} />
 
-      <div className="py-3.5 pl-5 pr-4">
-        {/* type chip · rank · (top read) · quiet conviction */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-bold" style={{ color: tone.fg, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+      <div className="py-5 pl-6 pr-5 sm:pr-6">
+        {/* frame row: category accent · rank · (start here) · quiet conviction */}
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold" style={{ color: accent, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
             <Icon className="h-3.5 w-3.5" strokeWidth={2.4} /> {cat.label}
           </span>
           <span className="text-[10.5px] font-semibold text-ink-secondary">Catch #{ins.rank}</span>
-          {hero && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-champagne-deep"><Sparkles className="h-3 w-3" />Start here</span>}
-          <span className="ml-auto inline-flex items-center gap-1.5 text-[10px] text-ink-secondary">
+          {hero && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.1em] text-champagne-deep"><Sparkles className="h-3 w-3" /> Start here</span>}
+          <span className="ml-auto inline-flex items-center gap-1.5 text-[10.5px] text-ink-secondary">
             <span className="h-1.5 w-1.5 rounded-full" style={{ background: CONVICTION_DOT[ins.conviction] }} />
             {CONVICTION_LABEL[ins.conviction]} · {HORIZON[ins.horizon]}
           </span>
         </div>
 
-        {/* the catch, in plain words */}
-        <h3 className="mt-2 font-display text-[17.5px] leading-snug text-navy-deep">{ins.headline}</h3>
-
-        {/* punch row: the one number + the picture */}
-        <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="flex flex-col justify-center gap-2">
-            {stat && (
-              <div className="rounded-xl px-3.5 py-3" style={{ background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">{pretty(stat.insurer)} · {stat.metric}</p>
-                <p className="font-display text-[30px] leading-none text-navy-deep" style={focal && stat.insurer === focal ? { color: GOLD } : undefined}>{fmtVal(stat.value, stat.unit)}</p>
-                <p className="mt-1 text-[11px] leading-snug text-ink-secondary">{stat.context} · {stat.period}</p>
-              </div>
-            )}
-            {more.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {more.map((e, i) => (
-                  <span key={i} className="inline-flex items-baseline gap-1 rounded-md bg-ice px-2 py-0.5 text-[10.5px] text-ink-secondary ring-1 ring-soft-border">
-                    {pretty(e.insurer)} <strong className="tabular-nums text-navy-deep">{fmtVal(e.value, e.unit)}</strong>
-                  </span>
-                ))}
-              </div>
-            )}
+        {/* body — LEFT the words · RIGHT the picture */}
+        <div className="mt-4 grid grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:gap-9">
+          {/* LEFT: bold headline → impact → the contrarian read */}
+          <div className="flex flex-col">
+            <h3 className="font-display text-[23px] font-semibold leading-[1.16] text-navy-deep">{ins.title}</h3>
+            <p className="mt-3 text-[13px] leading-relaxed text-ink-primary">{ins.thesis}</p>
+            <div className="mt-4 rounded-lg py-2 pl-3.5 pr-3.5" style={{ background: tone.bg, boxShadow: `inset 2.5px 0 0 ${accent}` }}>
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: accent }}>Against the grain</p>
+              <p className="mt-1 text-[12.5px] leading-snug text-navy-deep">{ins.whatConsensusMisses}</p>
+            </div>
           </div>
-          <div className="flex flex-col"><InsightChart spec={ins.chart} focal={focal} /></div>
-        </div>
 
-        {/* the analyst read */}
-        <p className="mt-3 text-[12.5px] leading-relaxed text-ink-primary">{ins.thesis}</p>
-
-        {/* the non-obvious bit, tone-coloured */}
-        <div className="mt-2.5 rounded-lg py-1.5 pl-3 pr-3" style={{ background: tone.bg, boxShadow: `inset 2px 0 0 ${tone.fg}` }}>
-          <p className="text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}>The catch the market's missing</p>
-          <p className="mt-0.5 text-[12px] leading-snug text-navy-deep">{ins.whatConsensusMisses}</p>
+          {/* RIGHT: one anchor number + one visual, in the category colour */}
+          <div className="rounded-xl px-4 pb-3 pt-3.5" style={{ background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+            {anchor && (
+              <div className="mb-2.5 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-display text-[34px] leading-none tabular-nums" style={{ color: accent }}>{fmtVal(anchor.value, anchor.unit)}</p>
+                  <p className="mt-1.5 truncate text-[10.5px] font-semibold uppercase tracking-[0.05em] text-ink-secondary">{pretty(anchor.insurer)} · {anchor.metric}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-ink-secondary ring-1 ring-soft-border">{anchor.period}</span>
+              </div>
+            )}
+            <InsightChart spec={ins.chart} focal={focal} accent={accent} height={170} bare />
+          </div>
         </div>
       </div>
 
       {/* quiet footer: what flips the call + where it comes from */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-soft-border bg-ice/30 px-5 py-2 text-[10.5px] text-ink-secondary">
-        <span className="inline-flex items-start gap-1.5"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span><strong className="text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-soft-border bg-ice/30 px-6 py-2.5 text-[10.5px] text-ink-secondary">
+        <span className="inline-flex items-start gap-1.5"><Eye className="mt-0.5 h-3 w-3 shrink-0" style={{ color: accent }} /><span><strong className="text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
         <span className="ml-auto whitespace-nowrap">{sourceLine(ins)}</span>
       </div>
     </article>

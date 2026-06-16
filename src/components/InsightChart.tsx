@@ -11,14 +11,15 @@ import { buildPanel, type InsurerPanel } from '@/insights/panel'
 const PANEL = buildPanel()
 const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 
-const COLORS = ['#27457E', '#168E8E', '#8061B8', '#3D5F9F', '#A8443B']
 const GRID = '#ECEFF5'
-const FOCAL = '#C99736' // gold — the insight's subject; pulls the eye to what matters
 const PEER = '#9FB1C9'  // calm slate-blue — the supporting cast
-// With a single-subject insight, paint the subject gold and mute the peers so the
-// protagonist stands out; with no single focus, fall back to the tone-coded cycle.
-const colorFor = (id: string, i: number, focal?: string) =>
-  focal ? (id === focal ? FOCAL : PEER) : COLORS[i % COLORS.length] || '#27457E'
+const DEFAULT_ACCENT = '#27457E'
+// The card's category accent paints the insight's subject; peers stay muted slate
+// so the protagonist stands out and the whole card reads in one colour. With no
+// single subject (a whole-panel catch), every series takes the accent — one story,
+// one hue, instead of a distracting rainbow.
+const colorFor = (id: string, focal: string | undefined, accent: string) =>
+  focal ? (id === focal ? accent : PEER) : accent
 const labelFor = (id: string) => byId.get(id)?.label ?? id
 
 type Num = number | null
@@ -44,16 +45,16 @@ function latest(p: InsurerPanel, key: string): Num {
   return lastDefined(series(p, key))
 }
 
-function Pending({ title }: { title: string }) {
+function Pending({ title, height }: { title: string; height: number }) {
   return (
-    <div className="flex h-full min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 text-center" style={{ minHeight: height }}>
       <p className="text-[12px] font-semibold text-navy-deep">{title}</p>
       <p className="mt-0.5 text-[11px] text-ink-secondary">Series not available yet — data pending.</p>
     </div>
   )
 }
 
-export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string }) {
+export function InsightChart({ spec, focal, accent = DEFAULT_ACCENT, height = 200, bare = false }: { spec: ChartSpec; focal?: string; accent?: string; height?: number; bare?: boolean }) {
   const insurers = spec.insurers.filter((id) => byId.has(id))
   const thresholds = (spec.annotations ?? []).filter((a) => a.kind === 'threshold' && typeof a.value === 'number')
 
@@ -61,21 +62,21 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   if (spec.type === 'timeseries') {
     const key = spec.seriesKeys[0]
     const fys = [...new Set(insurers.flatMap((id) => series(byId.get(id)!, key).map((s) => s.fy)))].sort()
-    if (!fys.length) return <Pending title={spec.title} />
+    if (!fys.length) return <Pending title={spec.title} height={height} />
     const rows = fys.map((fy) => {
       const row: Record<string, string | number | null> = { fy }
       for (const id of insurers) row[id] = series(byId.get(id)!, key).find((s) => s.fy === fy)?.v ?? null
       return row
     })
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} height={height} bare={bare}>
         <LineChart data={rows} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: GRID }} />
           <YAxis tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} width={36} />
           <Tooltip contentStyle={TT} formatter={(v: number, n: string) => [v, labelFor(n)]} />
           {thresholds.map((t, i) => <ReferenceLine key={i} y={t.value} stroke="#B68B3A" strokeDasharray="4 4" label={{ value: t.label, fontSize: 9, fill: '#8A6516', position: 'insideTopRight' }} />)}
-          {insurers.map((id, i) => <Line key={id} type="monotone" dataKey={id} name={id} stroke={colorFor(id, i, focal)} strokeWidth={focal && id === focal ? 2.6 : 1.6} dot={{ r: focal && id === focal ? 3 : 2 }} connectNulls={false} isAnimationActive={false} />)}
+          {insurers.map((id) => <Line key={id} type="monotone" dataKey={id} name={id} stroke={colorFor(id, focal, accent)} strokeWidth={focal && id === focal ? 2.6 : 1.6} dot={{ r: focal && id === focal ? 3 : 2 }} connectNulls={false} isAnimationActive={false} />)}
         </LineChart>
       </Wrap>
     )
@@ -84,10 +85,10 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   // ── ranking_bar: latest value per insurer for seriesKeys[0] ───────────────
   if (spec.type === 'ranking_bar') {
     const key = spec.seriesKeys[0]
-    const data = insurers.map((id, i) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, i, focal) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
-    if (!data.length) return <Pending title={spec.title} />
+    const data = insurers.map((id) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, focal, accent) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
+    if (!data.length) return <Pending title={spec.title} height={height} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} height={height} bare={bare}>
         <BarChart data={data} layout="vertical" margin={{ top: 6, right: 28, left: 6, bottom: 4 }}>
           <CartesianGrid stroke={GRID} horizontal={false} strokeDasharray="2 4" />
           <XAxis type="number" tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
@@ -105,10 +106,10 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
   // ── scatter_dislocation: x=seriesKeys[0], y=seriesKeys[1] per insurer ──────
   if (spec.type === 'scatter_dislocation') {
     const [xk, yk] = spec.seriesKeys
-    const pts = insurers.map((id, i) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, i, focal) })).filter((p) => p.x != null && p.y != null)
-    if (!pts.length) return <Pending title={spec.title} />
+    const pts = insurers.map((id) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, focal, accent) })).filter((p) => p.x != null && p.y != null)
+    if (!pts.length) return <Pending title={spec.title} height={height} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} height={height} bare={bare}>
         <ScatterChart margin={{ top: 10, right: 16, left: 0, bottom: 14 }}>
           <CartesianGrid stroke={GRID} strokeDasharray="2 4" />
           <XAxis type="number" dataKey="x" name={xk} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={{ stroke: GRID }} label={{ value: xk, position: 'insideBottom', offset: -8, fontSize: 10, fill: '#6B7280' }} />
@@ -130,9 +131,9 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
       const last = hm[hm.length - 1]
       return { label: labelFor(id), retail: last?.retail ?? null, group: last?.group ?? null }
     }).filter((d) => d.retail != null || d.group != null)
-    if (!data.length) return <Pending title={spec.title} />
+    if (!data.length) return <Pending title={spec.title} height={height} />
     return (
-      <Wrap title={spec.title}>
+      <Wrap title={spec.title} height={height} bare={bare}>
         <BarChart data={data} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#26303F' }} tickLine={false} axisLine={{ stroke: GRID }} />
@@ -147,18 +148,18 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
 
   // ── slope_dumbbell: first vs last period of seriesKeys[0] per insurer ─────
   const key = spec.seriesKeys[0]
-  const rows = insurers.map((id, i) => {
+  const rows = insurers.map((id) => {
     const s = series(byId.get(id)!, key).filter((x) => x.v != null)
     if (s.length < 2) return null
-    return { id, label: labelFor(id), from: s[0], to: s[s.length - 1], color: colorFor(id, i, focal) }
+    return { id, label: labelFor(id), from: s[0], to: s[s.length - 1], color: colorFor(id, focal, accent) }
   }).filter((r): r is NonNullable<typeof r> => r != null)
-  if (!rows.length) return <Pending title={spec.title} />
+  if (!rows.length) return <Pending title={spec.title} height={height} />
   const all = rows.flatMap((r) => [r.from.v as number, r.to.v as number])
   const lo = Math.min(...all, ...(thresholds.map((t) => t.value as number)))
   const hi = Math.max(...all, ...(thresholds.map((t) => t.value as number)))
   const pos = (v: number) => (hi === lo ? 50 : ((v - lo) / (hi - lo)) * 100)
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
+    <div className={bare ? '' : 'rounded-xl border border-soft-border bg-card p-3 shadow-soft'}>
       <p className="mb-3 text-[11px] font-semibold text-navy-deep">{spec.title}</p>
       <div className="space-y-3">
         {rows.map((r) => (
@@ -181,11 +182,11 @@ export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string 
 
 const TT = { borderRadius: 10, border: '1px solid #E5E8EF', fontSize: 11, boxShadow: '0 8px 22px rgba(23,43,77,0.1)' } as const
 
-function Wrap({ title, children }: { title: string; children: React.ReactElement }) {
+function Wrap({ title, height, bare, children }: { title: string; height: number; bare: boolean; children: React.ReactElement }) {
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
+    <div className={bare ? '' : 'rounded-xl border border-soft-border bg-card p-3 shadow-soft'}>
       <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{title}</p>
-      <div style={{ width: '100%', height: 200 }}>
+      <div style={{ width: '100%', height }}>
         <ResponsiveContainer>{children}</ResponsiveContainer>
       </div>
     </div>

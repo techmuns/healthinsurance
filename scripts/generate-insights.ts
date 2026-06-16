@@ -53,11 +53,21 @@ HARD RULES
 RANK every insight by EDGE = (non-obviousness x materiality x conviction).
 Return the 6-10 highest-edge insights. Drop everything marginal.
 
+PRESENTATION
+- title: a bold, scannable headline of AT MOST 7 words, in plain English (no
+  jargon, no "SAHI"). It states the surprising claim — challenge a common belief
+  ("X looks safe, but..."). Put NO raw numbers in the title; the figures live in
+  thesis / evidence / chart. The title must be faithful to the data, never hyped.
+- headline: the longer one-line version of the claim (may carry one figure).
+- thesis: the 2-3 sentence impact explanation that backs the title with the real
+  numbers and says why it matters / what to act on.
+
 Output ONLY a JSON object matching the provided schema. No prose, no markdown,
 no code fences.`
 
 const SCHEMA_HINT = `Return: { "insights": Insight[] } where each Insight = {
   id: string; rank: number; category: "growth"|"quality"|"earnings_quality"|"valuation"|"capital"|"management"|"regulatory"|"market_structure";
+  title: string (<=7 words, <=56 chars, plain English, NO raw numbers — the bold headline);
   headline: string (<=120 chars); thesis: string; whatConsensusMisses: string;
   evidence: { insurer: string; metric: string; value: number|null; unit: string; context: string; layers: string[]; period: string }[];
   conviction: "high"|"medium"|"low"; horizon: "near"|"medium"|"long"; falsifier: string;

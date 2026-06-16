@@ -57,6 +57,9 @@ export function validateInsightsFile(file: InsightsFile, run: SignalRun): Valida
     const id = ins.id || '(no id)'
     // 3. Falsifier required.
     if (!ins.falsifier || ins.falsifier.trim().length < 8) errors.push(`${id}: missing/empty falsifier`)
+    // Title required, short, and scannable (the bold headline the tab shows).
+    if (!ins.title || ins.title.trim().length < 3) errors.push(`${id}: missing/empty title`)
+    else if (ins.title.trim().split(/\s+/).length > 8) errors.push(`${id}: title too long (>8 words: "${ins.title}")`)
     // 2. Source firewall: a statutory-natured insight may not rest ONLY on market/opinion layers.
     if (STATUTORY_CATEGORIES.has(ins.category)) {
       const hasStatutory = ins.evidence.some((e) => e.layers.some((l) => STATUTORY_LAYERS.has(l)))
@@ -66,7 +69,7 @@ export function validateInsightsFile(file: InsightsFile, run: SignalRun): Valida
     for (const e of ins.evidence) {
       if (e.value != null && !isGrounded(e.value)) errors.push(`${id}: evidence ${e.value} (${e.insurer}/${e.metric}) not grounded in signals`)
     }
-    for (const text of [ins.headline, ins.thesis, ins.whatConsensusMisses]) {
+    for (const text of [ins.title, ins.headline, ins.thesis, ins.whatConsensusMisses]) {
       for (const n of numbersIn(text)) if (!isGrounded(n)) errors.push(`${id}: orphan number ${n} in prose ("${text.slice(0, 40)}…")`)
     }
     // chart series must reference keys, not inlined values (sanity).

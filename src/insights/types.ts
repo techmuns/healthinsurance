@@ -95,7 +95,8 @@ export interface Insight {
   id: string
   rank: number // 1 = highest edge
   category: InsightCategory
-  headline: string
+  title: string // the bold, scannable headline — <=7 words, no orphan numbers
+  headline: string // the longer one-line claim (kept for the record / detail views)
   thesis: string
   whatConsensusMisses: string
   evidence: InsightEvidence[]
