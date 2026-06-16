@@ -9,7 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
+import { ArrowDownRight, ArrowRight, ArrowUpRight, BarChart3, Lightbulb, Minus, TrendingDown, TrendingUp } from 'lucide-react'
 import { giPremiumMix } from '@/data/mockData'
 import { GI_SEGMENT_SOURCE } from '@/lib/industryStructure'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
@@ -557,20 +557,31 @@ const GROUP_COLOR = '#B68B3A' // gold — group
 
 type RetailBar = { fy: string; retailPct: number | null; groupPct: number | null }
 
-// Compact, hand-rolled stacked-bar trend (slim bars ≤42px + a thin retail-share
-// frontier line). SVG so the n/a slots and in-bar labels lay out exactly.
-function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }) {
+// Hand-rolled 100% stacked-column trend: teal retail below, gold group above,
+// with a light % axis (0–100), a thin retail-mix frontier line, a soft highlight
+// on the latest year, and an optional callout anchored to the latest marker. SVG
+// so the axis, n/a slots, labels and annotation lay out exactly. Pure
+// presentation — every value comes from `rows`.
+function RetailMixBars({
+  rows,
+  company,
+  annotation,
+}: {
+  rows: RetailBar[]
+  company: string
+  annotation?: { line1: string; line2: string } | null
+}) {
   const [ref, w] = useElementWidth()
-  const H = 288
-  const padL = 10
-  const padR = 10
+  const H = 300
+  const padL = 34
+  const padR = 16
   const padT = 18
   const padB = 28
   const plotW = Math.max(0, w - padL - padR)
   const plotH = H - padT - padB
   const n = rows.length
   const slotW = n > 0 ? plotW / n : plotW
-  const barW = Math.max(14, Math.min(42, slotW * 0.6))
+  const barW = Math.max(16, Math.min(46, slotW * 0.56))
   const cx = (i: number) => padL + slotW * (i + 0.5)
   const yOf = (pct: number) => padT + plotH * (1 - pct / 100)
 
@@ -579,7 +590,7 @@ function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }
     if (r.retailPct != null) lastDataIdx = i
   })
 
-  // Retail-share frontier → broken polyline so gaps (n/a years) don't connect.
+  // Retail-mix frontier → broken polyline so gaps (n/a years) don't connect.
   const segments: { x: number; y: number }[][] = []
   let cur: { x: number; y: number }[] = []
   rows.forEach((r, i) => {
@@ -595,10 +606,23 @@ function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }
     <div ref={ref} className="w-full" style={{ height: H }}>
       {w > 0 && n >= 1 && (
         <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
-          <rect x={padL} y={padT} width={plotW} height={plotH} rx={6} fill="#FAFBFD" />
-          <line x1={padL} x2={padL + plotW} y1={yOf(50)} y2={yOf(50)} stroke="#EAEEF4" strokeDasharray="3 3" />
+          {/* very light blue-grey chart panel */}
+          <rect x={padL} y={padT} width={plotW} height={plotH} rx={8} fill="#F7F9FC" />
 
-          {/* stacked bars (teal retail below, gold group above) + honest n/a slots */}
+          {/* soft highlight behind the latest year */}
+          {lastDataIdx >= 0 && (
+            <rect x={cx(lastDataIdx) - slotW / 2 + 3} y={padT} width={Math.max(0, slotW - 6)} height={plotH} rx={7} fill="#27457E" opacity={0.045} />
+          )}
+
+          {/* % axis 0 / 25 / 50 / 75 / 100 with very light gridlines */}
+          {[0, 25, 50, 75, 100].map((t) => (
+            <g key={`grid-${t}`}>
+              <line x1={padL} x2={padL + plotW} y1={yOf(t)} y2={yOf(t)} stroke="#EAEEF4" strokeWidth={1} strokeDasharray={t === 0 ? '' : '3 3'} />
+              <text x={padL - 7} y={yOf(t) + 3} textAnchor="end" fontSize={9.5} fill="#9AA3B2" style={{ fontVariantNumeric: 'tabular-nums' }}>{t}%</text>
+            </g>
+          ))}
+
+          {/* stacked columns (teal retail below, gold group above) + honest n/a slots */}
           {rows.map((r, i) => {
             const x = cx(i) - barW / 2
             if (r.retailPct == null || r.groupPct == null) {
@@ -613,6 +637,7 @@ function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }
             const retailH = yOf(0) - yb
             const groupH = yb - yOf(100)
             const clip = `rm-clip-${r.fy}`
+            const isLast = i === lastDataIdx
             return (
               <g key={r.fy}>
                 <defs>
@@ -624,6 +649,10 @@ function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }
                   <rect x={x} y={yb} width={barW} height={Math.max(0, retailH)} fill={RETAIL_COLOR} />
                   <rect x={x} y={padT} width={barW} height={Math.max(0, groupH)} fill={GROUP_COLOR} />
                 </g>
+                {/* crisp white seam between the two segments */}
+                <line x1={x} x2={x + barW} y1={yb} y2={yb} stroke="#FFFFFF" strokeWidth={1} strokeOpacity={0.85} />
+                {/* gentle outline on the latest column */}
+                {isLast && <rect x={x} y={padT} width={barW} height={plotH} rx={5} fill="none" stroke="#27457E" strokeOpacity={0.2} strokeWidth={1} />}
                 <rect x={x} y={padT} width={barW} height={plotH} fill="transparent">
                   <title>{`${company} · ${r.fy}: retail ${r.retailPct}% · group ${r.groupPct}%`}</title>
                 </rect>
@@ -637,28 +666,49 @@ function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }
             )
           })}
 
-          {/* retail-share frontier line + per-year dots (latest emphasised) */}
+          {/* retail-mix frontier line + clean circular markers (latest emphasised) */}
           {segments.map((seg, si) => {
             const d = seg.map((p, k) => `${k ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
             return (
               <g key={`seg-${si}`}>
-                <path d={d} fill="none" stroke="#FFFFFF" strokeWidth={3.4} strokeOpacity={0.9} strokeLinecap="round" strokeLinejoin="round" />
-                <path d={d} fill="none" stroke="#27457E" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+                <path d={d} fill="none" stroke="#FFFFFF" strokeWidth={3.2} strokeOpacity={0.9} strokeLinecap="round" strokeLinejoin="round" />
+                <path d={d} fill="none" stroke="#27457E" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
               </g>
             )
           })}
           {rows.map((r, i) =>
             r.retailPct == null ? null : (
-              <circle key={`dot-${r.fy}`} cx={cx(i)} cy={yOf(r.retailPct)} r={i === lastDataIdx ? 4 : 2.8} fill="#27457E" stroke="#FFFFFF" strokeWidth={1.4} />
+              <circle key={`dot-${r.fy}`} cx={cx(i)} cy={yOf(r.retailPct)} r={i === lastDataIdx ? 4.2 : 3} fill="#FFFFFF" stroke="#27457E" strokeWidth={i === lastDataIdx ? 2 : 1.6} />
             ),
           )}
 
-          {/* fiscal-year axis labels */}
+          {/* fiscal-year axis labels (latest emphasised) */}
           {rows.map((r, i) => (
-            <text key={`x-${r.fy}`} x={cx(i)} y={H - 8} textAnchor="middle" fontSize={11} fontWeight={i === lastDataIdx ? 700 : 600} fill={i === lastDataIdx ? '#26303F' : '#6B7280'}>
+            <text key={`x-${r.fy}`} x={cx(i)} y={H - 8} textAnchor="middle" fontSize={11} fontWeight={i === lastDataIdx ? 700 : 600} fill={i === lastDataIdx ? '#1B2A4A' : '#6B7280'}>
               {r.fy}
             </text>
           ))}
+
+          {/* callout anchored to the latest retail marker */}
+          {annotation && lastDataIdx >= 0 && plotW > 120 && rows[lastDataIdx].retailPct != null && (() => {
+            const ax = cx(lastDataIdx)
+            const ay = yOf(rows[lastDataIdx].retailPct as number)
+            const boxW = Math.min(208, plotW - 8)
+            const boxH = 38
+            const boxX = Math.max(padL + 4, padL + plotW - boxW)
+            const boxY = padT + 2
+            const startX = Math.min(Math.max(ax, boxX + 12), boxX + boxW - 12)
+            return (
+              <g>
+                <line x1={startX} y1={boxY + boxH} x2={ax} y2={ay - 5} stroke={RETAIL_COLOR} strokeWidth={1.2} strokeDasharray="2.5 2.5" />
+                <circle cx={startX} cy={boxY + boxH} r={1.8} fill={RETAIL_COLOR} />
+                <rect x={boxX} y={boxY} width={boxW} height={boxH} rx={9} fill="#FFFFFF" stroke="#BFE3E1" strokeWidth={1} style={{ filter: 'drop-shadow(0 4px 10px rgba(23,43,77,0.08))' }} />
+                <rect x={boxX} y={boxY + 6} width={3} height={boxH - 12} rx={1.5} fill={RETAIL_COLOR} />
+                <text x={boxX + 13} y={boxY + 16} fontSize={10.5} fontWeight={700} fill="#11324F">{annotation.line1}</text>
+                <text x={boxX + 13} y={boxY + 29} fontSize={9.5} fontWeight={600} fill="#5B6675">{annotation.line2}</text>
+              </g>
+            )
+          })()}
         </svg>
       )}
     </div>
@@ -693,30 +743,60 @@ function RetailGroupMixCard() {
   const fullSpan = series.length ? (series.length === 1 ? series[0].fy : `${series[0].fy}–${series[series.length - 1].fy}`) : null
 
   const tone = delta == null ? 'flat' : delta >= 2 ? 'up' : delta <= -2 ? 'down' : 'flat'
+  const DirIcon = tone === 'up' ? TrendingUp : tone === 'down' ? TrendingDown : Minus
+  // No harsh red: retail easing is tinted muted gold (the group book gaining).
   const deltaChipCls =
     tone === 'up'
       ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
       : tone === 'down'
-        ? 'bg-[#FBEDEA] text-[#C0584F] ring-[#F0D2CC]'
+        ? 'bg-[#FBF3E1] text-[#8A6A1E] ring-[#EAD9A8]'
         : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
+  const kpiNumCls = tone === 'up' ? 'text-teal' : tone === 'down' ? 'text-[#8A6A1E]' : 'text-navy-primary'
+
+  // Annotation copy — fully derived from the live first/last data points.
+  const annotation =
+    delta != null && first && last
+      ? {
+          line1: `Retail mix ${delta < 0 ? 'eased' : delta > 0 ? 'rose' : 'held'} from ${first.retailPct}% to ${last.retailPct}%`,
+          line2: `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} pp | ${first.fy} → ${last.fy}`,
+        }
+      : null
 
   return (
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
       <header className="mb-4 border-b border-[#EEF1F7] pb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
-          <h2 className="font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
-          <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">{company.shortName}</span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-teal-soft text-teal ring-1 ring-[#BFE3E1]">
+                <BarChart3 className="h-4 w-4" strokeWidth={2.2} />
+              </span>
+              <h2 className="font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
+              <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">{company.shortName}</span>
+              {delta != null && (
+                <span className={`inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${deltaChipCls}`}>
+                  <DirIcon className="h-3 w-3" strokeWidth={2.6} /> Retail {delta >= 0 ? '+' : '−'}{Math.abs(delta)} pp
+                </span>
+              )}
+              {!gate.ok && <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">Annual data</span>}
+            </div>
+            <p className="mt-1.5 text-[12px] text-ink-secondary">
+              Individual/retail vs group share of health GWP{spanLabel ? ` · ${spanLabel}` : ''}
+            </p>
+          </div>
+
           {delta != null && (
-            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${deltaChipCls}`}>
-              Retail {delta >= 0 ? '+' : '−'}{Math.abs(delta)} pp
-            </span>
+            <div className="shrink-0 rounded-xl border border-[#E6EAF2] bg-[#FBFCFE] px-3.5 py-2 text-right shadow-[0_1px_2px_rgba(23,43,77,0.04)]">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-secondary/75">Retail mix</p>
+              <p className={`mt-1 flex items-center justify-end gap-1 text-[19px] font-semibold leading-none tabular-nums ${kpiNumCls}`}>
+                <DirIcon className="h-4 w-4" strokeWidth={2.6} />
+                {delta >= 0 ? '+' : '−'}{Math.abs(delta)} pp
+              </p>
+              <p className="mt-1.5 text-[9.5px] font-medium text-ink-secondary/80">{first.fy} to {last.fy}</p>
+            </div>
           )}
-          {!gate.ok && <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">Annual data</span>}
         </div>
-        <p className="mt-1 text-[12px] text-ink-secondary">
-          Individual/retail vs group share of health GWP{spanLabel ? ` · ${spanLabel}` : ''}
-        </p>
       </header>
 
       {dataBars.length === 0 ? (
@@ -733,23 +813,31 @@ function RetailGroupMixCard() {
             <span className="ml-auto text-[10px] uppercase tracking-wide text-ink-secondary/70">Premium metric — not profit</span>
           </div>
 
-          <RetailMixBars rows={bars} company={company.shortName} />
+          <RetailMixBars rows={bars} company={company.shortName} annotation={annotation} />
 
-          <InsightLine>
-            {single ? (
-              <>In {last.fy}, {company.shortName} ran a <strong className="font-semibold text-teal">{last.retailPct}%</strong> retail / {last.groupPct}% group health book.</>
-            ) : tone === 'up' ? (
-              <>{company.shortName} grew <strong className="font-semibold text-teal">retail</strong> share by <strong className="font-semibold text-teal">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} — a stickier, higher-margin book.</>
-            ) : tone === 'down' ? (
-              <>Retail share at {company.shortName} eased <strong className="font-semibold text-[#C0584F]">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} as the group book scaled faster.</>
-            ) : (
-              <>{company.shortName} held a roughly {last.retailPct}/{last.groupPct} retail-to-group mix across {spanLabel}.</>
-            )}
-          </InsightLine>
-
-          <p className="mt-2 text-[11px] leading-snug text-ink-secondary">
-            A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
-          </p>
+          {/* premium insight strip — soft teal tint, icon + divider */}
+          <div className="mt-4 flex items-stretch gap-3 rounded-xl border border-[#CFE7E3] bg-[#F1FAF8] p-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center self-center rounded-lg bg-white text-teal ring-1 ring-[#BFE3E1]">
+              <Lightbulb className="h-4 w-4" strokeWidth={2} />
+            </span>
+            <span className="w-px self-stretch bg-[#CFE7E3]" />
+            <div className="min-w-0 self-center">
+              <p className="text-[12.5px] font-semibold leading-snug text-navy-deep">
+                {single ? (
+                  <>In {last.fy}, {company.shortName} ran a <strong className="font-semibold text-teal">{last.retailPct}%</strong> retail / {last.groupPct}% group health book.</>
+                ) : tone === 'up' ? (
+                  <>{company.shortName} grew <strong className="font-semibold text-teal">retail</strong> share by <strong className="font-semibold text-teal">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} — a stickier, higher-margin book.</>
+                ) : tone === 'down' ? (
+                  <>Retail share at {company.shortName} eased <strong className="font-semibold text-[#8A6A1E]">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} as the group book scaled faster.</>
+                ) : (
+                  <>{company.shortName} held a roughly {last.retailPct}/{last.groupPct} retail-to-group mix across {spanLabel}.</>
+                )}
+              </p>
+              <p className="mt-1 text-[11px] leading-snug text-ink-secondary">
+                A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
+              </p>
+            </div>
+          </div>
         </>
       )}
 
