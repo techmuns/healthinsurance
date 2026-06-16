@@ -20,6 +20,7 @@
     "ingest:audit": "tsx scripts/ingest/audit-fill.ts fill",
     "ingest:sectoral-news": "tsx scripts/ingest/sahi-sectoral-news-agent.ts",
     "ingest:life-industry": "tsx scripts/ingest/life-industry-agent.ts",
+    "ingest:valuation-fundamentals": "tsx scripts/ingest/valuation-fundamentals-agent.ts",
     "ingest:shareholding": "tsx scripts/ingest/fetch-shareholding.ts",
     "ingest:price:muns": "tsx scripts/ingest/fetch-muns-market-data.ts",
     "ingest:delivery:nse": "tsx scripts/ingest/fetch-nse-delivery.ts",

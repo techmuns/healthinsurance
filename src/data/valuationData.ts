@@ -12,7 +12,34 @@
 // ---------------------------------------------------------------------------
 
 import streetSnapshot from '@/data/snapshots/street-analyst-snapshot.json'
+import valuationFundamentals from '@/data/snapshots/valuation-fundamentals-snapshot.json'
 import type { StreetAnalystSnapshot } from '@/data/snapshots/_schemas'
+
+// Quarterly-refreshed reported financials (GWP / PAT / growth / retail share) for
+// the listed health insurers — written by scripts/ingest/valuation-fundamentals-
+// agent.ts. The Valuation tab reads the latest fiscal year per company from here
+// and derives the multiples live; the curated seeds below are the fallback.
+interface FundamentalsRow {
+  company_id: string
+  fiscal_year: string
+  gwp: number | null
+  gwp_growth_yoy: number | null
+  pat: number | null
+  pat_growth_yoy: number | null
+  retail_share: number | null
+  retail_share_delta_bps: number | null
+}
+const FUND_ROWS = (valuationFundamentals.data as FundamentalsRow[]) ?? []
+const _fyNum = (fy: string) => Number(fy.replace(/^FY/, '')) || 0
+/** Latest fiscal-year fundamentals row for a company (newest FY first), or null. */
+function latestFundamentals(companyId: string): FundamentalsRow | null {
+  return FUND_ROWS.filter((r) => r.company_id === companyId).sort((a, b) => _fyNum(b.fiscal_year) - _fyNum(a.fiscal_year))[0] ?? null
+}
+function fundamentalsFor(companyId: string, fy: string): FundamentalsRow | null {
+  return FUND_ROWS.find((r) => r.company_id === companyId && r.fiscal_year === fy) ?? null
+}
+const r2 = (v: number) => Math.round(v * 100) / 100
+const r1 = (v: number) => Math.round(v * 10) / 10
 
 // Broker rating vocabulary, ordered bullish → bearish. "Add" (accumulate) sits
 // on the buy side; "Equal-weight" is a neutral/hold stance; "Reduce" leans sell.
@@ -55,10 +82,15 @@ const streetData = streetSnapshot as unknown as StreetAnalystSnapshot
 
 // Live market-quote overlay: current price + 52-week range come from the daily
 // Moneycontrol pricefeed when present, else the seed values (never blanked).
+// Market cap tracks the live price via the seed's implied shares (≈ constant),
+// so the derived multiples move with the price rather than a frozen snapshot.
+const _livePrice =
+  streetData?.market?.current_price ?? streetData?.consensus?.current_price ?? seedMarketSnapshot.currentPrice
+const _impliedShares = seedMarketSnapshot.marketCap / seedMarketSnapshot.currentPrice
 export const marketSnapshot: MarketSnapshot = {
   ...seedMarketSnapshot,
-  currentPrice:
-    streetData?.market?.current_price ?? streetData?.consensus?.current_price ?? seedMarketSnapshot.currentPrice,
+  currentPrice: _livePrice,
+  marketCap: Math.round(_livePrice * _impliedShares),
   weekHigh52: streetData?.market?.week_high_52 ?? seedMarketSnapshot.weekHigh52,
   weekLow52: streetData?.market?.week_low_52 ?? seedMarketSnapshot.weekLow52,
   priceAsOf: streetData?.market?.price_as_of ?? seedMarketSnapshot.priceAsOf,
@@ -77,18 +109,22 @@ export interface FocalFinancials {
   patFY25: number
 }
 
-const _gwp26 = 9432.9
-const _pat26 = 366.1
+// Overlaid from the quarterly fundamentals snapshot (latest FY per company);
+// the curated seed values are the fallback if the snapshot is empty/pending.
+const _focalLatest = latestFundamentals(FOCAL_VALUATION_ID)
+const _focalPrior = fundamentalsFor(FOCAL_VALUATION_ID, 'FY25')
+const _gwp26 = _focalLatest?.gwp ?? 9432.9
+const _pat26 = _focalLatest?.pat ?? 366.1
 export const focalFinancials: FocalFinancials = {
   gwpFY26: _gwp26,
-  gwpGrowthFY26: 27.4,
+  gwpGrowthFY26: _focalLatest?.gwp_growth_yoy ?? 27.4,
   patFY26: _pat26,
-  patGrowthFY26: 80,
+  patGrowthFY26: _focalLatest?.pat_growth_yoy ?? 80,
   netMarginFY26: (_pat26 / _gwp26) * 100, // ≈ 3.9%
-  retailShareFY26: 10.1,
-  retailShareDeltaBps: 76,
-  gwpFY25: 7015,
-  patFY25: 203,
+  retailShareFY26: _focalLatest?.retail_share ?? 10.1,
+  retailShareDeltaBps: _focalLatest?.retail_share_delta_bps ?? 76,
+  gwpFY25: _focalPrior?.gwp ?? 7015,
+  patFY25: _focalPrior?.pat ?? 203,
 }
 
 // ── Multiples (derived from the sourced components above) ────────────────────
@@ -98,9 +134,12 @@ export interface FocalMultiples {
   pb: number | null // sourceId niva-pb (secondary)
 }
 
+// Derived live: P/GWP and P/E = market cap (which tracks the daily price) ÷ the
+// latest reported GWP / PAT — so they move with both the price (daily) and the
+// financials (quarterly). P/B keeps its seed (it needs net worth, not yet fetched).
 export const focalMultiples: FocalMultiples = {
-  pGwp: 1.65,
-  pe: 42.6,
+  pGwp: _gwp26 > 0 ? r2(marketSnapshot.marketCap / _gwp26) : null,
+  pe: _pat26 > 0 ? r1(marketSnapshot.marketCap / _pat26) : null,
   pb: 3.0,
 }
 
@@ -302,18 +341,27 @@ export interface AnalystThesis {
   catalysts: string[]
 }
 
+// Star's P/GWP on the same basis as the peer table, for the thesis comparison.
+const _starPGwp = (() => {
+  const s = latestFundamentals('star-health')
+  const g = s?.gwp ?? 20369
+  return g > 0 ? r2(30356 / g) : 1.49
+})()
+
 export const analystThesis: AnalystThesis = {
-  // Each bull/bear point references a reported, sourced figure.
+  // Each bull/bear point references a reported, sourced figure — the numbers are
+  // templated from the live financials/multiples so the prose never drifts from
+  // the tiles when the quarterly fetch refreshes them.
   bull: [
-    'Fastest-growing listed SAHI: GWP +27% in FY26',
-    'PAT +80% YoY to ₹366 Cr (FY26, IFRS)',
-    'Retail-health share up to 10.1% (+76 bps)',
+    `Fastest-growing listed SAHI: GWP +${Math.round(focalFinancials.gwpGrowthFY26)}% in FY26`,
+    `PAT +${Math.round(focalFinancials.patGrowthFY26)}% YoY to ₹${Math.round(focalFinancials.patFY26)} Cr (FY26, IFRS)`,
+    `Retail-health share up to ${focalFinancials.retailShareFY26}% (+${focalFinancials.retailShareDeltaBps} bps)`,
     'Combined service ratio 101.4% — improving (+160 bps)',
   ],
   bear: [
-    'Trades at a premium to Star on P/GWP (1.65x vs 1.49x)',
+    `Trades at a ${(focalMultiples.pGwp ?? 0) >= _starPGwp ? 'premium' : 'discount'} to Star on P/GWP (${focalMultiples.pGwp?.toFixed(2)}x vs ${_starPGwp.toFixed(2)}x)`,
     'Profit base still small — margin must keep scaling',
-    'P/E ≈ 43x prices in years of compounding',
+    `P/E ≈ ${Math.round(focalMultiples.pe ?? 0)}x prices in years of compounding`,
     'Rising competitive & regulatory intensity in health',
   ],
   risks: ['Claims / medical inflation', 'Commission & distribution cost', 'Regulatory change (EOM, pricing)', 'Slower retail policy growth'],
@@ -334,31 +382,40 @@ export interface PeerValuationRow {
   sourceId: string
 }
 
+// Listed peer rows are built from the same quarterly fundamentals snapshot, with
+// multiples derived (market cap ÷ reported GWP / PAT). Niva's market cap tracks
+// the live price; peers use their seed market cap. Seed figures are the fallback.
+function listedPeerRow(
+  companyId: string,
+  companyName: string,
+  seedMcap: number,
+  seedGwp: number,
+  seedGrowth: number,
+  seedPGwp: number,
+  seedPe: number,
+  sourceId: string,
+): PeerValuationRow {
+  const f = latestFundamentals(companyId)
+  const mcap = companyId === FOCAL_VALUATION_ID ? marketSnapshot.marketCap : seedMcap
+  const gwp = f?.gwp ?? seedGwp
+  const pat = f?.pat ?? null
+  return {
+    companyId,
+    companyName,
+    listingStatus: 'Listed',
+    marketCap: mcap,
+    gwp,
+    pGwp: gwp > 0 ? r2(mcap / gwp) : seedPGwp,
+    pe: pat != null && pat > 0 ? r1(mcap / pat) : seedPe,
+    growth: f?.gwp_growth_yoy ?? seedGrowth,
+    confidence: 'secondary',
+    sourceId,
+  }
+}
+
 export const peerValuation: PeerValuationRow[] = [
-  {
-    companyId: 'niva-bupa',
-    companyName: 'Niva Bupa',
-    listingStatus: 'Listed',
-    marketCap: 15576,
-    gwp: 9432.9,
-    pGwp: 1.65,
-    pe: 42.6,
-    growth: 27.4,
-    confidence: 'secondary',
-    sourceId: 'niva-pgwp',
-  },
-  {
-    companyId: 'star-health',
-    companyName: 'Star Health',
-    listingStatus: 'Listed',
-    marketCap: 30356,
-    gwp: 20369,
-    pGwp: 1.49,
-    pe: 33.3, // mkt cap ₹30,356 Cr ÷ FY26 PAT ₹911 Cr — same basis as Niva's P/E for a like-for-like compare
-    growth: 16,
-    confidence: 'secondary',
-    sourceId: 'star-pgwp',
-  },
+  listedPeerRow('niva-bupa', 'Niva Bupa', 15576, 9432.9, 27.4, 1.65, 42.6, 'niva-pgwp'),
+  listedPeerRow('star-health', 'Star Health', 30356, 20369, 16, 1.49, 33.3, 'star-pgwp'),
   { companyId: 'care-health', companyName: 'Care Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
   { companyId: 'aditya-birla', companyName: 'Aditya Birla Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
   { companyId: 'manipalcigna', companyName: 'ManipalCigna', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },

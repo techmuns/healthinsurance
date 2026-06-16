@@ -1,0 +1,61 @@
+name: valuation fundamentals fetch
+
+# Refreshes the Valuation tab's reported financials — full-year GWP, PAT, growth
+# and retail-health share for the LISTED health insurers (Niva Bupa, Star Health)
+# — which the tab uses to derive P/GWP and P/E. The muns web agent pulls each
+# company's latest reported full-year figures; the merge is ADD-ONLY (the audited
+# seed is never overwritten) and honest (anything unsourced or out-of-bounds stays
+# null). New fiscal years self-enter — the script targets the latest completed FY.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Quarterly, ~3 weeks after each Indian quarter-end so results have published:
+    # 20 Feb (Q3), 20 May (Q4 + full-year audited), 20 Aug (Q1), 20 Nov (Q2).
+    - cron: '0 6 20 2,5,8,11 *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: valuation-fundamentals-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Fetch valuation fundamentals (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
+        run: npx tsx scripts/ingest/valuation-fundamentals-agent.ts
+
+      - name: Commit refreshed fundamentals
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/valuation-fundamentals-snapshot.json
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: valuation fundamentals @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1
