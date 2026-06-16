@@ -13,7 +13,7 @@ const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 
 const COLORS = ['#27457E', '#168E8E', '#B68B3A', '#8061B8', '#A8443B']
 const GRID = '#ECEFF5'
-const colorFor = (id: string, i: number) => COLORS[i % COLORS.length] || '#27457E'
+const colorFor = (_id: string, i: number) => COLORS[i % COLORS.length] || '#27457E'
 const labelFor = (id: string) => byId.get(id)?.label ?? id
 
 type Num = number | null

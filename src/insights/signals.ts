@@ -11,7 +11,7 @@
 
 import type { Signal, ProvenanceLayer, CoverageRow, SignalRun } from './types'
 import type { Dataset, InsurerPanel, AnnualMetrics } from './panel'
-import { mean, median, stdev, zScore, slope, round, pctChange } from './stats'
+import { mean, stdev, zScore, slope, round, pctChange } from './stats'
 
 const STAT: ProvenanceLayer[] = ['annual_report', 'statutory']
 const GIC: ProvenanceLayer[] = ['statutory']
