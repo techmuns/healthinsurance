@@ -6,6 +6,7 @@ import { SourceTag } from './SourceTag'
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import quarterlyFinancials from '@/data/snapshots/insurer-quarterly-financials.json'
 import gicHealthQuarterly from '@/data/snapshots/gic-health-quarterly.json'
+import gicHealthMonthly from '@/data/snapshots/gic-health-monthly.json'
 import { formatRange, fyLabelsInRange, periodLabelsInRange } from '@/lib/dateRange'
 
 // Color meaning (financial story): deep navy = gross written premium / the
@@ -47,6 +48,12 @@ const Q_FY = /^Q([1-4])FY(\d{2})$/
 // fabricated number; a quarter stays n/a if its bracketing cumulatives aren't both present.)
 const CUM_FY = /^(3M|6M|H1|9M|12M)FY(\d{2})$/
 const CUM_IDX: Record<string, number> = { '3M': 0, '6M': 1, H1: 1, '9M': 2, '12M': 3 }
+// Standalone GI Council monthly health totals ("Apr-FY22" … "Mar-FY22"), summed
+// three-at-a-time to fill a quarter the council prints neither standalone nor as
+// a usable cumulative. Fiscal-month order: Apr = 0 … Mar = 11.
+interface GicHealthMRow { period: string; entity: string; health_total: number | null }
+const MON_FY = /^([A-Z][a-z]{2})-FY(\d{2})$/
+const FISCAL_MONTHS = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']
 
 function quarterlyPremiumMap(companyId: string): Map<string, { gwp: number | null; nwp: number | null; nep: number | null }> {
   const map = new Map<string, { gwp: number | null; nwp: number | null; nep: number | null }>()
@@ -65,13 +72,37 @@ function quarterlyPremiumMap(companyId: string): Map<string, { gwp: number | nul
     const c = CUM_FY.exec(r.period)
     if (c) ensure(cum, c[2])[CUM_IDX[c[1]]] = r.health_total
   }
-  for (const fy of new Set([...Object.keys(direct), ...Object.keys(cum)])) {
+
+  // Monthly rollup — a quarter's GWP from the sum of its three GI Council monthly
+  // health totals. Used only when the quarterly/cumulative figures can't yield the
+  // quarter on their own (e.g. FY22 Q1/Q2, where only 9M + Q4 are filed). All three
+  // months must be present, so a partial quarter stays null — never an understated
+  // or fabricated bar. This is real arithmetic on the same source at its finest
+  // grain (the months reconcile to the printed cumulative to the rupee).
+  const monSum: Record<string, (number | null)[]> = {}
+  const monCount: Record<string, number[]> = {}
+  for (const r of gicHealthMonthly.data as GicHealthMRow[]) {
+    if (r.entity !== companyId || typeof r.health_total !== 'number') continue
+    const mm = MON_FY.exec(r.period)
+    if (!mm) continue
+    const mo = FISCAL_MONTHS.indexOf(mm[1])
+    if (mo < 0) continue
+    const qi = Math.floor(mo / 3)
+    const sums = (monSum[mm[2]] ??= [null, null, null, null])
+    const counts = (monCount[mm[2]] ??= [0, 0, 0, 0])
+    sums[qi] = (sums[qi] ?? 0) + r.health_total
+    counts[qi] += 1
+  }
+  const fromMonths = (fy: string, qi: number): number | null =>
+    monCount[fy]?.[qi] === 3 ? (monSum[fy]?.[qi] ?? null) : null
+
+  for (const fy of new Set([...Object.keys(direct), ...Object.keys(cum), ...Object.keys(monSum)])) {
     const d = direct[fy] ?? [null, null, null, null]
     const c = cum[fy] ?? [null, null, null, null]
-    const q1 = d[0] ?? c[0] ?? null // filed Q1, else the 3M cumulative
-    const q2 = d[1] ?? (c[1] != null && q1 != null ? c[1] - q1 : null) // else H1 − Q1
-    const q3 = d[2] ?? (c[2] != null && c[1] != null ? c[2] - c[1] : null) // else 9M − H1
-    const q4 = d[3] ?? (c[3] != null && c[2] != null ? c[3] - c[2] : null) // else 12M − 9M
+    const q1 = d[0] ?? c[0] ?? fromMonths(fy, 0) // filed Q1, else 3M cumulative, else Apr+May+Jun
+    const q2 = d[1] ?? (c[1] != null && q1 != null ? c[1] - q1 : null) ?? fromMonths(fy, 1) // else H1 − Q1, else Jul+Aug+Sep
+    const q3 = d[2] ?? (c[2] != null && c[1] != null ? c[2] - c[1] : null) ?? fromMonths(fy, 2) // else 9M − H1, else Oct+Nov+Dec
+    const q4 = d[3] ?? (c[3] != null && c[2] != null ? c[3] - c[2] : null) ?? fromMonths(fy, 3) // else 12M − 9M, else Jan+Feb+Mar
     ;[q1, q2, q3, q4].forEach((v, i) => {
       if (v != null && v > 0) { const label = `Q${i + 1} FY${fy}`; const e = at(label); e.gwp = Math.round(v * 100) / 100; map.set(label, e) }
     })
@@ -310,7 +341,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             period={rangeLabel}
             provenance={{
               source_name: quarterly
-                ? `${name} quarterly results + GI Council health filings (quarters not filed standalone are derived from the cumulative period figures) — written / earned premium per quarter`
+                ? `${name} quarterly results + GI Council health filings (quarters not filed standalone are derived from the cumulative or monthly period figures) — written / earned premium per quarter`
                 : `${name} annual disclosures — written / retained / earned premium per year`,
               source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
             }}
