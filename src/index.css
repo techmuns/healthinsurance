@@ -188,7 +188,10 @@ body {
 .recharts-default-tooltip {
   border-radius: 12px !important;
   border: 1px solid rgba(229, 232, 239, 0.9) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
+  /* Thin champagne-gold accent on the leading edge — a premium, consistent
+     tooltip card across every chart that uses the default tooltip. */
+  border-left: 2.5px solid rgba(182, 139, 58, 0.55) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   box-shadow: 0 10px 30px rgba(23, 43, 77, 0.12) !important;
