@@ -568,11 +568,9 @@ type RetailBar = { fy: string; retailPct: number | null; groupPct: number | null
 function RetailMixBars({
   rows,
   company,
-  annotation,
 }: {
   rows: RetailBar[]
   company: string
-  annotation?: { line1: string; line2: string } | null
 }) {
   const [ref, w] = useElementWidth()
   const H = 300
@@ -692,26 +690,10 @@ function RetailMixBars({
             </text>
           ))}
 
-          {/* callout anchored to the latest retail marker */}
-          {annotation && lastDataIdx >= 0 && plotW > 120 && rows[lastDataIdx].retailPct != null && (() => {
-            const ax = cx(lastDataIdx)
-            const ay = yOf(rows[lastDataIdx].retailPct as number)
-            const boxW = Math.min(208, plotW - 8)
-            const boxH = 38
-            const boxX = Math.max(padL + 4, padL + plotW - boxW)
-            const boxY = padT + 2
-            const startX = Math.min(Math.max(ax, boxX + 12), boxX + boxW - 12)
-            return (
-              <g>
-                <line x1={startX} y1={boxY + boxH} x2={ax} y2={ay - 5} stroke={RETAIL_COLOR} strokeWidth={1.2} strokeDasharray="2.5 2.5" />
-                <circle cx={startX} cy={boxY + boxH} r={1.8} fill={RETAIL_COLOR} />
-                <rect x={boxX} y={boxY} width={boxW} height={boxH} rx={9} fill="#FFFFFF" stroke="#BFE3E1" strokeWidth={1} style={{ filter: 'drop-shadow(0 4px 10px rgba(23,43,77,0.08))' }} />
-                <rect x={boxX} y={boxY + 6} width={3} height={boxH - 12} rx={1.5} fill={RETAIL_COLOR} />
-                <text x={boxX + 13} y={boxY + 16} fontSize={10.5} fontWeight={700} fill="#11324F">{annotation.line1}</text>
-                <text x={boxX + 13} y={boxY + 29} fontSize={9.5} fontWeight={600} fill="#5B6675">{annotation.line2}</text>
-              </g>
-            )
-          })()}
+          {/* The retail-mix trend reads from the bars, the frontier line and its
+              markers. The "from X% to Y%, ±N pp" call-out is carried by the
+              header KPI tile and the structured insight strip below the chart —
+              kept off the plot so no annotation ever covers a bar. */}
         </svg>
       )}
     </div>
@@ -755,15 +737,6 @@ function RetailGroupMixCard() {
         ? 'bg-[#FBF3E1] text-[#8A6A1E] ring-[#EAD9A8]'
         : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
   const kpiNumCls = tone === 'up' ? 'text-teal' : tone === 'down' ? 'text-[#8A6A1E]' : 'text-navy-primary'
-
-  // Annotation copy — fully derived from the live first/last data points.
-  const annotation =
-    delta != null && first && last
-      ? {
-          line1: `Retail mix ${delta < 0 ? 'eased' : delta > 0 ? 'rose' : 'held'} from ${first.retailPct}% to ${last.retailPct}%`,
-          line2: `${delta >= 0 ? '+' : '−'}${Math.abs(delta)} pp | ${first.fy} → ${last.fy}`,
-        }
-      : null
 
   return (
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
@@ -816,7 +789,7 @@ function RetailGroupMixCard() {
             <span className="ml-auto text-[10px] uppercase tracking-wide text-ink-secondary/70">Premium metric — not profit</span>
           </div>
 
-          <RetailMixBars rows={bars} company={company.shortName} annotation={annotation} />
+          <RetailMixBars rows={bars} company={company.shortName} />
 
           {/* premium insight strip — soft teal tint, icon + divider */}
           <div className="mt-4 flex items-stretch gap-3 rounded-xl border border-[#CFE7E3] bg-[#F1FAF8] p-3">
