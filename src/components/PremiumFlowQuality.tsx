@@ -40,19 +40,44 @@ const SERIES: { key: 'gwp' | 'nwp' | 'nep'; name: string; abbr: string; color: s
 interface GicHealthQRow { period: string; entity: string; health_total: number | null }
 interface QuarterlyFinRow { company_id: string; quarter: string; fiscal_year: string; nwp: number | null; nep: number | null }
 const Q_FY = /^Q([1-4])FY(\d{2})$/
+// Cumulative GI Council period labels (FY-to-date). Quarters the council prints
+// only cumulatively are reconstructed from these — Q2 = H1−Q1, Q3 = 9M−H1,
+// Q4 = 12M−9M — so every quarter the filings imply is shown, not only the ones
+// published as a standalone column. (Real arithmetic on sourced figures, never a
+// fabricated number; a quarter stays n/a if its bracketing cumulatives aren't both present.)
+const CUM_FY = /^(3M|6M|H1|9M|12M)FY(\d{2})$/
+const CUM_IDX: Record<string, number> = { '3M': 0, '6M': 1, H1: 1, '9M': 2, '12M': 3 }
 
 function quarterlyPremiumMap(companyId: string): Map<string, { gwp: number | null; nwp: number | null; nep: number | null }> {
   const map = new Map<string, { gwp: number | null; nwp: number | null; nep: number | null }>()
   const at = (label: string) => map.get(label) ?? { gwp: null, nwp: null, nep: null }
+
+  // GI Council GWP: collect each FY's standalone quarters + cumulative checkpoints,
+  // then emit every standalone quarter, deriving from the cumulative deltas where
+  // it isn't filed on its own. health_total = total GWP for a standalone insurer.
+  const direct: Record<string, (number | null)[]> = {}
+  const cum: Record<string, (number | null)[]> = {}
+  const ensure = (o: Record<string, (number | null)[]>, fy: string) => (o[fy] ??= [null, null, null, null])
   for (const r of gicHealthQuarterly.data as GicHealthQRow[]) {
-    if (r.entity !== companyId) continue
-    const m = Q_FY.exec(r.period)
-    if (!m) continue
-    const label = `Q${m[1]} FY${m[2]}`
-    const e = at(label)
-    if (typeof r.health_total === 'number') e.gwp = r.health_total
-    map.set(label, e)
+    if (r.entity !== companyId || typeof r.health_total !== 'number') continue
+    const q = Q_FY.exec(r.period)
+    if (q) { ensure(direct, q[2])[Number(q[1]) - 1] = r.health_total; continue }
+    const c = CUM_FY.exec(r.period)
+    if (c) ensure(cum, c[2])[CUM_IDX[c[1]]] = r.health_total
   }
+  for (const fy of new Set([...Object.keys(direct), ...Object.keys(cum)])) {
+    const d = direct[fy] ?? [null, null, null, null]
+    const c = cum[fy] ?? [null, null, null, null]
+    const q1 = d[0] ?? c[0] ?? null // filed Q1, else the 3M cumulative
+    const q2 = d[1] ?? (c[1] != null && q1 != null ? c[1] - q1 : null) // else H1 − Q1
+    const q3 = d[2] ?? (c[2] != null && c[1] != null ? c[2] - c[1] : null) // else 9M − H1
+    const q4 = d[3] ?? (c[3] != null && c[2] != null ? c[3] - c[2] : null) // else 12M − 9M
+    ;[q1, q2, q3, q4].forEach((v, i) => {
+      if (v != null && v > 0) { const label = `Q${i + 1} FY${fy}`; const e = at(label); e.gwp = Math.round(v * 100) / 100; map.set(label, e) }
+    })
+  }
+
+  // NWP / NEP overlay from the company's quarterly results (filed where available).
   for (const r of quarterlyFinancials.data as QuarterlyFinRow[]) {
     if (r.company_id !== companyId) continue
     const label = `${r.quarter} ${r.fiscal_year}`
@@ -285,7 +310,7 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
             period={rangeLabel}
             provenance={{
               source_name: quarterly
-                ? `${name} quarterly results + GI Council quarterly health filings — written / earned premium per quarter`
+                ? `${name} quarterly results + GI Council health filings (quarters not filed standalone are derived from the cumulative period figures) — written / earned premium per quarter`
                 : `${name} annual disclosures — written / retained / earned premium per year`,
               source_url: 'https://transactions.nivabupa.com/pages/investor-relations.aspx',
             }}

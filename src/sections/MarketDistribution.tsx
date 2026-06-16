@@ -575,19 +575,16 @@ function RetailGroupMixCard() {
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
       <header className="mb-4 border-b border-[#EEF1F7] pb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
-        <h2 className="mt-1.5 font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+          <h2 className="font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
+          {!gate.ok && <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">Annual data</span>}
+        </div>
         <p className="mt-1 text-[12px] text-ink-secondary">
           Share of health GWP — individual/retail vs group — across the leading health insurers{targetFy ? ` · ${targetFy}` : ''}
         </p>
       </header>
 
-      {!gate.ok ? (
-        <EmptyState
-          title="Retail vs group split is captured annually"
-          body={gate.reason ?? 'The retail/group product mix is reported per financial year — switch the period toggle to Annual to view it.'}
-          height={220}
-        />
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <EmptyState
           title="Retail vs group split not reported for the selected years"
           body={reportedLabel ? `The retail/group split is reported for ${reportedLabel}. Widen the Data Range to include it.` : 'No retail vs group split is reported in the source yet.'}
@@ -663,17 +660,12 @@ function ChannelMixCard() {
               {lever.ch}: growth lever
             </span>
           )}
+          {!gate.ok && <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">Annual data</span>}
         </div>
         <p className="mt-1 text-[12px] text-ink-secondary">Share of GWP by channel · {span}</p>
       </header>
 
-      {!gate.ok ? (
-        <EmptyState
-          title="Distribution data unavailable for this period"
-          body={gate.reason ?? 'Channel mix is captured annually — switch the period toggle to Annual.'}
-          height={300}
-        />
-      ) : !data ? (
+      {!data ? (
         <EmptyState
           title={`Channel mix not wired for ${company.shortName}`}
           body="Add source-backed channel-mix data for this insurer to activate the chart."
