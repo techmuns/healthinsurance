@@ -53,7 +53,12 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           INSIGHTS_MODEL: ${{ vars.INSIGHTS_MODEL }}
-        run: npm run insights:generate
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY not set — skipping regeneration; the committed, validated insights remain in place."
+            exit 0
+          fi
+          npm run insights:generate
 
       - name: Commit refreshed insights
         run: |
