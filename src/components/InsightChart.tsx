@@ -11,9 +11,14 @@ import { buildPanel, type InsurerPanel } from '@/insights/panel'
 const PANEL = buildPanel()
 const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 
-const COLORS = ['#27457E', '#168E8E', '#B68B3A', '#8061B8', '#A8443B']
+const COLORS = ['#27457E', '#168E8E', '#8061B8', '#3D5F9F', '#A8443B']
 const GRID = '#ECEFF5'
-const colorFor = (_id: string, i: number) => COLORS[i % COLORS.length] || '#27457E'
+const FOCAL = '#C99736' // gold — the insight's subject; pulls the eye to what matters
+const PEER = '#9FB1C9'  // calm slate-blue — the supporting cast
+// With a single-subject insight, paint the subject gold and mute the peers so the
+// protagonist stands out; with no single focus, fall back to the tone-coded cycle.
+const colorFor = (id: string, i: number, focal?: string) =>
+  focal ? (id === focal ? FOCAL : PEER) : COLORS[i % COLORS.length] || '#27457E'
 const labelFor = (id: string) => byId.get(id)?.label ?? id
 
 type Num = number | null
@@ -48,7 +53,7 @@ function Pending({ title }: { title: string }) {
   )
 }
 
-export function InsightChart({ spec }: { spec: ChartSpec }) {
+export function InsightChart({ spec, focal }: { spec: ChartSpec; focal?: string }) {
   const insurers = spec.insurers.filter((id) => byId.has(id))
   const thresholds = (spec.annotations ?? []).filter((a) => a.kind === 'threshold' && typeof a.value === 'number')
 
@@ -70,7 +75,7 @@ export function InsightChart({ spec }: { spec: ChartSpec }) {
           <YAxis tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} width={36} />
           <Tooltip contentStyle={TT} formatter={(v: number, n: string) => [v, labelFor(n)]} />
           {thresholds.map((t, i) => <ReferenceLine key={i} y={t.value} stroke="#B68B3A" strokeDasharray="4 4" label={{ value: t.label, fontSize: 9, fill: '#8A6516', position: 'insideTopRight' }} />)}
-          {insurers.map((id, i) => <Line key={id} type="monotone" dataKey={id} name={id} stroke={colorFor(id, i)} strokeWidth={2} dot={{ r: 2 }} connectNulls={false} isAnimationActive={false} />)}
+          {insurers.map((id, i) => <Line key={id} type="monotone" dataKey={id} name={id} stroke={colorFor(id, i, focal)} strokeWidth={focal && id === focal ? 2.6 : 1.6} dot={{ r: focal && id === focal ? 3 : 2 }} connectNulls={false} isAnimationActive={false} />)}
         </LineChart>
       </Wrap>
     )
@@ -79,7 +84,7 @@ export function InsightChart({ spec }: { spec: ChartSpec }) {
   // ── ranking_bar: latest value per insurer for seriesKeys[0] ───────────────
   if (spec.type === 'ranking_bar') {
     const key = spec.seriesKeys[0]
-    const data = insurers.map((id, i) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, i) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
+    const data = insurers.map((id, i) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, i, focal) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
     if (!data.length) return <Pending title={spec.title} />
     return (
       <Wrap title={spec.title}>
@@ -100,7 +105,7 @@ export function InsightChart({ spec }: { spec: ChartSpec }) {
   // ── scatter_dislocation: x=seriesKeys[0], y=seriesKeys[1] per insurer ──────
   if (spec.type === 'scatter_dislocation') {
     const [xk, yk] = spec.seriesKeys
-    const pts = insurers.map((id, i) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, i) })).filter((p) => p.x != null && p.y != null)
+    const pts = insurers.map((id, i) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, i, focal) })).filter((p) => p.x != null && p.y != null)
     if (!pts.length) return <Pending title={spec.title} />
     return (
       <Wrap title={spec.title}>
@@ -145,7 +150,7 @@ export function InsightChart({ spec }: { spec: ChartSpec }) {
   const rows = insurers.map((id, i) => {
     const s = series(byId.get(id)!, key).filter((x) => x.v != null)
     if (s.length < 2) return null
-    return { id, label: labelFor(id), from: s[0], to: s[s.length - 1], color: colorFor(id, i) }
+    return { id, label: labelFor(id), from: s[0], to: s[s.length - 1], color: colorFor(id, i, focal) }
   }).filter((r): r is NonNullable<typeof r> => r != null)
   if (!rows.length) return <Pending title={spec.title} />
   const all = rows.flatMap((r) => [r.from.v as number, r.to.v as number])
@@ -153,7 +158,7 @@ export function InsightChart({ spec }: { spec: ChartSpec }) {
   const hi = Math.max(...all, ...(thresholds.map((t) => t.value as number)))
   const pos = (v: number) => (hi === lo ? 50 : ((v - lo) / (hi - lo)) * 100)
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3">
+    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
       <p className="mb-3 text-[11px] font-semibold text-navy-deep">{spec.title}</p>
       <div className="space-y-3">
         {rows.map((r) => (
@@ -178,7 +183,7 @@ const TT = { borderRadius: 10, border: '1px solid #E5E8EF', fontSize: 11, boxSha
 
 function Wrap({ title, children }: { title: string; children: React.ReactElement }) {
   return (
-    <div className="rounded-xl border border-soft-border bg-card p-3">
+    <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
       <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{title}</p>
       <div style={{ width: '100%', height: 200 }}>
         <ResponsiveContainer>{children}</ResponsiveContainer>
