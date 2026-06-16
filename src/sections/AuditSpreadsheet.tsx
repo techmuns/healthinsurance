@@ -6,6 +6,7 @@ import {
 } from '@/lib/extractedDataAudit'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
+import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 
 // ---------------------------------------------------------------------------
 //  Audit · Spreadsheet view — mirrors the source Excel template tab-for-tab and
@@ -527,6 +528,10 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
         })}
       </div>
 
+      {/* Contain a per-sheet render failure to this panel — the tab bar above
+          stays live, so one bad sheet can never blank the whole Data Audit page.
+          resetKey={group.sheet} clears the error when the user switches sheets. */}
+      <SectionErrorBoundary resetKey={group.sheet} sectionLabel={`${group.sheet} sheet`}>
       {group.role === 'market_quote' ? (
         // The Historical Stock Movement sheet is a transposed, date-by-row series
         // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
@@ -612,6 +617,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
       </div>
       </>
       )}
+      </SectionErrorBoundary>
     </div>
   )
 }
