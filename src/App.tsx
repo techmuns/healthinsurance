@@ -1,10 +1,11 @@
 import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
-import { UploadCloud } from 'lucide-react'
+import { UploadCloud, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, type LucideIcon } from 'lucide-react'
 import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
 import { SahiAnalysisHeader } from '@/components/SahiAnalysisHeader'
+import { PageHeadline, type HeadlineTone } from '@/components/PageHeadline'
 import { type SectionTab } from '@/components/SectionTabs'
 import { Sidebar } from '@/components/Sidebar'
 import { MarketTrendExplorer } from '@/components/MarketTrendExplorer'
@@ -143,40 +144,75 @@ function IndustryInsightsPage() {
   )
 }
 
-/** Narrative hooks — a one-line "chapter" lead-in before each SAHI section so
- *  the analysis reads as a guided story: scoreboard → how they grow → do they
- *  profit → what they're worth → the live market vote → who's behind them →
- *  what's coming next. Copy only; introduces the data, never restates it. */
-const SAHI_INTRO: Record<string, string> = {
-  companies:
-    'The standalone-health field at a glance — who leads and who lags — before the company-level detail.',
-  distribution:
-    'How each insurer builds its premium, and the retail-versus-group mix behind the rankings.',
-  profitability:
-    'Whether that growth strategy converts into durable profitability.',
-  valuation:
-    'What the market is prepared to pay for those fundamentals.',
-  'street-view':
-    'The live market read — price and momentum as the market sees them today.',
-  governance:
-    'Who owns and steers these franchises, and who has been buying or selling.',
-  'sector-news':
-    'The regulatory and sector signals shaping the quarters ahead.',
+/** Per-tab premium headline band — the SAHI "headline system". Each tab opens
+ *  with a tone-coded title + sharp subtitle so the analysis reads as a guided
+ *  story: scoreboard → how they grow → do they profit → what they're worth →
+ *  the live market vote → who's behind them → what's coming next. The subtitle
+ *  introduces the data; it never restates the numbers below. Colour psychology:
+ *  navy = core financial logic, teal = growth engine, gold = valuation/importance. */
+interface SahiHead {
+  eyebrow: string
+  title: string
+  subtitle: string
+  Icon: LucideIcon
+  tone: HeadlineTone
 }
-
-/** Compact, editorial section lead-in: a champagne accent and one guiding line. */
-function SectionIntro({ text }: { text: string }) {
-  return (
-    <div className="mb-5 flex items-start gap-3">
-      <span className="mt-1 h-9 w-[3px] shrink-0 rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
-      <p className="max-w-3xl font-display text-[15px] leading-relaxed text-navy-deep/85">{text}</p>
-    </div>
-  )
+const SAHI_HEAD: Record<string, SahiHead> = {
+  companies: {
+    eyebrow: 'Peer Positioning',
+    title: 'The standalone-health scoreboard',
+    subtitle: 'Who leads and who lags across the standalone health insurers — before the company-level detail.',
+    Icon: Users,
+    tone: 'navy',
+  },
+  distribution: {
+    eyebrow: 'Premium & Distribution',
+    title: 'How each insurer builds its premium',
+    subtitle: 'The retail-versus-group mix and the channel engine behind the rankings.',
+    Icon: Share2,
+    tone: 'teal',
+  },
+  profitability: {
+    eyebrow: 'Profitability',
+    title: 'Does the growth convert to profit?',
+    subtitle: 'Whether each insurer’s growth strategy turns into durable, high-quality profitability.',
+    Icon: Gauge,
+    tone: 'navy',
+  },
+  valuation: {
+    eyebrow: 'Valuation',
+    title: 'Is the valuation earned?',
+    subtitle: 'Whether the price is supported by growth, profitability and peer positioning.',
+    Icon: Scale,
+    tone: 'gold',
+  },
+  'street-view': {
+    eyebrow: 'Street View',
+    title: 'The live market read',
+    subtitle: 'Price, targets and momentum as the market sees them today.',
+    Icon: Activity,
+    tone: 'gold',
+  },
+  governance: {
+    eyebrow: 'Governance',
+    title: 'Who owns and steers these franchises',
+    subtitle: 'Ownership, leadership and who has recently been buying or selling.',
+    Icon: Landmark,
+    tone: 'navy',
+  },
+  'sector-news': {
+    eyebrow: 'Key Sectoral News',
+    title: 'Signals shaping the quarters ahead',
+    subtitle: 'The regulatory and sector developments moving the health-insurance pool.',
+    Icon: Newspaper,
+    tone: 'navy',
+  },
 }
 
 /** Renders the active SAHI deep-dive sub-section (no Overview — that has moved),
- *  each opened by a short narrative hook that guides the reader into the data. */
+ *  each opened by a premium headline band that guides the reader into the data. */
 function SahiContent({ tab }: { tab: string }) {
+  const head = SAHI_HEAD[tab] ?? SAHI_HEAD.companies
   const section = () => {
     switch (tab) {
       case 'distribution':
@@ -198,7 +234,7 @@ function SahiContent({ tab }: { tab: string }) {
   }
   return (
     <div>
-      <SectionIntro text={SAHI_INTRO[tab] ?? SAHI_INTRO.companies} />
+      <PageHeadline eyebrow={head.eyebrow} title={head.title} subtitle={head.subtitle} Icon={head.Icon} tone={head.tone} />
       {section()}
     </div>
   )
