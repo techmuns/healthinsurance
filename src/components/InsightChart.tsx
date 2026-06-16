@@ -1,5 +1,5 @@
 import {
-  Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer,
+  Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer,
   Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis,
 } from 'recharts'
 import type { ChartSpec } from '@/insights/types'
@@ -12,10 +12,10 @@ const PANEL = buildPanel()
 const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 
 // Standalone charts sit in their own bordered card; "embedded" charts live
-// inside a larger insight card, so they drop the heavy border for a calm,
-// airy tint that lets the surrounding white space breathe.
+// inside a larger insight card, in a soft slate-blue evidence panel with a thin
+// inner border and a quiet shadow — premium and calm, never flat or harsh.
 const SHELL = 'rounded-xl border border-soft-border bg-card p-3 shadow-soft'
-const SHELL_EMBEDDED = 'rounded-xl bg-gradient-to-br from-ice/70 to-white/40 p-3 ring-1 ring-soft-border/60'
+const SHELL_EMBEDDED = 'rounded-xl bg-gradient-to-b from-[#F4F7FB] to-[#E9EEF6] p-3.5 ring-1 ring-[#DCE3EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_2px_6px_rgba(23,43,77,0.045)]'
 const shell = (embedded: boolean) => (embedded ? SHELL_EMBEDDED : SHELL)
 
 const COLORS = ['#27457E', '#168E8E', '#8061B8', '#3D5F9F', '#A8443B']
@@ -36,6 +36,17 @@ const METRIC_LABEL: Record<string, string> = {
   retail: 'Retail', group: 'Group', health_retail_mix: 'Retail mix %',
 }
 const axisLabel = (k: string) => METRIC_LABEL[k] ?? k
+
+// Visual-only risk shading. Which side of a HARD-LINE benchmark (a floor or a
+// break-even — not a peer mean) is the "bad" side, by the metric's meaning. This
+// shades a faint danger zone behind the bars; it never alters a value, axis or
+// the chart's domain (the band is clipped to the existing scale).
+const DANGER_SIDE: Record<string, 'above' | 'below'> = {
+  combined_ratio: 'above', claims_ratio: 'above', expense_ratio: 'above',
+  solvency_ratio: 'below', roe: 'below',
+}
+const isHardLine = (label: string) => /floor|break.?even/i.test(label)
+const ZONE_FILL = 'rgba(168,68,59,0.07)' // muted terracotta — caution, never harsh red
 
 type Num = number | null
 const lastDefined = (xs: { fy: string; v: Num }[]): Num => {
@@ -90,7 +101,7 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
           <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: GRID }} />
           <YAxis tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} width={36} />
           <Tooltip contentStyle={TT} formatter={(v: number, n: string) => [v, labelFor(n)]} />
-          {thresholds.map((t, i) => <ReferenceLine key={i} y={t.value} stroke="#B68B3A" strokeDasharray="4 4" label={{ value: t.label, fontSize: 9, fill: '#8A6516', position: 'insideTopRight' }} />)}
+          {thresholds.map((t, i) => <ReferenceLine key={i} y={t.value} stroke="#9C7430" strokeWidth={1.25} strokeDasharray="5 4" label={{ value: t.label, fontSize: 9, fill: '#7A5B16', position: 'insideTopRight', fontWeight: 700 }} />)}
           {insurers.map((id, i) => <Line key={id} type="monotone" dataKey={id} name={id} stroke={colorFor(id, i, focal)} strokeWidth={focal && id === focal ? 2.6 : 1.6} dot={{ r: focal && id === focal ? 3 : 2 }} connectNulls={false} isAnimationActive={false} />)}
         </LineChart>
       </Wrap>
@@ -102,17 +113,28 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
     const key = spec.seriesKeys[0]
     const data = insurers.map((id, i) => ({ id, label: labelFor(id), v: latest(byId.get(id)!, key), color: colorFor(id, i, focal) })).filter((d) => d.v != null).sort((a, b) => (b.v as number) - (a.v as number))
     if (!data.length) return <Pending title={spec.title} embedded={embedded} />
+    // Faint danger zone on the bad side of a hard-line benchmark (visual only,
+    // clipped to the existing scale — no value or domain is changed).
+    const side = DANGER_SIDE[key]
+    const hard = thresholds.find((t) => isHardLine(t.label))
+    const dataMax = Math.max(...data.map((d) => d.v as number))
+    const zone = side && hard
+      ? side === 'above'
+        ? { x1: hard.value as number, x2: Math.max(dataMax, hard.value as number) * 1.12, label: 'Loss zone', pos: 'insideTopRight' as const }
+        : { x1: 0, x2: hard.value as number, label: 'Below floor', pos: 'insideBottomLeft' as const }
+      : null
     return (
       <Wrap title={spec.title} embedded={embedded}>
-        <BarChart data={data} layout="vertical" margin={{ top: 6, right: 28, left: 6, bottom: 4 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 6, right: 30, left: 6, bottom: 4 }}>
           <CartesianGrid stroke={GRID} horizontal={false} strokeDasharray="2 4" />
           <XAxis type="number" tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
           <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#26303F' }} tickLine={false} axisLine={false} width={88} />
-          <Tooltip contentStyle={TT} />
-          {thresholds.map((t, i) => <ReferenceLine key={i} x={t.value} stroke="#B68B3A" strokeDasharray="4 4" label={{ value: t.label, fontSize: 9, fill: '#8A6516', position: 'top' }} />)}
-          <Bar dataKey="v" radius={[0, 3, 3, 0]} maxBarSize={22} isAnimationActive={false}>
+          <Tooltip contentStyle={TT} cursor={{ fill: 'rgba(39,69,126,0.04)' }} />
+          {zone && <ReferenceArea x1={zone.x1} x2={zone.x2} ifOverflow="hidden" fill={ZONE_FILL} stroke="none" label={{ value: zone.label, position: zone.pos, fontSize: 8.5, fill: '#A8443B', fontWeight: 700 }} />}
+          <Bar dataKey="v" radius={[0, 4, 4, 0]} maxBarSize={20} isAnimationActive={false}>
             {data.map((d) => <Cell key={d.id} fill={d.color} />)}
           </Bar>
+          {thresholds.map((t, i) => <ReferenceLine key={i} x={t.value} stroke="#9C7430" strokeWidth={1.25} strokeDasharray="5 4" label={{ value: t.label, fontSize: 9, fill: '#7A5B16', position: 'top', fontWeight: 700 }} />)}
         </BarChart>
       </Wrap>
     )
@@ -173,6 +195,14 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
   const lo = Math.min(...all, ...(thresholds.map((t) => t.value as number)))
   const hi = Math.max(...all, ...(thresholds.map((t) => t.value as number)))
   const pos = (v: number) => (hi === lo ? 50 : ((v - lo) / (hi - lo)) * 100)
+  // Faint danger band on the bad side of a hard-line benchmark (visual only).
+  const side = DANGER_SIDE[key]
+  const hardT = thresholds.find((t) => isHardLine(t.label))
+  const dangerStyle: React.CSSProperties | null = hardT && side
+    ? side === 'above'
+      ? { left: `${pos(hardT.value as number)}%`, right: 0, background: ZONE_FILL }
+      : { left: 0, width: `${pos(hardT.value as number)}%`, background: ZONE_FILL }
+    : null
   return (
     <div className={shell(embedded)}>
       <p className="mb-3 text-[11px] font-semibold text-navy-deep">{spec.title}</p>
@@ -181,8 +211,9 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
           <div key={r.id} className="flex items-center gap-2 text-[11px]">
             <span className="w-20 shrink-0 truncate text-ink-secondary">{r.label}</span>
             <div className="relative h-5 flex-1">
+              {dangerStyle && <span aria-hidden className="absolute inset-y-0 rounded-sm" style={dangerStyle} />}
               <span className="absolute inset-y-1/2 left-0 right-0 h-px -translate-y-1/2 bg-soft-border" />
-              {thresholds.map((t, i) => <span key={i} className="absolute inset-y-0 w-px bg-[#B68B3A]/60" style={{ left: `${pos(t.value as number)}%` }} title={t.label} />)}
+              {thresholds.map((t, i) => <span key={i} className="absolute inset-y-0 w-[1.5px] bg-[#9C7430]/70" style={{ left: `${pos(t.value as number)}%` }} title={t.label} />)}
               <span className="absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full" style={{ left: `${Math.min(pos(r.from.v as number), pos(r.to.v as number))}%`, width: `${Math.abs(pos(r.to.v as number) - pos(r.from.v as number))}%`, background: r.color, opacity: 0.5 }} />
               <span className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white ring-2" style={{ left: `${pos(r.from.v as number)}%`, color: r.color, boxShadow: `0 0 0 2px ${r.color}` }} title={`${r.from.fy}: ${r.from.v}`} />
               <span className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${pos(r.to.v as number)}%`, background: r.color }} title={`${r.to.fy}: ${r.to.v}`} />
