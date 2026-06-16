@@ -127,6 +127,10 @@ export const focalFinancials: FocalFinancials = {
   patFY25: _focalPrior?.pat ?? 203,
 }
 
+// The fiscal year the focal GWP/PAT figures belong to — advances with the
+// snapshot, so "FY__" labels stay honest instead of a frozen year string.
+export const focalGwpFy = _focalLatest?.fiscal_year ?? 'FY26'
+
 // ── Multiples (derived from the sourced components above) ────────────────────
 export interface FocalMultiples {
   pGwp: number | null // sourceId niva-pgwp
@@ -140,6 +144,10 @@ export interface FocalMultiples {
 export const focalMultiples: FocalMultiples = {
   pGwp: _gwp26 > 0 ? r2(marketSnapshot.marketCap / _gwp26) : null,
   pe: _pat26 > 0 ? r1(marketSnapshot.marketCap / _pat26) : null,
+  // Net worth isn't fetched for the focal name, so P/B isn't derived from the
+  // live price here; this curated seed feeds the Insights P/B-vs-ROE signal. The
+  // daily market P/B (valuation snapshot, quote.pb) supersedes it on the next
+  // insights auto-regen — kept as the seed so the committed insight stays grounded.
   pb: 3.0,
 }
 
@@ -359,9 +367,11 @@ export const analystThesis: AnalystThesis = {
     'Combined service ratio 101.4% — improving (+160 bps)',
   ],
   bear: [
-    `Trades at a ${(focalMultiples.pGwp ?? 0) >= _starPGwp ? 'premium' : 'discount'} to Star on P/GWP (${focalMultiples.pGwp?.toFixed(2)}x vs ${_starPGwp.toFixed(2)}x)`,
+    focalMultiples.pGwp != null
+      ? `Trades at a ${focalMultiples.pGwp >= _starPGwp ? 'premium' : 'discount'} to Star on P/GWP (${focalMultiples.pGwp.toFixed(2)}x vs ${_starPGwp.toFixed(2)}x)`
+      : `P/GWP vs Star pending (Star ${_starPGwp.toFixed(2)}x)`,
     'Profit base still small — margin must keep scaling',
-    `P/E ≈ ${Math.round(focalMultiples.pe ?? 0)}x prices in years of compounding`,
+    focalMultiples.pe != null ? `P/E ≈ ${Math.round(focalMultiples.pe)}x prices in years of compounding` : 'P/E pending — PAT base being sourced',
     'Rising competitive & regulatory intensity in health',
   ],
   risks: ['Claims / medical inflation', 'Commission & distribution cost', 'Regulatory change (EOM, pricing)', 'Slower retail policy growth'],

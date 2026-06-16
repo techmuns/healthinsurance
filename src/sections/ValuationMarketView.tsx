@@ -5,6 +5,7 @@ import { insurers } from '@/data/mockData'
 import {
   analystConsensus,
   focalMultiples,
+  focalGwpFy,
   FOCAL_VALUATION_ID,
   marketSnapshot,
   peerValuation,
@@ -33,6 +34,16 @@ export function ValuationMarketView() {
   const starRow = peerValuation.find((r) => r.companyId === 'star-health')
   const starPGwp = starRow?.pGwp ?? null
   const premiumVsStar = pGwp != null && starPGwp ? ((pGwp - starPGwp) / starPGwp) * 100 : null
+
+  // Verdict badge tone follows the LIVE consensus label — never frozen to "Buy".
+  const verdictTone = ratingTone[ac.ratingLabel as keyof typeof ratingTone] ?? ratingTone.Buy
+  // Only assert the premium is "backed by faster growth" when Niva actually grows
+  // faster than Star (and is at a premium) — never claim it unconditionally.
+  const nivaGrowth = peerValuation.find((r) => r.companyId === FOCAL_VALUATION_ID)?.growth ?? null
+  const growthEdge =
+    premiumVsStar != null && premiumVsStar > 0 && nivaGrowth != null && starRow?.growth != null && nivaGrowth > starRow.growth
+      ? ' — backed by faster growth'
+      : ''
 
   // Verdict headline + stance (the one-line investment takeaway).
   const verdictTitle =
@@ -71,8 +82,8 @@ export function ValuationMarketView() {
                     <Search className="h-3 w-3 text-navy-primary" />
                     <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-primary">Valuation Verdict</span>
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ color: ratingTone.Buy.fg, background: ratingTone.Buy.bg }}>
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: ratingTone.Buy.fg }} />
+                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ color: verdictTone.fg, background: verdictTone.bg }}>
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: verdictTone.fg }} />
                     {ac.ratingLabel}-skewed · {ac.analystCount} analysts
                   </span>
                   {premiumVsStar != null && (
@@ -84,14 +95,14 @@ export function ValuationMarketView() {
 
                 <h1 className="mt-3 font-display text-[26px] leading-[1.12] tracking-tight text-navy-deep">{verdictTitle}</h1>
                 <p className="mt-2 max-w-md text-[12px] leading-relaxed text-ink-secondary">
-                  {marketSnapshot.company} trades at <b className="text-navy-deep">{px(price)}</b> vs consensus <b className="text-navy-deep">{px(target)}</b> ({upPct(upsideConsensus)}). The {xMult(pGwp)} P/GWP is a {premiumVsStar != null ? `~${Math.abs(premiumVsStar).toFixed(0)}% ${premiumVsStar >= 0 ? 'premium' : 'discount'}` : 'comparison pending'} to Star Health — backed by faster growth.
+                  {marketSnapshot.company} trades at <b className="text-navy-deep">{px(price)}</b> vs consensus <b className="text-navy-deep">{px(target)}</b> ({upPct(upsideConsensus)}). The {xMult(pGwp)} P/GWP is a {premiumVsStar != null ? `~${Math.abs(premiumVsStar).toFixed(0)}% ${premiumVsStar >= 0 ? 'premium' : 'discount'}` : 'comparison pending'} to Star Health{growthEdge}.
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   <Tile k="Current price" v={px(price)} sub={marketSnapshot.priceAsOf} />
                   <Tile k="Cons. target" v={px(target)} sub={`${ac.analystCount} analysts`} />
                   <Tile k="Upside" v={upPct(upsideConsensus)} tone={upsideConsensus == null ? 'navy' : upsideConsensus >= 0 ? 'teal' : 'red'} sub="to consensus" />
-                  <Tile k="P / GWP" v={xMult(pGwp)} sub="FY26" />
+                  <Tile k="P / GWP" v={xMult(pGwp)} sub={focalGwpFy} />
                 </div>
 
                 <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-4">

@@ -355,7 +355,7 @@ export function ProfitabilityReview() {
       </div>
 
       <p className="text-[10px] text-ink-secondary/70">
-        Underwriting result = net earned premium × (1 − combined ratio). Investment leverage = investment AUM ÷ net worth. RoE, solvency, net worth and the investment book are statutory measures (IFRS equity is not separately reported), shown for reference on both bases.
+        Net earned premium (NEP) and gross written premium (GWP) are premium measures, not profit — PAT, underwriting result and combined ratio are the profit measures. Underwriting result = net earned premium × (1 − combined ratio). Investment leverage = investment AUM ÷ net worth. RoE, solvency, net worth and the investment book are statutory measures (IFRS equity is not separately reported), shown for reference on both bases.
       </p>
     </div>
   )

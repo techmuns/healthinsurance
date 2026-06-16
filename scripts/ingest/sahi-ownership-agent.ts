@@ -139,15 +139,29 @@ function parseRows(answer: string, fetched_at: string): OwnershipRow[] {
     seen.add(company_id)
     const { quarter, fiscal_year } = splitPeriod(cells[1])
     const sourceUrl = (cells[7] || '').match(/https?:\/\/\S+/)?.[0] ?? null
+    const dii = num(cells[4])
+    let mf = num(cells[5])
+    let pub = num(cells[6])
+    // Reconcile a common agent slip: the public/retail residual reported in the
+    // MF column with public left blank. Mutual funds are a SUBSET of DII, never
+    // an additive standalone leg — so promoter+FII+DII+MF can only foot to ~100
+    // when that "MF" figure is in fact the public float (the 4-category public
+    // filing exposes promoter/FII/DII/public and does not break MF out). Relabel
+    // it to public and set MF to n/a rather than show the float as mutual funds.
+    if (pub == null && mf != null && promoter != null && fii != null && dii != null
+        && Math.abs(promoter + fii + dii + mf - 100) <= 1) {
+      pub = mf
+      mf = null
+    }
     out.push({
       company_id,
       quarter,
       fiscal_year,
       promoter_share: promoter,
       fii_share: fii,
-      dii_share: num(cells[4]),
-      mf_share: num(cells[5]),
-      public_share: num(cells[6]),
+      dii_share: dii,
+      mf_share: mf,
+      public_share: pub,
       sponsor_share: null,
       top_holders: [],
       pledge_share: null,

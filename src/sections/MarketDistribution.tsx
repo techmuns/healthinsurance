@@ -557,6 +557,7 @@ const GROUP_COLOR = '#B68B3A' // gold — group
 function RetailGroupMixCard() {
   const active = useActiveCompany()
   const { range } = useFilters()
+  const gate = usePeriodGate()
   const inRange = new Set(fyLabelsInRange(range))
   const years = retailMixYears() // newest first; only years that report the split
   const targetFy = years.find((fy) => inRange.has(fy)) ?? null
@@ -580,7 +581,13 @@ function RetailGroupMixCard() {
         </p>
       </header>
 
-      {rows.length === 0 ? (
+      {!gate.ok ? (
+        <EmptyState
+          title="Retail vs group split is captured annually"
+          body={gate.reason ?? 'The retail/group product mix is reported per financial year — switch the period toggle to Annual to view it.'}
+          height={220}
+        />
+      ) : rows.length === 0 ? (
         <EmptyState
           title="Retail vs group split not reported for the selected years"
           body={reportedLabel ? `The retail/group split is reported for ${reportedLabel}. Widen the Data Range to include it.` : 'No retail vs group split is reported in the source yet.'}

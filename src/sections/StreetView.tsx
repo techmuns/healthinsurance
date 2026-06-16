@@ -150,16 +150,16 @@ export function StreetView() {
   const quote = getMarketQuote(company.id)
   const ac = coverage.consensus
   const reports = coverage.reports
-  const price = ac.currentPrice ?? quote?.price ?? 0
+  const price = ac.currentPrice ?? quote?.price ?? null
   const priceAsOf = isFocal ? marketSnapshot.priceAsOf : quote?.asOf ?? '—'
   const has52 = isFocal // 52-week range / daily price history curated for the focal name only
   const target = ac.consensusTargetPrice
   const lo = ac.lowestTargetPrice
   const hi = ac.highestTargetPrice
-  const upside = target != null && price ? (target / price - 1) * 100 : 0
-  const { score, kind } = computeSignal(ac.buyCount, ac.holdCount, ac.sellCount, ac.analystCount, upside)
+  const upside = target != null && price != null && price > 0 ? (target / price - 1) * 100 : null
+  const { score, kind } = computeSignal(ac.buyCount, ac.holdCount, ac.sellCount, ac.analystCount, upside ?? 0)
   const reason = `${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell · ${upPct(upside)} upside`
-  const up = (t: number | null) => (t != null && price ? (t / price - 1) * 100 : null)
+  const up = (t: number | null) => (t != null && price != null && price > 0 ? (t / price - 1) * 100 : null)
 
   // One row per broker: keep each broker's most recent note (newest-first).
   const latestByBroker = reports.filter(
@@ -184,7 +184,7 @@ export function StreetView() {
   // name only; other names scale to their analyst target range.
   const dom = has52
     ? { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
-    : { lo: lo ?? price, hi: hi ?? price }
+    : { lo: lo ?? price ?? 0, hi: hi ?? price ?? 0 } // scaling domain only — this chart renders for the focal name, which always has a price
 
   return (
     <div className="space-y-5">
@@ -200,9 +200,9 @@ export function StreetView() {
 
       {/* ── Row 1: KPI cards ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi label="Consensus Target" value={px(target)} sub={`${upPct(upside)} vs current`} tone={upside >= 0 ? 'teal' : 'coral'} />
+        <Kpi label="Consensus Target" value={px(target)} sub={`${upPct(upside)} vs current`} tone={upside == null ? 'slate' : upside >= 0 ? 'teal' : 'coral'} />
         <Kpi label="Current Price" value={px(price)} sub={`as of ${priceAsOf}`} tone="navy" />
-        <Kpi label={upside >= 0 ? 'Implied Upside' : 'Implied Downside'} value={upPct(upside)} sub="to consensus target" tone={upside >= 0 ? 'teal' : 'coral'} />
+        <Kpi label={upside != null && upside < 0 ? 'Implied Downside' : 'Implied Upside'} value={upPct(upside)} sub="to consensus target" tone={upside == null ? 'slate' : upside >= 0 ? 'teal' : 'coral'} />
         <Kpi label="Analysts Covering" value={`${ac.analystCount}`} sub={`${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell`} tone="slate" />
       </div>
 
@@ -217,7 +217,7 @@ export function StreetView() {
               {target != null && lo != null && hi != null && (
                 <span className="absolute top-1/2 h-4 w-[2px] -translate-x-1/2 -translate-y-1/2 bg-navy-primary/50" style={{ left: `${((target - lo) / (hi - lo)) * 100}%` }} />
               )}
-              {lo != null && hi != null && (
+              {price != null && lo != null && hi != null && (
                 <span className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white shadow-soft" style={{ left: `${Math.max(0, Math.min(100, ((price - lo) / (hi - lo)) * 100))}%`, background: target != null && price < target ? TEAL : GOLD }} />
               )}
             </div>
@@ -227,7 +227,7 @@ export function StreetView() {
               <div className="text-right"><p className="font-semibold tabular-nums text-teal">{px(hi)}</p><p className="text-[9px] uppercase tracking-wide text-ink-secondary">High</p></div>
             </div>
             <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ice px-2.5 py-1 text-[11px]">
-              <span className="h-2.5 w-2.5 rounded-full ring-2 ring-white" style={{ background: target != null && price < target ? TEAL : GOLD }} />
+              <span className="h-2.5 w-2.5 rounded-full ring-2 ring-white" style={{ background: target != null && price != null && price < target ? TEAL : GOLD }} />
               Current <span className="font-semibold text-navy-deep">{px(price)}</span> · {upPct(upside)} to consensus
             </div>
           </div>
@@ -240,7 +240,7 @@ export function StreetView() {
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Price vs Target</p>
             <p className="mt-0.5 text-[11.5px] text-ink-secondary">52-week trading range vs the analyst target range.</p>
             <div className="mt-5 flex flex-1 flex-col justify-center gap-5">
-              <ScaledRange label="52-week trading range" lo={marketSnapshot.weekLow52} hi={marketSnapshot.weekHigh52} domainLo={dom.lo} domainHi={dom.hi} trackColor={SLATE} marker={{ value: price, color: GOLD, caption: `Current ${px(price)}` }} />
+              <ScaledRange label="52-week trading range" lo={marketSnapshot.weekLow52} hi={marketSnapshot.weekHigh52} domainLo={dom.lo} domainHi={dom.hi} trackColor={SLATE} marker={price != null ? { value: price, color: GOLD, caption: `Current ${px(price)}` } : undefined} />
               {lo != null && hi != null && (
                 <ScaledRange label="Analyst target range" lo={lo} hi={hi} domainLo={dom.lo} domainHi={dom.hi} trackColor={TEAL} marker={target != null ? { value: target, color: NAVY, caption: `Consensus ${px(target)}` } : undefined} />
               )}

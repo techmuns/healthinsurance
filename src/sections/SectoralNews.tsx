@@ -113,7 +113,7 @@ export function SectoralNews() {
     for (const n of ALL_ITEMS) c[n.category] += 1
     return c
   }, [])
-  const dominant = SECTORAL_CATEGORY_ORDER[0]
+  const dominant = SECTORAL_CATEGORY_ORDER.reduce((a, b) => (counts[b] > counts[a] ? b : a), SECTORAL_CATEGORY_ORDER[0])
   // Share of the feed taken by the two structural themes (consolidation + reform).
   const structuralShare = Math.round(((counts['Competition / Peers'] + counts.Regulatory) / total) * 100)
 
@@ -133,6 +133,15 @@ export function SectoralNews() {
   }, [])
   const maxMonth = Math.max(1, ...months.map((m) => monthCounts[m] ?? 0))
   const peakKey = months.reduce((a, b) => ((monthCounts[b] ?? 0) > (monthCounts[a] ?? 0) ? b : a), months[0])
+  // The dominant theme WITHIN the peak month — so the "why" is read from the live
+  // data, not pinned to a fixed past event the feed may have moved on from.
+  const peakTheme = useMemo(() => {
+    const inPeak = ALL_ITEMS.filter((i) => monthKey(i.date) === peakKey)
+    if (!inPeak.length) return null
+    const c = {} as Record<SectoralCategory, number>
+    for (const n of inPeak) c[n.category] = (c[n.category] ?? 0) + 1
+    return (Object.keys(c) as SectoralCategory[]).reduce((a, b) => (c[b] > c[a] ? b : a))
+  }, [peakKey])
 
   // Filter (theme + free-text) then sort newest-first.
   const filtered = useMemo(() => {
@@ -278,8 +287,8 @@ export function SectoralNews() {
               <span>{fmtMonth(months[months.length - 1])}</span>
             </div>
             <p className="mt-2 text-[11.5px] leading-snug text-ink-secondary">
-              Activity peaked in <b className="font-semibold text-navy-deep">{fmtMonth(peakKey)}</b>, around the Insurance
-              Amendment Bill and IRDAI's consumer reforms.
+              Activity peaked in <b className="font-semibold text-navy-deep">{fmtMonth(peakKey)}</b>
+              {peakTheme ? <>, led by <b className="font-semibold text-navy-deep">{SECTORAL_CATEGORY_META[peakTheme].short}</b> news</> : null}.
             </p>
           </div>
         </div>
