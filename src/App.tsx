@@ -149,19 +149,19 @@ function IndustryInsightsPage() {
  *  what's coming next. Copy only; introduces the data, never restates it. */
 const SAHI_INTRO: Record<string, string> = {
   companies:
-    "Start with the bird's-eye view — who's leading the standalone-health pack and who's slipping — before we zoom into any single name.",
+    'The standalone-health field at a glance — who leads and who lags — before the company-level detail.',
   distribution:
-    'Behind every rank sits a growth engine. See how each insurer builds its premium — and whether it leans on sticky retail or scale-heavy group.',
+    'How each insurer builds its premium, and the retail-versus-group mix behind the rankings.',
   profitability:
-    "Growth is only half the story. Now let's see whether that strategy turns into real profit — or quietly burns through it.",
+    'Whether that growth strategy converts into durable profitability.',
   valuation:
-    'Strong books are one thing; what the market will pay for them is another. This is where the fundamentals meet a price.',
+    'What the market is prepared to pay for those fundamentals.',
   'street-view':
-    'Step onto the street for the live read — how investors are voting on these names right now, in price and momentum.',
+    'The live market read — price and momentum as the market sees them today.',
   governance:
-    "Every number rides on the people behind it. See who owns and steers these franchises — and who's been buying or selling.",
+    'Who owns and steers these franchises, and who has been buying or selling.',
   'sector-news':
-    'Finally, the currents shaping what comes next — the regulatory and sector signals set to move the coming quarters.',
+    'The regulatory and sector signals shaping the quarters ahead.',
 }
 
 /** Compact, editorial section lead-in: a champagne accent and one guiding line. */
