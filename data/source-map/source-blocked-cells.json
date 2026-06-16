@@ -1,7 +1,7 @@
 {
   "_meta": {
     "id": "source-blocked-cells",
-    "description": "Blank cells tagged by WHERE the real figure lives, so the grid is honest about availability (Neha, 2026-06-14): 'In NL return' = statutory figure in the insurer's IRDAI NL public-disclosure filing (the agent now pulls it — pending the next run); 'Ind-AS only' = IFRS-basis figure in the Ind-AS statements, not the IGAAP NL return; 'Broker note' = analyst coverage, not a filing. Grey; never a fake value; each fills when a real value lands.",
+    "description": "Blank cells tagged by WHERE the real figure lives, so the grid is honest about availability (Neha, 2026-06-14): 'In NL return' = statutory figure in the insurer's IRDAI NL public-disclosure filing (the agent now pulls it — pending the next run); 'Ind-AS only' = IFRS-basis figure in the Ind-AS statements, not the IGAAP NL return; 'Broker note' = analyst coverage, not a filing. Grey; never a fake value; each fills when a real value lands. | 2026-06-16: cells with NO value in the shared template AND no external source are tagged 'Source unknown — no value in Excel'; cells whose value IS in the template keep their source tag.",
     "generated": "2026-06-14",
     "count": 178
   },
@@ -251,32 +251,32 @@
       "reason": "Expense ratio for Niva Bupa 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "niva-bupa::expense_ratio_igaap::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Expense ratio for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::claims_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Niva Bupa FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::claims_ratio_ifrs::H1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Niva Bupa H1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::claims_ratio_ifrs::9MFY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Niva Bupa 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::expense_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Niva Bupa FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::expense_ratio_ifrs::H1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Niva Bupa H1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::expense_ratio_ifrs::9MFY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Niva Bupa 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::net_worth::9MFY26": {
       "tag": "In NL return",
@@ -291,336 +291,336 @@
       "reason": "Investment yield for Niva Bupa 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
     },
     "star-health::group_other_gwp::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Group/other gwp for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::group_other_gwp::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Group/other gwp for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nwp::H1FY25": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nwp::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nwp::H1FY26": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nwp::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nep::H1FY25": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nep::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nep::H1FY26": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::nep::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::eom_igaap::H1FY25": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::eom_igaap::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::eom_igaap::H1FY26": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::eom_igaap::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::solvency_ratio::H1FY25": {
-      "tag": "In NL return",
-      "reason": "Solvency ratio for Star Health H1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::solvency_ratio::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Solvency ratio for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::net_worth::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net worth for Star Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::net_worth::H1FY26": {
-      "tag": "In NL return",
-      "reason": "Net worth for Star Health H1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "star-health::net_worth::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net worth for Star Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::group_other_gwp::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Group/other gwp for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::group_other_gwp::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Group/other gwp for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::nwp::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::nwp::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::nep::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::nep::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_igaap::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Igaap profit after tax for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_igaap::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Igaap profit after tax for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_igaap::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Expense ratio for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_igaap::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Expense ratio for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::eom_igaap::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::eom_igaap::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_ifrs::FY24": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_ifrs::9MFY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_ifrs::Q1FY26": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Care Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::pat_ifrs::9MFY26": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Care Health 9MFY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::claims_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::claims_ratio_ifrs::FY24": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::claims_ratio_ifrs::Q1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Care Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::claims_ratio_ifrs::9MFY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Care Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_ifrs::FY24": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Care Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_ifrs::Q1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Care Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::expense_ratio_ifrs::9MFY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Care Health 9MFY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::net_worth::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Net worth for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::net_worth::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Net worth for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::investment_aum::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Investment book (aum) for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::investment_aum::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Investment book (aum) for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::investment_yield::9MFY25": {
-      "tag": "In NL return",
-      "reason": "Investment yield for Care Health 9MFY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "care-health::investment_yield::9MFY26": {
-      "tag": "In NL return",
-      "reason": "Investment yield for Care Health 9MFY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::group_other_gwp::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Group/other gwp for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::nwp::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::nwp::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Net written premium for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::nep::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::nep::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Net earned premium for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::pat_igaap::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Igaap profit after tax for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::pat_igaap::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Igaap profit after tax for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_igaap::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Claims ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_igaap::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Claims ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_igaap::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Expense ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_igaap::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Expense ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::eom_igaap::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::eom_igaap::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Expense-of-management ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::pat_ifrs::Q1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::pat_ifrs::Q1FY26": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs profit after tax for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Aditya Birla Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_ifrs::FY24": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Aditya Birla Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_ifrs::FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Aditya Birla Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_ifrs::Q1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::claims_ratio_ifrs::Q1FY26": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs claims ratio for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_ifrs::FY23": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Aditya Birla Health FY23 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_ifrs::FY24": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Aditya Birla Health FY24 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_ifrs::FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Aditya Birla Health FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_ifrs::Q1FY25": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Aditya Birla Health Q1FY25 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::expense_ratio_ifrs::Q1FY26": {
-      "tag": "Ind-AS only",
-      "reason": "Ifrs expense ratio for Aditya Birla Health Q1FY26 is an Ind-AS (IFRS-basis) figure — it's in the insurer's Ind-AS financial statements, NOT the IGAAP NL return. Reported by the listed insurers (Niva Bupa, Star Health); unlisted insurers file IGAAP only."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::solvency_ratio::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Solvency ratio for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::solvency_ratio::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Solvency ratio for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::net_worth::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Net worth for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::net_worth::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Net worth for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::investment_aum::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Investment book (aum) for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::investment_aum::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Investment book (aum) for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::investment_yield::Q1FY25": {
-      "tag": "In NL return",
-      "reason": "Investment yield for Aditya Birla Health Q1FY25 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "aditya-birla::investment_yield::Q1FY26": {
-      "tag": "In NL return",
-      "reason": "Investment yield for Aditya Birla Health Q1FY26 is a statutory figure in the insurer's IRDAI NL public-disclosure return (NL-1 Revenue Account for premiums, NL-2 P&L for profit, the balance sheet for net worth/solvency). The agent now reads that filing — it fills on the next scheduled or dispatched run."
+      "tag": "Source unknown — no value in Excel",
+      "reason": "This cell was empty in the source workbook (the shared Excel left it blank) and no external source has been found for it — genuinely unknown / not yet sourced, not a known-source fetch we can close."
     },
     "niva-bupa::analyst_price_at_reco::Kotak Securities::2025-04-02": {
       "tag": "Broker note",
