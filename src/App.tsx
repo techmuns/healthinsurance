@@ -143,25 +143,65 @@ function IndustryInsightsPage() {
   )
 }
 
-/** Renders the active SAHI deep-dive sub-section (no Overview — that has moved). */
+/** Narrative hooks — a one-line "chapter" lead-in before each SAHI section so
+ *  the analysis reads as a guided story: scoreboard → how they grow → do they
+ *  profit → what they're worth → the live market vote → who's behind them →
+ *  what's coming next. Copy only; introduces the data, never restates it. */
+const SAHI_INTRO: Record<string, string> = {
+  companies:
+    "Start with the bird's-eye view — who's leading the standalone-health pack and who's slipping — before we zoom into any single name.",
+  distribution:
+    'Behind every rank sits a growth engine. See how each insurer builds its premium — and whether it leans on sticky retail or scale-heavy group.',
+  profitability:
+    "Growth is only half the story. Now let's see whether that strategy turns into real profit — or quietly burns through it.",
+  valuation:
+    'Strong books are one thing; what the market will pay for them is another. This is where the fundamentals meet a price.',
+  'street-view':
+    'Step onto the street for the live read — how investors are voting on these names right now, in price and momentum.',
+  governance:
+    "Every number rides on the people behind it. See who owns and steers these franchises — and who's been buying or selling.",
+  'sector-news':
+    'Finally, the currents shaping what comes next — the regulatory and sector signals set to move the coming quarters.',
+}
+
+/** Compact, editorial section lead-in: a champagne accent and one guiding line. */
+function SectionIntro({ text }: { text: string }) {
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <span className="mt-1 h-9 w-[3px] shrink-0 rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+      <p className="max-w-3xl font-display text-[15px] leading-relaxed text-navy-deep/85">{text}</p>
+    </div>
+  )
+}
+
+/** Renders the active SAHI deep-dive sub-section (no Overview — that has moved),
+ *  each opened by a short narrative hook that guides the reader into the data. */
 function SahiContent({ tab }: { tab: string }) {
-  switch (tab) {
-    case 'distribution':
-      return <MarketDistribution />
-    case 'profitability':
-      return <ProfitabilityReview />
-    case 'valuation':
-      return <ValuationMarketView />
-    case 'street-view':
-      return <StreetView />
-    case 'governance':
-      return <StatefulSection Comp={OwnershipGovernance} />
-    case 'sector-news':
-      return <SectoralNews />
-    case 'companies':
-    default:
-      return <CompetitivePositioning />
+  const section = () => {
+    switch (tab) {
+      case 'distribution':
+        return <MarketDistribution />
+      case 'profitability':
+        return <ProfitabilityReview />
+      case 'valuation':
+        return <ValuationMarketView />
+      case 'street-view':
+        return <StreetView />
+      case 'governance':
+        return <StatefulSection Comp={OwnershipGovernance} />
+      case 'sector-news':
+        return <SectoralNews />
+      case 'companies':
+      default:
+        return <CompetitivePositioning />
+    }
   }
+  return (
+    <div>
+      <SectionIntro text={SAHI_INTRO[tab] ?? SAHI_INTRO.companies} />
+      {section()}
+    </div>
+  )
 }
 
 export default function App() {
