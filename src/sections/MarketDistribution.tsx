@@ -10,12 +10,12 @@ import {
   YAxis,
 } from 'recharts'
 import { ArrowDownRight, ArrowRight, ArrowUpRight } from 'lucide-react'
-import { giPremiumMix, insurers } from '@/data/mockData'
+import { giPremiumMix } from '@/data/mockData'
 import { GI_SEGMENT_SOURCE } from '@/lib/industryStructure'
 import { useActiveCompany, useFilters, useRangeClip } from '@/state/filters'
 import { usePeriodGate } from '@/lib/usePeriodGate'
 import { fyLabelsInRange } from '@/lib/dateRange'
-import { retailMixYears, retailMixForYear } from '@/lib/dataLayer'
+import { retailMixSeriesForCompany, RETAIL_MIX_SOURCE } from '@/lib/dataLayer'
 import { getCompanyDistributionData, type DistChannel } from '@/lib/distributionEngine'
 import { EmptyState } from '@/components/EmptyState'
 import { SourceTag } from '@/components/SourceTag'
@@ -546,30 +546,159 @@ function StackedArea({ rows, hovered }: { rows: MixRow[]; hovered: DistChannel |
 }
 
 // ─── Retail Health vs Group premium mix ──────────────────────────────────────
-// A horizontal 100% split per insurer (retail/individual vs group), for the
-// LATEST fiscal year within the selected Data Range that actually reports the
-// split. Year-aware: it advances/recedes with the range and is labelled with
-// the year shown — never one year's mix presented under another. Where a year
-// has no reported split, it says so honestly rather than borrowing FY25's.
-const RETAIL_COLOR = '#168E8E' // teal — retail/individual health
+// The ACTIVE company's retail/individual vs group HEALTH-premium split, shown as
+// a trend: one slim 100%-stacked bar per fiscal year inside the header Data
+// Range, with a thin navy line tracing how the retail share moves. Reacts to
+// both the Company selector and the Data Range — bars and line redraw on either
+// change. Years the source never reported render an honest n/a, never a fake 0.
+// Basis: a premium metric (share of health GWP), not a profit measure.
+const RETAIL_COLOR = '#168E8E' // teal — retail/individual health (stickier, higher-margin)
 const GROUP_COLOR = '#B68B3A' // gold — group
 
+type RetailBar = { fy: string; retailPct: number | null; groupPct: number | null }
+
+// Compact, hand-rolled stacked-bar trend (slim bars ≤42px + a thin retail-share
+// frontier line). SVG so the n/a slots and in-bar labels lay out exactly.
+function RetailMixBars({ rows, company }: { rows: RetailBar[]; company: string }) {
+  const [ref, w] = useElementWidth()
+  const H = 288
+  const padL = 10
+  const padR = 10
+  const padT = 18
+  const padB = 28
+  const plotW = Math.max(0, w - padL - padR)
+  const plotH = H - padT - padB
+  const n = rows.length
+  const slotW = n > 0 ? plotW / n : plotW
+  const barW = Math.max(14, Math.min(42, slotW * 0.6))
+  const cx = (i: number) => padL + slotW * (i + 0.5)
+  const yOf = (pct: number) => padT + plotH * (1 - pct / 100)
+
+  let lastDataIdx = -1
+  rows.forEach((r, i) => {
+    if (r.retailPct != null) lastDataIdx = i
+  })
+
+  // Retail-share frontier → broken polyline so gaps (n/a years) don't connect.
+  const segments: { x: number; y: number }[][] = []
+  let cur: { x: number; y: number }[] = []
+  rows.forEach((r, i) => {
+    if (r.retailPct != null) cur.push({ x: cx(i), y: yOf(r.retailPct) })
+    else if (cur.length) {
+      segments.push(cur)
+      cur = []
+    }
+  })
+  if (cur.length) segments.push(cur)
+
+  return (
+    <div ref={ref} className="w-full" style={{ height: H }}>
+      {w > 0 && n >= 1 && (
+        <svg width={w} height={H} viewBox={`0 0 ${w} ${H}`} className="overflow-visible">
+          <rect x={padL} y={padT} width={plotW} height={plotH} rx={6} fill="#FAFBFD" />
+          <line x1={padL} x2={padL + plotW} y1={yOf(50)} y2={yOf(50)} stroke="#EAEEF4" strokeDasharray="3 3" />
+
+          {/* stacked bars (teal retail below, gold group above) + honest n/a slots */}
+          {rows.map((r, i) => {
+            const x = cx(i) - barW / 2
+            if (r.retailPct == null || r.groupPct == null) {
+              return (
+                <g key={`na-${r.fy}`}>
+                  <rect x={x} y={padT} width={barW} height={plotH} rx={5} fill="none" stroke="#DBE0E8" strokeDasharray="3 3" />
+                  <text x={cx(i)} y={padT + plotH / 2 + 3.5} textAnchor="middle" fontSize={10.5} fontStyle="italic" fill="#9AA3B2">n/a</text>
+                </g>
+              )
+            }
+            const yb = yOf(r.retailPct)
+            const retailH = yOf(0) - yb
+            const groupH = yb - yOf(100)
+            const clip = `rm-clip-${r.fy}`
+            return (
+              <g key={r.fy}>
+                <defs>
+                  <clipPath id={clip}>
+                    <rect x={x} y={padT} width={barW} height={plotH} rx={5} />
+                  </clipPath>
+                </defs>
+                <g clipPath={`url(#${clip})`}>
+                  <rect x={x} y={yb} width={barW} height={Math.max(0, retailH)} fill={RETAIL_COLOR} />
+                  <rect x={x} y={padT} width={barW} height={Math.max(0, groupH)} fill={GROUP_COLOR} />
+                </g>
+                <rect x={x} y={padT} width={barW} height={plotH} fill="transparent">
+                  <title>{`${company} · ${r.fy}: retail ${r.retailPct}% · group ${r.groupPct}%`}</title>
+                </rect>
+                {retailH >= 16 && (
+                  <text x={cx(i)} y={(yb + yOf(0)) / 2 + 3.5} textAnchor="middle" fontSize={10.5} fontWeight={700} fill="#FFFFFF" style={{ fontVariantNumeric: 'tabular-nums' }}>{r.retailPct}%</text>
+                )}
+                {groupH >= 16 && (
+                  <text x={cx(i)} y={(padT + yb) / 2 + 3.5} textAnchor="middle" fontSize={10.5} fontWeight={700} fill="#FFFFFF" style={{ fontVariantNumeric: 'tabular-nums' }}>{r.groupPct}%</text>
+                )}
+              </g>
+            )
+          })}
+
+          {/* retail-share frontier line + per-year dots (latest emphasised) */}
+          {segments.map((seg, si) => {
+            const d = seg.map((p, k) => `${k ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ')
+            return (
+              <g key={`seg-${si}`}>
+                <path d={d} fill="none" stroke="#FFFFFF" strokeWidth={3.4} strokeOpacity={0.9} strokeLinecap="round" strokeLinejoin="round" />
+                <path d={d} fill="none" stroke="#27457E" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+              </g>
+            )
+          })}
+          {rows.map((r, i) =>
+            r.retailPct == null ? null : (
+              <circle key={`dot-${r.fy}`} cx={cx(i)} cy={yOf(r.retailPct)} r={i === lastDataIdx ? 4 : 2.8} fill="#27457E" stroke="#FFFFFF" strokeWidth={1.4} />
+            ),
+          )}
+
+          {/* fiscal-year axis labels */}
+          {rows.map((r, i) => (
+            <text key={`x-${r.fy}`} x={cx(i)} y={H - 8} textAnchor="middle" fontSize={11} fontWeight={i === lastDataIdx ? 700 : 600} fill={i === lastDataIdx ? '#26303F' : '#6B7280'}>
+              {r.fy}
+            </text>
+          ))}
+        </svg>
+      )}
+    </div>
+  )
+}
+
 function RetailGroupMixCard() {
-  const active = useActiveCompany()
+  const company = useActiveCompany()
   const { range } = useFilters()
   const gate = usePeriodGate()
-  const inRange = new Set(fyLabelsInRange(range))
-  const years = retailMixYears() // newest first; only years that report the split
-  const targetFy = years.find((fy) => inRange.has(fy)) ?? null
-  const mix = targetFy ? retailMixForYear(targetFy) : new Map<string, number>()
-  const rows = insurers
-    .filter((i) => mix.has(i.id))
-    .map((i) => {
-      const retail = mix.get(i.id) as number
-      return { id: i.id, name: i.shortName, retail, group: Math.max(0, 100 - retail), focal: i.id === active.id }
-    })
-    .sort((a, b) => b.retail - a.retail)
-  const reportedLabel = years.length ? (years.length === 1 ? years[0] : `${years[years.length - 1]}–${years[0]}`) : null
+
+  const series = retailMixSeriesForCompany(company.id)
+  const retailByFy = new Map(series.map((p) => [p.fy, p.retailPct]))
+  const rawBars: RetailBar[] = fyLabelsInRange(range).map((fy) => {
+    const rp = retailByFy.get(fy)
+    return rp == null ? { fy, retailPct: null, groupPct: null } : { fy, retailPct: rp, groupPct: Math.max(0, 100 - rp) }
+  })
+  // Frame to the reported span inside the range — trim outer n/a, but keep
+  // interior gaps (e.g. FY20) visible as honest n/a so the trend stays truthful.
+  let lo = 0
+  let hi = rawBars.length - 1
+  while (lo <= hi && rawBars[lo].retailPct == null) lo++
+  while (hi >= lo && rawBars[hi].retailPct == null) hi--
+  const bars = lo <= hi ? rawBars.slice(lo, hi + 1) : []
+  const dataBars = bars.filter((b): b is { fy: string; retailPct: number; groupPct: number } => b.retailPct != null)
+
+  const first = dataBars[0]
+  const last = dataBars[dataBars.length - 1]
+  const single = dataBars.length === 1
+  const delta = first && last && dataBars.length > 1 ? last.retailPct - first.retailPct : null
+  const spanLabel = dataBars.length ? (single ? first.fy : `${first.fy}–${last.fy}`) : null
+  const fullSpan = series.length ? (series.length === 1 ? series[0].fy : `${series[0].fy}–${series[series.length - 1].fy}`) : null
+
+  const tone = delta == null ? 'flat' : delta >= 2 ? 'up' : delta <= -2 ? 'down' : 'flat'
+  const deltaChipCls =
+    tone === 'up'
+      ? 'bg-teal-soft text-teal ring-[#BFE3E1]'
+      : tone === 'down'
+        ? 'bg-[#FBEDEA] text-[#C0584F] ring-[#F0D2CC]'
+        : 'bg-soft-blue text-navy-primary ring-[#D6E2FA]'
 
   return (
     <section className="card-surface flex h-full flex-col p-5 sm:p-6">
@@ -577,51 +706,56 @@ function RetailGroupMixCard() {
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-champagne-deep">Product Mix</p>
         <div className="mt-1.5 flex flex-wrap items-center gap-2">
           <h2 className="font-display text-[20px] leading-tight text-navy-deep">Retail Health vs Group premium</h2>
+          <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">{company.shortName}</span>
+          {delta != null && (
+            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ${deltaChipCls}`}>
+              Retail {delta >= 0 ? '+' : '−'}{Math.abs(delta)} pp
+            </span>
+          )}
           {!gate.ok && <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-[#D6E2FA]">Annual data</span>}
         </div>
         <p className="mt-1 text-[12px] text-ink-secondary">
-          Share of health GWP — individual/retail vs group — across the leading health insurers{targetFy ? ` · ${targetFy}` : ''}
+          Individual/retail vs group share of health GWP{spanLabel ? ` · ${spanLabel}` : ''}
         </p>
       </header>
 
-      {rows.length === 0 ? (
+      {dataBars.length === 0 ? (
         <EmptyState
-          title="Retail vs group split not reported for the selected years"
-          body={reportedLabel ? `The retail/group split is reported for ${reportedLabel}. Widen the Data Range to include it.` : 'No retail vs group split is reported in the source yet.'}
-          height={220}
+          title={`Retail vs group split not reported for ${company.shortName} in these years`}
+          body={fullSpan ? `${company.shortName}'s split is reported for ${fullSpan}. Adjust the Data Range to include it.` : `No retail vs group split is reported for ${company.shortName} in the source yet.`}
+          height={240}
         />
       ) : (
         <>
-          <div className="mb-3 flex items-center gap-4 text-[11px] text-ink-secondary">
+          <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-ink-secondary">
             <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: RETAIL_COLOR }} /> Retail (individual)</span>
             <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: GROUP_COLOR }} /> Group</span>
+            <span className="ml-auto text-[10px] uppercase tracking-wide text-ink-secondary/70">Premium metric — not profit</span>
           </div>
 
-          <div className="space-y-2.5">
-            {rows.map((r) => (
-              <div key={r.id} className="flex items-center gap-3">
-                <span className={['w-24 shrink-0 truncate text-[11.5px]', r.focal ? 'font-bold text-navy-deep' : 'text-ink-primary'].join(' ')} title={r.name}>{r.name}</span>
-                <div
-                  className="relative flex h-5 flex-1 overflow-hidden rounded-md ring-1 ring-soft-border"
-                  style={r.focal ? { boxShadow: 'inset 0 0 0 1.5px rgba(39,69,126,0.45)' } : undefined}
-                  title={`${r.name} (${targetFy}): retail ${r.retail.toFixed(0)}% · group ${r.group.toFixed(0)}%`}
-                >
-                  <div className="flex items-center justify-end pr-1.5" style={{ width: `${r.retail}%`, background: RETAIL_COLOR }}>
-                    {r.retail >= 18 && <span className="text-[10px] font-semibold text-white">{r.retail.toFixed(0)}%</span>}
-                  </div>
-                  <div className="flex items-center pl-1.5" style={{ width: `${r.group}%`, background: GROUP_COLOR }}>
-                    {r.group >= 18 && <span className="text-[10px] font-semibold text-white">{r.group.toFixed(0)}%</span>}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <RetailMixBars rows={bars} company={company.shortName} />
 
-          <p className="mt-4 text-[11px] leading-snug text-ink-secondary">
+          <InsightLine>
+            {single ? (
+              <>In {last.fy}, {company.shortName} ran a <strong className="font-semibold text-teal">{last.retailPct}%</strong> retail / {last.groupPct}% group health book.</>
+            ) : tone === 'up' ? (
+              <>{company.shortName} grew <strong className="font-semibold text-teal">retail</strong> share by <strong className="font-semibold text-teal">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} — a stickier, higher-margin book.</>
+            ) : tone === 'down' ? (
+              <>Retail share at {company.shortName} eased <strong className="font-semibold text-[#C0584F]">{Math.abs(delta as number)} pp</strong> to {last.retailPct}% by {last.fy} as the group book scaled faster.</>
+            ) : (
+              <>{company.shortName} held a roughly {last.retailPct}/{last.groupPct} retail-to-group mix across {spanLabel}.</>
+            )}
+          </InsightLine>
+
+          <p className="mt-2 text-[11px] leading-snug text-ink-secondary">
             A higher retail mix signals a stickier, higher-margin book; group-heavy mixes scale faster but at thinner margins.
           </p>
         </>
       )}
+
+      <div className="mt-3 flex justify-end">
+        <SourceTag source={RETAIL_MIX_SOURCE.source} confidence={RETAIL_MIX_SOURCE.confidence} provenance={RETAIL_MIX_SOURCE.provenance} period={spanLabel ?? fullSpan ?? undefined} frequency="Annual" />
+      </div>
     </section>
   )
 }

@@ -511,19 +511,51 @@ const GIC_HEALTH_ROWS = (gicHealthPortfolio.data as GicHealthPortfolioRow[]) ?? 
 const hasHealthMix = (r: GicHealthPortfolioRow): boolean =>
   typeof r.health_retail === 'number' && typeof r.health_total === 'number' && r.health_total > 0
 
-/** Fiscal years (newest first) that report a per-insurer retail/group health split. */
-export function retailMixYears(): string[] {
-  return [...new Set(GIC_HEALTH_ROWS.filter(hasHealthMix).map((r) => r.fiscal_year))].sort((a, b) => fyNum(b) - fyNum(a))
+/** One fiscal year's retail-vs-group health split for a single insurer. */
+export interface RetailMixPoint {
+  fy: string
+  /** retail ÷ total health premium, whole %. */
+  retailPct: number
+  /** the complement (group + govt + overseas-medical), whole %. */
+  groupPct: number
+  retailPrem: number
+  groupPrem: number
+  totalPrem: number
 }
 
-/** company_id → retail-health-mix % for one fiscal year (retail ÷ total health premium). */
-export function retailMixForYear(fy: string): Map<string, number> {
-  return new Map(
-    GIC_HEALTH_ROWS.filter((r) => r.fiscal_year === fy && hasHealthMix(r)).map((r) => [
-      r.entity,
-      Math.round(((r.health_retail as number) / (r.health_total as number)) * 100),
-    ]),
-  )
+/** Retail-vs-group HEALTH split for ONE insurer across every fiscal year it
+ *  reports, oldest→newest. Where a year is printed twice (e.g. a restated
+ *  prior-year comparative from a later GIC edition) the newest row wins, matching
+ *  the rest of the pipeline. Years the source never reported are simply absent —
+ *  the caller renders an honest n/a, never a zero. */
+export function retailMixSeriesForCompany(companyId: string): RetailMixPoint[] {
+  const byFy = new Map<string, RetailMixPoint>()
+  for (const r of GIC_HEALTH_ROWS) {
+    if (r.entity !== companyId || !hasHealthMix(r)) continue
+    const totalPrem = r.health_total as number
+    const retailPrem = r.health_retail as number
+    const retailPct = Math.round((retailPrem / totalPrem) * 100)
+    byFy.set(r.fiscal_year, {
+      fy: r.fiscal_year,
+      retailPct,
+      groupPct: Math.max(0, 100 - retailPct),
+      retailPrem,
+      groupPrem: Math.max(0, totalPrem - retailPrem),
+      totalPrem,
+    })
+  }
+  return [...byFy.values()].sort((a, b) => fyNum(a.fy) - fyNum(b.fy))
+}
+
+/** Source descriptor for the retail/group split (GI Council Health Portfolio). */
+export const RETAIL_MIX_SOURCE = {
+  source: 'GI Council' as const,
+  confidence: 'high' as const,
+  provenance: {
+    source_name: 'GI Council Segment-wise Report — Health Portfolio (retail vs group health premium)',
+    source_url: 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/',
+    fetched_at: (gicHealthPortfolio as { _meta?: { last_updated?: string } })._meta?.last_updated ?? '',
+  },
 }
 
 /** Latest annual fiscal-year label actually present in the snapshot (e.g. "FY25").
