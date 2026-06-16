@@ -1,6 +1,6 @@
 import { Fragment, useMemo, useState } from 'react'
 import { useFilters } from '@/state/filters'
-import { formatRange } from '@/lib/dateRange'
+import { getLatestAnnualFyLabel } from '@/lib/dataLayer'
 import { AnalysisBuilder } from '@/components/AnalysisBuilder'
 import { SectionTabs } from '@/components/SectionTabs'
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
@@ -404,9 +404,10 @@ export function CompetitivePositioning() {
   const focalRow = card.rows.find((r) => r.focal) ?? card.rows[0]
   const activeCell = focalRow.cells[activeKey] ?? focalRow.cells.growth
   // Competitive Position has no frequency toggle — the scorecard is a latest-
-  // figures snapshot — so the range reads in stable Annual (FY) vocabulary and
-  // never flips with the global period control.
-  const rangeLabel = formatRange(filters.range, 'Annual')
+  // figures snapshot. Label it with the ACTUAL data year (the latest annual FY
+  // in the snapshot), not the selected range, so picking an earlier range never
+  // mislabels the latest figures as some other span.
+  const rangeLabel = `${getLatestAnnualFyLabel()} (latest)`
 
   const explainGrowth = focalRow.cells.growth.tone === 'leader' || focalRow.cells.growth.tone === 'strong'
     ? `Strong GWP growth${focalRow.cells.retailMix.tone === 'leader' || focalRow.cells.retailMix.tone === 'strong' ? ' + retail-mix lead' : ''}`
