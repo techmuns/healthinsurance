@@ -12,8 +12,8 @@ name: management events fetch
 on:
   workflow_dispatch:
   schedule:
-    # Twice a week (Mon & Thu, IST morning) — board / KMP changes are infrequent.
-    - cron: '0 6 * * 1,4'
+    # Daily (IST late morning) — catch board / KMP changes within a day of filing.
+    - cron: '0 6 * * *'
 
 permissions:
   contents: write
