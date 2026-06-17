@@ -62,6 +62,15 @@ export default {
           'ui-serif',
           'serif',
         ],
+        // Editorial serif — Cormorant Garamond — for the Insights tab's written
+        // narrative only (advisor read, headlines, theses, takeaways). Charts,
+        // tables, numbers and UI labels stay on the sans/display stacks above.
+        editorial: [
+          '"Cormorant Garamond"',
+          'Georgia',
+          'ui-serif',
+          'serif',
+        ],
       },
       boxShadow: {
         soft: '0 1px 2px rgba(23, 43, 77, 0.03), 0 6px 18px rgba(23, 43, 77, 0.04)',

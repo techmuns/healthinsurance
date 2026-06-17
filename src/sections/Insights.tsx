@@ -160,11 +160,11 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                 </div>
 
                 {/* title — editorial navy display */}
-                <h3 className="mt-3 font-display text-[23px] font-semibold leading-[1.14] tracking-[-0.015em] text-navy-deep lg:text-[26px]">{ins.shortHeadline}</h3>
+                <h3 className="mt-3 font-editorial text-[26px] font-bold leading-[1.12] tracking-[-0.01em] text-navy-deep lg:text-[30px]">{ins.shortHeadline}</h3>
 
                 {/* the overlooked angle → short thesis */}
                 <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: tone.fg }}>The overlooked angle</p>
-                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-primary">{ins.summary}</p>
+                <p className="mt-1.5 font-editorial text-[15px] leading-relaxed text-ink-primary">{ins.summary}</p>
 
                 {/* hero metric tile — locked to the full paragraph width */}
                 {stat && (
@@ -176,7 +176,7 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                         <span className="rounded-md bg-white/70 px-1.5 py-0.5 text-[9.5px] font-semibold text-ink-secondary ring-1 ring-soft-border">{stat.period}</span>
                       </div>
                       <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.07em] text-navy-deep">{pretty(stat.insurer)} · {stat.metric}</p>
-                      <p className="mt-0.5 text-[11px] leading-snug text-ink-secondary">{stat.context}</p>
+                      <p className="mt-0.5 font-editorial text-[12.5px] leading-snug text-ink-secondary">{stat.context}</p>
                     </div>
                   </div>
                 )}
@@ -187,7 +187,7 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                     <span className="h-1.5 w-1.5 rounded-full" style={{ background: CONVICTION_DOT[ins.conviction] }} />
                     {CONVICTION_LABEL[ins.conviction]} · {HORIZON[ins.horizon]}
                   </span>
-                  <span className="inline-flex items-start gap-1.5 text-ink-secondary"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span><strong className="font-semibold text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
+                  <span className="inline-flex items-start gap-1.5 text-ink-secondary"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span className="font-editorial text-[12.5px] italic leading-snug"><strong className="font-semibold not-italic text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
                 </div>
 
                 {/* source-backed footer strip + the "show the working" control — anchored to the bottom */}
@@ -224,7 +224,7 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                 {/* key takeaway strip — the insight's own "what consensus misses", verbatim */}
                 <div className="border-t border-soft-border bg-ice/60 px-4 py-2.5">
                   <p className="text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: tone.fg }}>Key takeaway</p>
-                  <p className="mt-1 text-[11.5px] leading-snug text-ink-primary">{ins.whatConsensusMisses}</p>
+                  <p className="mt-1 font-editorial text-[13px] leading-snug text-ink-primary">{ins.whatConsensusMisses}</p>
                 </div>
               </div>
             </div>
@@ -266,7 +266,9 @@ export function Insights() {
   const noFilter = insurer === 'all' && category === 'all' && conviction === 'all'
 
   return (
-    <div className="space-y-5">
+    // `insights-tab` scopes the editorial Cormorant Garamond serif to this tab's
+    // written narrative only; charts, tables, numbers and controls stay sans.
+    <div className="insights-tab space-y-5">
       {/* Advisor briefing lead — slim, premium hero */}
       <header className="relative overflow-hidden rounded-2xl border border-soft-border bg-gradient-to-br from-[#F7F5EF] via-card to-[#EAEFF7] px-4 py-3.5 shadow-card sm:px-5 sm:py-4">
         {/* soft gold glow behind the icon + a thin gold seam at the top edge */}
@@ -276,8 +278,8 @@ export function Insights() {
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne-soft text-champagne-deep ring-1 ring-[#E7D29B] shadow-[0_4px_14px_rgba(182,139,58,0.22)]"><Lightbulb className="h-5 w-5" /></span>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Advisor's read</p>
-            <h1 className="font-display text-[21px] font-semibold leading-tight text-navy-deep">What stands out across the dashboard</h1>
-            <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-ink-secondary">I went through all five health insurers — every chart, filing and price — and pulled out the insights worth acting on, sharpest first. Each one challenges the obvious read, names the single number behind it, and says what would flip the call.</p>
+            <h1 className="font-editorial text-[24px] font-semibold leading-tight text-navy-deep">What stands out across the dashboard</h1>
+            <p className="mt-1 max-w-2xl font-editorial text-[13.5px] leading-relaxed text-ink-secondary">I went through all five health insurers — every chart, filing and price — and pulled out the insights worth acting on, sharpest first. Each one challenges the obvious read, names the single number behind it, and says what would flip the call.</p>
           </div>
           {/* compact status badge — a live update chip, not a separate card */}
           <div className="inline-flex shrink-0 items-center gap-2.5 rounded-xl border border-soft-border bg-white/75 px-3 py-1.5 shadow-soft backdrop-blur-sm">

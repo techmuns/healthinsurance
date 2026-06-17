@@ -85,7 +85,7 @@ function MethodStep({ step, tone, index, open, onToggle }: { step: MethodDescrip
 
       {open && (
         <div className="space-y-3 px-3 pb-3.5 pt-0.5">
-          <p className="text-[11px] leading-snug text-ink-secondary">{step.gloss}</p>
+          <p className="font-editorial text-[12.5px] leading-relaxed text-ink-secondary">{step.gloss}</p>
           <div className="rounded-lg p-3" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
             <p className="mb-1 text-[8.5px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}>The formula</p>
             <div className="overflow-x-auto text-[15px] text-navy-deep"><KaTeXFormula tex={step.formulaTeX} display /></div>
@@ -193,14 +193,14 @@ function ApplicationBlock({ application }: { application: Application }) {
     <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${GOLD}` }}>
       <div className="flex items-center gap-2 px-3.5 pt-3">
         <Compass className="h-4 w-4 shrink-0" style={{ color: GOLD }} strokeWidth={2.2} />
-        <span className="font-display text-[13px] font-semibold text-navy-deep">How to use this</span>
+        <span className="font-editorial text-[15px] font-semibold text-navy-deep">How to use this</span>
       </div>
-      <p className="px-3.5 pt-1.5 text-[11.5px] leading-snug text-ink-secondary">{application.framing}</p>
+      <p className="px-3.5 pt-1.5 font-editorial text-[13px] leading-relaxed text-ink-secondary">{application.framing}</p>
       <ul className="space-y-1.5 px-3.5 py-3">
         {application.uses.map((u, i) => (
           <li key={i} className="flex items-start gap-2 text-[11.5px] leading-snug text-ink-primary">
             <span className="mt-px shrink-0 rounded-md px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.05em]" style={{ background: '#F5EDDC', color: GOLD }}>{u.angle}</span>
-            <span>{u.detail}</span>
+            <span className="font-editorial text-[12.5px] leading-relaxed">{u.detail}</span>
           </li>
         ))}
       </ul>
@@ -214,7 +214,7 @@ function WatchBlock({ watch }: { watch: Watch }) {
     <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${BURGUNDY}` }}>
       <div className="flex items-center gap-2 px-3.5 pt-3">
         <Bell className="h-4 w-4 shrink-0" style={{ color: BURGUNDY }} strokeWidth={2.2} />
-        <span className="font-display text-[13px] font-semibold text-navy-deep">What to watch</span>
+        <span className="font-editorial text-[15px] font-semibold text-navy-deep">What to watch</span>
       </div>
       <ul className="space-y-2 px-3.5 py-3">
         {watch.items.map((w, i) => {
@@ -224,7 +224,7 @@ function WatchBlock({ watch }: { watch: Watch }) {
               <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.04em]" style={{ background: d.bg, color: d.color }}>
                 <d.Icon className="h-2.5 w-2.5" strokeWidth={2.8} />{d.label}
               </span>
-              <span className="min-w-0 flex-1 text-[11.5px] leading-snug text-ink-primary">
+              <span className="min-w-0 flex-1 font-editorial text-[13px] leading-relaxed text-ink-primary">
                 <strong className="font-semibold text-navy-deep">{w.trigger}</strong> — {w.condition}
                 {w.cadence && <span className="ml-1.5 inline-block rounded bg-ice px-1.5 py-0.5 text-[9px] font-medium text-ink-secondary ring-1 ring-soft-border">{w.cadence}</span>}
               </span>
@@ -255,7 +255,7 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
         <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg" style={{ background: tone.bg, color: tone.fg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}><Sigma className="h-4 w-4" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-[9px] font-bold uppercase tracking-[0.16em]" style={{ color: tone.fg }}>Show the working</p>
-          <h3 id={labelId} className="font-display text-[15px] font-semibold leading-tight text-navy-deep">How we got here — and what to do with it</h3>
+          <h3 id={labelId} className="font-editorial text-[17px] font-semibold leading-tight text-navy-deep">How we got here — and what to do with it</h3>
           <p className="mt-0.5 truncate text-[10.5px] text-ink-secondary">{ins.shortHeadline}</p>
         </div>
         <button ref={backRef} type="button" onClick={onBack} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 text-[10.5px] font-semibold text-navy-deep shadow-soft transition-colors hover:border-muted-blue hover:text-muted-blue">
@@ -310,8 +310,8 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
           <div className="space-y-4">
             <div className="rounded-xl border border-soft-border bg-white/70 p-4">
               <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}><FileText className="h-3.5 w-3.5" /> Detection rule — not a quantitative signal</p>
-              <p className="mt-2 text-[12px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
-              <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{ins.sourceNote}</p>
+              <p className="mt-2 font-editorial text-[13.5px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
+              <p className="mt-2 font-editorial text-[12px] leading-relaxed text-ink-secondary">{ins.sourceNote}</p>
             </div>
             {(ins.application || ins.watch) && (
               <section className="space-y-2.5">
