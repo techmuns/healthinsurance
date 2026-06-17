@@ -388,59 +388,29 @@ function signalFor(change: number | null): Signal {
 }
 
 // ── Ownership composition — interactive donut + clickable holder list ────────
-// Chart-first replacement for the holder table. Donut slices are holder-class
-// BLOCKS (Promoter / PE / FII / MF / DII / Public) summed from the SAME fetched
-// holders; a block with ≥2 disclosed entities drills into them. The donut,
-// summary chips, list and detail panel all derive from `row`, so a new filing
-// re-renders everything automatically — no hardcoded values, no manual editing.
+// Built from the OFFICIAL filed holder-category totals (promoter / FII / DII /
+// MF / public) — the same basis as the Ownership Signal and the AI read, so the
+// whole page tells one number. Individual holders are listed once in the Top
+// Holders table above and are NOT repeated here. The donut, chips, list and
+// detail all derive from `row`, so a new filing re-renders them automatically.
 
-// Holder-class colour families — promoter = navy anchor, PE = champagne, the
-// institutions share a teal/blue family, public = slate. This only buckets the
-// EXISTING inferred holder types for colour + drill-down; it never reclassifies.
+// Holder-class colour key — promoter = navy anchor; the institutions share a
+// teal/blue family; public = slate.
 const FAMILY: Record<string, { label: string; color: string }> = {
   promoter: { label: 'Promoter', color: '#27457E' },
-  pe: { label: 'PE / Investor', color: '#B68B3A' },
   fii: { label: 'FII / Foreign', color: '#168E8E' },
-  mf: { label: 'Mutual Funds', color: '#7FA3D9' },
   dii: { label: 'Institutions (DII)', color: '#4F7BCF' },
+  mf: { label: 'Mutual Funds', color: '#7FA3D9' },
   public: { label: 'Public & Other', color: '#9AA6B6' },
-}
-const FAMILY_ORDER = ['promoter', 'pe', 'fii', 'mf', 'dii', 'public']
-
-function familyOf(type: string): string {
-  const t = type.toLowerCase()
-  if (t.includes('promoter')) return 'promoter'
-  if (t.includes('pe')) return 'pe'
-  if (t.includes('fii') || t.includes('fpi') || t.includes('foreign') || t.includes('sovereign')) return 'fii'
-  if (t.includes('mf') || t.includes('mutual')) return 'mf'
-  if (t.includes('dii') || t.includes('insurer') || t.includes('institution')) return 'dii'
-  return 'public'
 }
 
 interface CatMember { name: string; type: string; pct: number; change: number | null }
 interface Category { key: string; label: string; color: string; pct: number; members: CatMember[] }
 
-// Group the fetched holders into coloured blocks. When named holders exist they
-// become the members of each block (enabling drill-down); otherwise the class
-// aggregates stand alone (no per-holder breakdown to drill into).
+// Donut categories = the filed holder-category totals. `members` stays empty —
+// class-level totals carry no named sub-entities, so there's no drill-down and
+// no duplication of the Top Holders names.
 function buildCategories(row: OwnershipRow): { categories: Category[]; named: boolean } {
-  const holders = (row.top_holders ?? []).filter((h): h is { name: string; type: string; share: number; change: number | null } => h.share != null)
-  if (holders.length > 0) {
-    const map = new Map<string, Category>()
-    for (const h of holders) {
-      const fk = familyOf(h.type)
-      let c = map.get(fk)
-      if (!c) { c = { key: fk, label: FAMILY[fk].label, color: FAMILY[fk].color, pct: 0, members: [] }; map.set(fk, c) }
-      c.pct += h.share
-      c.members.push({ name: h.name, type: h.type, pct: h.share, change: h.change })
-    }
-    const categories = FAMILY_ORDER.filter((k) => map.has(k)).map((k) => {
-      const c = map.get(k)!
-      c.members.sort((a, b) => b.pct - a.pct)
-      return c
-    })
-    return { categories, named: true }
-  }
   const classes: { key: string; share: number | null }[] = [
     { key: 'promoter', share: row.promoter_share },
     { key: 'fii', share: row.fii_share },
@@ -649,13 +619,7 @@ function HolderComposition({ row }: { row: OwnershipRow }) {
         const sig = signalFor(change)
         const ss = SIGNAL_STYLE[sig]
         const color = detail.cat.color
-        const note = isMember
-          ? 'Movement not tracked yet — one shareholding filing on record, so no quarter-on-quarter buy/sell trend is shown.'
-          : detail.cat.members.length >= 2
-            ? `Holder block grouping ${detail.cat.members.length} disclosed entities — open the block to see each holder.`
-            : named
-              ? 'Single disclosed holder in this block.'
-              : 'Holder-class aggregate; the per-named-holder breakdown isn’t tracked yet.'
+        const note = 'Filed holder-category total — individual holders are listed under Top Holders above. Quarter-on-quarter movement isn’t tracked yet (one filing on record).'
         return (
           <div className="mt-3 rounded-xl border border-soft-border bg-gradient-to-br from-ice/70 to-white p-3">
             <div className="flex items-start justify-between gap-3">
@@ -699,7 +663,7 @@ function HolderComposition({ row }: { row: OwnershipRow }) {
 
       {!named && (
         <p className="mt-3 text-[10.5px] text-ink-secondary/80">
-          Showing holder-class aggregates. Per-named-holder stakes and quarter-on-quarter movement activate once the detailed shareholding schedule is tracked.
+          Filed shareholding-category totals (NSE / BSE) — the same basis as the Ownership Signal above. Individual holders are listed under Top Holders.
         </p>
       )}
 
