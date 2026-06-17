@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, type LucideIcon } from 'lucide-react'
+import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, type LucideIcon } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
@@ -147,10 +147,10 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
             {/* Ultra-faint category wash — a tinted overlay, never a flat fill. */}
             <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(100deg, ${tone.wash} 0%, transparent 40%)` }} />
 
-            <div className="relative grid grid-cols-1 items-center gap-7 py-6 pl-7 pr-6 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:py-8">
-              {/* ── LEFT · the advisor memo ── */}
-              <div className="min-w-0">
-                {/* category badge · insight number · featured flag */}
+            <div className="relative grid grid-cols-1 items-stretch gap-6 py-6 pl-7 pr-6 lg:grid-cols-[45fr_55fr] lg:gap-7 lg:py-7">
+              {/* ── LEFT · the advisor memo — 45%, footer anchored to the bottom ── */}
+              <div className="flex min-w-0 flex-col">
+                {/* category badge · insight number · featured flag — one compact row */}
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.05em]" style={{ color: tone.fg, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
                     <Icon className="h-3.5 w-3.5" strokeWidth={2.4} /> {cat.label}
@@ -160,15 +160,15 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                 </div>
 
                 {/* title — editorial navy display */}
-                <h3 className="mt-3.5 font-display text-[23px] font-semibold leading-[1.14] tracking-[-0.015em] text-navy-deep lg:text-[26px]">{ins.shortHeadline}</h3>
+                <h3 className="mt-3 font-display text-[23px] font-semibold leading-[1.14] tracking-[-0.015em] text-navy-deep lg:text-[26px]">{ins.shortHeadline}</h3>
 
                 {/* the overlooked angle → short thesis */}
-                <p className="mt-3.5 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: tone.fg }}>The overlooked angle</p>
+                <p className="mt-3 text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: tone.fg }}>The overlooked angle</p>
                 <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-ink-primary">{ins.summary}</p>
 
-                {/* hero metric tile — the single number that proves it */}
+                {/* hero metric tile — locked to the full paragraph width */}
                 {stat && (
-                  <div className="mt-5 flex w-full items-stretch gap-3.5 rounded-xl p-3.5" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+                  <div className="mt-4 flex w-full items-stretch gap-3.5 rounded-xl p-3.5" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
                     <span aria-hidden className="w-[2.5px] shrink-0 rounded-full" style={{ background: statColor }} />
                     <div className="min-w-0">
                       <div className="flex items-baseline gap-2">
@@ -182,7 +182,7 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                 )}
 
                 {/* conviction / timeframe + the falsifier */}
-                <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10.5px]">
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[10.5px]">
                   <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-ice px-2.5 py-1 font-semibold text-navy-deep ring-1 ring-soft-border">
                     <span className="h-1.5 w-1.5 rounded-full" style={{ background: CONVICTION_DOT[ins.conviction] }} />
                     {CONVICTION_LABEL[ins.conviction]} · {HORIZON[ins.horizon]}
@@ -190,8 +190,8 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                   <span className="inline-flex items-start gap-1.5 text-ink-secondary"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span><strong className="font-semibold text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
                 </div>
 
-                {/* source-backed footer strip + the "show the working" control */}
-                <div className="mt-4 flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-soft-border pt-3 text-[10px] text-ink-secondary">
+                {/* source-backed footer strip + the "show the working" control — anchored to the bottom */}
+                <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-soft-border pt-4 text-[10px] text-ink-secondary">
                   <span className="inline-flex items-center gap-1 rounded-full bg-teal-soft px-2 py-0.5 font-bold uppercase tracking-[0.08em] text-teal"><BadgeCheck className="h-3 w-3" />Source-backed</span>
                   <span>{sourceLine(ins)}</span>
                   {hasMethodology && (
@@ -210,10 +210,22 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                 </div>
               </div>
 
-              {/* ── RIGHT · visual evidence ── */}
-              <div className="min-w-0 lg:pl-1">
-                <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.15em] text-ink-secondary">Visual evidence</p>
-                <InsightChart spec={ins.chart} focal={focal} embedded />
+              {/* ── RIGHT · visual evidence — 55%, the dominant analytical proof ── */}
+              <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
+                {/* dark navy header strip */}
+                <div className="flex items-center gap-2 bg-gradient-to-r from-navy-deep to-navy-primary px-4 py-2.5">
+                  <BarChart3 className="h-3.5 w-3.5 text-[#E4CE93]" strokeWidth={2.2} />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/90">Visual Evidence</span>
+                </div>
+                {/* chart body — grows to fill, so the card bottom-aligns with the memo */}
+                <div className="min-h-0 flex-1 p-3.5">
+                  <InsightChart spec={ins.chart} focal={focal} bare fill />
+                </div>
+                {/* key takeaway strip — the insight's own "what consensus misses", verbatim */}
+                <div className="border-t border-soft-border bg-ice/60 px-4 py-2.5">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.14em]" style={{ color: tone.fg }}>Key takeaway</p>
+                  <p className="mt-1 text-[11.5px] leading-snug text-ink-primary">{ins.whatConsensusMisses}</p>
+                </div>
               </div>
             </div>
            </div>

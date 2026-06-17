@@ -16,7 +16,11 @@ const byId = new Map(PANEL.insurers.map((p) => [p.id, p]))
 // inner border and a quiet shadow — premium and calm, never flat or harsh.
 const SHELL = 'rounded-xl border border-soft-border bg-card p-3 shadow-soft'
 const SHELL_EMBEDDED = 'rounded-xl bg-gradient-to-b from-[#F4F7FB] to-[#E9EEF6] p-3.5 ring-1 ring-[#DCE3EF] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_2px_6px_rgba(23,43,77,0.045)]'
-const shell = (embedded: boolean) => (embedded ? SHELL_EMBEDDED : SHELL)
+// `bare` drops the panel chrome entirely (the chart sits directly inside a host
+// card — the insight "Visual Evidence" card); `embedded` keeps the soft slate
+// panel; otherwise a standalone bordered card. `fill` lets the chart grow to its
+// container height so the card can bottom-align with the narrative column.
+const shell = (embedded: boolean, bare = false) => (bare ? '' : embedded ? SHELL_EMBEDDED : SHELL)
 
 const COLORS = ['#27457E', '#168E8E', '#8061B8', '#3D5F9F', '#A8443B']
 const GRID = '#ECEFF5'
@@ -80,7 +84,7 @@ function Pending({ title, embedded = false }: { title: string; embedded?: boolea
   )
 }
 
-export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpec; focal?: string; embedded?: boolean }) {
+export function InsightChart({ spec, focal, embedded = false, bare = false, fill = false }: { spec: ChartSpec; focal?: string; embedded?: boolean; bare?: boolean; fill?: boolean }) {
   const insurers = spec.insurers.filter((id) => byId.has(id))
   const thresholds = (spec.annotations ?? []).filter((a) => a.kind === 'threshold' && typeof a.value === 'number')
 
@@ -95,7 +99,7 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
       return row
     })
     return (
-      <Wrap title={spec.title} embedded={embedded}>
+      <Wrap title={spec.title} embedded={embedded} bare={bare} fill={fill}>
         <LineChart data={rows} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="fy" tick={{ fontSize: 11, fill: '#6B7280' }} tickLine={false} axisLine={{ stroke: GRID }} />
@@ -124,7 +128,7 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
         : { x1: 0, x2: hard.value as number, label: 'Below floor', pos: 'insideBottomLeft' as const }
       : null
     return (
-      <Wrap title={spec.title} embedded={embedded}>
+      <Wrap title={spec.title} embedded={embedded} bare={bare} fill={fill}>
         <BarChart data={data} layout="vertical" margin={{ top: 6, right: 30, left: 6, bottom: 4 }}>
           <CartesianGrid stroke={GRID} horizontal={false} strokeDasharray="2 4" />
           <XAxis type="number" tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
@@ -146,7 +150,7 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
     const pts = insurers.map((id, i) => ({ id, label: labelFor(id), x: latest(byId.get(id)!, xk), y: latest(byId.get(id)!, yk), color: colorFor(id, i, focal) })).filter((p) => p.x != null && p.y != null)
     if (!pts.length) return <Pending title={spec.title} embedded={embedded} />
     return (
-      <Wrap title={spec.title} embedded={embedded}>
+      <Wrap title={spec.title} embedded={embedded} bare={bare} fill={fill}>
         <ScatterChart margin={{ top: 10, right: 16, left: 0, bottom: 14 }}>
           <CartesianGrid stroke={GRID} strokeDasharray="2 4" />
           <XAxis type="number" dataKey="x" name={axisLabel(xk)} tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={{ stroke: GRID }} label={{ value: axisLabel(xk), position: 'insideBottom', offset: -8, fontSize: 10, fill: '#6B7280' }} />
@@ -170,7 +174,7 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
     }).filter((d) => d.retail != null || d.group != null)
     if (!data.length) return <Pending title={spec.title} embedded={embedded} />
     return (
-      <Wrap title={spec.title} embedded={embedded}>
+      <Wrap title={spec.title} embedded={embedded} bare={bare} fill={fill}>
         <BarChart data={data} margin={{ top: 6, right: 10, left: 0, bottom: 4 }}>
           <CartesianGrid stroke={GRID} vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#26303F' }} tickLine={false} axisLine={{ stroke: GRID }} />
@@ -204,9 +208,9 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
       : { left: 0, width: `${pos(hardT.value as number)}%`, background: ZONE_FILL }
     : null
   return (
-    <div className={shell(embedded)}>
+    <div className={`${shell(embedded, bare)} ${fill ? 'flex h-full flex-col' : ''}`}>
       <p className="mb-3 text-[11px] font-semibold text-navy-deep">{spec.title}</p>
-      <div className="space-y-3">
+      <div className={`space-y-3 ${fill ? 'flex flex-1 flex-col justify-center' : ''}`}>
         {rows.map((r) => (
           <div key={r.id} className="flex items-center gap-2 text-[11px]">
             <span className="w-20 shrink-0 truncate text-ink-secondary">{r.label}</span>
@@ -228,11 +232,11 @@ export function InsightChart({ spec, focal, embedded = false }: { spec: ChartSpe
 
 const TT = { borderRadius: 10, border: '1px solid #E5E8EF', fontSize: 11, boxShadow: '0 8px 22px rgba(23,43,77,0.1)' } as const
 
-function Wrap({ title, children, embedded = false }: { title: string; children: React.ReactElement; embedded?: boolean }) {
+function Wrap({ title, children, embedded = false, bare = false, fill = false }: { title: string; children: React.ReactElement; embedded?: boolean; bare?: boolean; fill?: boolean }) {
   return (
-    <div className={shell(embedded)}>
+    <div className={`${shell(embedded, bare)} ${fill ? 'flex h-full flex-col' : ''}`}>
       <p className="mb-1.5 text-[11px] font-semibold text-navy-deep">{title}</p>
-      <div style={{ width: '100%', height: embedded ? 212 : 200 }}>
+      <div className={fill ? 'min-h-[180px] w-full flex-1' : ''} style={fill ? undefined : { width: '100%', height: embedded ? 212 : 200 }}>
         <ResponsiveContainer>{children}</ResponsiveContainer>
       </div>
     </div>
