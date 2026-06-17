@@ -201,6 +201,9 @@ function SummaryCard({ metric, active, onClick }: { metric: MetricDef; active: b
   const values = years.map((y) => map.get(y) ?? null)
   const color = METRIC_COLOR[metric.id]
   const latestYear = [...years].reverse().find((y) => map.get(y) != null) ?? years[years.length - 1] ?? '—'
+  // The delta is the first→latest move; label it with its real span so "+3.4 pp"
+  // is never ambiguous about which years it covers (honest period label).
+  const firstYear = years.find((y) => map.get(y) != null) ?? '—'
 
   return (
     <button
@@ -231,7 +234,14 @@ function SummaryCard({ metric, active, onClick }: { metric: MetricDef; active: b
           </p>
         )}
       </div>
-      <Sparkline values={values} color={color} />
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <Sparkline values={values} color={color} />
+        {delta != null && firstYear !== '—' && firstYear !== latestYear && (
+          <span className="whitespace-nowrap text-[8px] font-medium tabular-nums text-ink-secondary/70">
+            {firstYear} <span className="text-ink-secondary/45">→</span> {latestYear}
+          </span>
+        )}
+      </div>
     </button>
   )
 }
