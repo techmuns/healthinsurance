@@ -1,11 +1,13 @@
 name: management events fetch
 
 # Keeps the SAHI Analysis → Management & Events board/leadership feed current.
-# Listed insurers' NSE / BSE corporate announcements + every insurer's IR press
-# pages are scanned for appointment / resignation / board / KMP-change events
-# (each datable, source-linked, medium confidence). Offline-safe: a source the
-# WAF blocks simply stays 'pending' and retries next run — never fabricated.
-# The committed snapshot auto-deploys via the existing Pages build.
+# Board & leadership changes (appointments / re-appointments / resignations /
+# board & KMP changes) for the five SAHIs are pulled via the muns web-search
+# agent — the same route the bulk-deals / sector-news / market-intelligence feeds
+# use, because direct exchange access is WAF-blocked from CI. Every item is
+# source-linked, medium confidence; unattributed items are dropped. 0 events →
+# the snapshot is left untouched (honest 'pending'), never fabricated. The
+# committed snapshot auto-deploys via the existing Pages build.
 
 on:
   workflow_dispatch:
@@ -39,18 +41,18 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Install Chromium (WAF-gated exchange pages)
-        run: npx playwright install --with-deps chromium
-
-      - name: Fetch management / governance events
-        run: npm run ingest:events
+      - name: Fetch management / governance events (muns agent)
+        env:
+          MUNS_API_TOKEN: ${{ secrets.MUNS_API_TOKEN }}
+          MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
+        run: npm run ingest:management-events
 
       - name: Commit new events
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          # Commit ONLY the event payload — so a run that found no new events (just
-          # metadata churn) doesn't create a noisy commit + deploy.
+          # Commit ONLY the event payload — so a run that found no new events
+          # doesn't create a noisy commit + deploy.
           git add src/data/snapshots/management-events.json
           git diff --staged --quiet && { echo "no new events this run"; exit 0; }
           git commit -m "data: management events @ $(date -u +%Y-%m-%dT%H:%MZ)"

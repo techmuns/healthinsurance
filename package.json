@@ -23,6 +23,7 @@
     "ingest:life-industry": "tsx scripts/ingest/life-industry-agent.ts",
     "ingest:valuation-fundamentals": "tsx scripts/ingest/valuation-fundamentals-agent.ts",
     "ingest:bulk-block-deals": "tsx scripts/ingest/bulk-block-deals-agent.ts",
+    "ingest:management-events": "tsx scripts/ingest/management-events-agent.ts",
     "ingest:shareholding": "tsx scripts/ingest/fetch-shareholding.ts",
     "ingest:price:muns": "tsx scripts/ingest/fetch-muns-market-data.ts",
     "ingest:delivery:nse": "tsx scripts/ingest/fetch-nse-delivery.ts",
