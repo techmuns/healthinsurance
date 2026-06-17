@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Landmark, ShieldCheck } from 'lucide-react'
 import { useActiveCompany, useFilters } from '@/state/filters'
@@ -90,6 +90,7 @@ function fmt(value: number | null, kind: MetricKind): string {
 
 // ── Trend sparkline — colour-coded by direction & whether that's good ─────────
 function Trend({ values, goodWhenUp }: { values: (number | null)[]; goodWhenUp: boolean }) {
+  const gid = `spark-${useId().replace(/:/g, '')}`
   const pts = values.map((v, i) => ({ v, i })).filter((p): p is { v: number; i: number } => p.v != null)
   if (pts.length < 2) return <span className="text-[11px] text-ink-secondary/40">—</span>
 
@@ -110,11 +111,22 @@ function Trend({ values, goodWhenUp }: { values: (number | null)[]; goodWhenUp: 
   const color = dir > 0 ? '#168E8E' : dir < 0 ? '#C0584F' : '#8C97A8'
   const d = pts.map((p, k) => `${k === 0 ? 'M' : 'L'} ${sx(p.i).toFixed(1)} ${sy(p.v).toFixed(1)}`).join(' ')
   const last = pts[pts.length - 1]
+  // Soft tonal area under the line — same colour as the trend, fading to clear.
+  // Purely cosmetic depth; the up/down/flat colour meaning is unchanged.
+  const area = `${d} L ${sx(last.i).toFixed(1)} ${H} L ${sx(pts[0].i).toFixed(1)} ${H} Z`
 
   return (
-    <svg width={W} height={H} className="overflow-visible">
-      <path d={d} fill="none" stroke={color} strokeWidth={1.7} strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={sx(last.i)} cy={sy(last.v)} r={2.2} fill={color} />
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="overflow-visible">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.22} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gid})`} />
+      <path d={d} fill="none" stroke={color} strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={sx(last.i)} cy={sy(last.v)} r={3.6} fill={color} opacity={0.16} />
+      <circle cx={sx(last.i)} cy={sy(last.v)} r={2} fill={color} stroke="#ffffff" strokeWidth={0.8} />
     </svg>
   )
 }
@@ -122,79 +134,137 @@ function Trend({ values, goodWhenUp }: { values: (number | null)[]; goodWhenUp: 
 interface FrameworkTheme {
   label: string
   Icon: typeof Landmark
+  /** Gradient banner at the top of each card (navy = IFRS, gold = IGAAP). */
   headerClass: string
-  theadClass: string
-  fyClass: string
+  /** Tinted header row inside the table (the column labels band). */
+  headBand: string
+  /** Muted label colour for the "Metric"/"Trend" header cells. */
+  headMeta: string
+  /** Stronger label colour for the FY column headers. */
+  fyColor: string
+  /** Soft tone behind the rows — cool for IFRS, warm for IGAAP. */
+  bodyBg: string
+  /** Alternating row fills: flat sits calmer, lift sits a touch brighter. */
+  rowFlat: string
+  rowLift: string
+  /** Alternating elevation — flat rows barely lift, lift rows lift a touch more. */
+  shadowFlatClass: string
+  shadowLiftClass: string
+  /** Hairline frame colour, tone-matched to the side. */
+  frameBorder: string
 }
 
 const IFRS_THEME: FrameworkTheme = {
   label: 'IND AS / IFRS-style',
   Icon: Landmark,
   headerClass: 'bg-gradient-to-r from-navy-primary to-navy-deep',
-  theadClass: 'bg-soft-blue/60',
-  fyClass: 'text-navy-primary',
+  headBand: '#E8F0FB',
+  headMeta: '#5C6E91',
+  fyColor: '#27457E',
+  bodyBg: 'linear-gradient(180deg,#FBFCFE 0%,#F3F8FD 100%)',
+  rowFlat: '#FCFDFF',
+  rowLift: '#F1F6FC',
+  shadowFlatClass: 'shadow-[0_1px_2px_rgba(23,43,77,0.05)] hover:shadow-[0_2px_8px_rgba(23,43,77,0.09)]',
+  shadowLiftClass: 'shadow-[0_2px_6px_rgba(23,43,77,0.08),0_1px_2px_rgba(23,43,77,0.04)] hover:shadow-[0_4px_12px_rgba(23,43,77,0.11)]',
+  frameBorder: 'rgba(39,69,126,0.12)',
 }
 const IGAAP_THEME: FrameworkTheme = {
   label: 'IGAAP / Statutory',
   Icon: ShieldCheck,
   headerClass: 'bg-gradient-to-r from-[#C29A45] to-[#9C7430]',
-  theadClass: 'bg-champagne-soft/70',
-  fyClass: 'text-champagne-deep',
+  headBand: '#F7EFDC',
+  headMeta: '#8A7647',
+  fyColor: '#9C7430',
+  bodyBg: 'linear-gradient(180deg,#FEFDFA 0%,#FBF5EA 100%)',
+  rowFlat: '#FFFEFB',
+  rowLift: '#FAF4E8',
+  shadowFlatClass: 'shadow-[0_1px_2px_rgba(120,92,30,0.06)] hover:shadow-[0_2px_8px_rgba(120,92,30,0.10)]',
+  shadowLiftClass: 'shadow-[0_2px_6px_rgba(120,92,30,0.09),0_1px_2px_rgba(120,92,30,0.04)] hover:shadow-[0_4px_12px_rgba(120,92,30,0.12)]',
+  frameBorder: 'rgba(156,116,48,0.16)',
+}
+
+// Shared, refined banner — an icon chip on the tone-coded gradient with a faint
+// top sheen so it reads polished rather than a flat colour block.
+function FrameworkHeader({ theme }: { theme: FrameworkTheme }) {
+  return (
+    <div
+      className={`relative flex items-center justify-center gap-2 py-3 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] ${theme.headerClass}`}
+    >
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 ring-1 ring-white/20">
+        <theme.Icon className="h-3.5 w-3.5" />
+      </span>
+      <span className="text-[13px] font-semibold tracking-[0.04em]">{theme.label}</span>
+    </div>
+  )
 }
 
 function FrameworkTable({ theme, metrics, years }: { theme: FrameworkTheme; metrics: MetricDef[]; years: BasisPeriod[] }) {
   const rows = metrics.map((m) => ({ ...m, values: years.map((p) => m.get(p)) }))
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[rgba(23,43,77,0.08)] bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <div className={`flex items-center justify-center gap-2 py-3 text-white ${theme.headerClass}`}>
-        <theme.Icon className="h-4 w-4" />
-        <span className="text-[13.5px] font-semibold tracking-wide">{theme.label}</span>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-[12.5px]">
+    <div
+      className="overflow-hidden rounded-[18px] border bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]"
+      style={{ borderColor: theme.frameBorder }}
+    >
+      <FrameworkHeader theme={theme} />
+      {/* Tinted body surface — the gaps between card-rows show this tone. */}
+      <div className="overflow-x-auto px-3 pb-3.5 pt-2.5" style={{ background: theme.bodyBg }}>
+        <table className="w-full text-[12.5px]" style={{ borderCollapse: 'separate', borderSpacing: '0 5px' }}>
           <thead>
-            <tr className={`${theme.theadClass} text-[10.5px] font-semibold uppercase tracking-wide`}>
-              <th className="px-4 py-2.5 text-left text-ink-secondary">Metric</th>
+            <tr className="text-[10px] font-semibold uppercase tracking-[0.08em]">
+              <th className="rounded-l-[10px] px-4 py-2.5 text-left" style={{ background: theme.headBand, color: theme.headMeta }}>
+                Metric
+              </th>
               {years.map((y) => (
-                <th key={y} className={`px-2 py-2.5 text-right ${theme.fyClass}`}>{y}</th>
+                <th key={y} className="px-3 py-2.5 text-right" style={{ background: theme.headBand, color: theme.fyColor }}>
+                  {y}
+                </th>
               ))}
-              <th className="px-3 py-2.5 text-center text-ink-secondary">Trend</th>
+              <th className="rounded-r-[10px] px-3 py-2.5 text-center" style={{ background: theme.headBand, color: theme.headMeta }}>
+                Trend
+              </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.label} className="border-t border-soft-border/70 transition-colors hover:bg-ice/40">
-                <td className="px-4 py-2.5 text-left font-medium text-navy-deep">
-                  {r.label}
-                  {r.basisNeutral && (
-                    <span
-                      className="ml-1.5 align-middle rounded-full bg-ice px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary"
-                      title="Statutory / regulatory measure — reported on a single basis (not restated under IFRS vs IGAAP), so it shows the same figure on both tables."
-                    >
-                      statutory
-                    </span>
-                  )}
-                </td>
-                {r.values.map((v, i) => {
-                  const negative = r.kind === 'cr' && v != null && v < 0
-                  return (
-                    <td
-                      key={i}
-                      className={`px-2 py-2.5 text-right tabular-nums ${
-                        v == null ? 'text-ink-secondary/40' : negative ? 'font-semibold text-coral' : 'text-ink-primary'
-                      }`}
-                    >
-                      {fmt(v, r.kind)}
-                    </td>
-                  )
-                })}
-                <td className="px-3 py-2.5">
-                  <div className="flex justify-center">
-                    <Trend values={r.values} goodWhenUp={r.goodWhenUp} />
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {rows.map((r, ri) => {
+              // Alternate the depth: even rows sit calmer, odd rows lift a touch.
+              const lifted = ri % 2 === 1
+              const rowBg = lifted ? theme.rowLift : theme.rowFlat
+              const shadowClass = lifted ? theme.shadowLiftClass : theme.shadowFlatClass
+              return (
+                <tr key={r.label} className={`${shadowClass} transition-shadow duration-normal ease-premium`}>
+                  <td className="rounded-l-[11px] px-4 py-3 text-left font-semibold text-navy-deep" style={{ background: rowBg }}>
+                    {r.label}
+                    {r.basisNeutral && (
+                      <span
+                        className="ml-1.5 align-middle rounded-full bg-white/70 px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary ring-1 ring-black/[0.06]"
+                        title="Statutory / regulatory measure — reported on a single basis (not restated under IFRS vs IGAAP), so it shows the same figure on both tables."
+                      >
+                        statutory
+                      </span>
+                    )}
+                  </td>
+                  {r.values.map((v, i) => {
+                    const negative = r.kind === 'cr' && v != null && v < 0
+                    return (
+                      <td
+                        key={i}
+                        className={`px-3 py-3 text-right tabular-nums ${
+                          v == null ? 'text-ink-secondary/40' : negative ? 'font-semibold text-coral' : 'text-ink-primary'
+                        }`}
+                        style={{ background: rowBg }}
+                      >
+                        {fmt(v, r.kind)}
+                      </td>
+                    )
+                  })}
+                  <td className="rounded-r-[11px] px-3 py-3" style={{ background: rowBg }}>
+                    <div className="flex justify-center">
+                      <Trend values={r.values} goodWhenUp={r.goodWhenUp} />
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
@@ -231,11 +301,11 @@ function FrameworkCharts({ theme, basis, companyId, years }: { theme: FrameworkT
   const pat = years.map((p) => ({ fy: p, v: getBasisProfit(companyId, basis, p)?.pat ?? null }))
   const lineColor = basis === 'ifrs' ? '#27457E' : '#9C7430'
   return (
-    <div className="overflow-hidden rounded-[18px] border border-[rgba(23,43,77,0.08)] bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]">
-      <div className={`flex items-center justify-center gap-2 py-3 text-white ${theme.headerClass}`}>
-        <theme.Icon className="h-4 w-4" />
-        <span className="text-[13.5px] font-semibold tracking-wide">{theme.label}</span>
-      </div>
+    <div
+      className="overflow-hidden rounded-[18px] border bg-white shadow-[0_1px_2px_rgba(23,43,77,0.04),0_10px_26px_rgba(23,43,77,0.06)]"
+      style={{ borderColor: theme.frameBorder }}
+    >
+      <FrameworkHeader theme={theme} />
       <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2">
         <MiniSeriesChart title="Combined Ratio (%)" data={cr} unit="%" color={lineColor} />
         <MiniSeriesChart title="PAT (₹ Cr)" data={pat} unit="" color={lineColor} />
