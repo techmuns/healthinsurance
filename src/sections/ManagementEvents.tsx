@@ -2,34 +2,54 @@ import { Sparkles, ExternalLink, CalendarClock, Newspaper } from 'lucide-react'
 import { ModuleCard } from '@/components/ModuleCard'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { PromiseTracker } from '@/components/PromiseTracker'
-import { VerdictStrip } from '@/components/VerdictStrip'
+import { VerdictStrip, type VerdictTone } from '@/components/VerdictStrip'
 import { getPromises } from '@/lib/promiseTracker'
 import { useActiveCompany } from '@/state/filters'
 import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
 
 /**
- * Management Events section.
- *
- * Event-feed + commentary blocks have been removed pending the ingest-
- * management-events.ts pull (NSE / BSE filings + company press releases).
- * Promise Tracker remains because the items are anchored to specific
- * audited Niva Bupa FY25 metrics and the comparison is meaningful.
+ * Management & Events section. Two real, source-backed blocks: the Promise
+ * Tracker (management's public guidance vs the audited FY25 outcome) and a live
+ * AI Market Intelligence feed (events, regulatory shifts and catalysts, each
+ * source-linked). Structured board / KMP-change events join automatically once
+ * the exchange / IR feed returns parseable records.
  */
 export function ManagementEvents() {
   const company = useActiveCompany()
   const promises = getPromises(company.id)
+  const delivered = promises.filter((p) => p.status === 'Delivered').length
+  const missed = promises.filter((p) => p.status === 'Missed').length
+  const total = promises.length
+  // Live intelligence in view for this company (its own items + sector-wide).
+  const intelCount = (intelSnapshot.data as Array<{ company_id?: string }>).filter(
+    (i) => !i.company_id || i.company_id === company.id || i.company_id === 'sector' || i.company_id === 'all',
+  ).length
+
+  // Answer-first verdict from the AUDITED promise record (the intelligence feed is
+  // AI-generated, so it colours the summary but never the verdict).
+  const onTrack = total > 0 && missed === 0 && delivered * 2 >= total
+  const verdict = total === 0 ? 'Live intelligence' : missed > 0 ? 'Watch the misses' : onTrack ? 'Largely on track' : 'In progress'
+  const tone: VerdictTone = total === 0 ? 'navy' : missed > 0 ? 'warning' : onTrack ? 'teal' : 'navy'
+  const badge = total === 0 ? `${intelCount} live` : `${delivered}/${total} delivered`
+  const stats = total === 0
+    ? [{ label: 'Live signals', value: String(intelCount) }]
+    : [{ label: 'Promises delivered', value: `${delivered}/${total}` }, { label: 'Live signals', value: String(intelCount) }]
+  const summary = total === 0
+    ? `A live scan of the events, regulatory shifts and catalysts that could move ${company.shortName} and the sector — each item source-linked. Guidance tracking turns on once ${company.shortName}'s commitments are on record. The intelligence feed is AI-generated; verify before acting.`
+    : `We hold ${company.shortName} to its word — public guidance against the audited FY25 outcome — next to a live scan of the events, regulatory shifts and catalysts that could move the stock. Guidance is audited; the intelligence feed is AI-generated and source-linked.`
 
   return (
     <div className="space-y-6">
       <VerdictStrip
         eyebrow="Governance Signal"
-        verdict="Promise tracker only"
-        tone="navy"
-        badge="Partial"
-        summary={`Promise tracker compares ${company.shortName}'s public guidance to its FY25 audited disclosures. Event feed and management commentary blocks are pending the ingest-management-events.ts ingestion run.`}
-        source={promises.length > 0 ? 'Company filing' : 'Unavailable'}
+        verdict={verdict}
+        tone={tone}
+        badge={badge}
+        summary={summary}
+        stats={stats}
+        source={total > 0 ? 'Company filing' : 'Mixed: IRDAI + Company filing'}
         sourceFrequency="Event-based"
-        sourceStatus={promises.length > 0 ? 'available' : 'pending'}
+        sourceStatus="available"
         sourceProvenance={{
           source_name: 'Guidance from earnings calls + audited FY25 metrics from company press releases',
           source_url: 'https://transactions.nivabupa.com/pages/doc/investor-relations/Earnings-Calls/2024-2025/Earnings-Call-Transcript-Q4-FY-2025.pdf',
