@@ -144,7 +144,7 @@ export function ValuationMarketView() {
               right={
                 <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
                   {(['Listed', 'Unlisted', 'All'] as const).map((v) => (
-                    <button key={v} type="button" onClick={() => setPeerView(v)} aria-pressed={peerView === v} className={['rounded-full px-3 py-1 text-[11px] font-semibold transition-all', peerView === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary'].join(' ')}>{v} Peers</button>
+                    <button key={v} type="button" onClick={() => setPeerView(v)} aria-pressed={peerView === v} className={['rounded-full px-3 py-1 text-[11px] font-semibold transition-all duration-normal ease-premium', peerView === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#B68B3A]/30' : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary'].join(' ')}>{v} Peers</button>
                   ))}
                 </div>
               }

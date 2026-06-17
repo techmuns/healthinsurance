@@ -210,7 +210,7 @@ function SummaryCard({ metric, active, onClick }: { metric: MetricDef; active: b
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className="surface-soft group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-xl p-2.5 text-left transition-all duration-200 hover:-translate-y-px lg:flex-1"
+      className="surface-soft group relative flex w-full items-center justify-between gap-2 overflow-hidden rounded-xl p-2.5 text-left transition-all duration-normal ease-premium hover:-translate-y-px lg:flex-1"
       style={{
         background: `linear-gradient(135deg, ${color}${active ? '16' : '0A'} 0%, transparent 65%)`,
         boxShadow: active ? `0 0 0 1.5px ${color}66, 0 6px 16px rgba(23,43,77,0.06)` : undefined,
@@ -595,7 +595,7 @@ export function MarketTrendExplorer() {
                 aria-pressed={on}
                 style={on ? { background: `${color}14`, borderColor: `${color}59`, color } : undefined}
                 className={[
-                  'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
+                  'inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-normal ease-premium',
                   on
                     ? 'shadow-soft'
                     : 'border-soft-border bg-white/40 text-ink-secondary hover:bg-white/70',
@@ -637,7 +637,7 @@ export function MarketTrendExplorer() {
                   onClick={() => setMode(vm.id)}
                   title={disabled ? 'Select metrics that share a unit to compare absolute values' : undefined}
                   className={[
-                    'px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-200',
+                    'px-2.5 py-0.5 text-[10.5px] font-medium transition-all duration-normal ease-premium',
                     on ? 'bg-navy-deep text-white' : 'text-ink-secondary hover:bg-white',
                     disabled ? 'cursor-not-allowed opacity-40' : '',
                   ].join(' ')}

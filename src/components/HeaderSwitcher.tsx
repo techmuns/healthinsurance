@@ -41,7 +41,7 @@ export function HeaderSwitcher({ active, onSelect }: { active: TopPage; onSelect
             aria-current={on ? 'page' : undefined}
             title={label}
             className={[
-              'group relative flex items-center gap-1.5 overflow-hidden rounded-lg border px-2.5 py-1.5 text-left transition-all duration-200',
+              'group relative flex items-center gap-1.5 overflow-hidden rounded-lg border px-2.5 py-1.5 text-left transition-all duration-normal ease-premium',
               on
                 ? 'border-transparent bg-gradient-to-br from-[#1E4079] to-[#143058] text-white shadow-[0_4px_14px_rgba(20,48,88,0.26)]'
                 : 'border-[#D7DEEA] bg-white/85 text-navy-deep shadow-soft hover:-translate-y-0.5 hover:border-muted-blue hover:bg-white hover:shadow-card',
@@ -59,13 +59,15 @@ export function HeaderSwitcher({ active, onSelect }: { active: TopPage; onSelect
 
             <span className="block text-[12.5px] font-semibold tracking-tight">{label}</span>
 
-            {/* Thin gold bottom accent on the active tile. */}
-            {on && (
-              <span
-                className="pointer-events-none absolute inset-x-2.5 bottom-[3px] h-[2px] rounded-full"
-                style={{ background: GOLD_ON_DARK }}
-              />
-            )}
+            {/* Thin gold bottom accent — always present, fades softly on activate
+                so the accent glides in/out rather than popping. */}
+            <span
+              className={[
+                'pointer-events-none absolute inset-x-2.5 bottom-[3px] h-[2px] rounded-full transition-opacity duration-normal ease-premium',
+                on ? 'opacity-100' : 'opacity-0',
+              ].join(' ')}
+              style={{ background: GOLD_ON_DARK }}
+            />
           </button>
         )
       })}

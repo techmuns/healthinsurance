@@ -87,20 +87,30 @@ export default {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        // Soft page-change entrance: a longer fade + small upward translate
-        // so swapping between Executive Overview / Premium Engine / etc.
-        // feels calm rather than a hard cut.
+        // Soft page-change entrance: a gentle fade + small upward translate so
+        // swapping tabs/sections feels like a calm state change, never a hard
+        // cut or a jump. Tuned to the premium easing (220–280ms band).
         'page-enter': {
-          '0%': { opacity: '0', transform: 'translateY(8px)' },
-          '60%': { opacity: '1' },
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
       animation: {
         'fade-in': 'fade-in 0.4s ease-out both',
         'drawer-in': 'drawer-in 0.28s ease-out both',
-        'page-enter': 'page-enter 0.45s cubic-bezier(0.22, 0.61, 0.36, 1) both',
-        'fade-soft': 'fade-soft 0.3s ease-out both',
+        'page-enter': 'page-enter 0.26s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'fade-soft': 'fade-soft 0.24s ease-out both',
+      },
+      // Shared premium motion tokens — one calm easing + a 160/240/320ms scale,
+      // used for opacity / transform / colour / shadow transitions across the
+      // tabs, toggles, pills and cards so motion reads consistently.
+      transitionTimingFunction: {
+        premium: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      },
+      transitionDuration: {
+        fast: '160ms',
+        normal: '240ms',
+        slow: '320ms',
       },
     },
   },

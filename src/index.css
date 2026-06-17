@@ -178,6 +178,11 @@ body {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+  /* Keep page/section changes as a quick, calm opacity fade — drop the upward
+     translate, never a hard cut. (Higher specificity wins over the * reset.) */
+  .animate-page-enter {
+    animation: fade-soft 0.14s ease both !important;
+  }
 }
 
 /* Recharts polish */

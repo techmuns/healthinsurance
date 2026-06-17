@@ -512,13 +512,13 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
               type="button"
               onClick={() => { setActive(g.sheet); setSelected(null) }}
               className={[
-                'group relative -mb-px flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors',
+                'group relative -mb-px flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors duration-normal ease-premium',
                 on
                   ? 'border-soft-border border-b-white bg-white font-semibold text-navy-deep'
                   : 'border-transparent bg-transparent font-medium text-ink-secondary hover:bg-ice/60 hover:text-navy-primary',
               ].join(' ')}
             >
-              {on && <span className="absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep" />}
+              <span className={`pointer-events-none absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep transition-opacity duration-normal ease-premium ${on ? 'opacity-100' : 'opacity-0'}`} />
               {g.sheet}
               <span className={`rounded-full px-1.5 text-[9.5px] font-semibold tabular-nums ${on ? 'bg-emerald-soft text-emerald' : 'bg-ice text-ink-secondary'}`}>
                 {filled}/{g.stats.total}
@@ -560,7 +560,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
               const on = (v === 'raw') === raw
               return (
                 <button key={v} type="button" onClick={() => setRaw(v === 'raw')}
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${on ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}>
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-normal ease-premium ${on ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}>
                   {label}
                 </button>
               )
