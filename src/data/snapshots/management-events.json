@@ -1,14 +1,78 @@
 {
   "_meta": {
     "snapshot_id": "management-events",
-    "description": "Management / governance events (appointments, resignations, board changes, KMP changes). Event-based feed.",
-    "schema_version": "1.0.0",
-    "dataset": "pending",
-    "last_updated": null,
-    "last_successful_run": null,
-    "upstream_sources": ["company_ir", "nse_quotes", "bse_quotes"],
-    "parser_status": "pending",
-    "notes": "Sourced from regulatory filings + listed-company event disclosures. Confidence labelled per event."
+    "description": "Management / governance events (appointments, resignations, board & KMP changes) for the SAHI health insurers — web-sourced via the muns agent, each item source-linked. Medium confidence; verify against the underlying filing.",
+    "schema_version": "1.1.0",
+    "dataset": "ai_generated",
+    "last_updated": "2026-06-17",
+    "last_successful_run": "2026-06-17T19:19:57.051Z",
+    "upstream_sources": [
+      "muns_agent_web"
+    ],
+    "parser_status": "ready",
+    "generated_by": "AI (muns agent, web search)",
+    "notes": "Real, sourced board / leadership changes the agent found across exchange filings, IR pages and credible news. Unattributed items are dropped. Verify before acting."
   },
-  "data": []
+  "data": [
+    {
+      "company_id": "niva-bupa",
+      "event_date": "2026-05-09",
+      "event_type": "appointment",
+      "person_name": "Ashwani Bhatia",
+      "designation": "Chairman; Non-Executive Independent Director",
+      "event_summary": "Appointed as non-executive independent director and Chairman following Milind Barve’s exit.",
+      "source_name": "storyboard18.com",
+      "source_url": "https://www.storyboard18.com/brand-makers/niva-bupa-health-insurance-appoints-ashwani-bhatia-as-chairman-after-milind-barve-steps-down-100130.htm",
+      "confidence": "medium",
+      "fetched_at": "2026-06-17T19:19:57.051Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "event_date": "2026-05-08",
+      "event_type": "resignation",
+      "person_name": "Milind Keshav Barve",
+      "designation": "Chairman and Independent Director",
+      "event_summary": "Stepped down as Chairman and independent director effective close of business on 8 May 2026.",
+      "source_name": "storyboard18.com",
+      "source_url": "https://www.storyboard18.com/brand-makers/niva-bupa-health-insurance-appoints-ashwani-bhatia-as-chairman-after-milind-barve-steps-down-100130.htm",
+      "confidence": "medium",
+      "fetched_at": "2026-06-17T19:19:57.051Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "event_date": "2026-05-08",
+      "event_type": "resignation",
+      "person_name": "Carlos Antonio Jaureguizar Ruiz-Jarabo",
+      "designation": "Non-Executive Director",
+      "event_summary": "Resigned as non-executive director effective close of business on 8 May 2026, citing insufficient time to devote to company affairs.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/niva-bupa-health-insurance-announces-key-board-changes-leadership-elevation-and-esop-grant/39810840",
+      "confidence": "medium",
+      "fetched_at": "2026-06-17T19:19:57.051Z"
+    },
+    {
+      "company_id": "star-health",
+      "event_date": "2025-12-17",
+      "event_type": "appointment",
+      "person_name": "M. Jayaraman",
+      "designation": "Appointed Actuary",
+      "event_summary": "Appointed as Actuary and KMP of Star Health, subject to IRDAI approval.",
+      "source_name": "boardstewardship.com",
+      "source_url": "https://boardstewardship.com/m-jayaraman-appointed-as-actuary-of-star-health-and-allied-insurance/",
+      "confidence": "medium",
+      "fetched_at": "2026-06-17T19:19:57.051Z"
+    },
+    {
+      "company_id": "manipalcigna",
+      "event_date": "2025-02-20",
+      "event_type": "appointment",
+      "person_name": "Anjan Kumar Ganguly",
+      "designation": "Chief Financial Officer",
+      "event_summary": "Joined ManipalCigna Health Insurance as Chief Financial Officer.",
+      "source_name": "medianews4u.com",
+      "source_url": "https://www.medianews4u.com/manipalcigna-health-insurance-names-anjan-kumar-ganguly-as-chief-financial-officer/",
+      "confidence": "medium",
+      "fetched_at": "2026-06-17T19:19:57.051Z"
+    }
+  ]
 }
