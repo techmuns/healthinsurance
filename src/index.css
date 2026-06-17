@@ -67,30 +67,42 @@ body {
     /* Faint cool sheen so a card never reads as flat white — a premium
        texture, not a colour block. Tone variants below still override. */
     background-image: linear-gradient(159deg, #ffffff 0%, #fcfdfe 56%, #f6f9fd 100%);
-    border: 1px solid rgba(23, 43, 77, 0.1);
+    border: 1px solid rgba(23, 43, 77, 0.11);
     box-shadow:
-      0 1px 2px rgba(23, 43, 77, 0.04),
-      0 10px 26px rgba(23, 43, 77, 0.09);
+      0 1px 2px rgba(23, 43, 77, 0.05),
+      0 13px 30px rgba(23, 43, 77, 0.11);
     transition:
       box-shadow 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
       transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1),
       border-color 0.34s cubic-bezier(0.22, 0.61, 0.36, 1);
   }
 
-  /* Gentle card tints (apply alongside .card-surface). Very subtle — a tone-
-     coded whisper, not a colour block: teal = growth/selected, gold =
-     leader/premium, slate = secondary info. */
+  /* Tone-coded card tints (apply alongside .card-surface) — visible enough to
+     break the cream monotony and give each section a colour identity, while
+     staying a premium wash, never a flat block. Psychology: navy = intelligence
+     / analytical proof, slate = supporting analysis, teal = verified / positive,
+     gold = premium / advisor read, rose = risk / capital watch / exit overhang. */
   .card-tint-teal {
-    background-image: linear-gradient(135deg, #FFFFFF 0%, #F2FAF8 100%);
-    border-color: rgba(22, 142, 142, 0.16);
+    background-image: linear-gradient(135deg, #FBFEFE 0%, #E7F5F1 100%);
+    border-color: rgba(22, 142, 142, 0.22);
   }
   .card-tint-gold {
-    background-image: linear-gradient(135deg, #FFFFFF 0%, #FBF6EA 100%);
-    border-color: rgba(182, 139, 58, 0.18);
+    background-image: linear-gradient(135deg, #FFFDF7 0%, #F6EED9 100%);
+    border-color: rgba(182, 139, 58, 0.26);
   }
   .card-tint-slate {
-    background-image: linear-gradient(135deg, #FFFFFF 0%, #F3F6FB 100%);
-    border-color: rgba(39, 69, 126, 0.1);
+    background-image: linear-gradient(135deg, #FBFCFE 0%, #E8EFFA 100%);
+    border-color: rgba(39, 69, 126, 0.16);
+  }
+  /* Navy — the dominant intelligence tone; a touch deeper than slate. */
+  .card-tint-navy {
+    background-image: linear-gradient(150deg, #F4F7FC 0%, #E0E9F6 100%);
+    border-color: rgba(39, 69, 126, 0.24);
+  }
+  /* Rose / muted burgundy — reserved for risk, sell pressure, exit overhang. */
+  .card-tint-rose {
+    background-image: linear-gradient(135deg, #FFFBFA 0%, #FAE8E5 100%);
+    border-color: rgba(199, 93, 84, 0.24);
   }
 
   /* Secondary, tinted surface for supporting tiles. */

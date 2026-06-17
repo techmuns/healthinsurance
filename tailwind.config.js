@@ -15,7 +15,7 @@ export default {
         },
         soft: {
           blue: '#EEF4FF',
-          border: '#E8EBF1',
+          border: '#E1E6EF',
         },
         ice: '#F4F7FC',
         ivory: '#F6F4EF',
@@ -73,10 +73,10 @@ export default {
         ],
       },
       boxShadow: {
-        soft: '0 1px 2px rgba(23, 43, 77, 0.03), 0 6px 18px rgba(23, 43, 77, 0.04)',
-        card: '0 1px 2px rgba(23, 43, 77, 0.025), 0 14px 34px rgba(23, 43, 77, 0.045)',
-        lift: '0 14px 40px rgba(23, 43, 77, 0.10)',
-        bar: '0 2px 18px rgba(23, 43, 77, 0.05)',
+        soft: '0 1px 2px rgba(23, 43, 77, 0.05), 0 10px 24px rgba(23, 43, 77, 0.08)',
+        card: '0 1px 3px rgba(23, 43, 77, 0.05), 0 16px 38px rgba(23, 43, 77, 0.10)',
+        lift: '0 18px 46px rgba(23, 43, 77, 0.14)',
+        bar: '0 3px 20px rgba(23, 43, 77, 0.07)',
       },
       borderRadius: {
         xl2: '1.25rem',

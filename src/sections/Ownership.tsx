@@ -125,7 +125,7 @@ function BulkBlockTimeline({ deals, sourceName, sourceUrl, lastUpdated }: { deal
   )
 
   return (
-    <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+    <div className="card-surface card-tint-slate p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
         <a href={sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
@@ -572,7 +572,7 @@ function HolderComposition({ row }: { row: OwnershipRow }) {
   const sourceUrl = row.provenance?.source_url || null
 
   return (
-    <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+    <div className="card-surface card-tint-navy p-4">
       <div className="mb-3 flex items-center gap-1.5">
         <ArrowLeftRight className="h-3.5 w-3.5 text-navy-primary" />
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Ownership Composition</p>
@@ -834,7 +834,7 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
       {bulk.deals.length > 0 ? (
         <BulkBlockTimeline deals={bulk.deals} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
       ) : (
-        <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+        <div className="card-surface card-tint-slate p-4">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
           <DataEmptyState
             kind="pending"
@@ -857,9 +857,9 @@ function ExitOverhang({ hasNamed, promoter }: { hasNamed: boolean; promoter: num
     : 'Per-holder stakes and bulk/block-deal activity aren’t tracked yet, so a specific large-holder exit overhang can’t be assessed. Promoter and institutional totals look stable.'
   const tone = level === 'Insufficient data' ? SIGNAL_STYLE.Unknown : SIGNAL_STYLE.Stable
   return (
-    <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+    <div className="card-surface card-tint-rose p-4">
       <div className="mb-2 flex items-center gap-1.5">
-        <ShieldAlert className="h-3.5 w-3.5 text-ink-secondary" />
+        <ShieldAlert className="h-3.5 w-3.5 text-coral" />
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Exit Overhang</p>
       </div>
       <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold" style={{ background: tone.bg, color: tone.fg }}>
