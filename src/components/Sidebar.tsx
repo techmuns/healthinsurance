@@ -39,9 +39,9 @@ export function Sidebar({
 
   return (
     <>
-      {/* ── Persistent slim rail ─────────────────────────────────────────── */}
-      <aside className="z-30 hidden h-full w-[60px] shrink-0 flex-col items-center border-r border-[rgba(23,43,77,0.07)] bg-gradient-to-b from-[#FCFBF8] to-[#F4F2EB] py-3 lg:flex">
-        {/* Brand pebble doubles as the expand handle */}
+      {/* ── Persistent slim rail — deep-navy, institutional ──────────────── */}
+      <aside className="z-30 hidden h-full w-[60px] shrink-0 flex-col items-center border-r border-black/10 bg-gradient-to-b from-[#22386A] via-[#1B3059] to-[#152741] py-3 shadow-[1px_0_0_rgba(23,43,77,0.06)] lg:flex">
+        {/* Brand mark doubles as the expand handle */}
         <button
           type="button"
           onClick={onOpen}
@@ -49,15 +49,15 @@ export function Sidebar({
           className="group relative mb-3 flex flex-col items-center"
           title="Expand menu"
         >
-          <OrganicIconBlob shape="blob-a" tone="navySoft" size="sm">
-            <Icon name="shield" />
-          </OrganicIconBlob>
-          <ChevronRight className="mt-1 h-3 w-3 text-champagne-deep/70 transition-transform group-hover:translate-x-0.5" />
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-[#E7D29B] shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] ring-1 ring-white/15 transition-colors duration-200 group-hover:bg-white/[0.16]">
+            <Icon name="shield" className="h-[18px] w-[18px]" />
+          </span>
+          <ChevronRight className="mt-1 h-3 w-3 text-[#E7D29B]/70 transition-transform group-hover:translate-x-0.5" />
         </button>
 
-        <div className="mb-2 h-px w-7 bg-[rgba(23,43,77,0.08)]" />
+        <div className="mb-2.5 h-px w-7 bg-white/12" />
 
-        {/* Icon capsules — direct navigation, active = navy pebble + gold rib */}
+        {/* Icon capsules — clean light glyphs; active = soft pill + gold rib */}
         <nav className="flex flex-1 flex-col items-center gap-1.5">
           {navItems.map((item) => {
             const isActive = item.id === activeId
@@ -68,19 +68,17 @@ export function Sidebar({
                 onClick={() => onNavigate(item.id)}
                 aria-current={isActive ? 'page' : undefined}
                 title={item.label}
-                className="group relative flex h-10 w-10 items-center justify-center"
+                className={[
+                  'group relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200',
+                  isActive
+                    ? 'bg-white/[0.13] text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.14)]'
+                    : 'text-white/55 hover:bg-white/[0.08] hover:text-white',
+                ].join(' ')}
               >
                 {isActive && (
-                  <span className="absolute -left-[14px] top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+                  <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-champagne to-champagne-deep" />
                 )}
-                <OrganicIconBlob
-                  shape={isActive ? 'blob-b' : 'blob-d'}
-                  tone={isActive ? 'navySoft' : 'ivory'}
-                  size="xs"
-                  interactive={!isActive}
-                >
-                  <Icon name={item.icon} />
-                </OrganicIconBlob>
+                <Icon name={item.icon} className="h-[18px] w-[18px]" />
               </button>
             )
           })}
