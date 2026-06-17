@@ -3,7 +3,7 @@ import {
   ArrowLeft, Sigma, ShieldCheck, Lock, ChevronDown, Check, Flag, Minus, FileText,
   Calculator, Activity, Users, Globe2, Compass, Bell, type LucideIcon,
 } from 'lucide-react'
-import type { Insight, Lens, LensBlock, MethodDescriptor, ProvenanceLayer, WatchItem } from '@/insights/types'
+import type { Application, Insight, Lens, LensBlock, MethodDescriptor, ProvenanceLayer, Watch, WatchItem } from '@/insights/types'
 import { KaTeXFormula } from './KaTeXFormula'
 
 const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'macro']
@@ -186,6 +186,56 @@ const DIRECTION: Record<WatchItem['direction'], { label: string; color: string; 
   either: { label: 'either way', color: '#6B7280', bg: '#F1F3F7', Icon: Minus },
 }
 
+// "How to use this" — forward angles (gold). Content/styling unchanged; only its
+// placement on the card moves.
+function ApplicationBlock({ application }: { application: Application }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${GOLD}` }}>
+      <div className="flex items-center gap-2 px-3.5 pt-3">
+        <Compass className="h-4 w-4 shrink-0" style={{ color: GOLD }} strokeWidth={2.2} />
+        <span className="font-display text-[13px] font-semibold text-navy-deep">How to use this</span>
+      </div>
+      <p className="px-3.5 pt-1.5 text-[11.5px] leading-snug text-ink-secondary">{application.framing}</p>
+      <ul className="space-y-1.5 px-3.5 py-3">
+        {application.uses.map((u, i) => (
+          <li key={i} className="flex items-start gap-2 text-[11.5px] leading-snug text-ink-primary">
+            <span className="mt-px shrink-0 rounded-md px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.05em]" style={{ background: '#F5EDDC', color: GOLD }}>{u.angle}</span>
+            <span>{u.detail}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+// "What to watch" — anchored monitorables (burgundy). Content/styling unchanged.
+function WatchBlock({ watch }: { watch: Watch }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${BURGUNDY}` }}>
+      <div className="flex items-center gap-2 px-3.5 pt-3">
+        <Bell className="h-4 w-4 shrink-0" style={{ color: BURGUNDY }} strokeWidth={2.2} />
+        <span className="font-display text-[13px] font-semibold text-navy-deep">What to watch</span>
+      </div>
+      <ul className="space-y-2 px-3.5 py-3">
+        {watch.items.map((w, i) => {
+          const d = DIRECTION[w.direction]
+          return (
+            <li key={i} className="flex items-start gap-2.5">
+              <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.04em]" style={{ background: d.bg, color: d.color }}>
+                <d.Icon className="h-2.5 w-2.5" strokeWidth={2.8} />{d.label}
+              </span>
+              <span className="min-w-0 flex-1 text-[11.5px] leading-snug text-ink-primary">
+                <strong className="font-semibold text-navy-deep">{w.trigger}</strong> — {w.condition}
+                {w.cadence && <span className="ml-1.5 inline-block rounded bg-ice px-1.5 py-0.5 text-[9px] font-medium text-ink-secondary ring-1 ring-soft-border">{w.cadence}</span>}
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins: Insight; tone: Tone; onBack: () => void; backRef: RefObject<HTMLButtonElement>; labelId: string }) {
   const m = ins.methodology
   const steps = m?.steps ?? []
@@ -213,87 +263,64 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
         </button>
       </div>
 
-      <div className="flex-1 space-y-4 px-5 py-4">
-        {/* ── PART A · How we got here ── */}
+      <div className="flex-1 px-5 py-4">
         {m?.isQuantitative ? (
-          <section>
+          <>
             <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part A · How we got here</p>
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {LENS_ORDER.map((lens) => {
-                const block = m.lenses[lens]
-                const lensSteps = steps.filter((s) => s.lens === lens)
-                return <LensSection key={lens} lens={lens} block={block} steps={lensSteps} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
-              })}
-            </div>
-            {/* provenance + reproducibility — foot of Part A */}
-            <div className="mt-3 space-y-2 rounded-xl border border-soft-border bg-ice/40 px-3.5 py-3">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">Provenance</span>
-                {layersUsed.map((l) => <LayerBadge key={l} layer={l} />)}
-                {periodsUsed.length > 0 && <span className="text-[10px] font-medium text-ink-secondary">· as of {periodsUsed.join(' · ')}</span>}
+            {/* Two INDEPENDENT columns (not a row-aligned grid) so a short/empty lens
+                never leaves a blank box beside a tall one. Left = Fundamental ·
+                Sentiment · Provenance; right = Technical · Macro · the forward
+                "Next steps", which fill what would otherwise be dead space. */}
+            <div className="lg:flex lg:items-start lg:gap-2.5">
+              {/* LEFT — the written/derivation column */}
+              <div className="space-y-2.5 lg:min-w-0 lg:flex-1">
+                {(['fundamental', 'sentiment'] as const).map((lens) => (
+                  <LensSection key={lens} lens={lens} block={m.lenses[lens]} steps={steps.filter((s) => s.lens === lens)} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
+                ))}
+                {/* provenance + reproducibility — foot of Part A (left) */}
+                <div className="space-y-2 rounded-xl border border-soft-border bg-ice/40 px-3.5 py-3">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                    <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">Provenance</span>
+                    {layersUsed.map((l) => <LayerBadge key={l} layer={l} />)}
+                    {periodsUsed.length > 0 && <span className="text-[10px] font-medium text-ink-secondary">· as of {periodsUsed.join(' · ')}</span>}
+                  </div>
+                  <p className="flex items-start gap-1.5 text-[10px] leading-snug" style={{ color: tone.fg }}>
+                    <Lock className="mt-px h-3 w-3 shrink-0" />
+                    <span><strong className="font-bold">Reproducible.</strong> Lenses and every number are computed deterministically from the signal payload (<span className="font-mono">{m.payloadHash}</span>) — not model-generated.</span>
+                  </p>
+                </div>
               </div>
-              <p className="flex items-start gap-1.5 text-[10px] leading-snug" style={{ color: tone.fg }}>
-                <Lock className="mt-px h-3 w-3 shrink-0" />
-                <span><strong className="font-bold">Reproducible.</strong> Lenses and every number are computed deterministically from the signal payload (<span className="font-mono">{m.payloadHash}</span>) — not model-generated.</span>
-              </p>
+
+              {/* RIGHT — short lenses, then the forward "Next steps" filling the space */}
+              <div className="mt-2.5 space-y-2.5 lg:mt-0 lg:min-w-0 lg:flex-1">
+                {(['technical', 'macro'] as const).map((lens) => (
+                  <LensSection key={lens} lens={lens} block={m.lenses[lens]} steps={steps.filter((s) => s.lens === lens)} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
+                ))}
+                {(ins.application || ins.watch) && (
+                  <>
+                    <p className="pt-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part B · Next steps</p>
+                    {ins.application && <ApplicationBlock application={ins.application} />}
+                    {ins.watch && <WatchBlock watch={ins.watch} />}
+                  </>
+                )}
+              </div>
             </div>
-          </section>
+          </>
         ) : (
-          <div className="rounded-xl border border-soft-border bg-white/70 p-4">
-            <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}><FileText className="h-3.5 w-3.5" /> Detection rule — not a quantitative signal</p>
-            <p className="mt-2 text-[12px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
-            <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{ins.sourceNote}</p>
+          <div className="space-y-4">
+            <div className="rounded-xl border border-soft-border bg-white/70 p-4">
+              <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}><FileText className="h-3.5 w-3.5" /> Detection rule — not a quantitative signal</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
+              <p className="mt-2 text-[11px] leading-snug text-ink-secondary">{ins.sourceNote}</p>
+            </div>
+            {(ins.application || ins.watch) && (
+              <section className="space-y-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part B · Next steps</p>
+                {ins.application && <ApplicationBlock application={ins.application} />}
+                {ins.watch && <WatchBlock watch={ins.watch} />}
+              </section>
+            )}
           </div>
-        )}
-
-        {/* ── PART B · Next steps ── */}
-        {(ins.application || ins.watch) && (
-          <section className="space-y-2.5">
-            <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part B · Next steps</p>
-
-            {ins.application && (
-              <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${GOLD}` }}>
-                <div className="flex items-center gap-2 px-3.5 pt-3">
-                  <Compass className="h-4 w-4 shrink-0" style={{ color: GOLD }} strokeWidth={2.2} />
-                  <span className="font-display text-[13px] font-semibold text-navy-deep">How to use this</span>
-                </div>
-                <p className="px-3.5 pt-1.5 text-[11.5px] leading-snug text-ink-secondary">{ins.application.framing}</p>
-                <ul className="space-y-1.5 px-3.5 py-3">
-                  {ins.application.uses.map((u, i) => (
-                    <li key={i} className="flex items-start gap-2 text-[11.5px] leading-snug text-ink-primary">
-                      <span className="mt-px shrink-0 rounded-md px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.05em]" style={{ background: '#F5EDDC', color: GOLD }}>{u.angle}</span>
-                      <span>{u.detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {ins.watch && (
-              <div className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={{ borderLeft: `3px solid ${BURGUNDY}` }}>
-                <div className="flex items-center gap-2 px-3.5 pt-3">
-                  <Bell className="h-4 w-4 shrink-0" style={{ color: BURGUNDY }} strokeWidth={2.2} />
-                  <span className="font-display text-[13px] font-semibold text-navy-deep">What to watch</span>
-                </div>
-                <ul className="space-y-2 px-3.5 py-3">
-                  {ins.watch.items.map((w, i) => {
-                    const d = DIRECTION[w.direction]
-                    return (
-                      <li key={i} className="flex items-start gap-2.5">
-                        <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.04em]" style={{ background: d.bg, color: d.color }}>
-                          <d.Icon className="h-2.5 w-2.5" strokeWidth={2.8} />{d.label}
-                        </span>
-                        <span className="min-w-0 flex-1 text-[11.5px] leading-snug text-ink-primary">
-                          <strong className="font-semibold text-navy-deep">{w.trigger}</strong> — {w.condition}
-                          {w.cadence && <span className="ml-1.5 inline-block rounded bg-ice px-1.5 py-0.5 text-[9px] font-medium text-ink-secondary ring-1 ring-soft-border">{w.cadence}</span>}
-                        </span>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-            )}
-          </section>
         )}
       </div>
     </div>
