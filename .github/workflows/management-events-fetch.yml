@@ -1,0 +1,60 @@
+name: management events fetch
+
+# Keeps the SAHI Analysis → Management & Events board/leadership feed current.
+# Listed insurers' NSE / BSE corporate announcements + every insurer's IR press
+# pages are scanned for appointment / resignation / board / KMP-change events
+# (each datable, source-linked, medium confidence). Offline-safe: a source the
+# WAF blocks simply stays 'pending' and retries next run — never fabricated.
+# The committed snapshot auto-deploys via the existing Pages build.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Twice a week (Mon & Thu, IST morning) — board / KMP changes are infrequent.
+    - cron: '0 6 * * 1,4'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: management-events-fetch
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Install Chromium (WAF-gated exchange pages)
+        run: npx playwright install --with-deps chromium
+
+      - name: Fetch management / governance events
+        run: npm run ingest:events
+
+      - name: Commit new events
+        run: |
+          git config user.name "insurance-data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add src/data/snapshots/
+          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          git commit -m "data: management events @ $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
+            if git push origin HEAD:main; then echo "pushed on attempt $i"; exit 0; fi
+            sleep 5
+          done
+          echo "ERROR: push failed after retries"; exit 1

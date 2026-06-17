@@ -4,6 +4,7 @@ import { DataEmptyState } from '@/components/DataEmptyState'
 import { PromiseTracker } from '@/components/PromiseTracker'
 import { VerdictStrip, type VerdictTone } from '@/components/VerdictStrip'
 import { getPromises } from '@/lib/promiseTracker'
+import { getManagementEvents } from '@/lib/dataLayer'
 import { useActiveCompany } from '@/state/filters'
 import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
 
@@ -73,8 +74,78 @@ export function ManagementEvents() {
         )}
       </ModuleCard>
 
+      {/* Board & leadership changes — hidden until the scheduled exchange/IR feed
+          returns real, datable events; then it appears automatically. */}
+      <BoardEvents companyId={company.id} />
+
       <MarketIntelligence companyId={company.id} companyName={company.shortName} />
     </div>
+  )
+}
+
+// ── Board & leadership changes (exchange / IR event feed) ────────────────────
+// Appointment / resignation / board / KMP-change events parsed from NSE-BSE
+// announcements + IR press releases. Real and source-linked, or absent — never
+// a fabricated or "pending" placeholder (the section reads complete without it).
+
+interface MgmtEventRow {
+  event_date?: string | null
+  event_type?: string
+  person_name?: string | null
+  designation?: string | null
+  event_summary?: string
+  source_url?: string | null
+  confidence?: string
+}
+
+const EVENT_META: Record<string, { label: string; dot: string; bg: string; fg: string }> = {
+  appointment: { label: 'Appointment', dot: '#168E8E', bg: 'rgba(22,142,142,0.12)', fg: '#0E6F6D' },
+  reappointment: { label: 'Re-appointment', dot: '#168E8E', bg: 'rgba(22,142,142,0.12)', fg: '#0E6F6D' },
+  resignation: { label: 'Resignation', dot: '#C0584F', bg: 'rgba(192,88,79,0.12)', fg: '#A8443B' },
+  termination: { label: 'Cessation', dot: '#C0584F', bg: 'rgba(192,88,79,0.12)', fg: '#A8443B' },
+  kmp_change: { label: 'KMP change', dot: '#27457E', bg: 'rgba(39,69,126,0.10)', fg: '#27457E' },
+  board_change: { label: 'Board change', dot: '#27457E', bg: 'rgba(39,69,126,0.10)', fg: '#27457E' },
+  authorization: { label: 'Authorisation', dot: '#8C97A8', bg: 'rgba(140,151,168,0.14)', fg: '#5B6573' },
+  esop: { label: 'ESOP', dot: '#B68B3A', bg: 'rgba(182,139,58,0.16)', fg: '#8A6516' },
+}
+
+function BoardEvents({ companyId }: { companyId: string }) {
+  const { rows } = getManagementEvents(companyId) as { rows: MgmtEventRow[] }
+  if (!rows || rows.length === 0) return null // honest absence — no placeholder
+  const sorted = [...rows].sort((a, b) => String(b.event_date ?? '').localeCompare(String(a.event_date ?? '')))
+
+  return (
+    <ModuleCard question="Who's joining, leaving or changing roles at the top?" title="Board & leadership changes" icon="events">
+      <div className="space-y-2">
+        {sorted.map((e, idx) => {
+          const meta = EVENT_META[e.event_type ?? ''] ?? EVENT_META.board_change
+          return (
+            <div key={idx} className="rounded-xl border border-soft-border bg-white p-3 transition-colors hover:border-navy-primary/30">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-ink-secondary">
+                  <CalendarClock className="h-3.5 w-3.5 text-navy-primary" />{fmtDate(e.event_date)}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-semibold" style={{ background: meta.bg, color: meta.fg }}>
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.dot }} />{meta.label}
+                </span>
+                {e.confidence && e.confidence !== 'high' && <span className="rounded-full bg-ice px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-ink-secondary">{e.confidence} confidence</span>}
+              </div>
+              {(e.person_name || e.designation) && (
+                <p className="mt-1.5 text-[13px] font-semibold leading-snug text-navy-deep">
+                  {e.person_name}{e.person_name && e.designation ? ' · ' : ''}{e.designation && <span className="font-normal text-ink-secondary">{e.designation}</span>}
+                </p>
+              )}
+              {e.event_summary && <p className="mt-0.5 text-[11.5px] leading-snug text-ink-secondary">{e.event_summary}</p>}
+              {e.source_url && (
+                <a href={e.source_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
+                  Exchange / IR filing<ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </ModuleCard>
   )
 }
 

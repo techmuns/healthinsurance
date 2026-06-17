@@ -79,6 +79,9 @@ function shouldRun(f: Fetcher): boolean {
   if (CADENCE === 'monthly') return f.frequency === 'monthly' || f.frequency === 'daily'
   if (CADENCE === 'quarterly') return f.frequency === 'quarterly' || f.frequency === 'monthly'
   if (CADENCE === 'annual') return f.frequency === 'annual'
+  // Event-based sources (management / governance events) are time-sensitive and
+  // run on their own light cadence so they refresh between the bigger crons.
+  if (CADENCE === 'event') return f.frequency === 'event_based'
   return true
 }
 
