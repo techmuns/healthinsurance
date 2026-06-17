@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import type { InsightsFile, SignalRun, ProvenanceLayer } from './types'
-import { methodologyNumbers } from './methods'
+import { methodologyNumbers, forwardNumbers } from './methods'
 
 export interface ValidationResult {
   ok: boolean
@@ -84,10 +84,22 @@ export function validateInsightsFile(file: InsightsFile, run: SignalRun): Valida
       // 4c. Extended numeric-grounding — every number on the back traces to a
       //     signal value (± tol, percent/fraction-tolerant) or a structural const.
       for (const n of methodologyNumbers(m)) {
-        const ok = ALLOW.has(n) || ALLOW.has(Math.abs(n)) || grounded.some((g) => close(n, g) || close(Math.abs(n), Math.abs(g)) || close(n * 100, g) || close(n / 100, g))
-        if (!ok) errors.push(`${id}: methodology number ${n} not grounded in signals`)
+        if (!groundedNum(n, grounded)) errors.push(`${id}: methodology number ${n} not grounded in signals`)
       }
     }
+
+    // 5. Forward blocks (brief §9.2/§9.4) — model-authored, but every number they
+    //    cite (anchored thresholds included) must still trace to the signals.
+    for (const n of forwardNumbers(ins)) {
+      if (!groundedNum(n, grounded)) errors.push(`${id}: forward-block number ${n} not grounded in signals`)
+    }
+    if (ins.watch && !ins.watch.items.some((w) => w.direction === 'invalidates')) errors.push(`${id}: watch has no invalidates item (the falsifier must appear)`)
   }
   return { ok: errors.length === 0, errors }
+}
+
+/** Grounded if a structural const or within tolerance of a signal value
+ *  (abs / sign / percent-fraction tolerant). */
+function groundedNum(n: number, grounded: number[]): boolean {
+  return ALLOW.has(n) || ALLOW.has(Math.abs(n)) || grounded.some((g) => close(n, g) || close(Math.abs(n), Math.abs(g)) || close(n * 100, g) || close(n / 100, g))
 }

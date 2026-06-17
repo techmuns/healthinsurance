@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------
 
 import type {
-  Insight, MethodDescriptor, MethodInput, Methodology, ProvenanceLayer, Signal, SignalRun,
+  Insight, Lens, LensBlock, MethodDescriptor, MethodInput, Methodology, ProvenanceLayer, Signal, SignalRun,
 } from './types'
 
 // ── small helpers ───────────────────────────────────────────────────────────
@@ -82,8 +82,26 @@ interface MethodSpec {
   gloss: string
   formulaTeX: string
   match: (s: Signal) => boolean
-  build: (sigs: Signal[], ctx: BuildCtx) => MethodDescriptor | null
+  build: (sigs: Signal[], ctx: BuildCtx) => Omit<MethodDescriptor, 'lens'> | null
 }
+
+// Fixed analytical lens for each method family (deterministic; brief §4). Technical
+// has no method here (no price/volume signals yet) — it renders as an honest empty
+// state, N/A for unlisted names.
+const METHOD_LENS: Record<string, Lens> = {
+  zscore: 'fundamental', solvency_runway: 'fundamental', solvency_headroom: 'fundamental',
+  warranted_pb: 'fundamental', pgwp_growth: 'fundamental', uw_identity: 'fundamental',
+  cr_decomp: 'fundamental', ols_trend: 'fundamental', mix_attrib: 'fundamental',
+  marginal_share: 'macro', guidance_hitrate: 'sentiment', consensus_dynamics: 'sentiment',
+}
+const lensFor = (key: string): Lens => METHOD_LENS[key] ?? 'fundamental'
+const LENS_FAMILIES: Record<Lens, string[]> = {
+  fundamental: ['dispersion', 'combined_ratio', 'solvency', 'valuation', 'growth_quality'],
+  technical: [],
+  sentiment: ['management', 'consensus'],
+  macro: ['marginal_share'],
+}
+export const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'macro']
 
 /** Pick the focal insurer's signal if present, else the first. */
 const lead = (sigs: Signal[], focal?: string): Signal => sigs.find((s) => s.insurer === focal) ?? sigs[0]
@@ -539,15 +557,59 @@ export function assembleMethodology(insight: Insight, run: SignalRun, computedAt
 
   const steps: MethodDescriptor[] = [...byKey.entries()]
     .sort((a, b) => a[1].order - b[1].order || SPEC_INDEX[a[0]] - SPEC_INDEX[b[0]])
-    .map(([key, { sigs }]) => SPECS.find((s) => s.key === key)!.build(sigs, ctx))
+    .map(([key, { sigs }]) => {
+      const built = SPECS.find((s) => s.key === key)!.build(sigs, ctx)
+      return built ? { ...built, lens: lensFor(key) } : null
+    })
     .filter((d): d is MethodDescriptor => d != null)
 
   return {
     steps,
+    lenses: assembleLenses(steps, insight, run),
     payloadHash: hashPayload(contributing.map(({ signal }) => signal).sort((a, b) => (a.insurer + a.metric).localeCompare(b.insurer + b.metric))),
     computedAt: computedAt ?? new Date().toISOString(),
     isQuantitative: steps.length > 0,
   }
+}
+
+/** Listed insurers, derived from the data: only listed names carry valuation signals. */
+const listedSet = (run: SignalRun): Set<string> => new Set(run.signals.filter((s) => s.family === 'valuation' && s.insurer !== 'panel').map((s) => s.insurer))
+
+/** The fixed four-lens frame, assembled deterministically — always all four,
+ *  honest when empty (Technical is N/A for unlisted names; a missing input shows
+ *  the verbatim gap reason and visibly caps conviction). */
+function assembleLenses(steps: MethodDescriptor[], insight: Insight, run: SignalRun): Record<Lens, LensBlock> {
+  const listed = listedSet(run)
+  const affected = insight.affectedInsurers.filter((id) => id !== 'panel')
+  const anyListed = affected.length ? affected.some((id) => listed.has(id)) : true
+  const inScope = (insurer: string) => affected.length === 0 || affected.includes(insurer)
+  const out = {} as Record<Lens, LensBlock>
+  for (const lens of LENS_ORDER) {
+    const stepKeys = steps.filter((s) => s.lens === lens).map((s) => s.key)
+    if (stepKeys.length) { out[lens] = { status: 'populated', stepKeys }; continue }
+    if (lens === 'technical') {
+      out[lens] = affected.length && !anyListed
+        ? { status: 'not_applicable', reason: 'Unlisted — no market price/volume.', stepKeys: [] }
+        : { status: 'no_signal', stepKeys: [] }
+      continue
+    }
+    const gap = run.signals.find((s) => s.dataGap && LENS_FAMILIES[lens].includes(s.family) && inScope(s.insurer))
+    out[lens] = gap
+      ? { status: 'data_gap', reason: gap.note || 'Input not staged for this period.', stepKeys: [] }
+      : { status: 'no_signal', stepKeys: [] }
+  }
+  return out
+}
+
+/** Every number the model-authored forward blocks render — for grounding (§9.2). */
+export function forwardNumbers(insight: Insight): number[] {
+  const out: number[] = []
+  if (insight.application) {
+    out.push(...numbersIn(insight.application.framing))
+    for (const u of insight.application.uses) out.push(...numbersIn(`${u.angle} ${u.detail}`))
+  }
+  if (insight.watch) for (const w of insight.watch.items) out.push(...numbersIn([w.trigger, w.condition, w.cadence ?? ''].join(' ')))
+  return out
 }
 
 /** Every number a methodology renders — for the numeric-grounding guardrail. */

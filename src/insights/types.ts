@@ -66,9 +66,13 @@ export interface MethodInput {
   layer: ProvenanceLayer // provenance for THIS input
 }
 
+/** The four fixed analytical lenses every card's back is organised under. */
+export type Lens = 'fundamental' | 'technical' | 'sentiment' | 'macro'
+
 /** A recognized method instantiated with this insight's numbers. */
 export interface MethodDescriptor {
   key: string // stable id, maps to the registry in methods.ts
+  lens: Lens // which fixed lens this method belongs under (deterministic)
   name: string // recognized method name shown to the user
   refTag: string // short reference tag (e.g. 'Empirical-rule outlier')
   gloss: string // one plain-English line — what the method does
@@ -80,12 +84,35 @@ export interface MethodDescriptor {
   robustness?: string // why it isn't noise (n, persistence, corroboration)
 }
 
+/** One lens slot in the fixed back template — always present, honest when empty. */
+export interface LensBlock {
+  status: 'populated' | 'not_applicable' | 'no_signal' | 'data_gap'
+  reason?: string // e.g. 'Unlisted — no market price/volume.' / a verbatim gap note
+  stepKeys: string[] // which methodology.steps belong to this lens
+}
+
 /** Persisted onto each insight — the deterministic "why you should believe this". */
 export interface Methodology {
   steps: MethodDescriptor[] // ordered by load-bearing-ness, most important first
+  lenses: Record<Lens, LensBlock> // the fixed four-lens frame (deterministic)
   payloadHash: string // hash of the contributing signal payload these steps came from
   computedAt: string // ISO
   isQuantitative: boolean // false for news/event items (honest detection-rule view)
+}
+
+/** Forward "next steps" — model-authored under rails, never deterministic. */
+export interface Application {
+  framing: string // 1 line: what kind of read this is for a PM
+  uses: { angle: string; detail: string }[] // 2–4 grounded implications / use-cases
+}
+export interface WatchItem {
+  trigger: string // metric / event to monitor
+  condition: string // threshold or what to look for (anchored to a current value)
+  cadence?: string // next print / date / frequency
+  direction: 'confirms' | 'invalidates' | 'either'
+}
+export interface Watch {
+  items: WatchItem[] // 2–4 items; the falsifier becomes one `invalidates` item
 }
 
 export interface SignalRun {
@@ -152,6 +179,9 @@ export interface Insight {
    *  model (methods.ts). Optional only for backward-compat; every generated and
    *  backfilled insight carries it. */
   methodology?: Methodology
+  /** Forward "next steps" — model-authored on rails (grounded). */
+  application?: Application
+  watch?: Watch
 }
 
 export interface InsightsFile {

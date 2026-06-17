@@ -70,5 +70,16 @@ ok(!!pbWarranted && /loss-making/i.test(pbWarranted.robustness ?? '') && /analys
 // Multi-signal insights expose more than one contributing method.
 ok(file.insights.filter((i) => i.methodology!.steps.length >= 2).length >= 5, 'multi-method cards show each contributing method')
 
+console.log('— fixed template: four lenses + forward blocks —')
+const LENSES = ['fundamental', 'technical', 'sentiment', 'macro'] as const
+ok(file.insights.every((i) => i.methodology!.lenses && LENSES.every((l) => !!i.methodology!.lenses[l])), 'every card renders all four lens blocks')
+ok(file.insights.every((i) => i.methodology!.steps.every((s) => LENSES.includes(s.lens))), 'every method step carries a valid lens')
+ok(JSON.stringify(assembleMethodology(file.insights[0], run).lenses) === JSON.stringify(file.insights[0].methodology!.lenses), 'lens grouping is deterministic (re-assembly reproduces it)')
+const care = file.insights.find((i) => i.id === 'care-solvency-runway')!
+ok(care.methodology!.lenses.technical.status === 'not_applicable', 'unlisted name (Care) → Technical is not_applicable')
+ok(file.insights.every((i) => !!i.application && i.application.uses.length >= 1), 'every card has a How-to-use-this block')
+ok(file.insights.every((i) => !!i.watch && i.watch.items.length >= 1), 'every card has a What-to-watch block')
+ok(file.insights.every((i) => i.watch!.items.some((w) => w.direction === 'invalidates')), 'every watch list includes the falsifier (an invalidates item)')
+
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

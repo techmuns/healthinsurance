@@ -60,6 +60,19 @@ CARD COPY (how each insight is shown — a scannable card, headline left, chart 
 RANK every insight by EDGE = (non-obviousness x materiality x conviction).
 Return the 6-10 highest-edge insights. Drop everything marginal.
 
+FORWARD BLOCKS (for every insight, also return \`application\` and \`watch\`)
+- application: 2-4 ways a buy-side PM would USE this read — relative-value,
+  catalyst positioning, risk-flag, or thesis confirmation/contradiction. These
+  are analytical IMPLICATIONS and conditional scenarios, NOT buy/sell advice and
+  NOT price targets stated as recommendations. Broker targets may be reported as
+  consensus facts, clearly attributed.
+- watch: 2-4 concrete monitorables. Each MUST anchor to a real metric and its
+  current value from the SIGNALS (no free-floating thresholds). Include the next
+  print/date if known and tag each confirms/invalidates/either. Include the
+  insight's falsifier as one \`invalidates\` item.
+- Same hard rule as everywhere: any number you cite in application/watch must
+  exist in the SIGNALS payload. Do NOT author the methodology — that is computed.
+
 Output ONLY a JSON object matching the provided schema. No prose, no markdown,
 no code fences.`
 
@@ -71,7 +84,9 @@ const SCHEMA_HINT = `Return: { "insights": Insight[] } where each Insight = {
   affectedInsurers: string[];
   chart: { type: "timeseries"|"scatter_dislocation"|"ranking_bar"|"decomposition_stacked"|"slope_dumbbell"; title: string; seriesKeys: string[]; insurers: string[]; period?: string; annotations?: {kind:string;label:string;value?:number}[] };
   sourceNote: string;
-}. seriesKeys must be dataset metric keys (e.g. "combined_ratio","solvency_ratio","roe","pGwp","health_retail_mix","retail","group"), NOT inlined values.`
+  application: { framing: string; uses: { angle: string; detail: string }[] };
+  watch: { items: { trigger: string; condition: string; cadence?: string; direction: "confirms"|"invalidates"|"either" }[] };
+}. seriesKeys must be dataset metric keys (e.g. "combined_ratio","solvency_ratio","roe","pGwp","health_retail_mix","retail","group"), NOT inlined values. Do NOT return a "methodology" field — it is computed deterministically.`
 
 function stripFences(s: string): string {
   return s.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/, '').trim()

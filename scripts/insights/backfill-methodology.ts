@@ -12,6 +12,7 @@ import { writeFileSync, readFileSync } from 'node:fs'
 import { buildPanel } from '@/insights/panel'
 import { runAllSignals } from '@/insights/signals'
 import { assembleMethodology } from '@/insights/methods'
+import { FORWARD_SEEDS } from '@/insights/forwardSeeds'
 import { validateInsightsFile } from '@/insights/validate'
 import type { InsightsFile } from '@/insights/types'
 
@@ -23,7 +24,13 @@ const file = JSON.parse(readFileSync(OUT, 'utf8')) as InsightsFile
 // don't churn the diff when nothing material changed.
 const computedAt = file.meta.generatedAt
 
-file.insights = file.insights.map((ins) => ({ ...ins, methodology: assembleMethodology(ins, run, computedAt) }))
+file.insights = file.insights.map((ins) => ({
+  ...ins,
+  methodology: assembleMethodology(ins, run, computedAt),
+  // Forward blocks: keep any already present (e.g. a live model run), else seed.
+  application: ins.application ?? FORWARD_SEEDS[ins.id]?.application,
+  watch: ins.watch ?? FORWARD_SEEDS[ins.id]?.watch,
+}))
 
 const v = validateInsightsFile(file, run)
 if (!v.ok) {
