@@ -300,7 +300,7 @@ export function ProfitabilityReview() {
   if (!hasBasisData(id)) {
     return (
       <div className="space-y-5">
-        <ReviewHeader name={company.shortName} view={view} onView={setView} />
+        <ReviewToolbar name={company.shortName} span={periodSpan} view={view} onView={setView} />
         <DataEmptyState
           kind="pending"
           title="Dual-framework profitability not yet tracked for this insurer"
@@ -313,7 +313,7 @@ export function ProfitabilityReview() {
 
   return (
     <div className="space-y-5">
-      <ReviewHeader name={company.shortName} view={view} onView={setView} />
+      <ReviewToolbar name={company.shortName} span={periodSpan} view={view} onView={setView} />
 
       {periods.length === 0 ? (
         <DataEmptyState
@@ -361,18 +361,21 @@ export function ProfitabilityReview() {
   )
 }
 
-function ReviewHeader({ name, view, onView }: { name: string; view: 'table' | 'chart'; onView: (v: 'table' | 'chart') => void }) {
+// Slim comparison toolbar — replaces the old large "Profitability Review" card
+// (the page headline above already carries the Profitability narrative). One
+// compact, horizontally-aligned strip: company · descriptor · period badge · the
+// Table/Chart view toggle. Premium, calm, no second big heading.
+function ReviewToolbar({ name, span, view, onView }: { name: string; span: string; view: 'table' | 'chart'; onView: (v: 'table' | 'chart') => void }) {
   return (
-    <header className="relative flex flex-wrap items-start justify-between gap-3 overflow-hidden rounded-[1.15rem] border border-[#EAD9B6]/70 bg-gradient-to-br from-white to-[#FBF6EA] p-5 shadow-[0_1px_2px_rgba(23,43,77,0.04),0_12px_30px_rgba(23,43,77,0.06)]">
-      <span className="absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-champagne to-champagne-deep" />
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Profitability Review</p>
-        <h2 className="mt-1 font-display text-[21px] leading-tight text-navy-deep">{name} · Profitability Review</h2>
-        <p className="mt-1 max-w-2xl text-[12.5px] text-ink-secondary">
-          Compare profitability under IND AS / IFRS-style and IGAAP / Statutory reporting — reviewed side by side for easy comparison.
-        </p>
-      </div>
-      <div className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-white/80 p-0.5 shadow-soft">
+    <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 overflow-hidden rounded-xl border border-soft-border bg-gradient-to-r from-[#F8F7F2] via-card to-[#EEF3F9] px-3.5 py-2 shadow-soft">
+      {/* thin muted-gold accent line */}
+      <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0 w-[3px] bg-gradient-to-b from-champagne to-champagne-deep" />
+      <span className="pl-1.5 font-display text-[14px] leading-none text-navy-deep">{name}</span>
+      <span className="hidden text-[11.5px] leading-none text-ink-secondary sm:inline">IND AS / IFRS-style and IGAAP / Statutory comparison</span>
+      {span && span !== '—' && (
+        <span className="inline-flex items-center rounded-full bg-soft-blue px-2 py-0.5 text-[10px] font-semibold tabular-nums text-navy-primary ring-1 ring-[#D6E2FA]">{span}</span>
+      )}
+      <div className="ml-auto inline-flex items-center gap-1 rounded-full border border-soft-border bg-white/80 p-0.5 shadow-soft">
         <span className="px-2 text-[10px] font-semibold uppercase tracking-wide text-ink-secondary">View</span>
         {(['table', 'chart'] as const).map((v) => (
           <button
@@ -381,15 +384,15 @@ function ReviewHeader({ name, view, onView }: { name: string; view: 'table' | 'c
             onClick={() => onView(v)}
             aria-pressed={view === v}
             className={[
-              'rounded-full px-3 py-1 text-[11.5px] font-medium capitalize transition-all duration-200',
-              view === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft' : 'text-ink-secondary hover:text-navy-primary',
+              'rounded-full px-3 py-1 text-[11.5px] font-medium capitalize transition-all duration-normal ease-premium',
+              view === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#B68B3A]/30' : 'text-ink-secondary hover:text-navy-primary',
             ].join(' ')}
           >
             {v}
           </button>
         ))}
       </div>
-    </header>
+    </div>
   )
 }
 
