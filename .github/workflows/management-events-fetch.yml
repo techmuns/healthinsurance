@@ -49,8 +49,10 @@ jobs:
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add src/data/snapshots/
-          git diff --staged --quiet && { echo "no change this run"; exit 0; }
+          # Commit ONLY the event payload — so a run that found no new events (just
+          # metadata churn) doesn't create a noisy commit + deploy.
+          git add src/data/snapshots/management-events.json
+          git diff --staged --quiet && { echo "no new events this run"; exit 0; }
           git commit -m "data: management events @ $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do
             git fetch origin main && git rebase origin/main || { git rebase --abort 2>/dev/null || true; sleep 5; continue; }
