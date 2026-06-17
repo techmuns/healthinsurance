@@ -3,7 +3,8 @@
 // Run: npx tsx --tsconfig tsconfig.app.json scripts/insights/check.ts
 import { buildPanel } from '@/insights/panel'
 import { runAllSignals, dispersionSignals, solvencySignals, growthQualitySignals, signalHash } from '@/insights/signals'
-import { validateInsightsFile } from '@/insights/validate'
+import { validateInsightsFile, groundedNumbers } from '@/insights/validate'
+import { assembleMethodology, methodologyNumbers } from '@/insights/methods'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile } from '@/insights/types'
 
@@ -46,6 +47,28 @@ ok(v.ok, 'committed insights pass the grounding + firewall + falsifier checks')
 if (!v.ok) v.errors.forEach((e) => console.log('      · ' + e))
 ok(file.insights.length >= 6 && file.insights.length <= 10, `insight count ${file.insights.length} in [6,10]`)
 ok(file.insights.every((i) => i.evidence.length >= 1 && i.falsifier.length > 8), 'every insight has evidence + a falsifier')
+
+console.log('— methodology ("show the working") —')
+// Every insight carries a persisted methodology block.
+ok(file.insights.every((i) => !!i.methodology), 'every insight has a persisted methodology block')
+// Determinism: re-assembling from the live signals reproduces the persisted hash.
+ok(file.insights.every((i) => assembleMethodology(i, run).payloadHash === i.methodology!.payloadHash), 'methodology hash is deterministic (re-assembly reproduces it)')
+// Extended numeric grounding (brief §8.2): every back number traces to a signal.
+const grounded = groundedNumbers(run)
+const ALLOW = new Set([100, 1.5, 150, 12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+const tol = (a: number, b: number) => Math.abs(a - b) <= Math.max(0.06, Math.abs(b) * 0.012)
+const isGrounded = (n: number) => ALLOW.has(Math.abs(n)) || grounded.some((g) => tol(n, g) || tol(Math.abs(n), Math.abs(g)) || tol(n * 100, g) || tol(n / 100, g))
+const ungrounded = file.insights.flatMap((i) => methodologyNumbers(i.methodology!).filter((n) => !isGrounded(n)).map((n) => `${i.id}:${n}`))
+ok(ungrounded.length === 0, `every methodology number is grounded in signals${ungrounded.length ? ' — ' + ungrounded.join(', ') : ''}`)
+// Quantitative honesty + reproducibility stamp (brief §8.1, §8.3, §8.5).
+ok(file.insights.every((i) => i.methodology!.isQuantitative === i.methodology!.steps.length > 0), 'isQuantitative agrees with step count for every insight')
+ok(file.insights.every((i) => !i.methodology!.isQuantitative || /^sig_/.test(i.methodology!.payloadHash)), 'every quantitative card carries a reproducibility hash')
+// The P/B-on-ROE card rests on warranted-multiple math + the underwriting-loss flag + thin coverage.
+const pb = file.insights.find((i) => i.id === 'niva-pb-roe-dislocation')!
+const pbWarranted = pb.methodology!.steps.find((s) => s.key === 'warranted_pb')
+ok(!!pbWarranted && /loss-making/i.test(pbWarranted.robustness ?? '') && /analyst/i.test(pbWarranted.robustness ?? ''), 'P/B card rests on warranted-multiple math + underwriting-loss + thin coverage')
+// Multi-signal insights expose more than one contributing method.
+ok(file.insights.filter((i) => i.methodology!.steps.length >= 2).length >= 5, 'multi-method cards show each contributing method')
 
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

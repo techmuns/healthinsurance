@@ -47,6 +47,47 @@ export interface CoverageRow {
   gapped: number
 }
 
+// ── Methodology ("show the working") — the flip-side of every insight card ────
+//
+//  A METHOD descriptor is the recognized formula behind a signal family, rendered
+//  with the ACTUAL inputs that produced this insight. It is assembled
+//  deterministically from the signal payload at generation time (see
+//  src/insights/methods.ts) — never authored by the model. Every number it
+//  carries must trace back to a value present in the signals.
+
+/** One traceable input that plugs into a method's formula. */
+export interface MethodInput {
+  symbol: string // matches the formula, e.g. 'x_i', 'μ', 'σ', 'ROE'
+  label: string // plain-English label
+  value: number | null // null surfaces an honest data gap, never a fake 0
+  unit: string
+  insurer?: string // company_id when the input is insurer-specific
+  period: string
+  layer: ProvenanceLayer // provenance for THIS input
+}
+
+/** A recognized method instantiated with this insight's numbers. */
+export interface MethodDescriptor {
+  key: string // stable id, maps to the registry in methods.ts
+  name: string // recognized method name shown to the user
+  refTag: string // short reference tag (e.g. 'Empirical-rule outlier')
+  gloss: string // one plain-English line — what the method does
+  formulaTeX: string // KaTeX, the general form
+  instanceTeX: string // KaTeX, the form with THIS insight's numbers substituted
+  inputs: MethodInput[] // the actual values used, each traceable
+  statistic: { symbol: string; value: number; unit: string } // the computed result
+  threshold?: { rule: string; value: number; passed: boolean } // the trigger test
+  robustness?: string // why it isn't noise (n, persistence, corroboration)
+}
+
+/** Persisted onto each insight — the deterministic "why you should believe this". */
+export interface Methodology {
+  steps: MethodDescriptor[] // ordered by load-bearing-ness, most important first
+  payloadHash: string // hash of the contributing signal payload these steps came from
+  computedAt: string // ISO
+  isQuantitative: boolean // false for news/event items (honest detection-rule view)
+}
+
 export interface SignalRun {
   asOf: string
   signals: Signal[]
@@ -107,6 +148,10 @@ export interface Insight {
   affectedInsurers: string[]
   chart: ChartSpec
   sourceNote: string
+  /** The deterministic "show the working" panel — assembled from signals, not the
+   *  model (methods.ts). Optional only for backward-compat; every generated and
+   *  backfilled insight carries it. */
+  methodology?: Methodology
 }
 
 export interface InsightsFile {

@@ -6,11 +6,31 @@
     "signalsComputed": 59,
     "signalHash": "sig_d8e0a284",
     "coverage": [
-      { "insurer": "niva-bupa", "readyPct": 100, "gapped": 0 },
-      { "insurer": "star-health", "readyPct": 91, "gapped": 1 },
-      { "insurer": "care-health", "readyPct": 89, "gapped": 1 },
-      { "insurer": "aditya-birla", "readyPct": 88, "gapped": 1 },
-      { "insurer": "manipalcigna", "readyPct": 89, "gapped": 1 }
+      {
+        "insurer": "niva-bupa",
+        "readyPct": 100,
+        "gapped": 0
+      },
+      {
+        "insurer": "star-health",
+        "readyPct": 91,
+        "gapped": 1
+      },
+      {
+        "insurer": "care-health",
+        "readyPct": 89,
+        "gapped": 1
+      },
+      {
+        "insurer": "aditya-birla",
+        "readyPct": 88,
+        "gapped": 1
+      },
+      {
+        "insurer": "manipalcigna",
+        "readyPct": 89,
+        "gapped": 1
+      }
     ]
   },
   "insights": [
@@ -24,24 +44,168 @@
       "thesis": "Care runs solvency at 1.68x — only 12% above the 150% regulatory floor — while compounding GWP at roughly 21%. On that growth, the headroom drifts toward the floor far faster than Niva (~3.8 years) or Star (~4.1 years). Of the five, Care has the least room to grow before a capital action is forced.",
       "whatConsensusMisses": "\"Above the floor\" reads as safe, but growth-adjusted, Care's runway is the thinnest in the panel — the dilution / raise catalyst is near-term and concrete, not a tail risk.",
       "evidence": [
-        { "insurer": "care-health", "metric": "Solvency ratio", "value": 1.68, "unit": "x", "context": "only +0.18x above the 1.5x floor", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "care-health", "metric": "Raise-pressure horizon (heuristic)", "value": 0.6, "unit": "periods", "context": "at ~21% GWP growth, headroom erodes toward the floor", "layers": ["derived"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "Raise-pressure horizon (heuristic)", "value": 3.8, "unit": "periods", "context": "far longer runway for contrast", "layers": ["derived"], "period": "FY25" },
-        { "insurer": "star-health", "metric": "Raise-pressure horizon (heuristic)", "value": 4.1, "unit": "periods", "context": "far longer runway for contrast", "layers": ["derived"], "period": "FY25" }
+        {
+          "insurer": "care-health",
+          "metric": "Solvency ratio",
+          "value": 1.68,
+          "unit": "x",
+          "context": "only +0.18x above the 1.5x floor",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "care-health",
+          "metric": "Raise-pressure horizon (heuristic)",
+          "value": 0.6,
+          "unit": "periods",
+          "context": "at ~21% GWP growth, headroom erodes toward the floor",
+          "layers": [
+            "derived"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "Raise-pressure horizon (heuristic)",
+          "value": 3.8,
+          "unit": "periods",
+          "context": "far longer runway for contrast",
+          "layers": [
+            "derived"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "star-health",
+          "metric": "Raise-pressure horizon (heuristic)",
+          "value": 4.1,
+          "unit": "periods",
+          "context": "far longer runway for contrast",
+          "layers": [
+            "derived"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "medium",
       "horizon": "near",
       "falsifier": "Care raises equity, or its GWP growth decelerates below ~10%, restoring a multi-year solvency runway.",
-      "affectedInsurers": ["care-health"],
+      "affectedInsurers": [
+        "care-health"
+      ],
       "chart": {
         "type": "ranking_bar",
         "title": "Solvency ratio vs the 1.5x floor (FY25)",
-        "seriesKeys": ["solvency_ratio"],
-        "insurers": ["niva-bupa", "star-health", "care-health", "aditya-birla", "manipalcigna"],
+        "seriesKeys": [
+          "solvency_ratio"
+        ],
+        "insurers": [
+          "niva-bupa",
+          "star-health",
+          "care-health",
+          "aditya-birla",
+          "manipalcigna"
+        ],
         "period": "FY25",
-        "annotations": [{ "kind": "threshold", "label": "Regulatory floor 1.5x", "value": 1.5 }]
+        "annotations": [
+          {
+            "kind": "threshold",
+            "label": "Regulatory floor 1.5x",
+            "value": 1.5
+          }
+        ]
       },
-      "sourceNote": "Solvency ratios are statutory filings; the raise-pressure horizon is a derived heuristic (headroom eroded at the trailing GWP growth rate), not a company forecast."
+      "sourceNote": "Solvency ratios are statutory filings; the raise-pressure horizon is a derived heuristic (headroom eroded at the trailing GWP growth rate), not a company forecast.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "solvency_headroom",
+            "name": "Solvency headroom — level vs the regulatory floor",
+            "refTag": "Cushion above floor",
+            "gloss": "The solvency cushion held above the 150% control level.",
+            "formulaTeX": "\\text{headroom} = S - S_{\\text{floor}}, \\quad S_{\\text{floor}} = 1.5\\text{x}\\,(150\\%)",
+            "instanceTeX": "\\text{headroom} = 1.68 - 1.5 = +0.18\\text{x}",
+            "inputs": [
+              {
+                "symbol": "S",
+                "label": "Care Health · solvency ratio",
+                "value": 1.68,
+                "unit": "x",
+                "insurer": "care-health",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "S_{floor}",
+                "label": "IRDAI control floor",
+                "value": 1.5,
+                "unit": "x",
+                "period": "FY25",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "headroom",
+              "value": 0.18,
+              "unit": "x"
+            },
+            "threshold": {
+              "rule": "S ≥ 1.5x (IRDAI control level)",
+              "value": 1.5,
+              "passed": true
+            },
+            "robustness": "A static cushion ignores growth; pair with the runway method, which ages the cushion forward at the GWP growth rate."
+          },
+          {
+            "key": "solvency_runway",
+            "name": "Solvency runway — extrapolation to the regulatory floor",
+            "refTag": "Linear runway-to-floor",
+            "gloss": "How many years of growth-driven erosion until solvency reaches the IRDAI floor.",
+            "formulaTeX": "t = \\dfrac{\\ln\\!\\left(S / S_{\\text{floor}}\\right)}{\\ln\\!\\left(1 + g\\right)}, \\quad S_{\\text{floor}} = 150\\%",
+            "instanceTeX": "t = \\dfrac{\\ln(1.68 / 1.5)}{\\ln(1 + 21\\%)} \\approx 0.6\\text{ yrs}",
+            "inputs": [
+              {
+                "symbol": "S",
+                "label": "Care Health · solvency ratio",
+                "value": 1.68,
+                "unit": "x",
+                "insurer": "care-health",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "S_{floor}",
+                "label": "IRDAI control floor",
+                "value": 1.5,
+                "unit": "x",
+                "period": "FY25",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "g",
+                "label": "Care Health · GWP growth",
+                "value": 21,
+                "unit": "%",
+                "insurer": "care-health",
+                "period": "FY25",
+                "layer": "derived"
+              }
+            ],
+            "statistic": {
+              "symbol": "t",
+              "value": 0.6,
+              "unit": "periods"
+            },
+            "robustness": "Headroom eroded at the trailing GWP growth rate, not a company forecast. Thinnest in the panel vs Niva Bupa ~3.8 yrs, Star Health ~4.1 yrs."
+          }
+        ],
+        "payloadHash": "sig_7ec9d053",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "segment-underwriting-loss",
@@ -53,26 +217,241 @@
       "thesis": "All five SAHIs print a combined ratio above 100% in FY25 — from Star's 101.1% to ManipalCigna's 115%, a peer mean of 105.1%. The segment earns no underwriting profit; reported PAT, where positive, rests on investment income rather than core insurance.",
       "whatConsensusMisses": "The market rewards GWP growth and headline profit, but the underlying underwriting economics are negative across the entire group — a structural earnings-quality flag the growth narrative obscures.",
       "evidence": [
-        { "insurer": "star-health", "metric": "Combined ratio", "value": 101.1, "unit": "%", "context": "underwriting loss (>100)", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "Combined ratio", "value": 101.2, "unit": "%", "context": "underwriting loss (>100)", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "care-health", "metric": "Combined ratio", "value": 103, "unit": "%", "context": "underwriting loss (>100)", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "aditya-birla", "metric": "Combined ratio", "value": 105, "unit": "%", "context": "underwriting loss (>100)", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "manipalcigna", "metric": "Combined ratio", "value": 115, "unit": "%", "context": "underwriting loss (>100)", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "panel", "metric": "Combined ratio — peer mean", "value": 105.06, "unit": "%", "context": "n=5, sd 5.78", "layers": ["annual_report", "statutory"], "period": "FY25" }
+        {
+          "insurer": "star-health",
+          "metric": "Combined ratio",
+          "value": 101.1,
+          "unit": "%",
+          "context": "underwriting loss (>100)",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "Combined ratio",
+          "value": 101.2,
+          "unit": "%",
+          "context": "underwriting loss (>100)",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "care-health",
+          "metric": "Combined ratio",
+          "value": 103,
+          "unit": "%",
+          "context": "underwriting loss (>100)",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "aditya-birla",
+          "metric": "Combined ratio",
+          "value": 105,
+          "unit": "%",
+          "context": "underwriting loss (>100)",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "manipalcigna",
+          "metric": "Combined ratio",
+          "value": 115,
+          "unit": "%",
+          "context": "underwriting loss (>100)",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "panel",
+          "metric": "Combined ratio — peer mean",
+          "value": 105.06,
+          "unit": "%",
+          "context": "n=5, sd 5.78",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "high",
       "horizon": "medium",
       "falsifier": "Any standalone health insurer prints a combined ratio below 100% (a genuine underwriting profit) in its next annual accounts.",
-      "affectedInsurers": ["niva-bupa", "star-health", "care-health", "aditya-birla", "manipalcigna"],
+      "affectedInsurers": [
+        "niva-bupa",
+        "star-health",
+        "care-health",
+        "aditya-birla",
+        "manipalcigna"
+      ],
       "chart": {
         "type": "ranking_bar",
         "title": "FY25 combined ratio — all above the 100% break-even",
-        "seriesKeys": ["combined_ratio"],
-        "insurers": ["niva-bupa", "star-health", "care-health", "aditya-birla", "manipalcigna"],
+        "seriesKeys": [
+          "combined_ratio"
+        ],
+        "insurers": [
+          "niva-bupa",
+          "star-health",
+          "care-health",
+          "aditya-birla",
+          "manipalcigna"
+        ],
         "period": "FY25",
-        "annotations": [{ "kind": "threshold", "label": "Underwriting break-even 100%", "value": 100 }]
+        "annotations": [
+          {
+            "kind": "threshold",
+            "label": "Underwriting break-even 100%",
+            "value": 100
+          }
+        ]
       },
-      "sourceNote": "Combined ratios from statutory / annual-report disclosures — a statutory fact, not a market view."
+      "sourceNote": "Combined ratios from statutory / annual-report disclosures — a statutory fact, not a market view.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "uw_identity",
+            "name": "Earnings quality — underwriting identity",
+            "refTag": "Combined-ratio break-even",
+            "gloss": "A combined ratio above 100% means the core insurance book loses money.",
+            "formulaTeX": "CR = \\text{Loss Ratio} + \\text{Expense Ratio}, \\quad \\text{UW profit} \\iff CR < 100\\%",
+            "instanceTeX": "101.1\\% \\le CR \\le 115\\%,\\ \\text{mean } 105.06\\% > 100\\%",
+            "inputs": [
+              {
+                "symbol": "CR_{Star}",
+                "label": "Star Health · combined ratio",
+                "value": 101.1,
+                "unit": "%",
+                "insurer": "star-health",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "CR_{Niva}",
+                "label": "Niva Bupa · combined ratio",
+                "value": 101.2,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "CR_{Care}",
+                "label": "Care Health · combined ratio",
+                "value": 103,
+                "unit": "%",
+                "insurer": "care-health",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "CR_{Aditya}",
+                "label": "Aditya Birla · combined ratio",
+                "value": 105,
+                "unit": "%",
+                "insurer": "aditya-birla",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "CR_{ManipalCigna}",
+                "label": "ManipalCigna · combined ratio",
+                "value": 115,
+                "unit": "%",
+                "insurer": "manipalcigna",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "\\text{B/E}",
+                "label": "Underwriting break-even",
+                "value": 100,
+                "unit": "%",
+                "period": "FY25",
+                "layer": "derived"
+              }
+            ],
+            "statistic": {
+              "symbol": "\\overline{CR}",
+              "value": 105.06,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "CR < 100% for a genuine underwriting profit",
+              "value": 100,
+              "passed": false
+            },
+            "robustness": "Combined ratio is a statutory disclosure. Above 100%, reported profit (where positive) is investment-led — the underwriting line itself loses money."
+          },
+          {
+            "key": "zscore",
+            "name": "Cross-sectional outlier — standard score (z)",
+            "refTag": "Empirical-rule outlier",
+            "gloss": "How many peer standard deviations a value sits from the peer mean.",
+            "formulaTeX": "z = \\dfrac{x_i - \\mu_{\\text{peer}}}{\\sigma_{\\text{peer}}}, \\quad \\text{flag } |z| \\ge 1.5",
+            "instanceTeX": "z = \\dfrac{115 - 105.06}{5.78} = +1.72\\,\\sigma",
+            "inputs": [
+              {
+                "symbol": "x_i",
+                "label": "ManipalCigna · Combined ratio",
+                "value": 115,
+                "unit": "%",
+                "insurer": "manipalcigna",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "μ",
+                "label": "Peer mean",
+                "value": 105.06,
+                "unit": "%",
+                "insurer": "panel",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "σ",
+                "label": "Peer standard deviation",
+                "value": 5.78,
+                "unit": "%",
+                "insurer": "panel",
+                "period": "FY25",
+                "layer": "annual_report"
+              }
+            ],
+            "statistic": {
+              "symbol": "z",
+              "value": 1.72,
+              "unit": "σ"
+            },
+            "threshold": {
+              "rule": "|z| ≥ 1.5σ (lower-is-better)",
+              "value": 1.5,
+              "passed": true
+            },
+            "robustness": "Measured across 5 peers in one cross-section; |z| ≥ 1.5σ is the empirical-rule gate for a genuine outlier rather than ordinary spread."
+          }
+        ],
+        "payloadHash": "sig_32f11b60",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "niva-pb-roe-dislocation",
@@ -84,24 +463,173 @@
       "thesis": "Niva trades at 3.0x P/B while earning a 5.7% ROE and still running a 101.2% combined ratio (underwriting loss). A simple warranted multiple (ROE ÷ a 12% cost of equity) is ~0.5x — the market pays roughly six times that, an explicit bet on the FY29 mid-to-high-teens ROE target. Against Star, the point is sharper: Niva pays a higher 1.65x P/GWP for a lower 5.7% ROE, where Star is 1.49x on an 11% ROE.",
       "whatConsensusMisses": "The multiple is almost entirely a forward-ROE option. With underwriting still loss-making and only two analysts covering the name, there is little margin for any slip in the ROE path the price already assumes.",
       "evidence": [
-        { "insurer": "niva-bupa", "metric": "P/B vs warranted (ROE ÷ CoE)", "value": 3, "unit": "x", "context": "~0.47x warranted on 5.7% ROE @ 12% CoE", "layers": ["exchange", "annual_report", "derived"], "period": "FY26" },
-        { "insurer": "niva-bupa", "metric": "ROE", "value": 5.66, "unit": "%", "context": "current return base", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "P/GWP vs growth", "value": 1.65, "unit": "x", "context": "richer than Star on lower ROE", "layers": ["exchange", "annual_report", "derived"], "period": "FY26" },
-        { "insurer": "star-health", "metric": "P/GWP vs growth", "value": 1.49, "unit": "x", "context": "cheaper on an 11% ROE", "layers": ["exchange", "annual_report", "derived"], "period": "FY26" }
+        {
+          "insurer": "niva-bupa",
+          "metric": "P/B vs warranted (ROE ÷ CoE)",
+          "value": 3,
+          "unit": "x",
+          "context": "~0.47x warranted on 5.7% ROE @ 12% CoE",
+          "layers": [
+            "exchange",
+            "annual_report",
+            "derived"
+          ],
+          "period": "FY26"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "ROE",
+          "value": 5.66,
+          "unit": "%",
+          "context": "current return base",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "P/GWP vs growth",
+          "value": 1.65,
+          "unit": "x",
+          "context": "richer than Star on lower ROE",
+          "layers": [
+            "exchange",
+            "annual_report",
+            "derived"
+          ],
+          "period": "FY26"
+        },
+        {
+          "insurer": "star-health",
+          "metric": "P/GWP vs growth",
+          "value": 1.49,
+          "unit": "x",
+          "context": "cheaper on an 11% ROE",
+          "layers": [
+            "exchange",
+            "annual_report",
+            "derived"
+          ],
+          "period": "FY26"
+        }
       ],
       "conviction": "medium",
       "horizon": "medium",
       "falsifier": "Niva's ROE continues stepping toward the mid-teens (the FY29 target path) on improving underwriting — vindicating the multiple — rather than stalling near current levels.",
-      "affectedInsurers": ["niva-bupa", "star-health"],
+      "affectedInsurers": [
+        "niva-bupa",
+        "star-health"
+      ],
       "chart": {
         "type": "scatter_dislocation",
         "title": "P/GWP vs ROE — Niva pays more for less return",
-        "seriesKeys": ["roe", "pGwp"],
-        "insurers": ["niva-bupa", "star-health"],
+        "seriesKeys": [
+          "roe",
+          "pGwp"
+        ],
+        "insurers": [
+          "niva-bupa",
+          "star-health"
+        ],
         "period": "FY25",
-        "annotations": [{ "kind": "callout", "label": "Higher P/GWP, lower ROE = richer" }]
+        "annotations": [
+          {
+            "kind": "callout",
+            "label": "Higher P/GWP, lower ROE = richer"
+          }
+        ]
       },
-      "sourceNote": "P/B and P/GWP are derived from the live market price ÷ filed financials (exchange + annual report); the warranted line assumes a 12% cost of equity. This is a market / valuation view, not a statutory claim."
+      "sourceNote": "P/B and P/GWP are derived from the live market price ÷ filed financials (exchange + annual report); the warranted line assumes a 12% cost of equity. This is a market / valuation view, not a statutory claim.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "warranted_pb",
+            "name": "Valuation dislocation — justified P/B (Gordon)",
+            "refTag": "Warranted multiple",
+            "gloss": "The P/B a stock deserves on its return on equity vs its cost of equity.",
+            "formulaTeX": "P/B^{*} = \\dfrac{ROE - g}{CoE - g} \\;\\xrightarrow{\\,g \\to 0\\,}\\; \\dfrac{ROE}{CoE}",
+            "instanceTeX": "P/B^{*} = \\dfrac{5.7\\%}{12\\%} \\approx 0.47\\text{x} \\;\\;(\\text{market } 3\\text{x},\\ +2.53\\text{x})",
+            "inputs": [
+              {
+                "symbol": "ROE",
+                "label": "Niva Bupa · return on equity",
+                "value": 5.7,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "CoE",
+                "label": "Cost of equity (assumption)",
+                "value": 12,
+                "unit": "%",
+                "period": "FY26",
+                "layer": "derived"
+              },
+              {
+                "symbol": "P/B",
+                "label": "Niva Bupa · market price-to-book",
+                "value": 3,
+                "unit": "x",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "exchange"
+              }
+            ],
+            "statistic": {
+              "symbol": "P/B^{*}",
+              "value": 0.47,
+              "unit": "x"
+            },
+            "threshold": {
+              "rule": "market P/B ≤ warranted ⇒ cheap; > ⇒ prices in ROE expansion",
+              "value": 0.47,
+              "passed": false
+            },
+            "robustness": "The multiple is a forward-ROE option: underwriting is still loss-making (CR 101.2% > 100) and only 2 analysts cover the name — little margin for a slip in the ROE path the price already assumes."
+          },
+          {
+            "key": "pgwp_growth",
+            "name": "Growth-adjusted multiple — P/GWP vs GWP growth",
+            "refTag": "PEG-style sanity check",
+            "gloss": "Whether a richer premium multiple is actually buying faster growth.",
+            "formulaTeX": "\\text{richness} = \\dfrac{P/GWP}{g_{\\text{GWP}}} \\quad (\\text{higher} \\Rightarrow \\text{paying more per point of growth})",
+            "instanceTeX": "1.65\\text{x} \\,@\\, 20\\% \\;\\;\\text{vs}\\;\\; 1.49\\text{x} \\,@\\, 10\\%",
+            "inputs": [
+              {
+                "symbol": "P/GWP",
+                "label": "Niva Bupa · P/GWP @ ~20% GWP growth",
+                "value": 1.65,
+                "unit": "x",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "exchange"
+              },
+              {
+                "symbol": "P/GWP_{Star}",
+                "label": "Star Health · P/GWP @ ~10% GWP growth",
+                "value": 1.49,
+                "unit": "x",
+                "insurer": "star-health",
+                "period": "FY26",
+                "layer": "exchange"
+              }
+            ],
+            "statistic": {
+              "symbol": "P/GWP",
+              "value": 1.65,
+              "unit": "x"
+            },
+            "robustness": "Niva Bupa pays a richer 1.65x vs Star Health's 1.49x — a higher multiple, not faster growth."
+          }
+        ],
+        "payloadHash": "sig_3f75dda4",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "niva-retail-mix-drift",
@@ -113,23 +641,179 @@
       "thesis": "On the multi-year GI-Council data, Niva's retail share of health premium is trending DOWN about 2.9pp a year — the steepest negative retail-mix slope of the larger SAHIs — while Star (+1.4pp/yr), Care (+1.7pp/yr) and ManipalCigna (+1.2pp/yr) are building retail. The latest +1pp tick to a 67.8% mix masks the structural drift toward thinner-margin group business.",
       "whatConsensusMisses": "A 67.8% retail mix looks healthy in a single-period snapshot, but the trajectory is the wrong way — Niva is sourcing more of its growth from group, which the Street's retail-led margin path under-weights.",
       "evidence": [
-        { "insurer": "niva-bupa", "metric": "Retail-mix trend (slope, pp/yr)", "value": -2.89, "unit": "pp", "context": "steepest negative of the large SAHIs", "layers": ["statutory"], "period": "FY25" },
-        { "insurer": "star-health", "metric": "Retail-mix trend (slope, pp/yr)", "value": 1.35, "unit": "pp", "context": "building retail", "layers": ["statutory"], "period": "FY25" },
-        { "insurer": "care-health", "metric": "Retail-mix trend (slope, pp/yr)", "value": 1.72, "unit": "pp", "context": "building retail", "layers": ["statutory"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "Group health premium growth YoY", "value": 24.4, "unit": "%", "context": "group nearly matching retail's 29.7%", "layers": ["statutory"], "period": "FY25" }
+        {
+          "insurer": "niva-bupa",
+          "metric": "Retail-mix trend (slope, pp/yr)",
+          "value": -2.89,
+          "unit": "pp",
+          "context": "steepest negative of the large SAHIs",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "star-health",
+          "metric": "Retail-mix trend (slope, pp/yr)",
+          "value": 1.35,
+          "unit": "pp",
+          "context": "building retail",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "care-health",
+          "metric": "Retail-mix trend (slope, pp/yr)",
+          "value": 1.72,
+          "unit": "pp",
+          "context": "building retail",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "Group health premium growth YoY",
+          "value": 24.4,
+          "unit": "%",
+          "context": "group nearly matching retail's 29.7%",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "medium",
       "horizon": "medium",
       "falsifier": "Niva's retail-mix slope turns positive (retail premium re-accelerates clear of group) in the next GI-Council quarterly cut.",
-      "affectedInsurers": ["niva-bupa"],
+      "affectedInsurers": [
+        "niva-bupa"
+      ],
       "chart": {
         "type": "timeseries",
         "title": "Retail share of health premium — trend by insurer",
-        "seriesKeys": ["health_retail_mix"],
-        "insurers": ["niva-bupa", "star-health", "care-health"],
-        "annotations": [{ "kind": "trendline", "label": "Niva drifting down" }]
+        "seriesKeys": [
+          "health_retail_mix"
+        ],
+        "insurers": [
+          "niva-bupa",
+          "star-health",
+          "care-health"
+        ],
+        "annotations": [
+          {
+            "kind": "trendline",
+            "label": "Niva drifting down"
+          }
+        ]
       },
-      "sourceNote": "Retail/group health premium from the GI-Council health portfolio (a statutory aggregation); the trend slope is derived from that series."
+      "sourceNote": "Retail/group health premium from the GI-Council health portfolio (a statutory aggregation); the trend slope is derived from that series.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "ols_trend",
+            "name": "Trend & inflection — least-squares slope",
+            "refTag": "OLS trend",
+            "gloss": "The fitted per-year drift of a series — its direction, not a single print.",
+            "formulaTeX": "\\hat{\\beta} = \\dfrac{\\sum (t - \\bar{t})(y - \\bar{y})}{\\sum (t - \\bar{t})^{2}}",
+            "instanceTeX": "\\hat{\\beta} = -2.89\\text{ pp/yr}",
+            "inputs": [
+              {
+                "symbol": "\\hat{\\beta}",
+                "label": "Niva Bupa · retail-mix slope",
+                "value": -2.89,
+                "unit": "pp",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "\\hat{\\beta}_{Star}",
+                "label": "Star Health · retail-mix slope",
+                "value": 1.35,
+                "unit": "pp",
+                "insurer": "star-health",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "\\hat{\\beta}_{Care}",
+                "label": "Care Health · retail-mix slope",
+                "value": 1.72,
+                "unit": "pp",
+                "insurer": "care-health",
+                "period": "FY26",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "\\hat{\\beta}",
+              "value": -2.89,
+              "unit": "pp"
+            },
+            "threshold": {
+              "rule": "sign of β (negative ⇒ retail mix drifting down)",
+              "value": 0,
+              "passed": false
+            },
+            "robustness": "Least-squares fit over the trailing GI-Council prints — a trend, not one noisy reading. Niva Bupa declines where Star Health +1.35, Care Health +1.72."
+          },
+          {
+            "key": "mix_attrib",
+            "name": "Growth quality — retail/group mix attribution",
+            "refTag": "Contribution decomposition",
+            "gloss": "Whether growth is coming from higher-margin retail or thinner group business.",
+            "formulaTeX": "\\text{retail share} = \\dfrac{GWP_{\\text{retail}}}{GWP_{\\text{total}}}, \\quad \\text{mix shift} = \\Delta\\!\\left(\\tfrac{\\text{retail}}{\\text{total}}\\right)",
+            "instanceTeX": "g_{\\text{retail}} = +29.7\\%\\ \\text{vs}\\ g_{\\text{group}} = +24.4\\%,\\ \\text{mix } 67.8\\%",
+            "inputs": [
+              {
+                "symbol": "g_{\\text{retail}}",
+                "label": "Niva Bupa · retail premium growth",
+                "value": 29.7,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "g_{\\text{group}}",
+                "label": "Niva Bupa · group premium growth",
+                "value": 24.4,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "\\tfrac{\\text{retail}}{\\text{total}}",
+                "label": "Niva Bupa · retail mix",
+                "value": 67.8,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY26",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "g_{\\text{retail}}",
+              "value": 29.7,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "retail growth > group growth ⇒ mix improving",
+              "value": 24.4,
+              "passed": true
+            },
+            "robustness": "Sourced from the GI-Council retail/group health split — a growth headline only improves quality if retail outpaces group and the mix actually rises."
+          }
+        ],
+        "payloadHash": "sig_e30f2ed1",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "aditya-growth-quality",
@@ -141,23 +825,203 @@
       "thesis": "Aditya's retail health premium grew 50.3% YoY — the fastest in the panel — lifting its retail mix +4.8pp to 37.1%. But it remains the most group-led SAHI, runs a 105% combined ratio (underwriting loss) and sits at just 1.84x solvency. The top-line velocity is real; the quality and capital backing it are not yet there.",
       "whatConsensusMisses": "A 50% retail-growth headline screams winner, but it comes off the lowest retail base in the group, with loss-making underwriting and only modest capital — the growth is being bought, not yet earned.",
       "evidence": [
-        { "insurer": "aditya-birla", "metric": "Retail health premium growth YoY", "value": 50.3, "unit": "%", "context": "fastest in the panel", "layers": ["statutory"], "period": "FY25" },
-        { "insurer": "aditya-birla", "metric": "Retail mix (health)", "value": 37.1, "unit": "%", "context": "lowest retail mix of the five", "layers": ["statutory"], "period": "FY25" },
-        { "insurer": "aditya-birla", "metric": "Combined ratio", "value": 105, "unit": "%", "context": "underwriting loss", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "aditya-birla", "metric": "Solvency ratio", "value": 1.84, "unit": "x", "context": "modest cushion", "layers": ["annual_report", "statutory"], "period": "FY25" }
+        {
+          "insurer": "aditya-birla",
+          "metric": "Retail health premium growth YoY",
+          "value": 50.3,
+          "unit": "%",
+          "context": "fastest in the panel",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "aditya-birla",
+          "metric": "Retail mix (health)",
+          "value": 37.1,
+          "unit": "%",
+          "context": "lowest retail mix of the five",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "aditya-birla",
+          "metric": "Combined ratio",
+          "value": 105,
+          "unit": "%",
+          "context": "underwriting loss",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "aditya-birla",
+          "metric": "Solvency ratio",
+          "value": 1.84,
+          "unit": "x",
+          "context": "modest cushion",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "medium",
       "horizon": "medium",
       "falsifier": "Aditya's combined ratio improves below ~102% while retail growth stays above 30% — i.e. the growth proves margin-accretive.",
-      "affectedInsurers": ["aditya-birla"],
+      "affectedInsurers": [
+        "aditya-birla"
+      ],
       "chart": {
         "type": "decomposition_stacked",
         "title": "Aditya Birla health book — still group-heavy",
-        "seriesKeys": ["retail", "group"],
-        "insurers": ["aditya-birla"],
+        "seriesKeys": [
+          "retail",
+          "group"
+        ],
+        "insurers": [
+          "aditya-birla"
+        ],
         "period": "FY26"
       },
-      "sourceNote": "Retail/group split from the GI-Council health portfolio (statutory); combined ratio and solvency from statutory filings."
+      "sourceNote": "Retail/group split from the GI-Council health portfolio (statutory); combined ratio and solvency from statutory filings.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "mix_attrib",
+            "name": "Growth quality — retail/group mix attribution",
+            "refTag": "Contribution decomposition",
+            "gloss": "Whether growth is coming from higher-margin retail or thinner group business.",
+            "formulaTeX": "\\text{retail share} = \\dfrac{GWP_{\\text{retail}}}{GWP_{\\text{total}}}, \\quad \\text{mix shift} = \\Delta\\!\\left(\\tfrac{\\text{retail}}{\\text{total}}\\right)",
+            "instanceTeX": "g_{\\text{retail}} = +50.3\\%\\ \\text{vs}\\ g_{\\text{group}} = +22.9\\%,\\ \\text{mix } 37.1\\%",
+            "inputs": [
+              {
+                "symbol": "g_{\\text{retail}}",
+                "label": "Aditya Birla · retail premium growth",
+                "value": 50.3,
+                "unit": "%",
+                "insurer": "aditya-birla",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "g_{\\text{group}}",
+                "label": "Aditya Birla · group premium growth",
+                "value": 22.9,
+                "unit": "%",
+                "insurer": "aditya-birla",
+                "period": "FY26",
+                "layer": "statutory"
+              },
+              {
+                "symbol": "\\tfrac{\\text{retail}}{\\text{total}}",
+                "label": "Aditya Birla · retail mix",
+                "value": 37.1,
+                "unit": "%",
+                "insurer": "aditya-birla",
+                "period": "FY26",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "g_{\\text{retail}}",
+              "value": 50.3,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "retail growth > group growth ⇒ mix improving",
+              "value": 22.9,
+              "passed": true
+            },
+            "robustness": "Sourced from the GI-Council retail/group health split — a growth headline only improves quality if retail outpaces group and the mix actually rises."
+          },
+          {
+            "key": "uw_identity",
+            "name": "Earnings quality — underwriting identity",
+            "refTag": "Combined-ratio break-even",
+            "gloss": "A combined ratio above 100% means the core insurance book loses money.",
+            "formulaTeX": "CR = \\text{Loss Ratio} + \\text{Expense Ratio}, \\quad \\text{UW profit} \\iff CR < 100\\%",
+            "instanceTeX": "CR = 105\\% > 100\\% \\Rightarrow \\text{underwriting loss}",
+            "inputs": [
+              {
+                "symbol": "CR",
+                "label": "Aditya Birla · combined ratio",
+                "value": 105,
+                "unit": "%",
+                "insurer": "aditya-birla",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "\\text{B/E}",
+                "label": "Underwriting break-even",
+                "value": 100,
+                "unit": "%",
+                "period": "FY25",
+                "layer": "derived"
+              }
+            ],
+            "statistic": {
+              "symbol": "CR",
+              "value": 105,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "CR < 100% for a genuine underwriting profit",
+              "value": 100,
+              "passed": false
+            },
+            "robustness": "Combined ratio is a statutory disclosure. Above 100%, reported profit (where positive) is investment-led — the underwriting line itself loses money."
+          },
+          {
+            "key": "solvency_headroom",
+            "name": "Solvency headroom — level vs the regulatory floor",
+            "refTag": "Cushion above floor",
+            "gloss": "The solvency cushion held above the 150% control level.",
+            "formulaTeX": "\\text{headroom} = S - S_{\\text{floor}}, \\quad S_{\\text{floor}} = 1.5\\text{x}\\,(150\\%)",
+            "instanceTeX": "\\text{headroom} = 1.84 - 1.5 = +0.34\\text{x}",
+            "inputs": [
+              {
+                "symbol": "S",
+                "label": "Aditya Birla · solvency ratio",
+                "value": 1.84,
+                "unit": "x",
+                "insurer": "aditya-birla",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "S_{floor}",
+                "label": "IRDAI control floor",
+                "value": 1.5,
+                "unit": "x",
+                "period": "FY25",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "headroom",
+              "value": 0.34,
+              "unit": "x"
+            },
+            "threshold": {
+              "rule": "S ≥ 1.5x (IRDAI control level)",
+              "value": 1.5,
+              "passed": true
+            },
+            "robustness": "A static cushion ignores growth; pair with the runway method, which ages the cushion forward at the GWP growth rate."
+          }
+        ],
+        "payloadHash": "sig_a4beddb2",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "manipal-cr-outlier",
@@ -169,23 +1033,194 @@
       "thesis": "Manipal's 115% combined ratio sits +1.72σ worse than the 105.1% peer mean — a clear negative outlier. Its retail mix is climbing (+4pp to 51.6%, a +1.2pp/yr trend), which is the lever to repair economics, but it starts from the worst underwriting position and the smallest scale of the five.",
       "whatConsensusMisses": "The retail-mix improvement is encouraging, but Manipal needs the largest combined-ratio repair in the group off the smallest base — execution risk is concentrated here more than the gradual mix gains suggest.",
       "evidence": [
-        { "insurer": "manipalcigna", "metric": "Combined ratio", "value": 115, "unit": "%", "context": "+1.72σ vs peers", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "panel", "metric": "Combined ratio — peer mean", "value": 105.06, "unit": "%", "context": "the reference Manipal is 1.7σ above", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "manipalcigna", "metric": "Retail-mix trend (slope, pp/yr)", "value": 1.17, "unit": "pp", "context": "the repair lever, only just building", "layers": ["statutory"], "period": "FY25" }
+        {
+          "insurer": "manipalcigna",
+          "metric": "Combined ratio",
+          "value": 115,
+          "unit": "%",
+          "context": "+1.72σ vs peers",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "panel",
+          "metric": "Combined ratio — peer mean",
+          "value": 105.06,
+          "unit": "%",
+          "context": "the reference Manipal is 1.7σ above",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "manipalcigna",
+          "metric": "Retail-mix trend (slope, pp/yr)",
+          "value": 1.17,
+          "unit": "pp",
+          "context": "the repair lever, only just building",
+          "layers": [
+            "statutory"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "medium",
       "horizon": "long",
       "falsifier": "ManipalCigna's combined ratio improves toward the peer mean (~105%) within the next two annual prints.",
-      "affectedInsurers": ["manipalcigna"],
+      "affectedInsurers": [
+        "manipalcigna"
+      ],
       "chart": {
         "type": "ranking_bar",
         "title": "Combined ratio — ManipalCigna the clear outlier",
-        "seriesKeys": ["combined_ratio"],
-        "insurers": ["niva-bupa", "star-health", "care-health", "aditya-birla", "manipalcigna"],
+        "seriesKeys": [
+          "combined_ratio"
+        ],
+        "insurers": [
+          "niva-bupa",
+          "star-health",
+          "care-health",
+          "aditya-birla",
+          "manipalcigna"
+        ],
         "period": "FY25",
-        "annotations": [{ "kind": "threshold", "label": "Peer mean 105%", "value": 105.06 }]
+        "annotations": [
+          {
+            "kind": "threshold",
+            "label": "Peer mean 105%",
+            "value": 105.06
+          }
+        ]
       },
-      "sourceNote": "Combined ratios from statutory filings; the peer mean and z-score are derived across the panel."
+      "sourceNote": "Combined ratios from statutory filings; the peer mean and z-score are derived across the panel.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "zscore",
+            "name": "Cross-sectional outlier — standard score (z)",
+            "refTag": "Empirical-rule outlier",
+            "gloss": "How many peer standard deviations a value sits from the peer mean.",
+            "formulaTeX": "z = \\dfrac{x_i - \\mu_{\\text{peer}}}{\\sigma_{\\text{peer}}}, \\quad \\text{flag } |z| \\ge 1.5",
+            "instanceTeX": "z = \\dfrac{115 - 105.06}{5.78} = +1.72\\,\\sigma",
+            "inputs": [
+              {
+                "symbol": "x_i",
+                "label": "ManipalCigna · Combined ratio",
+                "value": 115,
+                "unit": "%",
+                "insurer": "manipalcigna",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "μ",
+                "label": "Peer mean",
+                "value": 105.06,
+                "unit": "%",
+                "insurer": "panel",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "σ",
+                "label": "Peer standard deviation",
+                "value": 5.78,
+                "unit": "%",
+                "insurer": "panel",
+                "period": "FY25",
+                "layer": "annual_report"
+              }
+            ],
+            "statistic": {
+              "symbol": "z",
+              "value": 1.72,
+              "unit": "σ"
+            },
+            "threshold": {
+              "rule": "|z| ≥ 1.5σ (lower-is-better)",
+              "value": 1.5,
+              "passed": true
+            },
+            "robustness": "Measured across 5 peers in one cross-section; |z| ≥ 1.5σ is the empirical-rule gate for a genuine outlier rather than ordinary spread."
+          },
+          {
+            "key": "uw_identity",
+            "name": "Earnings quality — underwriting identity",
+            "refTag": "Combined-ratio break-even",
+            "gloss": "A combined ratio above 100% means the core insurance book loses money.",
+            "formulaTeX": "CR = \\text{Loss Ratio} + \\text{Expense Ratio}, \\quad \\text{UW profit} \\iff CR < 100\\%",
+            "instanceTeX": "CR = 115\\% > 100\\% \\Rightarrow \\text{underwriting loss}",
+            "inputs": [
+              {
+                "symbol": "CR",
+                "label": "ManipalCigna · combined ratio",
+                "value": 115,
+                "unit": "%",
+                "insurer": "manipalcigna",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "\\text{B/E}",
+                "label": "Underwriting break-even",
+                "value": 100,
+                "unit": "%",
+                "period": "FY25",
+                "layer": "derived"
+              }
+            ],
+            "statistic": {
+              "symbol": "CR",
+              "value": 115,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "CR < 100% for a genuine underwriting profit",
+              "value": 100,
+              "passed": false
+            },
+            "robustness": "Combined ratio is a statutory disclosure. Above 100%, reported profit (where positive) is investment-led — the underwriting line itself loses money."
+          },
+          {
+            "key": "ols_trend",
+            "name": "Trend & inflection — least-squares slope",
+            "refTag": "OLS trend",
+            "gloss": "The fitted per-year drift of a series — its direction, not a single print.",
+            "formulaTeX": "\\hat{\\beta} = \\dfrac{\\sum (t - \\bar{t})(y - \\bar{y})}{\\sum (t - \\bar{t})^{2}}",
+            "instanceTeX": "\\hat{\\beta} = +1.17\\text{ pp/yr}",
+            "inputs": [
+              {
+                "symbol": "\\hat{\\beta}",
+                "label": "ManipalCigna · retail-mix slope",
+                "value": 1.17,
+                "unit": "pp",
+                "insurer": "manipalcigna",
+                "period": "FY26",
+                "layer": "statutory"
+              }
+            ],
+            "statistic": {
+              "symbol": "\\hat{\\beta}",
+              "value": 1.17,
+              "unit": "pp"
+            },
+            "threshold": {
+              "rule": "sign of β (negative ⇒ retail mix drifting down)",
+              "value": 0,
+              "passed": true
+            },
+            "robustness": "Least-squares fit over the trailing GI-Council prints — a trend, not one noisy reading."
+          }
+        ],
+        "payloadHash": "sig_882e7b5",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     },
     {
       "id": "niva-credibility-thin-coverage",
@@ -197,22 +1232,152 @@
       "thesis": "Niva has delivered 3 of 5 tracked guidance items with zero misses and one delay (the combined ratio, which ticked up to 101.2%). That is a decent credibility record. Yet only two analysts cover it, with a tight ±7.5% target dispersion and +12.2% consensus upside — thin scrutiny for a stock whose multiple embeds a steep ROE ramp.",
       "whatConsensusMisses": "Management is executing on its promises, but the shallow coverage means the market's forward-ROE thesis is lightly stress-tested — a modest surprise either way can move the stock more than the narrow consensus band implies.",
       "evidence": [
-        { "insurer": "niva-bupa", "metric": "Guidance delivered rate", "value": 60, "unit": "%", "context": "3/5 delivered, 1 delayed, 0 missed", "layers": ["annual_report", "statutory"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "Consensus upside to target", "value": 12.2, "unit": "%", "context": "2 buy / 0 hold / 0 sell, n=2", "layers": ["broker", "aggregator"], "period": "FY25" },
-        { "insurer": "niva-bupa", "metric": "Target dispersion (high−low ÷ mean)", "value": 7.5, "unit": "%", "context": "tight ₹90–₹97 range", "layers": ["broker", "aggregator"], "period": "FY25" }
+        {
+          "insurer": "niva-bupa",
+          "metric": "Guidance delivered rate",
+          "value": 60,
+          "unit": "%",
+          "context": "3/5 delivered, 1 delayed, 0 missed",
+          "layers": [
+            "annual_report",
+            "statutory"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "Consensus upside to target",
+          "value": 12.2,
+          "unit": "%",
+          "context": "2 buy / 0 hold / 0 sell, n=2",
+          "layers": [
+            "broker",
+            "aggregator"
+          ],
+          "period": "FY25"
+        },
+        {
+          "insurer": "niva-bupa",
+          "metric": "Target dispersion (high−low ÷ mean)",
+          "value": 7.5,
+          "unit": "%",
+          "context": "tight ₹90–₹97 range",
+          "layers": [
+            "broker",
+            "aggregator"
+          ],
+          "period": "FY25"
+        }
       ],
       "conviction": "medium",
       "horizon": "medium",
       "falsifier": "Analyst coverage broadens (the count rises materially) or a tracked guidance item flips to \"missed\".",
-      "affectedInsurers": ["niva-bupa"],
+      "affectedInsurers": [
+        "niva-bupa"
+      ],
       "chart": {
         "type": "slope_dumbbell",
         "title": "Niva combined ratio — the one delayed promise (FY24 → FY25)",
-        "seriesKeys": ["combined_ratio"],
-        "insurers": ["niva-bupa"],
-        "annotations": [{ "kind": "threshold", "label": "Break-even 100%", "value": 100 }]
+        "seriesKeys": [
+          "combined_ratio"
+        ],
+        "insurers": [
+          "niva-bupa"
+        ],
+        "annotations": [
+          {
+            "kind": "threshold",
+            "label": "Break-even 100%",
+            "value": 100
+          }
+        ]
       },
-      "sourceNote": "Guidance delivery is scored against the audited FY25 outcomes (statutory); the consensus target and dispersion are a broker/aggregator view, clearly attributed as analyst opinion, not statutory fact."
+      "sourceNote": "Guidance delivery is scored against the audited FY25 outcomes (statutory); the consensus target and dispersion are a broker/aggregator view, clearly attributed as analyst opinion, not statutory fact.",
+      "methodology": {
+        "steps": [
+          {
+            "key": "guidance_hitrate",
+            "name": "Management credibility — guidance hit-rate",
+            "refTag": "Promise vs delivery",
+            "gloss": "The share of tracked guidance management has actually delivered.",
+            "formulaTeX": "\\text{hit-rate} = \\dfrac{\\text{delivered}}{\\text{total tracked}}",
+            "instanceTeX": "\\text{hit-rate} = \\dfrac{3}{5} = 60\\%",
+            "inputs": [
+              {
+                "symbol": "\\text{delivered}",
+                "label": "Niva Bupa · guidance delivered",
+                "value": 3,
+                "unit": "items",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "annual_report"
+              },
+              {
+                "symbol": "\\text{total}",
+                "label": "Niva Bupa · guidance tracked",
+                "value": 5,
+                "unit": "items",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "annual_report"
+              }
+            ],
+            "statistic": {
+              "symbol": "\\text{hit-rate}",
+              "value": 60,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "0 missed items ⇒ credible delivery",
+              "value": 0,
+              "passed": true
+            },
+            "robustness": "Scored against audited outcomes, 1 delayed, 0 missed — credibility, not a forecast."
+          },
+          {
+            "key": "consensus_dynamics",
+            "name": "Consensus dynamics — upside & dispersion",
+            "refTag": "Street view",
+            "gloss": "How much upside the Street prices and how tightly analysts agree.",
+            "formulaTeX": "\\text{upside} = \\dfrac{\\overline{tgt} - P}{P}, \\quad \\text{dispersion} = \\dfrac{\\text{high} - \\text{low}}{\\overline{tgt}}",
+            "instanceTeX": "\\text{upside } +12.2\\%,\\ \\text{dispersion } 7.5\\%,\\ n = 2",
+            "inputs": [
+              {
+                "symbol": "\\text{upside}",
+                "label": "Niva Bupa · upside to target",
+                "value": 12.2,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "broker"
+              },
+              {
+                "symbol": "\\text{dispersion}",
+                "label": "Niva Bupa · target dispersion",
+                "value": 7.5,
+                "unit": "%",
+                "insurer": "niva-bupa",
+                "period": "FY25",
+                "layer": "broker"
+              }
+            ],
+            "statistic": {
+              "symbol": "\\text{upside}",
+              "value": 12.2,
+              "unit": "%"
+            },
+            "threshold": {
+              "rule": "thin coverage (few analysts) ⇒ lightly stress-tested",
+              "value": 2,
+              "passed": false
+            },
+            "robustness": "A broker/aggregator view, not statutory fact. Only 2 analysts and a tight band — a modest surprise can move the stock more than the consensus implies."
+          }
+        ],
+        "payloadHash": "sig_47c5d93e",
+        "computedAt": "2026-06-16T12:45:00.000Z",
+        "isQuantitative": true
+      }
     }
   ]
 }

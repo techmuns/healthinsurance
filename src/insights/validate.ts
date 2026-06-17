@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import type { InsightsFile, SignalRun, ProvenanceLayer } from './types'
+import { methodologyNumbers } from './methods'
 
 export interface ValidationResult {
   ok: boolean
@@ -71,6 +72,22 @@ export function validateInsightsFile(file: InsightsFile, run: SignalRun): Valida
     }
     // chart series must reference keys, not inlined values (sanity).
     if (!ins.chart || !Array.isArray(ins.chart.seriesKeys) || ins.chart.seriesKeys.length === 0) errors.push(`${id}: chart has no seriesKeys`)
+
+    // 4. Methodology guardrails (brief §8) — when present, the back must be
+    //    100% deterministic-grounded and honest about quantitative vs not.
+    const m = ins.methodology
+    if (m) {
+      // 4a. Quantitative honesty: isQuantitative ⇔ at least one method step.
+      if (m.isQuantitative !== m.steps.length > 0) errors.push(`${id}: methodology.isQuantitative (${m.isQuantitative}) disagrees with ${m.steps.length} steps`)
+      // 4b. Reproducibility stamp present on every quantitative card.
+      if (m.isQuantitative && (!m.payloadHash || !/^sig_/.test(m.payloadHash))) errors.push(`${id}: quantitative methodology missing a payloadHash`)
+      // 4c. Extended numeric-grounding — every number on the back traces to a
+      //     signal value (± tol, percent/fraction-tolerant) or a structural const.
+      for (const n of methodologyNumbers(m)) {
+        const ok = ALLOW.has(n) || ALLOW.has(Math.abs(n)) || grounded.some((g) => close(n, g) || close(Math.abs(n), Math.abs(g)) || close(n * 100, g) || close(n / 100, g))
+        if (!ok) errors.push(`${id}: methodology number ${n} not grounded in signals`)
+      }
+    }
   }
   return { ok: errors.length === 0, errors }
 }

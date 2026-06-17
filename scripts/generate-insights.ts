@@ -19,6 +19,7 @@ import { writeFileSync, readFileSync } from 'node:fs'
 import { buildPanel } from '@/insights/panel'
 import { runAllSignals, signalHash } from '@/insights/signals'
 import { validateInsightsFile } from '@/insights/validate'
+import { assembleMethodology } from '@/insights/methods'
 import type { InsightsFile, SignalRun } from '@/insights/types'
 
 const OUT = 'src/data/insights.generated.json'
@@ -86,16 +87,22 @@ async function callModel(run: SignalRun, extraNote = ''): Promise<unknown> {
 }
 
 function assemble(run: SignalRun, insights: unknown): InsightsFile {
+  const generatedAt = new Date().toISOString()
+  const list = ((insights as { insights?: unknown[] }).insights as InsightsFile['insights']) ?? (insights as InsightsFile['insights'])
+  // Attach the deterministic "show the working" block to each insight. This is
+  // assembled from the SAME signal payload (no model involvement) and refreshes
+  // automatically with the data — no new job, no new secret (brief §5, §9).
+  const withMethodology = list.map((ins) => ({ ...ins, methodology: assembleMethodology(ins, run, generatedAt) }))
   return {
     meta: {
-      generatedAt: new Date().toISOString(),
+      generatedAt,
       dataAsOf: run.asOf,
       model: MODEL,
       signalsComputed: run.signals.length,
       signalHash: signalHash(run.signals),
       coverage: run.coverage,
     },
-    insights: (insights as { insights?: unknown[] }).insights as InsightsFile['insights'] ?? (insights as InsightsFile['insights']),
+    insights: withMethodology,
   }
 }
 
@@ -104,10 +111,18 @@ async function main(): Promise<number> {
   console.log(`signals: ${run.signals.length} · asOf ${run.asOf} · ${signalHash(run.signals)}`)
 
   if (DRY) {
-    // Dry run: validate the committed sample against freshly-computed signals.
+    // Dry run: re-derive the methodology blocks deterministically and validate the
+    // committed sample against freshly-computed signals (emits the "show the
+    // working" payload the live deploy will reflect — brief §10).
     const file = JSON.parse(readFileSync(OUT, 'utf8')) as InsightsFile
+    console.log(`DRY RUN — committed ${OUT}: ${file.insights.length} insights`)
+    for (const ins of file.insights) {
+      const m = assembleMethodology(ins, run)
+      const tag = m.isQuantitative ? `${m.steps.length} method(s): ${m.steps.map((s) => s.key).join(', ')}` : 'non-quantitative (honest detection rule)'
+      console.log(`  • ${ins.id} → methodology ${m.payloadHash} · ${tag}`)
+    }
     const v = validateInsightsFile(file, run)
-    console.log(`DRY RUN — committed ${OUT}: ${file.insights.length} insights · valid=${v.ok}`)
+    console.log(`validation: valid=${v.ok}`)
     v.errors.forEach((e) => console.log('  · ' + e))
     return v.ok ? 0 : 1
   }
@@ -118,6 +133,13 @@ async function main(): Promise<number> {
   }
 
   let raw = await callModel(run)
+  // Guardrail (brief §8.1): the back of the card is never model-authored. Assert
+  // the model turn produced no methodology field before we attach the real one.
+  const modelList = ((raw as { insights?: unknown[] }).insights ?? []) as Record<string, unknown>[]
+  if (Array.isArray(modelList) && modelList.some((i) => i && 'methodology' in i)) {
+    console.error('refusing to write — the model turn authored a methodology field (must be deterministic-only)')
+    return 1
+  }
   let file = assemble(run, raw)
   let v = validateInsightsFile(file, run)
   if (!v.ok) {

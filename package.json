@@ -36,18 +36,21 @@
     "audit:niva-bupa:backfill": "tsx scripts/ingest/niva-backfill.ts && tsx scripts/ingest/audit-fill.ts fill --from data/agent-pulls/niva-backfill/cleaned.json",
     "ingest:quarterly-premium": "tsx scripts/ingest/insurer-quarterly-premium-agent.ts",
     "insights:generate": "tsx --tsconfig tsconfig.app.json scripts/generate-insights.ts",
+    "insights:methodology": "tsx --tsconfig tsconfig.app.json scripts/insights/backfill-methodology.ts",
     "insights:check": "tsx --tsconfig tsconfig.app.json scripts/insights/check.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
+    "katex": "^0.16.47",
     "lucide-react": "^0.469.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.15.0",
-    "xlsx": "^0.18.5",
-    "@anthropic-ai/sdk": "^0.65.0"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/katex": "^0.16.8",
     "@types/node": "^22.19.19",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18.3.18",
