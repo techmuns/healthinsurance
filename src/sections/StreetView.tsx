@@ -33,9 +33,11 @@ function StreetSignal({ kind, score, reason }: { kind: SignalKind; score: number
   const Icon = kind === 'Bullish' ? TrendingUp : kind === 'Bearish' ? TrendingDown : Gauge
   return (
     <div
-      className="relative w-full max-w-[300px] overflow-hidden rounded-[1.15rem] border p-4 shadow-card"
+      className="relative w-full max-w-[300px] overflow-hidden rounded-[1.15rem] border p-4 shadow-card transition-shadow duration-300 hover:shadow-lift"
       style={{ background: t.bg, borderColor: t.ring }}
     >
+      {/* thin champagne-gold accent seam — the premium teal/gold combination */}
+      <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#B68B3A]/55 to-transparent" />
       <div className="flex items-center justify-between">
         <span className="text-[9.5px] font-bold uppercase tracking-[0.18em]" style={{ color: t.fg }}>Street Signal</span>
         <span className="blob-a inline-flex h-7 w-7 items-center justify-center bg-white/80 shadow-soft" style={{ color: t.fg }}>
@@ -60,10 +62,10 @@ function StreetSignal({ kind, score, reason }: { kind: SignalKind; score: number
 // instantly readable by meaning (teal = upside, navy = price, slate = neutral,
 // coral = downside) while staying premium and calm.
 const KPI_TINT: Record<'navy' | 'teal' | 'coral' | 'slate', { bg: string; border: string; glow: string }> = {
-  navy: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(39,69,126,0.06) 100%)', border: 'rgba(39,69,126,0.18)', glow: 'rgba(39,69,126,0.10)' },
-  teal: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(22,142,142,0.07) 100%)', border: 'rgba(22,142,142,0.18)', glow: 'rgba(22,142,142,0.10)' },
-  coral: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(199,93,84,0.06) 100%)', border: 'rgba(199,93,84,0.18)', glow: 'rgba(199,93,84,0.10)' },
-  slate: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(140,151,168,0.07) 100%)', border: 'rgba(140,151,168,0.20)', glow: 'rgba(140,151,168,0.10)' },
+  navy: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(39,69,126,0.09) 100%)', border: 'rgba(39,69,126,0.22)', glow: 'rgba(39,69,126,0.12)' },
+  teal: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(22,142,142,0.10) 100%)', border: 'rgba(22,142,142,0.22)', glow: 'rgba(22,142,142,0.13)' },
+  coral: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(199,93,84,0.09) 100%)', border: 'rgba(199,93,84,0.22)', glow: 'rgba(199,93,84,0.12)' },
+  slate: { bg: 'linear-gradient(135deg,#FFFFFF 0%, rgba(140,151,168,0.10) 100%)', border: 'rgba(140,151,168,0.24)', glow: 'rgba(140,151,168,0.12)' },
 }
 
 function Kpi({ label, value, sub, tone = 'navy' }: { label: string; value: string; sub: string; tone?: 'navy' | 'teal' | 'coral' | 'slate' }) {
@@ -78,7 +80,7 @@ function Kpi({ label, value, sub, tone = 'navy' }: { label: string; value: strin
       <span className="pointer-events-none absolute -right-8 -top-9 h-24 w-24 rounded-full opacity-70 blur-2xl transition-opacity duration-300 group-hover:opacity-100" style={{ background: tint.glow }} />
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: bar }} />
       <p className="relative pl-1.5 text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
-      <p className={`relative mt-1 pl-1.5 font-display text-[24px] leading-none ${color}`}>{value}</p>
+      <p className={`relative mt-1 pl-1.5 font-display text-[24px] leading-none tabular-nums ${color}`}>{value}</p>
       <p className="relative mt-1 pl-1.5 text-[10px] text-ink-secondary/85">{sub}</p>
     </div>
   )
@@ -132,9 +134,14 @@ export function StreetView() {
   if (!coverage) {
     return (
       <div className="space-y-5">
-        <header>
-          <h2 className="font-display text-[22px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
-          <p className="mt-0.5 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
+        <header className="relative overflow-hidden rounded-2xl border border-[#E4E8F0] bg-gradient-to-br from-[#F6F9FD] via-[#FBFCFD] to-[#EEF3F9] px-5 py-4 shadow-card">
+          <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#B68B3A]/45 to-transparent" />
+          <div className="flex items-center gap-2">
+            <span className="h-3.5 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Street View</p>
+          </div>
+          <h2 className="mt-1 font-display text-[24px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
+          <p className="mt-1 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
         </header>
         <div className="card-surface p-5">
           <EmptyState
@@ -188,14 +195,23 @@ export function StreetView() {
 
   return (
     <div className="space-y-5">
-      {/* ── Top: title + Street Signal ─────────────────────────────────────── */}
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Street View</p>
-          <h2 className="mt-0.5 font-display text-[23px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
-          <p className="mt-1 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
+      {/* ── Top: premium market-read banner + Street Signal ────────────────── */}
+      <header className="relative overflow-hidden rounded-2xl border border-[#E4E8F0] bg-gradient-to-br from-[#F6F9FD] via-[#FBFCFD] to-[#EEF3F9] px-5 py-4 shadow-card">
+        {/* thin gold accent seam + soft navy/teal glows so the band never reads as flat white */}
+        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#B68B3A]/45 to-transparent" />
+        <span aria-hidden className="pointer-events-none absolute -left-12 -top-16 h-48 w-48 rounded-full opacity-60 blur-3xl" style={{ background: 'rgba(39,69,126,0.10)' }} />
+        <span aria-hidden className="pointer-events-none absolute -bottom-16 right-10 h-44 w-44 rounded-full opacity-50 blur-3xl" style={{ background: 'rgba(22,142,142,0.08)' }} />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="h-3.5 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Street View</p>
+            </div>
+            <h2 className="mt-1 font-display text-[24px] leading-tight text-navy-deep">{company.shortName} · Street View</h2>
+            <p className="mt-1 text-[12.5px] text-ink-secondary">Analyst targets, ratings, price trend, and key catalysts.</p>
+          </div>
+          <StreetSignal kind={kind} score={score} reason={reason} />
         </div>
-        <StreetSignal kind={kind} score={score} reason={reason} />
       </header>
 
       {/* ── Row 1: KPI cards ──────────────────────────────────────────────── */}
@@ -209,9 +225,8 @@ export function StreetView() {
       {/* ── Row 2: Target range + Price vs target ─────────────────────────── */}
       <div className={`grid grid-cols-1 gap-4 ${has52 ? 'lg:grid-cols-2' : ''}`}>
         {/* Target range with current-price marker */}
-        <div className="card-surface flex flex-col p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Target Range</p>
-          <p className="mt-0.5 text-[11.5px] text-ink-secondary">Where the price sits across the analyst target range.</p>
+        <div className="card-surface card-tint-slate flex flex-col p-5">
+          <PanelHead title="Target Range" note="Where the price sits across the analyst target range." />
           <div className="mt-5 flex-1">
             <div className="relative h-3 rounded-full" style={{ background: 'linear-gradient(90deg,#F8ECEC,#FBF3E2,#E6F4F1)' }}>
               {target != null && lo != null && hi != null && (
@@ -236,9 +251,8 @@ export function StreetView() {
         {/* Price vs target — 52-week trading range vs analyst target range
             (52-week range is curated for the focal name only). */}
         {has52 && (
-          <div className="card-surface flex flex-col p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Price vs Target</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-secondary">52-week trading range vs the analyst target range.</p>
+          <div className="card-surface card-tint-slate flex flex-col p-5">
+            <PanelHead title="Price vs Target" note="52-week trading range vs the analyst target range." />
             <div className="mt-5 flex flex-1 flex-col justify-center gap-5">
               <ScaledRange label="52-week trading range" lo={marketSnapshot.weekLow52} hi={marketSnapshot.weekHigh52} domainLo={dom.lo} domainHi={dom.hi} trackColor={SLATE} marker={price != null ? { value: price, color: GOLD, caption: `Current ${px(price)}` } : undefined} />
               {lo != null && hi != null && (
@@ -256,25 +270,25 @@ export function StreetView() {
 
       {/* ── Row 3: Rating split + Top analyst takeaways ───────────────────── */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="card-surface flex flex-col p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Rating Split</p>
-          <p className="mt-0.5 text-[11.5px] text-ink-secondary">{ac.analystCount} analysts · refreshed {ac.lastUpdated}</p>
-          <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-soft-border">
-            <span style={{ width: `${(ac.buyCount / ac.analystCount) * 100}%`, background: ratingTone.Buy.fg }} />
-            <span style={{ width: `${(ac.holdCount / ac.analystCount) * 100}%`, background: ratingTone.Hold.fg }} />
+        <div className="card-surface card-tint-slate flex flex-col p-5">
+          <PanelHead title="Rating Split" note={`${ac.analystCount} analysts · refreshed ${ac.lastUpdated}`} />
+          <div className="mt-4 flex h-3.5 overflow-hidden rounded-full bg-soft-border shadow-[inset_0_1px_2px_rgba(23,43,77,0.08)]">
+            <span style={{ width: `${(ac.buyCount / ac.analystCount) * 100}%`, background: ratingTone.Buy.fg, boxShadow: 'inset -1.5px 0 0 #FFFFFF' }} />
+            <span style={{ width: `${(ac.holdCount / ac.analystCount) * 100}%`, background: ratingTone.Hold.fg, boxShadow: 'inset -1.5px 0 0 #FFFFFF' }} />
             <span style={{ width: `${(ac.sellCount / ac.analystCount) * 100}%`, background: ratingTone.Sell.fg }} />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {([['Buy', ac.buyCount], ['Hold', ac.holdCount], ['Sell', ac.sellCount]] as const).map(([r, c]) => (
-              <span key={r} className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ color: ratingTone[r].fg, background: ratingTone[r].bg }}>
+              <span key={r} className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold shadow-soft transition-all duration-200" style={{ color: ratingTone[r].fg, background: ratingTone[r].bg }}>
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: ratingTone[r].fg }} />
                 {c} {r}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="card-surface p-5">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">Top Analyst Takeaways</p>
+        <div className="card-surface card-tint-slate p-5">
+          <PanelHead title="Top Analyst Takeaways" />
           <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Takeaway
               icon={<TrendingUp className="h-3.5 w-3.5" />}
@@ -307,10 +321,7 @@ export function StreetView() {
       {/* ── Row 4: All analyst views ──────────────────────────────────────── */}
       <div className="card-surface p-5">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">All Analyst Views</p>
-            <p className="mt-0.5 text-[11.5px] text-ink-secondary">Each broker&rsquo;s most recent call — one row per broker, every row with a live source.</p>
-          </div>
+          <PanelHead title="All Analyst Views" note="Each broker’s most recent call — one row per broker, every row with a live source." />
           {isFocal ? (
             <SourceTag {...srcTag('niva-consensus')} />
           ) : (
@@ -329,22 +340,22 @@ export function StreetView() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-[11.5px]">
             <thead>
-              <tr className="border-b border-soft-border text-[10px] uppercase tracking-wide text-ink-secondary">
-                <th className="py-2 pr-3 font-semibold">Analyst / Broker</th>
+              <tr className="border-b border-soft-border bg-[#EAF0FA] text-[10px] uppercase tracking-wide text-ink-secondary">
+                <th className="rounded-l-lg py-2 pr-3 font-semibold">Analyst / Broker</th>
                 <th className="py-2 pr-3 font-semibold">Rating</th>
                 <th className="py-2 pr-3 text-right font-semibold">Target</th>
                 <th className="py-2 pr-3 text-right font-semibold">Upside</th>
                 <th className="py-2 pr-3 font-semibold">Date</th>
                 <th className="py-2 pr-3 font-semibold">Key view</th>
                 <th className="py-2 pr-3 font-semibold">Source</th>
-                <th className="py-2 font-semibold">Confidence</th>
+                <th className="rounded-r-lg py-2 pr-3 font-semibold">Confidence</th>
               </tr>
             </thead>
             <tbody>
               {latestByBroker.map((r) => {
                 const u = up(r.targetPrice)
                 return (
-                  <tr key={r.sourceId} className="border-b border-[#F2F4F8] align-top transition-colors last:border-0 hover:bg-ice/40">
+                  <tr key={r.sourceId} className="border-b border-[#F2F4F8] align-top transition-colors duration-200 last:border-0 even:bg-[#F8FAFD] hover:bg-soft-blue/40">
                     <td className="py-2.5 pr-3 font-semibold text-navy-deep">{r.brokerage}</td>
                     <td className="py-2.5 pr-3">
                       {r.rating ? (
@@ -369,6 +380,21 @@ export function StreetView() {
           {latestByBroker.length} brokers on record — each shown with its most recent target; the consensus above reflects these latest views. Targets are sourced, never invented.
         </p>
       </div>
+    </div>
+  )
+}
+
+// Compact premium panel header — a thin gold accent tick + eyebrow + optional
+// note, shared by the Street View analytic panels so each reads as a titled,
+// premium widget rather than a label floating on white.
+function PanelHead({ title, note }: { title: string; note?: string }) {
+  return (
+    <div>
+      <div className="flex items-center gap-2">
+        <span className="h-3 w-[3px] rounded-full bg-gradient-to-b from-champagne to-champagne-deep" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-champagne-deep">{title}</p>
+      </div>
+      {note && <p className="mt-1 pl-[11px] text-[11.5px] text-ink-secondary">{note}</p>}
     </div>
   )
 }
