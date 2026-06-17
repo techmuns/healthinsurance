@@ -233,13 +233,11 @@ export function StreetView() {
       </div>
 
       {/* ── KPI cards ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Kpi label="Consensus Target" value={px(target)} sub={`${upPct(upside)} vs current`} tone={upside == null ? 'slate' : upside >= 0 ? 'teal' : 'coral'} Icon={Target}
           accent={<MiniBar pct={upside == null ? 0 : Math.abs(upside) * 3} color={upside == null ? SLATE : upside >= 0 ? TEAL : BURG} />} />
         <Kpi label="Current Price" value={px(price)} sub={`as of ${priceAsOf}`} tone="navy" Icon={Wallet}
           accent={has52 ? <MiniDot pct={pos52(price)} /> : <MiniBar pct={rangePos(price)} color={NAVY} />} />
-        <Kpi label={upside != null && upside < 0 ? 'Implied Downside' : 'Implied Upside'} value={upPct(upside)} sub="to consensus target" tone={upside == null ? 'slate' : upside >= 0 ? 'teal' : 'coral'} Icon={upside != null && upside < 0 ? TrendingDown : TrendingUp}
-          accent={<MiniBar pct={upside == null ? 0 : Math.abs(upside) * 3} color={upside == null ? SLATE : upside >= 0 ? TEAL : BURG} />} />
         <Kpi label="Analysts Covering" value={`${ac.analystCount}`} sub={`${ac.buyCount} Buy · ${ac.holdCount} Hold · ${ac.sellCount} Sell`} tone="gold" Icon={Users}
           accent={<MiniSplit buy={ac.buyCount} hold={ac.holdCount} sell={ac.sellCount} total={ac.analystCount} />} />
       </div>
