@@ -230,16 +230,6 @@ interface OwnershipRow {
   provenance?: { source_name?: string; source_url?: string; confidence?: 'high' | 'medium' | 'low' | 'pending' }
 }
 
-// Holder-class palette — calm, tone-coded (promoter = navy anchor, institutions
-// = teal/blue, public = slate).
-const CLASS: { key: keyof OwnershipRow; label: string; color: string }[] = [
-  { key: 'promoter_share', label: 'Promoter', color: '#27457E' },
-  { key: 'fii_share', label: 'FII', color: '#168E8E' },
-  { key: 'dii_share', label: 'DII', color: '#4F7BCF' },
-  { key: 'mf_share', label: 'Mutual Funds', color: '#7FA3D9' },
-  { key: 'public_share', label: 'Public & Other', color: '#9AA6B6' },
-]
-
 function pct(v: number | null): string {
   return v == null ? 'n/a' : `${v.toFixed(1)}%`
 }
@@ -307,9 +297,8 @@ export function Ownership() {
     )
   }
 
-  // Real data — render the composition.
-  const segments = CLASS.map((c) => ({ ...c, value: row[c.key] as number | null })).filter((s) => s.value != null && s.value > 0) as { key: string; label: string; color: string; value: number }[]
-  const total = segments.reduce((s, x) => s + x.value, 0) || 100
+  // Real data — the holder-class composition now renders as the interactive
+  // donut in the Ownership Dynamics block below (no duplicate stacked bar).
   const promoter = row.promoter_share
   const fii = row.fii_share
   const periodLabel = `${row.quarter} ${row.fiscal_year}`.trim()
@@ -338,34 +327,6 @@ export function Ownership() {
         icon="ownership"
       >
         <div className="space-y-5">
-          {/* Composition bar */}
-          <div>
-            <div className="flex h-7 w-full overflow-hidden rounded-lg ring-1 ring-soft-border">
-              {segments.map((s) => (
-                <div
-                  key={s.key}
-                  className="flex items-center justify-center"
-                  style={{ width: `${(s.value / total) * 100}%`, background: s.color }}
-                  title={`${s.label}: ${pct(s.value)}`}
-                >
-                  {s.value / total >= 0.1 && <span className="px-1 text-[10px] font-semibold text-white">{s.value.toFixed(0)}%</span>}
-                </div>
-              ))}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              {CLASS.map((c) => {
-                const v = row[c.key] as number | null
-                return (
-                  <span key={c.label} className="inline-flex items-center gap-1.5 text-[11px]">
-                    <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: c.color }} />
-                    <span className="text-ink-secondary">{c.label}</span>
-                    <span className={`font-semibold tabular-nums ${v == null ? 'text-ink-secondary/45' : 'text-navy-deep'}`}>{pct(v)}</span>
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-
           {/* Top holders */}
           {row.top_holders?.length > 0 && (
             <div>
