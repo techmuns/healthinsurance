@@ -125,11 +125,11 @@ export function InsightChart({ spec, focal, embedded = false, bare = false, fill
     const zone = side && hard
       ? side === 'above'
         ? { x1: hard.value as number, x2: Math.max(dataMax, hard.value as number) * 1.12, label: 'Loss zone', pos: 'insideTopRight' as const }
-        : { x1: 0, x2: hard.value as number, label: 'Below floor', pos: 'insideBottomLeft' as const }
+        : { x1: 0, x2: hard.value as number, label: 'Below floor', pos: 'insideTopLeft' as const }
       : null
     return (
       <Wrap title={spec.title} embedded={embedded} bare={bare} fill={fill}>
-        <BarChart data={data} layout="vertical" margin={{ top: 6, right: 30, left: 6, bottom: 4 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 18, right: 30, left: 6, bottom: 4 }}>
           <CartesianGrid stroke={GRID} horizontal={false} strokeDasharray="2 4" />
           <XAxis type="number" tick={{ fontSize: 10.5, fill: '#9AA3B2' }} tickLine={false} axisLine={false} />
           <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: '#26303F' }} tickLine={false} axisLine={false} width={88} />
