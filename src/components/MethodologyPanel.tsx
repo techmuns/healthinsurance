@@ -65,7 +65,7 @@ function MethodStep({ step, tone, index, open, onToggle }: { step: MethodDescrip
   const passed = step.threshold?.passed
   return (
     <div>
-      <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-ice/60">
+      <button type="button" onClick={(e) => { e.stopPropagation(); onToggle() }} aria-expanded={open} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left transition-colors hover:bg-ice/60">
         <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-bold tabular-nums" style={{ background: tone.bg, color: tone.fg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>{index}</span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -258,7 +258,7 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
           <h3 id={labelId} className="font-editorial text-[17px] font-semibold leading-tight text-navy-deep">How we got here — and what to do with it</h3>
           <p className="mt-0.5 truncate text-[10.5px] text-ink-secondary">{ins.shortHeadline}</p>
         </div>
-        <button ref={backRef} type="button" onClick={onBack} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 text-[10.5px] font-semibold text-navy-deep shadow-soft transition-colors hover:border-muted-blue hover:text-muted-blue">
+        <button ref={backRef} type="button" onClick={(e) => { e.stopPropagation(); onBack() }} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 text-[10.5px] font-semibold text-navy-deep shadow-soft transition-colors hover:border-muted-blue hover:text-muted-blue">
           <ArrowLeft className="h-3.5 w-3.5" /> Back to insight
         </button>
       </div>

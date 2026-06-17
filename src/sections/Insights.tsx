@@ -68,8 +68,9 @@ function usePrefersReducedMotion(): boolean {
 }
 
 // The insight card template — a buyside advisor memo. The FRONT is the written
-// read (unchanged); a "Show the working" control flips it to the deterministic
-// methodology panel on the BACK. LEFT is the written read: category badge, the
+// read (unchanged); clicking ANYWHERE on the card flips it to the deterministic
+// methodology panel on the BACK (a "View workings" pill signals the affordance;
+// a drag-to-select never flips). LEFT is the written read: category badge, the
 // editorial title, the overlooked angle + short thesis, a hero metric tile, then
 // conviction / falsifier / source. RIGHT is the visual evidence: one live chart.
 function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
@@ -127,13 +128,20 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
     ? { position: 'absolute', inset: 0, transform: 'none', opacity: flipped ? 1 : 0, transition: 'opacity 0.22s ease', pointerEvents: flipped ? undefined : 'none', zIndex: flipped ? 1 : 0 }
     : { position: 'absolute', inset: 0, transform: 'rotateY(180deg)' }
 
+  // Whole-card flip. Guard: a drag-to-select (or a click on a real link) must not
+  // flip — interactive children stopPropagation; here we also skip mid-selection.
+  const flipTo = (next: boolean) => {
+    if (typeof window !== 'undefined' && window.getSelection?.()?.toString()) return
+    setFlipped(next)
+  }
+
   return (
     <article
       className={[
-        'group relative overflow-hidden rounded-2xl border bg-card transition-all duration-200',
+        'group relative overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-px',
         hero
-          ? 'border-[#E4CE93] shadow-[0_2px_8px_rgba(23,43,77,0.05),0_22px_52px_rgba(23,43,77,0.12)]'
-          : 'border-soft-border shadow-card hover:-translate-y-px hover:shadow-[0_18px_42px_rgba(23,43,77,0.12)]',
+          ? 'border-[#E4CE93] shadow-[0_2px_8px_rgba(23,43,77,0.05),0_22px_52px_rgba(23,43,77,0.12)] hover:shadow-[0_4px_12px_rgba(23,43,77,0.06),0_26px_58px_rgba(23,43,77,0.14),0_0_0_1px_rgba(228,206,147,0.75)]'
+          : 'border-soft-border shadow-card hover:shadow-[0_18px_44px_rgba(23,43,77,0.13),0_0_0_1px_rgba(228,206,147,0.5)]',
       ].join(' ')}
     >
       {/* Category accent strip on the left edge — instant, colour-coded character (shared chrome). */}
@@ -141,8 +149,8 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
 
       <div className="flip-3d" style={{ height: h }}>
         <div className="flip-inner" style={innerStyle}>
-          {/* ───────────────────── FRONT ───────────────────── */}
-          <div ref={frontFaceRef} className="flip-face relative" style={frontFaceStyle}>
+          {/* ───────────────────── FRONT ───── whole face flips to the working ── */}
+          <div ref={frontFaceRef} onClick={() => hasMethodology && flipTo(true)} className={`flip-face relative ${hasMethodology ? 'cursor-pointer' : ''}`} style={frontFaceStyle}>
            <div ref={frontRef} className="relative">
             {/* Ultra-faint category wash — a tinted overlay, never a flat fill. */}
             <span aria-hidden className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(100deg, ${tone.wash} 0%, transparent 40%)` }} />
@@ -157,6 +165,22 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                   </span>
                   <span className="text-[10.5px] font-semibold tabular-nums text-ink-secondary">Insight #{ins.rank}</span>
                   {hero && <span className="inline-flex items-center gap-1 rounded-full bg-champagne-soft px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-champagne-deep ring-1 ring-[#E7D29B]"><Sparkles className="h-3 w-3" />Featured</span>}
+                  {/* Interactive cue — the whole card flips, this pill just signals it. */}
+                  {hasMethodology && (
+                    <button
+                      ref={showBtnRef}
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setFlipped(true) }}
+                      aria-expanded={flipped}
+                      aria-controls={backId}
+                      title="View the working behind this insight"
+                      className="ml-auto inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.08em] text-ink-secondary shadow-soft transition-all duration-200 group-hover:shadow-card"
+                      style={{ borderColor: tone.ring, background: tone.bg }}
+                    >
+                      <Sigma className="h-3 w-3" style={{ color: tone.fg }} strokeWidth={2.4} />
+                      <span style={{ color: tone.fg }}>View workings</span>
+                    </button>
+                  )}
                 </div>
 
                 {/* title — editorial navy display */}
@@ -190,23 +214,10 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                   <span className="inline-flex items-start gap-1.5 text-ink-secondary"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span className="font-editorial text-[12.5px] italic leading-snug"><strong className="font-semibold not-italic text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
                 </div>
 
-                {/* source-backed footer strip + the "show the working" control — anchored to the bottom */}
+                {/* source-backed footer strip — anchored to the bottom */}
                 <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-soft-border pt-4 text-[10px] text-ink-secondary">
                   <span className="inline-flex items-center gap-1 rounded-full bg-teal-soft px-2 py-0.5 font-bold uppercase tracking-[0.08em] text-teal"><BadgeCheck className="h-3 w-3" />Source-backed</span>
                   <span>{sourceLine(ins)}</span>
-                  {hasMethodology && (
-                    <button
-                      ref={showBtnRef}
-                      type="button"
-                      onClick={() => setFlipped(true)}
-                      aria-expanded={flipped}
-                      aria-controls={backId}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.06em] shadow-soft transition-all duration-200 hover:shadow-card"
-                      style={{ color: tone.fg, background: tone.bg, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}
-                    >
-                      <Sigma className="h-3.5 w-3.5" strokeWidth={2.4} /> Show the working
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -231,9 +242,10 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
            </div>
           </div>
 
-          {/* ───────────────────── BACK ───────────────────── */}
+          {/* ─────────────── BACK ───── click anywhere to flip back (interactive
+               controls inside stop propagation, so accordions/links still work) ── */}
           {hasMethodology && (
-            <div ref={backFaceRef} className="flip-face overflow-hidden rounded-2xl bg-card" style={backFaceStyle} id={backId}>
+            <div ref={backFaceRef} onClick={() => flipTo(false)} className="flip-face cursor-pointer overflow-hidden rounded-2xl bg-card" style={backFaceStyle} id={backId}>
               <div ref={backRef}>
                 <MethodologyPanel ins={ins} tone={tone} onBack={() => setFlipped(false)} backRef={backBtnRef} labelId={labelId} />
               </div>
