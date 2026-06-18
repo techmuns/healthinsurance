@@ -16,6 +16,7 @@ import { srcTag } from '@/data/valuationSources'
 import { getAnalystCoverage, getMarketQuote } from '@/lib/analystCoverage'
 import { useActiveCompany } from '@/state/filters'
 import { SourceTag } from '@/components/SourceTag'
+import { NavValuationCard } from '@/components/NavValuationCard'
 import type { Insurer } from '@/data/types'
 import { CORAL, Eyebrow, GOLD, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
 
@@ -212,6 +213,16 @@ export function ValuationMarketView() {
       ) : (
         <ValuationPending company={company} peerRow={peerValuation.find((r) => r.companyId === company.id) ?? null} />
       )}
+
+      {/* ═══ NAV / BOOK-VALUE LENS — implied value at peer P/BV, working hidden ══ */}
+      <section>
+        <Eyebrow
+          label="Book-Value Lens"
+          title="NAV / book-value valuation"
+          note="Values the company on its net worth at a comparable listed-peer P/BV. The final number shows here; the full working is one click away."
+        />
+        <NavValuationCard companyId={company.id} companyName={company.shortName} />
+      </section>
 
       {/* ═══ 5. QUALITY LENS — supports whether the premium is earned ════════════ */}
       <section>
