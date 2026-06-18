@@ -455,9 +455,12 @@ export function HistoricalStockMovement({
 
         {/* Selected average roll-up (Weekly / Monthly / Yearly) */}
         <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-soft">
-          <div className="flex items-center justify-between border-b border-soft-border bg-[#F3F6FB] px-3 py-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-navy-primary">{GRAN_LABEL[gran]} average</span>
-            <span className="text-[10px] text-ink-secondary">{buckets.length} periods · avg of daily</span>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-soft-border bg-[#F3F6FB] px-3 py-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-navy-primary">
+              {GRAN_LABEL[gran]} average
+              <span className="ml-1 font-medium normal-case tracking-normal text-ink-secondary/80">· {buckets.length} periods</span>
+            </span>
+            <GranularitySelect value={gran} onChange={setGran} />
           </div>
           <div className="overflow-auto" style={{ maxHeight: '60vh' }}>
             <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
