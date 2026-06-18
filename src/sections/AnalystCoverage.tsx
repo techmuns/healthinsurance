@@ -1,6 +1,8 @@
 import { Fragment, useMemo, useState } from 'react'
-import { ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp, X } from 'lucide-react'
+import { Building2, ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { STATUS_META, type AuditCell, type AuditGroup } from '@/lib/extractedDataAudit'
+import { companyColor, companyShortName } from '@/lib/companyColors'
+import { ColumnToggle, useColumnVisibility, type ColumnDef } from '@/components/ColumnToggle'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 
@@ -365,23 +367,48 @@ const COLS: { key: string; label: string; sub?: string; calc?: boolean; align?: 
   { key: 'up_cmp', label: 'Upside / (downside)', sub: 'vs CMP', calc: true, align: 'right' },
 ]
 
-export function AnalystCoverage({ group }: { group: AuditGroup }) {
-  const blocks = useMemo(() => buildBlocks(group), [group])
+export function AnalystCoverage({
+  group,
+  companyFilter = 'all',
+  onClearCompany,
+}: {
+  group: AuditGroup
+  companyFilter?: string
+  onClearCompany?: () => void
+}) {
+  const allBlocks = useMemo(() => buildBlocks(group), [group])
+  const blocks = useMemo(
+    () => (companyFilter === 'all' ? allBlocks : allBlocks.filter((b) => b.companyId === companyFilter)),
+    [allBlocks, companyFilter],
+  )
   const [selected, setSelected] = useState<AuditCell | null>(null)
+  const { hidden, toggle, showAll } = useColumnVisibility()
+  const vis = (key: string) => !hidden.has(key)
+
+  // Column hide/show — the Company column stays locked (it carries the row
+  // grouping). Everything else can be hidden; the data is never removed.
+  const columnDefs: ColumnDef[] = COLS.map((c) => ({
+    key: c.key,
+    label: c.sub ? `${c.label} · ${c.sub}` : c.label,
+    locked: c.key === 'company',
+  }))
 
   const totalRows = blocks.reduce((n, b) => n + b.rows.length, 0)
-  const fetched = group.cells.filter((c) => numOf(c.normalizedValue) != null).length
+  const fetched = useMemo(() => {
+    const ids = new Set(blocks.map((b) => b.companyId))
+    return group.cells.filter((c) => ids.has(c.entityId) && numOf(c.normalizedValue) != null).length
+  }, [blocks, group])
 
   const table = (
     <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '70vh' }}>
       <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
         <thead className="sticky top-0 z-20">
           <tr>
-            {COLS.map((c) => (
+            {COLS.filter((c) => c.key === 'company' || vis(c.key)).map((c) => (
               <th
                 key={c.key}
                 className={`border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'} ${c.key === 'company' ? 'sticky left-0 z-30' : ''}`}
-                style={{ minWidth: c.key === 'company' ? 132 : c.key === 'broker' ? 138 : 76 }}
+                style={{ minWidth: c.key === 'company' ? 150 : c.key === 'broker' ? 138 : 76 }}
               >
                 <span className="inline-flex items-center gap-1">
                   {c.calc && <FunctionSquare className="h-2.5 w-2.5 opacity-40" />}
@@ -395,48 +422,59 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
           </tr>
         </thead>
         <tbody>
-          {blocks.map((b) => (
+          {blocks.map((b) => {
+            const cc = companyColor(b.companyId)
+            return (
             <Fragment key={b.companyId}>
               {b.rows.map((r, i) => (
                 <tr key={r.rowNum} className="group">
                   {i === 0 && (
                     <th
                       rowSpan={b.rows.length}
-                      className="sticky left-0 z-10 border-b-2 border-r border-soft-border bg-white px-3 py-1.5 text-left align-middle"
+                      className="sticky left-0 z-10 border-b-2 border-r border-soft-border px-3 py-1.5 text-left align-middle"
+                      style={{ background: cc.tint, borderLeft: `3px solid ${cc.key}` }}
                     >
-                      <span className="block text-[12px] font-bold text-navy-deep">{b.companyLabel}</span>
-                      <span className="block text-[9.5px] text-ink-secondary">{b.rows.length} broker calls</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cc.key }} />
+                        <span className="block text-[12px] font-bold leading-tight" style={{ color: cc.text }}>{companyShortName(b.companyId, b.companyLabel)}</span>
+                      </span>
+                      <span className="mt-0.5 block pl-3.5 text-[9.5px] text-ink-secondary">{b.rows.length} broker calls</span>
                     </th>
                   )}
-                  <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11.5px] font-medium text-navy-deep group-hover:bg-ice/50">{r.broker || '—'}</td>
-                  <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11px] tabular-nums text-ink-secondary group-hover:bg-ice/50">{fmtDate(r.date)}</td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><RecoCell row={r} /></td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><CmpCell row={r} /></td>
-                  <td className="border-b border-r border-soft-border/70 p-0">
-                    <ValueCell cell={r.priceCell} selected={selected?.id === r.priceCell?.id} onSelect={() => r.priceCell && setSelected(r.priceCell)} />
-                  </td>
-                  <td className="border-b border-r border-soft-border/70 p-0">
-                    <ValueCell cell={r.targetCell} selected={selected?.id === r.targetCell?.id} onSelect={() => r.targetCell && setSelected(r.targetCell)} />
-                  </td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideReco} /></td>
-                  <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideCmp} /></td>
+                  {vis('broker') && <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11.5px] font-medium text-navy-deep group-hover:bg-ice/50">{r.broker || '—'}</td>}
+                  {vis('date') && <td className="border-b border-r border-soft-border/70 px-3 py-1.5 text-[11px] tabular-nums text-ink-secondary group-hover:bg-ice/50">{fmtDate(r.date)}</td>}
+                  {vis('reco') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><RecoCell row={r} /></td>}
+                  {vis('cmp') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><CmpCell row={r} /></td>}
+                  {vis('reco_price') && (
+                    <td className="border-b border-r border-soft-border/70 p-0">
+                      <ValueCell cell={r.priceCell} selected={selected?.id === r.priceCell?.id} onSelect={() => r.priceCell && setSelected(r.priceCell)} />
+                    </td>
+                  )}
+                  {vis('target') && (
+                    <td className="border-b border-r border-soft-border/70 p-0">
+                      <ValueCell cell={r.targetCell} selected={selected?.id === r.targetCell?.id} onSelect={() => r.targetCell && setSelected(r.targetCell)} />
+                    </td>
+                  )}
+                  {vis('up_reco') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideReco} /></td>}
+                  {vis('up_cmp') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideCmp} /></td>}
                 </tr>
               ))}
               {/* Average row — closes the block, exactly like the workbook. Fills
                   itself once every broker target in the block has been fetched. */}
-              <tr className="bg-navy-primary/[0.045]">
-                <td className="sticky left-0 z-10 border-b-2 border-r border-soft-border bg-[#F3F4FB]" />
-                <td className="border-b-2 border-r border-soft-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-navy-primary">Average</td>
-                <td className="border-b-2 border-r border-soft-border" />
-                <td className="border-b-2 border-r border-soft-border" />
-                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-semibold text-navy-deep/80">{inr(b.avg.cmp)}</td>
-                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.priceAtReco == null ? 'Average shows once all broker price-at-reco values in this block are fetched.' : undefined}>{inr(b.avg.priceAtReco)}</td>
-                <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.target == null ? 'Average shows once all broker targets in this block are fetched.' : undefined}>{inr(b.avg.target)}</td>
-                <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideReco} /></td>
-                <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideCmp} /></td>
+              <tr style={{ background: cc.tint }}>
+                <td className="sticky left-0 z-10 border-b-2 border-r border-soft-border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide" style={{ background: cc.tint, borderLeft: `3px solid ${cc.key}`, color: cc.text }}>Average</td>
+                {vis('broker') && <td className="border-b-2 border-r border-soft-border" />}
+                {vis('date') && <td className="border-b-2 border-r border-soft-border" />}
+                {vis('reco') && <td className="border-b-2 border-r border-soft-border" />}
+                {vis('cmp') && <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-semibold text-navy-deep/80">{inr(b.avg.cmp)}</td>}
+                {vis('reco_price') && <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.priceAtReco == null ? 'Average shows once all broker price-at-reco values in this block are fetched.' : undefined}>{inr(b.avg.priceAtReco)}</td>}
+                {vis('target') && <td className="border-b-2 border-r border-soft-border px-2.5 py-1.5 text-right text-[11.5px] tabular-nums font-bold text-navy-deep" title={b.avg.target == null ? 'Average shows once all broker targets in this block are fetched.' : undefined}>{inr(b.avg.target)}</td>}
+                {vis('up_reco') && <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideReco} /></td>}
+                {vis('up_cmp') && <td className="border-b-2 border-r border-soft-border p-0"><UpsideCell f={b.avg.upsideCmp} /></td>}
               </tr>
             </Fragment>
-          ))}
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -453,11 +491,14 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
             low-confidence backup (Moneycontrol / Trendlyne). CMP is the live market price (latest close); upside %s and the Average rows are calculated. Missing is never shown as 0.
           </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
-          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: TONE.green.dot, opacity: 0.85 }} />Fetched</span>
-          <span className="inline-flex items-center gap-1"><FunctionSquare className="h-3 w-3 opacity-40" />Calculated</span>
-          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald/60" />Live price (CMP)</span>
-          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: '#B68B3A', opacity: 0.85 }} />Reports — not fetched</span>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <ColumnToggle columns={columnDefs} hidden={hidden} onToggle={toggle} onShowAll={showAll} />
+          <div className="flex flex-wrap items-center justify-end gap-2 text-[10px] text-ink-secondary">
+            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: TONE.green.dot, opacity: 0.85 }} />Fetched</span>
+            <span className="inline-flex items-center gap-1"><FunctionSquare className="h-3 w-3 opacity-40" />Calculated</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald/60" />Live price (CMP)</span>
+            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: '#B68B3A', opacity: 0.85 }} />Reports — not fetched</span>
+          </div>
         </div>
       </div>
 
@@ -472,14 +513,31 @@ export function AnalystCoverage({ group }: { group: AuditGroup }) {
         </span>
       </div>
 
-      <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
-        {table}
-        {selected && (
-          <div className="lg:sticky lg:top-2 lg:self-start">
-            <Detail cell={selected} onClose={() => setSelected(null)} />
-          </div>
-        )}
-      </div>
+      {blocks.length === 0 ? (
+        <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
+          <p className="text-[12.5px] text-ink-secondary">
+            <span className="font-semibold text-navy-deep">{companyShortName(companyFilter)}</span> has no broker coverage on this sheet.
+          </p>
+          {onClearCompany && (
+            <button
+              type="button"
+              onClick={onClearCompany}
+              className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-3 py-1 text-[11px] font-medium text-navy-primary shadow-soft transition-colors hover:border-navy-primary/30"
+            >
+              <Building2 className="h-3.5 w-3.5" /> Show all companies
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
+          {table}
+          {selected && (
+            <div className="lg:sticky lg:top-2 lg:self-start">
+              <Detail cell={selected} onClose={() => setSelected(null)} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

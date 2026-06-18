@@ -1,12 +1,15 @@
 import { Fragment, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, Info, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, Info, Building2, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
 } from '@/lib/extractedDataAudit'
+import { companyColor, isCompanyEntity, companyShortName } from '@/lib/companyColors'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
+import { ColumnToggle, useColumnVisibility, type ColumnDef } from '@/components/ColumnToggle'
+import { CompanyFilter, type CompanyOption } from '@/components/CompanyFilter'
 
 // ---------------------------------------------------------------------------
 //  Audit · Spreadsheet view — mirrors the source Excel template tab-for-tab and
@@ -124,7 +127,7 @@ function colIndex(col: string): number {
   return n
 }
 
-interface GridCol { col: string; period: string; entity: string; metric: string; label: string; top: string }
+interface GridCol { col: string; period: string; entity: string; entityId: string; metric: string; label: string; top: string }
 interface GridRow {
   rowNum: number
   section: string
@@ -143,13 +146,13 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
 
   // Per Excel column: the period, the (dominant) entity, and the (dominant)
   // metric it carries.
-  const colMap = new Map<string, { period: string; entity: string; metric: string }>()
+  const colMap = new Map<string, { period: string; entity: string; entityId: string; metric: string }>()
   for (const c of cells) {
     const col = parseRef(c.cellRef)!.col
-    if (!colMap.has(col)) colMap.set(col, { period: c.period || col, entity: c.entityLabel || '', metric: c.metricLabel || '' })
+    if (!colMap.has(col)) colMap.set(col, { period: c.period || col, entity: c.entityLabel || '', entityId: c.entityId || '', metric: c.metricLabel || '' })
   }
   let columns: GridCol[] = [...colMap.entries()]
-    .map(([col, v]) => ({ col, period: v.period, entity: v.entity, metric: v.metric, label: v.period, top: col }))
+    .map(([col, v]) => ({ col, period: v.period, entity: v.entity, entityId: v.entityId, metric: v.metric, label: v.period, top: col }))
     .sort((a, b) => colIndex(a.col) - colIndex(b.col))
 
   // When every column shares one period but carries a distinct metric (e.g. the
@@ -205,12 +208,12 @@ function buildGrid(group: AuditGroup): { columns: GridCol[]; rows: GridRow[]; en
 }
 
 /** Group consecutive columns that share an entity, for the column-block band. */
-function entityBands(columns: GridCol[]): { entity: string; span: number }[] {
-  const bands: { entity: string; span: number }[] = []
+function entityBands(columns: GridCol[]): { entity: string; entityId: string; span: number }[] {
+  const bands: { entity: string; entityId: string; span: number }[] = []
   for (const c of columns) {
     const last = bands[bands.length - 1]
-    if (last && last.entity === c.entity) last.span += 1
-    else bands.push({ entity: c.entity, span: 1 })
+    if (last && last.entityId === c.entityId) last.span += 1
+    else bands.push({ entity: c.entity, entityId: c.entityId, span: 1 })
   }
   return bands
 }
@@ -341,13 +344,34 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
 }
 
 // ── Grid ─────────────────────────────────────────────────────────────────────
-function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void }) {
-  const { columns, rows, entityByColumn } = useMemo(() => buildGrid(group), [group])
+type Grid = ReturnType<typeof buildGrid>
+function SheetGrid({ grid, raw, selected, onSelect, hiddenCols }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; hiddenCols: Set<string> }) {
+  const { rows, entityByColumn } = grid
+  const columns = useMemo(() => grid.columns.filter((c) => !hiddenCols.has(c.col)), [grid.columns, hiddenCols])
   const bands = useMemo(() => (entityByColumn ? entityBands(columns) : []), [entityByColumn, columns])
+  // The first visible column of each company block (after the first) — gets a
+  // stronger left divider so companies read as clearly separate sections.
+  const blockStart = useMemo(() => {
+    const set = new Set<string>()
+    if (!entityByColumn) return set
+    let prev: string | undefined
+    for (const c of columns) {
+      if (prev !== undefined && c.entityId !== prev) set.add(c.col)
+      prev = c.entityId
+    }
+    return set
+  }, [columns, entityByColumn])
 
-  if (!columns.length || !rows.length) {
+  if (!grid.columns.length || !rows.length) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">No template cells reconstructable for this sheet.</div>
   }
+  if (!columns.length) {
+    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">All data columns are hidden — use <span className="font-semibold text-navy-primary">Columns</span> to bring them back.</div>
+  }
+
+  // Soft, company-tinted left divider for a block-start column.
+  const dividerStyle = (col: GridCol): React.CSSProperties | undefined =>
+    blockStart.has(col.col) ? { borderLeft: `2px solid ${companyColor(col.entityId).border}` } : undefined
 
   let lastSection = ''
   return (
@@ -359,11 +383,22 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
               <th className="sticky left-0 z-30 border-b border-r border-soft-border bg-[#EAEFF7] px-3 py-1 text-left text-[9px] font-bold uppercase tracking-[0.08em] text-ink-secondary" style={{ minWidth: 220 }}>
                 Insurer →
               </th>
-              {bands.map((b, i) => (
-                <th key={`${b.entity}-${i}`} colSpan={b.span} className="border-b border-r border-soft-border bg-[#EAEFF7] px-2 py-1 text-center text-[10.5px] font-bold text-navy-primary">
-                  {b.entity || '—'}
-                </th>
-              ))}
+              {bands.map((b, i) => {
+                const cc = companyColor(b.entityId)
+                return (
+                  <th
+                    key={`${b.entityId}-${i}`}
+                    colSpan={b.span}
+                    className="border-b border-r border-soft-border px-2 py-1 text-center text-[10.5px] font-bold"
+                    style={{ background: cc.tint, borderBottom: `2.5px solid ${cc.key}`, color: cc.text, ...(i > 0 ? { borderLeft: `2px solid ${cc.border}` } : null) }}
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full" style={{ background: cc.key }} />
+                      {b.entity || '—'}
+                    </span>
+                  </th>
+                )
+              })}
             </tr>
           )}
           <tr>
@@ -371,7 +406,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
               Line item
             </th>
             {columns.map((c) => (
-              <th key={c.col} className="border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center" style={{ minWidth: 78 }}>
+              <th key={c.col} className="border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center" style={{ minWidth: 78, ...dividerStyle(c) }}>
                 <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.top}</span>
                 <span className="block text-[11px] font-bold text-navy-deep">{c.label}</span>
               </th>
@@ -400,7 +435,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                   </th>
                   {columns.map((col) => {
                     const cell = r.byCol.get(col.col)
-                    if (!cell) return <td key={col.col} className="border-b border-r border-soft-border/60 bg-[#FCFDFE]" />
+                    if (!cell) return <td key={col.col} className="border-b border-r border-soft-border/60 bg-[#FCFDFE]" style={dividerStyle(col)} />
                     const meta = STATUS_META[cell.status]
                     const gap = deckGap(cell)
                     const fetched = isFetched(cell)
@@ -425,7 +460,7 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
                           ? `${cell.metricLabel} · ${cell.period} — ${tag}: ${cell.note}`
                           : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
-                      <td key={col.col} className="border-b border-r border-soft-border/60 p-0">
+                      <td key={col.col} className="border-b border-r border-soft-border/60 p-0" style={dividerStyle(col)}>
                         <button
                           type="button"
                           onClick={() => onSelect(cell)}
@@ -468,19 +503,43 @@ function SheetGrid({ group, raw, selected, onSelect }: { group: AuditGroup; raw:
   )
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
-export function AuditSpreadsheet({ model }: { model: AuditModel }) {
-  const sheets = model.groups
-  const [active, setActive] = useState(sheets[0]?.sheet ?? '')
-  const [raw, setRaw] = useState(false)
-  const [selected, setSelected] = useState<AuditCell | null>(null)
+// ── Company-filter empty state ───────────────────────────────────────────────
+function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
+      <p className="text-[12.5px] text-ink-secondary">
+        <span className="font-semibold text-navy-deep">{label}</span> doesn’t appear on this sheet.
+      </p>
+      <button
+        type="button"
+        onClick={onClear}
+        className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-3 py-1 text-[11px] font-medium text-navy-primary shadow-soft transition-colors hover:border-navy-primary/30"
+      >
+        <Building2 className="h-3.5 w-3.5" /> Show all companies
+      </button>
+    </div>
+  )
+}
 
-  const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
+// ── Grid view (one generic, period-pivot sheet) ──────────────────────────────
+// Keyed by sheet + company in the page, so its column-visibility and selection
+// state reset cleanly whenever the sheet or the company filter changes.
+function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCompany }: {
+  group: AuditGroup
+  companyLabel: string
+  isFiltered: boolean
+  raw: boolean
+  onRawChange: (v: boolean) => void
+  onClearCompany: () => void
+}) {
+  const [selected, setSelected] = useState<AuditCell | null>(null)
+  const grid = useMemo(() => buildGrid(group), [group])
+  const { hidden, toggle, showAll } = useColumnVisibility()
 
   // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
   // Blanks the deck doesn't publish are pulled into their own "not in deck" count
   // so they don't inflate the PPT pipeline's "missing" tally with pulls that can
-  // never happen.
+  // never happen. Honours the company filter (counts what's shown).
   const pipeStats = useMemo(() => {
     const pipes: Record<PipelineKey, { fetched: number; total: number }> = {
       irdai: { fetched: 0, total: 0 }, company: { fetched: 0, total: 0 },
@@ -488,7 +547,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
       aggregator: { fetched: 0, total: 0 }, capitaliq: { fetched: 0, total: 0 },
     }
     let notInDeck = 0
-    for (const c of group?.cells ?? []) {
+    for (const c of group.cells) {
       if (deckGap(c)) { notInDeck += 1; continue }
       const p = pipelineOf(c)
       pipes[p].total += 1
@@ -497,57 +556,25 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
     return { pipes, notInDeck }
   }, [group])
 
-  if (!sheets.length) return null
+  // Column list for the hide/show menu — disambiguated by company on the
+  // column-block sheets (where a period like "FY25" repeats per insurer).
+  const columnDefs: ColumnDef[] = useMemo(
+    () => grid.columns.map((c) => ({
+      key: c.col,
+      label: grid.entityByColumn && isCompanyEntity(c.entityId)
+        ? `${companyShortName(c.entityId, c.entity)} · ${c.label}`
+        : c.label,
+    })),
+    [grid],
+  )
+
+  if (isFiltered && !group.cells.length) {
+    return <CompanyEmptyState label={companyLabel} onClear={onClearCompany} />
+  }
 
   return (
-    <div className="space-y-3">
-      {/* Excel-style sheet tabs */}
-      <div className="flex flex-wrap items-end gap-1 border-b border-soft-border">
-        {sheets.map((g) => {
-          const on = g.sheet === active
-          const filled = g.stats.valuePresent
-          return (
-            <button
-              key={g.sheet}
-              type="button"
-              onClick={() => { setActive(g.sheet); setSelected(null) }}
-              className={[
-                'group relative -mb-px flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors duration-normal ease-premium',
-                on
-                  ? 'border-soft-border border-b-white bg-white font-semibold text-navy-deep'
-                  : 'border-transparent bg-transparent font-medium text-ink-secondary hover:bg-ice/60 hover:text-navy-primary',
-              ].join(' ')}
-            >
-              <span className={`pointer-events-none absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep transition-opacity duration-normal ease-premium ${on ? 'opacity-100' : 'opacity-0'}`} />
-              {g.sheet}
-              <span className={`rounded-full px-1.5 text-[9.5px] font-semibold tabular-nums ${on ? 'bg-emerald-soft text-emerald' : 'bg-ice text-ink-secondary'}`}>
-                {filled}/{g.stats.total}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Contain a per-sheet render failure to this panel — the tab bar above
-          stays live, so one bad sheet can never blank the whole Data Audit page.
-          resetKey={group.sheet} clears the error when the user switches sheets. */}
-      <SectionErrorBoundary resetKey={group.sheet} sectionLabel={`${group.sheet} sheet`}>
-      {group.role === 'market_quote' ? (
-        // The Historical Stock Movement sheet is a transposed, date-by-row series
-        // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
-        // can't represent — it gets a dedicated, workbook-faithful renderer.
-        <HistoricalStockMovement />
-      ) : group.role === 'analyst_coverage' ? (
-        // Analyst coverage is a record list — each row a dated broker note with
-        // nine attributes, not a period pivot — so it also gets a dedicated,
-        // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
-        // Upside×2, in four company blocks closed by Average rows).
-        <AnalystCoverage group={group} />
-      ) : (
-      <>
-      {/* ───────── grid view ───────── */}
-
-      {/* Toolbar — value mode + legend */}
+    <>
+      {/* Toolbar — context · value mode · columns · legend */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-ink-secondary">{group.dashboardSection || group.role}</span>
@@ -559,13 +586,14 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
             {([['final', 'Final value'], ['raw', 'As printed']] as const).map(([v, label]) => {
               const on = (v === 'raw') === raw
               return (
-                <button key={v} type="button" onClick={() => setRaw(v === 'raw')}
+                <button key={v} type="button" onClick={() => onRawChange(v === 'raw')}
                   className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all duration-normal ease-premium ${on ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}>
                   {label}
                 </button>
               )
             })}
           </div>
+          <ColumnToggle columns={columnDefs} hidden={hidden} onToggle={toggle} onShowAll={showAll} />
           <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
             {LEGEND.map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
@@ -608,15 +636,122 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
 
       {/* Grid + (optional) detail */}
       <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
-        <SheetGrid group={group} raw={raw} selected={selected} onSelect={setSelected} />
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} hiddenCols={hidden} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
             <CellDetail cell={selected} onClose={() => setSelected(null)} />
           </div>
         )}
       </div>
-      </>
-      )}
+    </>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+export function AuditSpreadsheet({ model }: { model: AuditModel }) {
+  const sheets = model.groups
+  const [active, setActive] = useState(sheets[0]?.sheet ?? '')
+  const [raw, setRaw] = useState(false)
+  const [company, setCompany] = useState('all')
+
+  const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
+
+  // Company filter options — every real company that appears anywhere in the
+  // audit, with Niva Bupa and Star pinned to the front. "All companies" default.
+  const companyOptions: CompanyOption[] = useMemo(() => {
+    const seen = new Map<string, string>()
+    for (const g of sheets) for (const c of g.cells) if (isCompanyEntity(c.entityId)) seen.set(c.entityId, c.entityLabel)
+    const PRIORITY = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna', 'icici-lombard']
+    const rank = (id: string) => { const i = PRIORITY.indexOf(id); return i === -1 ? 99 : i }
+    const list = [...seen.entries()]
+      .map(([id, label]) => ({ id, label: companyShortName(id, label) }))
+      .sort((a, b) => rank(a.id) - rank(b.id) || a.label.localeCompare(b.label))
+    return [{ id: 'all', label: 'All companies' }, ...list]
+  }, [sheets])
+
+  const companyLabel = companyOptions.find((o) => o.id === company)?.label ?? 'This company'
+
+  // View filter only — narrows which cells are shown; never mutates the data.
+  const filteredGroup = useMemo<AuditGroup>(
+    () => (company === 'all' ? group : { ...group, cells: group.cells.filter((c) => c.entityId === company) }),
+    [group, company],
+  )
+
+  if (!sheets.length) return null
+
+  return (
+    <div className="space-y-3">
+      {/* Excel-style sheet tabs */}
+      <div className="flex flex-wrap items-end gap-1 border-b border-soft-border">
+        {sheets.map((g) => {
+          const on = g.sheet === active
+          const filled = g.stats.valuePresent
+          return (
+            <button
+              key={g.sheet}
+              type="button"
+              onClick={() => setActive(g.sheet)}
+              className={[
+                'group relative -mb-px flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors duration-normal ease-premium',
+                on
+                  ? 'border-soft-border border-b-white bg-white font-semibold text-navy-deep'
+                  : 'border-transparent bg-transparent font-medium text-ink-secondary hover:bg-ice/60 hover:text-navy-primary',
+              ].join(' ')}
+            >
+              <span className={`pointer-events-none absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep transition-opacity duration-normal ease-premium ${on ? 'opacity-100' : 'opacity-0'}`} />
+              {g.sheet}
+              <span className={`rounded-full px-1.5 text-[9.5px] font-semibold tabular-nums ${on ? 'bg-emerald-soft text-emerald' : 'bg-ice text-ink-secondary'}`}>
+                {filled}/{g.stats.total}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Page control row — the company filter applies to every sheet type. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <CompanyFilter options={companyOptions} value={company} onChange={setCompany} />
+        {company !== 'all' && (
+          <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
+            <span className="h-2 w-2 rounded-full" style={{ background: companyColor(company).key }} />
+            Showing <span className="font-semibold text-navy-deep">{companyLabel}</span> only
+            <button
+              type="button"
+              onClick={() => setCompany('all')}
+              className="ml-1 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10px] font-medium text-navy-primary transition-colors hover:border-navy-primary/30"
+            >
+              Show all
+            </button>
+          </span>
+        )}
+      </div>
+
+      {/* Contain a per-sheet render failure to this panel — the tab bar above
+          stays live, so one bad sheet can never blank the whole Data Audit page.
+          resetKey clears the error when the user switches sheets or company. */}
+      <SectionErrorBoundary resetKey={`${group.sheet}::${company}`} sectionLabel={`${group.sheet} sheet`}>
+        {group.role === 'market_quote' ? (
+          // The Historical Stock Movement sheet is a transposed, date-by-row series
+          // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
+          // can't represent — it gets a dedicated, workbook-faithful renderer.
+          <HistoricalStockMovement companyFilter={company} onClearCompany={() => setCompany('all')} />
+        ) : group.role === 'analyst_coverage' ? (
+          // Analyst coverage is a record list — each row a dated broker note with
+          // nine attributes, not a period pivot — so it also gets a dedicated,
+          // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
+          // Upside×2, in company blocks closed by Average rows).
+          <AnalystCoverage key={company} group={group} companyFilter={company} onClearCompany={() => setCompany('all')} />
+        ) : (
+          <GridView
+            key={`${group.sheet}::${company}`}
+            group={filteredGroup}
+            companyLabel={companyLabel}
+            isFiltered={company !== 'all'}
+            raw={raw}
+            onRawChange={setRaw}
+            onClearCompany={() => setCompany('all')}
+          />
+        )}
       </SectionErrorBoundary>
     </div>
   )
