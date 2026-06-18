@@ -204,6 +204,17 @@ export function StreetView() {
   const mostConservative = withTarget.reduce<(typeof withTarget)[number] | null>((worst, r) => (worst == null || (r.targetPrice as number) < (worst.targetPrice as number) ? r : worst), null)
   const latestNote = latestByBroker[0] ?? null
 
+  // Dynamic "Average Analyst Target" — the mean of the valid (numeric, > 0)
+  // targets actually on the table below. Blank / null / non-numeric / NA / stale
+  // placeholder values are excluded, and it recomputes automatically whenever the
+  // broker rows change. An additional, transparent summary — never a replacement
+  // for the individual rows, and it never breaks if some rows are incomplete.
+  const validTargets = latestByBroker
+    .map((r) => r.targetPrice)
+    .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0)
+  const avgTarget = validTargets.length ? Math.round(validTargets.reduce((a, b) => a + b, 0) / validTargets.length) : null
+  const avgUpside = avgTarget != null && price != null && price > 0 ? (avgTarget / price - 1) * 100 : null
+
   // Shared ₹ domain for the range bars (52-week range exists for the focal name only).
   const dom = has52
     ? { lo: Math.min(marketSnapshot.weekLow52, lo ?? marketSnapshot.weekLow52), hi: Math.max(marketSnapshot.weekHigh52, hi ?? marketSnapshot.weekHigh52) }
@@ -344,6 +355,28 @@ export function StreetView() {
             <SourceTag source="Broker research" period={ac.lastUpdated} confidence="medium" provenance={{ source_name: 'Dated broker reports (rating + target + price-at-reco) via the Trendlyne research aggregator.', source_url: reports.find((r) => r.sourceUrl)?.sourceUrl ?? '', fetched_at: '' }} />
           )}
         </div>
+
+        {/* Average Analyst Target — a soft summary of the targets on the table
+            below; recalculates automatically as broker rows change. */}
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-[#DCE6F4] bg-soft-blue/50 px-4 py-2.5">
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-ink-secondary">Average Analyst Target</span>
+            <span className="font-display text-[21px] leading-none tabular-nums text-navy-deep">{px(avgTarget)}</span>
+            <span className="text-[11px] text-ink-secondary">
+              {validTargets.length > 0 ? (
+                <>based on <span className="font-semibold text-navy-deep">{validTargets.length}</span> {validTargets.length === 1 ? 'report' : 'reports'}</>
+              ) : (
+                'no numeric targets yet'
+              )}
+            </span>
+          </div>
+          {avgUpside != null && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1 text-[10.5px] font-semibold shadow-soft ring-1 ring-soft-border" style={{ color: avgUpside >= 0 ? TEAL : BURG }}>
+              {upPct(avgUpside)} vs current
+            </span>
+          )}
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full border-separate border-spacing-0 text-left text-[11.5px]">
             <thead>
