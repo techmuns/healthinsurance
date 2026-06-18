@@ -3,14 +3,47 @@
     "snapshot_id": "sectoral-news-snapshot",
     "description": "Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-15",
-    "last_successful_run": "2026-06-15T12:16:30.049Z",
+    "last_updated": "2026-06-18",
+    "last_successful_run": "2026-06-18T10:22:10.780Z",
     "seed_count": 31,
-    "agent_count": 29,
+    "agent_count": 39,
     "generated_by": "Seed: investor portfolio pack. Updates: AI (muns agent, web search).",
     "notes": "Seed floor can never be lost. Agent items are de-duped by subject+date and verified-before-acting."
   },
   "data": [
+    {
+      "sn": 62,
+      "category": "General",
+      "date": "2026-06-17",
+      "subject": "Health insurance growth stays firm but underwriting turns more selective",
+      "summary": "Recent sector reporting said health-insurance demand remains healthy in 2026, but insurers are becoming more cautious on customer selection and portfolio risk. That matters because growth may remain robust, yet quality of growth and retention could become more important than topline expansion alone.",
+      "reference": "https://bfsi.economictimes.indiatimes.com/articles/health-insurance-in-2026-navigating-growth-and-risk/126225527",
+      "id": "02b5dd4bf35e1d",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
+      "sn": 61,
+      "category": "Profitability",
+      "date": "2026-06-17",
+      "subject": "Medical inflation keeps health insurers in repricing mode",
+      "summary": "Industry commentary highlighted medical inflation around 14% and continued premium repricing pressure across health insurers. For investors, this points to ongoing strain on loss ratios and margins unless pricing catches up to hospital-cost inflation.",
+      "reference": "https://bfsi.economictimes.indiatimes.com/articles/health-insurance-in-2026-navigating-growth-and-risk/126225527",
+      "id": "0a4fde7b3df318",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
+      "sn": 63,
+      "category": "GST",
+      "date": "2026-06-11",
+      "subject": "GST relief on health insurance still under discussion",
+      "summary": "Recent policy coverage indicated that GST changes on health-insurance premiums remain under discussion rather than finalized. The lack of a clear rate cut or exemption keeps affordability unchanged for now, limiting any immediate demand uplift from tax relief.",
+      "reference": "https://www.livemint.com/insurance/gst-on-health-life-insurance-premiums-relief-still-under-discussion-11718000000000.html",
+      "id": "12fca83f3cf2f5",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
     {
       "sn": 36,
       "category": "General",
@@ -67,6 +100,17 @@
       "added_at": "2026-06-10"
     },
     {
+      "sn": 64,
+      "category": "Regulatory",
+      "date": "2026-06-05",
+      "subject": "IRDAI pushes faster claims and stronger policyholder-service standards",
+      "summary": "Recent reporting on regulatory developments indicated continuing IRDAI pressure on insurers to tighten claims handling and customer-service timelines. This matters because stronger service rules can improve trust and distribution, but may also raise compliance and operating costs for weaker players.",
+      "reference": "https://www.business-standard.com/industry/news/irdai-asks-insurers-to-improve-claims-settlement-service-standards-126060500001_1.html",
+      "id": "03d967b60482c8",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
       "sn": 43,
       "category": "Regulatory",
       "date": "2026-06-04",
@@ -89,6 +133,17 @@
       "added_at": "2026-06-11"
     },
     {
+      "sn": 65,
+      "category": "Competition / Peers",
+      "date": "2026-05-28",
+      "subject": "Health insurers sharpen product and distribution competition",
+      "summary": "Sector coverage in late May noted that standalone health insurers and broader insurers are increasingly using product tweaks, partnerships and channel expansion to compete for retail health business. For investors, this suggests market-share battles may intensify even as the category grows.",
+      "reference": "https://bfsi.economictimes.indiatimes.com/articles/health-insurance-in-2026-navigating-growth-and-risk/126225527",
+      "id": "0c8ea1d897b16c",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
       "sn": 45,
       "category": "Regulatory",
       "date": "2026-05-25",
@@ -109,6 +164,28 @@
       "id": "17e00de0e8623e",
       "origin": "agent",
       "added_at": "2026-06-11"
+    },
+    {
+      "sn": 66,
+      "category": "Profitability",
+      "date": "2026-05-16",
+      "subject": "Hospital tariffs remain a key margin risk for insurers",
+      "summary": "Industry articles during the period emphasized that rising hospital billing and treatment intensity continue to drive claim severity higher. That is directly relevant for Star Health, Niva Bupa and peers because claims inflation can outpace premium hikes and pressure underwriting profitability.",
+      "reference": "https://www.hindustantimes.com/ht-insight/public-health/indias-health-insurance-paradox-101781692824861-amp.html",
+      "id": "065581abdd7dec",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
+      "sn": 67,
+      "category": "General",
+      "date": "2026-04-30",
+      "subject": "Low insurance penetration keeps long runway intact",
+      "summary": "Multiple recent sector reports highlighted India’s large underinsured population and rising awareness of private health cover. That supports a structural growth case for standalone health insurers, though conversion depends on affordability and claims experience.",
+      "reference": "https://hindustantimes.com/ht-insight/public-health/indias-health-insurance-paradox-101781692824861-amp.html",
+      "id": "0c9ddd1afb2ad4",
+      "origin": "agent",
+      "added_at": "2026-06-18"
     },
     {
       "sn": 52,
@@ -142,6 +219,28 @@
       "id": "1d0b0807f6301e",
       "origin": "agent",
       "added_at": "2026-06-10"
+    },
+    {
+      "sn": 68,
+      "category": "Competition / Peers",
+      "date": "2026-04-18",
+      "subject": "Claims-service rankings keep pressure on weaker brands",
+      "summary": "Published complaint and claims-service comparisons drew attention to differences in insurer customer experience and grievance patterns. For investors, sustained service-quality gaps can affect renewal rates, agent preference and ultimately market-share outcomes among Niva Bupa, Star Health, Care and peers.",
+      "reference": "https://joinditto.in/articles/health-insurance/top-10-health-insurance-companies-with-the-lowest-complaints",
+      "id": "0f22b6f2e77adf",
+      "origin": "agent",
+      "added_at": "2026-06-18"
+    },
+    {
+      "sn": 69,
+      "category": "Regulatory",
+      "date": "2026-04-12",
+      "subject": "IRDAI data keeps claim-settlement quality in focus",
+      "summary": "Reporting based on IRDAI data showed wide variation in claim-settlement metrics across health insurers, including named standalone players. Even without a new rule, disclosure-led scrutiny can pressure insurers with weaker settlement performance to improve processes or risk reputational damage.",
+      "reference": "https://www.business-standard.com/finance/personal-finance/paying-claims-or-pushing-back-what-irdai-data-reveals-about-insurers-126010100580_1.html",
+      "id": "06b3cfd71a1137",
+      "origin": "agent",
+      "added_at": "2026-06-18"
     },
     {
       "sn": 47,
@@ -263,6 +362,17 @@
       "id": "1d1702ee5d84f0",
       "origin": "agent",
       "added_at": "2026-06-11"
+    },
+    {
+      "sn": 70,
+      "category": "GST",
+      "date": "2026-03-21",
+      "subject": "No immediate GST cut leaves premium affordability unchanged",
+      "summary": "Coverage around GST Council deliberations suggested no near-term implemented reduction in GST on health-insurance premiums. For the sector, that means demand continues to rely on income growth and awareness rather than a tax-led affordability boost.",
+      "reference": "https://www.livemint.com/insurance/gst-on-health-life-insurance-premiums-relief-still-under-discussion-11718000000000.html",
+      "id": "0005c8d5d6af14",
+      "origin": "agent",
+      "added_at": "2026-06-18"
     },
     {
       "sn": 58,
