@@ -29,7 +29,7 @@ interface ValRow { company_id: string; date?: string | null; market_cap?: number
 const VAL = (valuationSnapshot as { data?: ValRow[] }).data ?? []
 const valRow = (id: string) => VAL.find((r) => r.company_id === id) ?? null
 
-interface ShareRow { company_id: string; shares?: number | null; filing_period?: string }
+interface ShareRow { company_id: string; shares?: number | null; period?: string; filing_period?: string }
 const SHARES = (shareholdingPattern as { data?: ShareRow[] }).data ?? []
 
 const CR = 1e7 // ₹1 crore in rupees — net worth / market cap are stored in ₹ Cr.
@@ -69,8 +69,12 @@ export interface SharesOutstanding { value: number; source: string }
 export function getSharesOutstanding(companyId: string): SharesOutstanding | null {
   const rows = SHARES.filter((r) => r.company_id === companyId && typeof r.shares === 'number')
   if (rows.length) {
-    const total = rows.reduce((s, r) => s + (r.shares ?? 0), 0)
-    return { value: total, source: `${rows[0].filing_period ?? 'latest'} shareholding pattern` }
+    // The snapshot can carry several filed quarters; shares outstanding is the
+    // sum of holders for the LATEST filed quarter only — never added across periods.
+    const latest = rows.reduce((p, r) => ((r.period ?? '') > p ? r.period ?? '' : p), '')
+    const latestRows = rows.filter((r) => (r.period ?? '') === latest)
+    const total = latestRows.reduce((s, r) => s + (r.shares ?? 0), 0)
+    return { value: total, source: `${latestRows[0].filing_period ?? 'latest'} shareholding pattern` }
   }
   const v = valRow(companyId)
   if (v && typeof v.shares_outstanding === 'number') return { value: v.shares_outstanding, source: 'exchange filing' }

@@ -272,8 +272,15 @@ export interface NamedHolder {
  *  filing, largest first. `change` is null — a single filing carries no
  *  quarter-on-quarter movement (never fabricated). */
 export function getNamedHolders(companyId: string): NamedHolder[] {
-  return ((shareholdingPatternSnapshot as { data?: ShareholdingPatternRow[] }).data ?? [])
-    .filter((r) => r.company_id === companyId && r.pct != null)
+  const rows = ((shareholdingPatternSnapshot as { data?: ShareholdingPatternRow[] }).data ?? []).filter(
+    (r) => r.company_id === companyId && r.pct != null,
+  )
+  if (!rows.length) return []
+  // The snapshot can now carry several filed quarters; the named-holder list
+  // shows the LATEST filed quarter only — never blended across periods.
+  const latest = rows.reduce((p, r) => ((r.period ?? '') > p ? r.period ?? '' : p), '')
+  return rows
+    .filter((r) => (r.period ?? '') === latest)
     .sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0))
     .map((r) => ({ name: r.holder, type: inferHolderType(r.holder), share: r.pct, change: null }))
 }

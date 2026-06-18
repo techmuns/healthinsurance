@@ -6,6 +6,7 @@ import { LockedPanel } from '@/components/LockedPanel'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { SourceTag } from '@/components/SourceTag'
+import { ShareholdingTrend } from '@/components/ShareholdingTrend'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyMaster, getOwnershipData, getBulkBlockDeals, type BulkBlockDeal } from '@/lib/dataLayer'
 
@@ -360,6 +361,10 @@ export function Ownership() {
           </div>
         </div>
       </ModuleCard>
+
+      {/* Per-holder trend across the filed quarters (own data source: the
+          quarterly shareholding pattern). Self-hides for names with no filing. */}
+      <ShareholdingTrend companyId={company.id} />
 
       <OwnershipDynamics row={row} companyName={company.shortName} periodLabel={periodLabel} />
     </div>
