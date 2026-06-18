@@ -36,9 +36,19 @@ import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 // ---------------------------------------------------------------------------
 
 const FOCAL = 'niva-bupa'
-const FOCAL_LABEL = 'Niva Bupa Health Insurance'
-const YAHOO_URL = 'https://finance.yahoo.com/quote/NIVABUPA.NS/history/'
 const BLOCK_THRESHOLD = 50_000_000
+
+// The listed insurers we carry a daily NSE series for — each is selectable on
+// the Historical tab and fed by the SAME muns market-data API + Yahoo backup
+// (see scripts/ingest/fetch-muns-market-data.ts). Keep the tickers in sync with
+// that fetcher's TICKERS list.
+const LISTED: Record<string, { label: string; nse: string }> = {
+  'niva-bupa': { label: 'Niva Bupa Health Insurance', nse: 'NIVABUPA' },
+  'star-health': { label: 'Star Health and Allied Insurance', nse: 'STARHEALTH' },
+  'icici-lombard': { label: 'ICICI Lombard General Insurance', nse: 'ICICIGI' },
+  'godigit': { label: 'Go Digit General Insurance', nse: 'GODIGIT' },
+}
+const yahooUrl = (nse: string) => `https://finance.yahoo.com/quote/${nse}.NS/history/`
 
 interface RawRow {
   company_id: string
@@ -161,9 +171,14 @@ export function HistoricalStockMovement({
     })
     .filter((x): x is TrayChip => x != null)
 
+  // Which insurer's series to show: the focused company (when one is selected on
+  // the audit tab and we carry an NSE series for it), else the focal Niva Bupa.
+  const targetId = companyFilter && companyFilter !== 'all' ? companyFilter : FOCAL
+  const target = LISTED[targetId]
+
   const model = useMemo(() => {
     const rows: DailyRow[] = SNAP.data
-      .filter((r) => r.company_id === FOCAL && r.close != null)
+      .filter((r) => r.company_id === targetId && r.close != null)
       .sort((a, b) => a.date.localeCompare(b.date))
       .map((r) => ({ ...r, deliPct: pctOf(r.deliverable_qty, r.traded_qty) }))
 
@@ -190,7 +205,7 @@ export function HistoricalStockMovement({
     const changePct = change != null && first?.close ? change / first.close : null
 
     return { rows, average, chart, first, last, hi, lo, change, changePct }
-  }, [])
+  }, [targetId])
 
   // The selected-average roll-up (computed live; ascending for the trend chart,
   // newest-first for the table).
@@ -207,17 +222,21 @@ export function HistoricalStockMovement({
   const lastUpdated = SNAP._meta?.last_updated?.slice(0, 10)
   const NA_TITLE = 'Deliverable quantity is an exchange-only field (NSE) — not carried by the daily price feeds (muns API / Yahoo). Fills when an NSE delivery file is staged.'
 
-  // The whole tab is Niva Bupa only (the workbook tab is NIVABUPA on NSE). If the
-  // company filter points at another insurer, say so honestly rather than
-  // pretending this is their data.
-  if (companyFilter !== 'all' && companyFilter !== FOCAL) {
+  // No NSE series for the chosen company — say so honestly (real data only,
+  // never a fabricated stand-in). A listed name with no rows yet is still
+  // backfilling from the same muns API; a non-listed name simply isn't tracked.
+  if (!target || !model.rows.length) {
+    const name = target?.label ?? companyShortName(targetId)
     return (
       <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
-        <p className="text-[12.5px] text-ink-secondary">
-          Historical stock movement is tracked for <span className="font-semibold text-navy-deep">Niva Bupa</span> only on this sheet
-          {companyFilter ? <> — not <span className="font-semibold text-navy-deep">{companyShortName(companyFilter)}</span></> : null}.
+        <p className="mx-auto max-w-xl text-[12.5px] text-ink-secondary">
+          {target ? (
+            <>No NSE price history yet for <span className="font-semibold text-navy-deep">{name}</span> — it fills from the muns market-data API, the same feed as Niva Bupa.</>
+          ) : (
+            <><span className="font-semibold text-navy-deep">{name}</span> isn’t a separately-listed NSE name tracked on this sheet.</>
+          )}
         </p>
-        {onClearCompany && (
+        {onClearCompany && companyFilter !== 'all' && (
           <button
             type="button"
             onClick={onClearCompany}
@@ -230,18 +249,15 @@ export function HistoricalStockMovement({
     )
   }
 
-  if (!model.rows.length) {
-    return (
-      <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">
-        No price history in the snapshot yet — run <code className="font-mono">npm run ingest:price:yahoo</code>.
-      </div>
-    )
-  }
-
   const latestBucket = bucketsDesc[0]
   const priorBucket = bucketsDesc[1]
   const bucketDelta =
     latestBucket?.avgClose != null && priorBucket?.avgClose != null ? latestBucket.avgClose - priorBucket.avgClose : null
+
+  // Niva carries a workbook-seeded history back to listing; the peers are fed by
+  // the muns API only, so a short series is still backfilling (honest, not 0).
+  const hasWorkbook = model.rows.some((r) => /workbook/i.test(r.provenance?.source_name ?? ''))
+  const backfilling = !hasWorkbook && model.rows.length < 120
 
   return (
     <div className="space-y-4">
@@ -249,18 +265,22 @@ export function HistoricalStockMovement({
       <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="leading-tight">
-            <h2 className="font-display text-[16px] text-navy-deep">Historical Stock Movement · {FOCAL_LABEL}</h2>
+            <h2 className="font-display text-[16px] text-navy-deep">Historical Stock Movement · {target.label}</h2>
             <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-              Daily close, traded &amp; delivered quantity on NSE (NIVABUPA), with weekly / monthly / yearly averages — the
-              workbook tab, live.
+              Daily close, traded &amp; delivered quantity on NSE ({target.nse}), with weekly / monthly / yearly averages — live.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
+            {backfilling && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-gold/30 bg-gold-soft px-2 py-0.5 text-[10px] font-semibold text-gold" title="Earlier history is still backfilling from the muns market-data API — it extends automatically on each daily run.">
+                <RefreshCw className="h-2.5 w-2.5" /> Backfilling history
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 rounded-full border border-emerald/30 bg-emerald-soft px-2 py-0.5 text-[10px] font-semibold text-emerald">
               <RefreshCw className="h-2.5 w-2.5" /> Auto-refreshes daily
             </span>
             <a
-              href={YAHOO_URL}
+              href={yahooUrl(target.nse)}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-ice/60 px-2 py-0.5 text-[10px] font-medium text-navy-primary hover:bg-ice"
@@ -274,7 +294,7 @@ export function HistoricalStockMovement({
         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Kpi label={`Latest close · ${last ? fmtDate(last.date) : ''}`} value={inr(last?.close ?? null)} />
           <Kpi
-            label="Since listing"
+            label={`Over period${first ? ` · since ${fmtDate(first.date)}` : ''}`}
             value={changePct == null ? '—' : `${up ? '+' : ''}${(changePct * 100).toFixed(1)}%`}
             tone={up ? 'pos' : 'neg'}
             icon={up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -321,10 +341,10 @@ export function HistoricalStockMovement({
           </ResponsiveContainer>
         </div>
         <p className="mt-1.5 text-[10px] leading-snug text-ink-secondary/80">
-          <span className="font-semibold text-ink-secondary">Source ·</span> Close &amp; volume — workbook (listing→Jul 2025),
-          then the muns market-data API &amp; Yahoo Finance keep it current{lastUpdated ? `, last refreshed ${lastUpdated}` : ''}.
-          Delivery — NSE (workbook history + the daily NSE delivery file); shown <span className="italic">n/a</span> only if a
-          day's file isn't out yet, never 0.
+          <span className="font-semibold text-ink-secondary">Source ·</span> Close &amp; volume — {hasWorkbook ? 'workbook seed (listing→Jul 2025), then ' : ''}the muns
+          market-data API &amp; Yahoo Finance (NSE daily history){lastUpdated ? `, last refreshed ${lastUpdated}` : ''}.
+          Delivery — NSE security-wise delivery file; shown <span className="italic">n/a</span> only if a day's file isn't out yet, never 0.
+          {backfilling && <> Earlier sessions are still backfilling from the muns API and extend on each daily run.</>}
         </p>
       </div>
 

@@ -37,16 +37,20 @@ const TICKERS: Array<{ company_id: string; ticker: string }> = [
 const WINDOW_DAYS = Number(process.env.MUNS_WINDOW_DAYS ?? 4)
 // Safety cap on windows per ticker per run (≈ how far back one run will backfill).
 const MAX_WINDOWS = Number(process.env.MUNS_MAX_WINDOWS ?? 160)
-// Earliest date to ever request when a ticker has no stored history yet.
+// Earliest date to ever request when a ticker has no stored history yet — the
+// Historical Stock Movement horizon. Every listed insurer in TICKERS is now
+// backfilled to here (each is selectable on the Historical tab), not just the
+// focal insurer; one run fills the gap, then it advances incrementally.
 const FLOOR_START = process.env.MUNS_START ?? '2024-11-01'
-// For peers that aren't the focal insurer and have no history yet, only keep
-// recent data current (full backfill isn't needed for the Comps sheet).
-const PEER_LOOKBACK_DAYS = 35
-const FOCAL = 'niva-bupa'
+// Re-walk from the floor only when a ticker's earliest stored session is more
+// than this many days after it (a real early gap to fill) — so a fully-seeded
+// ticker just extends forward instead of re-walking every run.
+const BACKFILL_GAP_DAYS = Number(process.env.MUNS_BACKFILL_GAP_DAYS ?? 21)
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const isoOf = (d: Date) => d.toISOString().slice(0, 10)
 const addDays = (iso: string, n: number) => isoOf(new Date(Date.parse(iso + 'T00:00:00Z') + n * 86_400_000))
+const daysBetween = (a: string, b: string) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86_400_000)
 
 type Rec = Record<string, unknown>
 
@@ -188,9 +192,12 @@ export const fetchMunsMarketData: Fetcher = {
 
     const snap = await loadPriceHistory()
     const latestByCompany = new Map<string, string>()
+    const earliestByCompany = new Map<string, string>()
     for (const r of snap.data) {
-      const cur = latestByCompany.get(r.company_id)
-      if (!cur || r.date > cur) latestByCompany.set(r.company_id, r.date)
+      const lo = earliestByCompany.get(r.company_id)
+      if (!lo || r.date < lo) earliestByCompany.set(r.company_id, r.date)
+      const hi = latestByCompany.get(r.company_id)
+      if (!hi || r.date > hi) latestByCompany.set(r.company_id, r.date)
     }
 
     const warnings: string[] = []
@@ -199,14 +206,20 @@ export const fetchMunsMarketData: Fetcher = {
     let okTickers = 0
 
     for (const t of TICKERS) {
-      // Start from a few days before the last stored session (overlap = self-heal),
-      // or a sensible floor when this ticker has no history yet.
+      // Start a few days before the last stored session (overlap = self-heal),
+      // or from the floor when this ticker has no history yet. Additionally, if a
+      // ticker DOES have history but it doesn't reach back to the floor (e.g. a
+      // peer that was only kept recent until now), re-walk from the floor to fill
+      // that early gap — the merge is idempotent, so this self-limits once full.
       const stored = latestByCompany.get(t.company_id)
-      const start = stored
-        ? addDays(stored, -3)
-        : t.company_id === FOCAL
-          ? FLOOR_START
-          : addDays(today, -PEER_LOOKBACK_DAYS)
+      const earliest = earliestByCompany.get(t.company_id)
+      let start: string
+      if (!stored) {
+        start = FLOOR_START
+      } else {
+        start = addDays(stored, -3)
+        if (earliest && daysBetween(FLOOR_START, earliest) > BACKFILL_GAP_DAYS) start = FLOOR_START
+      }
       const { rows, windows, sampleErr } = await walkTicker(t.company_id, t.ticker, start, today, fetched_at)
       if (rows.length) {
         const res = mergePriceRows(snap, rows)
