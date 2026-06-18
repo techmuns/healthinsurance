@@ -102,6 +102,24 @@ export interface CoverageBundle {
   reports: AnalystReport[]
 }
 
+/** Every dated broker call we hold for a company → AnalystReport[], newest
+ *  first. Same source the audit's Broker-coverage table reads, so Street View
+ *  can show all of them (not just one row per broker). */
+function mapCalls(rows: CoverageRow[]): AnalystReport[] {
+  return [...rows]
+    .sort((a, b) => (a.report_date < b.report_date ? 1 : -1))
+    .map((r) => ({
+      brokerage: r.broker,
+      rating: normRating(r.rating),
+      targetPrice: r.target_price ?? null,
+      reportDate: fmtReportDate(r.report_date),
+      thesis: '',
+      sourceId: '',
+      sourceUrl: r.source_url ?? undefined,
+      confidence: 'secondary',
+    }))
+}
+
 /** Build consensus + per-broker latest reports from the dated coverage rows. */
 function buildFromCoverage(rows: CoverageRow[], quote: MarketQuote | null): CoverageBundle | null {
   if (!rows.length) return null
@@ -137,18 +155,7 @@ function buildFromCoverage(rows: CoverageRow[], quote: MarketQuote | null): Cove
     lastUpdated: fmtReportDate(newestFirst[0].report_date),
   }
 
-  const reports: AnalystReport[] = newestFirst.map((r) => ({
-    brokerage: r.broker,
-    rating: normRating(r.rating),
-    targetPrice: r.target_price ?? null,
-    reportDate: fmtReportDate(r.report_date),
-    thesis: '',
-    sourceId: '',
-    sourceUrl: r.source_url ?? undefined,
-    confidence: 'secondary',
-  }))
-
-  return { consensus, reports }
+  return { consensus, reports: mapCalls(rows) }
 }
 
 /**
@@ -157,7 +164,13 @@ function buildFromCoverage(rows: CoverageRow[], quote: MarketQuote | null): Cove
  * or null when no citable coverage exists (→ honest "not tracked" state).
  */
 export function getAnalystCoverage(companyId: string): CoverageBundle | null {
-  if (companyId === FOCAL_VALUATION_ID) return { consensus: nivaConsensus, reports: nivaReports }
+  if (companyId === FOCAL_VALUATION_ID) {
+    // Keep Niva's curated daily Moneycontrol consensus for the headline numbers,
+    // but list ALL the dated broker calls we hold (the same coverage the audit
+    // shows) — falling back to the curated reports only if none are on record.
+    const calls = COVERAGE_ROWS.filter((r) => r.company_id === companyId)
+    return { consensus: nivaConsensus, reports: calls.length ? mapCalls(calls) : nivaReports }
+  }
   return buildFromCoverage(
     COVERAGE_ROWS.filter((r) => r.company_id === companyId),
     getMarketQuote(companyId),

@@ -205,15 +205,18 @@ export function StreetView() {
   const latestNote = latestByBroker[0] ?? null
 
   // Dynamic "Average Analyst Target" — the mean of the valid (numeric, > 0)
-  // targets actually on the table below. Blank / null / non-numeric / NA / stale
-  // placeholder values are excluded, and it recomputes automatically whenever the
-  // broker rows change. An additional, transparent summary — never a replacement
-  // for the individual rows, and it never breaks if some rows are incomplete.
-  const validTargets = latestByBroker
+  // targets across every dated broker call on the table below. Blank / null /
+  // non-numeric / NA / stale placeholder values are excluded, and it recomputes
+  // automatically whenever the broker rows change. An additional, transparent
+  // summary — never a replacement, and it never breaks if some rows are incomplete.
+  const validTargets = reports
     .map((r) => r.targetPrice)
     .filter((t): t is number => typeof t === 'number' && Number.isFinite(t) && t > 0)
   const avgTarget = validTargets.length ? Math.round(validTargets.reduce((a, b) => a + b, 0) / validTargets.length) : null
   const avgUpside = avgTarget != null && price != null && price > 0 ? (avgTarget / price - 1) * 100 : null
+  // Only show the "Key view" column when at least one row carries a thesis — the
+  // dated audit calls don't, so an empty column would read as missing data.
+  const hasThesis = reports.some((r) => (r.thesis ?? '').trim().length > 0)
 
   // Shared ₹ domain for the range bars (52-week range exists for the focal name only).
   const dom = has52
@@ -348,7 +351,7 @@ export function StreetView() {
       {/* ── All analyst views ──────────────────────────────────────────────── */}
       <div className="card-surface p-5">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-          <PanelHead title="All Analyst Views" note="Each broker’s most recent call — one row per broker, every row with a live source." />
+          <PanelHead title="All Analyst Views" note="Every dated broker call on record — newest first, each with a live source." />
           {isFocal ? (
             <SourceTag {...srcTag('niva-consensus')} />
           ) : (
@@ -386,16 +389,16 @@ export function StreetView() {
                 <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 text-right font-semibold">Target</th>
                 <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 text-right font-semibold">Upside</th>
                 <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 font-semibold">Date</th>
-                <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 font-semibold">Key view</th>
+                {hasThesis && <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 font-semibold">Key view</th>}
                 <th className="border-y border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 font-semibold">Source</th>
                 <th className="rounded-r-lg border-y border-r border-[#DCE6F4] bg-[#EBF1FB] py-2.5 pr-3 font-semibold">Confidence</th>
               </tr>
             </thead>
             <tbody>
-              {latestByBroker.map((r) => {
+              {reports.map((r, i) => {
                 const u = up(r.targetPrice)
                 return (
-                  <tr key={r.sourceId} className="align-top transition-colors duration-200 hover:bg-[#F4F8FE]">
+                  <tr key={`${r.brokerage}-${r.reportDate}-${i}`} className="align-top transition-colors duration-200 hover:bg-[#F4F8FE]">
                     <td className="border-b border-[#EEF1F7] py-2.5 pl-3 pr-3 font-semibold text-navy-deep">{r.brokerage}</td>
                     <td className="border-b border-[#EEF1F7] py-2.5 pr-3">
                       {r.rating ? (
@@ -407,7 +410,7 @@ export function StreetView() {
                     <td className="border-b border-[#EEF1F7] py-2.5 pr-3 text-right font-semibold tabular-nums text-navy-deep">{r.targetPrice != null ? px(r.targetPrice) : <span className="text-ink-secondary/40">—</span>}</td>
                     <td className="border-b border-[#EEF1F7] py-2.5 pr-3 text-right font-semibold tabular-nums" style={{ color: u == null ? '#A6AEBC' : u >= 0 ? TEAL : BURG }}>{u == null ? '—' : upPct(u)}</td>
                     <td className="whitespace-nowrap border-b border-[#EEF1F7] py-2.5 pr-3 text-ink-secondary">{r.reportDate}</td>
-                    <td className="border-b border-[#EEF1F7] py-2.5 pr-3 text-ink-secondary">{r.thesis}</td>
+                    {hasThesis && <td className="border-b border-[#EEF1F7] py-2.5 pr-3 text-ink-secondary">{r.thesis}</td>}
                     <td className="border-b border-[#EEF1F7] py-2.5 pr-3"><OpenSource id={r.sourceId} url={r.sourceUrl} /></td>
                     <td className="border-b border-[#EEF1F7] py-2.5 pr-3"><ValPill c={r.confidence} /></td>
                   </tr>
@@ -417,7 +420,7 @@ export function StreetView() {
           </table>
         </div>
         <p className="mt-3 text-[10.5px] text-ink-secondary">
-          {latestByBroker.length} brokers on record — each shown with its most recent target; the consensus above reflects these latest views. Targets are sourced, never invented.
+          {reports.length} broker {reports.length === 1 ? 'call' : 'calls'} on record for {company.shortName} — every dated note we hold; the consensus above reflects each broker’s latest view. Targets are sourced, never invented.
         </p>
       </div>
     </div>
