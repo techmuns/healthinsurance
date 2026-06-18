@@ -23,13 +23,6 @@ export function ExtractedDataAudit() {
         subtitle="Your Excel template, tab-for-tab and cell-for-cell, beside the dashboard data. A filled cell shows the verified value; an empty cell shows which source pipeline should fill it — and why it is still missing."
         Icon={ClipboardCheck}
         tone="navy"
-        right={
-          <div className="rounded-xl border border-soft-border bg-white/75 px-3 py-1.5 text-right shadow-soft backdrop-blur-sm">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-ink-secondary">Template</p>
-            <p className="font-display text-[12px] leading-tight text-navy-deep">{model.meta.template_file ?? 'niva-bupa-portfolio-review.xlsx'}</p>
-            {model.meta.last_updated && <p className="text-[9.5px] text-ink-secondary">Pipeline updated {model.meta.last_updated.slice(0, 10)}</p>}
-          </div>
-        }
       />
 
       <AuditSpreadsheet model={model} />
