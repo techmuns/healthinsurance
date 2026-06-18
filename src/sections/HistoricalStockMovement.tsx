@@ -9,10 +9,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { Building2, ExternalLink, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react'
+import { Building2, ExternalLink, RefreshCw, TrendingDown, TrendingUp, X } from 'lucide-react'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 import { companyShortName } from '@/lib/companyColors'
-import { ColumnToggle, useColumnVisibility, type ColumnDef } from '@/components/ColumnToggle'
+import { useAuditView } from '@/lib/auditView'
+import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 
 // ---------------------------------------------------------------------------
 //  Historical Stock Movement — the dashboard mirror of the workbook's
@@ -134,9 +135,9 @@ function bucketize(rows: DailyRow[], g: Granularity): Bucket[] {
     })
 }
 
-// Daily-table columns (hide/show). Date is locked — it's the row key.
-const DAILY_COLS: ColumnDef[] = [
-  { key: 'date', label: 'Date', locked: true },
+// Daily-table columns that can be hidden directly from the header (Date is the
+// row key, so it always stays).
+const DAILY_HIDEABLE: { key: string; label: string }[] = [
   { key: 'close', label: 'Close' },
   { key: 'traded', label: 'Total Qty' },
   { key: 'deliv', label: 'Deliv. Qty' },
@@ -151,8 +152,14 @@ export function HistoricalStockMovement({
   onClearCompany?: () => void
 } = {}) {
   const [gran, setGran] = useState<Granularity>('month')
-  const { hidden, toggle, showAll } = useColumnVisibility()
-  const vis = (key: string) => !hidden.has(key)
+  const view = useAuditView('historical-stock', DAILY_HIDEABLE.map((c) => c.key))
+  const vis = (key: string) => !view.isHiddenColumn(key)
+  const chips: TrayChip[] = view.hiddenColumns
+    .map((k): TrayChip | null => {
+      const c = DAILY_HIDEABLE.find((x) => x.key === k)
+      return c ? { id: k, kind: 'column', label: c.label } : null
+    })
+    .filter((x): x is TrayChip => x != null)
 
   const model = useMemo(() => {
     const rows: DailyRow[] = SNAP.data
@@ -388,28 +395,37 @@ export function HistoricalStockMovement({
         </p>
       </div>
 
+      {/* Customize View — tap × on a Daily column header to hide it; restore here. */}
+      <CustomizeBar
+        chips={chips}
+        onRestore={(chip) => view.showColumn(chip.id)}
+        onRestoreAll={view.restoreAll}
+        onSave={view.save}
+        onReset={view.reset}
+        dirty={view.dirty}
+        customized={view.customized}
+        hasSaved={view.hasSaved}
+      />
+
       {/* ── The two tables, aligned side by side ─────────────────────────────── */}
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.55fr_1fr]">
         {/* Daily */}
         <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-soft">
           <div className="flex items-center justify-between gap-2 border-b border-soft-border bg-[#F3F6FB] px-3 py-1.5">
             <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-navy-primary">Daily</span>
-            <div className="flex items-center gap-2">
-              <span className="hidden text-[10px] tabular-nums text-ink-secondary sm:inline">
-                {model.rows.length} sessions · {first ? fmtDate(first.date) : ''} → {last ? fmtDate(last.date) : ''}
-              </span>
-              <ColumnToggle columns={DAILY_COLS} hidden={hidden} onToggle={toggle} onShowAll={showAll} />
-            </div>
+            <span className="hidden text-[10px] tabular-nums text-ink-secondary sm:inline">
+              {model.rows.length} sessions · {first ? fmtDate(first.date) : ''} → {last ? fmtDate(last.date) : ''}
+            </span>
           </div>
           <div className="overflow-auto" style={{ maxHeight: '60vh' }}>
             <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[#F8FAFD]">
                   <Th className="text-left">Date</Th>
-                  {vis('close') && <Th>Close</Th>}
-                  {vis('traded') && <Th>Total Qty</Th>}
-                  {vis('deliv') && <Th>Deliv. Qty</Th>}
-                  {vis('delivpct') && <Th>% Deliv.</Th>}
+                  {vis('close') && <Th onHide={() => view.hideColumn('close')}>Close</Th>}
+                  {vis('traded') && <Th onHide={() => view.hideColumn('traded')}>Total Qty</Th>}
+                  {vis('deliv') && <Th onHide={() => view.hideColumn('deliv')}>Deliv. Qty</Th>}
+                  {vis('delivpct') && <Th onHide={() => view.hideColumn('delivpct')}>% Deliv.</Th>}
                 </tr>
                 {/* Period average — pinned at the top, just under the column
                     labels (the all-sessions mean). Solid tint so the daily rows
@@ -529,12 +545,22 @@ function Kpi({
   )
 }
 
-function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+function Th({ children, className = '', onHide }: { children: React.ReactNode; className?: string; onHide?: () => void }) {
   return (
     <th
-      className={`border-b border-soft-border px-2.5 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-ink-secondary ${className || 'text-right'}`}
+      className={`group/col relative border-b border-soft-border px-2.5 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-ink-secondary ${className || 'text-right'}`}
     >
       {children}
+      {onHide && (
+        <button
+          type="button"
+          title="Hide column"
+          onClick={onHide}
+          className="absolute right-0.5 top-0.5 rounded p-0.5 text-ink-secondary opacity-0 transition-opacity hover:bg-coral-soft hover:text-coral group-hover/col:opacity-100"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
     </th>
   )
 }

@@ -1,14 +1,15 @@
 import { Fragment, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ExternalLink, FunctionSquare, Info, Building2, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
 } from '@/lib/extractedDataAudit'
 import { companyColor, isCompanyEntity, companyShortName } from '@/lib/companyColors'
+import { useAuditView, type AuditView } from '@/lib/auditView'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
-import { ColumnToggle, useColumnVisibility, type ColumnDef } from '@/components/ColumnToggle'
+import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import { CompanyFilter, type CompanyOption } from '@/components/CompanyFilter'
 
 // ---------------------------------------------------------------------------
@@ -345,28 +346,68 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
 
 // ── Grid ─────────────────────────────────────────────────────────────────────
 type Grid = ReturnType<typeof buildGrid>
-function SheetGrid({ grid, raw, selected, onSelect, hiddenCols }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; hiddenCols: Set<string> }) {
+
+// Apply the view (hidden columns / hidden companies + column order) to the
+// sheet's columns. On company-block sheets, companies are kept contiguous (so
+// the colour separation never breaks) — reordering happens within a company,
+// and a company's place is set by its earliest column in the order.
+function viewColumns(columns: GridCol[], view: AuditView, entityByColumn: boolean): GridCol[] {
+  const rank = new Map(view.order.map((k, i) => [k, i]))
+  const r = (c: GridCol) => (rank.has(c.col) ? rank.get(c.col)! : Number.MAX_SAFE_INTEGER)
+  const cols = columns.filter((c) => !view.isHiddenColumn(c.col) && !view.isHiddenCompany(c.entityId))
+  if (!entityByColumn) return cols.slice().sort((a, b) => r(a) - r(b))
+  const byE = new Map<string, GridCol[]>()
+  for (const c of cols) (byE.get(c.entityId) ?? byE.set(c.entityId, []).get(c.entityId)!).push(c)
+  const ents = [...byE.keys()].sort((a, b) => Math.min(...byE.get(a)!.map(r)) - Math.min(...byE.get(b)!.map(r)))
+  return ents.flatMap((e) => byE.get(e)!.slice().sort((a, b) => r(a) - r(b)))
+}
+
+function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView }) {
   const { rows, entityByColumn } = grid
-  const columns = useMemo(() => grid.columns.filter((c) => !hiddenCols.has(c.col)), [grid.columns, hiddenCols])
-  const bands = useMemo(() => (entityByColumn ? entityBands(columns) : []), [entityByColumn, columns])
+  const [dragKey, setDragKey] = useState<string | null>(null)
+  const [overKey, setOverKey] = useState<string | null>(null)
+
+  const columns = viewColumns(grid.columns, view, entityByColumn)
+  const bands = entityByColumn ? entityBands(columns) : []
+  const keys = columns.map((c) => c.col)
   // The first visible column of each company block (after the first) — gets a
   // stronger left divider so companies read as clearly separate sections.
-  const blockStart = useMemo(() => {
-    const set = new Set<string>()
-    if (!entityByColumn) return set
+  const blockStart = new Set<string>()
+  if (entityByColumn) {
     let prev: string | undefined
     for (const c of columns) {
-      if (prev !== undefined && c.entityId !== prev) set.add(c.col)
+      if (prev !== undefined && c.entityId !== prev) blockStart.add(c.col)
       prev = c.entityId
     }
-    return set
-  }, [columns, entityByColumn])
+  }
+
+  // Drag-to-reorder — constrained to within a company on the block sheets, so
+  // dragging can rearrange a company's periods but never scramble the groups.
+  const sameBand = (aKey: string, bEntityId: string) => {
+    if (!entityByColumn) return true
+    const a = columns.find((c) => c.col === aKey)
+    return a ? a.entityId === bEntityId : false
+  }
+  const canDrop = (target: GridCol) => dragKey != null && dragKey !== target.col && sameBand(dragKey, target.entityId)
+  const onColDrop = (target: GridCol) => {
+    if (canDrop(target)) view.reorder(dragKey!, target.col)
+    setDragKey(null)
+    setOverKey(null)
+  }
+  const move = (key: string, dir: -1 | 1) => {
+    const i = keys.indexOf(key)
+    const j = i + dir
+    if (i === -1 || j < 0 || j >= keys.length) return
+    if (entityByColumn && columns[i].entityId !== columns[j].entityId) return
+    view.swap(key, keys[j])
+  }
+  const stop = (e: React.SyntheticEvent) => e.stopPropagation()
 
   if (!grid.columns.length || !rows.length) {
     return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">No template cells reconstructable for this sheet.</div>
   }
   if (!columns.length) {
-    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">All data columns are hidden — use <span className="font-semibold text-navy-primary">Columns</span> to bring them back.</div>
+    return <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12px] text-ink-secondary">Everything is hidden — use the <span className="font-semibold text-navy-primary">Hidden</span> tray above to restore a column or company.</div>
   }
 
   // Soft, company-tinted left divider for a block-start column.
@@ -389,12 +430,21 @@ function SheetGrid({ grid, raw, selected, onSelect, hiddenCols }: { grid: Grid; 
                   <th
                     key={`${b.entityId}-${i}`}
                     colSpan={b.span}
-                    className="border-b border-r border-soft-border px-2 py-1 text-center text-[10.5px] font-bold"
+                    className="group/band border-b border-r border-soft-border px-2 py-1 text-center text-[10.5px] font-bold"
                     style={{ background: cc.tint, borderBottom: `2.5px solid ${cc.key}`, color: cc.text, ...(i > 0 ? { borderLeft: `2px solid ${cc.border}` } : null) }}
                   >
                     <span className="inline-flex items-center gap-1.5">
                       <span className="h-2 w-2 rounded-full" style={{ background: cc.key }} />
                       {b.entity || '—'}
+                      <button
+                        type="button"
+                        title={`Hide ${b.entity || 'this company'}`}
+                        onClick={() => view.hideCompany(b.entityId)}
+                        className="rounded p-0.5 opacity-0 transition-opacity hover:bg-white/70 group-hover/band:opacity-100"
+                        style={{ color: cc.text }}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     </span>
                   </th>
                 )
@@ -405,12 +455,33 @@ function SheetGrid({ grid, raw, selected, onSelect, hiddenCols }: { grid: Grid; 
             <th className="sticky left-0 z-30 border-b border-r border-soft-border bg-[#F3F6FB] px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide text-ink-secondary" style={{ minWidth: 220 }}>
               Line item
             </th>
-            {columns.map((c) => (
-              <th key={c.col} className="border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center" style={{ minWidth: 78, ...dividerStyle(c) }}>
-                <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.top}</span>
-                <span className="block text-[11px] font-bold text-navy-deep">{c.label}</span>
-              </th>
-            ))}
+            {columns.map((c) => {
+              const isDragging = dragKey === c.col
+              const isOver = overKey === c.col && canDrop(c)
+              return (
+                <th
+                  key={c.col}
+                  draggable
+                  onDragStart={(e) => { setDragKey(c.col); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', c.col) } catch { /* noop */ } }}
+                  onDragOver={(e) => { if (canDrop(c)) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setOverKey(c.col) } }}
+                  onDragLeave={() => setOverKey((k) => (k === c.col ? null : k))}
+                  onDrop={(e) => { e.preventDefault(); onColDrop(c) }}
+                  onDragEnd={() => { setDragKey(null); setOverKey(null) }}
+                  className="group/col relative cursor-grab border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center active:cursor-grabbing"
+                  style={{ minWidth: 82, opacity: isDragging ? 0.45 : 1, ...dividerStyle(c), ...(isOver ? { boxShadow: 'inset 2px 0 0 #27457E' } : null) }}
+                  title="Drag to reorder"
+                >
+                  {/* Hover controls — move left · hide · move right */}
+                  <span className="absolute inset-x-0 top-0 z-10 hidden items-center justify-center gap-0.5 bg-white/85 py-px group-hover/col:flex">
+                    <button type="button" title="Move left" onMouseDown={stop} onClick={(e) => { stop(e); move(c.col, -1) }} className="rounded p-0.5 text-ink-secondary hover:bg-ice hover:text-navy-primary"><ChevronLeft className="h-3 w-3" /></button>
+                    <button type="button" title={`Hide ${c.label}`} onMouseDown={stop} onClick={(e) => { stop(e); view.hideColumn(c.col) }} className="rounded p-0.5 text-ink-secondary hover:bg-coral-soft hover:text-coral"><X className="h-3 w-3" /></button>
+                    <button type="button" title="Move right" onMouseDown={stop} onClick={(e) => { stop(e); move(c.col, 1) }} className="rounded p-0.5 text-ink-secondary hover:bg-ice hover:text-navy-primary"><ChevronRight className="h-3 w-3" /></button>
+                  </span>
+                  <span className="block font-mono text-[8.5px] font-medium text-ink-secondary/60">{c.top}</span>
+                  <span className="block text-[11px] font-bold text-navy-deep">{c.label}</span>
+                </th>
+              )
+            })}
           </tr>
         </thead>
         <tbody>
@@ -522,10 +593,12 @@ function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => v
 }
 
 // ── Grid view (one generic, period-pivot sheet) ──────────────────────────────
-// Keyed by sheet + company in the page, so its column-visibility and selection
-// state reset cleanly whenever the sheet or the company filter changes.
-function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCompany }: {
+// Keyed by sheet + company in the page, so selection/drag state reset cleanly
+// when the sheet or company filter changes. The saved "Customize View" is keyed
+// by sheet only, so it survives a company-filter change and reloads on return.
+function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany }: {
   group: AuditGroup
+  fullColumns: GridCol[]
   companyLabel: string
   isFiltered: boolean
   raw: boolean
@@ -534,7 +607,32 @@ function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCo
 }) {
   const [selected, setSelected] = useState<AuditCell | null>(null)
   const grid = useMemo(() => buildGrid(group), [group])
-  const { hidden, toggle, showAll } = useColumnVisibility()
+  const allCols = useMemo(() => fullColumns.map((c) => c.col), [fullColumns])
+  const view = useAuditView(group.sheet, allCols)
+
+  // Labels for the Hidden tray come from the FULL sheet, so a hidden column /
+  // company still has a readable chip even when the company filter is narrowing.
+  const fullEntityByColumn = useMemo(() => new Set(fullColumns.map((c) => c.entityId).filter(Boolean)).size > 1, [fullColumns])
+  const colMeta = useMemo(() => new Map(fullColumns.map((c) => [c.col, c] as const)), [fullColumns])
+  const companyMeta = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const c of fullColumns) if (c.entityId) m.set(c.entityId, c.entity)
+    return m
+  }, [fullColumns])
+
+  const chips: TrayChip[] = [
+    ...view.hiddenCompanies
+      .filter((id) => companyMeta.has(id))
+      .map((id) => ({ id, kind: 'company' as const, label: companyShortName(id, companyMeta.get(id)), color: companyColor(id).key })),
+    ...view.hiddenColumns
+      .filter((k) => colMeta.has(k))
+      .map((k) => {
+        const c = colMeta.get(k)!
+        const label = fullEntityByColumn && isCompanyEntity(c.entityId) ? `${companyShortName(c.entityId, c.entity)} · ${c.label}` : c.label
+        return { id: k, kind: 'column' as const, label }
+      }),
+  ]
+  const restore = (chip: TrayChip) => (chip.kind === 'company' ? view.showCompany(chip.id) : view.showColumn(chip.id))
 
   // Per-sheet source-pipeline coverage (fetched vs missing), for the summary row.
   // Blanks the deck doesn't publish are pulled into their own "not in deck" count
@@ -556,25 +654,13 @@ function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCo
     return { pipes, notInDeck }
   }, [group])
 
-  // Column list for the hide/show menu — disambiguated by company on the
-  // column-block sheets (where a period like "FY25" repeats per insurer).
-  const columnDefs: ColumnDef[] = useMemo(
-    () => grid.columns.map((c) => ({
-      key: c.col,
-      label: grid.entityByColumn && isCompanyEntity(c.entityId)
-        ? `${companyShortName(c.entityId, c.entity)} · ${c.label}`
-        : c.label,
-    })),
-    [grid],
-  )
-
   if (isFiltered && !group.cells.length) {
     return <CompanyEmptyState label={companyLabel} onClear={onClearCompany} />
   }
 
   return (
     <>
-      {/* Toolbar — context · value mode · columns · legend */}
+      {/* Toolbar — context · value mode · legend */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-[11px] text-ink-secondary">{group.dashboardSection || group.role}</span>
@@ -593,7 +679,6 @@ function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCo
               )
             })}
           </div>
-          <ColumnToggle columns={columnDefs} hidden={hidden} onToggle={toggle} onShowAll={showAll} />
           <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
             {LEGEND.map((c) => (
               <span key={c} className="inline-flex items-center gap-1">
@@ -634,9 +719,22 @@ function GridView({ group, companyLabel, isFiltered, raw, onRawChange, onClearCo
         )}
       </div>
 
+      {/* Customize View — the hidden-items tray + Save / Reset. Tap × on a
+          company band or a column header to tidy the view; restore from here. */}
+      <CustomizeBar
+        chips={chips}
+        onRestore={restore}
+        onRestoreAll={view.restoreAll}
+        onSave={view.save}
+        onReset={view.reset}
+        dirty={view.dirty}
+        customized={view.customized}
+        hasSaved={view.hasSaved}
+      />
+
       {/* Grid + (optional) detail */}
       <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
-        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} hiddenCols={hidden} />
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} view={view} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
             <CellDetail cell={selected} onClose={() => setSelected(null)} />
@@ -676,6 +774,10 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
     () => (company === 'all' ? group : { ...group, cells: group.cells.filter((c) => c.entityId === company) }),
     [group, company],
   )
+
+  // The full (unfiltered) column set for the active sheet — the order universe
+  // and chip labels for the Customize View, stable across company-filter changes.
+  const fullColumns = useMemo(() => (group ? buildGrid(group).columns : []), [group])
 
   if (!sheets.length) return null
 
@@ -745,6 +847,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
           <GridView
             key={`${group.sheet}::${company}`}
             group={filteredGroup}
+            fullColumns={fullColumns}
             companyLabel={companyLabel}
             isFiltered={company !== 'all'}
             raw={raw}

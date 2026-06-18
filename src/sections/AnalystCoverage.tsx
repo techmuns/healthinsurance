@@ -2,7 +2,8 @@ import { Fragment, useMemo, useState } from 'react'
 import { Building2, ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { STATUS_META, type AuditCell, type AuditGroup } from '@/lib/extractedDataAudit'
 import { companyColor, companyShortName } from '@/lib/companyColors'
-import { ColumnToggle, useColumnVisibility, type ColumnDef } from '@/components/ColumnToggle'
+import { useAuditView } from '@/lib/auditView'
+import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 
@@ -377,21 +378,34 @@ export function AnalystCoverage({
   onClearCompany?: () => void
 }) {
   const allBlocks = useMemo(() => buildBlocks(group), [group])
-  const blocks = useMemo(
-    () => (companyFilter === 'all' ? allBlocks : allBlocks.filter((b) => b.companyId === companyFilter)),
-    [allBlocks, companyFilter],
-  )
   const [selected, setSelected] = useState<AuditCell | null>(null)
-  const { hidden, toggle, showAll } = useColumnVisibility()
-  const vis = (key: string) => !hidden.has(key)
+  // Customize View — hide columns / company blocks directly from the table. The
+  // Company column is the row grouping, so it's never part of the hide order.
+  const view = useAuditView('analyst-coverage', COLS.filter((c) => c.key !== 'company').map((c) => c.key))
+  const vis = (key: string) => !view.isHiddenColumn(key)
 
-  // Column hide/show — the Company column stays locked (it carries the row
-  // grouping). Everything else can be hidden; the data is never removed.
-  const columnDefs: ColumnDef[] = COLS.map((c) => ({
-    key: c.key,
-    label: c.sub ? `${c.label} · ${c.sub}` : c.label,
-    locked: c.key === 'company',
-  }))
+  // Visible blocks honour the company focus (dropdown) AND the tap-to-hide tray.
+  const blocks = useMemo(
+    () =>
+      allBlocks.filter(
+        (b) => (companyFilter === 'all' || b.companyId === companyFilter) && !view.isHiddenCompany(b.companyId),
+      ),
+    [allBlocks, companyFilter, view],
+  )
+
+  const companyMeta = useMemo(() => new Map(allBlocks.map((b) => [b.companyId, b.companyLabel] as const)), [allBlocks])
+  const chips: TrayChip[] = [
+    ...view.hiddenCompanies
+      .filter((id) => companyMeta.has(id))
+      .map((id) => ({ id, kind: 'company' as const, label: companyShortName(id, companyMeta.get(id)), color: companyColor(id).key })),
+    ...view.hiddenColumns
+      .map((k): TrayChip | null => {
+        const c = COLS.find((x) => x.key === k)
+        return c ? { id: k, kind: 'column', label: c.sub ? `${c.label} · ${c.sub}` : c.label } : null
+      })
+      .filter((x): x is TrayChip => x != null),
+  ]
+  const restore = (chip: TrayChip) => (chip.kind === 'company' ? view.showCompany(chip.id) : view.showColumn(chip.id))
 
   const totalRows = blocks.reduce((n, b) => n + b.rows.length, 0)
   const fetched = useMemo(() => {
@@ -407,7 +421,7 @@ export function AnalystCoverage({
             {COLS.filter((c) => c.key === 'company' || vis(c.key)).map((c) => (
               <th
                 key={c.key}
-                className={`border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'} ${c.key === 'company' ? 'sticky left-0 z-30' : ''}`}
+                className={`group/col relative border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'} ${c.key === 'company' ? 'sticky left-0 z-30' : ''}`}
                 style={{ minWidth: c.key === 'company' ? 150 : c.key === 'broker' ? 138 : 76 }}
               >
                 <span className="inline-flex items-center gap-1">
@@ -417,6 +431,16 @@ export function AnalystCoverage({
                     {c.sub && <span className="ml-1 font-medium normal-case text-ink-secondary/70">· {c.sub}</span>}
                   </span>
                 </span>
+                {c.key !== 'company' && (
+                  <button
+                    type="button"
+                    title={`Hide ${c.label}${c.sub ? ` · ${c.sub}` : ''}`}
+                    onClick={() => view.hideColumn(c.key)}
+                    className="absolute right-1 top-1 rounded p-0.5 text-ink-secondary opacity-0 transition-opacity hover:bg-coral-soft hover:text-coral group-hover/col:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
               </th>
             ))}
           </tr>
@@ -431,12 +455,21 @@ export function AnalystCoverage({
                   {i === 0 && (
                     <th
                       rowSpan={b.rows.length}
-                      className="sticky left-0 z-10 border-b-2 border-r border-soft-border px-3 py-1.5 text-left align-middle"
+                      className="group/band sticky left-0 z-10 border-b-2 border-r border-soft-border px-3 py-1.5 text-left align-middle"
                       style={{ background: cc.tint, borderLeft: `3px solid ${cc.key}` }}
                     >
                       <span className="flex items-center gap-1.5">
                         <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cc.key }} />
                         <span className="block text-[12px] font-bold leading-tight" style={{ color: cc.text }}>{companyShortName(b.companyId, b.companyLabel)}</span>
+                        <button
+                          type="button"
+                          title={`Hide ${companyShortName(b.companyId, b.companyLabel)}`}
+                          onClick={() => view.hideCompany(b.companyId)}
+                          className="ml-auto rounded p-0.5 opacity-0 transition-opacity hover:bg-white/70 group-hover/band:opacity-100"
+                          style={{ color: cc.text }}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
                       </span>
                       <span className="mt-0.5 block pl-3.5 text-[9.5px] text-ink-secondary">{b.rows.length} broker calls</span>
                     </th>
@@ -491,14 +524,11 @@ export function AnalystCoverage({
             low-confidence backup (Moneycontrol / Trendlyne). CMP is the live market price (latest close); upside %s and the Average rows are calculated. Missing is never shown as 0.
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          <ColumnToggle columns={columnDefs} hidden={hidden} onToggle={toggle} onShowAll={showAll} />
-          <div className="flex flex-wrap items-center justify-end gap-2 text-[10px] text-ink-secondary">
-            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: TONE.green.dot, opacity: 0.85 }} />Fetched</span>
-            <span className="inline-flex items-center gap-1"><FunctionSquare className="h-3 w-3 opacity-40" />Calculated</span>
-            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald/60" />Live price (CMP)</span>
-            <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: '#B68B3A', opacity: 0.85 }} />Reports — not fetched</span>
-          </div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2 text-[10px] text-ink-secondary">
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: TONE.green.dot, opacity: 0.85 }} />Fetched</span>
+          <span className="inline-flex items-center gap-1"><FunctionSquare className="h-3 w-3 opacity-40" />Calculated</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-emerald/60" />Live price (CMP)</span>
+          <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: '#B68B3A', opacity: 0.85 }} />Reports — not fetched</span>
         </div>
       </div>
 
@@ -513,19 +543,40 @@ export function AnalystCoverage({
         </span>
       </div>
 
+      {/* Customize View — tap × on a company block or a column header to hide it;
+          restore from the tray. */}
+      <CustomizeBar
+        chips={chips}
+        onRestore={restore}
+        onRestoreAll={view.restoreAll}
+        onSave={view.save}
+        onReset={view.reset}
+        dirty={view.dirty}
+        customized={view.customized}
+        hasSaved={view.hasSaved}
+      />
+
       {blocks.length === 0 ? (
         <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
-          <p className="text-[12.5px] text-ink-secondary">
-            <span className="font-semibold text-navy-deep">{companyShortName(companyFilter)}</span> has no broker coverage on this sheet.
-          </p>
-          {onClearCompany && (
-            <button
-              type="button"
-              onClick={onClearCompany}
-              className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-3 py-1 text-[11px] font-medium text-navy-primary shadow-soft transition-colors hover:border-navy-primary/30"
-            >
-              <Building2 className="h-3.5 w-3.5" /> Show all companies
-            </button>
+          {companyFilter !== 'all' ? (
+            <>
+              <p className="text-[12.5px] text-ink-secondary">
+                <span className="font-semibold text-navy-deep">{companyShortName(companyFilter)}</span> has no broker coverage on this sheet.
+              </p>
+              {onClearCompany && (
+                <button
+                  type="button"
+                  onClick={onClearCompany}
+                  className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-3 py-1 text-[11px] font-medium text-navy-primary shadow-soft transition-colors hover:border-navy-primary/30"
+                >
+                  <Building2 className="h-3.5 w-3.5" /> Show all companies
+                </button>
+              )}
+            </>
+          ) : (
+            <p className="text-[12.5px] text-ink-secondary">
+              Every company is hidden — restore one from the <span className="font-semibold text-navy-primary">Hidden</span> tray above.
+            </p>
           )}
         </div>
       ) : (
