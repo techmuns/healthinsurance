@@ -763,7 +763,7 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
     if (group?.role === 'market_quote') {
       return [
         { id: 'all', label: 'All companies' },
-        ...LISTED_INSURER_IDS.map((id) => ({ id, label: companyShortName(id, LISTED_INSURERS[id].label) })),
+        ...LISTED_INSURER_IDS.map((id) => ({ id, label: LISTED_INSURERS[id].short ?? companyShortName(id, LISTED_INSURERS[id].label) })),
       ]
     }
     const seen = new Map<string, string>()

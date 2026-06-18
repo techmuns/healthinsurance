@@ -227,7 +227,7 @@ export function HistoricalStockMovement({
       <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
         <p className="mx-auto max-w-xl text-[12.5px] text-ink-secondary">
           {target ? (
-            <>No NSE price history yet for <span className="font-semibold text-navy-deep">{name}</span>{target.via ? <> — tracked via <span className="font-semibold text-navy-deep">{target.via}</span> (listed parent)</> : null}. It fills from the muns market-data API, the same feed as Niva Bupa.</>
+            <>No NSE price history yet for <span className="font-semibold text-navy-deep">{name}</span>{target.note ? <> ({target.note})</> : null}. It fills from the muns market-data API, the same feed as Niva Bupa.</>
           ) : (
             <><span className="font-semibold text-navy-deep">{name}</span> isn’t a separately-listed NSE name tracked on this sheet.</>
           )}
@@ -263,7 +263,7 @@ export function HistoricalStockMovement({
           <div className="leading-tight">
             <h2 className="font-display text-[16px] text-navy-deep">Historical Stock Movement · {target.label}</h2>
             <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-              Daily close, traded &amp; delivered quantity on NSE ({target.nse}){target.via ? <> · tracked via <span className="font-medium text-ink-primary">{target.via}</span> (listed parent)</> : null}, with weekly / monthly / yearly averages — live.
+              Daily close, traded &amp; delivered quantity on NSE ({target.nse}){target.note ? <> · <span className="font-medium text-ink-primary">{target.note}</span></> : null}, with weekly / monthly / yearly averages — live.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
