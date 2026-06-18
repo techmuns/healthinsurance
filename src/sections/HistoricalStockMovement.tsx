@@ -545,10 +545,15 @@ function Kpi({
   )
 }
 
+// Default cells to right-aligned (tabular numbers), unless the caller sets an
+// explicit alignment — so a className like "tabular-nums" never silently drops
+// the alignment and leaves numbers floating left of their right-aligned header.
+const alignClass = (className: string) => (/\btext-(left|center|right)\b/.test(className) ? '' : 'text-right')
+
 function Th({ children, className = '', onHide }: { children: React.ReactNode; className?: string; onHide?: () => void }) {
   return (
     <th
-      className={`group/col relative border-b border-soft-border px-2.5 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-ink-secondary ${className || 'text-right'}`}
+      className={`group/col relative border-b border-soft-border px-2.5 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-ink-secondary ${alignClass(className)} ${className}`}
     >
       {children}
       {onHide && (
@@ -566,7 +571,7 @@ function Th({ children, className = '', onHide }: { children: React.ReactNode; c
 }
 function Td({ children, className = '', title }: { children: React.ReactNode; className?: string; title?: string }) {
   return (
-    <td title={title} className={`border-b border-soft-border/60 px-2.5 py-[5px] text-[11px] group-hover:bg-ice/50 ${className || 'text-right'}`}>
+    <td title={title} className={`border-b border-soft-border/60 px-2.5 py-[5px] text-[11px] group-hover:bg-ice/50 ${alignClass(className)} ${className}`}>
       {children}
     </td>
   )
