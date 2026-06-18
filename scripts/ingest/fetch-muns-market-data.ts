@@ -25,11 +25,15 @@ const PARSER_NAME = 'fetch-muns-market-data'
 const API_BASE = 'https://fastapi.muns.io/market_data'
 
 // Listed insurers and their NSE tickers (country=India handles the exchange).
+// Keep in sync with src/lib/listedInsurers.ts (the Historical-tab config). Care
+// Health is unlisted, so its listed parent Religare Enterprises is tracked and
+// shown as Care's proxy on the Historical tab.
 const TICKERS: Array<{ company_id: string; ticker: string }> = [
   { company_id: 'niva-bupa', ticker: 'NIVABUPA' },
   { company_id: 'star-health', ticker: 'STARHEALTH' },
   { company_id: 'icici-lombard', ticker: 'ICICIGI' },
   { company_id: 'godigit', ticker: 'GODIGIT' },
+  { company_id: 'religare-enterprises', ticker: 'RELIGARE' },
 ]
 
 // A 4-calendar-day window spans at most 4 trading days, so the preview shows

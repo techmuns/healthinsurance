@@ -5,6 +5,7 @@ import {
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
 } from '@/lib/extractedDataAudit'
 import { companyColor, isCompanyEntity, companyShortName } from '@/lib/companyColors'
+import { LISTED_INSURERS, LISTED_INSURER_IDS } from '@/lib/listedInsurers'
 import { useAuditView, type AuditView } from '@/lib/auditView'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
@@ -754,9 +755,17 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
 
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
 
-  // Company filter options — every real company that appears anywhere in the
-  // audit, with Niva Bupa and Star pinned to the front. "All companies" default.
+  // Company filter options. On the Historical Stock Movement (market_quote)
+  // sheet only the LISTED insurers are meaningful (the unlisted SAHIs have no
+  // tradeable stock), so the dropdown is trimmed to them — Care via its listed
+  // parent Religare. Every other sheet lists every company in the audit.
   const companyOptions: CompanyOption[] = useMemo(() => {
+    if (group?.role === 'market_quote') {
+      return [
+        { id: 'all', label: 'All companies' },
+        ...LISTED_INSURER_IDS.map((id) => ({ id, label: companyShortName(id, LISTED_INSURERS[id].label) })),
+      ]
+    }
     const seen = new Map<string, string>()
     for (const g of sheets) for (const c of g.cells) if (isCompanyEntity(c.entityId)) seen.set(c.entityId, c.entityLabel)
     const PRIORITY = ['niva-bupa', 'star-health', 'care-health', 'aditya-birla', 'manipalcigna', 'icici-lombard']
@@ -765,14 +774,18 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
       .map(([id, label]) => ({ id, label: companyShortName(id, label) }))
       .sort((a, b) => rank(a.id) - rank(b.id) || a.label.localeCompare(b.label))
     return [{ id: 'all', label: 'All companies' }, ...list]
-  }, [sheets])
+  }, [sheets, group?.role])
 
-  const companyLabel = companyOptions.find((o) => o.id === company)?.label ?? 'This company'
+  // The selected company may not be a valid option on the current sheet (e.g. an
+  // unlisted SAHI when viewing Historical) — fall back to "all" for this sheet,
+  // without losing the underlying selection for sheets where it does apply.
+  const effectiveCompany = companyOptions.some((o) => o.id === company) ? company : 'all'
+  const companyLabel = companyOptions.find((o) => o.id === effectiveCompany)?.label ?? 'This company'
 
   // View filter only — narrows which cells are shown; never mutates the data.
   const filteredGroup = useMemo<AuditGroup>(
-    () => (company === 'all' ? group : { ...group, cells: group.cells.filter((c) => c.entityId === company) }),
-    [group, company],
+    () => (effectiveCompany === 'all' ? group : { ...group, cells: group.cells.filter((c) => c.entityId === effectiveCompany) }),
+    [group, effectiveCompany],
   )
 
   // The full (unfiltered) column set for the active sheet — the order universe
@@ -812,10 +825,10 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
 
       {/* Page control row — the company filter applies to every sheet type. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <CompanyFilter options={companyOptions} value={company} onChange={setCompany} />
-        {company !== 'all' && (
+        <CompanyFilter options={companyOptions} value={effectiveCompany} onChange={setCompany} />
+        {effectiveCompany !== 'all' && (
           <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
-            <span className="h-2 w-2 rounded-full" style={{ background: companyColor(company).key }} />
+            <span className="h-2 w-2 rounded-full" style={{ background: companyColor(effectiveCompany).key }} />
             Showing <span className="font-semibold text-navy-deep">{companyLabel}</span> only
             <button
               type="button"
@@ -831,25 +844,25 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
       {/* Contain a per-sheet render failure to this panel — the tab bar above
           stays live, so one bad sheet can never blank the whole Data Audit page.
           resetKey clears the error when the user switches sheets or company. */}
-      <SectionErrorBoundary resetKey={`${group.sheet}::${company}`} sectionLabel={`${group.sheet} sheet`}>
+      <SectionErrorBoundary resetKey={`${group.sheet}::${effectiveCompany}`} sectionLabel={`${group.sheet} sheet`}>
         {group.role === 'market_quote' ? (
           // The Historical Stock Movement sheet is a transposed, date-by-row series
           // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
           // can't represent — it gets a dedicated, workbook-faithful renderer.
-          <HistoricalStockMovement companyFilter={company} onClearCompany={() => setCompany('all')} />
+          <HistoricalStockMovement companyFilter={effectiveCompany} onClearCompany={() => setCompany('all')} />
         ) : group.role === 'analyst_coverage' ? (
           // Analyst coverage is a record list — each row a dated broker note with
           // nine attributes, not a period pivot — so it also gets a dedicated,
           // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
           // Upside×2, in company blocks closed by Average rows).
-          <AnalystCoverage key={company} group={group} companyFilter={company} onClearCompany={() => setCompany('all')} />
+          <AnalystCoverage key={effectiveCompany} group={group} companyFilter={effectiveCompany} onClearCompany={() => setCompany('all')} />
         ) : (
           <GridView
-            key={`${group.sheet}::${company}`}
+            key={`${group.sheet}::${effectiveCompany}`}
             group={filteredGroup}
             fullColumns={fullColumns}
             companyLabel={companyLabel}
-            isFiltered={company !== 'all'}
+            isFiltered={effectiveCompany !== 'all'}
             raw={raw}
             onRawChange={setRaw}
             onClearCompany={() => setCompany('all')}

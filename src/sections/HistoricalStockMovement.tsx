@@ -12,6 +12,7 @@ import {
 import { Building2, ExternalLink, RefreshCw, TrendingDown, TrendingUp, X } from 'lucide-react'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 import { companyShortName } from '@/lib/companyColors'
+import { LISTED_INSURERS } from '@/lib/listedInsurers'
 import { useAuditView } from '@/lib/auditView'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 
@@ -38,16 +39,9 @@ import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 const FOCAL = 'niva-bupa'
 const BLOCK_THRESHOLD = 50_000_000
 
-// The listed insurers we carry a daily NSE series for — each is selectable on
-// the Historical tab and fed by the SAME muns market-data API + Yahoo backup
-// (see scripts/ingest/fetch-muns-market-data.ts). Keep the tickers in sync with
-// that fetcher's TICKERS list.
-const LISTED: Record<string, { label: string; nse: string }> = {
-  'niva-bupa': { label: 'Niva Bupa Health Insurance', nse: 'NIVABUPA' },
-  'star-health': { label: 'Star Health and Allied Insurance', nse: 'STARHEALTH' },
-  'icici-lombard': { label: 'ICICI Lombard General Insurance', nse: 'ICICIGI' },
-  'godigit': { label: 'Go Digit General Insurance', nse: 'GODIGIT' },
-}
+// The listed insurers we carry a daily NSE series for live in one shared config
+// (src/lib/listedInsurers.ts) so the dropdown and this renderer never drift.
+const LISTED = LISTED_INSURERS
 const yahooUrl = (nse: string) => `https://finance.yahoo.com/quote/${nse}.NS/history/`
 
 interface RawRow {
@@ -173,12 +167,14 @@ export function HistoricalStockMovement({
 
   // Which insurer's series to show: the focused company (when one is selected on
   // the audit tab and we carry an NSE series for it), else the focal Niva Bupa.
+  // The price rows may live under a listed parent's id (Care → Religare).
   const targetId = companyFilter && companyFilter !== 'all' ? companyFilter : FOCAL
   const target = LISTED[targetId]
+  const dataId = target?.dataId ?? targetId
 
   const model = useMemo(() => {
     const rows: DailyRow[] = SNAP.data
-      .filter((r) => r.company_id === targetId && r.close != null)
+      .filter((r) => r.company_id === dataId && r.close != null)
       .sort((a, b) => a.date.localeCompare(b.date))
       .map((r) => ({ ...r, deliPct: pctOf(r.deliverable_qty, r.traded_qty) }))
 
@@ -205,7 +201,7 @@ export function HistoricalStockMovement({
     const changePct = change != null && first?.close ? change / first.close : null
 
     return { rows, average, chart, first, last, hi, lo, change, changePct }
-  }, [targetId])
+  }, [dataId])
 
   // The selected-average roll-up (computed live; ascending for the trend chart,
   // newest-first for the table).
@@ -231,7 +227,7 @@ export function HistoricalStockMovement({
       <div className="rounded-xl2 border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
         <p className="mx-auto max-w-xl text-[12.5px] text-ink-secondary">
           {target ? (
-            <>No NSE price history yet for <span className="font-semibold text-navy-deep">{name}</span> — it fills from the muns market-data API, the same feed as Niva Bupa.</>
+            <>No NSE price history yet for <span className="font-semibold text-navy-deep">{name}</span>{target.via ? <> — tracked via <span className="font-semibold text-navy-deep">{target.via}</span> (listed parent)</> : null}. It fills from the muns market-data API, the same feed as Niva Bupa.</>
           ) : (
             <><span className="font-semibold text-navy-deep">{name}</span> isn’t a separately-listed NSE name tracked on this sheet.</>
           )}
@@ -267,7 +263,7 @@ export function HistoricalStockMovement({
           <div className="leading-tight">
             <h2 className="font-display text-[16px] text-navy-deep">Historical Stock Movement · {target.label}</h2>
             <p className="mt-0.5 text-[11.5px] text-ink-secondary">
-              Daily close, traded &amp; delivered quantity on NSE ({target.nse}), with weekly / monthly / yearly averages — live.
+              Daily close, traded &amp; delivered quantity on NSE ({target.nse}){target.via ? <> · tracked via <span className="font-medium text-ink-primary">{target.via}</span> (listed parent)</> : null}, with weekly / monthly / yearly averages — live.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
