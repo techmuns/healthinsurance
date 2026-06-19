@@ -4,14 +4,14 @@
     "description": "Exchange-reported BULK and BLOCK deals per LISTED insurer (date, client, buy/sell side, quantity, price), from the NSE/BSE bulk & block deal disclosures (the authentic source; aggregated by Screener). Drives the Bulk / Block Deal Timeline on the Governance tab. Listed names only; missing = no deal on record, never fabricated.",
     "schema_version": "1.0.0",
     "dataset": "official",
-    "last_updated": "2026-06-18",
+    "last_updated": "2026-06-19",
     "refresh_cadence": "daily/weekly — NSE & BSE publish bulk and block deals each trading day. The agent pulls the latest deals per listed insurer and appends new ones (add-only, de-duped by date+client+side+qty).",
     "source": {
       "source_name": "NSE / BSE bulk & block deals (via Screener)",
       "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA",
       "aggregator_url": "https://www.screener.in/company/NIVABUPA/#shareholding"
     },
-    "last_successful_run": "2026-06-18T18:27:44.873Z",
+    "last_successful_run": "2026-06-19T18:01:33.730Z",
     "notes": "Quantity in shares; price in Rs/share. side = buy | sell. deal_kind = bulk | block."
   },
   "data": [
@@ -41,6 +41,24 @@
       "side": "sell",
       "quantity": 793511,
       "price": 443.42
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "block",
+      "date": "2026-03-11",
+      "client": "B N P PARIBAS FINANCIAL MARKETS",
+      "side": "sell",
+      "quantity": 123458,
+      "price": 438.2
+    },
+    {
+      "company_id": "star-health",
+      "deal_kind": "block",
+      "date": "2026-03-11",
+      "client": "B N P PARIBAS FINANCIAL MARKETS",
+      "side": "buy",
+      "quantity": 123458,
+      "price": 438.2
     },
     {
       "company_id": "star-health",
