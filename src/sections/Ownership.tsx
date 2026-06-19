@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Sparkles, ShieldAlert, ArrowLeftRight, ArrowUpRight } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ReferenceLine, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from 'recharts'
 import { ModuleCard } from '@/components/ModuleCard'
@@ -92,20 +92,42 @@ function DealTooltip({ active, payload }: { active?: boolean; payload?: { payloa
   )
 }
 
-/** Real exchange-reported bulk/block deals as a single event-signal chart:
- *  buys rise above the zero line, sells dip below, one bar per trade. The chart,
- *  the header chips and the net-flow footer all derive from `deals` — the hidden
- *  structured source below — so they re-render automatically as new deals land. */
-function BulkBlockTimeline({ deals, sourceName, sourceUrl, lastUpdated }: { deals: BulkBlockDeal[]; sourceName: string; sourceUrl: string; lastUpdated: string | null }) {
-  const buyCr = deals.filter((d) => d.side === 'buy').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
-  const sellCr = deals.filter((d) => d.side === 'sell').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
+// The two exchange deal segments. Kept strictly separate — never silently mixed.
+const DEAL_SEGMENTS: { id: 'bulk' | 'block'; label: string }[] = [
+  { id: 'bulk', label: 'Bulk Deals' },
+  { id: 'block', label: 'Block Deals' },
+]
+// Muted segment chips — slate for bulk, soft champagne for block.
+const SEG_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
+  bulk: { label: 'Bulk', bg: '#EEF1F7', fg: '#41557A' },
+  block: { label: 'Block', bg: '#F5EEDD', fg: '#8A6A2B' },
+}
+
+/** Real exchange-reported bulk/block deals. Bulk and block are split into their
+ *  own tabs (never mixed); each tab drives the buy/sell signal chart, the net-flow
+ *  footer and a visible audit table of every trade behind it. All of it derives
+ *  from `deals`, so newly-pulled trades render automatically. Per-company. */
+function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpdated }: { deals: BulkBlockDeal[]; companyName: string; sourceName: string; sourceUrl: string; lastUpdated: string | null }) {
+  // How many trades sit in each segment — drives the tab counts + the default.
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { bulk: 0, block: 0 }
+    for (const d of deals) c[d.deal_kind] = (c[d.deal_kind] ?? 0) + 1
+    return c
+  }, [deals])
+  // Default to the segment that actually has data, preferring Bulk — never force
+  // an empty Bulk tab when only Block deals exist (or vice-versa).
+  const [segment, setSegment] = useState<'bulk' | 'block'>(counts.bulk === 0 && counts.block > 0 ? 'block' : 'bulk')
+
+  const segDeals = deals.filter((d) => d.deal_kind === segment)
+  const buyCr = segDeals.filter((d) => d.side === 'buy').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
+  const sellCr = segDeals.filter((d) => d.side === 'sell').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
   const netCr = buyCr - sellCr
   const netBought = netCr >= 0
 
   // One bar per trade, oldest → newest (left → right) so it reads like a signal
   // tape. `deals` arrives newest-first from the data layer; reverse for display
   // only — the data logic is untouched. Date label prints once per day-group.
-  const chrono = [...deals].reverse()
+  const chrono = [...segDeals].reverse()
   const bars: DealBar[] = chrono.map((d, idx) => ({
     i: String(idx),
     xLabel: idx > 0 && chrono[idx - 1].date === d.date ? '' : dealDateShort(d.date),
@@ -116,6 +138,8 @@ function BulkBlockTimeline({ deals, sourceName, sourceUrl, lastUpdated }: { deal
     price: d.price,
     cr: (d.side === 'buy' ? 1 : -1) * crOf(d.quantity, d.price),
   }))
+  const dates = [...new Set(segDeals.map((d) => d.date))]
+  const oneDate = segDeals.length > 0 && dates.length === 1
   const m = niceCeil(Math.max(...bars.map((b) => Math.abs(b.cr)), 1))
   const tick = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1))
 
@@ -127,82 +151,148 @@ function BulkBlockTimeline({ deals, sourceName, sourceUrl, lastUpdated }: { deal
 
   return (
     <div className="card-surface card-tint-slate p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
-        <a href={sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
-          {sourceName} <ArrowUpRight className="h-3 w-3" />
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
+          <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · exchange-reported large trades</p>
+        </div>
+        <a href={sourceUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
+          NSE / BSE <ArrowUpRight className="h-3 w-3" />
         </a>
       </div>
-      <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
-        <span className="rounded-full bg-teal-soft px-2 py-0.5 font-semibold text-teal">Bought {fmtCr(buyCr)}</span>
-        <span className="rounded-full bg-coral-soft px-2 py-0.5 font-semibold text-coral">Sold {fmtCr(sellCr)}</span>
-        <span className="text-ink-secondary">· {deals.length} large trades on record</span>
-      </div>
-      <p className="mb-2 text-[10px] leading-snug text-ink-secondary/80">
-        Reported only on large trades — buys rise above the line, sells dip below, ₹ Cr per trade{lastUpdated ? `. Checked ${dealDate(lastUpdated)}` : ''}. New deals appear here automatically.
-      </p>
 
-      <div className="w-full" style={{ height: 224 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap="22%">
-            <CartesianGrid vertical={false} stroke={DEAL_GRID} strokeDasharray="2 4" />
-            <XAxis dataKey="xLabel" tickLine={false} axisLine={false} tick={<DealTick />} height={22} interval={0} />
-            <YAxis
-              domain={[-m, m]}
-              ticks={[-m, -m / 2, 0, m / 2, m]}
-              tickFormatter={tick}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fontSize: 10, fill: DEAL_AXIS }}
-              width={34}
-            />
-            <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<DealTooltip />} />
-            <ReferenceLine y={0} stroke={DEAL_ZERO} strokeWidth={1.25} />
-            <Bar dataKey="cr" maxBarSize={26} shape={<DealSignalBar />} isAnimationActive={false} />
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Segment tabs — bulk and block, each with its trade count, never mixed. */}
+      <div className="mb-2.5 inline-flex rounded-lg border border-soft-border bg-ice/40 p-0.5">
+        {DEAL_SEGMENTS.map(({ id, label }) => {
+          const on = id === segment
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setSegment(id)}
+              aria-pressed={on}
+              className={['inline-flex items-center gap-1.5 rounded-[7px] px-2.5 py-1 text-[11px] font-semibold transition-colors', on ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'].join(' ')}
+            >
+              {label}
+              <span className={['rounded-full px-1.5 text-[9px] font-bold tabular-nums', on ? 'bg-ice text-ink-secondary' : 'bg-white/60 text-ink-secondary/80'].join(' ')}>{counts[id]}</span>
+            </button>
+          )
+        })}
       </div>
 
-      {/* Net-flow summary — auto-calculated from the same deals. */}
-      <div className="mt-2 grid grid-cols-3 gap-2 border-t border-soft-border pt-2.5">
-        <div>
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total bought</p>
-          <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_BUY }}>{fmtCr(buyCr)}</p>
-        </div>
-        <div>
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total sold</p>
-          <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_SELL }}>{fmtCr(sellCr)}</p>
-        </div>
-        <div>
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net flow</p>
-          <p className="text-[13px] font-bold tabular-nums" style={{ color: netBought ? DEAL_BUY : DEAL_SELL }}>
-            {netBought ? '+' : '−'}{fmtCr(netCr)}
-            <span className="ml-1 text-[9px] font-semibold uppercase tracking-wide">{netBought ? 'net bought' : 'net sold'}</span>
+      {segDeals.length === 0 ? (
+        <DataEmptyState
+          kind="pending"
+          height={92}
+          title={`No ${segment} deals on record`}
+          body={`No exchange-reported ${segment} deals for ${companyName} in the current dataset.${segment === 'block' && counts.bulk > 0 ? ' Bulk-deal activity is in the Bulk Deals tab.' : ' They appear here automatically once the feed reports one.'}`}
+        />
+      ) : (
+        <>
+          <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="rounded-full bg-teal-soft px-2 py-0.5 font-semibold text-teal">Bought {fmtCr(buyCr)}</span>
+            <span className="rounded-full bg-coral-soft px-2 py-0.5 font-semibold text-coral">Sold {fmtCr(sellCr)}</span>
+            <span className="text-ink-secondary">· {segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} trade{segDeals.length === 1 ? '' : 's'} on record</span>
+          </div>
+          <p className="mb-2 text-[10px] leading-snug text-ink-secondary/80">
+            Reported only on large trades — buys rise above the line, sells dip below, ₹ Cr per trade{lastUpdated ? `. Checked ${dealDate(lastUpdated)}` : ''}. New deals appear here automatically.
           </p>
-        </div>
-      </div>
 
-      {/* Hidden structured source — the chart, chips and net-flow all read from
-          this exact table, so any newly-pulled deal renders automatically. Kept
-          for the record and for screen readers; not shown visually. */}
-      <table className="sr-only">
-        <caption>Bulk / block deals — {deals.length} large trades on record</caption>
-        <thead>
-          <tr><th>Date</th><th>Party</th><th>Side</th><th>Quantity (shares)</th><th>Price (₹)</th><th>Value (₹ Cr)</th></tr>
-        </thead>
-        <tbody>
-          {bars.map((b) => (
-            <tr key={b.i}>
-              <td>{dealDate(b.date)}</td>
-              <td>{b.client}</td>
-              <td>{b.side === 'buy' ? 'Buy' : 'Sell'}</td>
-              <td>{b.quantity}</td>
-              <td>{b.price}</td>
-              <td>{Math.abs(b.cr).toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          {/* Honest data-coverage note — only when the segment truly has one date. */}
+          {oneDate && (
+            <p className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-ice/70 px-2.5 py-1 text-[10.5px] text-ink-secondary ring-1 ring-soft-border">
+              <ShieldAlert className="h-3 w-3 shrink-0 text-ink-secondary" />
+              Only one deal date available in current dataset ({dealDate(dates[0])}).
+            </p>
+          )}
+
+          <div className="w-full" style={{ height: 224 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap="22%">
+                <CartesianGrid vertical={false} stroke={DEAL_GRID} strokeDasharray="2 4" />
+                <XAxis dataKey="xLabel" tickLine={false} axisLine={false} tick={<DealTick />} height={22} interval={0} />
+                <YAxis
+                  domain={[-m, m]}
+                  ticks={[-m, -m / 2, 0, m / 2, m]}
+                  tickFormatter={tick}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={{ fontSize: 10, fill: DEAL_AXIS }}
+                  width={34}
+                />
+                <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<DealTooltip />} />
+                <ReferenceLine y={0} stroke={DEAL_ZERO} strokeWidth={1.25} />
+                <Bar dataKey="cr" maxBarSize={26} shape={<DealSignalBar />} isAnimationActive={false} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Net-flow summary — auto-calculated from the same segment's deals. */}
+          <div className="mt-2 grid grid-cols-3 gap-2 border-t border-soft-border pt-2.5">
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total bought</p>
+              <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_BUY }}>{fmtCr(buyCr)}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total sold</p>
+              <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_SELL }}>{fmtCr(sellCr)}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net flow</p>
+              <p className="text-[13px] font-bold tabular-nums" style={{ color: netBought ? DEAL_BUY : DEAL_SELL }}>
+                {netBought ? '+' : '−'}{fmtCr(netCr)}
+                <span className="ml-1 text-[9px] font-semibold uppercase tracking-wide">{netBought ? 'net bought' : 'net sold'}</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Visible audit table — every trade behind the chart, to verify it. The
+              chart, chips and net-flow all read the same rows, so it stays in sync. */}
+          <div className="mt-3">
+            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Every {SEG_BADGE[segment].label.toLowerCase()} deal on record · audit view</p>
+            <div className="overflow-hidden rounded-xl border border-soft-border">
+              <div className="max-h-[300px] overflow-y-auto scroll-thin">
+                <table className="w-full border-collapse text-[11px]">
+                  <thead className="sticky top-0 bg-ice/95 backdrop-blur">
+                    <tr className="text-[8.5px] uppercase tracking-[0.05em] text-ink-secondary">
+                      <th className="px-2.5 py-1.5 text-left font-bold">Date</th>
+                      <th className="px-2 py-1.5 text-left font-bold">Segment</th>
+                      <th className="px-2 py-1.5 text-left font-bold">Buyer</th>
+                      <th className="px-2 py-1.5 text-left font-bold">Seller</th>
+                      <th className="px-2 py-1.5 text-right font-bold">Quantity</th>
+                      <th className="px-2 py-1.5 text-right font-bold">Price</th>
+                      <th className="px-2 py-1.5 text-right font-bold">Value</th>
+                      <th className="px-2.5 py-1.5 text-left font-bold">Source</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {segDeals.map((d, i) => {
+                      const buy = d.side === 'buy'
+                      const badge = SEG_BADGE[d.deal_kind] ?? SEG_BADGE.bulk
+                      const cp = <span className="text-ink-secondary/50" title="Counterparty not disclosed in exchange data">—</span>
+                      return (
+                        <tr key={i} className="border-t border-soft-border/70 align-top">
+                          <td className="whitespace-nowrap px-2.5 py-1.5 font-medium text-navy-deep">{dealDate(d.date)}</td>
+                          <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide" style={{ background: badge.bg, color: badge.fg }}>{badge.label}</span></td>
+                          <td className="px-2 py-1.5">{buy ? <span className="font-medium text-teal">{d.client}</span> : cp}</td>
+                          <td className="px-2 py-1.5">{buy ? cp : <span className="font-medium text-coral">{d.client}</span>}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary" title={`${d.quantity.toLocaleString('en-IN')} shares`}>{dealQty(d.quantity)}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary">₹{d.price.toFixed(2)}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums text-navy-deep">{fmtCr(crOf(d.quantity, d.price))}</td>
+                          <td className="whitespace-nowrap px-2.5 py-1.5 text-ink-secondary">NSE / BSE</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p className="mt-1 text-[9.5px] leading-snug text-ink-secondary/80">
+              Buyer/seller as disclosed by the exchange — the counterparty isn’t reported per trade. Value = quantity × price. Per-trade source links aren’t in the feed; verify via the {sourceName} link above.
+            </p>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -762,7 +852,7 @@ function OwnershipDynamics({ row, companyName, periodLabel }: { row: OwnershipRo
 
       {/* Bulk / Block Deal timeline — real exchange-reported large trades */}
       {bulk.deals.length > 0 ? (
-        <BulkBlockTimeline deals={bulk.deals} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
+        <BulkBlockTimeline deals={bulk.deals} companyName={companyName} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
       ) : (
         <div className="card-surface card-tint-slate p-4">
           <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
