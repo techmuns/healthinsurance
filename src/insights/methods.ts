@@ -92,14 +92,15 @@ const METHOD_LENS: Record<string, Lens> = {
   zscore: 'fundamental', solvency_runway: 'fundamental', solvency_headroom: 'fundamental',
   warranted_pb: 'fundamental', pgwp_growth: 'fundamental', uw_identity: 'fundamental',
   cr_decomp: 'fundamental', ols_trend: 'fundamental', mix_attrib: 'fundamental',
+  implied_roe: 'fundamental', float_cost: 'fundamental', // Part 2 — reverse-the-price + float economics
   marginal_share: 'macro', guidance_hitrate: 'sentiment', consensus_dynamics: 'sentiment',
 }
 const lensFor = (key: string): Lens => METHOD_LENS[key] ?? 'fundamental'
 const LENS_FAMILIES: Record<Lens, string[]> = {
-  fundamental: ['dispersion', 'combined_ratio', 'solvency', 'valuation', 'growth_quality'],
+  fundamental: ['dispersion', 'combined_ratio', 'solvency', 'valuation', 'growth_quality', 'implied_expectations', 'float_cost', 'persistency', 'operating_leverage', 'mix_comparability'],
   technical: [],
   sentiment: ['management', 'consensus'],
-  macro: ['marginal_share'],
+  macro: ['marginal_share', 'reflexive_solvency'],
 }
 export const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'macro']
 
@@ -508,6 +509,70 @@ const SPECS: MethodSpec[] = [
         statistic: { symbol: '\\text{upside}', value: (upV ?? dispV) as number, unit: '%' },
         threshold: analysts != null ? { rule: 'thin coverage (few analysts) ⇒ lightly stress-tested', value: analysts, passed: analysts >= 5 } : undefined,
         robustness: `A broker/aggregator view, not statutory fact.${analysts != null ? ` Only ${analysts} analysts and a tight band — a modest surprise can move the stock more than the consensus implies.` : ''}`,
+      }
+    },
+  },
+
+  // 13 ── Implied expectations: reverse the price (Gordon inversion) ────────────
+  {
+    key: 'implied_roe',
+    name: 'Implied expectations — reverse the multiple (Gordon)',
+    refTag: 'Reverse Gordon',
+    gloss: 'The steady-state ROE the current P/B implies, against the ROE delivered.',
+    formulaTeX: 'ROE^{*} = CoE \\cdot (P/B) - g\\,((P/B) - 1)',
+    match: (s) => s.family === 'implied_expectations' && /Implied steady-state ROE/.test(s.metric),
+    build: (sigs, ctx) => {
+      const v = lead(sigs, ctx.focal)
+      const impliedRoe = (ctx.shown(v) ?? v.value) as number
+      const delivered = v.comparison?.referenceValue ?? null
+      const pbSig = find(ctx.run, v.insurer, /P\/B vs warranted/)
+      const pb = pbSig ? ((ctx.shown(pbSig) ?? pbSig.value) as number) : null
+      const COE = 12, G = 8
+      const inputs: MethodInput[] = [
+        { symbol: 'P/B', label: `${pretty(v.insurer)} · market P/B`, value: pb, unit: 'x', insurer: v.insurer, period: v.period, layer: 'exchange' },
+        { symbol: 'CoE', label: 'Cost of equity (assumption)', value: COE, unit: '%', period: v.period, layer: 'derived' },
+        { symbol: 'g', label: 'Terminal growth (assumption)', value: G, unit: '%', period: v.period, layer: 'derived' },
+        { symbol: 'ROE_{del}', label: `${pretty(v.insurer)} · delivered ROE`, value: delivered, unit: '%', insurer: v.insurer, period: v.period, layer: primaryLayer(v) },
+      ]
+      return {
+        key: 'implied_roe', name: 'Implied expectations — reverse the multiple (Gordon)', refTag: 'Reverse Gordon',
+        gloss: 'The steady-state ROE the current P/B implies, against the ROE delivered.',
+        formulaTeX: 'ROE^{*} = CoE \\cdot (P/B) - g\\,((P/B) - 1)',
+        instanceTeX: pb != null
+          ? `ROE^{*} = ${COE} \\cdot ${fmt(pb)} - ${G}\\,(${fmt(pb)} - 1) = ${fmt(impliedRoe)}\\%${delivered != null ? ` \\;\\;(\\text{delivered } ${fmt(delivered)}\\%)` : ''}`
+          : `ROE^{*} = ${fmt(impliedRoe)}\\%`,
+        inputs,
+        statistic: { symbol: 'ROE^{*}', value: impliedRoe, unit: '%' },
+        threshold: delivered != null ? { rule: 'delivered ROE ≥ implied ⇒ the multiple is earned, not front-run', value: Math.round(impliedRoe), passed: delivered >= impliedRoe } : undefined,
+        robustness: delivered != null && pb != null
+          ? `At ${fmt(pb)}x book the price implies a ~${fmt(impliedRoe)}% sustainable ROE against ${fmt(delivered)}% delivered — the multiple front-runs the return ramp, it does not reflect today's economics.`
+          : 'Inverts the multiple to the steady-state ROE the price implies.',
+      }
+    },
+  },
+
+  // 14 ── Cost of float: underwriting result over float (Buffett lens) ──────────
+  {
+    key: 'float_cost',
+    name: 'Cost of float — underwriting result over float',
+    refTag: 'Float economics',
+    gloss: 'What the insurer pays (or earns) to hold float; for short-tail health, (combined ratio − 100).',
+    formulaTeX: '\\text{float cost} = -\\dfrac{\\text{UW result}}{\\text{float}} \\approx CR - 100\\ \\,(\\text{NEP as float})',
+    match: (s) => s.family === 'float_cost',
+    build: (sigs, ctx) => {
+      const v = lead(sigs, ctx.focal)
+      const fc = (ctx.shown(v) ?? v.value) as number
+      const crSig = find(ctx.run, v.insurer, /^Combined ratio$/)
+      const cr = crSig ? ((ctx.shown(crSig) ?? crSig.value) as number) : fc + 100
+      return {
+        key: 'float_cost', name: 'Cost of float — underwriting result over float', refTag: 'Float economics',
+        gloss: 'What the insurer pays (or earns) to hold float; for short-tail health, (combined ratio − 100).',
+        formulaTeX: '\\text{float cost} = -\\dfrac{\\text{UW result}}{\\text{float}} \\approx CR - 100\\ \\,(\\text{NEP as float})',
+        instanceTeX: `\\text{float cost} = ${fmt(cr)} - 100 = ${signed(fc)}\\%`,
+        inputs: [{ symbol: 'CR', label: `${pretty(v.insurer)} · combined ratio`, value: cr, unit: '%', insurer: v.insurer, period: v.period, layer: primaryLayer(crSig ?? v) }],
+        statistic: { symbol: '\\text{float cost}', value: fc, unit: '%' },
+        threshold: { rule: 'float cost ≤ 0 ⇒ free float; > 0 ⇒ pays to hold float', value: 0, passed: fc <= 0 },
+        robustness: `${fc > 0 ? 'Pays' : 'Earns'} ${fmt(Math.abs(fc))}% to hold float — for short-tail health, float ≈ earned premium so this tracks the combined ratio; the franchise question is whether underwriting funds the float or drains it.`,
       }
     },
   },

@@ -223,7 +223,8 @@
             "stepKeys": []
           },
           "macro": {
-            "status": "no_signal",
+            "status": "data_gap",
+            "reason": "unlisted — no market multiple; runway only (see solvency family)",
             "stepKeys": []
           }
         },
@@ -531,7 +532,8 @@
             "stepKeys": []
           },
           "macro": {
-            "status": "no_signal",
+            "status": "data_gap",
+            "reason": "solvency / multiple / growth incomplete",
             "stepKeys": []
           }
         },
@@ -766,7 +768,8 @@
             "stepKeys": []
           },
           "macro": {
-            "status": "no_signal",
+            "status": "data_gap",
+            "reason": "solvency / multiple / growth incomplete",
             "stepKeys": []
           }
         },
@@ -1278,7 +1281,8 @@
             "stepKeys": []
           },
           "macro": {
-            "status": "no_signal",
+            "status": "data_gap",
+            "reason": "unlisted — no market multiple; runway only (see solvency family)",
             "stepKeys": []
           }
         },
@@ -1536,7 +1540,8 @@
             "stepKeys": []
           },
           "macro": {
-            "status": "no_signal",
+            "status": "data_gap",
+            "reason": "unlisted — no market multiple; runway only (see solvency family)",
             "stepKeys": []
           }
         },

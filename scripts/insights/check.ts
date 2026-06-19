@@ -2,12 +2,16 @@
 // grounding / firewall / falsifier validation of the committed insights file.
 // Run: npx tsx --tsconfig tsconfig.app.json scripts/insights/check.ts
 import { buildPanel } from '@/insights/panel'
-import { runAllSignals, dispersionSignals, solvencySignals, growthQualitySignals, signalHash } from '@/insights/signals'
+import {
+  runAllSignals, dispersionSignals, solvencySignals, growthQualitySignals, signalHash,
+  combinedRatioSignals, impliedExpectationsSignals, costOfFloatSignals,
+  reflexiveSolvencySignals, persistencySignals, operatingLeverageSignals, mixComparabilitySignals,
+} from '@/insights/signals'
 import { validateInsightsFile, groundedNumbers } from '@/insights/validate'
 import { assembleMethodology, methodologyNumbers } from '@/insights/methods'
 import { auditMethodMath, auditUniqueness } from '@/insights/audit'
 import generated from '@/data/insights.generated.json'
-import type { InsightsFile } from '@/insights/types'
+import type { InsightsFile, MethodDescriptor, MethodInput } from '@/insights/types'
 
 let pass = 0
 let fail = 0
@@ -107,6 +111,62 @@ dup.id = 'dup-manipal'
 dup.methodology!.steps = dup.methodology!.steps.filter((s) => s.key === 'zscore') // same core calc, no added method
 f4.insights.push(dup)
 ok(!auditUniqueness(f4).ok, 'uniqueness flags a pure-duplicate (same core calc, no new method)')
+
+console.log('— Part 2 signal families (data-availability split) —')
+// (a) live & populated — implied-expectations (focal) + the five-name cross-sections.
+const ie = impliedExpectationsSignals(d)
+const ieLive = ie.filter((s) => !s.dataGap).length, ieGap = ie.filter((s) => s.dataGap).length
+const nivaIR = ie.find((s) => s.insurer === 'niva-bupa' && /Implied steady-state ROE/.test(s.metric))
+ok(!!nivaIR && nivaIR!.value === 20 && nivaIR!.comparison?.referenceValue === 5.7, 'implied_expectations: Niva implied steady-state ROE = 20% vs 5.7% delivered (reverse Gordon, 12·3 − 8·2)')
+ok(ie.some((s) => /Implied perpetual growth/.test(s.metric) && s.insurer === 'niva-bupa' && !s.dataGap), 'implied_expectations: Niva implied-growth cross-check emitted (delivered-ROE held fixed)')
+ok(ieLive === 2 && ieGap === 4, `implied_expectations: ${ieLive} live (focal only), ${ieGap} gapped — unlisted names have no market multiple to invert`)
+
+const fc = costOfFloatSignals(d)
+ok(fc.length === 5 && fc.every((s) => !s.dataGap), 'float_cost: 5 live / 0 gap (combined ratio on record for all five)')
+const manFc = fc.find((s) => s.insurer === 'manipalcigna')
+ok(!!manFc && manFc!.value === 15, 'float_cost: ManipalCigna pays 15% to hold float (CR 115 − 100)')
+// reconciliation: every float cost equals (its own combined ratio − 100).
+const crById = new Map(combinedRatioSignals(d).filter((s) => s.metric === 'Combined ratio').map((s) => [s.insurer, s.value as number]))
+ok(fc.every((s) => s.value == null || Math.abs((s.value as number) - ((crById.get(s.insurer) ?? NaN) - 100)) <= 0.06), 'float_cost: every value reconciles to (combined ratio − 100)')
+
+// (b) live but mostly-gapped — reflexive-solvency, operating-leverage thin on multi-year depth.
+const rs = reflexiveSolvencySignals(d)
+ok(rs.filter((s) => !s.dataGap).length === 1 && rs.filter((s) => s.dataGap).length === 4, 'reflexive_solvency: 1 live (Niva — only disclosed multiple), 4 gapped')
+const ol = operatingLeverageSignals(d)
+ok(ol.filter((s) => !s.dataGap).length === 2 && ol.filter((s) => s.dataGap).length === 3, 'operating_leverage: 2 live (Niva trajectory + Star break-even), 3 gapped (single-year only)')
+
+const pe = persistencySignals(d)
+ok(pe.length === 5 && pe.every((s) => !s.dataGap), 'persistency: 5 live (renewal rate disclosed for all five)')
+ok(pe.every((s) => s.dataGap || s.comparison?.basis === 'peer_mean'), 'persistency: live renewal rates carry a peer-mean comparison')
+const mx = mixComparabilitySignals(d)
+ok(mx.length === 5 && mx.every((s) => !s.dataGap), 'mix_comparability: 5 live (retail mix disclosed for all five)')
+
+console.log('— Part 2 gate: implied_roe + float_cost recompute & sign checks (fail-closed) —')
+const inp = (symbol: string, value: number | null, unit = '%'): MethodInput => ({ symbol, label: symbol, value, unit, period: 'FY26', layer: 'derived' })
+const base0 = file.insights[0]
+const synthFile = (steps: MethodDescriptor[]): InsightsFile => ({ meta: file.meta, insights: [{ ...base0, id: 'synth', methodology: { ...base0.methodology!, steps } }] })
+
+// reverse-Gordon implied ROE: ROE* = CoE·(P/B) − g·((P/B) − 1); "front-runs" ⇔ implied > delivered.
+const FRONT = 'the price front-runs the return ramp; it does not reflect today economics'
+const irStep = (impliedRoe: number, pb: number, del: number, passed: boolean, robustness: string): MethodDescriptor => ({
+  key: 'implied_roe', lens: 'fundamental', name: 'Implied expectations — reverse the multiple (Gordon)', refTag: 'Reverse Gordon', gloss: '', formulaTeX: '', instanceTeX: '',
+  inputs: [inp('P/B', pb, 'x'), inp('CoE', 12), inp('g', 8), inp('ROE_{del}', del)],
+  statistic: { symbol: 'ROE^{*}', value: impliedRoe, unit: '%' }, threshold: { rule: '', value: Math.round(impliedRoe), passed }, robustness,
+})
+ok(auditMethodMath(synthFile([irStep(20, 3, 5.7, false, FRONT)])).ok, 'implied_roe: accepts the correct Niva instance (12·3 − 8·2 = 20 vs 5.7 delivered)')
+ok(!auditMethodMath(synthFile([irStep(14, 3, 5.7, false, FRONT)])).ok, 'implied_roe: rejects wrong arithmetic (statistic 14 ≠ recompute 20)')
+ok(!auditMethodMath(synthFile([irStep(20, 3, 5.7, true, FRONT)])).ok, 'implied_roe: rejects direction inversion (passed claims delivered ≥ implied when 5.7 < 20)')
+ok(!auditMethodMath(synthFile([irStep(20, 3, 25, true, FRONT)])).ok, 'implied_roe: rejects "front-runs" wording when implied 20 ≤ delivered 25')
+
+// cost of float: float cost = CR − 100 (NEP-as-float); ≤ 0 ⇒ free float.
+const fcStep = (fcv: number, cr: number, passed: boolean): MethodDescriptor => ({
+  key: 'float_cost', lens: 'fundamental', name: 'Cost of float — underwriting result over float', refTag: 'Float economics', gloss: '', formulaTeX: '', instanceTeX: '',
+  inputs: [inp('CR', cr)], statistic: { symbol: '\\text{float cost}', value: fcv, unit: '%' }, threshold: { rule: '', value: 0, passed }, robustness: '',
+})
+ok(auditMethodMath(synthFile([fcStep(15, 115, false)])).ok, 'float_cost: accepts the correct Manipal instance (115 − 100 = 15, pays to hold float)')
+ok(auditMethodMath(synthFile([fcStep(-5, 95, true)])).ok, 'float_cost: accepts a free-float instance (95 − 100 = −5, earns to hold float)')
+ok(!auditMethodMath(synthFile([fcStep(20, 115, false)])).ok, 'float_cost: rejects wrong arithmetic (statistic 20 ≠ recompute 15)')
+ok(!auditMethodMath(synthFile([fcStep(15, 115, true)])).ok, 'float_cost: rejects sign inversion (passed claims free float when it pays 15%)')
 
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

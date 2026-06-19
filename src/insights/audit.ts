@@ -64,6 +64,15 @@ function recompute(step: MethodDescriptor): number | null {
       const d = numOf(by(/delivered/)), t = numOf(by(/total/))
       return d != null && t ? (d / t) * 100 : null
     }
+    case 'implied_roe': {
+      // ROE* = CoE·(P/B) − g·((P/B) − 1)  — reverse Gordon (Part 2).
+      const pb = numOf(by(/P\/B/)), coe = numOf(by(/CoE/)), g = numOf(inputBy(step, (s) => s === 'g'))
+      return pb != null && coe != null && g != null ? coe * pb - g * (pb - 1) : null
+    }
+    case 'float_cost': {
+      const cr = numOf(by(/CR/))
+      return cr != null ? cr - 100 : null // float cost ≈ CR − 100 (NEP-as-float)
+    }
     default:
       return null // ols_trend / mix_attrib / pgwp_growth / consensus / uw_identity: the statistic IS an input
   }
@@ -103,6 +112,18 @@ function directionErrors(id: string, step: MethodDescriptor): string[] {
       if (/cheaper(?:[^.]*per point of growth)?/i.test(rob) && /per point of growth/i.test(rob) && !(peg1 < peg2)) e.push(`${id}/pgwp: claims "cheaper per point of growth" but PEG ${peg1.toFixed(3)} ≥ ${peg2.toFixed(3)}`)
       if (/richer[^.]*per point of growth/i.test(rob) && !(peg1 > peg2)) e.push(`${id}/pgwp: claims "richer per point of growth" but PEG ${peg1.toFixed(3)} ≤ ${peg2.toFixed(3)}`)
     }
+  }
+  // float_cost — the pass-flag must agree with the sign (≤0 ⇒ free float).
+  if (step.key === 'float_cost' && th && th.passed !== stat <= th.value)
+    e.push(`${id}/float_cost: passed=${th.passed} disagrees with float cost ${stat} vs ${th.value} (≤0 ⇒ free float)`)
+
+  // implied_roe — the "front-runs returns" conclusion must agree with implied > delivered.
+  if (step.key === 'implied_roe') {
+    const del = numOf(inputBy(step, (s) => s.includes('del')))
+    if (del != null && th && th.passed !== del >= stat)
+      e.push(`${id}/implied_roe: passed=${th.passed} (earned⇔delivered≥implied) disagrees with delivered ${del} vs implied ${stat}`)
+    if (del != null && /(front-?run|prices? in|does not reflect|expansion)/i.test(step.robustness ?? '') && !(stat > del))
+      e.push(`${id}/implied_roe: claims the multiple front-runs returns but implied ROE ${stat} ≤ delivered ${del}`)
   }
   void by
   return e

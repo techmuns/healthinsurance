@@ -208,8 +208,157 @@ export function consensusSignals(d: Dataset): Signal[] {
   return out
 }
 
+// ── 9. Implied expectations — REVERSE THE PRICE (Gordon: P/B → steady-state ROE)
+//  The structural valuation read the prompt's "reverse the price" step consumes:
+//  invert the multiple to the steady-state ROE (and the perpetual growth) the
+//  CURRENT price implies, against the ROE delivered. Listed names only — a
+//  disclosed market P/B is required; unlisted SAHIs gap honestly.
+export function impliedExpectationsSignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  const COE = 12 // assumed cost of equity %
+  const G_TERM = 8 // assumed terminal perpetual growth % (<= nominal GDP)
+  for (const p of d.insurers) {
+    const pb = p.valuation?.pb ?? null
+    const roe = atFy(p, d.asOf)?.roe ?? null
+    if (pb == null || roe == null) {
+      out.push({ family: 'implied_expectations', insurer: p.id, period: d.asOf, metric: 'Implied steady-state ROE (reverse Gordon)', value: null, unit: '%', layers: MKT, dataGap: true, note: p.listed ? 'P/B or ROE not on record this period' : 'unlisted — no disclosed market multiple to invert' })
+      continue
+    }
+    // P/B = (ROE − g)/(CoE − g)  ⇒  ROE* = CoE·(P/B) − g·((P/B) − 1)
+    const roeImplied = round(COE * pb - G_TERM * (pb - 1), 1)
+    out.push({
+      family: 'implied_expectations', insurer: p.id, period: p.valuation!.period, metric: 'Implied steady-state ROE (reverse Gordon)', value: roeImplied, unit: '%',
+      comparison: { basis: 'own_trend', referenceValue: round(roe, 1), delta: round(roeImplied - roe, 1) },
+      layers: MKT, dataGap: false,
+      note: `${round(pb, 1)}x P/B @ ${COE}% CoE & ${G_TERM}% terminal g implies ~${roeImplied}% sustainable ROE vs ${round(roe, 1)}% delivered — a ${round(roeImplied - roe, 1)}pp gap the price front-runs`,
+    })
+    // Cross-check: holding delivered ROE fixed, the perpetual growth the price requires.
+    // g* = (ROE − P/B·CoE)/(1 − P/B)
+    if (pb !== 1) {
+      const gImplied = round((roe - pb * COE) / (1 - pb), 1)
+      out.push({ family: 'implied_expectations', insurer: p.id, period: p.valuation!.period, metric: 'Implied perpetual growth (at current ROE)', value: gImplied, unit: '%', layers: MKT, dataGap: false, note: `on ${round(roe, 1)}% ROE a ${round(pb, 1)}x P/B requires ~${gImplied}% perpetual growth` })
+    }
+  }
+  return out
+}
+
+// ── 10. Cost of float (Buffett lens) — underwriting result as a % of float.
+//  For SHORT-TAIL health, float ≈ earned premium (claims pay out fast), so with
+//  NEP as the float proxy the cost of float collapses to (combined ratio − 100):
+//  positive = the insurer PAYS to hold float (loss-making underwriting); negative
+//  = free float that compounds. Honest proxy — reserve-leverage isn't disclosed.
+export function costOfFloatSignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  for (const p of d.insurers) {
+    const cur = atFy(p, d.asOf)
+    const cr = cur?.combined_ratio ?? null
+    if (cr == null) { out.push({ family: 'float_cost', insurer: p.id, period: d.asOf, metric: 'Cost of float (UW result ÷ NEP proxy)', value: null, unit: '%', layers: STAT, dataGap: true, note: 'combined ratio not reported' }); continue }
+    const fc = round(cr - 100, 1) // -(UW result)/NEP = (CR − 100) for short-tail health
+    out.push({
+      family: 'float_cost', insurer: p.id, period: d.asOf, metric: 'Cost of float (UW result ÷ NEP proxy)', value: fc, unit: '%',
+      comparison: { basis: 'regulatory_floor', referenceValue: 0, delta: fc },
+      layers: STAT, dataGap: false,
+      note: `${fc > 0 ? 'pays' : 'earns'} ${Math.abs(fc)}% to hold float${cur?.nep != null ? ` (NEP ~₹${round(cur.nep)}cr float proxy)` : ''} — ${fc > 0 ? 'a cost, not free compounding (franchise-quality flag)' : 'free float'}`,
+    })
+  }
+  return out
+}
+
+// ── 11. Reflexive solvency-as-governor — can the name fund guided growth without
+//  dilution at its current multiple? Needs a market multiple (listed only): a rich
+//  multiple + comfortable solvency + high growth = a VIRTUOUS loop (cheap equity
+//  funds growth); a cheap multiple + near-floor solvency forces dilution = VICIOUS.
+export function reflexiveSolvencySignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  const FLOOR = 1.5
+  for (const p of d.insurers) {
+    const cur = atFy(p, d.asOf)
+    const s = cur?.solvency_ratio ?? null
+    const pb = p.valuation?.pb ?? null
+    const gpair = lastTwo(p.annual.filter((a) => a.gwp != null))
+    const g = gpair ? pctChange(gpair[0].gwp, gpair[1].gwp) : null
+    if (s == null || pb == null || g == null) {
+      out.push({ family: 'reflexive_solvency', insurer: p.id, period: d.asOf, metric: 'Solvency–multiple reflexive loop', value: null, unit: 'x', layers: MKT, dataGap: true, note: p.listed ? 'solvency / multiple / growth incomplete' : 'unlisted — no market multiple; runway only (see solvency family)' })
+      continue
+    }
+    const headroom = round(s - FLOOR, 2)
+    const virtuous = pb >= 1.5 && s > FLOOR * 1.2
+    out.push({
+      family: 'reflexive_solvency', insurer: p.id, period: d.asOf, metric: 'Solvency–multiple reflexive loop', value: round(s, 2), unit: 'x',
+      comparison: { basis: 'regulatory_floor', referenceValue: FLOOR, delta: headroom },
+      layers: MKT, dataGap: false,
+      note: `${virtuous ? 'virtuous' : 'watch'}: ${round(pb, 1)}x P/B + ${round(s, 2)}x solvency + ~${round(g, 0)}% growth — ${virtuous ? 'a rich multiple lets it raise solvency capital cheaply and out-grow' : 'thin headroom or a cheap multiple risks dilution that validates the cheapness'}`,
+    })
+  }
+  return out
+}
+
+// ── 12. Persistency / embedded annuity value — renewal rate as the leading proxy
+//  for the in-force book's lifetime value. Level only (single FY25 print); the
+//  trend and an explicit LTV need churn/CAC the filings don't carry — gapped.
+export function persistencySignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  const present = d.insurers.map((p) => ({ id: p.id, r: atFy(p, d.asOf)?.renewal_rate ?? null })).filter((x): x is { id: string; r: number } => x.r != null)
+  const mu = present.length >= 3 ? round(mean(present.map((x) => x.r)), 1) : null
+  for (const p of d.insurers) {
+    const cur = atFy(p, d.asOf)
+    const r = cur?.renewal_rate ?? null
+    if (r == null) { out.push({ family: 'persistency', insurer: p.id, period: d.asOf, metric: 'Renewal rate (persistency)', value: null, unit: '%', layers: STAT, dataGap: true, note: 'renewal rate not reported' }); continue }
+    const comp = mu != null ? { basis: 'peer_mean' as const, referenceValue: mu, delta: round(r - mu, 1) } : undefined
+    out.push({ family: 'persistency', insurer: p.id, period: d.asOf, metric: 'Renewal rate (persistency)', value: round(r, 0), unit: '%', comparison: comp, layers: STAT, dataGap: false, note: `${r}% retained${cur?.customer_retention != null ? ` · ${cur.customer_retention}% customer retention` : ''} — a stickier book is embedded annuity value; trend/LTV not disclosed` })
+  }
+  return out
+}
+
+// ── 13. Operating-leverage scale path — expense ratio falling as GWP scales is
+//  positive operating leverage; and the distance from the expense ratio to the
+//  level that turns underwriting profitable (expense < 100 − claims). Only names
+//  that disclose a multi-year expense ratio (trend) or expense + claims together
+//  (distance) qualify; the rest gap honestly.
+export function operatingLeverageSignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  for (const p of d.insurers) {
+    let emitted = false
+    const exp = p.annual.filter((a) => a.expense_ratio != null)
+    const pair = lastTwo(exp)
+    if (pair) {
+      const [a0, a1] = pair
+      const dExp = round((a1.expense_ratio as number) - (a0.expense_ratio as number), 1)
+      out.push({ family: 'operating_leverage', insurer: p.id, period: a1.fiscal_year, metric: 'Expense-ratio trajectory (operating leverage)', value: round(a1.expense_ratio as number, 1), unit: '%', comparison: { basis: 'prior_period', referenceValue: round(a0.expense_ratio as number, 1), delta: dExp }, layers: STAT, dataGap: false, note: `${dExp <= 0 ? 'falling' : 'rising'} ${Math.abs(dExp)}pp YoY as GWP scales — ${dExp <= 0 ? 'positive' : 'negative'} operating leverage` })
+      emitted = true
+    }
+    const cur = atFy(p, d.asOf)
+    if (cur?.expense_ratio != null && cur?.claims_ratio != null) {
+      const breakeven = round(100 - cur.claims_ratio, 1)
+      const dist = round(cur.expense_ratio - breakeven, 1)
+      out.push({ family: 'operating_leverage', insurer: p.id, period: d.asOf, metric: 'Distance to underwriting break-even (via expense)', value: dist, unit: 'pp', comparison: { basis: 'regulatory_floor', referenceValue: 0, delta: dist }, layers: STAT, dataGap: false, note: `expense ${cur.expense_ratio}% vs ${breakeven}% break-even on ${cur.claims_ratio}% claims — ${dist > 0 ? `${dist}pp of expense to cut` : 'already expense-profitable'}` })
+      emitted = true
+    }
+    if (!emitted) out.push({ family: 'operating_leverage', insurer: p.id, period: d.asOf, metric: 'Operating leverage', value: null, unit: '%', layers: STAT, dataGap: true, note: 'no multi-year expense ratio, nor expense + claims for the same period' })
+  }
+  return out
+}
+
+// ── 14. Mix-adjusted comparability — each insurer's retail vs group mix, so naive
+//  cross-insurer combined-ratio / growth comparisons are made mix-aware (a group-
+//  heavy book runs a structurally different combined ratio). Segment-level combined
+//  ratios aren't disclosed, so a true mix-normalised CR is gapped.
+export function mixComparabilitySignals(d: Dataset): Signal[] {
+  const out: Signal[] = []
+  const present = d.insurers.map((p) => ({ id: p.id, m: atFy(p, d.asOf)?.retail_mix ?? null })).filter((x): x is { id: string; m: number } => x.m != null)
+  const mu = present.length >= 3 ? round(mean(present.map((x) => x.m)), 1) : null
+  for (const p of d.insurers) {
+    const m = atFy(p, d.asOf)?.retail_mix ?? null
+    if (m == null) { out.push({ family: 'mix_comparability', insurer: p.id, period: d.asOf, metric: 'Retail mix (comparability adjuster)', value: null, unit: '%', layers: GIC, dataGap: true, note: 'retail mix not reported' }); continue }
+    const comp = mu != null ? { basis: 'peer_mean' as const, referenceValue: mu, delta: round(m - mu, 1) } : undefined
+    const heavy = m >= (mu ?? 60)
+    out.push({ family: 'mix_comparability', insurer: p.id, period: d.asOf, metric: 'Retail mix (comparability adjuster)', value: round(m, 0), unit: '%', comparison: comp, layers: GIC, dataGap: false, note: `${m}% retail — mix-adjust before comparing combined ratios: a ${heavy ? 'retail-heavy' : 'group-heavy'} book runs structurally ${heavy ? 'higher-expense, stickier' : 'lower-expense, thinner-margin'} economics` })
+  }
+  return out
+}
+
 // ── Orchestrator ────────────────────────────────────────────────────────────
-const FAMILIES = [dispersionSignals, growthQualitySignals, marginalShareSignals, combinedRatioSignals, solvencySignals, valuationSignals, managementSignals, consensusSignals]
+const FAMILIES = [dispersionSignals, growthQualitySignals, marginalShareSignals, combinedRatioSignals, solvencySignals, valuationSignals, managementSignals, consensusSignals, impliedExpectationsSignals, costOfFloatSignals, reflexiveSolvencySignals, persistencySignals, operatingLeverageSignals, mixComparabilitySignals]
 
 /** Deterministic 32-bit hash of the signal payload (reproducibility stamp). */
 export function signalHash(signals: Signal[]): string {

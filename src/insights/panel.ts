@@ -14,6 +14,7 @@ import { peerValuation, focalMultiples, analystConsensus, focalFinancials, FOCAL
 export interface AnnualMetrics {
   fiscal_year: string
   gwp: number | null
+  nep: number | null // net earned premium — float-magnitude proxy
   combined_ratio: number | null
   claims_ratio: number | null
   expense_ratio: number | null
@@ -22,6 +23,8 @@ export interface AnnualMetrics {
   retail_mix: number | null
   market_share: number | null
   growth_yoy: number | null
+  renewal_rate: number | null // persistency / embedded-annuity input
+  customer_retention: number | null
 }
 
 export interface HealthMix {
@@ -91,6 +94,7 @@ function annualFor(companyId: string): AnnualMetrics[] {
     .map((r) => ({
       fiscal_year: r.fiscal_year,
       gwp: numOrNull(r.gwp),
+      nep: numOrNull(r.nep),
       combined_ratio: numOrNull(r.combined_ratio),
       claims_ratio: numOrNull(r.claims_ratio),
       expense_ratio: numOrNull(r.expense_ratio),
@@ -99,6 +103,8 @@ function annualFor(companyId: string): AnnualMetrics[] {
       retail_mix: numOrNull(r.retail_mix),
       market_share: numOrNull(r.market_share),
       growth_yoy: numOrNull(r.growth_yoy),
+      renewal_rate: numOrNull(r.renewal_rate),
+      customer_retention: numOrNull(r.customer_retention),
     }))
 }
 
