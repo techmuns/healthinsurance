@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, type LucideIcon } from 'lucide-react'
+import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, type LucideIcon } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
 import { MethodologyPanel } from '@/components/MethodologyPanel'
+import { useFilters } from '@/state/filters'
+import { resolveSource, freshnessOf, latestPeriodAcross, type Freshness, type NavTarget, type SourceLocation } from '@/insights/sourceMap'
 
 const FILE = generated as unknown as InsightsFile
 
@@ -55,6 +57,23 @@ function sourceLine(ins: Insight): string {
   return words.length ? `Backed by ${words.join(', ')}` : 'Backed by the dashboard data'
 }
 
+// Data-freshness pill — states the period the insight actually uses. Teal when it
+// is the newest period in the run; warm champagne when it trails (honest "older
+// basis" cue, never hidden). Wording comes from the deterministic freshness read.
+function FreshnessPill({ freshness }: { freshness: Freshness }) {
+  const fresh = freshness.tone === 'fresh'
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold uppercase tracking-[0.06em]"
+      style={fresh ? { background: 'rgba(14,111,109,0.09)', color: '#0E6F6D' } : { background: 'rgba(156,116,48,0.12)', color: '#9C7430' }}
+      title={freshness.detail}
+    >
+      <CalendarClock className="h-3 w-3" strokeWidth={2.4} />
+      {freshness.shortLabel}
+    </span>
+  )
+}
+
 function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false)
   useEffect(() => {
@@ -73,7 +92,7 @@ function usePrefersReducedMotion(): boolean {
 // a drag-to-select never flips). LEFT is the written read: category badge, the
 // editorial title, the overlooked angle + short thesis, a hero metric tile, then
 // conviction / falsifier / source. RIGHT is the visual evidence: one live chart.
-function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
+function InsightCard({ ins, hero = false, source, freshness, onGoToSource }: { ins: Insight; hero?: boolean; source: SourceLocation; freshness: Freshness; onGoToSource: () => void }) {
   const cat = CATCH[ins.category]
   const tone = TONE[cat.tone]
   const Icon = cat.Icon
@@ -214,9 +233,11 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
                   <span className="inline-flex items-start gap-1.5 text-ink-secondary"><Eye className="mt-0.5 h-3 w-3 shrink-0 text-coral" /><span className="font-editorial text-[12.5px] italic leading-snug"><strong className="font-semibold not-italic text-navy-deep">Flips if:</strong> {ins.falsifier}</span></span>
                 </div>
 
-                {/* source-backed footer strip — anchored to the bottom */}
+                {/* source-backed footer strip — anchored to the bottom. Carries an
+                    honest data-freshness pill (the period the insight actually uses). */}
                 <div className="mt-auto flex flex-wrap items-center gap-x-2.5 gap-y-2 border-t border-soft-border pt-4 text-[10px] text-ink-secondary">
                   <span className="inline-flex items-center gap-1 rounded-full bg-teal-soft px-2 py-0.5 font-bold uppercase tracking-[0.08em] text-teal"><BadgeCheck className="h-3 w-3" />Source-backed</span>
+                  <FreshnessPill freshness={freshness} />
                   <span>{sourceLine(ins)}</span>
                 </div>
               </div>
@@ -247,7 +268,7 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
           {hasMethodology && (
             <div ref={backFaceRef} onClick={() => flipTo(false)} className="flip-face cursor-pointer overflow-hidden rounded-2xl bg-card" style={backFaceStyle} id={backId}>
               <div ref={backRef}>
-                <MethodologyPanel ins={ins} tone={tone} onBack={() => setFlipped(false)} backRef={backBtnRef} labelId={labelId} />
+                <MethodologyPanel ins={ins} tone={tone} source={source} freshness={freshness} onGoToSource={onGoToSource} onBack={() => setFlipped(false)} backRef={backBtnRef} labelId={labelId} />
               </div>
             </div>
           )}
@@ -257,25 +278,52 @@ function InsightCard({ ins, hero = false }: { ins: Insight; hero?: boolean }) {
   )
 }
 
-const ALL_INSURERS = [...new Set(FILE.insights.flatMap((i) => i.affectedInsurers))].filter((id) => id !== 'panel')
 const ALL_CATEGORIES = [...new Set(FILE.insights.map((i) => i.category))]
 
-export function Insights() {
-  const [insurer, setInsurer] = useState<string>('all')
+// Company filter — a simple, grouped lens (not one row per insurer). Defaults to
+// Niva Bupa so the focal name leads; "Other peers" rolls up the remaining SAHIs.
+const OTHER_PEERS = ['care-health', 'aditya-birla', 'manipalcigna']
+const COMPANY_OPTIONS: [string, string][] = [
+  ['niva-bupa', 'Niva Bupa'],
+  ['star-health', 'Star'],
+  ['others', 'Other peers'],
+  ['all', 'All'],
+]
+const matchCompany = (ins: Insight, sel: string): boolean => {
+  if (sel === 'all') return true
+  if (sel === 'others') return ins.affectedInsurers.some((id) => OTHER_PEERS.includes(id))
+  return ins.affectedInsurers.includes(sel)
+}
+
+// The newest period anywhere in the run — the yardstick for "latest vs older".
+const PANEL_LATEST = latestPeriodAcross(FILE.insights)
+// Real generation date (honest) — replaces the stale FY label in the header.
+const GEN_DATE = new Date(FILE.meta.generatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+
+export function Insights({ onNavigate }: { onNavigate?: (target: NavTarget) => void }) {
+  const [company, setCompany] = useState<string>('niva-bupa')
   const [category, setCategory] = useState<string>('all')
   const [conviction, setConviction] = useState<string>('all')
+  const { setHighlightedCompany } = useFilters()
 
   const filtered = useMemo(
     () =>
       FILE.insights
-        .filter((i) => insurer === 'all' || i.affectedInsurers.includes(insurer))
+        .filter((i) => matchCompany(i, company))
         .filter((i) => category === 'all' || i.category === category)
         .filter((i) => conviction === 'all' || i.conviction === conviction)
         .sort((a, b) => a.rank - b.rank),
-    [insurer, category, conviction],
+    [company, category, conviction],
   )
   const avgReady = Math.round(FILE.meta.coverage.reduce((s, c) => s + c.readyPct, 0) / Math.max(1, FILE.meta.coverage.length))
-  const noFilter = insurer === 'all' && category === 'all' && conviction === 'all'
+
+  // "Go to source data" — highlight the insight's company, then jump to the
+  // dashboard tab/table it was drawn from. Section-level today (honest about it).
+  const goToSource = (ins: Insight) => {
+    const src = resolveSource(ins)
+    if (src.target.company) setHighlightedCompany(src.target.company)
+    onNavigate?.(src.target)
+  }
 
   return (
     // `insights-tab` scopes the editorial Cormorant Garamond serif to this tab's
@@ -297,17 +345,18 @@ export function Insights() {
           <div className="inline-flex shrink-0 items-center gap-2.5 rounded-xl border border-soft-border bg-white/75 px-3 py-1.5 shadow-soft backdrop-blur-sm">
             <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full rounded-full bg-teal/40" /><span className="relative inline-flex h-2 w-2 rounded-full bg-teal" /></span>
             <div className="text-right leading-tight">
-              <p className="font-display text-[12.5px] text-navy-deep">Updated {FILE.meta.dataAsOf}</p>
-              <p className="text-[9.5px] text-ink-secondary">{FILE.insights.length} insights · {avgReady}% source-backed</p>
+              <p className="font-display text-[12.5px] text-navy-deep">Updated {GEN_DATE}</p>
+              <p className="text-[9.5px] text-ink-secondary">{FILE.insights.length} insights · {avgReady}% source-backed · data through {PANEL_LATEST}</p>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Filters — understated premium controls */}
+      {/* Filters — understated premium controls. Company leads (defaults to Niva
+          Bupa); Type and Conviction refine. */}
       <div className="flex flex-wrap items-center gap-2.5">
         <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Filter</span>
-        <Filter label="Insurer" value={insurer} onChange={setInsurer} options={[['all', 'All'], ...ALL_INSURERS.map((i) => [i, pretty(i)] as [string, string])]} />
+        <Filter label="Company" value={company} onChange={setCompany} options={COMPANY_OPTIONS} />
         <Filter label="Type" value={category} onChange={setCategory} options={[['all', 'All'], ...ALL_CATEGORIES.map((c) => [c, CATCH[c].label] as [string, string])]} />
         <Filter label="Conviction" value={conviction} onChange={setConviction} options={[['all', 'All'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]} />
         <span className="ml-1 text-[10.5px] font-medium text-ink-secondary">{filtered.length} insight{filtered.length === 1 ? '' : 's'} shown</span>
@@ -319,7 +368,14 @@ export function Insights() {
       ) : (
         <div className="space-y-5">
           {filtered.map((ins, i) => (
-            <InsightCard key={ins.id} ins={ins} hero={i === 0 && noFilter} />
+            <InsightCard
+              key={ins.id}
+              ins={ins}
+              hero={i === 0}
+              source={resolveSource(ins)}
+              freshness={freshnessOf(ins, PANEL_LATEST)}
+              onGoToSource={() => goToSource(ins)}
+            />
           ))}
         </div>
       )}

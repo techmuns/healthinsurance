@@ -309,7 +309,12 @@ export default function App() {
                   {page === 'industry' ? (
                     <IndustryInsightsPage />
                   ) : page === 'insights' ? (
-                    <Insights />
+                    <Insights
+                      onNavigate={(target) => {
+                        setPage(target.page)
+                        if (target.sahiTab) setSahiTab(target.sahiTab)
+                      }}
+                    />
                   ) : page === 'audit' ? (
                     <Suspense fallback={<div className="py-16 text-center text-[12.5px] text-ink-secondary">Loading the audit index…</div>}>
                       <ExtractedDataAudit />

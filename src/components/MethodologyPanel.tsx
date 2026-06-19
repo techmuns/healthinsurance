@@ -1,9 +1,11 @@
-import { useState, type RefObject } from 'react'
+import { useState, type ReactNode, type RefObject } from 'react'
 import {
   ArrowLeft, Sigma, ShieldCheck, Lock, ChevronDown, Check, Flag, Minus, FileText,
-  Calculator, Activity, Users, Globe2, Compass, Bell, type LucideIcon,
+  Calculator, Activity, Users, Globe2, Compass, Bell, Lightbulb, Database, MapPin,
+  ArrowUpRight, CalendarClock, type LucideIcon,
 } from 'lucide-react'
 import type { Application, Insight, Lens, LensBlock, MethodDescriptor, ProvenanceLayer, Watch, WatchItem } from '@/insights/types'
+import type { Freshness, SourceLocation } from '@/insights/sourceMap'
 import { KaTeXFormula } from './KaTeXFormula'
 
 const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'macro']
@@ -236,7 +238,112 @@ function WatchBlock({ watch }: { watch: Watch }) {
   )
 }
 
-export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins: Insight; tone: Tone; onBack: () => void; backRef: RefObject<HTMLButtonElement>; labelId: string }) {
+const NAMES: Record<string, string> = {
+  'niva-bupa': 'Niva Bupa', 'star-health': 'Star Health', 'care-health': 'Care Health',
+  'aditya-birla': 'Aditya Birla', 'manipalcigna': 'ManipalCigna', panel: 'Across the panel',
+}
+const pretty = (id: string) => NAMES[id] ?? id
+
+// A titled audit block — the plain-labelled containers on the back ("Why this
+// matters", "Data used", "Source location"). Mirrors the panel's card aesthetic.
+function SummaryCard({ label, Icon, tone, accent, children }: { label: string; Icon: LucideIcon; tone: Tone; accent?: string; children: ReactNode }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-soft-border bg-white/70" style={accent ? { borderLeft: `3px solid ${accent}` } : undefined}>
+      <header className="flex items-center gap-2 border-b border-soft-border/70 bg-ice/40 px-3 py-2">
+        <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: tone.fg }} strokeWidth={2.2} />
+        <span className="font-display text-[12px] font-semibold text-navy-deep">{label}</span>
+      </header>
+      <div className="px-3.5 py-3">{children}</div>
+    </section>
+  )
+}
+
+// The audit summary — the plain-English "show your working" a human can verify:
+// why the insight fired, the exact data points behind it, where they live in the
+// dashboard, how fresh they are, and a one-click jump to the source table. Built
+// entirely from the insight's own fields + the deterministic source resolver.
+function AuditSummary({ ins, tone, source, freshness, onGoToSource }: { ins: Insight; tone: Tone; source: SourceLocation; freshness: Freshness; onGoToSource: () => void }) {
+  const fresh = freshness.tone === 'fresh'
+  // The plain rule the engine applied — the load-bearing method's name + one-line
+  // gloss (or an honest detection-rule note for non-quantitative items).
+  const primaryStep = ins.methodology?.steps?.[0]
+  const rule = primaryStep
+    ? `${primaryStep.name} — ${primaryStep.gloss}`
+    : 'Flagged from a filing or news event — a detection rule, not a computed statistic.'
+  return (
+    <div className="space-y-2.5">
+      {/* Why this matters — the plain "so what" + the rule the engine used. */}
+      <SummaryCard label="Why this matters" Icon={Lightbulb} tone={tone}>
+        <p className="font-editorial text-[13px] leading-relaxed text-ink-primary">{ins.whatConsensusMisses}</p>
+        <p className="mt-1.5 text-[11px] leading-snug text-ink-secondary"><strong className="font-semibold text-navy-deep">Why it fired:</strong> {ins.summary}</p>
+        <div className="mt-2.5 rounded-lg px-2.5 py-2" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+          <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: tone.fg }}>Rule used</span>
+          <p className="mt-0.5 text-[11px] leading-snug text-ink-primary">{rule}</p>
+        </div>
+      </SummaryCard>
+
+      {/* Data used — every evidence point, each traceable to a source layer. */}
+      <SummaryCard label="Data used" Icon={Database} tone={tone}>
+        <div className="overflow-hidden rounded-lg border border-soft-border">
+          <table className="w-full border-collapse text-[11px]">
+            <thead>
+              <tr className="bg-ice/70 text-[8.5px] uppercase tracking-[0.06em] text-ink-secondary">
+                <th className="px-2.5 py-1.5 text-left font-bold">Company</th>
+                <th className="px-2 py-1.5 text-left font-bold">Metric</th>
+                <th className="px-2 py-1.5 text-right font-bold">Value</th>
+                <th className="px-2 py-1.5 text-right font-bold">Period</th>
+                <th className="px-2.5 py-1.5 text-left font-bold">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ins.evidence.map((e, i) => (
+                <tr key={i} className="border-t border-soft-border/70 align-top">
+                  <td className="whitespace-nowrap px-2.5 py-1.5 font-semibold text-navy-deep">{pretty(e.insurer)}</td>
+                  <td className="px-2 py-1.5 text-ink-primary">{e.metric}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums" style={{ color: tone.fg }}>{valUnit(e.value, e.unit)}</td>
+                  <td className="whitespace-nowrap px-2 py-1.5 text-right text-ink-secondary">{e.period}</td>
+                  <td className="px-2.5 py-1.5">{e.layers[0] ? <LayerBadge layer={e.layers[0]} /> : <span className="text-[9px] text-ink-secondary">—</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </SummaryCard>
+
+      {/* Source location — where it lives, how fresh, and the jump to it. */}
+      <SummaryCard label="Source location" Icon={MapPin} tone={tone} accent={tone.fg}>
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11.5px] font-semibold">
+          {source.breadcrumb.map((b, i) => {
+            const leaf = i === source.breadcrumb.length - 1
+            return (
+              <span key={i} className="inline-flex items-center gap-1">
+                {i > 0 && <span className="text-ink-secondary">›</span>}
+                <span className={leaf ? 'text-navy-deep' : 'text-ink-secondary'}>{b}</span>
+              </span>
+            )
+          })}
+        </div>
+        <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug" style={{ color: fresh ? TEAL : GOLD }}>
+          <CalendarClock className="mt-px h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
+          <span>{freshness.detail}</span>
+        </p>
+        <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">Backed by {source.provenance}. {source.cellStatus}</p>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onGoToSource() }}
+          title={`Open ${source.breadcrumb.join(' › ')}`}
+          className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11.5px] font-bold text-white shadow-soft transition-transform hover:-translate-y-px"
+          style={{ background: tone.fg }}
+        >
+          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.6} />
+          Go to source data
+        </button>
+      </SummaryCard>
+    </div>
+  )
+}
+
+export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, onBack, backRef, labelId }: { ins: Insight; tone: Tone; source: SourceLocation; freshness: Freshness; onGoToSource: () => void; onBack: () => void; backRef: RefObject<HTMLButtonElement>; labelId: string }) {
   const m = ins.methodology
   const steps = m?.steps ?? []
   const [openKey, setOpenKey] = useState(steps[0]?.key ?? '')
@@ -263,10 +370,14 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
         </button>
       </div>
 
-      <div className="flex-1 px-5 py-4">
+      <div className="flex-1 space-y-4 px-5 py-4">
+        {/* The plain-labelled, human-verifiable audit read sits first; the
+            deterministic calculation + next steps follow below it. */}
+        <AuditSummary ins={ins} tone={tone} source={source} freshness={freshness} onGoToSource={onGoToSource} />
+        <div>
         {m?.isQuantitative ? (
           <>
-            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part A · How we got here</p>
+            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Calculation · how we worked it out</p>
             {/* Two INDEPENDENT columns (not a row-aligned grid) so a short/empty lens
                 never leaves a blank box beside a tall one. Left = Fundamental ·
                 Sentiment · Provenance; right = Technical · Macro · the forward
@@ -322,6 +433,7 @@ export function MethodologyPanel({ ins, tone, onBack, backRef, labelId }: { ins:
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   )
