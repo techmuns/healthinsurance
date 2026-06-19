@@ -106,6 +106,25 @@ export const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'mac
 /** Pick the focal insurer's signal if present, else the first. */
 const lead = (sigs: Signal[], focal?: string): Signal => sigs.find((s) => s.insurer === focal) ?? sigs[0]
 
+/** Honest growth-adjusted (PEG) read for the P/GWP step. States the raw multiple
+ *  gap AND the growth gap, then concludes in words — so it never asserts "not
+ *  faster growth" when the focal name in fact grows faster. Emits only the already
+ *  grounded numbers (the two P/GWP multiples + the two growth rates); the PEG
+ *  ratio itself is described, not printed, to keep every number signal-traceable. */
+function pegRobustness(v: Signal, pgwp: number, g: number | null, other?: Signal, og?: number | null): string {
+  if (!other) return 'Reads the premium multiple against its own GWP growth, not just its level.'
+  const ov = other.value as number
+  const mult = pgwp > ov ? 'higher' : pgwp < ov ? 'lower' : 'a similar'
+  const head = `${pretty(v.insurer)} carries ${mult === 'a similar' ? 'a similar' : `a ${mult}`} ${fmt(pgwp)}x vs ${pretty(other.insurer)}'s ${fmt(ov)}x`
+  if (g == null || og == null) return `${head}.`
+  const growth = `on ~${fmt(g)}% vs ~${fmt(og)}% GWP growth`
+  let tail: string
+  if (pgwp > ov) tail = g > og ? `${growth} — the richer multiple is buying faster growth, not pure re-rating` : `${growth} — a higher multiple without faster growth to justify it`
+  else if (pgwp < ov) tail = g > og ? `${growth} — a lower multiple even on faster growth` : growth
+  else tail = growth
+  return `${head}, ${tail}.`
+}
+
 const SPECS: MethodSpec[] = [
   // 1 ── Cross-sectional outlier: standard score (z) ──────────────────────────
   {
@@ -277,7 +296,7 @@ const SPECS: MethodSpec[] = [
         formulaTeX: '\\text{richness} = \\dfrac{P/GWP}{g_{\\text{GWP}}} \\quad (\\text{higher} \\Rightarrow \\text{paying more per point of growth})',
         instanceTeX, inputs,
         statistic: { symbol: 'P/GWP', value: pgwp, unit: 'x' },
-        robustness: other ? `${pretty(v.insurer)} pays a richer ${fmt(pgwp)}x vs ${pretty(other.insurer)}'s ${fmt(other.value)}x — a higher multiple, not faster growth.` : 'Reads the premium multiple against its own GWP growth, not just its level.',
+        robustness: pegRobustness(v, pgwp, g, other, og),
       }
     },
   },
@@ -398,7 +417,7 @@ const SPECS: MethodSpec[] = [
         instanceTeX, inputs,
         statistic: { symbol: 'g_{\\text{retail}}', value: (rg ?? mx ?? headline.value) as number, unit: '%' },
         threshold: rg != null && gg != null ? { rule: 'retail growth > group growth ⇒ mix improving', value: gg, passed: rg > gg } : undefined,
-        robustness: 'Sourced from the GI-Council retail/group health split — a growth headline only improves quality if retail outpaces group and the mix actually rises.',
+        robustness: 'Sourced from the GI-Council retail/group health split — a single latest-period growth read, not the multi-year trend, so retail can lead in the newest print even where the trend slope is still down. Growth only improves quality if retail outpaces group and the mix actually rises.',
       }
     },
   },

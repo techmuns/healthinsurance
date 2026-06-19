@@ -744,7 +744,7 @@
               "value": 1.65,
               "unit": "x"
             },
-            "robustness": "Niva Bupa pays a richer 1.65x vs Star Health's 1.49x — a higher multiple, not faster growth.",
+            "robustness": "Niva Bupa carries a higher 1.65x vs Star Health's 1.49x, on ~20% vs ~10% GWP growth — the richer multiple is buying faster growth, not pure re-rating.",
             "lens": "fundamental"
           }
         ],
@@ -990,7 +990,7 @@
               "value": 24.4,
               "passed": true
             },
-            "robustness": "Sourced from the GI-Council retail/group health split — a growth headline only improves quality if retail outpaces group and the mix actually rises.",
+            "robustness": "Sourced from the GI-Council retail/group health split — a single latest-period growth read, not the multi-year trend, so retail can lead in the newest print even where the trend slope is still down. Growth only improves quality if retail outpaces group and the mix actually rises.",
             "lens": "fundamental"
           }
         ],
@@ -1176,7 +1176,7 @@
               "value": 22.9,
               "passed": true
             },
-            "robustness": "Sourced from the GI-Council retail/group health split — a growth headline only improves quality if retail outpaces group and the mix actually rises.",
+            "robustness": "Sourced from the GI-Council retail/group health split — a single latest-period growth read, not the multi-year trend, so retail can lead in the newest print even where the trend slope is still down. Growth only improves quality if retail outpaces group and the mix actually rises.",
             "lens": "fundamental"
           },
           {
