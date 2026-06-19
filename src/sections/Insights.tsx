@@ -92,7 +92,7 @@ function usePrefersReducedMotion(): boolean {
 // a drag-to-select never flips). LEFT is the written read: category badge, the
 // editorial title, the overlooked angle + short thesis, a hero metric tile, then
 // conviction / falsifier / source. RIGHT is the visual evidence: one live chart.
-function InsightCard({ ins, hero = false, source, freshness, onGoToSource }: { ins: Insight; hero?: boolean; source: SourceLocation; freshness: Freshness; onGoToSource: () => void }) {
+function InsightCard({ ins, hero = false, source, freshness, onGoToSource, initialFlipped = false }: { ins: Insight; hero?: boolean; source: SourceLocation; freshness: Freshness; onGoToSource: () => void; initialFlipped?: boolean }) {
   const cat = CATCH[ins.category]
   const tone = TONE[cat.tone]
   const Icon = cat.Icon
@@ -104,8 +104,11 @@ function InsightCard({ ins, hero = false, source, freshness, onGoToSource }: { i
   const statColor = focal && stat && stat.insurer === focal ? GOLD : tone.fg
 
   // ── flip state + variable-height 3D flip ──────────────────────────────────
+  // `initialFlipped` is true only when the reader is returning from "Go to source
+  // → Back to Insight", so the card reopens on its workings, where they left off.
   const reduced = usePrefersReducedMotion()
-  const [flipped, setFlipped] = useState(false)
+  const [flipped, setFlipped] = useState(initialFlipped)
+  const articleRef = useRef<HTMLElement>(null)
   const frontRef = useRef<HTMLDivElement>(null)
   const backRef = useRef<HTMLDivElement>(null)
   const frontFaceRef = useRef<HTMLDivElement>(null)
@@ -137,6 +140,11 @@ function InsightCard({ ins, hero = false, source, freshness, onGoToSource }: { i
     else showBtnRef.current?.focus()
   }, [flipped])
 
+  // On return from "Go to source", scroll this (re-flipped) card back into view.
+  useEffect(() => {
+    if (initialFlipped) articleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [])
+
   const innerStyle: React.CSSProperties = reduced
     ? { transform: 'none' }
     : { transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)', transition: 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)' }
@@ -156,6 +164,7 @@ function InsightCard({ ins, hero = false, source, freshness, onGoToSource }: { i
 
   return (
     <article
+      ref={articleRef}
       className={[
         'group relative overflow-hidden rounded-2xl border bg-card transition-all duration-300 hover:-translate-y-px',
         hero
@@ -294,17 +303,38 @@ const matchCompany = (ins: Insight, sel: string): boolean => {
   if (sel === 'others') return ins.affectedInsurers.some((id) => OTHER_PEERS.includes(id))
   return ins.affectedInsurers.includes(sel)
 }
+// The filter group that surfaces a given insight — so a card reopened on return
+// is guaranteed visible in the feed.
+const groupFor = (ins: Insight): string => {
+  if (ins.affectedInsurers.includes('niva-bupa')) return 'niva-bupa'
+  if (ins.affectedInsurers.includes('star-health')) return 'star-health'
+  if (ins.affectedInsurers.some((id) => OTHER_PEERS.includes(id))) return 'others'
+  return 'all'
+}
 
 // The newest period anywhere in the run — the yardstick for "latest vs older".
 const PANEL_LATEST = latestPeriodAcross(FILE.insights)
 // Real generation date (honest) — replaces the stale FY label in the header.
 const GEN_DATE = new Date(FILE.meta.generatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
 
-export function Insights({ onNavigate }: { onNavigate?: (target: NavTarget) => void }) {
-  const [company, setCompany] = useState<string>('niva-bupa')
+export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNavigate?: (target: NavTarget, insightId: string) => void; reopenInsightId?: string | null; onReopened?: () => void }) {
+  // Captured once at mount: when the reader returns from "Go to source", this is
+  // the insight to re-open (flipped), and the filter must be set to show it.
+  const reopenRef = useRef(reopenInsightId ?? null)
+  const [company, setCompany] = useState<string>(() => {
+    const id = reopenRef.current
+    const ins = id ? FILE.insights.find((i) => i.id === id) : undefined
+    return ins ? groupFor(ins) : 'niva-bupa'
+  })
   const [category, setCategory] = useState<string>('all')
   const [conviction, setConviction] = useState<string>('all')
   const { setHighlightedCompany } = useFilters()
+
+  // Clear the App-level reopen flag once we've mounted (the matching card opens
+  // flipped + scrolls itself); the card's own state persists after this clears.
+  useEffect(() => {
+    if (reopenRef.current) onReopened?.()
+  }, [])
 
   const filtered = useMemo(
     () =>
@@ -317,12 +347,13 @@ export function Insights({ onNavigate }: { onNavigate?: (target: NavTarget) => v
   )
   const avgReady = Math.round(FILE.meta.coverage.reduce((s, c) => s + c.readyPct, 0) / Math.max(1, FILE.meta.coverage.length))
 
-  // "Go to source data" — highlight the insight's company, then jump to the
-  // dashboard tab/table it was drawn from. Section-level today (honest about it).
+  // "Go to source" — highlight the insight's company, then jump to its source:
+  // Data Audit first (the verification layer), the chart only on fallback. The
+  // insight id rides along so the reader can return to this exact card.
   const goToSource = (ins: Insight) => {
     const src = resolveSource(ins)
     if (src.target.company) setHighlightedCompany(src.target.company)
-    onNavigate?.(src.target)
+    onNavigate?.(src.target, ins.id)
   }
 
   return (
@@ -375,6 +406,7 @@ export function Insights({ onNavigate }: { onNavigate?: (target: NavTarget) => v
               source={resolveSource(ins)}
               freshness={freshnessOf(ins, PANEL_LATEST)}
               onGoToSource={() => goToSource(ins)}
+              initialFlipped={ins.id === reopenRef.current}
             />
           ))}
         </div>

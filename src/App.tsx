@@ -1,5 +1,6 @@
 import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
-import { UploadCloud, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, type LucideIcon } from 'lucide-react'
+import { UploadCloud, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
+import type { AuditFocus, NavTarget } from '@/insights/sourceMap'
 import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
@@ -244,6 +245,12 @@ export default function App() {
   const [page, setPage] = useState<TopPage>('industry')
   const [sahiTab, setSahiTab] = useState('companies')
   const [navOpen, setNavOpen] = useState(false)
+  // Insight → source navigation: the Data-Audit cell to highlight on arrival, the
+  // insight to offer "Back to Insight" for, and the insight to re-open (flipped)
+  // once we land back on the Insights tab.
+  const [auditFocus, setAuditFocus] = useState<AuditFocus | null>(null)
+  const [insightReturn, setInsightReturn] = useState<string | null>(null)
+  const [reopenInsightId, setReopenInsightId] = useState<string | null>(null)
 
   const auraKey = page === 'industry' ? 'overview' : page === 'insights' ? 'insights' : page === 'audit' ? 'audit' : AURA_KEY[sahiTab] ?? 'peers'
   const aura = SECTION_AURA[auraKey] ?? SECTION_AURA.overview
@@ -251,6 +258,27 @@ export default function App() {
   const selectPage = (p: TopPage) => {
     setPage(p)
     setNavOpen(false)
+    // A manual page switch cancels the "return to the insight" breadcrumb.
+    setInsightReturn(null)
+    setAuditFocus(null)
+  }
+
+  // Jump from an insight to its source — Data Audit first (the verification
+  // layer), the dashboard chart only on fallback. Remembers the insight to return.
+  const goToInsightSource = (target: NavTarget, insightId: string) => {
+    setInsightReturn(insightId)
+    setAuditFocus(target.page === 'audit' ? target.audit ?? null : null)
+    setPage(target.page)
+    if (target.sahiTab) setSahiTab(target.sahiTab)
+    setNavOpen(false)
+  }
+
+  // Return to the same insight card the user jumped from, re-flipped to its workings.
+  const backToInsight = () => {
+    if (insightReturn) setReopenInsightId(insightReturn)
+    setInsightReturn(null)
+    setAuditFocus(null)
+    setPage('insights')
   }
   // Sidebar mirrors the top-level pages as app-level icon nav (ids match TopPage).
   const onSidebarNavigate = (id: string) =>
@@ -310,14 +338,13 @@ export default function App() {
                     <IndustryInsightsPage />
                   ) : page === 'insights' ? (
                     <Insights
-                      onNavigate={(target) => {
-                        setPage(target.page)
-                        if (target.sahiTab) setSahiTab(target.sahiTab)
-                      }}
+                      onNavigate={goToInsightSource}
+                      reopenInsightId={reopenInsightId}
+                      onReopened={() => setReopenInsightId(null)}
                     />
                   ) : page === 'audit' ? (
                     <Suspense fallback={<div className="py-16 text-center text-[12.5px] text-ink-secondary">Loading the audit index…</div>}>
-                      <ExtractedDataAudit />
+                      <ExtractedDataAudit focus={auditFocus} />
                     </Suspense>
                   ) : (
                     <SahiContent tab={sahiTab} />
@@ -331,6 +358,19 @@ export default function App() {
             </div>
           </main>
         </div>
+
+        {/* Floating return — shown after jumping from an insight to its source
+            (Data Audit or a chart). Brings the reader back to the same insight,
+            re-flipped, so studying context is never lost. */}
+        {insightReturn && page !== 'insights' && (
+          <button
+            type="button"
+            onClick={backToInsight}
+            className="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full border border-[#E4CE93] bg-gradient-to-br from-[#1E4079] to-[#143058] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_10px_30px_rgba(23,43,77,0.28)] transition-transform hover:-translate-y-0.5"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Insight
+          </button>
+        )}
       </div>
     </FilterProvider>
   )

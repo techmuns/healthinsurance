@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
@@ -8,6 +8,7 @@ import { companyColor, isCompanyEntity, companyShortName } from '@/lib/companyCo
 import { LISTED_INSURERS, LISTED_INSURER_IDS } from '@/lib/listedInsurers'
 import { useAuditView, type AuditView } from '@/lib/auditView'
 import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
+import type { AuditFocus } from '@/insights/sourceMap'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
@@ -748,11 +749,17 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
-export function AuditSpreadsheet({ model }: { model: AuditModel }) {
+export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: AuditFocus | null }) {
   const sheets = model.groups
   const [active, setActive] = useState(sheets[0]?.sheet ?? '')
   const [raw, setRaw] = useState(false)
   const [company, setCompany] = useState('all')
+
+  // Arriving from an insight's "Go to Data Audit": pre-select that company so its
+  // rows are isolated for verification (an invalid id falls back to "all" below).
+  useEffect(() => {
+    if (focus?.company) setCompany(focus.company)
+  }, [focus])
 
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
 
@@ -797,6 +804,28 @@ export function AuditSpreadsheet({ model }: { model: AuditModel }) {
 
   return (
     <div className="space-y-3">
+      {/* Verifying-from-insight banner — names the exact company / metric / period /
+          value to check; the company is already filtered in. Honest about whether
+          this is an exact cell or the closest row. */}
+      {focus && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-[#E4CE93] bg-gradient-to-r from-[#FBF6EA] to-card px-4 py-2.5 shadow-soft">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-champagne-deep">
+            <CheckCircle2 className="h-3.5 w-3.5" /> Verifying from insight
+          </span>
+          <span className="text-[12.5px] text-navy-deep">
+            <strong className="font-semibold">{focus.companyLabel ?? 'This company'}</strong>
+            {focus.metricLabel && <> · {focus.metricLabel}</>}
+            {focus.year && <> · {focus.year}</>}
+            {focus.valueLabel && <> = <strong className="font-semibold">{focus.valueLabel}</strong></>}
+          </span>
+          <span className="text-[11px] leading-snug text-ink-secondary">
+            {focus.status === 'exact_cell'
+              ? `${focus.companyLabel ?? 'The company'} is pre-selected — find ${focus.metricLabel ?? 'the metric'} for ${focus.year ?? 'the year'} below.`
+              : `Closest match — locate the ${focus.metricLabel ?? 'metric'} row${focus.year ? ` for ${focus.year}` : ''} below (exact cell mapping pending).`}
+          </span>
+        </div>
+      )}
+
       {/* Excel-style sheet tabs */}
       <div className="flex flex-wrap items-end gap-1 border-b border-soft-border">
         {sheets.map((g) => {

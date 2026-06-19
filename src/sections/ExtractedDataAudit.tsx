@@ -3,6 +3,7 @@ import { ClipboardCheck } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 import { PageHeadline } from '@/components/PageHeadline'
+import type { AuditFocus } from '@/insights/sourceMap'
 
 // ---------------------------------------------------------------------------
 //  Extracted Data Audit — a source-mapping QA surface that mirrors the source
@@ -12,7 +13,7 @@ import { PageHeadline } from '@/components/PageHeadline'
 //  should fill it and why it is still missing. Read-only — no data is changed.
 // ---------------------------------------------------------------------------
 
-export function ExtractedDataAudit() {
+export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
   const model = useMemo(() => buildAudit(), [])
 
   return (
@@ -25,7 +26,7 @@ export function ExtractedDataAudit() {
         tone="navy"
       />
 
-      <AuditSpreadsheet model={model} />
+      <AuditSpreadsheet model={model} focus={focus} />
     </div>
   )
 }

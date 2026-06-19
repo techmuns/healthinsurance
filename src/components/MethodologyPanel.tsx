@@ -2,10 +2,10 @@ import { useState, type ReactNode, type RefObject } from 'react'
 import {
   ArrowLeft, Sigma, ShieldCheck, Lock, ChevronDown, Check, Flag, Minus, FileText,
   Calculator, Activity, Users, Globe2, Compass, Bell, Lightbulb, Database, MapPin,
-  ArrowUpRight, CalendarClock, type LucideIcon,
+  CalendarClock, Eye, CheckCircle2, BarChart3, Clock, type LucideIcon,
 } from 'lucide-react'
 import type { Application, Insight, Lens, LensBlock, MethodDescriptor, ProvenanceLayer, Watch, WatchItem } from '@/insights/types'
-import type { Freshness, SourceLocation } from '@/insights/sourceMap'
+import type { AuditMappingStatus, Freshness, SourceLocation, SourcePreview } from '@/insights/sourceMap'
 import { KaTeXFormula } from './KaTeXFormula'
 
 const LENS_ORDER: Lens[] = ['fundamental', 'technical', 'sentiment', 'macro']
@@ -258,87 +258,126 @@ function SummaryCard({ label, Icon, tone, accent, children }: { label: string; I
   )
 }
 
-// The audit summary — the plain-English "show your working" a human can verify:
-// why the insight fired, the exact data points behind it, where they live in the
-// dashboard, how fresh they are, and a one-click jump to the source table. Built
-// entirely from the insight's own fields + the deterministic source resolver.
-function AuditSummary({ ins, tone, source, freshness, onGoToSource }: { ins: Insight; tone: Tone; source: SourceLocation; freshness: Freshness; onGoToSource: () => void }) {
-  const fresh = freshness.tone === 'fresh'
-  // The plain rule the engine applied — the load-bearing method's name + one-line
-  // gloss (or an honest detection-rule note for non-quantitative items).
+// "Why this matters" — the plain "so what" + the rule the engine used (right col).
+function WhyThisMatters({ ins, tone }: { ins: Insight; tone: Tone }) {
   const primaryStep = ins.methodology?.steps?.[0]
   const rule = primaryStep
     ? `${primaryStep.name} — ${primaryStep.gloss}`
     : 'Flagged from a filing or news event — a detection rule, not a computed statistic.'
   return (
-    <div className="space-y-2.5">
-      {/* Why this matters — the plain "so what" + the rule the engine used. */}
-      <SummaryCard label="Why this matters" Icon={Lightbulb} tone={tone}>
-        <p className="font-editorial text-[13px] leading-relaxed text-ink-primary">{ins.whatConsensusMisses}</p>
-        <p className="mt-1.5 text-[11px] leading-snug text-ink-secondary"><strong className="font-semibold text-navy-deep">Why it fired:</strong> {ins.summary}</p>
-        <div className="mt-2.5 rounded-lg px-2.5 py-2" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
-          <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: tone.fg }}>Rule used</span>
-          <p className="mt-0.5 text-[11px] leading-snug text-ink-primary">{rule}</p>
-        </div>
-      </SummaryCard>
+    <SummaryCard label="Why this matters" Icon={Lightbulb} tone={tone}>
+      <p className="font-editorial text-[13px] leading-relaxed text-ink-primary">{ins.whatConsensusMisses}</p>
+      <p className="mt-1.5 text-[11px] leading-snug text-ink-secondary"><strong className="font-semibold text-navy-deep">Why it fired:</strong> {ins.summary}</p>
+      <div className="mt-2.5 rounded-lg px-2.5 py-2" style={{ background: tone.soft, boxShadow: `inset 0 0 0 1px ${tone.ring}` }}>
+        <span className="text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: tone.fg }}>Rule used</span>
+        <p className="mt-0.5 text-[11px] leading-snug text-ink-primary">{rule}</p>
+      </div>
+    </SummaryCard>
+  )
+}
 
-      {/* Data used — every evidence point, each traceable to a source layer. */}
-      <SummaryCard label="Data used" Icon={Database} tone={tone}>
-        <div className="overflow-hidden rounded-lg border border-soft-border">
-          <table className="w-full border-collapse text-[11px]">
-            <thead>
-              <tr className="bg-ice/70 text-[8.5px] uppercase tracking-[0.06em] text-ink-secondary">
-                <th className="px-2.5 py-1.5 text-left font-bold">Company</th>
-                <th className="px-2 py-1.5 text-left font-bold">Metric</th>
-                <th className="px-2 py-1.5 text-right font-bold">Value</th>
-                <th className="px-2 py-1.5 text-right font-bold">Period</th>
-                <th className="px-2.5 py-1.5 text-left font-bold">Source</th>
+// "Data used" — every evidence point, traceable. Lives in the left/calc column.
+function DataUsedTable({ ins, tone }: { ins: Insight; tone: Tone }) {
+  return (
+    <SummaryCard label="Data used" Icon={Database} tone={tone}>
+      <div className="overflow-hidden rounded-lg border border-soft-border">
+        <table className="w-full border-collapse text-[11px]">
+          <thead>
+            <tr className="bg-ice/70 text-[8.5px] uppercase tracking-[0.06em] text-ink-secondary">
+              <th className="px-2.5 py-1.5 text-left font-bold">Company</th>
+              <th className="px-2 py-1.5 text-left font-bold">Metric</th>
+              <th className="px-2 py-1.5 text-right font-bold">Value</th>
+              <th className="px-2 py-1.5 text-right font-bold">Period</th>
+              <th className="px-2.5 py-1.5 text-left font-bold">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ins.evidence.map((e, i) => (
+              <tr key={i} className="border-t border-soft-border/70 align-top">
+                <td className="whitespace-nowrap px-2.5 py-1.5 font-semibold text-navy-deep">{pretty(e.insurer)}</td>
+                <td className="px-2 py-1.5 text-ink-primary">{e.metric}</td>
+                <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums" style={{ color: tone.fg }}>{valUnit(e.value, e.unit)}</td>
+                <td className="whitespace-nowrap px-2 py-1.5 text-right text-ink-secondary">{e.period}</td>
+                <td className="px-2.5 py-1.5">{e.layers[0] ? <LayerBadge layer={e.layers[0]} /> : <span className="text-[9px] text-ink-secondary">—</span>}</td>
               </tr>
-            </thead>
-            <tbody>
-              {ins.evidence.map((e, i) => (
-                <tr key={i} className="border-t border-soft-border/70 align-top">
-                  <td className="whitespace-nowrap px-2.5 py-1.5 font-semibold text-navy-deep">{pretty(e.insurer)}</td>
-                  <td className="px-2 py-1.5 text-ink-primary">{e.metric}</td>
-                  <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums" style={{ color: tone.fg }}>{valUnit(e.value, e.unit)}</td>
-                  <td className="whitespace-nowrap px-2 py-1.5 text-right text-ink-secondary">{e.period}</td>
-                  <td className="px-2.5 py-1.5">{e.layers[0] ? <LayerBadge layer={e.layers[0]} /> : <span className="text-[9px] text-ink-secondary">—</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </SummaryCard>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </SummaryCard>
+  )
+}
 
-      {/* Source location — where it lives, how fresh, and the jump to it. */}
-      <SummaryCard label="Source location" Icon={MapPin} tone={tone} accent={tone.fg}>
-        <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[11.5px] font-semibold">
-          {source.breadcrumb.map((b, i) => {
-            const leaf = i === source.breadcrumb.length - 1
-            return (
-              <span key={i} className="inline-flex items-center gap-1">
-                {i > 0 && <span className="text-ink-secondary">›</span>}
-                <span className={leaf ? 'text-navy-deep' : 'text-ink-secondary'}>{b}</span>
-              </span>
-            )
-          })}
-        </div>
-        <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug" style={{ color: fresh ? TEAL : GOLD }}>
-          <CalendarClock className="mt-px h-3.5 w-3.5 shrink-0" strokeWidth={2.2} />
-          <span>{freshness.detail}</span>
-        </p>
-        <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">Backed by {source.provenance}. {source.cellStatus}</p>
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onGoToSource() }}
-          title={`Open ${source.breadcrumb.join(' › ')}`}
-          className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11.5px] font-bold text-white shadow-soft transition-transform hover:-translate-y-px"
-          style={{ background: tone.fg }}
-        >
-          <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.6} />
-          Go to source data
-        </button>
-      </SummaryCard>
+// Audit-mapping + confidence → tone + icon.
+const AUDIT_STATUS_UI: Record<AuditMappingStatus, { fg: string; bg: string; Icon: LucideIcon }> = {
+  exact_cell: { fg: '#0E6F6D', bg: 'rgba(14,111,109,0.10)', Icon: CheckCircle2 },
+  audit_row: { fg: '#27457E', bg: 'rgba(39,69,126,0.08)', Icon: Database },
+  chart_fallback: { fg: '#9C7430', bg: 'rgba(156,116,48,0.12)', Icon: BarChart3 },
+  pending: { fg: '#6B7280', bg: '#EEF0F4', Icon: Clock },
+}
+const CONF_UI: Record<SourcePreview['confidence'], { fg: string; bg: string }> = {
+  High: { fg: '#0E6F6D', bg: 'rgba(14,111,109,0.10)' },
+  Medium: { fg: '#9C7430', bg: 'rgba(156,116,48,0.12)' },
+  Low: { fg: '#A8443B', bg: 'rgba(168,68,59,0.10)' },
+  Pending: { fg: '#6B7280', bg: '#EEF0F4' },
+}
+
+// "Source preview" — the compact data read shown BEFORE the user navigates.
+function SourcePreviewPanel({ preview, freshness, tone }: { preview: SourcePreview; freshness: Freshness; tone: Tone }) {
+  const conf = CONF_UI[preview.confidence]
+  const ast = AUDIT_STATUS_UI[preview.auditStatus]
+  const rows: [string, string, boolean?][] = [
+    ['Metric', preview.metric], ['Company', preview.companyLabel], ['Period', preview.period],
+    ['Value used', preview.valueLabel, true], ['Source', preview.sourceType],
+  ]
+  return (
+    <SummaryCard label="Source preview" Icon={Eye} tone={tone} accent={tone.fg}>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3">
+        {rows.map(([k, v, strong]) => (
+          <div key={k} className="contents">
+            <dt className="py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-ink-secondary">{k}</dt>
+            <dd className={`py-0.5 text-[11.5px] ${strong ? 'font-semibold text-navy-deep' : 'text-ink-primary'}`}>{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold" style={{ background: conf.bg, color: conf.fg }}>{preview.confidence} confidence</span>
+        <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold" style={{ background: ast.bg, color: ast.fg }}><ast.Icon className="h-3 w-3" />{preview.auditStatusLabel}</span>
+      </div>
+      <p className="mt-1.5 flex items-start gap-1 text-[10px] leading-snug text-ink-secondary">
+        <CalendarClock className="mt-px h-3 w-3 shrink-0" />{freshness.detail}
+      </p>
+    </SummaryCard>
+  )
+}
+
+// The jump (dynamic label) — Data Audit first, chart only on fallback — plus the
+// honest cell status and a note that the user can return to this card.
+function GoToSourcePanel({ source, onGoToSource, tone }: { source: SourceLocation; onGoToSource: () => void; tone: Tone }) {
+  const toAudit = source.auditStatus === 'exact_cell' || source.auditStatus === 'audit_row'
+  return (
+    <div className="rounded-xl border px-3.5 py-3" style={{ borderColor: tone.ring, background: tone.soft }}>
+      <div className="flex flex-wrap items-center gap-1 text-[11px] font-semibold">
+        <MapPin className="h-3.5 w-3.5 shrink-0" style={{ color: tone.fg }} />
+        {source.breadcrumb.map((b, i) => (
+          <span key={i} className="inline-flex items-center gap-1">
+            {i > 0 && <span className="text-ink-secondary">›</span>}
+            <span className={i === source.breadcrumb.length - 1 ? 'text-navy-deep' : 'text-ink-secondary'}>{b}</span>
+          </span>
+        ))}
+      </div>
+      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary">Backed by {source.provenance}. {source.cellStatus}</p>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onGoToSource() }}
+        title={`Open ${source.breadcrumb.join(' › ')}`}
+        className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11.5px] font-bold text-white shadow-soft transition-transform hover:-translate-y-px"
+        style={{ background: tone.fg }}
+      >
+        {toAudit ? <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.6} /> : <BarChart3 className="h-3.5 w-3.5" strokeWidth={2.6} />}
+        {source.buttonLabel}
+      </button>
+      <p className="mt-1.5 flex items-center gap-1 text-[9.5px] text-ink-secondary"><ArrowLeft className="h-3 w-3 shrink-0" /> A “Back to Insight” button brings you back to this card.</p>
     </div>
   )
 }
@@ -350,10 +389,12 @@ export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, o
 
   const layersUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.layer)))]
   const periodsUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.period)))].sort()
-  // Continuous step numbering across the (ordered) lenses.
-  const startIndex = {} as Record<Lens, number>
+  // Only the lenses that actually carry a signal — empty Technical / Macro /
+  // Sentiment boxes are dropped entirely (no "no material signal" clutter).
+  const populatedLenses = LENS_ORDER.filter((lens) => m?.lenses[lens]?.status === 'populated')
+  const startIndex: Record<string, number> = {}
   let acc = 0
-  for (const lens of LENS_ORDER) { startIndex[lens] = acc + 1; acc += m?.lenses[lens].stepKeys.length ?? 0 }
+  for (const lens of populatedLenses) { startIndex[lens] = acc + 1; acc += m?.lenses[lens].stepKeys.length ?? 0 }
 
   return (
     <div className="flex h-full flex-col" role="region" aria-labelledby={labelId}>
@@ -370,69 +411,57 @@ export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, o
         </button>
       </div>
 
-      <div className="flex-1 space-y-4 px-5 py-4">
-        {/* The plain-labelled, human-verifiable audit read sits first; the
-            deterministic calculation + next steps follow below it. */}
-        <AuditSummary ins={ins} tone={tone} source={source} freshness={freshness} onGoToSource={onGoToSource} />
-        <div>
-        {m?.isQuantitative ? (
-          <>
-            <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Calculation · how we worked it out</p>
-            {/* Two INDEPENDENT columns (not a row-aligned grid) so a short/empty lens
-                never leaves a blank box beside a tall one. Left = Fundamental ·
-                Sentiment · Provenance; right = Technical · Macro · the forward
-                "Next steps", which fill what would otherwise be dead space. */}
-            <div className="lg:flex lg:items-start lg:gap-2.5">
-              {/* LEFT — the written/derivation column */}
-              <div className="space-y-2.5 lg:min-w-0 lg:flex-1">
-                {(['fundamental', 'sentiment'] as const).map((lens) => (
+      {/* Compact two-column study layout — LEFT: the calculation + the data it
+          used; RIGHT: the plain read, the source preview, the jump, and how to
+          use it. Independent columns so neither pads the other; only the lenses
+          that actually contributed are shown. */}
+      <div className="flex-1 px-5 py-4 lg:grid lg:grid-cols-[52fr_48fr] lg:gap-4">
+        {/* LEFT — calculation & data */}
+        <div className="space-y-3">
+          <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Calculation · how we worked it out</p>
+          {m?.isQuantitative ? (
+            populatedLenses.length > 0 ? (
+              <div className="space-y-2.5">
+                {populatedLenses.map((lens) => (
                   <LensSection key={lens} lens={lens} block={m.lenses[lens]} steps={steps.filter((s) => s.lens === lens)} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
                 ))}
-                {/* provenance + reproducibility — foot of Part A (left) */}
-                <div className="space-y-2 rounded-xl border border-soft-border bg-ice/40 px-3.5 py-3">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">Provenance</span>
-                    {layersUsed.map((l) => <LayerBadge key={l} layer={l} />)}
-                    {periodsUsed.length > 0 && <span className="text-[10px] font-medium text-ink-secondary">· as of {periodsUsed.join(' · ')}</span>}
-                  </div>
-                  <p className="flex items-start gap-1.5 text-[10px] leading-snug" style={{ color: tone.fg }}>
-                    <Lock className="mt-px h-3 w-3 shrink-0" />
-                    <span><strong className="font-bold">Reproducible.</strong> Lenses and every number are computed deterministically from the signal payload (<span className="font-mono">{m.payloadHash}</span>) — not model-generated.</span>
-                  </p>
-                </div>
               </div>
-
-              {/* RIGHT — short lenses, then the forward "Next steps" filling the space */}
-              <div className="mt-2.5 space-y-2.5 lg:mt-0 lg:min-w-0 lg:flex-1">
-                {(['technical', 'macro'] as const).map((lens) => (
-                  <LensSection key={lens} lens={lens} block={m.lenses[lens]} steps={steps.filter((s) => s.lens === lens)} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
-                ))}
-                {(ins.application || ins.watch) && (
-                  <>
-                    <p className="pt-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part B · Next steps</p>
-                    {ins.application && <ApplicationBlock application={ins.application} />}
-                    {ins.watch && <WatchBlock watch={ins.watch} />}
-                  </>
-                )}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-4">
+            ) : (
+              <p className="rounded-xl border border-soft-border bg-ice/40 px-3.5 py-3 text-[11.5px] italic leading-snug text-ink-secondary">No quantitative method on record for this item.</p>
+            )
+          ) : (
             <div className="rounded-xl border border-soft-border bg-white/70 p-4">
               <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.12em]" style={{ color: tone.fg }}><FileText className="h-3.5 w-3.5" /> Detection rule — not a quantitative signal</p>
-              <p className="mt-2 font-editorial text-[13.5px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
+              <p className="mt-2 font-editorial text-[13px] leading-relaxed text-ink-primary">This item is flagged from a filing or news event rather than a computed statistic. No formula is shown because none applies — the honesty is the point.</p>
               <p className="mt-2 font-editorial text-[12px] leading-relaxed text-ink-secondary">{ins.sourceNote}</p>
             </div>
-            {(ins.application || ins.watch) && (
-              <section className="space-y-2.5">
-                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Part B · Next steps</p>
-                {ins.application && <ApplicationBlock application={ins.application} />}
-                {ins.watch && <WatchBlock watch={ins.watch} />}
-              </section>
-            )}
-          </div>
-        )}
+          )}
+
+          <DataUsedTable ins={ins} tone={tone} />
+
+          {/* provenance + reproducibility — compact foot of the calc column */}
+          {m?.isQuantitative && (
+            <div className="space-y-1.5 rounded-xl border border-soft-border bg-ice/40 px-3.5 py-2.5">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">Provenance</span>
+                {layersUsed.map((l) => <LayerBadge key={l} layer={l} />)}
+                {periodsUsed.length > 0 && <span className="text-[10px] font-medium text-ink-secondary">· as of {periodsUsed.join(' · ')}</span>}
+              </div>
+              <p className="flex items-start gap-1.5 text-[10px] leading-snug" style={{ color: tone.fg }}>
+                <Lock className="mt-px h-3 w-3 shrink-0" />
+                <span><strong className="font-bold">Reproducible.</strong> Every number is computed deterministically from the signal payload (<span className="font-mono">{m.payloadHash}</span>) — not model-generated.</span>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* RIGHT — read & verify */}
+        <div className="mt-3 space-y-3 lg:mt-0">
+          <WhyThisMatters ins={ins} tone={tone} />
+          <SourcePreviewPanel preview={source.preview} freshness={freshness} tone={tone} />
+          <GoToSourcePanel source={source} onGoToSource={onGoToSource} tone={tone} />
+          {ins.application && <ApplicationBlock application={ins.application} />}
+          {ins.watch && <WatchBlock watch={ins.watch} />}
         </div>
       </div>
     </div>
