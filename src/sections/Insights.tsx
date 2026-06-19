@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, type LucideIcon } from 'lucide-react'
+import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, Presentation, type LucideIcon } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
 import { MethodologyPanel } from '@/components/MethodologyPanel'
 import { useFilters } from '@/state/filters'
 import { resolveSource, freshnessOf, latestPeriodAcross, type Freshness, type NavTarget, type SourceLocation } from '@/insights/sourceMap'
+import { exportInsightsPptx } from '@/lib/pptExport'
 
 const FILE = generated as unknown as InsightsFile
 
@@ -391,6 +392,16 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
         <Filter label="Type" value={category} onChange={setCategory} options={[['all', 'All'], ...ALL_CATEGORIES.map((c) => [c, CATCH[c].label] as [string, string])]} />
         <Filter label="Conviction" value={conviction} onChange={setConviction} options={[['all', 'All'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]} />
         <span className="ml-1 text-[10.5px] font-medium text-ink-secondary">{filtered.length} insight{filtered.length === 1 ? '' : 's'} shown</span>
+        {/* Export the shown insights as a PowerPoint deck (one slide per insight). */}
+        <button
+          type="button"
+          onClick={() => exportInsightsPptx({ ...FILE, insights: filtered })}
+          disabled={filtered.length === 0}
+          title="Download these insights as a PowerPoint deck — a title slide plus one slide per insight"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[#E2CF9B] bg-champagne-soft px-2.5 py-1 text-[11px] font-semibold text-champagne-deep shadow-soft transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Presentation className="h-3.5 w-3.5" /> Export to PowerPoint
+        </button>
       </div>
 
       {/* Feed */}
