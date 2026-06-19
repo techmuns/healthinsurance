@@ -389,12 +389,18 @@ export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, o
 
   const layersUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.layer)))]
   const periodsUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.period)))].sort()
-  // Only the lenses that actually carry a signal — empty Technical / Macro /
-  // Sentiment boxes are dropped entirely (no "no material signal" clutter).
+  // Which lenses appear on the card: those that carry a method (populated) AND
+  // those with an honest DATA GAP — a gap ("unlisted — no market multiple") is a
+  // conviction-capping disclosure a PM must see, not clutter. Only genuinely-empty
+  // lenses (no_signal / not_applicable) are dropped to keep the frame compact.
   const populatedLenses = LENS_ORDER.filter((lens) => m?.lenses[lens]?.status === 'populated')
+  const shownLenses = LENS_ORDER.filter((lens) => {
+    const st = m?.lenses[lens]?.status
+    return st === 'populated' || st === 'data_gap'
+  })
   const startIndex: Record<string, number> = {}
   let acc = 0
-  for (const lens of populatedLenses) { startIndex[lens] = acc + 1; acc += m?.lenses[lens].stepKeys.length ?? 0 }
+  for (const lens of shownLenses) { startIndex[lens] = acc + 1; acc += m?.lenses[lens].stepKeys.length ?? 0 }
 
   return (
     <div className="flex h-full flex-col" role="region" aria-labelledby={labelId}>
@@ -422,7 +428,7 @@ export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, o
           {m?.isQuantitative ? (
             populatedLenses.length > 0 ? (
               <div className="space-y-2.5">
-                {populatedLenses.map((lens) => (
+                {shownLenses.map((lens) => (
                   <LensSection key={lens} lens={lens} block={m.lenses[lens]} steps={steps.filter((s) => s.lens === lens)} tone={tone} openKey={openKey} setOpenKey={setOpenKey} startIndex={startIndex[lens]} />
                 ))}
               </div>
