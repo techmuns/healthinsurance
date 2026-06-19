@@ -21,7 +21,10 @@
       "source_name": "Screener.in public company page — shareholding pattern (category aggregates, Mar 2026)",
       "source_url": "https://www.screener.in/company/NIVABUPA/#shareholding",
       "note": "Public Screener exposes only these four class totals + shareholder count; the named-holder list is login-only."
-    }
+    },
+    "last_attempt": "2026-06-19T06:44:01.818Z",
+    "last_attempt_status": "unchanged",
+    "last_attempt_note": "no new quarter available yet"
   },
   "data": [
     {
