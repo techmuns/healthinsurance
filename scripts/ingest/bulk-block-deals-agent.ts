@@ -45,10 +45,11 @@ function buildPayload() {
     user_index: 124,
     tasks: [
       'List the most recent EXCHANGE-REPORTED bulk deals AND block deals for these two listed Indian health insurers: Niva Bupa (NSE: NIVABUPA) and Star Health (NSE: STARHEALTH). Use ONLY the official NSE / BSE bulk & block deal disclosures (also shown on screener.in). Cover roughly the last 6 months. If there are none, return nothing — never invent a deal.\n\n' +
+        'IMPORTANT: bulk deals and block deals are published in SEPARATE tables (both on NSE/BSE and on screener.in). Check BOTH tables and return EVERY row from EACH. Block deals are easy to miss — do NOT omit them: if a company has block deals, include every one, tagged deal_kind="block".\n\n' +
         'Return ONLY a pipe-delimited table, no leading/trailing pipe, EXACTLY these columns:\n\n' +
         'company | deal_kind | date | client | side | quantity | price\n\n' +
         'company  = "NIVABUPA" or "STARHEALTH".\n' +
-        'deal_kind = "bulk" or "block".\n' +
+        'deal_kind = "bulk" or "block" — tag rows from the block-deals table as "block" and rows from the bulk-deals table as "bulk".\n' +
         'date     = the deal date as YYYY-MM-DD.\n' +
         'client   = the client / entity name exactly as the exchange prints it.\n' +
         'side     = "buy" or "sell".\n' +
@@ -97,7 +98,10 @@ const numOf = (s: string): number | null => {
   const n = m ? Number(m[0]) : NaN
   return Number.isFinite(n) ? n : null
 }
-const keyOf = (d: Deal) => `${d.company_id}::${d.date}::${d.client.toLowerCase().replace(/\s+/g, ' ').trim()}::${d.side}::${d.quantity}`
+// Identity for ADD-ONLY de-dup. deal_kind is part of the key so a BLOCK deal is
+// never silently dropped as a "duplicate" of a BULK deal that happens to share
+// the same date/client/side/quantity — the two segments are kept distinct.
+export const keyOf = (d: Deal) => `${d.company_id}::${d.deal_kind}::${d.date}::${d.client.toLowerCase().replace(/\s+/g, ' ').trim()}::${d.side}::${d.quantity}`
 
 export function parseDeals(answer: string): Deal[] {
   const out: Deal[] = []
@@ -170,8 +174,10 @@ export async function main(): Promise<number> {
   }
 
   await writeSnapshot(SNAPSHOT_FILE, snap)
-  await appendLog('bulk-block-deals-agent.log', { added, total: deals.length, had_token: !!token })
-  console.log(`bulk-block-deals: ${added} new deal(s) this run; ${deals.length} on record.`)
+  // Per-segment counts so a run that captures no block deals is visible at a glance.
+  const onRecord = { bulk: deals.filter((d) => d.deal_kind === 'bulk').length, block: deals.filter((d) => d.deal_kind === 'block').length }
+  await appendLog('bulk-block-deals-agent.log', { added, total: deals.length, bulk: onRecord.bulk, block: onRecord.block, had_token: !!token })
+  console.log(`bulk-block-deals: ${added} new deal(s) this run; ${deals.length} on record (${onRecord.bulk} bulk, ${onRecord.block} block).`)
   return 0
 }
 
