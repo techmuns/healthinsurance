@@ -48,6 +48,7 @@ import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { labelInRange } from '@/lib/dateRange'
 import { lookupProvenance } from '@/lib/dataLayer'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import type { Insurer, TimePeriod } from '@/data/types'
 import { BasisExplainer, BASIS_TONE } from '@/components/AccountingBasisControls'
 import { ProfitQualityCheck } from '@/components/ProfitQualityCheck'
@@ -1747,11 +1748,11 @@ function LensDetailDrawer({ open, onClose, lens, company }: { open: boolean; onC
         <DrawerBlock title="Sources">
           <div className="flex flex-wrap gap-2">
             {d.sources.map((s, i) =>
-              s.url ? (
-                <a key={i} href={s.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[11px] font-medium text-navy-primary transition-colors hover:border-muted-blue">
+              isLinkable(s.url) ? (
+                <a key={i} href={sourceHref(s.url)!} target="_blank" rel="noreferrer" title={classifySource(s.url).hint} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[11px] font-medium text-navy-primary transition-colors hover:border-muted-blue">
                   <span className="h-1.5 w-1.5 rounded-full bg-teal" />
                   {s.label}{s.period ? ` · ${s.period}` : ''}
-                  <ExternalLink className="h-3 w-3" />
+                  {classifySource(s.url).state === 'fixed' ? <ShieldCheck className="h-3 w-3 text-teal" /> : <ExternalLink className="h-3 w-3" />}
                 </a>
               ) : (
                 <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-2.5 py-1 text-[11px] font-medium text-ink-secondary">

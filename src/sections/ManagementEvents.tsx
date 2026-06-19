@@ -5,6 +5,7 @@ import { PromiseTracker } from '@/components/PromiseTracker'
 import { VerdictStrip, type VerdictTone } from '@/components/VerdictStrip'
 import { getPromises } from '@/lib/promiseTracker'
 import { getManagementEvents } from '@/lib/dataLayer'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { useActiveCompany } from '@/state/filters'
 import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
 
@@ -136,8 +137,8 @@ function BoardEvents({ companyId }: { companyId: string }) {
                 </p>
               )}
               {e.event_summary && <p className="mt-0.5 text-[11.5px] leading-snug text-ink-secondary">{e.event_summary}</p>}
-              {e.source_url && (
-                <a href={e.source_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
+              {isLinkable(e.source_url) && (
+                <a href={sourceHref(e.source_url)!} target="_blank" rel="noreferrer" title={classifySource(e.source_url).hint} className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
                   Exchange / IR filing<ExternalLink className="h-3 w-3" />
                 </a>
               )}
@@ -245,8 +246,8 @@ function MarketIntelligence({ companyId, companyName }: { companyId: string; com
                 </div>
                 <p className="mt-1.5 text-[13px] font-semibold leading-snug text-navy-deep">{i.headline}</p>
                 {i.detail && <p className="mt-0.5 text-[11.5px] leading-snug text-ink-secondary">{i.detail}</p>}
-                {i.source_url && (
-                  <a href={i.source_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
+                {isLinkable(i.source_url) && (
+                  <a href={sourceHref(i.source_url)!} target="_blank" rel="noreferrer" title={classifySource(i.source_url).hint} className="mt-1 inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
                     {i.source_name || 'Source'}<ExternalLink className="h-3 w-3" />
                   </a>
                 )}

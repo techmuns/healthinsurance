@@ -18,6 +18,7 @@ import {
   type GridStatus,
   type MetricCategory,
 } from '@/lib/auditGrid'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 
 const TONE_CLASS: Record<string, { cell: string; dot: string; text: string }> = {
   green: { cell: 'bg-[#ECF6F4] ring-[#BFE3E1]', dot: 'bg-teal', text: 'text-teal' },
@@ -103,8 +104,8 @@ function CellDrawer({ cell, onClose }: { cell: GridCell; onClose: () => void }) 
             <Row label="Source">{src.sourceName ?? '—'}</Row>
             {src.page && <Row label="Page / sec">{src.page}</Row>}
             <Row label="Source link">
-              {src.sourceUrl ? (
-                <a href={src.sourceUrl} target="_blank" rel="noreferrer" className="break-all text-teal underline decoration-dotted">{src.sourceUrl}</a>
+              {isLinkable(src.sourceUrl) ? (
+                <a href={sourceHref(src.sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(src.sourceUrl).hint} className="break-all text-teal underline decoration-dotted">{sourceHref(src.sourceUrl)}</a>
               ) : src.sourceFile ? (
                 <span className="break-all text-ink-secondary">{src.sourceFile}</span>
               ) : '—'}

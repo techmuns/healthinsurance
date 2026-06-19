@@ -4,6 +4,7 @@ import { SignalBadge } from './SignalBadge'
 import { OrganicIconBlob } from './OrganicIconBlob'
 import { BasisTag } from './BasisTag'
 import { statusTone } from '@/lib/format'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import type { Metric } from '@/data/types'
 import type { BasisInfo } from '@/data/mockData'
 
@@ -64,11 +65,12 @@ export function DataStatusDrawer({ open, onClose, moduleName, entries, basis }: 
                   <SignalBadge label={e.metric.status} tone={statusTone[e.metric.status]} size="sm" />
                 </td>
                 <td className="px-4 py-3 text-ink-secondary">
-                  {e.metric.sourceUrl ? (
+                  {isLinkable(e.metric.sourceUrl) ? (
                     <a
-                      href={e.metric.sourceUrl}
+                      href={sourceHref(e.metric.sourceUrl)!}
                       target="_blank"
                       rel="noreferrer"
+                      title={classifySource(e.metric.sourceUrl).hint}
                       className="inline-flex items-center gap-1 text-navy-primary hover:underline"
                     >
                       {e.metric.source}

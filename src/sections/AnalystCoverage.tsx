@@ -3,6 +3,7 @@ import { Building2, ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp
 import { STATUS_META, type AuditCell, type AuditGroup } from '@/lib/extractedDataAudit'
 import { companyColor, companyShortName } from '@/lib/companyColors'
 import { useAuditView } from '@/lib/auditView'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
@@ -327,8 +328,8 @@ function Detail({ cell, onClose }: { cell: AuditCell; onClose: () => void }) {
         <div>
           <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Source</p>
           <div className="mt-0.5 text-[12px] text-ink-primary">
-            {cell.sourceUrl ? (
-              <a href={cell.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-navy-primary hover:underline">
+            {isLinkable(cell.sourceUrl) ? (
+              <a href={sourceHref(cell.sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(cell.sourceUrl).hint} className="inline-flex items-start gap-1 text-navy-primary hover:underline">
                 {cell.sourceName || 'Broker-research aggregator'}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
               </a>
             ) : (

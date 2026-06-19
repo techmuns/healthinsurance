@@ -7,6 +7,7 @@ import {
 import { companyColor, isCompanyEntity, companyShortName } from '@/lib/companyColors'
 import { LISTED_INSURERS, LISTED_INSURER_IDS } from '@/lib/listedInsurers'
 import { useAuditView, type AuditView } from '@/lib/auditView'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { HistoricalStockMovement } from '@/sections/HistoricalStockMovement'
 import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
@@ -300,8 +301,8 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
         {/* Source — actual when fetched, expected (or "comes from") when empty */}
         <DetailField label={fetched ? 'Source (verified)' : gap ? 'Comes from' : 'Expected source'}>
           {cell.sourceName ? (
-            cell.sourceUrl ? (
-              <a href={cell.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-start gap-1 text-navy-primary hover:underline">
+            isLinkable(cell.sourceUrl) ? (
+              <a href={sourceHref(cell.sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(cell.sourceUrl).hint} className="inline-flex items-start gap-1 text-navy-primary hover:underline">
                 {cell.sourceName}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
               </a>
             ) : <span>{cell.sourceName}</span>

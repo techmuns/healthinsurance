@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { SignalBadge } from './SignalBadge'
 import { SegmentedControl } from './SegmentedControl'
 import type { PromiseCategory, PromiseItem } from '@/lib/promiseTracker'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 
 const categories: ('All' | PromiseCategory)[] = [
   'All',
@@ -93,8 +94,8 @@ export function PromiseTracker({ items, companyName }: { items: PromiseItem[]; c
                   <SignalBadge label={p.status} size="sm" />
                 </td>
                 <td className="px-3 py-2.5 text-[11px]">
-                  {p.sourceUrl ? (
-                    <a href={p.sourceUrl} target="_blank" rel="noreferrer" className="text-navy-primary hover:underline">{p.source}</a>
+                  {isLinkable(p.sourceUrl) ? (
+                    <a href={sourceHref(p.sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(p.sourceUrl).hint} className="text-navy-primary hover:underline">{p.source}</a>
                   ) : (
                     <span className="text-ink-secondary">{p.source}</span>
                   )}

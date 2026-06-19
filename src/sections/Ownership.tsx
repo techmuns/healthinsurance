@@ -9,6 +9,7 @@ import { SourceTag } from '@/components/SourceTag'
 import { ShareholdingTrend } from '@/components/ShareholdingTrend'
 import { useActiveCompany } from '@/state/filters'
 import { getCompanyMaster, getOwnershipData, getBulkBlockDeals, type BulkBlockDeal } from '@/lib/dataLayer'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 
 // ── Bulk / block deal formatting + signal chart ─────────────────────────────
 const dealQty = (q: number): string =>
@@ -156,7 +157,7 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
           <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · exchange-reported large trades</p>
         </div>
-        <a href={sourceUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
+        <a href={sourceHref(sourceUrl) ?? sourceUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
           NSE / BSE <ArrowUpRight className="h-3 w-3" />
         </a>
       </div>
@@ -747,8 +748,8 @@ function HolderComposition({ row }: { row: OwnershipRow }) {
               </div>
             </div>
             <p className="mt-2 text-[10.5px] leading-snug text-ink-secondary">{note}</p>
-            {sourceUrl && (
-              <a href={sourceUrl} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-0.5 text-[10.5px] font-medium text-navy-primary hover:underline">
+            {isLinkable(sourceUrl) && (
+              <a href={sourceHref(sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(sourceUrl).hint} className="mt-1.5 inline-flex items-center gap-0.5 text-[10.5px] font-medium text-navy-primary hover:underline">
                 Source filing <ArrowUpRight className="h-3 w-3" />
               </a>
             )}

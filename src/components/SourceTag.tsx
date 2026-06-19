@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { DataStatusPill, type DataStatus } from './DataStatusPill'
+import { classifySource } from '@/lib/sourceHealth'
 
 // ---------------------------------------------------------------------------
 //  SourceTag — small, premium source indicator placed at the corner of every
@@ -108,8 +109,12 @@ export function SourceTag({
 }: SourceTagProps) {
   const [hover, setHover] = useState(false)
   const conf = effectiveConfidence(source, confidence)
-  const dot = DOT_COLOUR[conf]
-  const url = provenance?.source_url
+  // Source-link health — stabilises broken/session URLs (so the chip never opens
+  // a dead page) and decides whether it is safely clickable at all.
+  const health = classifySource(provenance?.source_url)
+  const url = health.href
+  // Drop the dot to a warning tone when the *link* is the problem, not the data.
+  const dot = health.state === 'unavailable' ? '#C0533F' : health.state === 'unstable' ? '#B6892F' : DOT_COLOUR[conf]
   const hasPopover = !!(provenance && (provenance.source_name || provenance.source_url))
   const popoverPos: CSSProperties = align === 'right' ? { right: 0 } : { left: 0 }
 
@@ -134,7 +139,10 @@ export function SourceTag({
           <span className="font-medium text-muted-blue/90">{frequency}</span>
         </>
       )}
-      {url && <ExternalLink className="ml-0.5 h-3 w-3 shrink-0 text-ink-secondary/55 transition-colors group-hover:text-muted-blue" aria-hidden />}
+      {url && health.state === 'fixed' && <ShieldCheck className="ml-0.5 h-3 w-3 shrink-0 text-teal" aria-label="stabilised source link" />}
+      {url && health.state === 'unstable' && <AlertTriangle className="ml-0.5 h-3 w-3 shrink-0 text-[#B6892F]" aria-label="source link may need a manual check" />}
+      {url && health.state !== 'fixed' && health.state !== 'unstable' && <ExternalLink className="ml-0.5 h-3 w-3 shrink-0 text-ink-secondary/55 transition-colors group-hover:text-muted-blue" aria-hidden />}
+      {!url && health.state === 'unavailable' && <AlertTriangle className="ml-0.5 h-3 w-3 shrink-0 text-[#C0533F]" aria-label="source unavailable" />}
     </>
   )
 
@@ -150,6 +158,22 @@ export function SourceTag({
       )}
       {url && (
         <span className="mt-1.5 block break-all text-[10px] leading-snug text-muted-blue">{url}</span>
+      )}
+      {/* Honest link-health note — only when the link isn't a clean verified one. */}
+      {health.state !== 'verified' && (
+        <span
+          className={`mt-1.5 flex items-start gap-1 text-[10px] leading-snug ${
+            health.state === 'unavailable' ? 'text-[#A8443B]' : health.state === 'unstable' ? 'text-[#8A6A2B]' : 'text-teal'
+          }`}
+        >
+          {health.state === 'fixed' ? <ShieldCheck className="mt-px h-3 w-3 shrink-0" /> : <AlertTriangle className="mt-px h-3 w-3 shrink-0" />}
+          <span>
+            {health.hint}
+            {(health.state === 'fixed' || health.state === 'unavailable') && health.original && (
+              <span className="mt-0.5 block break-all text-ink-secondary/70">On record: {health.original}</span>
+            )}
+          </span>
+        </span>
       )}
       <span className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-ink-secondary">
         <span className="inline-flex items-center gap-1">
@@ -188,7 +212,7 @@ export function SourceTag({
         href={url}
         target="_blank"
         rel="noreferrer"
-        title={provenance?.source_name ? `${provenance.source_name} — ${linkKind(url)}` : linkKind(url)}
+        title={provenance?.source_name ? `${provenance.source_name} — ${health.hint}` : health.hint}
         className={`${base} border-soft-border bg-white/70 shadow-[0_1px_2px_rgba(23,43,77,0.04)] hover:border-muted-blue hover:bg-white hover:text-navy-deep hover:shadow-soft ${className}`}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
