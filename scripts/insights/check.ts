@@ -5,6 +5,7 @@ import { buildPanel } from '@/insights/panel'
 import { runAllSignals, dispersionSignals, solvencySignals, growthQualitySignals, signalHash } from '@/insights/signals'
 import { validateInsightsFile, groundedNumbers } from '@/insights/validate'
 import { assembleMethodology, methodologyNumbers } from '@/insights/methods'
+import { auditMethodMath, auditUniqueness } from '@/insights/audit'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile } from '@/insights/types'
 
@@ -80,6 +81,32 @@ ok(care.methodology!.lenses.technical.status === 'not_applicable', 'unlisted nam
 ok(file.insights.every((i) => !!i.application && i.application.uses.length >= 1), 'every card has a How-to-use-this block')
 ok(file.insights.every((i) => !!i.watch && i.watch.items.length >= 1), 'every card has a What-to-watch block')
 ok(file.insights.every((i) => i.watch!.items.some((w) => w.direction === 'invalidates')), 'every watch list includes the falsifier (an invalidates item)')
+
+console.log('— harder gate: arithmetic recompute + formula-direction + uniqueness —')
+// §2 instance-arithmetic recompute + §1 formula-direction must pass on every card.
+const math = auditMethodMath(file)
+ok(math.ok, 'instance-arithmetic recompute + direction sanity pass on all live cards')
+if (!math.ok) math.errors.forEach((e) => console.log('      · ' + e))
+// Part 4 uniqueness — no pure-duplicate cards (breadth-then-depth is allowed).
+const uniq = auditUniqueness(file)
+ok(uniq.ok, 'uniqueness: no pure-duplicate cards (breadth-then-depth allowed)')
+if (!uniq.ok) uniq.errors.forEach((e) => console.log('      · ' + e))
+
+// Adversarial: deliberately inverted cards MUST be rejected (the gate fails closed).
+const clone = (): InsightsFile => JSON.parse(JSON.stringify(file))
+const stepOf = (f: InsightsFile, id: string, key: string) => f.insights.find((i) => i.id === id)!.methodology!.steps.find((s) => s.key === key)!
+const f1 = clone(); stepOf(f1, 'manipal-cr-outlier', 'zscore').threshold!.passed = false
+ok(!auditMethodMath(f1).ok, 'rejects inverted card — z-score pass-flag flipped against |z| ≥ 1.5')
+const f2 = clone(); stepOf(f2, 'niva-pb-roe-dislocation', 'pgwp_growth').robustness = "Niva carries a higher 1.65x vs Star's 1.49x — a higher multiple, not faster growth."
+ok(!auditMethodMath(f2).ok, 'rejects inverted card — "not faster growth" vs 20% > 10% (the #3 inversion)')
+const f3 = clone(); stepOf(f3, 'manipal-cr-outlier', 'zscore').statistic.value = 3.5
+ok(!auditMethodMath(f3).ok, 'rejects inverted card — z-score statistic ≠ recompute from inputs')
+const f4 = clone()
+const dup = JSON.parse(JSON.stringify(f4.insights.find((i) => i.id === 'manipal-cr-outlier')!)) as InsightsFile['insights'][number]
+dup.id = 'dup-manipal'
+dup.methodology!.steps = dup.methodology!.steps.filter((s) => s.key === 'zscore') // same core calc, no added method
+f4.insights.push(dup)
+ok(!auditUniqueness(f4).ok, 'uniqueness flags a pure-duplicate (same core calc, no new method)')
 
 console.log(`\n${pass} passed, ${fail} failed`)
 process.exit(fail ? 1 : 0)

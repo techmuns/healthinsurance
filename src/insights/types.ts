@@ -168,6 +168,14 @@ export interface Insight {
   summary: string // 2-3 sentences: the surprise/belief-challenge, then the data behind it
   thesis: string
   whatConsensusMisses: string
+  // ── Variant-perception fields (goldmine brief) — model-authored, optional for
+  //    backward-compat; the generation layer populates them and the flip-side
+  //    template surfaces them. tier is the honest edge grade.
+  tier?: 'goldmine' | 'supporting' | 'context'
+  consensusView?: string // what the Street believes (+ the evidence it is consensus)
+  variantBasis?: string // why that's wrong/incomplete — the edge
+  impliedExpectations?: string // the reverse-the-multiple read (valuation insights)
+  steelman?: string // the strongest surviving rebuttal + how it was handled
   evidence: InsightEvidence[]
   conviction: 'high' | 'medium' | 'low'
   horizon: 'near' | 'medium' | 'long'
