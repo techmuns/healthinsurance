@@ -4,8 +4,8 @@
     "description": "Management / governance events (appointments, resignations, board & KMP changes) for the SAHI health insurers — web-sourced via the muns agent, each item source-linked. Medium confidence; verify against the underlying filing.",
     "schema_version": "1.1.0",
     "dataset": "ai_generated",
-    "last_updated": "2026-06-20",
-    "last_successful_run": "2026-06-20T09:25:36.557Z",
+    "last_updated": "2026-06-21",
+    "last_successful_run": "2026-06-21T09:57:07.464Z",
     "upstream_sources": [
       "muns_agent_web"
     ],
@@ -15,88 +15,64 @@
   },
   "data": [
     {
-      "company_id": "manipalcigna",
-      "event_date": "2025-05-16",
-      "event_type": "appointment",
-      "person_name": "Joydeep Roy",
-      "designation": "Managing Director & Chief Executive Officer",
-      "event_summary": "ManipalCigna appointed Joydeep Roy as MD & CEO; the board-members page identifies him in the role and notes his prior internal leadership positions.",
-      "source_name": "manipalcigna.com",
-      "source_url": "https://www.manipalcigna.com/board-members",
-      "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
-    },
-    {
-      "company_id": "manipalcigna",
-      "event_date": "2025-05-16",
-      "event_type": "kmp_change",
-      "person_name": "Vishal RK Jain",
-      "designation": "Appointed Actuary",
-      "event_summary": "The management-team page identifies Vishal RK Jain as Appointed Actuary, indicating a current key managerial setup relevant for investors.",
-      "source_name": "manipalcigna.com",
-      "source_url": "https://www.manipalcigna.com/management-team",
-      "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
-    },
-    {
       "company_id": "niva-bupa",
-      "event_date": "2025-02-13",
-      "event_type": "resignation",
-      "person_name": "Krishnan Ramachandran",
-      "designation": "Non-Executive Director",
-      "event_summary": "The company disclosed the resignation of non-executive director Krishnan Ramachandran.",
-      "source_name": "bseindia.com",
-      "source_url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/df8385fa-d1ae-41e3-82a5-a25bba86e6e2.pdf",
-      "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
-    },
-    {
-      "company_id": "niva-bupa",
-      "event_date": "2025-02-13",
+      "event_date": "2026-06-04",
       "event_type": "board_change",
-      "person_name": null,
-      "designation": "Board of Directors",
-      "event_summary": "Investor-relations update flagged a board-level change through the resignation of a non-executive director.",
+      "person_name": "Ashwani Bhatia",
+      "designation": "Chairperson",
+      "event_summary": "Ashwani Bhatia was appointed Chairperson and Milind Barve stepped down from the role.",
+      "source_name": "business-standard.com",
+      "source_url": "https://business-standard.com/markets/capital-market-news/niva-bupa-appoints-ashwani-bhatia-as-chairperson-milind-barve-steps-down-126060400237_1.html",
+      "confidence": "medium",
+      "fetched_at": "2026-06-21T09:57:07.464Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "event_date": "2024-06-01",
+      "event_type": "kmp_change",
+      "person_name": "Aparna Sharma",
+      "designation": "Company Secretary and Compliance Officer",
+      "event_summary": "Aparna Sharma joined Niva Bupa’s secretarial team in June 2024 and is presented by the company as Company Secretary and Compliance Officer.",
       "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+      "source_url": "https://transactions.nivabupa.com/pages/management-team.aspx",
       "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
+      "fetched_at": "2026-06-21T09:57:07.464Z"
+    },
+    {
+      "company_id": "manipalcigna",
+      "event_date": "2024-02-20",
+      "event_type": "appointment",
+      "person_name": "Joydeep Saha",
+      "designation": "Managing Director & Chief Executive Officer",
+      "event_summary": "ManipalCigna appointed Joydeep Saha as Managing Director and CEO.",
+      "source_name": "manipalcigna.com",
+      "source_url": "https://www.manipalcigna.com/press-releases",
+      "confidence": "medium",
+      "fetched_at": "2026-06-21T09:57:07.464Z"
     },
     {
       "company_id": "care-health",
-      "event_date": "2025-01-01",
-      "event_type": "board_change",
-      "person_name": "Rashmi Saluja",
-      "designation": "Non-Executive Chairperson",
-      "event_summary": "Care Health’s board disclosure lists Dr. Rashmi Saluja as Non-Executive Chairperson, confirming the current governance structure.",
-      "source_name": "cms.careinsurance.com",
-      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
-      "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
-    },
-    {
-      "company_id": "care-health",
-      "event_date": "2025-01-01",
-      "event_type": "board_change",
-      "person_name": "Malay Kumar Sinha",
-      "designation": "Non-Executive Independent Director",
-      "event_summary": "Care Health’s board disclosure lists Malay Kumar Sinha as a non-executive independent director in the current board structure.",
-      "source_name": "cms.careinsurance.com",
-      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
-      "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
-    },
-    {
-      "company_id": "aditya-birla",
       "event_date": null,
-      "event_type": "kmp_change",
-      "person_name": "Mayank Bathwal",
-      "designation": "Chief Executive Officer",
-      "event_summary": "Aditya Birla Health Insurance’s executive listing identifies Mayank Bathwal as CEO in the current management structure.",
-      "source_name": "theofficialboard.com",
-      "source_url": "https://www.theofficialboard.com/org-chart/aditya-birla-health-insurance",
+      "event_type": "board_change",
+      "person_name": "Praveen Kumar Tripathi",
+      "designation": "Additional Non-Executive Independent Director",
+      "event_summary": "Care Health’s board disclosure lists Praveen Kumar Tripathi as an Additional Non-Executive Independent Director.",
+      "source_name": "cms.careinsurance.com",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
       "confidence": "medium",
-      "fetched_at": "2026-06-20T09:25:36.557Z"
+      "fetched_at": "2026-06-21T09:57:07.464Z"
+    },
+    {
+      "company_id": "care-health",
+      "event_date": null,
+      "event_type": "board_change",
+      "person_name": "Pratap Venugopal",
+      "designation": "Additional Non-Executive Independent Director",
+      "event_summary": "Care Health’s board disclosure lists Pratap Venugopal as an Additional Non-Executive Independent Director.",
+      "source_name": "cms.careinsurance.com",
+      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
+      "confidence": "medium",
+      "fetched_at": "2026-06-21T09:57:07.464Z"
     }
   ]
 }
