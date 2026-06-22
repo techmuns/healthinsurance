@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
-import { UploadCloud, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
+import { UploadCloud, FileCheck2, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
 import type { AuditFocus, NavTarget } from '@/insights/sourceMap'
 import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
@@ -27,6 +27,12 @@ const ExtractedDataAudit = lazy(() =>
   import('@/sections/ExtractedDataAudit').then((m) => ({ default: m.ExtractedDataAudit })),
 )
 
+// Lazy — the Excel verifier pulls in SheetJS + the cell-level audit model, so it
+// loads only when Neha actually opens the tool, never on first paint.
+const ExcelVerifierDrawer = lazy(() =>
+  import('@/components/ExcelVerifierDrawer').then((m) => ({ default: m.ExcelVerifierDrawer })),
+)
+
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
 /**
@@ -37,7 +43,7 @@ type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 function SourceUploadButton() {
   const [open, setOpen] = useState(false)
   return (
-    <div className="ml-auto shrink-0">
+    <div className="shrink-0">
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -48,6 +54,34 @@ function SourceUploadButton() {
         Add source
       </button>
       <SourceUploadDrawer open={open} onClose={() => setOpen(false)} />
+    </div>
+  )
+}
+
+/**
+ * Dedicated "Excel Upload Verifier" — distinct from "Add source". Opens a tool
+ * that reads an uploaded workbook in the browser and checks it cell-by-cell
+ * against the dashboard's own audited values, with an exportable report. Lazy:
+ * the heavy audit model + SheetJS load only when the tool is opened.
+ */
+function VerifyExcelButton() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-1.5 rounded-full border border-navy-primary/25 bg-soft-blue/40 px-3 py-1.5 text-[12px] font-semibold text-navy-primary shadow-soft transition-colors hover:border-navy-primary/40 hover:bg-soft-blue/60"
+        title="Upload an Excel file and check it cell-by-cell against the dashboard"
+      >
+        <FileCheck2 className="h-3.5 w-3.5" />
+        Verify Excel
+      </button>
+      {open && (
+        <Suspense fallback={null}>
+          <ExcelVerifierDrawer open={open} onClose={() => setOpen(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }
@@ -314,7 +348,10 @@ export default function App() {
                   <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
                 </div>
               )}
-              <SourceUploadButton />
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                <VerifyExcelButton />
+                <SourceUploadButton />
+              </div>
             </div>
           </header>
 

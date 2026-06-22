@@ -10,10 +10,13 @@ export interface DrawerProps {
   subtitle?: string
   children: ReactNode
   footer?: ReactNode
+  /** Panel max-width (Tailwind class). Defaults to a narrow form drawer; a data
+   *  tool (e.g. the Excel verifier) passes a wider class so a table can breathe. */
+  widthClass?: string
 }
 
 /** Right-side sliding drawer for module drill-downs and data-status panels. */
-export function Drawer({ open, onClose, title, subtitle, children, footer }: DrawerProps) {
+export function Drawer({ open, onClose, title, subtitle, children, footer, widthClass = 'max-w-xl' }: DrawerProps) {
   const panelRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export function Drawer({ open, onClose, title, subtitle, children, footer }: Dra
       <aside
         ref={panelRef}
         tabIndex={-1}
-        className="absolute inset-y-0 right-0 flex w-full max-w-xl flex-col overflow-hidden rounded-l-[28px] bg-ivory shadow-lift outline-none animate-drawer-in"
+        className={`absolute inset-y-0 right-0 flex w-full ${widthClass} flex-col overflow-hidden rounded-l-[28px] bg-ivory shadow-lift outline-none animate-drawer-in`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
