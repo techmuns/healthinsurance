@@ -3,6 +3,7 @@ import { ClipboardCheck } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 import { PageHeadline } from '@/components/PageHeadline'
+import { ExcelVerifierLauncher } from '@/components/ExcelVerifierLauncher'
 import type { AuditFocus } from '@/insights/sourceMap'
 
 // ---------------------------------------------------------------------------
@@ -25,6 +26,8 @@ export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
         Icon={ClipboardCheck}
         tone="navy"
       />
+
+      <ExcelVerifierLauncher />
 
       <AuditSpreadsheet model={model} focus={focus} />
     </div>

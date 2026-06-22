@@ -1,5 +1,5 @@
-import { useEffect, useState, lazy, Suspense, Component, type ComponentType, type ReactNode } from 'react'
-import { UploadCloud, FileCheck2, TriangleAlert, RotateCcw, Loader2, Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
+import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
+import { Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
 import type { AuditFocus, NavTarget } from '@/insights/sourceMap'
 import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
@@ -19,123 +19,16 @@ import { StreetView } from '@/sections/StreetView'
 import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 import { SectoralNews } from '@/sections/SectoralNews'
 import { Insights } from '@/sections/Insights'
-import { SourceUploadDrawer } from '@/components/SourceUploadDrawer'
-import { Drawer } from '@/components/Drawer'
 
 // Lazy — the audit tab carries a ~1 MB cell-level index that should only load
-// when a reviewer actually opens the QA surface, never on first paint.
+// when a reviewer actually opens the QA surface, never on first paint. The Excel
+// verifier now lives INSIDE this section, so opening Data Audit is the only place
+// that pulls SheetJS + the cell-level model.
 const ExtractedDataAudit = lazy(() =>
   import('@/sections/ExtractedDataAudit').then((m) => ({ default: m.ExtractedDataAudit })),
 )
 
-// Lazy — the Excel verifier pulls in SheetJS + the cell-level audit model, so it
-// loads only when Neha actually opens the tool, never on first paint.
-const ExcelVerifierDrawer = lazy(() =>
-  import('@/components/ExcelVerifierDrawer').then((m) => ({ default: m.ExcelVerifierDrawer })),
-)
-
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
-
-/**
- * Header affordance to hand the dashboard an official source document. Lean by
- * design — official sources are acquired automatically; this is just the manual
- * "I have a file" option (annual report / disclosure / results / deck).
- */
-function SourceUploadButton() {
-  const [open, setOpen] = useState(false)
-  return (
-    <div className="shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary"
-        title="Upload an official document as a source for the dashboard"
-      >
-        <UploadCloud className="h-3.5 w-3.5" />
-        Add source
-      </button>
-      <SourceUploadDrawer open={open} onClose={() => setOpen(false)} />
-    </div>
-  )
-}
-
-/**
- * Safety net for the lazily-loaded verifier. A failed chunk load (e.g. opening
- * the tool moments after a deploy, before the new chunk has propagated / while
- * an old index.html is cached) makes React.lazy throw on render — and because
- * this lives in the header, OUTSIDE the section error boundary, that would
- * white-screen the whole dashboard. This contains it to a calm recovery drawer
- * instead. (Reload, not in-place retry: React caches a rejected lazy import.)
- */
-class ToolErrorBoundary extends Component<{ onClose: () => void; children: ReactNode }, { failed: boolean }> {
-  state = { failed: false }
-  static getDerivedStateFromError() { return { failed: true } }
-  componentDidCatch(error: unknown) { console.error('[Verify Excel] tool failed to load:', error) }
-  render() {
-    if (!this.state.failed) return this.props.children
-    return (
-      <Drawer open onClose={this.props.onClose} widthClass="max-w-md" title="Excel Upload Verifier" subtitle="Couldn’t open the tool">
-        <div className="space-y-4">
-          <p className="flex items-start gap-2 rounded-lg bg-coral-soft/40 px-3 py-2 text-[12.5px] text-coral-deep">
-            <TriangleAlert className="mt-px h-4 w-4 shrink-0" />
-            <span>The verifier didn’t finish loading — this usually means the dashboard was mid-update. A reload fixes it.</span>
-          </p>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-1.5 rounded-full bg-navy-primary px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-all hover:bg-navy-deep"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Reload &amp; try again
-          </button>
-        </div>
-      </Drawer>
-    )
-  }
-}
-
-/** Drawer-shaped loading state while the (large) verifier chunk downloads, so
- *  opening the tool shows progress in a real drawer instead of a blank flash. */
-function VerifierLoading({ onClose }: { onClose: () => void }) {
-  return (
-    <Drawer open onClose={onClose} widthClass="max-w-md" title="Excel Upload Verifier" subtitle="Loading the tool…">
-      <div className="flex items-center gap-2 py-12 text-[12.5px] text-ink-secondary">
-        <Loader2 className="h-4 w-4 animate-spin" /> Loading the verifier…
-      </div>
-    </Drawer>
-  )
-}
-
-/**
- * Dedicated "Excel Upload Verifier" — distinct from "Add source". Opens a tool
- * that reads an uploaded workbook in the browser and checks it cell-by-cell
- * against the dashboard's own audited values, with an exportable report. Lazy:
- * the heavy audit model + SheetJS load only when the tool is opened; wrapped in
- * an error boundary + loading drawer so a slow/failed chunk never blanks the app.
- */
-function VerifyExcelButton() {
-  const [open, setOpen] = useState(false)
-  const close = () => setOpen(false)
-  return (
-    <div className="shrink-0">
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-full border border-navy-primary/25 bg-soft-blue/40 px-3 py-1.5 text-[12px] font-semibold text-navy-primary shadow-soft transition-colors hover:border-navy-primary/40 hover:bg-soft-blue/60"
-        title="Upload an Excel file and check it cell-by-cell against the dashboard"
-      >
-        <FileCheck2 className="h-3.5 w-3.5" />
-        Verify Excel
-      </button>
-      {open && (
-        <ToolErrorBoundary onClose={close}>
-          <Suspense fallback={<VerifierLoading onClose={close} />}>
-            <ExcelVerifierDrawer open onClose={close} />
-          </Suspense>
-        </ToolErrorBoundary>
-      )}
-    </div>
-  )
-}
 
 // ── SAHI Analysis sub-navigation ────────────────────────────────────────────
 // The detailed SAHI workspace starts directly at Companies (Overview has moved
@@ -399,10 +292,6 @@ export default function App() {
                   <SahiAnalysisHeader tabs={SAHI_TABS} activeTab={sahiTab} onSelectTab={setSahiTab} />
                 </div>
               )}
-              <div className="ml-auto flex shrink-0 items-center gap-2">
-                <VerifyExcelButton />
-                <SourceUploadButton />
-              </div>
             </div>
           </header>
 
