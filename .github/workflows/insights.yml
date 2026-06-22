@@ -19,6 +19,19 @@ on:
       - 'src/data/snapshots/**'
       - 'src/data/valuationData.ts'
       - 'src/insights/**'
+  # A data workflow's OWN commit (pushed via GITHUB_TOKEN) does NOT fire the push
+  # trigger above — GitHub suppresses workflow-triggered-by-workflow pushes. So also
+  # run after the data-refresh workflows complete, keeping insights in lock-step with
+  # every new month of data instead of waiting for the weekly schedule.
+  workflow_run:
+    workflows:
+      - "gic-segment-monthly"
+      - "insurance-data-ingest"
+      - "monthly ingestion"
+      - "insurer quarterly premium fetch"
+      - "industry segment history fetch"
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -29,6 +42,9 @@ concurrency:
 
 jobs:
   generate:
+    # Run on a chained data workflow only when it SUCCEEDED; manual / scheduled / push
+    # runs always proceed.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
