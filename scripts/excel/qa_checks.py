@@ -91,8 +91,14 @@ def main(filled_path: Path) -> int:
         norm = aud.cell(r, 8).value
         metric = aud.cell(r, 4).value
         audit_vals[(sheet, cell)] = (norm, metric)
-        # H1 provenance
-        if not src_name or not src_url:
+        # H1 provenance — every audited value must NAME its source. A source URL
+        # is required too, EXCEPT for analyst-entered figures compiled in the
+        # portfolio-review workbook: that is a real, named provenance which simply
+        # has no external link (Neha compiled them herself), so demanding a URL
+        # there is wrong and was failing every scheduled fill. Anything citing an
+        # external source still must carry its link.
+        analyst_entered = isinstance(src_name, str) and "analyst-entered" in src_name.lower()
+        if not src_name or (not src_url and not analyst_entered):
             hard.append(f"H1 provenance missing for {sheet}!{cell} (name={src_name!r}, url={src_url!r}).")
         # H3 missing != zero (no null written as a value)
         if norm is None:
