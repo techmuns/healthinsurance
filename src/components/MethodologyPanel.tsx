@@ -389,15 +389,13 @@ export function MethodologyPanel({ ins, tone, source, freshness, onGoToSource, o
 
   const layersUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.layer)))]
   const periodsUsed = [...new Set(steps.flatMap((s) => s.inputs.map((i) => i.period)))].sort()
-  // Which lenses appear on the card: those that carry a method (populated) AND
-  // those with an honest DATA GAP — a gap ("unlisted — no market multiple") is a
-  // conviction-capping disclosure a PM must see, not clutter. Only genuinely-empty
-  // lenses (no_signal / not_applicable) are dropped to keep the frame compact.
+  // Which lenses appear on the card: only those that actually carry a method
+  // (populated). Empty lenses — data gap, no signal, or not applicable alike — are
+  // dropped so the panel shows just the analysis we genuinely ran, never a
+  // placeholder "gap" box. (The gap status still lives in the insight data for the
+  // record; it is simply not surfaced as viewer-facing clutter.)
   const populatedLenses = LENS_ORDER.filter((lens) => m?.lenses[lens]?.status === 'populated')
-  const shownLenses = LENS_ORDER.filter((lens) => {
-    const st = m?.lenses[lens]?.status
-    return st === 'populated' || st === 'data_gap'
-  })
+  const shownLenses = populatedLenses
   const startIndex: Record<string, number> = {}
   let acc = 0
   for (const lens of shownLenses) { startIndex[lens] = acc + 1; acc += m?.lenses[lens].stepKeys.length ?? 0 }
