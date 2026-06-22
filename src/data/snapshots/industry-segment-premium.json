@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-06-22",
-    "last_successful_run": "2026-06-22T08:58:09.761Z",
+    "last_successful_run": "2026-06-22T13:43:01.662Z",
     "upstream_sources": [
       "irdai_handbook",
       "gi_council",
@@ -22,7 +22,7 @@
       "health_premium": 137144.46,
       "motor_premium": 108216.08,
       "fire_premium": 27523.79,
-      "crop_premium": 21903.63,
+      "crop_premium": 19216.49,
       "marine_premium": 5819.52,
       "other_premium": 90762.14,
       "total_gi_premium": 336122.68,
@@ -30,11 +30,11 @@
       "motor_share": 32.2,
       "provenance": {
         "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — current-year columns",
-        "source_url": "https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx",
-        "source_file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY26",
-        "fetched_at": "2026-06-22T08:58:00.035Z",
-        "parsed_at": "2026-06-22T08:58:04.504Z",
+        "fetched_at": "2026-06-22T13:42:52.612Z",
+        "parsed_at": "2026-06-22T13:42:56.882Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -46,7 +46,7 @@
       "health_premium": 118857.63,
       "motor_premium": 99093.47,
       "fire_premium": 24265.33,
-      "crop_premium": 30090.98,
+      "crop_premium": 26235.04,
       "marine_premium": 5503.94,
       "other_premium": 89709.59,
       "total_gi_premium": 307660.69,
@@ -54,11 +54,11 @@
       "motor_share": 32.2,
       "provenance": {
         "source_name": "GI Council Segment-wise Report (upto March 2026 (FY26, provisional & unaudited)) — prior-year comparative columns",
-        "source_url": "https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx",
-        "source_file": "data/raw/gicouncil/segment-annual/FY26-march.xlsx",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
         "source_period": "FY25",
-        "fetched_at": "2026-06-22T08:58:00.035Z",
-        "parsed_at": "2026-06-22T08:58:04.504Z",
+        "fetched_at": "2026-06-22T13:42:52.612Z",
+        "parsed_at": "2026-06-22T13:42:56.882Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -129,8 +129,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T08:58:00.035Z",
-        "parsed_at": "2026-06-22T08:58:04.504Z",
+        "fetched_at": "2026-06-22T13:42:52.612Z",
+        "parsed_at": "2026-06-22T13:42:56.882Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
