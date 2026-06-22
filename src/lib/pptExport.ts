@@ -72,21 +72,29 @@ function concat(parts: Uint8Array[]): Uint8Array {
   return out
 }
 
-// ── slide content model ───────────────────────────────────────────────────────
-const NAVY = '1E4079', GOLD = 'B68B3A', TEAL = '0E6F6D', INK = '26303F', GREY = '6B7280', RISK = 'A8443B', FLAG = '27457E'
-const CAT: Record<InsightCategory, { label: string; color: string }> = {
-  capital: { label: 'Capital watch', color: RISK },
-  earnings_quality: { label: 'Earnings-quality flag', color: RISK },
-  valuation: { label: 'Valuation gap', color: GOLD },
-  growth: { label: 'Growth standout', color: TEAL },
-  quality: { label: 'Quality flag', color: FLAG },
-  management: { label: 'Management read', color: FLAG },
-  regulatory: { label: 'Regulatory shift', color: FLAG },
-  market_structure: { label: 'Market shift', color: FLAG },
+// ── design tokens — mirror the dashboard (tailwind.config.js) so the deck reads
+//    like the Insights tab: an editorial-serif voice on an institutional navy /
+//    champagne palette, not a generic Office deck. ─────────────────────────────
+const NAVY = '27457E', NAVY_DEEP = '172B4D', GOLD = 'B68B3A', TEAL = '168E8E',
+  INK = '26303F', GREY = '6B7280', CORAL = 'C75D54', BORDER = 'E1E6EF',
+  ICE = 'F4F7FC', MUTE = 'B6C0D2'
+// The Insights tab's fonts: Cormorant Garamond (editorial serif — headlines &
+// narrative) and Inter (numbers, labels, eyebrows). Both fall back to Georgia /
+// a system sans on machines that don't have them installed.
+const SERIF = 'Cormorant Garamond', SANS = 'Inter'
+const CAT: Record<InsightCategory, { label: string; color: string; soft: string }> = {
+  capital: { label: 'Capital watch', color: CORAL, soft: 'F8ECEC' },
+  earnings_quality: { label: 'Earnings-quality flag', color: CORAL, soft: 'F8ECEC' },
+  valuation: { label: 'Valuation gap', color: GOLD, soft: 'F4ECDB' },
+  growth: { label: 'Growth standout', color: TEAL, soft: 'E1F2F1' },
+  quality: { label: 'Quality flag', color: NAVY, soft: 'EEF4FF' },
+  management: { label: 'Management read', color: NAVY, soft: 'EEF4FF' },
+  regulatory: { label: 'Regulatory shift', color: NAVY, soft: 'EEF4FF' },
+  market_structure: { label: 'Market shift', color: NAVY, soft: 'EEF4FF' },
 }
 const NAMES: Record<string, string> = {
   'niva-bupa': 'Niva Bupa', 'star-health': 'Star Health', 'care-health': 'Care Health',
-  'aditya-birla': 'Aditya Birla', 'manipalcigna': 'ManipalCigna', panel: 'Across the panel',
+  'aditya-birla': 'Aditya Birla', 'manipalcigna': 'ManipalCigna', panel: 'Panel mean',
 }
 const pretty = (id: string) => NAMES[id] ?? id
 const fmtVal = (v: number | null, unit: string) =>
@@ -100,29 +108,49 @@ function sourceLine(ins: Insight): string {
   const words = [...new Set(ins.evidence.flatMap((e) => e.layers).map((l) => LAYER_WORD[l]))].filter(Boolean).slice(0, 2)
   return words.length ? words.join(', ') : 'dashboard data'
 }
+// The largest set of evidence values that share ONE unit — an honest like-for-like
+// comparison we can draw as bars (never mix % with x). Up to 5.
+interface Bar { insurer: string; metric: string; value: number; unit: string }
+function barGroup(ins: Insight): Bar[] {
+  const vals: Bar[] = ins.evidence
+    .filter((e) => typeof e.value === 'number')
+    .map((e) => ({ insurer: e.insurer, metric: e.metric, value: e.value as number, unit: e.unit }))
+  const byUnit = new Map<string, Bar[]>()
+  for (const e of vals) byUnit.set(e.unit || '', [...(byUnit.get(e.unit || '') ?? []), e])
+  let best: Bar[] = []
+  for (const g of byUnit.values()) if (g.length > best.length) best = g
+  return best.slice(0, 5)
+}
 
 // ── OOXML shape helpers (EMU units; 16:9 slide = 12192000 × 6858000) ──────────
 const CX = 12192000, CY = 6858000
-function txBox(id: number, name: string, x: number, y: number, w: number, h: number, runs: { t: string; sz: number; color: string; b?: boolean; i?: boolean }[], align = 'l'): string {
-  const paras = runs.map((r) =>
-    `<a:p><a:pPr algn="${align}"/><a:r><a:rPr lang="en-US" sz="${r.sz}" b="${r.b ? 1 : 0}" i="${r.i ? 1 : 0}"><a:solidFill><a:srgbClr val="${r.color}"/></a:solidFill><a:latin typeface="Calibri"/></a:rPr><a:t>${xml(r.t)}</a:t></a:r></a:p>`,
+const r0 = Math.round
+interface Run { t: string; sz: number; color: string; b?: boolean; i?: boolean; font?: string; spc?: number }
+function txBox(id: number, name: string, x: number, y: number, w: number, h: number, runs: Run[], align = 'l', anchor = 't'): string {
+  const paras = runs.map((rn) =>
+    `<a:p><a:pPr algn="${align}"/><a:r><a:rPr lang="en-US" sz="${rn.sz}" b="${rn.b ? 1 : 0}" i="${rn.i ? 1 : 0}"${rn.spc != null ? ` spc="${rn.spc}"` : ''}><a:solidFill><a:srgbClr val="${rn.color}"/></a:solidFill><a:latin typeface="${rn.font ?? SANS}"/></a:rPr><a:t>${xml(rn.t)}</a:t></a:r></a:p>`,
   ).join('')
-  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0"><a:normAutofit/></a:bodyPr><a:lstStyle/>${paras}</p:txBody></p:sp>`
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="${name}"/><p:cNvSpPr txBox="1"/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${r0(x)}" y="${r0(y)}"/><a:ext cx="${r0(w)}" cy="${r0(h)}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:txBody><a:bodyPr wrap="square" rtlCol="0" anchor="${anchor}"><a:normAutofit/></a:bodyPr><a:lstStyle/>${paras}</p:txBody></p:sp>`
 }
 function rect(id: number, x: number, y: number, w: number, h: number, color: string): string {
-  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="bar${id}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${x}" y="${y}"/><a:ext cx="${w}" cy="${h}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="bar${id}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${r0(x)}" y="${r0(y)}"/><a:ext cx="${r0(w)}" cy="${r0(h)}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`
+}
+function roundRect(id: number, x: number, y: number, w: number, h: number, color: string, adj = 5500): string {
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="rr${id}"/><p:cNvSpPr/><p:nvPr/></p:nvSpPr><p:spPr><a:xfrm><a:off x="${r0(x)}" y="${r0(y)}"/><a:ext cx="${r0(w)}" cy="${r0(h)}"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst><a:gd name="adj" fmla="val ${adj}"/></a:avLst></a:prstGeom><a:solidFill><a:srgbClr val="${color}"/></a:solidFill><a:ln><a:noFill/></a:ln></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p/></p:txBody></p:sp>`
 }
 const slideWrap = (shapes: string) =>
-  `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${shapes}</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sld>`
+  `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"><p:cSld><p:bg><p:bgPr><a:solidFill><a:srgbClr val="FCFCFB"/></a:solidFill><a:effectLst/></p:bgPr></p:bg><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr>${shapes}</p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sld>`
 
 function titleSlide(file: InsightsFile): string {
   const date = new Date(file.meta.generatedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
   const shapes = [
-    rect(2, 0, 0, CX, 120000, GOLD),
-    txBox(3, 'eyebrow', 700000, 1700000, 10000000, 500000, [{ t: 'NIVA BUPA · SAHI HEALTH-INSURANCE DASHBOARD', sz: 1400, color: GOLD, b: true }]),
-    txBox(4, 'title', 680000, 2300000, 10800000, 1800000, [{ t: 'What stands out across the dashboard', sz: 4000, color: NAVY, b: true }]),
-    txBox(5, 'sub', 700000, 4250000, 10800000, 700000, [{ t: `${file.insights.length} advisor insights · sharpest first · ${date}`, sz: 1600, color: GREY }]),
-    txBox(6, 'foot', 700000, 6250000, 10800000, 400000, [{ t: 'Each insight names the single number behind it, what would flip the call, and where to verify it.', sz: 1100, color: GREY, i: true }]),
+    rect(2, 0, 0, CX, 150000, GOLD),                  // champagne top rule
+    rect(3, 0, CY - 64000, CX, 64000, NAVY_DEEP),     // navy bottom hairline
+    txBox(4, 'eyebrow', 760000, 1620000, 10600000, 460000, [{ t: 'NIVA BUPA   ·   SAHI HEALTH-INSURANCE DASHBOARD', sz: 1350, color: GOLD, b: true, spc: 160 }]),
+    txBox(5, 'title', 740000, 2220000, 10900000, 1900000, [{ t: 'What stands out across the dashboard', sz: 4600, color: NAVY_DEEP, b: true, font: SERIF }]),
+    rect(6, 770000, 4360000, 900000, 13000, GOLD),    // short gold underline
+    txBox(7, 'sub', 760000, 4560000, 10800000, 560000, [{ t: `${file.insights.length} advisor insights   ·   sharpest first   ·   ${date}`, sz: 1550, color: GREY }]),
+    txBox(8, 'foot', 760000, 6150000, 10800000, 460000, [{ t: 'Each insight names the single number behind it, what would flip the call, and where to verify it.', sz: 1200, color: GREY, i: true, font: SERIF }]),
   ].join('')
   return slideWrap(shapes)
 }
@@ -130,24 +158,61 @@ function titleSlide(file: InsightsFile): string {
 function insightSlide(ins: Insight, index: number): string {
   const cat = CAT[ins.category] ?? CAT.quality
   const stat = ins.evidence.find((e) => e.value != null) ?? ins.evidence[0]
-  const shapes = [
-    rect(2, 0, 0, 120000, CY, cat.color),
-    txBox(3, 'cat', 700000, 520000, 10800000, 450000, [{ t: `${cat.label.toUpperCase()}  ·  INSIGHT ${ins.rank}`, sz: 1300, color: cat.color, b: true }]),
-    txBox(4, 'headline', 680000, 1050000, 10900000, 1500000, [{ t: ins.shortHeadline, sz: 3200, color: NAVY, b: true }]),
-    rect(5, 700000, 2750000, 10800000, 9525, 'D9DEE8'),
-    // hero number tile
-    txBox(6, 'stat', 700000, 2950000, 10800000, 900000, stat
-      ? [{ t: fmtVal(stat.value, stat.unit), sz: 3600, color: cat.color, b: true }, { t: `   ${pretty(stat.insurer)} · ${stat.metric} · ${stat.period}`, sz: 1300, color: GREY }]
-      : [{ t: '—', sz: 3600, color: cat.color, b: true }]),
-    txBox(7, 'why', 700000, 4050000, 10800000, 1700000, [
-      { t: 'Why this matters', sz: 1200, color: cat.color, b: true },
-      { t: ins.whatConsensusMisses, sz: 1600, color: INK },
-    ]),
-    txBox(8, 'src', 700000, 6150000, 10800000, 450000, [
-      { t: `Source: ${sourceLine(ins)} · ${stat?.period ?? ''}    ·    Slide ${index + 1}`, sz: 1000, color: GREY, i: true },
-    ]),
-  ].join('')
-  return slideWrap(shapes)
+  const heroInsurer = stat?.insurer ?? ''
+  const shapes: string[] = []
+  let id = 2
+  const nid = () => id++
+
+  shapes.push(rect(nid(), 0, 0, 95000, CY, cat.color))   // left category rail
+  shapes.push(txBox(nid(), 'cat', 760000, 470000, 10900000, 360000, [{ t: `${cat.label.toUpperCase()}   ·   INSIGHT ${ins.rank}`, sz: 1150, color: cat.color, b: true, spc: 120 }]))
+  shapes.push(txBox(nid(), 'headline', 740000, 870000, 11050000, 1450000, [{ t: ins.shortHeadline, sz: 3400, color: NAVY_DEEP, b: true, font: SERIF }]))
+  shapes.push(rect(nid(), 760000, 2430000, 10680000, 11000, BORDER))   // divider rule
+
+  // LEFT — hero tile + the plain read (editorial serif)
+  const colY = 2680000
+  shapes.push(roundRect(nid(), 760000, colY, 5350000, 1330000, cat.soft))
+  shapes.push(txBox(nid(), 'stat', 985000, colY + 145000, 5000000, 800000, [{ t: stat && stat.value != null ? fmtVal(stat.value, stat.unit) : '—', sz: 4200, color: cat.color, b: true }]))
+  shapes.push(txBox(nid(), 'statlbl', 990000, colY + 945000, 5000000, 320000, [{ t: stat ? `${pretty(stat.insurer)} · ${stat.metric} · ${stat.period}` : '', sz: 1050, color: GREY, b: true }]))
+  shapes.push(txBox(nid(), 'whylbl', 760000, 4290000, 5350000, 300000, [{ t: 'WHY THIS MATTERS', sz: 1000, color: cat.color, b: true, spc: 100 }]))
+  shapes.push(txBox(nid(), 'why', 760000, 4620000, 5350000, 1650000, [{ t: ins.whatConsensusMisses || ins.summary, sz: 1550, color: INK, font: SERIF }]))
+
+  // RIGHT — the visual evidence
+  const rx = 6450000, rw = 5000000
+  shapes.push(txBox(nid(), 'vtitle', rx, colY - 30000, rw, 340000, [{ t: ins.chart.title, sz: 1050, color: GREY, b: true }]))
+  const grp = barGroup(ins)
+  const top = colY + 380000, chartH = 2700000
+  if (grp.length >= 2) {
+    const sameIns = new Set(grp.map((g) => g.insurer)).size === 1
+    const maxV = Math.max(...grp.map((g) => Math.abs(g.value)), 0.0001)
+    const labelW = 1450000, valueW = 760000, trackX = rx + labelW, trackW = rw - labelW - valueW
+    const rowH = r0(Math.min(560000, chartH / grp.length))
+    const barH = r0(rowH * 0.46)
+    const thr = (ins.chart.annotations ?? []).find((a) => a.kind === 'threshold' && typeof a.value === 'number')
+    if (thr && (thr.value as number) >= 0 && (thr.value as number) <= maxV * 1.15) {
+      const tx = trackX + r0(((thr.value as number) / maxV) * trackW)
+      shapes.push(rect(nid(), tx, top - 30000, 9000, rowH * grp.length + 60000, MUTE))
+      shapes.push(txBox(nid(), 'thr', tx - 1150000, top + rowH * grp.length + 30000, 2300000, 280000, [{ t: thr.label, sz: 850, color: GREY, i: true }], 'ctr'))
+    }
+    grp.forEach((g, i) => {
+      const y = top + i * rowH
+      const barW = Math.max(46000, r0((Math.abs(g.value) / maxV) * trackW))
+      const focal = sameIns ? i === 0 : g.insurer === heroInsurer
+      shapes.push(txBox(nid(), `bl${i}`, rx, y + (rowH - 300000) / 2, labelW - 90000, 300000, [{ t: sameIns ? g.metric : pretty(g.insurer), sz: 950, color: INK }], 'r', 'ctr'))
+      shapes.push(roundRect(nid(), trackX, y + (rowH - barH) / 2, barW, barH, focal ? cat.color : MUTE, 14000))
+      shapes.push(txBox(nid(), `bv${i}`, trackX + barW + 70000, y + (rowH - 300000) / 2, valueW, 300000, [{ t: fmtVal(g.value, g.unit), sz: 950, color: focal ? cat.color : INK, b: true }], 'l', 'ctr'))
+    })
+  } else {
+    // fallback: up to 3 evidence values as clean stat chips
+    ins.evidence.filter((e) => typeof e.value === 'number').slice(0, 3).forEach((e, i) => {
+      const y = top + i * 720000
+      shapes.push(roundRect(nid(), rx, y, rw, 620000, ICE))
+      shapes.push(txBox(nid(), `cv${i}`, rx + 210000, y, 2150000, 620000, [{ t: fmtVal(e.value as number, e.unit), sz: 2000, color: cat.color, b: true }], 'l', 'ctr'))
+      shapes.push(txBox(nid(), `cl${i}`, rx + 2300000, y, rw - 2450000, 620000, [{ t: `${pretty(e.insurer)} · ${e.metric}`, sz: 1000, color: GREY }], 'l', 'ctr'))
+    })
+  }
+
+  shapes.push(txBox(nid(), 'src', 760000, 6380000, 10680000, 340000, [{ t: `Source: ${sourceLine(ins)}${stat?.period ? ' · ' + stat.period : ''}     ·     ${index + 1}`, sz: 950, color: GREY, i: true }]))
+  return slideWrap(shapes.join(''))
 }
 
 // ── the fixed scaffolding (content types, rels, presentation, master, layout, theme) ──
@@ -170,7 +235,7 @@ const SLIDE_MASTER_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"
 const SLIDE_LAYOUT = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><p:sldLayout xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" type="blank" preserve="1"><p:cSld name="Blank"><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/><a:chOff x="0" y="0"/><a:chExt cx="0" cy="0"/></a:xfrm></p:grpSpPr></p:spTree></p:cSld><p:clrMapOvr><a:overrideClrMapping bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/></p:clrMapOvr></p:sldLayout>`
 const SLIDE_LAYOUT_RELS = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/></Relationships>`
 const slideRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/></Relationships>`
-const THEME = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1E4079"/></a:dk2><a:lt2><a:srgbClr val="EEF1F7"/></a:lt2><a:accent1><a:srgbClr val="1E4079"/></a:accent1><a:accent2><a:srgbClr val="0E6F6D"/></a:accent2><a:accent3><a:srgbClr val="B68B3A"/></a:accent3><a:accent4><a:srgbClr val="A8443B"/></a:accent4><a:accent5><a:srgbClr val="27457E"/></a:accent5><a:accent6><a:srgbClr val="6B7280"/></a:accent6><a:hlink><a:srgbClr val="0E6F6D"/></a:hlink><a:folHlink><a:srgbClr val="9C7430"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Calibri Light"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Calibri"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="19050"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>`
+const THEME = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Office Theme"><a:themeElements><a:clrScheme name="Office"><a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1><a:dk2><a:srgbClr val="1E4079"/></a:dk2><a:lt2><a:srgbClr val="EEF1F7"/></a:lt2><a:accent1><a:srgbClr val="1E4079"/></a:accent1><a:accent2><a:srgbClr val="0E6F6D"/></a:accent2><a:accent3><a:srgbClr val="B68B3A"/></a:accent3><a:accent4><a:srgbClr val="A8443B"/></a:accent4><a:accent5><a:srgbClr val="27457E"/></a:accent5><a:accent6><a:srgbClr val="6B7280"/></a:accent6><a:hlink><a:srgbClr val="0E6F6D"/></a:hlink><a:folHlink><a:srgbClr val="9C7430"/></a:folHlink></a:clrScheme><a:fontScheme name="Office"><a:majorFont><a:latin typeface="Fraunces"/><a:ea typeface=""/><a:cs typeface=""/></a:majorFont><a:minorFont><a:latin typeface="Inter"/><a:ea typeface=""/><a:cs typeface=""/></a:minorFont></a:fontScheme><a:fmtScheme name="Office"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="6350"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="12700"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln><a:ln w="19050"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst><a:effectStyleLst><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle><a:effectStyle><a:effectLst/></a:effectStyle></a:effectStyleLst><a:bgFillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:bgFillStyleLst></a:fmtScheme></a:themeElements></a:theme>`
 
 /** Pure: assemble the full .pptx as zip bytes (Node + browser). */
 export function pptxBytes(file: InsightsFile): Uint8Array {
@@ -203,7 +268,7 @@ export function exportInsightsPptx(file: InsightsFile): void {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `Insights-${file.meta.dataAsOf || 'dashboard'}.pptx`
+  a.download = 'Insights.pptx'
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
