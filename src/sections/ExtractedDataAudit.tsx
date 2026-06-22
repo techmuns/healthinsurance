@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
-import { ClipboardCheck } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
-import { PageHeadline } from '@/components/PageHeadline'
 import { ExcelVerifierLauncher } from '@/components/ExcelVerifierLauncher'
 import type { AuditFocus } from '@/insights/sourceMap'
 
@@ -19,14 +17,6 @@ export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
 
   return (
     <div className="space-y-4">
-      <PageHeadline
-        eyebrow="Data Audit"
-        title="What's sourced, verified, and still missing"
-        subtitle="Your Excel template, tab-for-tab and cell-for-cell, beside the dashboard data. A filled cell shows the verified value; an empty cell shows which source pipeline should fill it — and why it is still missing."
-        Icon={ClipboardCheck}
-        tone="navy"
-      />
-
       <ExcelVerifierLauncher />
 
       <AuditSpreadsheet model={model} focus={focus} />
