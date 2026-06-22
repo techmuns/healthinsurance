@@ -4,8 +4,8 @@
     "description": "Management / governance events (appointments, resignations, board & KMP changes) for the SAHI health insurers — web-sourced via the muns agent, each item source-linked. Medium confidence; verify against the underlying filing.",
     "schema_version": "1.1.0",
     "dataset": "ai_generated",
-    "last_updated": "2026-06-21",
-    "last_successful_run": "2026-06-21T09:57:07.464Z",
+    "last_updated": "2026-06-22",
+    "last_successful_run": "2026-06-22T12:13:57.547Z",
     "upstream_sources": [
       "muns_agent_web"
     ],
@@ -15,64 +15,64 @@
   },
   "data": [
     {
-      "company_id": "niva-bupa",
-      "event_date": "2026-06-04",
-      "event_type": "board_change",
-      "person_name": "Ashwani Bhatia",
-      "designation": "Chairperson",
-      "event_summary": "Ashwani Bhatia was appointed Chairperson and Milind Barve stepped down from the role.",
-      "source_name": "business-standard.com",
-      "source_url": "https://business-standard.com/markets/capital-market-news/niva-bupa-appoints-ashwani-bhatia-as-chairperson-milind-barve-steps-down-126060400237_1.html",
-      "confidence": "medium",
-      "fetched_at": "2026-06-21T09:57:07.464Z"
-    },
-    {
-      "company_id": "niva-bupa",
-      "event_date": "2024-06-01",
-      "event_type": "kmp_change",
-      "person_name": "Aparna Sharma",
-      "designation": "Company Secretary and Compliance Officer",
-      "event_summary": "Aparna Sharma joined Niva Bupa’s secretarial team in June 2024 and is presented by the company as Company Secretary and Compliance Officer.",
-      "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/management-team.aspx",
-      "confidence": "medium",
-      "fetched_at": "2026-06-21T09:57:07.464Z"
-    },
-    {
       "company_id": "manipalcigna",
-      "event_date": "2024-02-20",
+      "event_date": "2026-06-22",
       "event_type": "appointment",
-      "person_name": "Joydeep Saha",
-      "designation": "Managing Director & Chief Executive Officer",
-      "event_summary": "ManipalCigna appointed Joydeep Saha as Managing Director and CEO.",
-      "source_name": "manipalcigna.com",
-      "source_url": "https://www.manipalcigna.com/press-releases",
+      "person_name": "Anjan Kumar Ganguly",
+      "designation": "Chief Financial Officer",
+      "event_summary": "ManipalCigna appointed Anjan Kumar Ganguly as Chief Financial Officer.",
+      "source_name": "impactonnet.com",
+      "source_url": "https://www.impactonnet.com/more-from-impact/manipalcigna-health-insurance-appoints-anjan-kumar-ganguly-as-cfo-14856.html",
       "confidence": "medium",
-      "fetched_at": "2026-06-21T09:57:07.464Z"
+      "fetched_at": "2026-06-22T12:13:57.547Z"
     },
     {
-      "company_id": "care-health",
-      "event_date": null,
-      "event_type": "board_change",
-      "person_name": "Praveen Kumar Tripathi",
-      "designation": "Additional Non-Executive Independent Director",
-      "event_summary": "Care Health’s board disclosure lists Praveen Kumar Tripathi as an Additional Non-Executive Independent Director.",
-      "source_name": "cms.careinsurance.com",
-      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
+      "company_id": "niva-bupa",
+      "event_date": "2026-06-17",
+      "event_type": "appointment",
+      "person_name": "Ashwani Bhatia",
+      "designation": "Non-Executive Independent Director",
+      "event_summary": "Niva Bupa appointed former SBI chairman Ashwani Bhatia as a non-executive independent director.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/niva-bupa-appoints-ashwani-bhatia-as-non-executive-independent-director/42026112",
       "confidence": "medium",
-      "fetched_at": "2026-06-21T09:57:07.464Z"
+      "fetched_at": "2026-06-22T12:13:57.547Z"
     },
     {
-      "company_id": "care-health",
-      "event_date": null,
-      "event_type": "board_change",
-      "person_name": "Pratap Venugopal",
-      "designation": "Additional Non-Executive Independent Director",
-      "event_summary": "Care Health’s board disclosure lists Pratap Venugopal as an Additional Non-Executive Independent Director.",
-      "source_name": "cms.careinsurance.com",
-      "source_url": "https://cms.careinsurance.com/cms/public/uploads/download_center/board-of-directors---letterhead.pdf",
+      "company_id": "star-health",
+      "event_date": "2025-07-29",
+      "event_type": "reappointment",
+      "person_name": "Rajeev Kher",
+      "designation": "Non-Executive Independent Director",
+      "event_summary": "Shareholder notice states Rajeev Kher’s board tenure runs from 2024-09-23 to 2029-09-22, indicating his current re-appointed independent-director term.",
+      "source_name": "nsearchives.nseindia.com",
+      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_31072025125336_SEPBNotice290725.pdf",
       "confidence": "medium",
-      "fetched_at": "2026-06-21T09:57:07.464Z"
+      "fetched_at": "2026-06-22T12:13:57.547Z"
+    },
+    {
+      "company_id": "aditya-birla",
+      "event_date": "2025-07-09",
+      "event_type": "kmp_change",
+      "person_name": null,
+      "designation": null,
+      "event_summary": "Aditya Birla Health Insurance published a management/KMP disclosure update; the specific individual change should be confirmed from the filing.",
+      "source_name": "adityabirlacapital.com",
+      "source_url": "https://www.adityabirlacapital.com/healthinsurance/assets/PDF/20250709T090902.pdf",
+      "confidence": "medium",
+      "fetched_at": "2026-06-22T12:13:57.547Z"
+    },
+    {
+      "company_id": "niva-bupa",
+      "event_date": "2024-06-27",
+      "event_type": "board_change",
+      "person_name": "Jolly Abraham Plammoottil",
+      "designation": "Independent Director",
+      "event_summary": "Annual report disclosure shows Jolly Abraham Plammoottil resigned from board committee positions during FY25.",
+      "source_name": "transactions.nivabupa.com",
+      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Submision%20of%20Annual%20report%20for%20the%20financial%20year%20ended%20March%2031,%202024.pdf",
+      "confidence": "medium",
+      "fetched_at": "2026-06-22T12:13:57.547Z"
     }
   ]
 }
