@@ -21,6 +21,13 @@
       "sha256": "7cc707a356ea54a2608ef4b854c407c6910264fb1b3927e1333bec37c1809b3b",
       "fetched_at": "2026-06-09T19:11:10.626Z"
     },
+    "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q1-fy26-investor-presentationpdf?scl=1&fmt=pdf": {
+      "filename": "bajaj-finance-q1-fy26-investor-presentationpdf",
+      "url": "https://cms-assets.bajajfinserv.in/is/content/bajajfinance/bajaj-finance-q1-fy26-investor-presentationpdf?scl=1&fmt=pdf",
+      "bytes": 1190873,
+      "sha256": "344dce6de09fbebc5990f7a6f1bc824821b0cc2aed11576cd8ed37e5fe21b0b7",
+      "fetched_at": "2026-06-22T10:57:08.286Z"
+    },
     "https://cms.careinsurance.com/cms/public/other_disclosure": {
       "filename": "other_disclosure",
       "url": "https://cms.careinsurance.com/cms/public/other_disclosure",
@@ -126,12 +133,26 @@
       "sha256": "27ad9dcedadcf5cf946906de71eb4bc7760a1feede097b9530b1b39455582b61",
       "fetched_at": "2026-06-09T12:42:47.964Z"
     },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/PublicDisclosure_1756111179.pdf": {
+      "filename": "PublicDisclosure_1756111179.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%202%2024-25/PublicDisclosure_1756111179.pdf",
+      "bytes": 3458556,
+      "sha256": "1612af1dbb930b9c5ef4471f57550aba23a506604db226480ce92a6995799862",
+      "fetched_at": "2026-06-22T10:54:28.098Z"
+    },
     "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf": {
       "filename": "PublicDisclosuresDecember2024_1738647983.pdf",
       "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf",
       "bytes": 2492002,
       "sha256": "147ab9d00462c02645cac6c3338bc383ce77a9ba71b536e1cf78e8492f3f9bee",
       "fetched_at": "2026-06-15T08:11:30.927Z"
+    },
+    "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%204%2024-25/PublicDisclosure_1756111277.pdf": {
+      "filename": "PublicDisclosure_1756111277.pdf",
+      "url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%204%2024-25/PublicDisclosure_1756111277.pdf",
+      "bytes": 3451152,
+      "sha256": "4beef39e8b907f646bcfba9a4b965ba8dda1ce9f4511a35ca1aa59d7735386f5",
+      "fetched_at": "2026-06-22T10:54:28.851Z"
     },
     "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2025-26/Qtr%201%2025-26/PublicDisclosure_1755066696.pdf": {
       "filename": "PublicDisclosure_1755066696.pdf",
@@ -160,6 +181,13 @@
       "bytes": 2251002,
       "sha256": "85578e83970de18f607b380a3689cec42cedd3b3afb92be776d985b1bb1bbe5f",
       "fetched_at": "2026-06-15T08:13:12.457Z"
+    },
+    "https://content.naic.org/sites/default/files/health-2024mid-year-industry-report.pdf": {
+      "filename": "health-2024mid-year-industry-report.pdf",
+      "url": "https://content.naic.org/sites/default/files/health-2024mid-year-industry-report.pdf",
+      "bytes": 1711341,
+      "sha256": "026bdb4b03ee897e29c7aa039d8ca44a25f631a14ff702ff940682bebd130007",
+      "fetched_at": "2026-06-22T10:55:35.566Z"
     },
     "https://doc-files-donotdelete.s3.ap-south-1.amazonaws.com/cmsdocs/Investor%20Presentation%20Q1%20FY25.pdf": {
       "filename": "Investor Presentation Q1 FY25.pdf",
@@ -202,6 +230,27 @@
       "bytes": 1605756,
       "sha256": "a49cccda41030591184516e77065b6dddde7f364521831f5f5cc341d031e06d9",
       "fetched_at": "2026-06-15T08:13:17.280Z"
+    },
+    "https://mediassist.in/assets/pdf/reports/2024/annual-report-fy-23-24.pdf": {
+      "filename": "annual-report-fy-23-24.pdf",
+      "url": "https://mediassist.in/assets/pdf/reports/2024/annual-report-fy-23-24.pdf",
+      "bytes": 22469532,
+      "sha256": "6d84fd99887841ed730aeeb93eed41a24025948a756947bd362f30bafdac0539",
+      "fetched_at": "2026-06-22T10:56:17.750Z"
+    },
+    "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf": {
+      "filename": "487b7b99-7b36-4143-bf32-33e408aa1866.pdf",
+      "url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28042026235130_ECPresentationQ4FY26.pdf",
+      "bytes": 894504,
+      "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
+      "fetched_at": "2026-06-22T10:57:07.940Z"
+    },
+    "https://plindia.com/ResReport/Conect-27-11-25-PL.pdf": {
+      "filename": "Conect-27-11-25-PL.pdf",
+      "url": "https://plindia.com/ResReport/Conect-27-11-25-PL.pdf",
+      "bytes": 1708900,
+      "sha256": "f45678aad11ff364e8055ec9b479ec1f3949af29a6514cc319c7652b1d201fc3",
+      "fetched_at": "2026-06-22T10:54:37.587Z"
     },
     "https://radiuscare.co.nz/wp-content/uploads/2025/05/FY25-Investor-Presentation.pdf": {
       "filename": "FY25-Investor-Presentation.pdf",
@@ -252,6 +301,27 @@
       "sha256": "1de93f6867ef7f94e5d1ffec5ef9b7ed3449ff7d73184c395f00c8367563db19",
       "fetched_at": "2026-06-15T08:13:17.173Z"
     },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachHis/63d2beca-84b1-4bdc-8f4a-ffeb439df9b9.pdf": {
+      "filename": "63d2beca-84b1-4bdc-8f4a-ffeb439df9b9.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachHis/63d2beca-84b1-4bdc-8f4a-ffeb439df9b9.pdf",
+      "bytes": 1740110,
+      "sha256": "771d6306c095c008d09fbec756f53f7eba11ddd0b33afe7e455982c6835ae660",
+      "fetched_at": "2026-06-22T10:55:35.900Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachLive/487b7b99-7b36-4143-bf32-33e408aa1866.pdf": {
+      "filename": "487b7b99-7b36-4143-bf32-33e408aa1866.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/487b7b99-7b36-4143-bf32-33e408aa1866.pdf",
+      "bytes": 894504,
+      "sha256": "c4209efc48c0b10b005b8dbcf17f3fd2413876b71dc6a39ee920195a527a8cd5",
+      "fetched_at": "2026-06-22T10:54:31.775Z"
+    },
+    "https://www.bseindia.com/xml-data/corpfiling/AttachLive/a8114df0-5800-4af2-a11c-24d183ab709f.pdf": {
+      "filename": "a8114df0-5800-4af2-a11c-24d183ab709f.pdf",
+      "url": "https://www.bseindia.com/xml-data/corpfiling/AttachLive/a8114df0-5800-4af2-a11c-24d183ab709f.pdf",
+      "bytes": 872261,
+      "sha256": "b2e513108ad9612c133f681dd78f6275d85fc0ec3a45814e8fbc6ede1f9a3b3a",
+      "fetched_at": "2026-06-22T10:57:04.441Z"
+    },
     "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf": {
       "filename": "Financial Ratios _Insurance Sector_November2020.pdf",
       "url": "https://www.careratings.com/upload/pdf/Financial%20Ratios%20_Insurance%20Sector_November2020.pdf",
@@ -286,6 +356,13 @@
       "bytes": 2726091,
       "sha256": "2adeac4e4b4993d0a4107f52b42d97cd33e775aeec315ce08fd11b65a00a0625",
       "fetched_at": "2026-06-10T21:54:13.545Z"
+    },
+    "https://www.hdfcsec.com/hsl.docs/Insurance%20Thematic%20-%20Jul25%20--%20HSIE-202507042052572076930.pdf": {
+      "filename": "Insurance Thematic - Jul25 -- HSIE-202507042052572076930.pdf",
+      "url": "https://www.hdfcsec.com/hsl.docs/Insurance%20Thematic%20-%20Jul25%20--%20HSIE-202507042052572076930.pdf",
+      "bytes": 5172565,
+      "sha256": "18e270196e60d4411cc815c90de47a2e085fa05332f3d9de86eacf9991caabf9",
+      "fetched_at": "2026-06-22T10:54:35.586Z"
     },
     "https://www.idfcfirst.bank.in/content/dam/idfcfirstbank/pdf/financial-results/IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf": {
       "filename": "IDFC-FIRST-Bank-Investor-Presentation-updated-file-Q3-FY26.pdf",
@@ -330,5 +407,5 @@
       "fetched_at": "2026-06-10T21:30:38.379Z"
     }
   },
-  "updated_at": "2026-06-15T11:30:07.473Z"
+  "updated_at": "2026-06-22T10:58:00.208Z"
 }
