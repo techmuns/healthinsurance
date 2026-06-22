@@ -16,7 +16,7 @@ export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
   const model = useMemo(() => buildAudit(), [])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <ExcelVerifierLauncher />
 
       <AuditSpreadsheet model={model} focus={focus} />

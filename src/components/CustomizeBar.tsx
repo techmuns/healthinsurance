@@ -36,7 +36,7 @@ export function CustomizeBar({
   hasSaved: boolean
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-lg border border-soft-border bg-ice/40 px-3 py-2">
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-lg border border-soft-border bg-ice/25 px-3 py-1.5">
       {/* Hidden-items tray */}
       <div className="flex min-w-0 flex-wrap items-center gap-1.5">
         <span className="inline-flex items-center gap-1 text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">

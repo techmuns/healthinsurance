@@ -31,7 +31,7 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
   yellow: { cell: 'bg-gold-soft', ring: 'rgba(183,121,31,0.22)', text: 'text-gold', dot: '#B7791F', label: 'Adjusted / typed' },
   red: { cell: 'bg-coral-soft', ring: 'rgba(199,93,84,0.22)', text: 'text-coral', dot: '#C75D54', label: 'Missing / not reachable' },
   grey: { cell: 'bg-slate-100', ring: 'rgba(148,163,184,0.25)', text: 'text-slate-500', dot: '#94A3B8', label: 'Not needed / blocked' },
-  info: { cell: 'bg-lavender-soft', ring: 'rgba(110,123,214,0.22)', text: 'text-lavender', dot: '#6E7BD6', label: 'Calculated' },
+  info: { cell: 'bg-soft-blue', ring: 'rgba(61,125,214,0.20)', text: 'text-navy-primary', dot: '#3D7DD6', label: 'Calculated' },
 }
 const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
 
@@ -467,7 +467,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
             </tr>
           )}
           <tr>
-            <th className="sticky left-0 z-30 border-b border-r border-soft-border bg-[#F3F6FB] px-3 py-2 text-left text-[10px] font-bold uppercase tracking-wide text-ink-secondary" style={{ minWidth: 220 }}>
+            <th className="sticky left-0 z-30 border-b border-r border-soft-border bg-[#E7EEFA] px-3 py-1.5 text-left text-[10px] font-bold uppercase tracking-wide text-navy-primary/80" style={{ minWidth: 220 }}>
               Line item
             </th>
             {columns.map((c) => {
@@ -482,7 +482,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                   onDragLeave={() => setOverKey((k) => (k === c.col ? null : k))}
                   onDrop={(e) => { e.preventDefault(); onColDrop(c) }}
                   onDragEnd={() => { setDragKey(null); setOverKey(null) }}
-                  className="group/col relative cursor-grab border-b border-r border-soft-border bg-[#F3F6FB] px-2.5 py-1.5 text-center active:cursor-grabbing"
+                  className="group/col relative cursor-grab border-b border-r border-soft-border bg-[#EDF3FC] px-2.5 py-1 text-center active:cursor-grabbing"
                   style={{ minWidth: 82, opacity: isDragging ? 0.45 : 1, ...dividerStyle(c), ...(isOver ? { boxShadow: 'inset 2px 0 0 #27457E' } : null) }}
                   title="Drag to reorder"
                 >
@@ -500,20 +500,21 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => {
+          {rows.map((r, ri) => {
             const showSection = r.section && r.section !== lastSection
             lastSection = r.section || lastSection
+            const zebra = ri % 2 === 1
             return (
               <Fragment key={r.rowNum}>
                 {showSection && (
                   <tr>
-                    <td colSpan={columns.length + 1} className="border-b border-soft-border bg-navy-primary/[0.05] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-navy-primary">
+                    <td colSpan={columns.length + 1} className="border-y border-soft-border bg-gradient-to-r from-navy-primary/[0.09] via-navy-primary/[0.05] to-transparent px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-navy-primary">
                       {r.section}
                     </td>
                   </tr>
                 )}
                 <tr className="group">
-                  <th className="sticky left-0 z-10 border-b border-r border-soft-border bg-white px-3 py-1.5 text-left align-middle group-hover:bg-ice">
+                  <th className={`sticky left-0 z-10 border-b border-r border-soft-border ${zebra ? 'bg-[#F7FAFD]' : 'bg-white'} px-3 py-1.5 text-left align-middle group-hover:bg-ice`}>
                     <span className="block truncate text-[11.5px] font-semibold text-navy-deep" style={{ maxWidth: 210 }} title={r.primary}>{r.primary}</span>
                     {r.secondary && r.secondary !== r.primary && (
                       <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 210 }} title={r.secondary}>{r.secondary}</span>
@@ -521,7 +522,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                   </th>
                   {columns.map((col) => {
                     const cell = r.byCol.get(col.col)
-                    if (!cell) return <td key={col.col} className="border-b border-r border-soft-border/60 bg-[#FCFDFE]" style={dividerStyle(col)} />
+                    if (!cell) return <td key={col.col} className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'}`} style={dividerStyle(col)} />
                     const meta = STATUS_META[cell.status]
                     const gap = deckGap(cell)
                     const fetched = isFetched(cell)
@@ -714,7 +715,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
 
       {/* Source-pipeline coverage for this sheet — where each source maps and
           how much of it has been fetched. */}
-      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-soft-border bg-ice/40 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-soft-border bg-ice/30 px-3 py-1.5">
         <span className="text-[9.5px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Source pipelines</span>
         {(['irdai', 'company', 'exchange', 'computed', 'aggregator', 'capitaliq'] as PipelineKey[]).map((k) => {
           const p = PIPELINE[k]
@@ -722,7 +723,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
           if (!st.total) return null
           const miss = st.total - st.fetched
           return (
-            <span key={k} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px]" title={p.what}>
+            <span key={k} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10.5px]" title={p.what}>
               <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
               <span className="font-semibold text-navy-deep">{p.label}</span>
               <span className="text-emerald">{st.fetched} fetched</span>
@@ -732,7 +733,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
         })}
         {pipeStats.notInDeck > 0 && (
           <span
-            className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10.5px]"
             title="Overall health market share isn't given a value in the investor decks (the KPI page shows the retail health share only) — it comes from the GI Council segment report, so a blank here is not a pending deck pull."
           >
             <span className="h-2 w-2 rounded-full bg-slate-300" />
@@ -823,7 +824,7 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   if (!sheets.length) return null
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {/* Verifying-from-insight banner — names the exact company / metric / period /
           value to check; the company is already filtered in. Honest about whether
           this is an exact cell or the closest row. */}
@@ -846,8 +847,9 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
         </div>
       )}
 
-      {/* Excel-style sheet tabs */}
-      <div className="flex flex-wrap items-end gap-1 border-b border-soft-border">
+      {/* Audit section tabs — one single-line premium rail; scrolls horizontally
+          on narrow widths instead of wrapping to a second row. */}
+      <div className="flex items-center gap-1.5 overflow-x-auto scroll-thin px-0.5 pt-0.5 pb-2">
         {sheets.map((g) => {
           const on = g.sheet === active
           const filled = g.stats.valuePresent
@@ -856,18 +858,19 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
               key={g.sheet}
               type="button"
               onClick={() => setActive(g.sheet)}
+              title={`${g.sheet} — ${filled}/${g.stats.total} cells with a value`}
               className={[
-                'group relative -mb-px flex items-center gap-1.5 rounded-t-lg border px-3 py-1.5 text-[12px] transition-colors duration-normal ease-premium',
+                'group relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[12px] transition-all duration-normal ease-premium',
                 on
-                  ? 'border-soft-border border-b-white bg-white font-semibold text-navy-deep'
-                  : 'border-transparent bg-transparent font-medium text-ink-secondary hover:bg-ice/60 hover:text-navy-primary',
+                  ? 'bg-gradient-to-b from-[#27457E] to-[#1E3A6B] font-semibold text-white shadow-[0_2px_8px_rgba(23,43,77,0.18)]'
+                  : 'font-medium text-ink-secondary hover:bg-ice/70 hover:text-navy-primary',
               ].join(' ')}
             >
-              <span className={`pointer-events-none absolute inset-x-2 top-0 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep transition-opacity duration-normal ease-premium ${on ? 'opacity-100' : 'opacity-0'}`} />
-              {g.sheet}
-              <span className={`rounded-full px-1.5 text-[9.5px] font-semibold tabular-nums ${on ? 'bg-emerald-soft text-emerald' : 'bg-ice text-ink-secondary'}`}>
+              <span>{g.sheet}</span>
+              <span className={`rounded-full px-1.5 py-px text-[9px] font-semibold tabular-nums ${on ? 'bg-white/20 text-white' : 'bg-ice text-ink-secondary'}`}>
                 {filled}/{g.stats.total}
               </span>
+              {on && <span className="pointer-events-none absolute inset-x-2.5 bottom-1 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep" />}
             </button>
           )
         })}
