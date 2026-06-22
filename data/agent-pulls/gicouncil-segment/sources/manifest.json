@@ -56,6 +56,13 @@
       "sha256": "154d3eb213ba6ac6528a86abeffa3599440d3398d2578cfbb5c0b7751f530e60",
       "fetched_at": "2026-06-10T20:14:16.537Z"
     },
+    "https://www.gicouncil.in/media/3682/revised-segment-wise-report-december-2018_updated.xlsx": {
+      "filename": "revised-segment-wise-report-december-2018_updated.xlsx",
+      "url": "https://www.gicouncil.in/media/3682/revised-segment-wise-report-december-2018_updated.xlsx",
+      "bytes": 703806,
+      "sha256": "623c6bae405a98a0f33d04bd2273eb3ed02832c3ceaf7cc92a9c38b62137a309",
+      "fetched_at": "2026-06-22T08:40:21.929Z"
+    },
     "https://www.gicouncil.in/media/3686/segment-wise-report-january-2019.xlsx": {
       "filename": "segment-wise-report-january-2019.xlsx",
       "url": "https://www.gicouncil.in/media/3686/segment-wise-report-january-2019.xlsx",
@@ -671,7 +678,28 @@
       "bytes": 46572,
       "sha256": "a6d296a585e516013ab61d2a1734ff7cb38599518e6fc27d5050ca57c64b8394",
       "fetched_at": "2026-06-10T20:00:18.327Z"
+    },
+    "https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx": {
+      "filename": "segment_march_2026-170426v1.xlsx",
+      "url": "https://www.gicouncil.in/media/4654/segment_march_2026-170426v1.xlsx",
+      "bytes": 50933,
+      "sha256": "70057471ae978eb32ee234bc781b44435412ee33d97a4e7a1655062fe81067bf",
+      "fetched_at": "2026-06-22T08:40:20.814Z"
+    },
+    "https://www.gicouncil.in/media/4658/segment_may_2026.xlsx": {
+      "filename": "segment_may_2026.xlsx",
+      "url": "https://www.gicouncil.in/media/4658/segment_may_2026.xlsx",
+      "bytes": 51836,
+      "sha256": "d338f1524b574964305547d14a93a314910c29b32b54075b75c76737d9a8cbdc",
+      "fetched_at": "2026-06-22T08:40:20.309Z"
+    },
+    "https://www.gicouncil.in/media/4659/segment_april_2026-10.xlsx": {
+      "filename": "segment_april_2026-10.xlsx",
+      "url": "https://www.gicouncil.in/media/4659/segment_april_2026-10.xlsx",
+      "bytes": 46468,
+      "sha256": "0d7ab42a316e28ba8e94047629fa06203a3b5e70cdf8e471206c211d1cdecfe1",
+      "fetched_at": "2026-06-22T08:40:20.569Z"
     }
   },
-  "updated_at": "2026-06-10T20:16:28.142Z"
+  "updated_at": "2026-06-22T08:40:21.930Z"
 }
