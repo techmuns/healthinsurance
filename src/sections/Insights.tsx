@@ -312,6 +312,16 @@ const groupFor = (ins: Insight): string => {
   if (ins.affectedInsurers.some((id) => OTHER_PEERS.includes(id))) return 'others'
   return 'all'
 }
+// The insight's PRIMARY subject — the company its lead evidence stat is about
+// (the "101.1% · Star Health" hero). A five-insurer sector card's primary is Star
+// even though it also touches Niva; this is what lets a focused-company view LEAD
+// with that company instead of merely including it.
+const primarySubject = (ins: Insight): string | null => ins.evidence[0]?.insurer ?? null
+const leadsFor = (ins: Insight, sel: string): boolean => {
+  const p = primarySubject(ins)
+  if (sel === 'others') return p != null && OTHER_PEERS.includes(p)
+  return p === sel
+}
 
 // The newest period anywhere in the run — the yardstick for "latest vs older".
 const PANEL_LATEST = latestPeriodAcross(FILE.insights)
@@ -343,7 +353,17 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
         .filter((i) => matchCompany(i, company))
         .filter((i) => category === 'all' || i.category === category)
         .filter((i) => conviction === 'all' || i.conviction === conviction)
-        .sort((a, b) => a.rank - b.rank),
+        // In a focused-company view, lead with the insights that are ABOUT that
+        // company (primary subject), not merely the ones that mention it — so the
+        // Niva view opens on the Niva insight, never a sector card whose hero is a
+        // peer. "All" stays sharpest-first (pure editorial rank).
+        .sort((a, b) => {
+          if (company !== 'all') {
+            const d = (leadsFor(a, company) ? 0 : 1) - (leadsFor(b, company) ? 0 : 1)
+            if (d !== 0) return d
+          }
+          return a.rank - b.rank
+        }),
     [company, category, conviction],
   )
   const avgReady = Math.round(FILE.meta.coverage.reduce((s, c) => s + c.readyPct, 0) / Math.max(1, FILE.meta.coverage.length))
