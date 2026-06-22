@@ -137,6 +137,24 @@ def build_formula_resolver(schema, store):
     # cell -> binding (entity / metric / period) per sheet, from the schema map.
     cellmap = {sh.get("sheet"): {b.get("cell"): b for b in (sh.get("bindings") or [])}
                for sh in schema.get("sheets", [])}
+    # Cells that are GENUINELY not applicable (insurer not yet licensed / merged
+    # away / exited), keyed entity::metric::period. A not-applicable cell has no
+    # value and never will for that period, so inside a column total it is a TRUE
+    # ZERO (contributes nothing) — not an unknown that has to block the sum. This
+    # is what lets e.g. the SAHI-total SUM resolve from the insurers that existed
+    # rather than going blank because a not-yet-launched insurer's cell is empty.
+    try:
+        na_keys = set(json.loads(
+            (REPO / "data" / "source-map" / "not-applicable-cells.json").read_text()
+        ).get("cells", {}).keys())
+    except Exception:
+        na_keys = set()
+
+    def is_not_applicable(sheet, ref, cur_sheet):
+        b = cellmap.get(sheet or cur_sheet, {}).get(ref) or {}
+        e, m, p = b.get("entity"), b.get("metric"), b.get("period")
+        return bool(e and m and p) and f"{e}::{m}::{p}" in na_keys
+
     # row -> human label per sheet, read from the template's leftmost text column.
     rowlabel = {}
     for ws in wb.worksheets:
@@ -248,6 +266,13 @@ def build_formula_resolver(schema, store):
                     sheet, ref, ext = split_ref(c)
                     v = None if ext else store_value(sheet, ref, cur_sheet, depth)
                     if v is None:
+                        # A blank cell that is genuinely NOT APPLICABLE (the insurer
+                        # didn't exist that year) is a true zero by non-existence, not
+                        # an unknown — it must not block the total. SUM skips it (adds
+                        # nothing); AVERAGE excludes it from the mean. Only a genuinely
+                        # missing / unknown cell still blocks the calculation.
+                        if not ext and is_not_applicable(sheet, ref, cur_sheet):
+                            continue
                         bad[0] = True
                         return "0"
                     vals.append(v)

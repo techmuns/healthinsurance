@@ -246,10 +246,14 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
   const gap = deckGap(cell)
   // Blocked / not-found blank — figure exists but the pipeline can't pull it;
   // a resolved, calm-grey state (with the reason + short tag), not a red "missing".
+  const notApplicable = cell.status === 'not_applicable'
   const blocked = !fetched && (cell.status === 'web_blocked' || cell.status === 'not_in_ppt')
   const blockTag = cell.blankTag
     ?? (cell.status === 'web_blocked' ? 'IRDAI' : cell.status === 'not_in_ppt' ? 'Not in PPT' : 'Awaiting source file')
-  const calm = gap || blocked // both render as calm grey, not coral
+  // not-applicable (the insurer didn't exist this period) renders calm grey with NO
+  // source tag — a source pipeline / "expected source" there would wrongly imply a
+  // pending pull for a number that is never coming (Neha, 2026-06-22).
+  const calm = gap || blocked || notApplicable
   const pipe = PIPELINE[pipelineOf(cell)]
   return (
     <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
@@ -272,14 +276,17 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
             ? <Info className="h-4 w-4 shrink-0 text-slate-500" />
             : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
         <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : calm ? 'text-slate-600' : 'text-coral'}`}>
-          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : blocked ? blockTag : 'Not fetched — cell empty'}
+          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : 'Not fetched — cell empty'}
         </span>
         <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${calm ? 'bg-slate-100 text-slate-500' : `${q.cell} ${q.text}`}`}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: calm ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : blocked ? blockTag : meta.label}
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: calm ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : meta.label}
         </span>
       </div>
 
       <div className="space-y-3 px-4 py-3">
+        {/* Source pipeline + source row are meaningless for a not-applicable cell
+            (the insurer didn't exist) — show only the reason, never a source tag. */}
+        {!notApplicable && (<>
         {/* Pipeline — the real source for a row the deck doesn't publish */}
         <DetailField label="Source pipeline">
           {gap ? (
@@ -310,6 +317,7 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
           ) : gap ? <span>{gap.sourceLabel}</span> : <span className="text-ink-secondary">Not defined</span>}
           {cell.sourceFile && <p className="mt-0.5 break-all font-mono text-[10px] text-ink-secondary/80">{cell.sourceFile}</p>}
         </DetailField>
+        </>)}
 
         {fetched ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -322,6 +330,10 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
           </DetailField>
         ) : blocked ? (
           <DetailField label="Why it's blank">
+            <span className="text-ink-secondary">{cell.note}</span>
+          </DetailField>
+        ) : notApplicable ? (
+          <DetailField label="Not applicable">
             <span className="text-ink-secondary">{cell.note}</span>
           </DetailField>
         ) : (
@@ -513,6 +525,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                     const meta = STATUS_META[cell.status]
                     const gap = deckGap(cell)
                     const fetched = isFetched(cell)
+                    const notApplicable = cell.status === 'not_applicable'
                     // Honest short tag for a blank: the curated blankTag ("1/n data
                     // not found" / "Not in PPT" / "IRDAI"), or a sensible default
                     // from the status. A tagged blank reads as a resolved, calm-grey
@@ -530,6 +543,8 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                       ? `${cell.metricLabel} · ${cell.period} — ${meta.label}`
                       : gap
                         ? `${cell.metricLabel} · ${cell.period} — not published in the investor deck; comes from ${gap.sourceLabel}`
+                        : notApplicable
+                          ? `${cell.metricLabel} · ${cell.period} — not applicable: ${cell.note}`
                         : tag
                           ? `${cell.metricLabel} · ${cell.period} — ${tag}: ${cell.note}`
                           : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
@@ -557,6 +572,11 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                             <span className="inline-flex items-center gap-1 text-[8px] font-semibold tracking-tight text-slate-400">
                               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />{tag}
                             </span>
+                          ) : notApplicable ? (
+                            // Insurer didn't exist this period — kept clean, with no
+                            // source tag (a pipeline pill would imply a pending pull);
+                            // the full reason shows on hover / click.
+                            <span className="text-[11px] text-slate-300">—</span>
                           ) : (
                             // Empty cell → show which pipeline should have filled it.
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/75">
