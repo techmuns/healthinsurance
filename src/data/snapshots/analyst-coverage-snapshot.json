@@ -4,7 +4,7 @@
     "description": "Dated broker research reports (target price + price at recommendation) for the Analyst coverage sheet. Aggregator-sourced: a headless Trendlyne scrape (ScraperAPI India IP) primary, the muns agent — the sanctioned low-confidence backup for broker targets (no official feed exists). Rows without a public source URL are never written. Missing is never zero.",
     "schema_version": "1.0.0",
     "dataset": "backup_aggregator",
-    "last_updated": "2026-06-15",
+    "last_updated": "2026-06-22",
     "upstream_sources": [
       "trendlyne_scrape",
       "muns_agent_web"
