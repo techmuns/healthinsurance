@@ -4,8 +4,8 @@
     "description": "Full-fiscal-year health premium by insurer and carrier type, from the GI Council Segment-wise Report's Health Portfolio sheet. One row per fiscal_year × entity × carrier_group: tracked insurers (health retail / group / government / overseas-medical / grand total) plus aggregates — SAHI, GENERAL and INDUSTRY as printed; PSUs (sum of the 4 public-sector general insurers), Private (GENERAL − PSUs) and Others-retail (INDUSTRY retail − the named insurers) derived by exact arithmetic over rows printed in the same official table (each row's `basis` field says which). For each FY the newest GIC statement wins: a later report's restated prior-year comparative supersedes the year's own earlier edition. Missing is never zero.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-22",
-    "last_successful_run": "2026-06-22T13:43:01.672Z",
+    "last_updated": "2026-06-23",
+    "last_successful_run": "2026-06-23T08:03:58.280Z",
     "upstream_sources": [
       "gi_council"
     ],
@@ -3319,8 +3319,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3343,8 +3343,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3367,8 +3367,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3391,8 +3391,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3415,8 +3415,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3439,8 +3439,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3463,8 +3463,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3487,8 +3487,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3511,8 +3511,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3655,8 +3655,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3703,8 +3703,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3727,8 +3727,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3751,8 +3751,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
@@ -3775,8 +3775,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-22T13:42:52.612Z",
-        "parsed_at": "2026-06-22T13:42:56.882Z",
+        "fetched_at": "2026-06-23T08:02:47.710Z",
+        "parsed_at": "2026-06-23T08:02:49.717Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       }
