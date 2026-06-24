@@ -14,7 +14,7 @@
 //  does not contain.
 // ---------------------------------------------------------------------------
 
-import { STATUS_META, type AuditCell, type AuditStatus } from '@/lib/extractedDataAudit'
+import { STATUS_META, formatValue, type AuditCell, type AuditStatus } from '@/lib/extractedDataAudit'
 import { mean, median, stdev, zScore, pctChange, round } from '@/insights/stats'
 import type {
   SelectionItem,
@@ -319,4 +319,42 @@ export function scopeLabel(readout: Tier1Readout): string {
 export function buildAnalystRequest(items: SelectionItem[], datasetVersion = DATASET_VERSION): AnalystRequest {
   const readout = computeReadout(items, datasetVersion)
   return { scopeLabel: scopeLabel(readout), selection: items, readout, datasetVersion }
+}
+
+/** A few plain-language analysis points computed in the browser — the always-on
+ *  read shown with or without AI. Honest: only grounded values, no fabrication,
+ *  no trend implied from a single period. */
+export function localQuickRead(readout: Tier1Readout, items: SelectionItem[]): string[] {
+  const out: string[] = []
+  const fmt = (v: number, u: string) => formatValue(v, u)
+
+  for (const m of readout.metricStats.slice(0, 3)) {
+    if (m.higherIsBetter == null) {
+      out.push(`${m.metricLabel} ranges from ${m.min.companyLabel} at ${fmt(m.min.value, m.unit)} to ${m.max.companyLabel} at ${fmt(m.max.value, m.unit)} (median ${fmt(m.median, m.unit)}).`)
+    } else {
+      const best = m.higherIsBetter ? m.max : m.min
+      const worst = m.higherIsBetter ? m.min : m.max
+      out.push(`${best.companyLabel} leads on ${m.metricLabel} at ${fmt(best.value, m.unit)}; ${worst.companyLabel} lags at ${fmt(worst.value, m.unit)} (median ${fmt(m.median, m.unit)}).`)
+    }
+    const outlier = m.ranks.find((r) => r.isOutlier)
+    if (outlier) out.push(`${outlier.companyLabel} stands apart from the group on ${m.metricLabel} at ${fmt(outlier.value, m.unit)}.`)
+  }
+
+  for (const t of readout.trends.slice(0, 2)) {
+    const dir = t.absChange > 0 ? 'rose' : t.absChange < 0 ? 'eased' : 'held flat'
+    out.push(`${t.companyLabel}'s ${t.metricLabel} ${dir} from ${fmt(t.from, t.unit)} to ${fmt(t.to, t.unit)} over ${t.points[0].period}–${t.points[t.points.length - 1].period}.`)
+  }
+
+  // Nothing comparative — state the selected values plainly.
+  if (out.length === 0) {
+    for (const r of items.filter((i) => i.ready && i.value != null).slice(0, 4)) {
+      out.push(`${r.companyLabel} · ${r.metricLabel} (${r.period}): ${fmt(r.value as number, r.unit)}.`)
+    }
+  }
+
+  if (readout.scope.singlePeriod && readout.scope.periods[0] && out.length > 0) {
+    out.push(`${readout.scope.periods[0]} only — not enough history to call a trend.`)
+  }
+
+  return out.slice(0, 6)
 }

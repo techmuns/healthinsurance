@@ -159,10 +159,9 @@ export const onRequestPost = async (context: Ctx): Promise<Response> => {
   if (readout.coverage.ready === 0) return json({ ok: false, error: 'No ready, source-backed cells in the selection to analyse.' }, 422)
 
   if (!env.ANTHROPIC_API_KEY) {
-    return json(
-      { ok: false, error: 'AI analysis is not configured on the server.', detail: 'Set ANTHROPIC_API_KEY in the Cloudflare Pages project settings to enable it.' },
-      503,
-    )
+    // Plain, viewer-safe message — setup lives in functions/README.md, never on the
+    // dashboard. The browser falls back to the free analysis points.
+    return json({ ok: false, error: 'AI summary is unavailable right now.' }, 503)
   }
 
   const model = env.INSIGHTS_MODEL || DEFAULT_MODEL

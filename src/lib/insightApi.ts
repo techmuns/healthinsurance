@@ -59,17 +59,14 @@ export async function generateAnalysis(req: AnalystRequest, force = false): Prom
       })
       const ct = res.headers.get('content-type') ?? ''
       if (!ct.includes('application/json')) {
-        return {
-          ok: false,
-          error: 'AI analysis runs on the deployed site.',
-          detail: 'The /api/insight function is served by Cloudflare Pages. The instant readout below works everywhere.',
-        }
+        // No Functions runtime here (e.g. plain vite dev) — stay viewer-safe.
+        return { ok: false, error: 'AI summary isn’t available right now.' }
       }
       const data = (await res.json()) as AnalystApiResponse
       if (data.ok) writeCache(sig, data.result)
       return data
-    } catch (err) {
-      return { ok: false, error: 'Couldn’t reach the analysis service.', detail: err instanceof Error ? err.message : 'network error' }
+    } catch {
+      return { ok: false, error: 'AI summary isn’t available right now.' }
     } finally {
       inFlight.delete(sig)
     }
