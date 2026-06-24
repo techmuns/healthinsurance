@@ -3,11 +3,16 @@ import { createPortal } from 'react-dom'
 import {
   UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Scale, Download,
   RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight, Minus, Maximize2, X,
+  History, Trash2,
 } from 'lucide-react'
 import {
   verifyWorkbook, downloadVerifyReport, VERIFY_META,
   type VerifyResult, type VerifyRow, type VerifyStatus,
 } from '@/lib/excelVerify'
+import {
+  listHistory, addHistory, getHistoryBytes, removeHistory, clearHistory,
+  formatSize, formatWhen, type HistoryEntry,
+} from '@/lib/verifyHistory'
 import { useVerify, type ListFilter } from '@/state/verifyState'
 
 // ---------------------------------------------------------------------------
@@ -100,9 +105,11 @@ function VerifierPill({ label, onRestore }: { label: string; onRestore: () => vo
 }
 
 // ── Upload zone (first screen) ───────────────────────────────────────────────
-function UploadZone({ onPick, busy }: { onPick: (f: File) => void; busy: boolean }) {
+function UploadZone({ onPick, busy, onReopen }: { onPick: (f: File) => void; busy: boolean; onReopen: (e: HistoryEntry) => void }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
+  const [history, setHistory] = useState<HistoryEntry[]>(() => listHistory())
+  const refresh = () => setHistory(listHistory())
   return (
     <div className="space-y-4">
       <p className="text-[12.5px] leading-relaxed text-ink-secondary">
@@ -129,6 +136,40 @@ function UploadZone({ onPick, busy }: { onPick: (f: File) => void; busy: boolean
         <span className="text-[11px] text-ink-secondary">.xlsx, .xls or .csv — read in your browser, nothing is uploaded to a server</span>
       </button>
       <input ref={inputRef} type="file" accept={ACCEPT} className="hidden" onChange={(e) => { if (e.target.files?.[0]) onPick(e.target.files[0]); e.target.value = '' }} />
+
+      {/* Recent uploads — reopen a past file with one click (re-checked live). */}
+      {history.length > 0 && (
+        <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-secondary">
+              <History className="h-3.5 w-3.5" /> Recent uploads
+            </p>
+            <button type="button" onClick={() => { clearHistory(); refresh() }} className="text-[10px] font-medium text-ink-secondary transition-colors hover:text-coral">
+              Clear all
+            </button>
+          </div>
+          <ul className="space-y-1.5">
+            {history.map((h) => (
+              <li key={h.id} className="flex items-center gap-2 rounded-lg border border-soft-border bg-ivory/60 px-2.5 py-1.5">
+                <FileSpreadsheet className="h-4 w-4 shrink-0 text-teal" />
+                <button type="button" onClick={() => onReopen(h)} disabled={busy} title="Reopen and re-check this file" className="min-w-0 flex-1 text-left disabled:opacity-60">
+                  <span className="block truncate text-[12px] font-medium text-navy-deep" title={h.name}>{h.name}</span>
+                  <span className="block text-[10px] text-ink-secondary">{formatSize(h.size)} · {formatWhen(h.ts)}</span>
+                </button>
+                <button type="button" onClick={() => onReopen(h)} disabled={busy} title="Re-check against the latest dashboard figures" className="inline-flex shrink-0 items-center gap-1 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10.5px] font-semibold text-navy-primary transition-colors hover:border-navy-primary/30 disabled:opacity-60">
+                  <RotateCcw className="h-3 w-3" /> Re-check
+                </button>
+                <button type="button" onClick={() => { removeHistory(h.id); refresh() }} title="Remove from history" className="shrink-0 rounded-full p-1 text-ink-secondary/60 transition-colors hover:bg-coral-soft hover:text-coral">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[10px] leading-snug text-ink-secondary/80">
+            Saved on this device only — nothing leaves your browser. Reopening re-checks the file against the latest dashboard figures.
+          </p>
+        </div>
+      )}
 
       {/* Legend — the four honest outcomes, colour-coded. */}
       <div className="rounded-xl border border-soft-border bg-card p-4 shadow-soft">
@@ -396,6 +437,7 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
     try {
       const buf = await file.arrayBuffer()
       const res = verifyWorkbook(buf, file.name)
+      addHistory(file.name, buf) // remember every successfully-read upload
       if (res.summary.comparable === 0) {
         setError('Couldn’t match any cells. Make sure this is the dashboard’s portfolio-review workbook (its tabs are matched by name).')
         v.setResult(null)
@@ -405,6 +447,32 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
     } catch (e) {
       setError(e instanceof Error ? `Couldn’t read this file: ${e.message}` : 'Couldn’t read this file.')
       v.setResult(null)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  // Reopen a saved upload: re-read its bytes and re-run the check against the
+  // CURRENT dashboard figures (never a stored, possibly-stale result).
+  const onReopen = (entry: HistoryEntry) => {
+    setError(null)
+    const buf = getHistoryBytes(entry.id)
+    if (!buf) {
+      setError('That saved file couldn’t be read back — it may have been cleared. Please upload it again.')
+      return
+    }
+    setBusy(true)
+    try {
+      const res = verifyWorkbook(buf, entry.name)
+      addHistory(entry.name, buf) // bump it back to the top
+      if (res.summary.comparable === 0) {
+        setError('Couldn’t match any cells in that file against the current dashboard.')
+        v.setResult(null)
+      } else {
+        v.setResult(res)
+      }
+    } catch (e) {
+      setError(e instanceof Error ? `Couldn’t re-check that file: ${e.message}` : 'Couldn’t re-check that file.')
     } finally {
       setBusy(false)
     }
@@ -429,7 +497,7 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
         <Results result={v.result} />
       ) : (
         <div className="space-y-4">
-          <UploadZone onPick={onPick} busy={busy} />
+          <UploadZone onPick={onPick} busy={busy} onReopen={onReopen} />
           {error && (
             <p className="flex items-start gap-1.5 rounded-lg bg-coral-soft/40 px-3 py-2 text-[12px] text-coral-deep">
               <AlertTriangle className="mt-px h-4 w-4 shrink-0" /><span>{error}</span>
