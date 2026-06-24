@@ -47,8 +47,8 @@ export const VERIFY_META: Record<VerifyStatus, VerifyStatusMeta> = {
   matched: { label: 'Matched', short: 'Match', tone: 'green', cell: 'bg-emerald-soft', text: 'text-emerald', dot: '#2F855A' },
   source_basis: { label: 'Source / basis differs', short: 'Source/basis', tone: 'amber', cell: 'bg-gold-soft', text: 'text-gold', dot: '#B7791F' },
   mismatch: { label: 'Mismatched', short: 'Mismatch', tone: 'red', cell: 'bg-coral-soft', text: 'text-coral', dot: '#C75D54' },
-  missing_upload: { label: 'Blank in your file', short: 'Missing', tone: 'grey', cell: 'bg-slate-100', text: 'text-slate-500', dot: '#94A3B8' },
-  missing_dashboard: { label: 'Not on dashboard', short: 'Missing', tone: 'grey', cell: 'bg-slate-100', text: 'text-slate-500', dot: '#94A3B8' },
+  missing_upload: { label: 'Blank in your file', short: 'Blank in file', tone: 'grey', cell: 'bg-slate-100', text: 'text-slate-500', dot: '#94A3B8' },
+  missing_dashboard: { label: 'Blank in dashboard', short: 'Blank in dash', tone: 'grey', cell: 'bg-slate-100', text: 'text-slate-500', dot: '#94A3B8' },
 }
 
 /** Worst-first order, so problems surface at the top of the report. */

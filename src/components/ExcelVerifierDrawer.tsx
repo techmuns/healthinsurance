@@ -206,6 +206,11 @@ function Results({ result }: { result: VerifyResult }) {
   const s = result.summary
   const [sheetFilter, setSheetFilter] = useState<string>('all')
 
+  // The two "blank" directions, counted separately so each gets its own card:
+  // blank in YOUR file (dashboard has it) vs blank in the DASHBOARD (your file has it).
+  const blankInFile = useMemo(() => result.rows.filter((r) => r.status === 'missing_upload').length, [result.rows])
+  const blankInDash = useMemo(() => result.rows.filter((r) => r.status === 'missing_dashboard').length, [result.rows])
+
   // Rows after the status filter (All / Mismatched / Source-basis / …).
   const statusRows = useMemo(
     () => result.rows.filter((r) => inBucket(r.status, filter)),
@@ -258,12 +263,19 @@ function Results({ result }: { result: VerifyResult }) {
         </div>
       </div>
 
-      {/* Compact outcome tiles — tap one to filter, tap again to clear. */}
-      <div className="grid grid-cols-4 gap-2">
-        <Tile status="matched" value={s.matched} active={filter === 'matched'} onClick={() => setFilter(filter === 'matched' ? 'all' : 'matched')} />
-        <Tile status="source_basis" value={s.sourceBasis} active={filter === 'source_basis'} onClick={() => setFilter(filter === 'source_basis' ? 'all' : 'source_basis')} />
-        <Tile status="mismatch" value={s.mismatch} active={filter === 'mismatch'} onClick={() => setFilter(filter === 'mismatch' ? 'all' : 'mismatch')} />
-        <Tile status="missing_upload" value={s.missing} active={filter === 'missing'} onClick={() => setFilter(filter === 'missing' ? 'all' : 'missing')} />
+      {/* Outcome cards — tap one to filter, tap again to clear. The two "blank"
+          directions get their own row so each reads clearly: blank in YOUR file
+          (the dashboard has it) vs blank in the DASHBOARD (your file has it). */}
+      <div className="space-y-2">
+        <div className="grid grid-cols-3 gap-2">
+          <Tile status="matched" value={s.matched} active={filter === 'matched'} onClick={() => setFilter(filter === 'matched' ? 'all' : 'matched')} />
+          <Tile status="source_basis" value={s.sourceBasis} active={filter === 'source_basis'} onClick={() => setFilter(filter === 'source_basis' ? 'all' : 'source_basis')} />
+          <Tile status="mismatch" value={s.mismatch} active={filter === 'mismatch'} onClick={() => setFilter(filter === 'mismatch' ? 'all' : 'mismatch')} />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Tile status="missing_upload" value={blankInFile} active={filter === 'missing_upload'} onClick={() => setFilter(filter === 'missing_upload' ? 'all' : 'missing_upload')} />
+          <Tile status="missing_dashboard" value={blankInDash} active={filter === 'missing_dashboard'} onClick={() => setFilter(filter === 'missing_dashboard' ? 'all' : 'missing_dashboard')} />
+        </div>
       </div>
 
       {/* Sheet coverage — only surfaced when a template tab wasn't found. */}

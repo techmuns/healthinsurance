@@ -24,8 +24,9 @@ export interface VerifyTarget {
 
 /** Grid overlay filter — by exact verify status, or all. */
 export type GridFilter = VerifyStatus | 'all'
-/** Verifier list filter — "missing" folds the two missing directions. */
-export type ListFilter = 'all' | 'mismatch' | 'source_basis' | 'missing' | 'matched'
+/** Verifier list filter — "missing" folds the two directions; the two specific
+ *  keys filter each direction (blank in your file vs blank on the dashboard). */
+export type ListFilter = 'all' | 'mismatch' | 'source_basis' | 'missing' | 'missing_upload' | 'missing_dashboard' | 'matched'
 
 export interface VerifyState {
   /** The verification result (persists until a new file / clear). */
