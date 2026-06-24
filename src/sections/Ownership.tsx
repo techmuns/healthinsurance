@@ -6,7 +6,7 @@ import { LockedPanel } from '@/components/LockedPanel'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { useActiveCompany, useFilters } from '@/state/filters'
-import { getCompanyMaster, getOwnershipData, getTradeDisclosures, getNamedHolders, type TradeDisclosuresView } from '@/lib/dataLayer'
+import { getCompanyMaster, getOwnershipData, getTradeDisclosures, summarizeTradeDisclosures, getNamedHolders, type TradeDisclosuresView } from '@/lib/dataLayer'
 import {
   getOwnershipTrendView,
   groupInsight,
@@ -126,13 +126,21 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
   const sideOf = (d: { buyer: string | null; seller: string | null }): 'buy' | 'sell' =>
     d.buyer && !d.seller ? 'buy' : d.seller && !d.buyer ? 'sell' : 'buy'
   const segDeals = deals.filter((d) => d.deal_type === segment)
-  const buyCr = segDeals.filter((d) => d.buyer && !d.seller).reduce((s, d) => s + (d.value_cr ?? 0), 0)
-  const sellCr = segDeals.filter((d) => d.seller && !d.buyer).reduce((s, d) => s + (d.value_cr ?? 0), 0)
-  const netCr = buyCr - sellCr
+  const dates = [...new Set(segDeals.map((d) => d.date))]
+  // The big timeline only earns its space across MULTIPLE dates; a single-date
+  // set renders as a compact cluster instead (no stretched, near-empty chart).
+  const multiDate = dates.length > 1
+  // Per-tab summary (bought / sold / net / parties / largest) — same logic as the
+  // section summary, scoped to the active segment.
+  const segSummary = summarizeTradeDisclosures(segDeals)
+  const bought = segSummary.total_bought_value_cr
+  const sold = segSummary.total_sold_value_cr
+  const netCr = segSummary.net_flow_value_cr
   const netBought = netCr >= 0
+  const total = bought + sold || 1
 
-  // One bar per trade, oldest → newest (left → right) so it reads like a signal
-  // tape. Date label prints once per day-group.
+  // Multi-date timeline tape: one bar per trade, oldest → newest. Date label
+  // prints once per day-group. (Only rendered when there is more than one date.)
   const chrono = [...segDeals].reverse()
   const bars: DealBar[] = chrono.map((d, idx) => ({
     i: String(idx),
@@ -144,12 +152,10 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
     price: d.price ?? 0,
     cr: (sideOf(d) === 'buy' ? 1 : -1) * (d.value_cr ?? 0),
   }))
-  const dates = [...new Set(segDeals.map((d) => d.date))]
-  const oneDate = segDeals.length > 0 && dates.length === 1
   const m = niceCeil(Math.max(...bars.map((b) => Math.abs(b.cr)), 1))
   const tick = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1))
-  // Single-date clusters don't stretch across the full width — cap + centre them.
-  const chartW = oneDate ? Math.max(300, bars.length * 56) : undefined
+  // Single-date transaction chips — every trade, signed, largest first.
+  const chips = [...segDeals].sort((a, b) => (b.value_cr ?? 0) - (a.value_cr ?? 0))
 
   const DealTick = ({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) => (
     <text x={x ?? 0} y={(y ?? 0) + 12} textAnchor="middle" fontSize={10} fontWeight={600} fill="#26303F">
@@ -159,7 +165,7 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
   const Stat = ({ label, value, color }: { label: string; value: string; color?: string }) => (
     <div className="min-w-0">
       <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
-      <p className="truncate text-[12px] font-bold tabular-nums" style={color ? { color } : undefined}>{value}</p>
+      <p title={value} className="truncate text-[12px] font-bold tabular-nums" style={color ? { color } : undefined}>{value}</p>
     </div>
   )
 
@@ -230,67 +236,94 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
         )
       ) : (
         <>
-          <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
-            <span className="rounded-full bg-teal-soft px-2 py-0.5 font-semibold text-teal">Bought {fmtCr(buyCr)}</span>
-            <span className="rounded-full bg-coral-soft px-2 py-0.5 font-semibold text-coral">Sold {fmtCr(sellCr)}</span>
-            <span className="text-ink-secondary">· {segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} trade{segDeals.length === 1 ? '' : 's'} on record</span>
-          </div>
-          <p className="mb-2 text-[10px] leading-snug text-ink-secondary/80">
-            Reported only on large trades — buys rise above the line, sells dip below, ₹ Cr per trade. New deals appear here automatically on the next Screener Trades run.
-          </p>
-
-          {/* Single-date disclosure cluster — compact, not stretched. */}
-          {oneDate && (
-            <p className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-ice/70 px-2.5 py-1 text-[10.5px] text-ink-secondary ring-1 ring-soft-border">
-              <Info className="h-3 w-3 shrink-0 text-ink-secondary" />
-              Single-date disclosure cluster — all {segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} trades reported on {dealDate(dates[0])}.
-            </p>
-          )}
-
-          <div style={{ height: 224, width: chartW ? `${chartW}px` : '100%', maxWidth: '100%', margin: chartW ? '0 auto' : undefined }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap={oneDate ? '34%' : '22%'}>
-                <CartesianGrid vertical={false} stroke={DEAL_GRID} strokeDasharray="2 4" />
-                <XAxis dataKey="xLabel" tickLine={false} axisLine={false} tick={<DealTick />} height={22} interval={0} />
-                <YAxis
-                  domain={[-m, m]}
-                  ticks={[-m, -m / 2, 0, m / 2, m]}
-                  tickFormatter={tick}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 10, fill: DEAL_AXIS }}
-                  width={34}
-                />
-                <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<DealTooltip />} />
-                <ReferenceLine y={0} stroke={DEAL_ZERO} strokeWidth={1.25} />
-                <Bar dataKey="cr" maxBarSize={26} shape={<DealSignalBar />} isAnimationActive={false} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Net-flow summary — auto-calculated from the same segment's deals. */}
-          <div className="mt-2 grid grid-cols-3 gap-2 border-t border-soft-border pt-2.5">
-            <Stat label="Total bought" value={fmtCr(buyCr)} color={DEAL_BUY} />
-            <Stat label="Total sold" value={fmtCr(sellCr)} color={DEAL_SELL} />
-            <div>
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net flow</p>
-              <p className="text-[13px] font-bold tabular-nums" style={{ color: netBought ? DEAL_BUY : DEAL_SELL }}>
-                {netBought ? '+' : '−'}{fmtCr(netCr)}
-                <span className="ml-1 text-[9px] font-semibold uppercase tracking-wide">{netBought ? 'net bought' : 'net sold'}</span>
-              </p>
+          {/* Compact summary strip — one soft inner panel, not scattered. */}
+          <div className="rounded-xl border border-soft-border bg-white/70 px-3 py-2.5">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
+              <Stat label="Total bought" value={fmtCr(bought)} color={DEAL_BUY} />
+              <Stat label="Total sold" value={fmtCr(sold)} color={DEAL_SELL} />
+              <div className="min-w-0">
+                <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net flow</p>
+                <p className="truncate text-[12px] font-bold tabular-nums" style={{ color: netBought ? DEAL_BUY : DEAL_SELL }}>
+                  {netBought ? '+' : '−'}{fmtCr(netCr)} <span className="text-[9px] font-semibold uppercase tracking-wide">{netBought ? 'net bought' : 'net sold'}</span>
+                </p>
+              </div>
+              <Stat label="Largest trade" value={fmtCr(segSummary.largest_trade_value_cr)} />
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 border-t border-soft-border/60 pt-2 sm:grid-cols-4">
+              <Stat label="Unique buyers" value={String(segSummary.unique_buyers)} />
+              <Stat label="Unique sellers" value={String(segSummary.unique_sellers)} />
+              <Stat label="Largest buyer" value={segSummary.largest_buyer ? `${segSummary.largest_buyer.name} · ${fmtCr(segSummary.largest_buyer.value_cr)}` : '—'} color={DEAL_BUY} />
+              <Stat label="Largest seller" value={segSummary.largest_seller ? `${segSummary.largest_seller.name} · ${fmtCr(segSummary.largest_seller.value_cr)}` : '—'} color={DEAL_SELL} />
             </div>
           </div>
 
-          {/* Task-3 summary stats — across the company's disclosures. */}
-          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-xl bg-ice/40 px-3 py-2 sm:grid-cols-3">
-            <Stat label="Unique buyers" value={String(summary.unique_buyers)} />
-            <Stat label="Unique sellers" value={String(summary.unique_sellers)} />
-            <Stat label="Largest trade" value={fmtCr(summary.largest_trade_value_cr)} />
-            <Stat label="Largest buyer" value={summary.largest_buyer ? `${summary.largest_buyer.name} · ${fmtCr(summary.largest_buyer.value_cr)}` : '—'} color={DEAL_BUY} />
-            <Stat label="Largest seller" value={summary.largest_seller ? `${summary.largest_seller.name} · ${fmtCr(summary.largest_seller.value_cr)}` : '—'} color={DEAL_SELL} />
-          </div>
+          {/* Conditional visualization (Task 2): a full timeline ONLY when the
+              deals span more than one date; otherwise a compact single-date cluster. */}
+          {multiDate ? (
+            <div className="mt-3">
+              <p className="mb-1 text-[10px] leading-snug text-ink-secondary/80">Buys rise above the line, sells dip below — ₹ Cr per trade.</p>
+              <div className="w-full" style={{ height: 280 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap="22%">
+                    <CartesianGrid vertical={false} stroke={DEAL_GRID} strokeDasharray="2 4" />
+                    <XAxis dataKey="xLabel" tickLine={false} axisLine={false} tick={<DealTick />} height={22} interval={0} />
+                    <YAxis domain={[-m, m]} ticks={[-m, -m / 2, 0, m / 2, m]} tickFormatter={tick} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: DEAL_AXIS }} width={34} />
+                    <Tooltip cursor={{ fill: 'rgba(39,69,126,0.05)' }} content={<DealTooltip />} />
+                    <ReferenceLine y={0} stroke={DEAL_ZERO} strokeWidth={1.25} />
+                    <Bar dataKey="cr" maxBarSize={26} shape={<DealSignalBar />} isAnimationActive={false} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 rounded-xl border border-soft-border bg-white/70 p-3.5">
+              <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[12px] font-semibold text-navy-deep">Single-date disclosure cluster</p>
+                  <p className="text-[10.5px] text-ink-secondary">{segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} deals reported on {dealDate(dates[0])}</p>
+                </div>
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-soft-blue px-2.5 py-1 text-[10.5px] font-semibold text-navy-primary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-champagne" />
+                  {dealDate(dates[0])}
+                </span>
+              </div>
 
-          {/* Visible audit table — every trade behind the chart, to verify it. */}
+              {/* Bought · net badge · Sold + a single proportional balance bar. */}
+              <div className="flex items-center justify-between gap-2 text-[12px]">
+                <span className="font-semibold tabular-nums" style={{ color: DEAL_BUY }}>Bought {fmtCr(bought)}</span>
+                <span
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-bold tabular-nums"
+                  style={{ background: netBought ? 'rgba(22,142,142,0.12)' : 'rgba(199,93,84,0.12)', color: netBought ? DEAL_BUY : DEAL_SELL }}
+                >
+                  {netBought ? 'Net bought' : 'Net sold'} {fmtCr(netCr)}
+                </span>
+                <span className="font-semibold tabular-nums" style={{ color: DEAL_SELL }}>Sold {fmtCr(sold)}</span>
+              </div>
+              <div className="mt-1.5 flex h-2.5 w-full overflow-hidden rounded-full bg-ice" title={`Bought ${fmtCr(bought)} · Sold ${fmtCr(sold)}`}>
+                <div style={{ width: `${(bought / total) * 100}%`, background: DEAL_BUY }} />
+                <div style={{ width: `${(sold / total) * 100}%`, background: DEAL_SELL }} />
+              </div>
+
+              {/* Every trade as a signed chip — same information, no stretched chart. */}
+              <div className="mt-2.5 flex flex-wrap gap-1.5">
+                {chips.map((d, i) => {
+                  const buy = !!d.buyer && !d.seller
+                  return (
+                    <span
+                      key={i}
+                      title={`${d.buyer ?? d.seller ?? ''} · ${d.value_display}`}
+                      className="inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-semibold tabular-nums"
+                      style={{ background: buy ? 'rgba(22,142,142,0.10)' : 'rgba(199,93,84,0.10)', color: buy ? DEAL_BUY : DEAL_SELL }}
+                    >
+                      {buy ? '+' : '−'}{fmtCr(d.value_cr ?? 0)}
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Visible audit table — every trade behind the summary, to verify it. */}
           <div className="mt-3">
             <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Every {SEG_BADGE[segment].label.toLowerCase()} deal on record · audit view</p>
             <div className="overflow-hidden rounded-xl border border-soft-border">
