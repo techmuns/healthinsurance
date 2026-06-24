@@ -5,7 +5,6 @@ import { companyColor, companyShortName } from '@/lib/companyColors'
 import { useAuditView } from '@/lib/auditView'
 import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
-import { VerifyRowHighlight } from '@/components/VerifyRowHighlight'
 import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
@@ -408,7 +407,6 @@ export function AnalystCoverage({
   // and scroll it into view. These cells carry audit ids, so we match by id.
   const verifyHlId = verifyRow?.id ?? null
   const hlColor = verifyRow ? VERIFY_META[verifyRow.status].dot : undefined
-  const located = !!verifyHlId && blocks.some((b) => b.rows.some((r) => r.priceCell?.id === verifyHlId || r.targetCell?.id === verifyHlId))
   useEffect(() => {
     if (!verifyHlId) return
     const t = setTimeout(() => {
@@ -539,7 +537,6 @@ export function AnalystCoverage({
 
   return (
     <div className="space-y-3">
-      <VerifyRowHighlight row={verifyRow} located={located} />
       {/* Title + honest source/basis line */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

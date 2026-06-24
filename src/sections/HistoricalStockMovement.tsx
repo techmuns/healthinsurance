@@ -15,7 +15,6 @@ import { companyShortName } from '@/lib/companyColors'
 import { LISTED_INSURERS } from '@/lib/listedInsurers'
 import { useAuditView } from '@/lib/auditView'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
-import { VerifyRowHighlight } from '@/components/VerifyRowHighlight'
 import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
 
 // Map a verifier row's metric to this table's daily column, so a clicked row
@@ -288,7 +287,6 @@ export function HistoricalStockMovement({
 
   return (
     <div className="space-y-4">
-      <VerifyRowHighlight row={verifyRow} located={located} />
       {/* ── Header: story + provenance + KPI rail + daily chart ──────────────── */}
       <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-3">
