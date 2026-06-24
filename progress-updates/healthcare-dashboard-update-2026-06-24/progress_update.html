@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Healthcare Dashboard Weekly Build Update</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  html,body { margin:0; padding:0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color:#2B2B2B; background:#ddd; }
+  .page { position:relative; width:297mm; height:210mm; padding:14mm 16mm; background:#FAF6EC; overflow:hidden; page-break-after:always; display:flex; flex-direction:column; }
+  .eyebrow { font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:#B68B3A; font-weight:700; margin:0 0 6px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size:46px; line-height:1.04; color:#16294A; margin:4px 0 8px; font-weight:700; letter-spacing:-.01em; }
+  h2 { font-family: Georgia, serif; font-size:30px; line-height:1.06; color:#16294A; margin:0; font-weight:700; }
+  h2.big { font-size:34px; margin:2px 0 14px; }
+  /* cover */
+  .cover-page { background: linear-gradient(135deg, #16294A 0%, #0E1D36 100%); color:#F4EEDF; justify-content:center; }
+  .cover .cover-rule { width:64px; height:4px; background:#B68B3A; border-radius:3px; margin-bottom:18px; }
+  .cover .eyebrow { color:#B68B3A; }
+  .cover h1 { color:#FCF7EA; font-size:54px; max-width:80%; }
+  .cover .sub { font-size:17px; color:#C9D2E2; margin:2px 0 26px; max-width:60%; }
+  .cover .meta { display:grid; grid-template-columns: repeat(2, minmax(0,360px)); gap:12px 36px; margin-bottom:26px; }
+  .cover .meta div { border-top:1px solid rgba(212,164,65,.35); padding-top:7px; }
+  .cover .meta span { display:block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:#B68B3A; }
+  .cover .meta b { font-size:14px; color:#EFE9DA; font-weight:600; }
+  .cover-badge { align-self:flex-start; background:#B68B3A; color:#16294A; font-weight:800; font-size:13px; letter-spacing:.04em; padding:9px 16px; border-radius:999px; }
+  /* thank-you closing page */
+  .thanks { justify-content:center; }
+  .thanks h1 { font-size:72px; margin:6px 0 10px; }
+  .thanks .sub { font-size:18px; color:#D9E0EC; max-width:none; margin:0 0 18px; }
+  .thanks-line { font-size:12.5px; letter-spacing:.06em; color:#B68B3A; font-weight:600; }
+  /* summary */
+  .kpis { display:grid; grid-template-columns: repeat(4,1fr); gap:14px; margin:6px 0 14px; }
+  .kpi { background:#fff; border:1px solid #E7DEC8; border-radius:14px; padding:16px 18px; box-shadow:0 6px 18px rgba(22,41,74,.06); }
+  .kpi b { display:block; font-family:Georgia,serif; font-size:40px; color:#16294A; line-height:1; }
+  .kpi span { font-size:12px; color:#6B6452; }
+  .kpi.green b { color:#0E7A52; }
+  .lead { font-size:14.5px; color:#3A3526; max-width:80%; margin:4px 0 14px; }
+  .top3 { background:#fff; border:1px solid #E7DEC8; border-left:4px solid #B68B3A; border-radius:12px; padding:14px 18px; }
+  .top3 .label { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#B68B3A; font-weight:700; margin:0 0 6px; }
+  .top3 ol { margin:0; padding-left:20px; } .top3 li { font-size:14px; color:#16294A; margin:5px 0; font-weight:600; }
+  .obs { margin-top:14px; font-size:12px; color:#5B5440; background:#F3ECD9; border-radius:10px; padding:10px 14px; }
+  /* module pages */
+  .head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:10px; }
+  .pill { flex:0 0 auto; background:#0E7A52; color:#fff; font-weight:800; font-size:12px; letter-spacing:.06em; padding:7px 14px; border-radius:999px; box-shadow:0 4px 12px rgba(14,122,82,.25); }
+  .pillwrap { display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+  .pill-new { background:#B68B3A; color:#fff; font-weight:800; font-size:11px; letter-spacing:.05em; padding:7px 12px; border-radius:999px; box-shadow:0 4px 12px rgba(182,139,58,.28); }
+  .shot-banner { margin:2px 0 9px; }
+  .shot-banner img { width:100%; height:auto; max-height:24mm; object-fit:contain; border:1px solid #E2D9C2; border-radius:8px; box-shadow:0 6px 16px rgba(22,41,74,.10); background:#fff; }
+  .shots { flex:1 1 auto; display:flex; gap:12px; align-items:center; justify-content:center; min-height:0; margin:4px 0 10px; }
+  .shots.multi { align-items:center; }
+  .shot { margin:0; flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; }
+  .shot img { max-width:100%; max-height:108mm; width:auto; height:auto; border:1px solid #E2D9C2; border-radius:10px; box-shadow:0 10px 28px rgba(22,41,74,.14); background:#fff; }
+  .shots.multi .shot img { max-height:96mm; }
+  .bullets { margin:0; padding-left:18px; columns:2; column-gap:30px; }
+  .bullets li { font-size:13px; line-height:1.42; color:#33301F; margin:0 0 7px; break-inside:avoid; }
+  .note { margin:8px 0 0; font-size:11.5px; color:#7A5B1E; background:#F6EFDD; border-radius:8px; padding:8px 12px; }
+  .foot { position:absolute; left:16mm; right:16mm; bottom:8mm; display:flex; justify-content:space-between; font-size:10px; color:#9A917A; border-top:1px solid #E2D9C2; padding-top:6px; }
+</style></head><body><section class="page cover-page">
+  <div class="cover">
+    <div class="cover-rule"></div>
+    <p class="eyebrow">Weekly Build Update · 2026-06-24</p>
+    <h1>Healthcare Dashboard Weekly Build Update</h1>
+    <p class="sub">Fully implemented features, verified changes, and visual walkthrough</p>
+    <div class="meta">
+      <div><span>Date</span><b>2026-06-24</b></div>
+      <div><span>Prepared for</span><b>Paragon Partners (India), by Munshot</b></div>
+      <div><span>Coverage</span><b>9 modules · 56 changes</b></div>
+      <div><span>Walkthrough</span><b>11 feature pages</b></div>
+    </div>
+    <div class="cover-badge">All 56 changes implemented · 0 pending</div>
+  </div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Data Audit</p>
+        <h2>Cell-for-cell mirror — now mostly green</h2>
+      </div>
+      <div class="pillwrap">
+        <span class="pill-new">UPDATED THIS WEEK</span>
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots multi"><figure class="shot"><img src="screenshots/m1-data-audit.jpg" alt="m1-data-audit.jpg"/></figure><figure class="shot"><img src="screenshots/m1b-data-audit-companies.jpg" alt="m1b-data-audit-companies.jpg"/></figure></div>
+    <ul class="bullets"><li>Every template cell is mirrored and checked against its source — the grid now reads mostly green (fetched & verified), with only a few cells still pending.</li><li>A source-pipeline strip is honest about what is in vs missing (e.g. IRDAI portal — 338 fetched, 33 missing).</li><li>Tap × on any column or company to tidy the view; hidden items sit in a tray and restore in one tap, with Save view / Reset.</li><li>Each company is colour-coded into its own block, and any cell opens its full source on click.</li></ul>
+    <p class="note"><b>Note:</b> Most cells are now fetched & verified (green); the source-pipeline strip stays honest about the few still pending.</p>
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 2</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Analyst Targets</p>
+        <h2>The average target is finally on the page</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m2-analyst.jpg" alt="m2-analyst.jpg"/></figure></div>
+    <ul class="bullets"><li>A single “Average analyst target” reads the mean of every valid broker target — e.g. ₹569 for Star Health.</li><li>It states how many reports it used (“based on 17 reports”) and the move vs the current price.</li><li>Blank, zero and non-numeric targets are dropped before the mean, so one bad row can’t skew it.</li><li>Every broker call sits below with its rating, target, date and a live source — the average recomputes as new coverage lands.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 3</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Shareholding Pattern</p>
+        <h2>Ownership movement over time</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m3-shareholding.jpg" alt="m3-shareholding.jpg"/></figure></div>
+    <ul class="bullets"><li>An Ownership Trend chart tracks Promoter, FII, DII and Public float across years (FY25 → FY26) — click any point to read that period.</li><li>A live donut shows the selected-period mix — Promoter 55.4%, DII 16.5%, Public 17.6%, FII 10.6%.</li><li>Sourced from the exchange shareholding-pattern filing; bulk / block deals are kept separate (they are individual trades, not the quarter-end pattern).</li><li>Movement reads at a glance — promoter steady while public float eases as domestic institutions build.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 4</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Valuation</p>
+        <h2>Is the valuation earned?</h2>
+      </div>
+      <div class="pillwrap">
+        <span class="pill-new">UPDATED THIS WEEK</span>
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots multi"><figure class="shot"><img src="screenshots/m4-valuation-hero.jpg" alt="m4-valuation-hero.jpg"/></figure><figure class="shot"><img src="screenshots/m4b-valuation-peer.jpg" alt="m4b-valuation-peer.jpg"/></figure><figure class="shot"><img src="screenshots/m4c-nav-card.jpg" alt="m4c-nav-card.jpg"/></figure></div>
+    <ul class="bullets"><li>A redesigned valuation hero: a Street-verdict gauge from the IPO price (₹74) through current (₹86.4) to fair value (₹95) — about +10% upside.</li><li>Valuation lenses show the premium to listed peers (P/GWP 1.71× vs Star 1.49×, ~15% premium) backed by faster growth.</li><li>One clean peer matrix lists every SAHI’s scale and multiples, marking the unlisted ones honestly as “no public market price”.</li><li>A NAV / book-value card adds the asset-based cross-check, with the full workings one click away (“Show calculation”).</li></ul>
+    <p class="note"><b>Note:</b> The valuation page was rebuilt this week — Street-verdict gauge, valuation lenses and one clean peer matrix.</p>
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 5</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Insights</p>
+        <h2>Source-first audit trail</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots multi"><figure class="shot"><img src="screenshots/m5-insights-front.jpg" alt="m5-insights-front.jpg"/></figure><figure class="shot"><img src="screenshots/m5b-insights-back.jpg" alt="m5b-insights-back.jpg"/></figure><figure class="shot"><img src="screenshots/m5c-insights-goto.jpg" alt="m5c-insights-goto.jpg"/></figure></div>
+    <ul class="bullets"><li>Insights open Niva-Bupa-first, in plain language, in a compact left-memo / right-chart layout.</li><li>Flip any card to see the workings: the calculation, the data used, and a “Source preview” (metric, company, period, value, confidence).</li><li>The source button goes to the Data Audit cell first — the verification layer — and only falls back to a chart when no audit mapping exists.</li><li>Empty Technical / Macro / Sentiment lenses are dropped, so a card only shows the analysis actually run.</li><li>Period labels are honest (FY25, latest) — they always show the real period.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 6</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Insights · Verification loop</p>
+        <h2>Back to the insight after you’ve checked the source</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m5c-insights-goto.jpg" alt="m5c-insights-goto.jpg"/></figure></div>
+    <ul class="bullets"><li>Jumping to a source drops a “Verifying from insight” breadcrumb and pre-selects the right company in the Data Audit grid.</li><li>A floating “Back to Insight” button stays on screen the whole time you’re in the source.</li><li>Clicking it returns you to the exact card you came from — re-flipped to its workings — so you never lose your place.</li><li>This closes the loop: read the insight → verify the number at source → return, in two clicks.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 7</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Bulk & Block Deals</p>
+        <h2>Deal records, now with the full picture</h2>
+      </div>
+      <div class="pillwrap">
+        <span class="pill-new">UPDATED THIS WEEK</span>
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m6-deals.jpg" alt="m6-deals.jpg"/></figure></div>
+    <ul class="bullets"><li>Bulk and block deals are split into their own tabs (Bulk 8 · Block 2) with a clean buy-above / sell-below timeline.</li><li>A summary reads at a glance — total bought, total sold, net flow (e.g. −₹9.3 Cr net sold) and the largest single trade.</li><li>It also names the unique buyers and sellers and the biggest counterparties (e.g. Morgan Stanley Asia).</li><li>Sourced from NSE / BSE large-trade disclosures, with a note that deals are individual trades, not the quarter-end ownership pattern.</li></ul>
+    <p class="note"><b>Note:</b> Refreshed this week — net flow, largest trade, unique buyers / sellers and named counterparties, dated 2026-06-24.</p>
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 8</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Sources</p>
+        <h2>Reliable links, and the status is clear</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m7-sources.jpg" alt="m7-sources.jpg"/></figure></div>
+    <ul class="bullets"><li>Each figure shows its source status plainly — click it to see “Fetched & verified”, the source pipeline and a working link.</li><li>Links that tend to break (the exchanges’ session-based pages) are automatically swapped for a stable public page.</li><li>The “as printed” value and the dashboard’s final value sit side by side, with the exact document referenced.</li><li>It’s always clear which numbers are sourced and verified, and which are still pending.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 9</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Excel Verifier</p>
+        <h2>Upload a workbook, compare — then jump to any cell</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots multi"><figure class="shot"><img src="screenshots/m8-verifier.jpg" alt="m8-verifier.jpg"/></figure><figure class="shot"><img src="screenshots/m8b-verifier-rows.jpg" alt="m8b-verifier-rows.jpg"/></figure></div>
+    <ul class="bullets"><li>Drop in your Excel and every cell is checked, line by line, against the dashboard — all in your browser, nothing leaves your computer.</li><li>Five clear outcomes sit on top — Matched, Source / basis differs, Mismatched, Blank in your file, Missing in the dashboard.</li><li>Every result row is clickable — it jumps straight to that exact cell in the Data Audit grid and highlights it, so there’s no manual searching.</li><li>The verifier is a movable, resizable window beside the grid that remembers recent files to re-check in one click. Sample run: 1,706 matched, 44 source / basis, 362 mismatched, 830 blank-in-file, 96 blank-in-dashboard.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 10</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Excel Verifier · Data Audit</p>
+        <h2>In the grid, only the problems light up</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m8e-overlay-grid.jpg" alt="m8e-overlay-grid.jpg"/></figure></div>
+    <ul class="bullets"><li>Once a file is checked, the grid switches to a verification view: matched cells go quiet and neutral, so only the issues draw the eye.</li><li>Soft, premium tints — red for a value mismatch, amber for a source / basis difference, blue for blank-in-your-file, purple for missing-in-dashboard.</li><li>A sticky bar shows the live counts and a one-tap filter that dims everything else, with “Back to Verifier” and “Exit” to restore the normal grid.</li><li>Click any flagged cell for the full story — your value vs the dashboard, the difference, the source, and a “Back to Verifier row” link.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 11</span></div></section><section class="page mod-page">
+    <div class="head">
+      <div>
+        <p class="eyebrow">Historical Data</p>
+        <h2>Weekly, monthly, yearly average trends</h2>
+      </div>
+      <div class="pillwrap">
+        
+        <span class="pill">IMPLEMENTED</span>
+      </div>
+    </div>
+    
+    <div class="shots "><figure class="shot"><img src="screenshots/m9-historical.jpg" alt="m9-historical.jpg"/></figure></div>
+    <ul class="bullets"><li>A live daily close / volume / delivery chart for the stock, with hover read-outs for any day.</li><li>One clean “Average” control rolls it up Weekly, Monthly or Yearly — the chart and the summary update instantly.</li><li>Averages skip days with no trading instead of counting them as zero.</li><li>The roll-up reads at a glance — latest period, change vs prior, and average volume.</li></ul>
+    
+    <div class="foot"><span>Healthcare Dashboard Weekly Build Update</span><span>2026-06-24</span><span>Page 12</span></div></section><section class="page cover-page">
+  <div class="cover thanks">
+    <div class="cover-rule"></div>
+    <p class="eyebrow">Healthcare Dashboard · Weekly Build Update</p>
+    <h1>Thank you</h1>
+    <p class="sub">Prepared for Paragon Partners (India), by Munshot</p>
+    <p class="thanks-line">2026-06-24 · 56 changes implemented across 9 areas</p>
+  </div></section></body></html>

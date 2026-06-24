@@ -1,0 +1,429 @@
+{
+  "report": {
+    "title": "Healthcare Dashboard Weekly Build Update",
+    "subtitle": "Fully implemented features, verified changes, and visual walkthrough",
+    "date": "2026-06-24",
+    "preparedFor": "Paragon Partners (India), by Munshot"
+  },
+  "summary": {
+    "areas": 9,
+    "requestedChanges": 56,
+    "implemented": 56,
+    "pending": 0,
+    "topImpact": [
+      "Excel Verifier — upload any workbook and it checks every cell against the dashboard, with an exportable report.",
+      "Insights source-first audit trail — read an insight, jump to the exact Data Audit cell, and return with one tap.",
+      "Data Audit custom views — hide/restore/reorder columns and companies, colour-coded, with Save/Reset."
+    ]
+  },
+  "modules": [
+    {
+      "module": "Data Audit",
+      "headline": "Cell-for-cell mirror — now mostly green",
+      "status": "Implemented",
+      "note": "Most cells are now fetched & verified (green); the source-pipeline strip stays honest about the few still pending.",
+      "items": [
+        {
+          "requested": "Mostly-green fetched grid",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": "Updated this week"
+        },
+        {
+          "requested": "Tap-to-hide columns",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Tap-to-hide company groups",
+          "status": "Implemented",
+          "screenshot": "m1b-data-audit-companies.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Hidden items tray + restore",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Drag / move-left-right reordering",
+          "status": "Implemented",
+          "screenshot": "m1b-data-audit-companies.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Save view",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Reset view",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Company colour separation",
+          "status": "Implemented",
+          "screenshot": "m1b-data-audit-companies.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Cell source on click",
+          "status": "Implemented",
+          "screenshot": "m1-data-audit.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Analyst Targets",
+      "headline": "The average target is finally on the page",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Dynamic average analyst target",
+          "status": "Implemented",
+          "screenshot": "m2-analyst.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Count of reports used",
+          "status": "Implemented",
+          "screenshot": "m2-analyst.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Invalid / blank target exclusion",
+          "status": "Implemented",
+          "screenshot": "m2-analyst.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Auto-update when targets added",
+          "status": "Implemented",
+          "screenshot": "m2-analyst.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Shareholding Pattern",
+      "headline": "Ownership movement over time",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Historical shareholding % trend",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Previous vs latest comparison",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Change in percentage points",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Change in shares",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Trend / position view",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Period selector",
+          "status": "Implemented",
+          "screenshot": "m3-shareholding.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Bulk / block deals kept separate",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Valuation",
+      "headline": "Is the valuation earned?",
+      "status": "Implemented",
+      "note": "The valuation page was rebuilt this week — Street-verdict gauge, valuation lenses and one clean peer matrix.",
+      "items": [
+        {
+          "requested": "Street-verdict fair-value gauge",
+          "status": "Implemented",
+          "screenshot": "m4-valuation-hero.jpg",
+          "notes": "Updated this week"
+        },
+        {
+          "requested": "Valuation lenses (premium to peers)",
+          "status": "Implemented",
+          "screenshot": "m4-valuation-hero.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Clean peer valuation matrix",
+          "status": "Implemented",
+          "screenshot": "m4b-valuation-peer.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "NAV / book-value card",
+          "status": "Implemented",
+          "screenshot": "m4c-nav-card.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "“Show calculation” workings",
+          "status": "Implemented",
+          "screenshot": "m4c-nav-card.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Honest missing-data handling",
+          "status": "Implemented",
+          "screenshot": "m4b-valuation-peer.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Insights",
+      "headline": "Source-first audit trail",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Niva Bupa-first default",
+          "status": "Implemented",
+          "screenshot": "m5-insights-front.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Latest period / FY2026 handling",
+          "status": "Implemented",
+          "screenshot": "m5b-insights-back.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Simpler insight language",
+          "status": "Implemented",
+          "screenshot": "m5-insights-front.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Source preview panel",
+          "status": "Implemented",
+          "screenshot": "m5b-insights-back.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "“Go to Data Audit” priority over chart",
+          "status": "Implemented",
+          "screenshot": "m5c-insights-goto.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Fallback to chart if no audit mapping",
+          "status": "Implemented",
+          "screenshot": "m5b-insights-back.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "“Back to Insight” return path",
+          "status": "Implemented",
+          "screenshot": "m5c-insights-goto.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Empty Technical/Macro/Sentiment removed",
+          "status": "Implemented",
+          "screenshot": "m5b-insights-back.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Compact left-right flipped layout",
+          "status": "Implemented",
+          "screenshot": "m5-insights-front.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Bulk & Block Deals",
+      "headline": "Deal records, now with the full picture",
+      "status": "Implemented",
+      "note": "Refreshed this week — net flow, largest trade, unique buyers / sellers and named counterparties, dated 2026-06-24.",
+      "items": [
+        {
+          "requested": "Dates parse across all records",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": "Updated this week"
+        },
+        {
+          "requested": "Bulk vs block separated",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Net flow + largest trade summary",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Unique buyers / sellers + counterparties",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Source visibility",
+          "status": "Implemented",
+          "screenshot": "m6-deals.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Sources",
+      "headline": "Reliable links, and the status is clear",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Broken / session links checked",
+          "status": "Implemented",
+          "screenshot": "m7-sources.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Stable source links added",
+          "status": "Implemented",
+          "screenshot": "m7-sources.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Source status shown clearly",
+          "status": "Implemented",
+          "screenshot": "m7-sources.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "As-printed vs dashboard value",
+          "status": "Implemented",
+          "screenshot": "m7-sources.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Excel Verifier",
+      "headline": "Upload a workbook, compare — then jump to any cell",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Excel upload as verifier",
+          "status": "Implemented",
+          "screenshot": "m8-verifier.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Cell-to-dashboard comparison",
+          "status": "Implemented",
+          "screenshot": "m8-verifier.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Five outcome statuses",
+          "status": "Implemented",
+          "screenshot": "m8-verifier.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Colour-coded in the grid",
+          "status": "Implemented",
+          "screenshot": "m8e-overlay-grid.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Row click → jump to exact cell",
+          "status": "Implemented",
+          "screenshot": "m8b-verifier-rows.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Summary tiles + tab filter",
+          "status": "Implemented",
+          "screenshot": "m8-verifier.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Movable window + file history",
+          "status": "Implemented",
+          "screenshot": "m8b-verifier-rows.jpg",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "module": "Historical Data",
+      "headline": "Weekly, monthly, yearly average trends",
+      "status": "Implemented",
+      "note": "",
+      "items": [
+        {
+          "requested": "Live daily price / volume / delivery chart",
+          "status": "Implemented",
+          "screenshot": "m9-historical.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Weekly average",
+          "status": "Implemented",
+          "screenshot": "m9-historical.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Monthly average",
+          "status": "Implemented",
+          "screenshot": "m9-historical.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Yearly average",
+          "status": "Implemented",
+          "screenshot": "m9-historical.jpg",
+          "notes": ""
+        },
+        {
+          "requested": "Trend + summary update on selection",
+          "status": "Implemented",
+          "screenshot": "m9-historical.jpg",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
