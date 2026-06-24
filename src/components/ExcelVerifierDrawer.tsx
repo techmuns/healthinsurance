@@ -184,11 +184,18 @@ function VerifierWindow({
       {/* Content fills the window; the children own their internal scrolling. */}
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
 
-      {/* Resize handles — right edge, bottom edge, and the bottom-right corner. */}
-      <div onPointerDown={win.onResizePointerDown('e')} className="absolute right-0 top-12 bottom-4 w-1.5 cursor-ew-resize" style={{ touchAction: 'none' }} aria-hidden />
-      <div onPointerDown={win.onResizePointerDown('s')} className="absolute bottom-0 left-4 right-4 h-1.5 cursor-ns-resize" style={{ touchAction: 'none' }} aria-hidden />
-      <div onPointerDown={win.onResizePointerDown('se')} className="absolute bottom-0 right-0 grid h-4 w-4 cursor-nwse-resize place-items-center text-ink-secondary/40" style={{ touchAction: 'none' }} aria-hidden title="Drag to resize">
-        <svg viewBox="0 0 10 10" className="h-2.5 w-2.5"><path d="M9 1 L1 9 M9 5 L5 9" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
+      {/* Resize handles — z-20 keeps them above the sticky table header so they're
+          always grabbable; generous hit areas with a hover cue, and the corner is
+          an always-visible grip (the obvious place to drag-resize from). */}
+      <div onPointerDown={win.onResizePointerDown('e')} className="absolute right-0 top-12 bottom-7 z-20 w-2.5 cursor-ew-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('s')} className="absolute bottom-0 left-7 right-7 z-20 h-2.5 cursor-ns-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div
+        onPointerDown={win.onResizePointerDown('se')}
+        className="absolute bottom-0 right-0 z-20 grid h-6 w-6 cursor-nwse-resize place-items-center rounded-tl-lg bg-card/80 text-ink-secondary/60 transition-colors hover:bg-navy-primary/10 hover:text-navy-primary"
+        style={{ touchAction: 'none' }}
+        title="Drag to resize"
+      >
+        <svg viewBox="0 0 12 12" className="h-3 w-3"><path d="M11 3 L3 11 M11 7 L7 11" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" /></svg>
       </div>
     </aside>,
     document.body,
@@ -455,7 +462,7 @@ function Results({ result }: { result: VerifyResult }) {
       {/* Result table — the internal scroll zone. When the window is made small,
           this is what scrolls; the summary above stays put. Click a row to
           highlight its cell in the audit grid (behaviour unchanged). */}
-      <div className="min-h-0 flex-1 overflow-auto border-t border-soft-border bg-card">
+      <div className="scroll-thin min-h-0 flex-1 overflow-auto border-t border-soft-border bg-card">
         <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#F3F6FB]">
