@@ -84,9 +84,14 @@ export function classifySourceClass(ref: SourceRef | null): 'statutory' | 'marke
   return 'other'
 }
 
+/** A cell whose value is present and trustworthy enough to analyse. */
+export function isReadyCell(cell: GridCell): boolean {
+  return READY_STATUSES.has(cell.status) && cell.value != null
+}
+
 /** Project one audited GridCell into the minimal, serialisable SelectionItem. */
 export function toSelectionItem(cell: GridCell): SelectionItem {
-  const ready = READY_STATUSES.has(cell.status) && cell.value != null
+  const ready = isReadyCell(cell)
   const src = cell.chosen
   return {
     company: cell.company,

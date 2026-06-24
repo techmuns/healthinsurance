@@ -5,7 +5,7 @@
 // carries its source + which dashboard area consumes it.
 
 import { useMemo, useState } from 'react'
-import { X } from 'lucide-react'
+import { X, Sparkles, Check, MousePointerClick } from 'lucide-react'
 import {
   AUDIT_COMPANIES,
   AUDIT_METRICS,
@@ -19,6 +19,10 @@ import {
   type MetricCategory,
 } from '@/lib/auditGrid'
 import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
+import { isReadyCell } from '@/lib/analystReadout'
+import { AnalystReadoutDrawer } from '@/components/AnalystReadoutDrawer'
+
+const cellKey = (company: string, metric: string, year: string) => `${company}::${metric}::${year}`
 
 const TONE_CLASS: Record<string, { cell: string; dot: string; text: string }> = {
   green: { cell: 'bg-[#ECF6F4] ring-[#BFE3E1]', dot: 'bg-teal', text: 'text-teal' },
@@ -155,16 +159,76 @@ export function AuditDataGrid() {
   const [category, setCategory] = useState('all')
   const [status, setStatus] = useState('all')
   const [selected, setSelected] = useState<GridCell | null>(null)
+  // ── AI Analyst selection ────────────────────────────────────────────────
+  const [selectMode, setSelectMode] = useState(false)
+  const [picks, setPicks] = useState<Set<string>>(new Set())
+  const [readoutOpen, setReadoutOpen] = useState(false)
 
   const byKey = useMemo(() => {
     const m = new Map<string, GridCell>()
-    for (const c of model.cells) m.set(`${c.company}::${c.metric}::${c.year}`, c)
+    for (const c of model.cells) m.set(cellKey(c.company, c.metric, c.year), c)
     return m
   }, [model])
 
   const companies = company === 'all' ? AUDIT_COMPANIES : AUDIT_COMPANIES.filter((c) => c.id === company)
   const years = year === 'all' ? [...AUDIT_YEARS] : AUDIT_YEARS.filter((y) => y === year)
   const metrics = category === 'all' ? AUDIT_METRICS : AUDIT_METRICS.filter((m) => m.category === category)
+
+  // Selection helpers — a pick is the stable `${company}::${metric}::${year}` key.
+  const togglePick = (key: string) =>
+    setPicks((prev) => {
+      const n = new Set(prev)
+      if (n.has(key)) n.delete(key)
+      else n.add(key)
+      return n
+    })
+  const setKeys = (keys: string[], on: boolean) =>
+    setPicks((prev) => {
+      const n = new Set(prev)
+      for (const k of keys) {
+        if (on) n.add(k)
+        else n.delete(k)
+      }
+      return n
+    })
+  const allOn = (keys: string[]) => keys.length > 0 && keys.every((k) => picks.has(k))
+  const clearPicks = () => {
+    setPicks(new Set())
+    setReadoutOpen(false)
+  }
+
+  const shownKeys = useMemo(() => {
+    if (view === 'ledger') {
+      return model.cells
+        .filter(
+          (c) =>
+            (company === 'all' || c.company === company) &&
+            (year === 'all' || c.year === year) &&
+            (category === 'all' || c.category === category) &&
+            (status === 'all' || c.status === status),
+        )
+        .map((c) => cellKey(c.company, c.metric, c.year))
+    }
+    const keys: string[] = []
+    for (const c of companies) for (const m of metrics) for (const y of years) {
+      const k = cellKey(c.id, m.key, y)
+      if (byKey.has(k)) keys.push(k)
+    }
+    return keys
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, company, year, category, status, byKey, model])
+
+  const pickedCells = useMemo(
+    () => [...picks].map((k) => byKey.get(k)).filter((c): c is GridCell => !!c),
+    [picks, byKey],
+  )
+  const readyCount = useMemo(() => pickedCells.filter(isReadyCell).length, [pickedCells])
+
+  // Clicking a cell either opens its source drawer (default) or toggles a pick.
+  const onCellClick = (cell: GridCell) => {
+    if (selectMode) togglePick(cellKey(cell.company, cell.metric, cell.year))
+    else setSelected(cell)
+  }
 
   const ledger = useMemo(
     () =>
@@ -189,19 +253,51 @@ export function AuditDataGrid() {
             {AUDIT_COMPANIES.length} insurers × {AUDIT_YEARS.length} years × {AUDIT_METRICS.length} metrics — real, source-linked values only.
           </p>
         </div>
-        <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-ice/60 p-0.5">
-          {(['matrix', 'ledger'] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setView(v)}
-              className={`rounded-full px-3 py-1 text-[11px] font-medium capitalize transition-all ${view === v ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}
-            >
-              {v === 'matrix' ? 'Metric × Year' : 'Cell ledger'}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSelectMode((s) => !s)}
+            aria-pressed={selectMode}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold transition-all ${
+              selectMode
+                ? 'border-transparent bg-gradient-to-br from-[#1E4079] to-[#143058] text-white shadow-soft'
+                : 'border-soft-border bg-white text-navy-deep hover:border-muted-blue hover:shadow-soft'
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            {selectMode ? 'Selecting for AI' : 'Select for AI'}
+          </button>
+          <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-ice/60 p-0.5">
+            {(['matrix', 'ledger'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={`rounded-full px-3 py-1 text-[11px] font-medium capitalize transition-all ${view === v ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'}`}
+              >
+                {v === 'matrix' ? 'Metric × Year' : 'Cell ledger'}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Select-mode helper banner */}
+      {selectMode && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#9DB4D8] bg-soft-blue/60 px-3 py-2 text-[11px] text-navy-primary">
+          <span className="inline-flex items-center gap-1.5">
+            <MousePointerClick className="h-3.5 w-3.5" />
+            Click cells to add them — or a company name, a year, or a metric label to grab a whole set.
+          </span>
+          <button
+            type="button"
+            onClick={() => setKeys(shownKeys, !allOn(shownKeys))}
+            className="rounded-full bg-white/80 px-2.5 py-1 text-[10.5px] font-semibold text-navy-deep ring-1 ring-soft-border transition hover:bg-white"
+          >
+            {allOn(shownKeys) ? 'Clear shown' : 'Select all shown'}
+          </button>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
@@ -225,50 +321,90 @@ export function AuditDataGrid() {
       {/* Matrix view — metric rows × year columns, one block per company. */}
       {view === 'matrix' && (
         <div className="space-y-5">
-          {companies.map((c) => (
+          {companies.map((c) => {
+            const inBlock = (keys: string[]) => keys.filter((k) => byKey.has(k))
+            const blockKeys = inBlock(metrics.flatMap((m) => years.map((y) => cellKey(c.id, m.key, y))))
+            return (
             <div key={c.id} className="card-surface overflow-x-auto p-4">
-              <p className="mb-2 font-display text-[14px] text-navy-deep">{c.label}</p>
+              {selectMode ? (
+                <button
+                  type="button"
+                  onClick={() => setKeys(blockKeys, !allOn(blockKeys))}
+                  className="mb-2 -ml-1.5 inline-flex items-center gap-2 rounded-md px-1.5 py-0.5 font-display text-[14px] text-navy-deep transition hover:bg-soft-blue"
+                >
+                  {c.label}
+                  <span className="font-sans text-[9px] font-bold uppercase tracking-wide text-muted-blue">{allOn(blockKeys) ? 'clear' : 'select all'}</span>
+                </button>
+              ) : (
+                <p className="mb-2 font-display text-[14px] text-navy-deep">{c.label}</p>
+              )}
               <table className="w-full min-w-[560px] border-collapse text-[11px]">
                 <thead>
                   <tr className="border-b border-soft-border text-left text-[9.5px] uppercase tracking-wide text-ink-secondary">
                     <th className="py-2 pr-2 font-semibold">Metric</th>
                     <th className="py-2 pr-2 font-semibold">Category</th>
-                    {years.map((y) => <th key={y} className="px-2 py-2 text-center font-semibold">{y}</th>)}
+                    {years.map((y) => {
+                      const colKeys = inBlock(metrics.map((m) => cellKey(c.id, m.key, y)))
+                      return (
+                        <th key={y} className="px-2 py-2 text-center font-semibold">
+                          {selectMode ? (
+                            <button type="button" onClick={() => setKeys(colKeys, !allOn(colKeys))} className="rounded px-1 py-0.5 transition hover:bg-soft-blue">{y}</button>
+                          ) : (
+                            y
+                          )}
+                        </th>
+                      )
+                    })}
                   </tr>
                 </thead>
                 <tbody>
-                  {metrics.map((m) => (
+                  {metrics.map((m) => {
+                    const rowKeys = inBlock(years.map((y) => cellKey(c.id, m.key, y)))
+                    return (
                     <tr key={m.key} className="border-b border-[#F1F3F8]">
-                      <td className="py-1.5 pr-2 font-medium text-navy-deep">{m.label}</td>
+                      <td className="py-1.5 pr-2 font-medium text-navy-deep">
+                        {selectMode ? (
+                          <button type="button" onClick={() => setKeys(rowKeys, !allOn(rowKeys))} className="-ml-1 rounded px-1 py-0.5 text-left transition hover:bg-soft-blue">{m.label}</button>
+                        ) : (
+                          m.label
+                        )}
+                      </td>
                       <td className="py-1.5 pr-2 text-ink-secondary">{m.category}</td>
                       {years.map((y) => {
-                        const cell = byKey.get(`${c.id}::${m.key}::${y}`)
+                        const key = cellKey(c.id, m.key, y)
+                        const cell = byKey.get(key)
                         if (!cell) return <td key={y} className="px-1 py-1" />
-                        const tone = TONE_CLASS[GRID_STATUS_META[cell.status].tone]
+                        const toneC = TONE_CLASS[GRID_STATUS_META[cell.status].tone]
                         const dim = status !== 'all' && cell.status !== status
+                        const picked = picks.has(key)
                         return (
                           <td key={y} className="px-1 py-1">
                             <button
                               type="button"
-                              onClick={() => setSelected(cell)}
+                              onClick={() => onCellClick(cell)}
                               title={`${GRID_STATUS_META[cell.status].label}${cell.chosen?.sourceName ? ' · ' + cell.chosen.sourceName : ''}`}
-                              className={`flex w-full items-center justify-center rounded-lg px-2 py-1.5 text-center ring-1 transition hover:brightness-[0.97] ${tone.cell} ${dim ? 'opacity-30' : ''}`}
+                              className={`relative flex w-full items-center justify-center rounded-lg px-2 py-1.5 text-center ring-1 transition hover:brightness-[0.97] ${toneC.cell} ${dim ? 'opacity-30' : ''} ${picked ? 'outline outline-2 outline-offset-1 outline-navy-primary' : ''}`}
                             >
+                              {picked && (
+                                <span className="absolute right-0.5 top-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-navy-primary text-white">
+                                  <Check className="h-2 w-2" />
+                                </span>
+                              )}
                               {cell.value != null ? (
-                                <span className={`font-semibold tabular-nums ${tone.text}`}>{formatGridValue(cell.value, cell.unit)}</span>
+                                <span className={`font-semibold tabular-nums ${toneC.text}`}>{formatGridValue(cell.value, cell.unit)}</span>
                               ) : (
-                                <span className={`text-[9.5px] font-medium ${tone.text}`}>{cell.displayTag ?? GRID_STATUS_META[cell.status].label}</span>
+                                <span className={`text-[9.5px] font-medium ${toneC.text}`}>{cell.displayTag ?? GRID_STATUS_META[cell.status].label}</span>
                               )}
                             </button>
                           </td>
                         )
                       })}
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>
-          ))}
+          )})}
         </div>
       )}
 
@@ -289,9 +425,19 @@ export function AuditDataGrid() {
               </tr>
             </thead>
             <tbody>
-              {ledger.map((cell) => (
-                <tr key={`${cell.company}-${cell.metric}-${cell.year}`} onClick={() => setSelected(cell)} className="cursor-pointer border-b border-[#F1F3F8] hover:bg-ice/40">
-                  <td className="py-1.5 pl-2 text-navy-deep">{cell.companyLabel}</td>
+              {ledger.map((cell) => {
+                const key = cellKey(cell.company, cell.metric, cell.year)
+                const picked = picks.has(key)
+                return (
+                <tr key={`${cell.company}-${cell.metric}-${cell.year}`} onClick={() => onCellClick(cell)} className={`cursor-pointer border-b border-[#F1F3F8] ${picked ? 'bg-soft-blue/70' : 'hover:bg-ice/40'}`}>
+                  <td className="py-1.5 pl-2 text-navy-deep">
+                    {selectMode && (
+                      <span className={`mr-1.5 inline-flex h-3 w-3 items-center justify-center rounded-[3px] align-middle ${picked ? 'bg-navy-primary text-white' : 'ring-1 ring-soft-border'}`}>
+                        {picked && <Check className="h-2 w-2" />}
+                      </span>
+                    )}
+                    {cell.companyLabel}
+                  </td>
                   <td className="py-1.5 pl-2 text-ink-secondary">{cell.year}</td>
                   <td className="py-1.5 pl-2 font-medium text-navy-deep">{cell.metricLabel}</td>
                   <td className="py-1.5 pl-2 text-ink-secondary">{cell.category}</td>
@@ -300,7 +446,7 @@ export function AuditDataGrid() {
                   <td className="max-w-[180px] truncate py-1.5 pl-2 text-ink-secondary" title={cell.chosen?.sourceName ?? ''}>{cell.chosen?.sourceName ?? '—'}</td>
                   <td className="py-1.5 pl-2 text-ink-secondary">{cell.usage.map((u: DashboardArea) => u.replace(' Analysis', '').replace(' Insights', '')).join(', ') || '—'}</td>
                 </tr>
-              ))}
+              )})}
               {ledger.length === 0 && (
                 <tr><td colSpan={8} className="py-6 text-center text-[12px] text-ink-secondary">No cells match the current filters.</td></tr>
               )}
@@ -310,6 +456,32 @@ export function AuditDataGrid() {
       )}
 
       {selected && <CellDrawer cell={selected} onClose={() => setSelected(null)} />}
+
+      {/* Floating selection action bar — appears whenever cells are picked. */}
+      {picks.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 px-3">
+          <div className="flex items-center gap-3 rounded-full border border-[#9DB4D8] bg-card/95 px-3 py-2 shadow-lift backdrop-blur">
+            <span className="pl-1 text-[11.5px] font-semibold text-navy-deep">
+              {pickedCells.length} selected · <span className="text-teal">{readyCount} ready</span>
+              {pickedCells.length - readyCount > 0 && (
+                <span className="text-coral"> · {pickedCells.length - readyCount} gap{pickedCells.length - readyCount > 1 ? 's' : ''}</span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => setReadoutOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Analyse selection
+            </button>
+            <button type="button" onClick={clearPicks} className="rounded-full p-1 text-ink-secondary transition hover:bg-ice hover:text-navy-deep" aria-label="Clear selection">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {readoutOpen && <AnalystReadoutDrawer cells={pickedCells} onClose={() => setReadoutOpen(false)} />}
     </div>
   )
 }
