@@ -117,7 +117,7 @@ function CellDrawer({ cell, onClose }: { cell: GridCell; onClose: () => void }) 
         )}
         {/* A note surfaces only to explain an absent value. Internal lineage notes
             on filled cells (seeds, supersession, policy picks) are bookkeeping,
-            not viewer content (Neha, 2026-06-11). */}
+            not viewer content (owner, 2026-06-11). */}
         {cell.value == null && cell.notes && <Row label="Why it's blank">{cell.notes}</Row>}
         {cell.competing.length > 0 && (
           <Row label="Conflicts">

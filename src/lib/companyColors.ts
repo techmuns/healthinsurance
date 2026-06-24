@@ -6,7 +6,7 @@
 //  data cells. Every audit table (spreadsheet grid, broker coverage, historical
 //  stock) reads through this, so a company looks the same wherever it appears.
 //
-//  Pins, per Neha's brief: Niva Bupa keeps its own steady navy/blue (it's the
+//  Pins, per the owner's brief: Niva Bupa keeps its own steady navy/blue (it's the
 //  focal insurer); Star takes a soft yellow/gold; every other company gets its
 //  own muted, distinct tone. Aggregates / segments ("Total", "Others", "SAHI",
 //  "Private", "PSUs"…) are deliberately NOT companies, so they stay calm slate.

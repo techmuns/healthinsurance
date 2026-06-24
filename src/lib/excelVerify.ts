@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 //  excelVerify — the engine behind the "Excel Upload Verifier" tool.
 //
-//  Neha uploads a workbook (the same template the dashboard mirrors). This reads
+//  A user uploads a workbook (the same template the dashboard mirrors). This reads
 //  it IN THE BROWSER and checks it cell-by-cell against the dashboard's OWN
 //  audited values — the exact AuditModel the Data Audit grid renders
 //  (buildAudit → AuditCell), so there is one source of truth and no number is
@@ -146,7 +146,7 @@ function close(a: number, b: number, unit: string | undefined): boolean {
 
 /** Do the two values render to the SAME shown figure at this cell's display
  *  precision? The grid rounds (e.g. 6.23% and 6.0% both read "6%"), so two values
- *  that display identically are the same shown value — never a mismatch (Neha:
+ *  that display identically are the same shown value — never a mismatch (owner:
  *  "mismatch is only where it is the same value but differs"). Ratio cells also
  *  reconcile the 0.06 ⇔ 6% (×100) representation so a fraction and a percent of
  *  the same magnitude count as equal. */

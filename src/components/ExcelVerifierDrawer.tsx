@@ -17,7 +17,7 @@ import { useVerify, type ListFilter } from '@/state/verifyState'
 
 // ---------------------------------------------------------------------------
 //  Excel Upload Verifier — a dedicated tool (separate from "Add a source").
-//  Neha uploads her workbook; the dashboard reads it in the browser and checks
+//  A user uploads her workbook; the dashboard reads it in the browser and checks
 //  every cell against its OWN audited value, then lets her export the report.
 //  Clicking a result row jumps to that exact cell in the Data Audit grid (via
 //  the shared verify state); hovering a row previews the uploaded-vs-dashboard

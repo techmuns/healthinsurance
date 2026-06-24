@@ -192,7 +192,7 @@ const MARKET_VALUES: Record<string, RawValue> = (() => {
 
 // ─── Public types ───────────────────────────────────────────────────────────
 
-/** The QA status ladder. The first five are the ones Neha asked to see by name;
+/** The QA status ladder. The first five are the ones requested to see by name;
  *  `transformed`, `blocked`, `not_applicable` and `unused` are honest extras. */
 export type AuditStatus =
   | 'fetched'
@@ -208,7 +208,7 @@ export type AuditStatus =
   | 'not_in_ppt'
   | 'unused'
 
-/** Cell-level QA colour (Neha's legend). `info` = neutral context (unused). */
+/** Cell-level QA colour (the owner's legend). `info` = neutral context (unused). */
 export type QaColor = 'green' | 'yellow' | 'red' | 'grey' | 'info'
 
 export interface StatusMeta {
@@ -752,7 +752,7 @@ export function buildAudit(): AuditModel {
         note = b.na_reason ?? 'Not applicable in this period — the insurer was not operating.'
       } else if ((b.source_status ?? '') === 'not_in_ppt') {
         // The company's investor presentations / annual reports were swept
-        // page-by-page and do not print this number. Grey, per Neha
+        // page-by-page and do not print this number. Grey, per owner
         // (2026-06-11); a statutory filing can still fill the cell later.
         status = 'not_in_ppt'
         note = b.na_reason ?? 'Searched the investor presentations — this number is not disclosed there.'

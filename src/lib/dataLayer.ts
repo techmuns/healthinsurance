@@ -660,7 +660,7 @@ function round1(v: number): number {
 // so the scorecard's P/GWP is shown on the SAME basis as the Valuation tab —
 // e.g. Niva Bupa 1.65x (FY26), not the feed's 2.26x (older FY25 direct-premium
 // base). Companies without a curated figure fall back to the daily feed.
-// (Standing decision, Neha 2026-06-15: standardise on the FY26 latest-year basis.)
+// (Standing decision, 2026-06-15: standardise on the FY26 latest-year basis.)
 const CURATED_PRICE_TO_GWP: Record<string, number> = Object.fromEntries(
   peerValuation.filter((r) => r.pGwp != null).map((r) => [r.companyId, r.pGwp as number]),
 )
@@ -726,7 +726,7 @@ function buildInsurer(c: CompanyMasterEntry): Insurer {
 // Standalone-health minnows with negligible market share and no meaningful
 // financials. They are EXCLUDED from the deep analysis (peer scorecard, company
 // selector, company-specific views) so they don't clutter it with empty rows.
-// Their records stay in company-master for SAHI industry-level context. (Neha,
+// Their records stay in company-master for SAHI industry-level context. (owner,
 // 2026-06-10 — "very low market share, don't extend deep analysis to them".)
 const DEEP_ANALYSIS_EXCLUDE = new Set(['galaxy-health', 'narayana-health', 'reliance-health'])
 

@@ -296,7 +296,7 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
     ?? (cell.status === 'web_blocked' ? 'IRDAI' : cell.status === 'not_in_ppt' ? 'Not in PPT' : 'Awaiting source file')
   // not-applicable (the insurer didn't exist this period) renders calm grey with NO
   // source tag — a source pipeline / "expected source" there would wrongly imply a
-  // pending pull for a number that is never coming (Neha, 2026-06-22).
+  // pending pull for a number that is never coming (owner, 2026-06-22).
   // Blank formula cell — a calculation whose input value isn't available. Same
   // logic: showing a "PPT" source would be wrong (a formula isn't fetched), so we
   // show the reason ("value for calculation not found") instead.
@@ -428,7 +428,7 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
         )}
 
         {/* Internal lineage notes (seeds, supersession, basis bookkeeping) never
-            surface on fetched cells — viewer-facing panel (Neha, 2026-06-11). */}
+            surface on fetched cells — viewer-facing panel (owner, 2026-06-11). */}
 
         {cell.formula && (
           <DetailField label="Excel formula">

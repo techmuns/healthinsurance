@@ -143,7 +143,7 @@ const mean = (xs: (number | null)[]): number | null => {
 }
 // The workbook averages ALL broker rows in a block. We only show the Average
 // once the basis is COMPLETE (every row fetched) — a mean over a partial set
-// would misrepresent the consensus (Neha's honesty rule: never derive a number
+// would misrepresent the consensus (the owner's honesty rule: never derive a number
 // from an incomplete basis that would mislead). Until then the row holds an
 // honest placeholder and fills itself as the fetcher completes the block.
 const fullMean = (xs: (number | null)[]): number | null =>
