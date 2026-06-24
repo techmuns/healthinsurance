@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Scale, Download,
-  RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight, Minus, Maximize2, X,
+  UploadCloud, FileSpreadsheet, AlertTriangle, Download,
+  RotateCcw, Info, Loader2, FileDown, ArrowRight, Minus, Maximize2, X,
   History, Trash2,
 } from 'lucide-react'
 import {
@@ -49,11 +49,11 @@ function VerifierDock({
   if (typeof document === 'undefined') return null
   return createPortal(
     <aside
-      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-hidden rounded-l-[28px] border-l border-soft-border bg-ivory shadow-lift outline-none animate-drawer-in"
+      className="fixed inset-y-0 right-0 z-50 flex w-1/2 min-w-[440px] flex-col overflow-hidden rounded-l-[28px] border-l border-soft-border bg-ivory shadow-lift outline-none animate-drawer-in"
       role="dialog"
       aria-label={title}
     >
-      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-soft-border bg-card px-5 py-4">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-soft-border bg-card px-5 py-3.5">
         <div className="min-w-0">
           <h3 className="font-display text-lg text-navy-deep">{title}</h3>
           {subtitle && <p className="mt-0.5 text-[12px] leading-snug text-ink-secondary">{subtitle}</p>}
@@ -63,7 +63,7 @@ function VerifierDock({
             type="button"
             onClick={onMinimize}
             aria-label="Minimise"
-            title="Minimise — keep it open while you read the grid"
+            title="Minimise to a corner pill"
             className="rounded-full p-2 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary"
           >
             <Minus className="h-4 w-4" />
@@ -112,11 +112,6 @@ function UploadZone({ onPick, busy, onReopen }: { onPick: (f: File) => void; bus
   const refresh = () => setHistory(listHistory())
   return (
     <div className="space-y-4">
-      <p className="text-[12.5px] leading-relaxed text-ink-secondary">
-        Upload your workbook and the dashboard checks it <span className="font-semibold text-navy-deep">cell by cell</span> against
-        the numbers it already shows — flagging anything that doesn’t match, then letting you export the report.
-      </p>
-
       <button
         type="button"
         disabled={busy}
@@ -166,28 +161,10 @@ function UploadZone({ onPick, busy, onReopen }: { onPick: (f: File) => void; bus
             ))}
           </ul>
           <p className="mt-2 text-[10px] leading-snug text-ink-secondary/80">
-            Saved on this device only — nothing leaves your browser. Reopening re-checks the file against the latest dashboard figures.
+            Saved on this device only. Reopening re-checks against the latest figures.
           </p>
         </div>
       )}
-
-      {/* Legend — the four honest outcomes, colour-coded. */}
-      <div className="rounded-xl border border-soft-border bg-card p-4 shadow-soft">
-        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-secondary">What the colours mean</p>
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {([
-            ['matched', 'The cell matches the dashboard.'],
-            ['source_basis', 'Differs, but it’s a known source / accounting-basis difference — not an error.'],
-            ['mismatch', 'The value genuinely differs from the dashboard.'],
-            ['missing_upload', 'Present on one side, blank on the other.'],
-          ] as [VerifyStatus, string][]).map(([s, desc]) => (
-            <li key={s} className="flex items-start gap-2 text-[11.5px] text-ink-secondary">
-              <span className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: VERIFY_META[s].dot }} />
-              <span><span className="font-semibold text-navy-deep">{VERIFY_META[s].label}</span> — {desc}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }
@@ -199,13 +176,14 @@ function Tile({ status, value, active, onClick }: { status: VerifyStatus; value:
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-start rounded-xl border border-soft-border bg-card p-4 text-left shadow-soft transition-all hover:brightness-[0.99]"
-      style={active ? { boxShadow: `inset 0 0 0 2px ${m.dot}` } : undefined}
+      title={m.label}
+      className="flex items-center justify-between gap-2 rounded-lg border border-soft-border bg-card px-2.5 py-1.5 text-left shadow-soft transition-all hover:brightness-[0.99]"
+      style={active ? { boxShadow: `inset 0 0 0 1.5px ${m.dot}` } : undefined}
     >
-      <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-[0.06em]" style={{ color: m.dot }}>
-        <span className="h-2 w-2 rounded-full" style={{ background: m.dot }} />{m.label}
+      <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.04em]" style={{ color: m.dot }}>
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: m.dot }} />{m.short}
       </span>
-      <span className="mt-1 font-display text-[26px] leading-none tabular-nums text-navy-deep">{value.toLocaleString('en-IN')}</span>
+      <span className="font-display text-[17px] leading-none tabular-nums text-navy-deep">{value.toLocaleString('en-IN')}</span>
     </button>
   )
 }
@@ -264,16 +242,8 @@ function Results({ result }: { result: VerifyResult }) {
 
   const missingSheets = result.sheetMatch.filter((sm) => !sm.matchedTo)
 
-  const chips: { key: ListFilter; label: string; count: number; dot?: string }[] = [
-    { key: 'all', label: 'All', count: s.comparable },
-    { key: 'mismatch', label: 'Mismatched', count: s.mismatch, dot: VERIFY_META.mismatch.dot },
-    { key: 'source_basis', label: 'Source / basis', count: s.sourceBasis, dot: VERIFY_META.source_basis.dot },
-    { key: 'missing', label: 'Missing', count: s.missing, dot: VERIFY_META.missing_upload.dot },
-    { key: 'matched', label: 'Matched', count: s.matched, dot: VERIFY_META.matched.dot },
-  ]
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-3.5">
       {/* File + actions */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -294,59 +264,21 @@ function Results({ result }: { result: VerifyResult }) {
         </div>
       </div>
 
-      {/* Headline tiles — the four outcomes */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* Compact outcome tiles — tap one to filter, tap again to clear. */}
+      <div className="grid grid-cols-4 gap-2">
         <Tile status="matched" value={s.matched} active={filter === 'matched'} onClick={() => setFilter(filter === 'matched' ? 'all' : 'matched')} />
         <Tile status="source_basis" value={s.sourceBasis} active={filter === 'source_basis'} onClick={() => setFilter(filter === 'source_basis' ? 'all' : 'source_basis')} />
         <Tile status="mismatch" value={s.mismatch} active={filter === 'mismatch'} onClick={() => setFilter(filter === 'mismatch' ? 'all' : 'mismatch')} />
         <Tile status="missing_upload" value={s.missing} active={filter === 'missing'} onClick={() => setFilter(filter === 'missing' ? 'all' : 'missing')} />
       </div>
 
-      {/* Honest banner — clean pass, or the headline problem */}
-      {s.mismatch === 0 ? (
-        <div className="flex items-start gap-2 rounded-lg bg-emerald-soft/50 px-3 py-2 text-[12px] text-emerald">
-          <CheckCircle2 className="mt-px h-4 w-4 shrink-0" />
-          <span>No value mismatches. {s.sourceBasis > 0 && <>{s.sourceBasis} cell{s.sourceBasis > 1 ? 's' : ''} differ on a known source / basis (amber) — expected, not errors. </>}{s.missing > 0 && <>{s.missing} cell{s.missing > 1 ? 's are' : ' is'} present on only one side.</>}</span>
-        </div>
-      ) : (
-        <div className="flex items-start gap-2 rounded-lg bg-coral-soft/40 px-3 py-2 text-[12px] text-coral-deep">
-          <AlertTriangle className="mt-px h-4 w-4 shrink-0" />
-          <span><span className="font-semibold">{s.mismatch} cell{s.mismatch > 1 ? 's' : ''} don’t match</span> the dashboard. Open the <span className="font-semibold">Mismatched</span> tile to review each one.</span>
-        </div>
-      )}
-
-      {/* Sheet coverage — honest about anything not found in the upload */}
+      {/* Sheet coverage — only surfaced when a template tab wasn't found. */}
       {missingSheets.length > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-soft-border bg-ice/50 px-3 py-2 text-[11.5px] text-ink-secondary">
+        <div className="flex items-start gap-2 rounded-lg border border-soft-border bg-ice/50 px-3 py-1.5 text-[11px] text-ink-secondary">
           <Info className="mt-px h-3.5 w-3.5 shrink-0 text-ink-secondary" />
-          <span>Checked <span className="font-semibold text-navy-deep">{s.matchedSheets} of {s.templateSheets}</span> template tabs. Not found in your file: {missingSheets.map((m) => m.sheet).join(', ')}.</span>
+          <span>Not found in your file: {missingSheets.map((m) => m.sheet).join(', ')}.</span>
         </div>
       )}
-
-      {/* Jump hint — clicking a row highlights the cell but KEEPS this panel open. */}
-      <div className="flex items-center gap-1.5 rounded-lg bg-soft-blue/40 px-3 py-1.5 text-[11.5px] text-navy-primary">
-        <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
-        <span><span className="font-semibold">Click any row</span> to highlight that cell in the grid on the left — this panel stays open so you can compare. Tap <span className="font-semibold">–</span> to minimise.</span>
-      </div>
-
-      {/* Status filter chips */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {chips.map((c) => {
-          const on = filter === c.key
-          return (
-            <button
-              key={c.key}
-              type="button"
-              onClick={() => setFilter(c.key)}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${on ? 'border-navy-primary/40 bg-navy-primary/[0.06] text-navy-deep' : 'border-soft-border bg-card text-ink-secondary hover:border-navy-primary/30'}`}
-            >
-              {c.dot && <span className="h-2 w-2 rounded-full" style={{ background: c.dot }} />}
-              {c.label}
-              <span className="rounded-full bg-ice px-1.5 text-[9.5px] font-semibold tabular-nums text-ink-secondary">{c.count.toLocaleString('en-IN')}</span>
-            </button>
-          )
-        })}
-      </div>
 
       {/* Tab (source sheet) selector — check one tab at a time, or all. */}
       {sheetTabs.length > 1 && (
@@ -487,12 +419,8 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
     return <VerifierPill label={label} onRestore={v.restoreVerifier} />
   }
 
-  const subtitle = v.result
-    ? 'Click a row to find that cell in the grid — the panel stays open so you can compare side by side. Minimise (–) to see the whole grid.'
-    : 'Check an uploaded workbook against the dashboard, cell by cell'
-
   return (
-    <VerifierDock title="Excel Upload Verifier" subtitle={subtitle} onMinimize={v.minimizeVerifier} onClose={onClose}>
+    <VerifierDock title="Excel Upload Verifier" onMinimize={v.minimizeVerifier} onClose={onClose}>
       {v.result ? (
         <Results result={v.result} />
       ) : (
@@ -503,10 +431,6 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
               <AlertTriangle className="mt-px h-4 w-4 shrink-0" /><span>{error}</span>
             </p>
           )}
-          <p className="flex items-start gap-1.5 rounded-lg bg-teal-soft/60 px-3 py-2 text-[11px] leading-snug text-teal">
-            <Scale className="mt-px h-3.5 w-3.5 shrink-0" />
-            <span>Compared against the dashboard’s own audited values — the same model the Data Audit grid uses. A blank cell is shown as <span className="font-semibold">missing</span>, never a fake zero; a source- or basis-difference is flagged <span className="font-semibold">amber</span>, not as an error.</span>
-          </p>
         </div>
       )}
     </VerifierDock>
