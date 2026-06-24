@@ -40,6 +40,8 @@ export interface VerifyState {
   target: VerifyTarget | null
   /** Is the verifier drawer open. */
   open: boolean
+  /** Drawer is open but collapsed to a small pill (grid fully visible). */
+  minimized: boolean
 
   setResult: (r: VerifyResult | null) => void
   setVerifyView: (b: boolean) => void
@@ -47,7 +49,12 @@ export interface VerifyState {
   setListFilter: (f: ListFilter) => void
   openVerifier: () => void
   closeVerifier: () => void
-  /** From a verifier row → jump to that exact audit cell (closes the drawer). */
+  /** Collapse the open drawer to a corner pill (keeps the result + state). */
+  minimizeVerifier: () => void
+  /** Expand the pill back to the full docked panel. */
+  restoreVerifier: () => void
+  /** From a verifier row → highlight that audit cell. Keeps the drawer OPEN
+   *  (docked beside the grid) so the list and the cell can be read together. */
   navigateToCell: (row: VerifyRow) => void
   /** Leave overlay colouring but keep the result available. */
   exitVerifyView: () => void
@@ -76,10 +83,11 @@ export function VerifyProvider({ children }: { children: ReactNode }) {
   const [listFilter, setListFilter] = useState<ListFilter>('all')
   const [target, setTarget] = useState<VerifyTarget | null>(null)
   const [open, setOpen] = useState(false)
+  const [minimized, setMinimized] = useState(false)
   const nonce = useRef(0)
 
   const value = useMemo<VerifyState>(() => ({
-    result, verifyView, gridFilter, listFilter, target, open,
+    result, verifyView, gridFilter, listFilter, target, open, minimized,
     setResult: (r) => {
       setResultState(r)
       setVerifyView(!!r)
@@ -88,20 +96,24 @@ export function VerifyProvider({ children }: { children: ReactNode }) {
     setVerifyView,
     setGridFilter,
     setListFilter,
-    openVerifier: () => setOpen(true),
-    closeVerifier: () => setOpen(false),
+    openVerifier: () => { setOpen(true); setMinimized(false) },
+    closeVerifier: () => { setOpen(false); setMinimized(false) },
+    minimizeVerifier: () => setMinimized(true),
+    restoreVerifier: () => { setOpen(true); setMinimized(false) },
     navigateToCell: (row) => {
       nonce.current += 1
       setTarget({ sheet: row.sheet, cellId: row.id, cellRef: row.cellRef, nonce: nonce.current })
       setGridFilter('all') // never let the active filter dim the cell we just jumped to
       setVerifyView(true)
-      setOpen(false)
+      // Keep the drawer open + expanded so the list stays beside the grid; the
+      // cell pulses on the left. (Was: setOpen(false), which hid the list.)
+      setMinimized(false)
     },
     exitVerifyView: () => setVerifyView(false),
     clearVerification: () => {
       setResultState(null); setVerifyView(false); setTarget(null); setGridFilter('all'); setListFilter('all')
     },
-  }), [result, verifyView, gridFilter, listFilter, target, open])
+  }), [result, verifyView, gridFilter, listFilter, target, open, minimized])
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

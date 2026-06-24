@@ -1,12 +1,12 @@
-import { useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import {
   UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Scale, Download,
-  RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight,
+  RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight, Minus, Maximize2, X,
 } from 'lucide-react'
-import { Drawer } from './Drawer'
 import {
   verifyWorkbook, downloadVerifyReport, VERIFY_META,
-  type VerifyResult, type VerifyStatus,
+  type VerifyResult, type VerifyRow, type VerifyStatus,
 } from '@/lib/excelVerify'
 import { useVerify, type ListFilter } from '@/state/verifyState'
 
@@ -25,6 +25,79 @@ const ACCEPT = '.xlsx,.xls,.csv'
 // Filter buckets shown as chips. "missing" folds the two missing directions.
 const inBucket = (status: VerifyStatus, key: ListFilter): boolean =>
   key === 'all' ? true : key === 'missing' ? status.startsWith('missing') : status === key
+
+// ── Dockable shell ───────────────────────────────────────────────────────────
+// A NON-blocking side panel (unlike the modal Drawer): no dimming backdrop and no
+// page-scroll freeze, so the audit grid stays fully visible and usable on the
+// left while the verifier sits docked on the right — letting a row and the cell
+// it points to be read together. Minimise collapses it to a corner pill; close
+// dismisses it. Portalled to <body> so the page-transition transform can't trap
+// its fixed positioning.
+function VerifierDock({
+  title, subtitle, onMinimize, onClose, children,
+}: { title: string; subtitle?: string; onMinimize: () => void; onClose: () => void; children: ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  if (typeof document === 'undefined') return null
+  return createPortal(
+    <aside
+      className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col overflow-hidden rounded-l-[28px] border-l border-soft-border bg-ivory shadow-lift outline-none animate-drawer-in"
+      role="dialog"
+      aria-label={title}
+    >
+      <header className="flex shrink-0 items-start justify-between gap-3 border-b border-soft-border bg-card px-5 py-4">
+        <div className="min-w-0">
+          <h3 className="font-display text-lg text-navy-deep">{title}</h3>
+          {subtitle && <p className="mt-0.5 text-[12px] leading-snug text-ink-secondary">{subtitle}</p>}
+        </div>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button
+            type="button"
+            onClick={onMinimize}
+            aria-label="Minimise"
+            title="Minimise — keep it open while you read the grid"
+            className="rounded-full p-2 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            title="Close the verifier"
+            className="rounded-full p-2 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
+      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+    </aside>,
+    document.body,
+  )
+}
+
+// The minimised state — a compact corner pill that keeps the verification alive
+// and one tap from full view, while the grid is completely unobstructed.
+function VerifierPill({ label, onRestore }: { label: string; onRestore: () => void }) {
+  if (typeof document === 'undefined') return null
+  return createPortal(
+    <button
+      type="button"
+      onClick={onRestore}
+      className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-[#9DB4D8] bg-gradient-to-br from-[#1E4079] to-[#143058] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_10px_30px_rgba(23,43,77,0.28)] transition-transform hover:-translate-y-0.5 animate-fade-in"
+      title="Reopen the verifier"
+    >
+      <FileSpreadsheet className="h-4 w-4" />
+      <span>{label}</span>
+      <Maximize2 className="h-3.5 w-3.5 opacity-80" />
+    </button>,
+    document.body,
+  )
+}
 
 // ── Upload zone (first screen) ───────────────────────────────────────────────
 function UploadZone({ onPick, busy }: { onPick: (f: File) => void; busy: boolean }) {
@@ -112,11 +185,42 @@ function Results({ result }: { result: VerifyResult }) {
   const filter = v.listFilter
   const setFilter = v.setListFilter
   const s = result.summary
+  const [sheetFilter, setSheetFilter] = useState<string>('all')
 
-  const rows = useMemo(
+  // Rows after the status filter (All / Mismatched / Source-basis / …).
+  const statusRows = useMemo(
     () => result.rows.filter((r) => inBucket(r.status, filter)),
     [result.rows, filter],
   )
+
+  // The source tabs present in the current status view, in first-seen order with
+  // counts — drives the "which tab" selector.
+  const sheetTabs = useMemo(() => {
+    const order: string[] = []
+    const count = new Map<string, number>()
+    for (const r of statusRows) {
+      if (!count.has(r.sheet)) order.push(r.sheet)
+      count.set(r.sheet, (count.get(r.sheet) ?? 0) + 1)
+    }
+    return order.map((sheet) => ({ sheet, count: count.get(sheet) ?? 0 }))
+  }, [statusRows])
+
+  // Keep the chosen tab valid if a status-filter change removed it.
+  const activeSheet = sheetFilter !== 'all' && sheetTabs.some((t) => t.sheet === sheetFilter) ? sheetFilter : 'all'
+
+  // Rows shown, grouped tab-by-tab (one block per source sheet).
+  const groups = useMemo(() => {
+    const visible = activeSheet === 'all' ? statusRows : statusRows.filter((r) => r.sheet === activeSheet)
+    const order: string[] = []
+    const bySheet = new Map<string, VerifyRow[]>()
+    for (const r of visible) {
+      if (!bySheet.has(r.sheet)) { order.push(r.sheet); bySheet.set(r.sheet, []) }
+      bySheet.get(r.sheet)!.push(r)
+    }
+    return order.map((sheet) => ({ sheet, rows: bySheet.get(sheet)! }))
+  }, [statusRows, activeSheet])
+  const shownCount = groups.reduce((n, g) => n + g.rows.length, 0)
+
   const missingSheets = result.sheetMatch.filter((sm) => !sm.matchedTo)
 
   const chips: { key: ListFilter; label: string; count: number; dot?: string }[] = [
@@ -178,13 +282,13 @@ function Results({ result }: { result: VerifyResult }) {
         </div>
       )}
 
-      {/* Jump hint — the row's primary action is now "click → go to the cell". */}
+      {/* Jump hint — clicking a row highlights the cell but KEEPS this panel open. */}
       <div className="flex items-center gap-1.5 rounded-lg bg-soft-blue/40 px-3 py-1.5 text-[11.5px] text-navy-primary">
         <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
-        <span><span className="font-semibold">Click any row</span> to jump to that exact cell in the Data Audit grid and open its detail panel.</span>
+        <span><span className="font-semibold">Click any row</span> to highlight that cell in the grid on the left — this panel stays open so you can compare. Tap <span className="font-semibold">–</span> to minimise.</span>
       </div>
 
-      {/* Filter chips */}
+      {/* Status filter chips */}
       <div className="flex flex-wrap items-center gap-1.5">
         {chips.map((c) => {
           const on = filter === c.key
@@ -203,8 +307,29 @@ function Results({ result }: { result: VerifyResult }) {
         })}
       </div>
 
-      {/* Result table — click a row to jump to that exact cell in the grid. Hover
-          only lightly highlights the row; it never opens a panel. */}
+      {/* Tab (source sheet) selector — check one tab at a time, or all. */}
+      {sheetTabs.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-ink-secondary">Tab</span>
+          <select
+            value={activeSheet}
+            onChange={(e) => setSheetFilter(e.target.value)}
+            className="max-w-[15rem] truncate rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px] font-medium text-navy-deep shadow-soft transition-colors hover:border-navy-primary/30 focus:outline-none focus:ring-1 focus:ring-muted-blue"
+            title="Show only one source tab"
+          >
+            <option value="all">All tabs ({statusRows.length.toLocaleString('en-IN')})</option>
+            {sheetTabs.map((t) => (
+              <option key={t.sheet} value={t.sheet}>{t.sheet} ({t.count.toLocaleString('en-IN')})</option>
+            ))}
+          </select>
+          {activeSheet !== 'all' && (
+            <button type="button" onClick={() => setSheetFilter('all')} className="text-[10.5px] font-medium text-navy-primary hover:underline">Show all tabs</button>
+          )}
+        </div>
+      )}
+
+      {/* Result table — grouped tab by tab. Click a row to highlight its cell in
+          the grid; the panel stays open so a row and its cell read together. */}
       <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '56vh' }}>
         <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
           <thead className="sticky top-0 z-10">
@@ -215,32 +340,41 @@ function Results({ result }: { result: VerifyResult }) {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {shownCount === 0 ? (
               <tr><td colSpan={6} className="px-3 py-10 text-center text-[12px] text-ink-secondary">No cells in this view.</td></tr>
-            ) : rows.map((r) => {
-              const m = VERIFY_META[r.status]
-              return (
-                <tr
-                  key={r.id}
-                  onClick={() => v.navigateToCell(r)}
-                  title="Click to open this cell in the Data Audit grid"
-                  className={`group cursor-pointer ${m.tone === 'green' ? 'hover:bg-emerald-soft/30' : m.tone === 'amber' ? 'bg-gold-soft/25 hover:bg-gold-soft/40' : m.tone === 'red' ? 'bg-coral-soft/25 hover:bg-coral-soft/40' : 'hover:bg-ice/60'}`}
-                >
-                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
-                    <span className="font-mono text-[10.5px] text-ink-secondary">{r.cellRef}</span>
-                    <span className="block text-[9px] text-ink-secondary/70">{r.sheet}</span>
+            ) : groups.map((g) => (
+              <Fragment key={g.sheet}>
+                {/* Tab subheader — organises the rows tab by tab. */}
+                <tr>
+                  <td colSpan={6} className="border-b border-soft-border bg-[#EAF0FA] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.06em] text-navy-primary">
+                    {g.sheet} <span className="font-medium normal-case tracking-normal text-ink-secondary/80">· {g.rows.length.toLocaleString('en-IN')} cell{g.rows.length > 1 ? 's' : ''}</span>
                   </td>
-                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
-                    <span className="block truncate text-[11.5px] font-medium text-navy-deep" style={{ maxWidth: 230 }} title={r.metricLabel}>{r.metricLabel}</span>
-                    <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 230 }}>{r.entityLabel} · {r.period}</span>
-                  </td>
-                  <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] font-semibold text-navy-deep">{r.uploadedDisplay}</td>
-                  <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] text-ink-primary">{r.dashboardDisplay}</td>
-                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top"><StatusPill status={r.status} /></td>
-                  <td className="border-b border-soft-border/60 px-2 py-1.5 align-middle text-ink-secondary/50 transition-colors group-hover:text-navy-primary"><ArrowRight className="h-3.5 w-3.5" /></td>
                 </tr>
-              )
-            })}
+                {g.rows.map((r) => {
+                  const m = VERIFY_META[r.status]
+                  return (
+                    <tr
+                      key={r.id}
+                      onClick={() => v.navigateToCell(r)}
+                      title="Click to highlight this cell in the Data Audit grid"
+                      className={`group cursor-pointer ${m.tone === 'green' ? 'hover:bg-emerald-soft/30' : m.tone === 'amber' ? 'bg-gold-soft/25 hover:bg-gold-soft/40' : m.tone === 'red' ? 'bg-coral-soft/25 hover:bg-coral-soft/40' : 'hover:bg-ice/60'}`}
+                    >
+                      <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
+                        <span className="font-mono text-[10.5px] text-ink-secondary">{r.cellRef}</span>
+                      </td>
+                      <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
+                        <span className="block truncate text-[11.5px] font-medium text-navy-deep" style={{ maxWidth: 230 }} title={r.metricLabel}>{r.metricLabel}</span>
+                        <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 230 }}>{r.entityLabel} · {r.period}</span>
+                      </td>
+                      <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] font-semibold text-navy-deep">{r.uploadedDisplay}</td>
+                      <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] text-ink-primary">{r.dashboardDisplay}</td>
+                      <td className="border-b border-soft-border/60 px-3 py-1.5 align-top"><StatusPill status={r.status} /></td>
+                      <td className="border-b border-soft-border/60 px-2 py-1.5 align-middle text-ink-secondary/50 transition-colors group-hover:text-navy-primary"><ArrowRight className="h-3.5 w-3.5" /></td>
+                    </tr>
+                  )
+                })}
+              </Fragment>
+            ))}
           </tbody>
         </table>
       </div>
@@ -249,7 +383,10 @@ function Results({ result }: { result: VerifyResult }) {
 }
 
 // ── Drawer shell ─────────────────────────────────────────────────────────────
-export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+// `open` is kept in the props for the launcher's call site, but mounting is what
+// actually gates visibility now (the launcher only renders this when open), so
+// the shell itself just switches between the docked panel and the minimised pill.
+export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () => void }) {
   const v = useVerify()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -273,14 +410,21 @@ export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose:
     }
   }
 
+  // Minimised → just the corner pill (grid fully visible). Reopen restores state.
+  if (v.minimized) {
+    const s = v.result?.summary
+    const label = s
+      ? s.mismatch > 0 ? `Verifier · ${s.mismatch.toLocaleString('en-IN')} mismatched` : `Verifier · ${s.comparable.toLocaleString('en-IN')} checked`
+      : 'Verifier'
+    return <VerifierPill label={label} onRestore={v.restoreVerifier} />
+  }
+
+  const subtitle = v.result
+    ? 'Click a row to find that cell in the grid — the panel stays open so you can compare side by side. Minimise (–) to see the whole grid.'
+    : 'Check an uploaded workbook against the dashboard, cell by cell'
+
   return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      widthClass="max-w-3xl"
-      title="Excel Upload Verifier"
-      subtitle="Check an uploaded workbook against the dashboard, cell by cell"
-    >
+    <VerifierDock title="Excel Upload Verifier" subtitle={subtitle} onMinimize={v.minimizeVerifier} onClose={onClose}>
       {v.result ? (
         <Results result={v.result} />
       ) : (
@@ -297,6 +441,6 @@ export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose:
           </p>
         </div>
       )}
-    </Drawer>
+    </VerifierDock>
   )
 }
