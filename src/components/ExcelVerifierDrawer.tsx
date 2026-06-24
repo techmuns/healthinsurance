@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from '
 import { createPortal } from 'react-dom'
 import {
   UploadCloud, FileSpreadsheet, AlertTriangle,
-  RotateCcw, Info, Loader2, ArrowRight, Minus, Maximize2, X,
+  RotateCcw, Info, Loader2, ArrowRight, Minus, Maximize2, Minimize2, GripVertical, X,
   History, Trash2,
 } from 'lucide-react'
 import {
@@ -31,70 +31,212 @@ const ACCEPT = '.xlsx,.xls,.csv'
 const inBucket = (status: VerifyStatus, key: ListFilter): boolean =>
   key === 'all' ? true : key === 'missing' ? status.startsWith('missing') : status === key
 
-// ── Dockable shell ───────────────────────────────────────────────────────────
-// A NON-blocking side panel (unlike the modal Drawer): no dimming backdrop and no
-// page-scroll freeze, so the audit grid stays fully visible and usable on the
-// left while the verifier sits docked on the right — letting a row and the cell
-// it points to be read together. Minimise collapses it to a corner pill; close
-// dismisses it. Portalled to <body> so the page-transition transform can't trap
-// its fixed positioning.
-function VerifierDock({
-  title, subtitle, onMinimize, onClose, children,
-}: { title: string; subtitle?: string; onMinimize: () => void; onClose: () => void; children: ReactNode }) {
+// ── Floating-window geometry (drag + resize + clamp + session memory) ─────────
+// Pure window-positioning helper — it moves/sizes the panel and remembers the
+// last box for the session. It touches NO verify data, calculations, navigation
+// or audit logic; only where the panel sits on screen.
+interface Box { x: number; y: number; w: number; h: number }
+const WIN_MIN_W = 380
+const WIN_MIN_H = 240
+const WIN_KEY = 'verify:windowBox:v1'
+const PILL_KEY = 'verify:pillPos:v1'
+const vpW = () => window.innerWidth
+const vpH = () => window.innerHeight
+
+function clampBox(b: Box): Box {
+  const W = vpW(), H = vpH()
+  const w = Math.min(Math.max(b.w, WIN_MIN_W), Math.max(WIN_MIN_W, W - 16))
+  const h = Math.min(Math.max(b.h, WIN_MIN_H), Math.max(WIN_MIN_H, H - 16))
+  const x = Math.min(Math.max(b.x, 8), Math.max(8, W - w - 8))
+  const y = Math.min(Math.max(b.y, 8), Math.max(8, H - h - 8))
+  return { x, y, w, h }
+}
+function defaultBox(): Box {
+  const W = vpW(), H = vpH()
+  const w = Math.min(540, W - 48)
+  const h = Math.min(Math.round(H * 0.8), H - 48)
+  return clampBox({ x: W - w - 24, y: 24, w, h })
+}
+function loadBox(): Box {
+  try { const raw = sessionStorage.getItem(WIN_KEY); if (raw) return clampBox(JSON.parse(raw)) } catch { /* ignore */ }
+  return defaultBox()
+}
+function persist(key: string, value: unknown) {
+  try { sessionStorage.setItem(key, JSON.stringify(value)) } catch { /* ignore */ }
+}
+
+type ResizeDir = 'se' | 'e' | 's'
+
+function useFloatingWindow() {
+  const [box, setBox] = useState<Box>(() => (typeof window === 'undefined' ? { x: 40, y: 40, w: 540, h: 600 } : loadBox()))
+  const ref = useRef<HTMLElement>(null) // the panel element — mutated directly mid-drag for smoothness
+  const prevRef = useRef<Box | null>(null) // remembers the pre-maximise box
+  const [maxed, setMaxed] = useState(false)
+
+  // Keep the panel on-screen if the viewport shrinks.
+  useEffect(() => {
+    const onResize = () => setBox((b) => {
+      const c = clampBox(b); persist(WIN_KEY, c); return c
+    })
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // Drag the whole window (mode 'move') or resize from an edge/corner. The DOM is
+  // moved directly during the gesture (no per-frame React render); state syncs on
+  // release so the panel never janks even with a long row list behind it.
+  const begin = (e: React.PointerEvent, mode: 'move' | ResizeDir) => {
+    if (e.button !== 0) return
+    e.preventDefault()
+    const el = ref.current
+    if (!el) return
+    const start = { px: e.clientX, py: e.clientY, ...box }
+    let latest = box
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.px, dy = ev.clientY - start.py
+      const next = mode === 'move'
+        ? { ...start, x: start.x + dx, y: start.y + dy }
+        : { ...start, w: start.w + (mode === 'e' || mode === 'se' ? dx : 0), h: start.h + (mode === 's' || mode === 'se' ? dy : 0) }
+      latest = clampBox(next)
+      el.style.left = `${latest.x}px`; el.style.top = `${latest.y}px`; el.style.width = `${latest.w}px`; el.style.height = `${latest.h}px`
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      setBox(latest); persist(WIN_KEY, latest)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
+  const toggleMaximize = () => {
+    if (maxed && prevRef.current) {
+      const restore = clampBox(prevRef.current)
+      prevRef.current = null; setMaxed(false); setBox(restore); persist(WIN_KEY, restore)
+    } else {
+      prevRef.current = box
+      const m = clampBox({ x: 8, y: 8, w: vpW() - 16, h: vpH() - 16 })
+      setMaxed(true); setBox(m); persist(WIN_KEY, m)
+    }
+  }
+
+  return {
+    box, ref, maxed,
+    onHeaderPointerDown: (e: React.PointerEvent) => begin(e, 'move'),
+    onResizePointerDown: (dir: ResizeDir) => (e: React.PointerEvent) => { e.stopPropagation(); begin(e, dir) },
+    toggleMaximize,
+  }
+}
+
+// ── Floating window shell ─────────────────────────────────────────────────────
+// The verifier as a movable, resizable utility window floating above the audit
+// page — never a full-height blocking drawer. Drag by the title bar, resize from
+// the right/bottom/corner, minimise to a pill, maximise/restore. Portalled to
+// <body> so the page-transition transform can't trap its fixed positioning.
+function VerifierWindow({
+  title, win, onMinimize, onMaximize, onClose, children,
+}: {
+  title: string
+  win: ReturnType<typeof useFloatingWindow>
+  onMinimize: () => void
+  onMaximize: () => void
+  onClose: () => void
+  children: ReactNode
+}) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   if (typeof document === 'undefined') return null
+  const { box } = win
   return createPortal(
     <aside
-      className="fixed inset-y-0 right-0 z-50 flex w-1/2 min-w-[440px] flex-col overflow-hidden rounded-l-[28px] border-l border-soft-border bg-ivory shadow-lift outline-none animate-drawer-in"
+      ref={win.ref}
+      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-ivory shadow-lift outline-none animate-fade-in"
+      style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
       role="dialog"
       aria-label={title}
     >
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-soft-border bg-card px-5 py-3.5">
-        <div className="min-w-0">
-          <h3 className="font-display text-lg text-navy-deep">{title}</h3>
-          {subtitle && <p className="mt-0.5 text-[12px] leading-snug text-ink-secondary">{subtitle}</p>}
+      {/* Title bar = drag handle. Buttons stop propagation so a click never drags. */}
+      <header
+        onPointerDown={win.onHeaderPointerDown}
+        className="flex shrink-0 cursor-move select-none items-center justify-between gap-3 border-b border-soft-border bg-card px-4 py-2.5"
+        style={{ touchAction: 'none' }}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <GripVertical className="h-4 w-4 shrink-0 text-ink-secondary/45" />
+          <h3 className="truncate font-display text-[15.5px] text-navy-deep">{title}</h3>
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            onClick={onMinimize}
-            aria-label="Minimise"
-            title="Minimise to a corner pill"
-            className="rounded-full p-2 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary"
-          >
+        <div className="flex shrink-0 items-center gap-0.5" onPointerDown={(e) => e.stopPropagation()}>
+          <button type="button" onClick={onMinimize} aria-label="Minimise" title="Minimise" className="rounded-full p-1.5 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary">
             <Minus className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            title="Close the verifier"
-            className="rounded-full p-2 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary"
-          >
-            <X className="h-5 w-5" />
+          <button type="button" onClick={onMaximize} aria-label={win.maxed ? 'Restore' : 'Maximise'} title={win.maxed ? 'Restore size' : 'Maximise'} className="rounded-full p-1.5 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary">
+            {win.maxed ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+          </button>
+          <button type="button" onClick={onClose} aria-label="Close" title="Close" className="rounded-full p-1.5 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary">
+            <X className="h-4 w-4" />
           </button>
         </div>
       </header>
-      <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+
+      {/* Content fills the window; the children own their internal scrolling. */}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+
+      {/* Resize handles — right edge, bottom edge, and the bottom-right corner. */}
+      <div onPointerDown={win.onResizePointerDown('e')} className="absolute right-0 top-12 bottom-4 w-1.5 cursor-ew-resize" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('s')} className="absolute bottom-0 left-4 right-4 h-1.5 cursor-ns-resize" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('se')} className="absolute bottom-0 right-0 grid h-4 w-4 cursor-nwse-resize place-items-center text-ink-secondary/40" style={{ touchAction: 'none' }} aria-hidden title="Drag to resize">
+        <svg viewBox="0 0 10 10" className="h-2.5 w-2.5"><path d="M9 1 L1 9 M9 5 L5 9" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" /></svg>
+      </div>
     </aside>,
     document.body,
   )
 }
 
-// The minimised state — a compact corner pill that keeps the verification alive
-// and one tap from full view, while the grid is completely unobstructed.
+// ── Minimised state — a small, draggable floating card ────────────────────────
+function clampPill(p: { x: number; y: number }): { x: number; y: number } {
+  const W = vpW(), H = vpH()
+  return { x: Math.min(Math.max(p.x, 8), Math.max(8, W - 230)), y: Math.min(Math.max(p.y, 8), Math.max(8, H - 52)) }
+}
+function loadPill(): { x: number; y: number } {
+  try { const raw = sessionStorage.getItem(PILL_KEY); if (raw) return clampPill(JSON.parse(raw)) } catch { /* ignore */ }
+  return clampPill({ x: vpW() - 236, y: vpH() - 64 })
+}
 function VerifierPill({ label, onRestore }: { label: string; onRestore: () => void }) {
+  const [pos, setPos] = useState(() => (typeof window === 'undefined' ? { x: 24, y: 24 } : loadPill()))
+  const dragged = useRef(false)
   if (typeof document === 'undefined') return null
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    dragged.current = false
+    const start = { px: e.clientX, py: e.clientY, ...pos }
+    let latest = pos
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - start.px, dy = ev.clientY - start.py
+      if (Math.abs(dx) + Math.abs(dy) > 3) dragged.current = true
+      latest = clampPill({ x: start.x + dx, y: start.y + dy })
+      setPos(latest)
+    }
+    const onUp = () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      persist(PILL_KEY, latest)
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+  }
+
   return createPortal(
     <button
       type="button"
-      onClick={onRestore}
-      className="fixed bottom-6 right-6 z-50 inline-flex items-center gap-2 rounded-full border border-[#9DB4D8] bg-gradient-to-br from-[#1E4079] to-[#143058] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_10px_30px_rgba(23,43,77,0.28)] transition-transform hover:-translate-y-0.5 animate-fade-in"
-      title="Reopen the verifier"
+      onPointerDown={onPointerDown}
+      onClick={() => { if (!dragged.current) onRestore() }}
+      style={{ left: pos.x, top: pos.y, touchAction: 'none' }}
+      className="fixed z-50 inline-flex cursor-grab items-center gap-2 rounded-full border border-[#9DB4D8] bg-gradient-to-br from-[#1E4079] to-[#143058] px-4 py-2.5 text-[12.5px] font-semibold text-white shadow-[0_10px_30px_rgba(23,43,77,0.28)] active:cursor-grabbing animate-fade-in"
+      title="Drag to move · click to reopen the verifier"
     >
       <FileSpreadsheet className="h-4 w-4" />
       <span>{label}</span>
@@ -248,7 +390,9 @@ function Results({ result }: { result: VerifyResult }) {
   const missingSheets = result.sheetMatch.filter((sm) => !sm.matchedTo)
 
   return (
-    <div className="space-y-3.5">
+    <div className="flex h-full min-h-0 flex-col">
+      {/* Fixed summary — file, outcome cards, tab selector stay put as the table scrolls. */}
+      <div className="shrink-0 space-y-3 px-5 pb-3 pt-4">
       {/* File + actions */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
@@ -306,10 +450,12 @@ function Results({ result }: { result: VerifyResult }) {
           )}
         </div>
       )}
+      </div>
 
-      {/* Result table — grouped tab by tab. Click a row to highlight its cell in
-          the grid; the panel stays open so a row and its cell read together. */}
-      <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '56vh' }}>
+      {/* Result table — the internal scroll zone. When the window is made small,
+          this is what scrolls; the summary above stays put. Click a row to
+          highlight its cell in the audit grid (behaviour unchanged). */}
+      <div className="min-h-0 flex-1 overflow-auto border-t border-soft-border bg-card">
         <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-[#F3F6FB]">
@@ -367,6 +513,7 @@ function Results({ result }: { result: VerifyResult }) {
 // the shell itself just switches between the docked panel and the minimised pill.
 export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () => void }) {
   const v = useVerify()
+  const win = useFloatingWindow()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -426,11 +573,11 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
   }
 
   return (
-    <VerifierDock title="Excel Upload Verifier" onMinimize={v.minimizeVerifier} onClose={onClose}>
+    <VerifierWindow title="Excel Upload Verifier" win={win} onMinimize={v.minimizeVerifier} onMaximize={win.toggleMaximize} onClose={onClose}>
       {v.result ? (
         <Results result={v.result} />
       ) : (
-        <div className="space-y-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           <UploadZone onPick={onPick} busy={busy} onReopen={onReopen} />
           {error && (
             <p className="flex items-start gap-1.5 rounded-lg bg-coral-soft/40 px-3 py-2 text-[12px] text-coral-deep">
@@ -439,6 +586,6 @@ export function ExcelVerifierDrawer({ onClose }: { open: boolean; onClose: () =>
           )}
         </div>
       )}
-    </VerifierDock>
+    </VerifierWindow>
   )
 }
