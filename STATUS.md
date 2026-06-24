@@ -7,20 +7,23 @@ container is ephemeral, so this lives in the repo so the next session can pick u
 without re-deriving state.
 
 ## Where it stands
-- **AI Senior-Analyst Explorer — Data Audit → AI** (Neha, 2026-06-24): select
-  audited cells in Data Audit's new **Analyst Grid** view (a "Select for AI" mode;
-  click cells, or a company / year / metric to grab a set), or build a scope in the
-  Insights **Explorer** tab. Both feed one pipeline: an instant, free, in-browser
-  **Tier-1 readout** (peer ranking, z-score outliers, real multi-period deltas,
-  source quality, honest gaps — no API key) and, on click, a **Tier-2 AI
-  senior-analyst card** via the Cloudflare Pages function `functions/api/insight.ts`
-  (the Anthropic key stays server-side; output passes a fail-closed grounding +
-  no-advice gate, retried once; identical selections are cached). Cards pin to the
-  Insights tab / copy. Single-FY selections are labelled, never implied as a trend.
-  The single source of truth is `buildAuditGrid()` — no parallel metric list.
-  **One manual step to switch the AI on:** set `ANTHROPIC_API_KEY` in the Cloudflare
-  Pages project settings (Workers & Pages → project → Settings → Environment
-  variables). Tier-1 works without it. Runbook: `functions/README.md`.
+- **AI Mode in the Data Audit table** (Neha, 2026-06-24): a lightweight **AI Mode**
+  toggle sits on the Data Audit page. With it on, the reviewer **drag-selects cells
+  like Excel** (rectangular range; Esc / Clear to reset); a floating bar shows
+  "N cells selected · R ready · G gaps". **Analyse selected data** opens a compact
+  right drawer with an instant, free in-browser readout (count · ready/gaps ·
+  highest/lowest · peer rank · formula) and, on click, a short AI read (4-6 bullets
+  + a useful formula + a plain conclusion) via the Cloudflare Pages function
+  `functions/api/insight.ts` (Anthropic key stays server-side; output passes a
+  fail-closed grounding + no-advice gate, retried once; identical selections are
+  cached). No separate tab/grid — it lives inside the existing audit table; AI Mode
+  off leaves all existing behaviour (click-to-source, verifier overlay) untouched.
+  Uses the audit table's own `AuditCell` as the single source of truth; only ready,
+  numeric cells feed the stats (missing/blocked ≠ 0); single-FY selections never
+  imply a trend. **One manual step to switch the AI on:** set `ANTHROPIC_API_KEY` in
+  the Cloudflare Pages project settings (Workers & Pages → project → Settings →
+  Environment variables). The instant readout works without it. Runbook:
+  `functions/README.md`.
 - **Full-auto across every Data Audit tab** (Neha, 2026-06-11): every fetch
   workflow now has a schedule — nothing is dispatch-only any more (company
   PDFs monthly-7th, SAHI financials monthly-8th, deck metrics monthly-9th,

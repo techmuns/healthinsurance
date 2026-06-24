@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X, ArrowLeft, FileCheck2 } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X, ArrowLeft, FileCheck2, Sparkles, MousePointerClick } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
@@ -14,6 +14,8 @@ import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import { CompanyFilter, type CompanyOption } from '@/components/CompanyFilter'
+import { AiAnalysisDrawer } from '@/components/AiAnalysisDrawer'
+import { isReadyAuditCell } from '@/lib/analystReadout'
 import { useVerifyOptional } from '@/state/verifyState'
 import type { VerifyResult, VerifyRow, VerifyStatus } from '@/lib/excelVerify'
 
@@ -460,12 +462,65 @@ function viewColumns(columns: GridCol[], view: AuditView, entityByColumn: boolea
   return ents.flatMap((e) => byE.get(e)!.slice().sort((a, b) => r(a) - r(b)))
 }
 
-function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView; verify?: VerifyGridProps }) {
+function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false, onAiSelection, clearSignal = 0 }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView; verify?: VerifyGridProps; aiMode?: boolean; onAiSelection?: (cells: AuditCell[]) => void; clearSignal?: number }) {
   const { rows, entityByColumn } = grid
   const [dragKey, setDragKey] = useState<string | null>(null)
   const [overKey, setOverKey] = useState<string | null>(null)
 
   const columns = viewColumns(grid.columns, view, entityByColumn)
+
+  // ── AI Mode: Excel-like rectangular drag selection over the grid ────────────
+  const [sel, setSel] = useState<{ a: { r: number; c: number }; h: { r: number; c: number } } | null>(null)
+  const draggingRef = useRef(false)
+  useEffect(() => {
+    const up = () => { draggingRef.current = false }
+    window.addEventListener('pointerup', up)
+    return () => window.removeEventListener('pointerup', up)
+  }, [])
+  useEffect(() => { if (!aiMode) setSel(null) }, [aiMode])
+  useEffect(() => { setSel(null) }, [clearSignal])
+  useEffect(() => {
+    if (!aiMode) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSel(null) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [aiMode])
+  const startSel = (r: number, c: number) => { draggingRef.current = true; setSel({ a: { r, c }, h: { r, c } }) }
+  const extendSel = (r: number, c: number) => { if (draggingRef.current) setSel((s) => (s ? { a: s.a, h: { r, c } } : { a: { r, c }, h: { r, c } })) }
+  const b = sel ? { r0: Math.min(sel.a.r, sel.h.r), r1: Math.max(sel.a.r, sel.h.r), c0: Math.min(sel.a.c, sel.h.c), c1: Math.max(sel.a.c, sel.h.c) } : null
+  const inSel = (r: number, c: number) => !!b && aiMode && r >= b.r0 && r <= b.r1 && c >= b.c0 && c <= b.c1
+  // Report the selected cells up — guarded by an id signature so the rebuilt
+  // `columns` array each render can't trigger a state-update loop.
+  const lastReport = useRef('')
+  useEffect(() => {
+    const cells: AuditCell[] = []
+    if (b) {
+      for (let r = b.r0; r <= b.r1; r++) {
+        const row = rows[r]
+        if (!row) continue
+        for (let c = b.c0; c <= b.c1; c++) {
+          const col = columns[c]
+          const cell = col ? row.byCol.get(col.col) : undefined
+          if (cell) cells.push(cell)
+        }
+      }
+    }
+    const sig = cells.map((c) => c.id).join('|')
+    if (sig === lastReport.current) return
+    lastReport.current = sig
+    onAiSelection?.(cells)
+  }, [b?.r0, b?.r1, b?.c0, b?.c1, rows, columns, onAiSelection])
+  const aiCellProps = (r: number, c: number) =>
+    aiMode
+      ? {
+          onPointerDown: (e: React.PointerEvent) => {
+            e.preventDefault()
+            try { (e.currentTarget as Element).releasePointerCapture?.(e.pointerId) } catch { /* noop */ }
+            startSel(r, c)
+          },
+          onPointerEnter: () => extendSel(r, c),
+        }
+      : {}
   const bands = entityByColumn ? entityBands(columns) : []
   const keys = columns.map((c) => c.col)
   // The first visible column of each company block (after the first) — gets a
@@ -514,7 +569,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
 
   let lastSection = ''
   return (
-    <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '70vh' }}>
+    <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '70vh', userSelect: aiMode ? 'none' : undefined }}>
       <table className="border-separate" style={{ borderSpacing: 0 }}>
         <thead className="sticky top-0 z-20">
           {entityByColumn && (
@@ -603,9 +658,17 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                       <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 210 }} title={r.secondary}>{r.secondary}</span>
                     )}
                   </th>
-                  {columns.map((col) => {
+                  {columns.map((col, ci) => {
                     const cell = r.byCol.get(col.col)
-                    if (!cell) return <td key={col.col} className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'}`} style={dividerStyle(col)} />
+                    if (!cell)
+                      return (
+                        <td
+                          key={col.col}
+                          className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'} ${aiMode ? 'cursor-cell' : ''}`}
+                          style={{ ...dividerStyle(col), ...(inSel(ri, ci) ? { boxShadow: 'inset 0 0 0 2px #4F7BCF', background: 'rgba(79,123,207,0.12)' } : null) }}
+                          {...aiCellProps(ri, ci)}
+                        />
+                      )
                     const isSel = selected?.id === cell.id        // persistent selection (blue ring)
                     const isPulsing = verify?.pulseId === cell.id // one-shot navigation pulse
                     // ── Verification overlay cell: matched → neutral; only issues tinted ──
@@ -671,15 +734,16 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                             ? `${cell.metricLabel} · ${cell.period} — calculated cell · a value it depends on isn’t available (value for calculation not found)`
                             : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
-                      <td key={col.col} className="border-b border-r border-soft-border/60 p-0" style={dividerStyle(col)}>
+                      <td key={col.col} className={`border-b border-r border-soft-border/60 p-0 ${aiMode ? 'cursor-cell' : ''}`} style={dividerStyle(col)} {...aiCellProps(ri, ci)}>
                         <button
                           type="button"
                           data-cell-id={cell.id}
-                          onClick={() => onSelect(cell)}
+                          onClick={() => { if (!aiMode) onSelect(cell) }}
                           title={title}
                           className={`relative flex h-full min-h-[34px] w-full items-center ${fetched ? 'justify-end text-right' : 'justify-center'} px-2 py-1 tabular-nums transition-all ${q.cell} hover:brightness-95`}
-                          style={isPulsing ? { boxShadow: 'inset 0 0 0 2px #1E4079' } : isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
+                          style={inSel(ri, ci) ? { boxShadow: 'inset 0 0 0 2px #4F7BCF' } : isPulsing ? { boxShadow: 'inset 0 0 0 2px #1E4079' } : isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
                         >
+                          {inSel(ri, ci) && <span className="pointer-events-none absolute inset-0 bg-[#4F7BCF]/12" />}
                           {isFormula && <FunctionSquare className="absolute left-1 top-1 h-2.5 w-2.5 opacity-40" />}
                           {fetched ? (
                             <span className={`text-[11.5px] font-semibold ${q.text}`}>{txt}</span>
@@ -749,7 +813,7 @@ function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => v
 // Keyed by sheet + company in the page, so selection/drag state reset cleanly
 // when the sheet or company filter changes. The saved "Customize View" is keyed
 // by sheet only, so it survives a company-filter change and reloads on return.
-function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify, selected, onSelect }: {
+function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify, selected, onSelect, aiMode, onAiSelection, clearSignal }: {
   group: AuditGroup
   fullColumns: GridCol[]
   companyLabel: string
@@ -761,6 +825,10 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
   /** Selection is owned by the page so a verifier-row click can open the panel. */
   selected: AuditCell | null
   onSelect: (c: AuditCell | null) => void
+  /** AI Mode: drag-select cells for analysis. */
+  aiMode?: boolean
+  onAiSelection?: (cells: AuditCell[]) => void
+  clearSignal?: number
 }) {
   const grid = useMemo(() => buildGrid(group), [group])
   const allCols = useMemo(() => fullColumns.map((c) => c.col), [fullColumns])
@@ -892,7 +960,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
 
       {/* Grid + (optional) detail */}
       <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
-        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={onSelect} view={view} verify={verify} />
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={onSelect} view={view} verify={verify} aiMode={aiMode} onAiSelection={onAiSelection} clearSignal={clearSignal} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
             <CellDetail
@@ -923,6 +991,15 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   const [pulseId, setPulseId] = useState<string | null>(null)
   const [selected, setSelected] = useState<AuditCell | null>(null)
   const [navNote, setNavNote] = useState<string | null>(null)
+
+  // ── AI Mode (in-grid drag-select → analysis) ───────────────────────────────
+  const [aiMode, setAiMode] = useState(false)
+  const [aiSelection, setAiSelection] = useState<AuditCell[]>([])
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false)
+  const [aiAutoGen, setAiAutoGen] = useState(false)
+  const [clearSignal, setClearSignal] = useState(0)
+  const aiReady = useMemo(() => aiSelection.filter(isReadyAuditCell).length, [aiSelection])
+  const clearAiSelection = () => { setClearSignal((n) => n + 1); setAiSelection([]) }
   const verifyMap = useMemo(() => {
     const m = new Map<string, VerifyRow>()
     if (verifyResult) for (const r of verifyResult.rows) m.set(r.id, r)
@@ -957,6 +1034,13 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
     const pulseT = setTimeout(() => setPulseId(null), 1900)
     return () => { clearTimeout(scrollT); clearTimeout(pulseT) }
   }, [verifyTarget?.nonce]) // eslint react-hooks rule not configured; nonce-keyed by design
+
+  // AI Mode is mutually exclusive with the Excel verification overlay.
+  useEffect(() => { if (verifyView) setAiMode(false) }, [verifyView])
+  // Turning AI Mode off clears any selection + closes the drawer.
+  useEffect(() => { if (!aiMode) { setAiSelection([]); setAiDrawerOpen(false) } }, [aiMode])
+  // Switching sheet or company clears the selection (the grid remounts anyway).
+  useEffect(() => { setAiSelection([]); setAiDrawerOpen(false); setClearSignal((n) => n + 1) }, [active, company])
 
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
 
@@ -1124,21 +1208,46 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
 
       {/* Page control row — the company filter applies to every sheet type. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <CompanyFilter options={companyOptions} value={effectiveCompany} onChange={(c) => { setCompany(c); setSelected(null) }} />
-        {effectiveCompany !== 'all' && (
-          <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
-            <span className="h-2 w-2 rounded-full" style={{ background: companyColor(effectiveCompany).key }} />
-            Showing <span className="font-semibold text-navy-deep">{companyLabel}</span> only
-            <button
-              type="button"
-              onClick={() => { setCompany('all'); setSelected(null) }}
-              className="ml-1 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10px] font-medium text-navy-primary transition-colors hover:border-navy-primary/30"
-            >
-              Show all
-            </button>
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <CompanyFilter options={companyOptions} value={effectiveCompany} onChange={(c) => { setCompany(c); setSelected(null) }} />
+          {effectiveCompany !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
+              <span className="h-2 w-2 rounded-full" style={{ background: companyColor(effectiveCompany).key }} />
+              Showing <span className="font-semibold text-navy-deep">{companyLabel}</span> only
+              <button
+                type="button"
+                onClick={() => { setCompany('all'); setSelected(null) }}
+                className="ml-1 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10px] font-medium text-navy-primary transition-colors hover:border-navy-primary/30"
+              >
+                Show all
+              </button>
+            </span>
+          )}
+        </div>
+        {/* AI Mode — drag-select cells in the grid and ask for a quick analysis.
+            Hidden during the Excel verification overlay (the two don't mix). */}
+        {!verifyView && (
+          <button
+            type="button"
+            onClick={() => setAiMode((m) => !m)}
+            aria-pressed={aiMode}
+            title="Turn on to drag-select cells and analyse them with AI"
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold transition-all ${
+              aiMode ? 'border-transparent bg-gradient-to-br from-[#1E4079] to-[#143058] text-white shadow-soft' : 'border-soft-border bg-white text-navy-deep hover:border-muted-blue hover:shadow-soft'
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" /> AI Mode: {aiMode ? 'On' : 'Off'}
+          </button>
         )}
       </div>
+
+      {/* AI Mode hint */}
+      {aiMode && !verifyView && (
+        <div className="flex items-center gap-1.5 rounded-xl border border-[#9DB4D8] bg-soft-blue/60 px-3 py-1.5 text-[11px] text-navy-primary">
+          <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
+          Drag across cells to select a range — like Excel. Press Esc to clear.
+        </div>
+      )}
 
       {/* Contain a per-sheet render failure to this panel — the tab bar above
           stays live, so one bad sheet can never blank the whole Data Audit page.
@@ -1168,9 +1277,38 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
             verify={verifyGrid}
             selected={selectedOnActive}
             onSelect={setSelected}
+            aiMode={aiMode}
+            onAiSelection={setAiSelection}
+            clearSignal={clearSignal}
           />
         )}
       </SectionErrorBoundary>
+
+      {/* AI Mode floating action bar — only while there's an active selection. */}
+      {aiMode && aiSelection.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 px-3">
+          <div className="flex items-center gap-3 rounded-full border border-[#9DB4D8] bg-card/95 px-3 py-2 shadow-lift backdrop-blur">
+            <span className="pl-1 text-[11.5px] font-semibold text-navy-deep">
+              {aiSelection.length} cell{aiSelection.length === 1 ? '' : 's'} selected · <span className="text-teal">{aiReady} ready</span>
+              {aiSelection.length - aiReady > 0 && (
+                <span className="text-coral"> · {aiSelection.length - aiReady} gap{aiSelection.length - aiReady > 1 ? 's' : ''}</span>
+              )}
+            </span>
+            <button
+              type="button"
+              onClick={() => { setAiAutoGen(true); setAiDrawerOpen(true) }}
+              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Analyse selected data
+            </button>
+            <button type="button" onClick={clearAiSelection} className="rounded-full p-1 text-ink-secondary transition hover:bg-ice hover:text-navy-deep" aria-label="Clear selection">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {aiDrawerOpen && <AiAnalysisDrawer cells={aiSelection} autoGenerate={aiAutoGen} onClose={() => setAiDrawerOpen(false)} />}
     </div>
   )
 }

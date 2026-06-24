@@ -3,13 +3,14 @@
 Server-side endpoints served by Cloudflare Pages (the same build that deploys the
 dashboard). Everything here runs on the edge — the browser never sees any secret.
 
-## `/api/insight` — AI Senior-Analyst synthesis
+## `/api/insight` — on-demand AI analysis
 
-`POST /api/insight` powers the **Generate AI Analysis** button in Data Audit (and
-the Insights Explorer). The browser sends only the pre-computed Tier-1 readout +
-audit metadata (`src/lib/analystReadout.ts`); the function calls Anthropic, runs a
-fail-closed correctness gate (every number must trace to the readout; no investment
-advice), retries once, and caches identical selections.
+`POST /api/insight` powers **AI Mode** in the Data Audit table: turn AI Mode on,
+drag-select cells, then click **Analyse selected data**. The browser sends only the
+pre-computed Tier-1 readout + audit metadata (`src/lib/analystReadout.ts`); the
+function calls Anthropic for a short read (a few bullets + a formula + a plain
+conclusion), runs a fail-closed correctness gate (every number must trace to the
+readout; no investment advice), retries once, and caches identical selections.
 
 ### One-time setup (the only manual step)
 
