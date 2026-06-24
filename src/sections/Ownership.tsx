@@ -1,11 +1,10 @@
-import { useMemo, useState, type ReactNode } from 'react'
-import { ArrowLeftRight, ArrowUpRight, Info, Landmark, Minus, ShieldCheck, TrendingDown, TrendingUp, Users, Waves } from 'lucide-react'
-import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ReferenceLine, ResponsiveContainer, Sector, Tooltip, XAxis, YAxis } from 'recharts'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ArrowUpRight, Info, Landmark, Minus, ShieldCheck, TrendingDown, TrendingUp, Users, Waves } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ModuleCard } from '@/components/ModuleCard'
 import { LockedPanel } from '@/components/LockedPanel'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
-import { SourceTag } from '@/components/SourceTag'
 import { useActiveCompany, useFilters } from '@/state/filters'
 import { getCompanyMaster, getOwnershipData, getBulkBlockDeals, getNamedHolders, type BulkBlockDeal } from '@/lib/dataLayer'
 import {
@@ -17,7 +16,7 @@ import {
   type OwnershipTrendView,
 } from '@/lib/ownershipTrend'
 import type { OwnershipHolderGroup } from '@/data/snapshots/_schemas'
-import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
+import { sourceHref } from '@/lib/sourceHealth'
 
 // ── Bulk / block deal formatting + signal chart ─────────────────────────────
 const dealQty = (q: number): string =>
@@ -315,13 +314,14 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
 
 // ---------------------------------------------------------------------------
 //  Ownership — Governance → Ownership Trend module for the LISTED standalone-
-//  health insurers (Niva Bupa, Star Health). The page leads with the ownership
-//  *trend* (how Promoter / FII / DII / Public holding has moved over time, from
-//  Screener's shareholding pattern), then an insight strip, the investor-movement
-//  table, the latest-period composition donut and the bulk/block-deal timeline.
-//  Annual ↔ Quarterly follows the page-level toggle; the FY/QTR range narrows the
-//  periods. Missing legs render as a quiet n/a — never coerced to 0; investor-
-//  level rows are shown only from a real source, never invented.
+//  health insurers (Niva Bupa, Star Health). The hero is a split, interactive
+//  card: a line chart of how Promoter / FII / DII / Public holding has moved over
+//  time (left), and a donut showing the ownership *position* for the period the
+//  user clicks (right). Below: an insight strip, the investor-movement table and
+//  the bulk/block-deal timeline. Annual ↔ Quarterly follows the page-level
+//  toggle; both chart and donut read the same Screener data. Missing legs render
+//  as a quiet n/a — never 0; investor-level rows are shown only from a real
+//  source, never invented.
 // ---------------------------------------------------------------------------
 
 interface Holder { name: string; type: string; share: number | null; change: number | null }
@@ -353,8 +353,8 @@ const TREND_COLOR: Record<OwnershipHolderGroup, string> = {
 }
 const CATEGORY_LABEL: Record<string, string> = {
   Promoters: 'Promoter',
-  FIIs: 'Foreign (FII)',
-  DIIs: 'Domestic (DII)',
+  FIIs: 'Foreign / FII',
+  DIIs: 'Domestic / DII',
   Public: 'Public float',
 }
 const UP = '#2F855A'
@@ -447,7 +447,7 @@ function TrendTooltip({ active, label, view }: { active?: boolean; label?: strin
           )
         })}
       </div>
-      <p className="mt-1.5 border-t border-soft-border pt-1 text-[9.5px] font-medium text-ink-secondary/80">Source: Screener · Shareholding Pattern</p>
+      <p className="mt-1.5 border-t border-soft-border pt-1 text-[9.5px] font-medium text-ink-secondary/80">Click to lock this period · Source: Screener</p>
     </div>
   )
 }
@@ -475,13 +475,122 @@ function buildTakeaway(view: OwnershipTrendView, modeWord: string): string {
   return `${promPart}${instPart}${pubPart}.${moverPart}`
 }
 
+// ── Smooth value tween (ease-out cubic) — drives the donut morph + legend ─────
+// Interpolates from the currently-displayed values to the new target over
+// ~600ms so the donut segments and legend numbers glide rather than jump.
+function useTween(target: number[], duration = 620): number[] {
+  const [vals, setVals] = useState<number[]>(target)
+  const valsRef = useRef<number[]>(target)
+  valsRef.current = vals
+  const raf = useRef(0)
+  const key = target.join(',')
+  useEffect(() => {
+    const from = valsRef.current.slice()
+    const to = target
+    let start = 0
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3)
+    cancelAnimationFrame(raf.current)
+    const step = (ts: number) => {
+      if (!start) start = ts
+      const p = Math.min(1, (ts - start) / duration)
+      const e = ease(p)
+      setVals(to.map((v, i) => (from[i] ?? v) + (v - (from[i] ?? v)) * e))
+      if (p < 1) raf.current = requestAnimationFrame(step)
+    }
+    raf.current = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf.current)
+  }, [key, duration])
+  return vals
+}
+
+/** Annulus-sector path (clockwise from `a0` to `a1`, radians). */
+function donutSlicePath(cx: number, cy: number, rO: number, rI: number, a0: number, a1: number): string {
+  const pt = (r: number, a: number) => `${(cx + r * Math.cos(a)).toFixed(2)},${(cy + r * Math.sin(a)).toFixed(2)}`
+  const large = a1 - a0 > Math.PI ? 1 : 0
+  return `M${pt(rO, a0)} A${rO},${rO} 0 ${large} 1 ${pt(rO, a1)} L${pt(rI, a1)} A${rI},${rI} 0 ${large} 0 ${pt(rI, a0)} Z`
+}
+
+// ── PART (interactive donut) — Ownership Position for the selected period ─────
+function OwnershipPositionDonut({ view, selectedIdx, onLatest }: { view: OwnershipTrendView; selectedIdx: number; onLatest: () => void }) {
+  const groups = TREND_GROUPS
+  const target = useMemo(() => groups.map((g) => view.seriesByGroup[g][selectedIdx] ?? 0), [view, selectedIdx, groups])
+  const vals = useTween(target, 620)
+  const sel = view.periods[selectedIdx]
+  const isLatest = selectedIdx === view.periods.length - 1
+  const total = vals.reduce((a, b) => a + Math.max(0, b), 0) || 1
+
+  const C = 88, RO = 80, RI = 58, GAP = 0.05
+  let acc = -Math.PI / 2
+  const arcs = groups.map((g, i) => {
+    const span = (Math.max(0, vals[i]) / total) * 2 * Math.PI
+    const a0 = acc + GAP / 2
+    const a1 = acc + span - GAP / 2
+    acc += span
+    return { g, color: TREND_COLOR[g], path: donutSlicePath(C, C, RO, RI, a0, Math.max(a0, a1)) }
+  })
+
+  return (
+    <div className="flex h-full flex-col rounded-xl border border-soft-border bg-white/70 p-3.5">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Ownership Position</p>
+          <p className="mt-0.5 text-[10.5px] text-ink-secondary">Selected-period ownership mix</p>
+        </div>
+        <button
+          type="button"
+          onClick={onLatest}
+          disabled={isLatest}
+          className={['shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors', isLatest ? 'cursor-default bg-ice text-ink-secondary/50' : 'bg-soft-blue text-navy-primary hover:bg-[#E2ECFF]'].join(' ')}
+        >
+          Latest
+        </button>
+      </div>
+
+      <div className="mt-1.5">
+        <span className="inline-flex items-center gap-1 rounded-full bg-navy-primary/8 px-2 py-0.5 text-[10px] font-semibold text-navy-primary ring-1 ring-navy-primary/15">
+          <span className="h-1.5 w-1.5 rounded-full bg-champagne" />
+          Selected: {sel?.fiscal ?? '—'}
+        </span>
+      </div>
+
+      <div className="relative mx-auto mt-2 h-[176px] w-[176px]">
+        <svg viewBox="0 0 176 176" className="h-full w-full">
+          {arcs.map((a) => (
+            <path key={a.g} d={a.path} fill={a.color} stroke="#FFFFFF" strokeWidth={0.75} />
+          ))}
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="font-display text-[27px] leading-none text-navy-deep tabular-nums">{vals[0].toFixed(1)}%</span>
+          <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Promoter</span>
+          <span className="mt-0.5 text-[10.5px] font-medium text-navy-deep">{sel?.fiscal ?? ''}</span>
+        </div>
+      </div>
+
+      <ul className="mt-2.5 space-y-1">
+        {groups.map((g, i) => (
+          <li key={g} className="flex items-center gap-2 text-[11px]">
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: TREND_COLOR[g] }} />
+            <span className="flex-1 truncate text-ink-secondary">{CATEGORY_LABEL[g]}</span>
+            <span className="w-14 shrink-0 text-right font-semibold tabular-nums text-navy-deep">{vals[i].toFixed(1)}%</span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 text-[9.5px] leading-snug text-ink-secondary/70">Same source as the trend · Screener shareholding pattern.</p>
+    </div>
+  )
+}
+
 // Secondary metric strip — shareholder count over the same periods (kept OFF the
-// holding-% axis). Mini bars + latest value + change vs previous period.
-function ShareholderStrip({ view }: { view: OwnershipTrendView }) {
+// holding-% axis). Mini bars (selected highlighted) + the selected period's count
+// and its change vs the prior period.
+function ShareholderStrip({ view, selectedIdx }: { view: OwnershipTrendView; selectedIdx: number }) {
   const counts = view.shareholderCounts
-  const sh = shareholderInsight(view)
+  const latest = counts[selectedIdx] ?? null
+  const prev = selectedIdx > 0 ? counts[selectedIdx - 1] ?? null : null
+  const change = latest != null && prev != null ? latest - prev : null
   const known = counts.filter((v): v is number => v != null)
   const max = known.length ? Math.max(...known) : 1
+  const sel = view.periods[selectedIdx]
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-soft-border bg-ice/40 px-3 py-2.5">
       <div className="flex items-center gap-1.5">
@@ -490,22 +599,68 @@ function ShareholderStrip({ view }: { view: OwnershipTrendView }) {
       </div>
       <div className="flex items-end gap-[3px]" aria-hidden>
         {counts.map((c, i) => {
-          const last = i === counts.length - 1
+          const on = i === selectedIdx
           const hgt = c == null ? 3 : 6 + (c / max) * 22
-          return <span key={i} className="w-2 rounded-[2px]" style={{ height: hgt, background: last ? '#B68B3A' : '#C9D2E0' }} title={view.periods[i] ? `${view.periods[i].fiscal}: ${fmtCount(c)}` : undefined} />
+          return <span key={i} className="w-2 rounded-[2px] transition-colors" style={{ height: hgt, background: on ? '#B68B3A' : '#C9D2E0' }} title={view.periods[i] ? `${view.periods[i].fiscal}: ${fmtCount(c)}` : undefined} />
         })}
       </div>
       <div className="flex items-baseline gap-2">
-        <span className="font-display text-[18px] leading-none text-navy-deep tabular-nums">{fmtCount(sh.latest)}</span>
-        <span className="text-[11px]"><ChangeBadge value={sh.change} kind="count" /></span>
-        <span className="text-[10px] text-ink-secondary">vs prev {view.periodType === 'yearly' ? 'year' : 'quarter'}</span>
+        <span className="font-display text-[18px] leading-none text-navy-deep tabular-nums">{fmtCount(latest)}</span>
+        <span className="text-[11px]"><ChangeBadge value={change} kind="count" /></span>
+        <span className="text-[10px] text-ink-secondary">in {sel?.fiscal ?? '—'}</span>
       </div>
     </div>
   )
 }
 
-// ── PART 5 — Hero: Ownership Trend line chart ────────────────────────────────
-function OwnershipTrendHero({ view, scrapedAt }: { view: OwnershipTrendView; scrapedAt: string | null }) {
+// Compact source pill + click popover that opens DOWNWARD from the pill — so it
+// never floats over the chart/donut interaction area.
+function HeroSource({ sourceUrl, scrapedAt, lastUpdated }: { sourceUrl: string; scrapedAt: string | null; lastUpdated: string | null }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="relative mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="group inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-white/70 px-2.5 py-1 text-[10px] font-medium text-ink-secondary shadow-[0_1px_2px_rgba(23,43,77,0.04)] transition-colors hover:border-muted-blue hover:text-navy-deep"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-teal" />
+        <span className="font-semibold uppercase tracking-[0.08em]">Source</span>
+        <span aria-hidden className="text-ink-secondary/50">·</span>
+        Screener · Shareholding Pattern
+        <Info className="h-3 w-3 text-ink-secondary/55 transition-colors group-hover:text-muted-blue" />
+      </button>
+      <span className="text-[10px] text-ink-secondary">Updated {lastUpdated ?? '—'}</span>
+      {open && (
+        <div className="absolute left-0 top-full z-40 mt-1.5 w-72 rounded-xl border border-soft-border bg-card p-3 text-left shadow-card">
+          <p className="text-[11px] font-semibold leading-snug text-navy-deep">Screener — Niva Bupa (NIVABUPA) · Investors / Shareholding Pattern</p>
+          <a href={sourceUrl} target="_blank" rel="noreferrer" className="mt-1.5 block break-all text-[10px] leading-snug text-muted-blue hover:underline">
+            {sourceUrl}
+          </a>
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-ink-secondary">
+            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-teal" />Verified · high confidence</span>
+            {scrapedAt && (<><span aria-hidden>·</span><span>Fetched {scrapedAt.slice(0, 10)}</span></>)}
+          </p>
+          <p className="mt-2 border-t border-soft-border pt-2 text-[9.5px] italic leading-snug text-ink-secondary/80">
+            Classifications might have changed from Sep 2022 onwards (new XBRL format added more detail).
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── PART 5 — Hero: split Ownership Trend (line) + Ownership Position (donut) ───
+function OwnershipTrendHero({ view }: { view: OwnershipTrendView }) {
+  const lastIdx = view.periods.length - 1
+  const [selectedIdx, setSelectedIdx] = useState(lastIdx)
+  // Reset the selection to the latest period whenever the period set changes
+  // (Annual ↔ Quarterly, or a range change).
+  useEffect(() => {
+    setSelectedIdx(view.periods.length - 1)
+  }, [view.periodType, view.periods.length])
+
   const modeWord = view.periodType === 'yearly' ? 'annual' : 'quarterly'
   const data: TrendDatum[] = view.periods.map((p, i) => ({
     label: p.fiscal,
@@ -515,7 +670,9 @@ function OwnershipTrendHero({ view, scrapedAt }: { view: OwnershipTrendView; scr
     DIIs: view.seriesByGroup.DIIs[i],
     Public: view.seriesByGroup.Public[i],
   }))
+  const selFiscal = view.periods[selectedIdx]?.fiscal
   const takeaway = buildTakeaway(view, modeWord)
+  const lastUpdated = view.meta.last_updated ?? view.meta.scraped_at ?? null
 
   return (
     <div className="card-surface card-tint-navy p-4 sm:p-5">
@@ -530,73 +687,94 @@ function OwnershipTrendHero({ view, scrapedAt }: { view: OwnershipTrendView; scr
         </span>
       </div>
 
-      {/* Legend chips — colour key + latest holding, doubles as a quick read. */}
-      <div className="mb-1.5 mt-2 flex flex-wrap items-center gap-x-3.5 gap-y-1">
-        {TREND_GROUPS.map((g) => {
-          const v = view.seriesByGroup[g]
-          const latest = v.length ? v[v.length - 1] : null
-          return (
-            <span key={g} className="inline-flex items-center gap-1.5 text-[11px]">
-              <span className="h-2.5 w-2.5 rounded-full" style={{ background: TREND_COLOR[g] }} />
-              <span className="font-medium text-ink-primary">{CATEGORY_LABEL[g] ?? g}</span>
-              <span className="font-semibold tabular-nums text-navy-deep">{fmtPct(latest, 1)}</span>
-            </span>
-          )
-        })}
-      </div>
-
-      <div className="w-full" style={{ height: 312 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 10, right: 18, left: -6, bottom: 2 }}>
-            <CartesianGrid vertical={false} stroke="#EAEEF6" strokeDasharray="2 4" />
-            <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E2E7F0' }} tick={{ fontSize: 11, fill: '#5B6573', fontWeight: 600 }} padding={{ left: 12, right: 12 }} />
-            <YAxis domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#6B7280' }} width={34} unit="%" />
-            <Tooltip content={<TrendTooltip view={view} />} cursor={{ stroke: '#C9D2E0', strokeDasharray: '3 3' }} />
+      {/* Split hero: trend (left) + period-snapshot donut (right). Stacks on mobile. */}
+      <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-[7fr_3fr]">
+        {/* LEFT — line chart + legend key + shareholder strip + takeaway */}
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1">
             {TREND_GROUPS.map((g) => (
-              <Line
-                key={g}
-                type="monotone"
-                dataKey={g}
-                stroke={TREND_COLOR[g]}
-                strokeWidth={g === 'Promoters' ? 2.6 : 2}
-                dot={{ r: 2.4, fill: TREND_COLOR[g], strokeWidth: 0 }}
-                activeDot={{ r: 4.5 }}
-                connectNulls
-                isAnimationActive={false}
-              />
+              <span key={g} className="inline-flex items-center gap-1.5 text-[11px]">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: TREND_COLOR[g] }} />
+                <span className="font-medium text-ink-primary">{CATEGORY_LABEL[g] ?? g}</span>
+              </span>
             ))}
-          </LineChart>
-        </ResponsiveContainer>
+            <span className="ml-auto text-[10px] italic text-ink-secondary/70">Click any point to view that period →</span>
+          </div>
+
+          <div className="w-full" style={{ height: 312 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={data}
+                margin={{ top: 18, right: 18, left: -6, bottom: 2 }}
+                onClick={(state) => {
+                  if (state && typeof state.activeTooltipIndex === 'number') setSelectedIdx(state.activeTooltipIndex)
+                }}
+                style={{ cursor: 'pointer' }}
+              >
+                <CartesianGrid vertical={false} stroke="#EAEEF6" strokeDasharray="2 4" />
+                <XAxis dataKey="label" tickLine={false} axisLine={{ stroke: '#E2E7F0' }} tick={{ fontSize: 11, fill: '#5B6573', fontWeight: 600 }} padding={{ left: 12, right: 12 }} />
+                <YAxis domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#6B7280' }} width={34} unit="%" />
+                <Tooltip content={<TrendTooltip view={view} />} cursor={{ stroke: '#C9D2E0', strokeDasharray: '3 3' }} />
+                {selFiscal && (
+                  <ReferenceLine
+                    x={selFiscal}
+                    stroke="#9AA6B6"
+                    strokeDasharray="4 4"
+                    strokeOpacity={0.85}
+                    label={{ value: selFiscal, position: 'top', fill: '#5B6573', fontSize: 10, fontWeight: 700 }}
+                  />
+                )}
+                {TREND_GROUPS.map((g) => (
+                  <Line
+                    key={g}
+                    type="monotone"
+                    dataKey={g}
+                    stroke={TREND_COLOR[g]}
+                    strokeWidth={g === 'Promoters' ? 2.6 : 2}
+                    dot={(p) => {
+                      const sel = p.index === selectedIdx
+                      return (
+                        <circle
+                          key={`${g}-${p.index}`}
+                          cx={p.cx}
+                          cy={p.cy}
+                          r={sel ? 4.6 : 2.2}
+                          fill={TREND_COLOR[g]}
+                          stroke={sel ? '#FFFFFF' : 'none'}
+                          strokeWidth={sel ? 1.6 : 0}
+                        />
+                      )
+                    }}
+                    activeDot={{ r: 4.5 }}
+                    connectNulls
+                    isAnimationActive={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          <ShareholderStrip view={view} selectedIdx={selectedIdx} />
+
+          <p className="mt-3 flex items-start gap-2 text-[12px] leading-snug text-ink-primary">
+            <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-champagne-deep" />
+            <span>{takeaway}</span>
+          </p>
+
+          {view.showingFullHistory && (
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-ice/70 px-2.5 py-1 text-[10px] text-ink-secondary ring-1 ring-soft-border">
+              <Info className="h-3 w-3 shrink-0" />
+              Showing full available history — the selected range covers fewer than two comparable periods.
+            </p>
+          )}
+        </div>
+
+        {/* RIGHT — Ownership Position donut for the selected period */}
+        <OwnershipPositionDonut view={view} selectedIdx={selectedIdx} onLatest={() => setSelectedIdx(view.periods.length - 1)} />
       </div>
 
-      {/* Shareholder count — secondary metric, off the holding-% axis. */}
-      <ShareholderStrip view={view} />
-
-      {/* "So what" — data-derived investor narrative. */}
-      <p className="mt-3 flex items-start gap-2 text-[12px] leading-snug text-ink-primary">
-        <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-champagne-deep" />
-        <span>{takeaway}</span>
-      </p>
-
-      {view.showingFullHistory && (
-        <p className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-ice/70 px-2.5 py-1 text-[10px] text-ink-secondary ring-1 ring-soft-border">
-          <Info className="h-3 w-3 shrink-0" />
-          Showing full available history — the selected range covers fewer than two comparable periods.
-        </p>
-      )}
-
-      <div className="mt-3 flex justify-end">
-        <SourceTag
-          source="Screener"
-          period={view.latest?.fiscal}
-          confidence="high"
-          provenance={{
-            source_name: 'Screener — Niva Bupa (NIVABUPA) · Investors / Shareholding Pattern',
-            source_url: view.meta.source_url,
-            fetched_at: scrapedAt,
-          }}
-        />
-      </div>
+      {/* Compact source pill (popover opens downward, off the chart) */}
+      <HeroSource sourceUrl={view.meta.source_url} scrapedAt={view.meta.scraped_at} lastUpdated={lastUpdated} />
     </div>
   )
 }
@@ -834,14 +1012,14 @@ export function Ownership() {
 
   return (
     <div className="space-y-5">
-      {/* 1 — Hero: Ownership Trend */}
+      {/* 1 — Hero: split Ownership Trend (line) + Ownership Position (donut) */}
       {view.available ? (
-        <OwnershipTrendHero view={view} scrapedAt={view.meta.scraped_at} />
+        <OwnershipTrendHero view={view} />
       ) : (
         <div className="card-surface card-tint-navy p-4">
           <h3 className="font-display text-[18px] text-navy-deep">Ownership Trend</h3>
           <p className="mt-0.5 mb-3 text-[12px] text-ink-secondary">Promoter, FII, DII and Public holding movement from Screener shareholding pattern</p>
-          <DataEmptyState kind="pending" height={220} title="Ownership trend being sourced" body={`${company.shortName}'s multi-period shareholding pattern is being pulled from Screener. The latest-period composition is shown below.`} />
+          <DataEmptyState kind="pending" height={220} title="Ownership trend being sourced" body={`${company.shortName}'s multi-period shareholding pattern is being pulled from Screener.`} />
         </div>
       )}
 
@@ -851,10 +1029,7 @@ export function Ownership() {
       {/* 3 — Investor Movement table */}
       {view.available && <InvestorMovementTable view={view} companyId={company.id} latestExchangePeriod={periodLabel} />}
 
-      {/* 4 — Ownership Composition (latest period), moved below the trend */}
-      {row && <HolderComposition row={row} />}
-
-      {/* 5 — Bulk / Block Deal timeline (kept separate from shareholding pattern) */}
+      {/* 4 — Bulk / Block Deal timeline (kept separate from shareholding pattern) */}
       {bulk.deals.length > 0 ? (
         <BulkBlockTimeline deals={bulk.deals} companyName={company.shortName} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
       ) : (
@@ -868,7 +1043,7 @@ export function Ownership() {
         </div>
       )}
 
-      {/* 6 — Source / audit footer (PART 10) */}
+      {/* 5 — Source / audit footer (PART 10) */}
       <div className="rounded-xl border border-soft-border bg-ice/40 px-4 py-3 text-[10.5px] leading-relaxed text-ink-secondary">
         <p>
           <span className="font-semibold text-ink-primary">Source:</span> Screener → Investors / Shareholding Pattern · based on company filings · classifications may change due to XBRL format updates (Screener notes classifications might have changed from Sep 2022 onwards as the new XBRL format added more detail).
@@ -881,269 +1056,6 @@ export function Ownership() {
           <span>Bulk/block deals: NSE / BSE</span>
         </p>
       </div>
-    </div>
-  )
-}
-
-// ── Ownership composition — interactive donut + clickable holder list ────────
-// Built from the OFFICIAL filed holder-category totals (promoter / FII / DII /
-// MF / public) — the latest-period composition. Individual holders are listed in
-// the Investor Movement table above and are NOT repeated here. The donut, chips,
-// list and detail all derive from `row`, so a new filing re-renders them.
-
-// Holder-class colour key — promoter = navy anchor; institutions share a
-// teal/blue family; public = slate.
-const FAMILY: Record<string, { label: string; color: string }> = {
-  promoter: { label: 'Promoter', color: '#27457E' },
-  fii: { label: 'FII / Foreign', color: '#168E8E' },
-  dii: { label: 'Institutions (DII)', color: '#4F7BCF' },
-  mf: { label: 'Mutual Funds', color: '#7FA3D9' },
-  public: { label: 'Public & Other', color: '#9AA6B6' },
-}
-
-interface CatMember { name: string; type: string; pct: number; change: number | null }
-interface Category { key: string; label: string; color: string; pct: number; members: CatMember[] }
-
-// Donut categories = the filed holder-category totals. `members` stays empty —
-// class-level totals carry no named sub-entities, so there's no drill-down and
-// no duplication of the named holders.
-function buildCategories(row: OwnershipRow): { categories: Category[]; named: boolean } {
-  const classes: { key: string; share: number | null }[] = [
-    { key: 'promoter', share: row.promoter_share },
-    { key: 'fii', share: row.fii_share },
-    { key: 'dii', share: row.dii_share },
-    { key: 'mf', share: row.mf_share },
-    { key: 'public', share: row.public_share },
-  ]
-  const categories = classes
-    .filter((c) => c.share != null && c.share > 0)
-    .map((c) => ({ key: c.key, label: FAMILY[c.key].label, color: FAMILY[c.key].color, pct: c.share as number, members: [] as CatMember[] }))
-  return { categories, named: false }
-}
-
-const RAD = Math.PI / 180
-interface ActiveSectorProps {
-  cx: number; cy: number; midAngle: number; innerRadius: number; outerRadius: number
-  startAngle: number; endAngle: number; fill: string; fillOpacity?: number
-}
-// The selected / hovered slice — nudged outward and grown a touch for a clean
-// "lift" that reads as expanded, without losing the ring's shape.
-function ActiveSlice({ cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, fillOpacity }: ActiveSectorProps) {
-  const dx = Math.cos(-RAD * midAngle) * 5
-  const dy = Math.sin(-RAD * midAngle) * 5
-  return (
-    <Sector cx={cx + dx} cy={cy + dy} innerRadius={innerRadius} outerRadius={outerRadius + 6} startAngle={startAngle} endAngle={endAngle} fill={fill} fillOpacity={fillOpacity ?? 1} cornerRadius={3} />
-  )
-}
-
-interface DonutSlice { key: string; label: string; color: string; opacity: number; pct: number; member: CatMember | null }
-
-function HolderComposition({ row }: { row: OwnershipRow }) {
-  const [drill, setDrill] = useState<string | null>(null)
-  const [sel, setSel] = useState<{ kind: 'category' | 'member'; key: string } | null>(null)
-  const [hover, setHover] = useState<number | null>(null)
-
-  const { categories, named } = buildCategories(row)
-  const sumOf = (keys: string[]) => categories.filter((c) => keys.includes(c.key)).reduce((s, c) => s + c.pct, 0)
-  const promoterPct = sumOf(['promoter'])
-  const instPct = sumOf(['pe', 'fii', 'mf', 'dii'])
-  const publicPct = sumOf(['public'])
-
-  const drillCat = drill ? categories.find((c) => c.key === drill) ?? null : null
-  const inDrill = drillCat != null && drillCat.members.length >= 2
-
-  const slices: DonutSlice[] = inDrill
-    ? drillCat!.members.map((m, i) => ({
-        key: `${drillCat!.key}:${m.name}`,
-        label: m.name,
-        color: drillCat!.color,
-        opacity: 1 - Math.min(0.5, (i * 0.5) / Math.max(1, drillCat!.members.length - 1)),
-        pct: m.pct,
-        member: m,
-      }))
-    : categories.map((c) => ({ key: c.key, label: c.label, color: c.color, opacity: 1, pct: c.pct, member: c.members.length === 1 ? c.members[0] : null }))
-
-  const selIndex = !sel
-    ? -1
-    : inDrill || sel.kind === 'member'
-      ? slices.findIndex((s) => s.member?.name === sel.key)
-      : slices.findIndex((s) => s.key === sel.key)
-  const activeIndex: number | undefined = hover != null ? hover : selIndex >= 0 ? selIndex : undefined
-  const defaultIdx = slices.reduce((mi, s, i, arr) => (s.pct > arr[mi].pct ? i : mi), 0)
-  const centerSlice = hover != null ? slices[hover] : selIndex >= 0 ? slices[selIndex] : slices[defaultIdx]
-
-  const clickCategory = (c: Category) => {
-    if (c.members.length >= 2) { setDrill(c.key); setSel({ kind: 'category', key: c.key }) }
-    else if (c.members.length === 1) setSel({ kind: 'member', key: c.members[0].name })
-    else setSel({ kind: 'category', key: c.key })
-  }
-  const clickSlice = (i: number) => {
-    const s = slices[i]
-    if (!s) return
-    if (inDrill) { if (s.member) setSel({ kind: 'member', key: s.member.name }) }
-    else { const c = categories.find((x) => x.key === s.key); if (c) clickCategory(c) }
-  }
-  const back = () => { setSel(drillCat ? { kind: 'category', key: drillCat.key } : null); setDrill(null); setHover(null) }
-
-  const detail = (() => {
-    if (!sel) return null
-    if (sel.kind === 'member') {
-      for (const c of categories) { const m = c.members.find((x) => x.name === sel.key); if (m) return { kind: 'member' as const, m, cat: c } }
-      return null
-    }
-    const c = categories.find((x) => x.key === sel.key)
-    return c ? { kind: 'category' as const, cat: c } : null
-  })()
-
-  const sourceUrl = row.provenance?.source_url || null
-
-  return (
-    <div className="card-surface card-tint-navy p-4">
-      <div className="mb-1 flex items-center gap-1.5">
-        <ArrowLeftRight className="h-3.5 w-3.5 text-navy-primary" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Ownership Composition</p>
-        {inDrill && (
-          <button onClick={back} className="ml-1 inline-flex items-center gap-1 rounded-full bg-ice px-2 py-0.5 text-[10px] font-semibold text-navy-primary transition-colors hover:bg-soft-blue">
-            ‹ All blocks
-          </button>
-        )}
-      </div>
-      <p className="mb-3 text-[10.5px] text-ink-secondary">Latest-period composition ({row.quarter} {row.fiscal_year}). Trend shown above.</p>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,250px)_1fr]">
-        {/* SECTION A — donut + auto-derived summary chips */}
-        <div className="flex flex-col items-center">
-          <div className="relative h-[184px] w-[184px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={slices}
-                  dataKey="pct"
-                  nameKey="label"
-                  innerRadius="78%"
-                  outerRadius="98%"
-                  paddingAngle={1.4}
-                  stroke="none"
-                  isAnimationActive={false}
-                  activeIndex={activeIndex}
-                  activeShape={(p: unknown) => <ActiveSlice {...(p as ActiveSectorProps)} />}
-                  onMouseEnter={(_, i) => setHover(i)}
-                  onMouseLeave={() => setHover(null)}
-                  onClick={(_, i) => clickSlice(i)}
-                >
-                  {slices.map((s, i) => (
-                    <Cell key={s.key} fill={s.color} fillOpacity={(hover != null && hover !== i ? 0.5 : 1) * s.opacity} style={{ cursor: 'pointer', transition: 'opacity .18s ease' }} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-9 text-center">
-              <span className="font-display text-[26px] leading-none text-navy-deep">{centerSlice ? `${centerSlice.pct.toFixed(1)}%` : '—'}</span>
-              <span className="mt-1 line-clamp-2 text-[10.5px] font-medium leading-tight text-ink-secondary">{centerSlice?.label ?? 'Ownership'}</span>
-            </div>
-          </div>
-          <div className="mt-3 grid w-full grid-cols-3 gap-1.5">
-            {[
-              { label: 'Promoter', v: promoterPct, c: FAMILY.promoter.color },
-              { label: 'Institutional', v: instPct, c: FAMILY.dii.color },
-              { label: 'Public / Other', v: publicPct, c: FAMILY.public.color },
-            ].map((chip) => (
-              <div key={chip.label} className="rounded-lg border border-soft-border bg-ice/50 px-2 py-1 text-center">
-                <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{chip.label}</p>
-                <p className="text-[12.5px] font-bold tabular-nums" style={{ color: chip.c }}>{chip.v > 0 ? `${chip.v.toFixed(1)}%` : 'n/a'}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* SECTION B — compact clickable holder list (synced to the donut level) */}
-        <div className="min-w-0">
-          <div className="mb-1.5 flex items-center justify-between">
-            <p className="text-[9.5px] font-semibold uppercase tracking-wide text-ink-secondary">{inDrill ? `${drillCat!.label} · ${drillCat!.members.length} holders` : `${categories.length} holder blocks`}</p>
-            <p className="text-[9.5px] text-ink-secondary/70">Holding %</p>
-          </div>
-          <ul className="space-y-0.5">
-            {inDrill
-              ? drillCat!.members.map((m) => {
-                  const active = sel?.kind === 'member' && sel.key === m.name
-                  return (
-                    <li key={m.name}>
-                      <button
-                        onClick={() => setSel({ kind: 'member', key: m.name })}
-                        onMouseEnter={() => setHover(slices.findIndex((s) => s.member?.name === m.name))}
-                        onMouseLeave={() => setHover(null)}
-                        className={['flex w-full items-center gap-2 rounded-md px-2 py-1 text-left transition-colors', active ? 'bg-soft-blue ring-1 ring-navy-primary/20' : 'hover:bg-ice/70'].join(' ')}
-                      >
-                        <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: drillCat!.color }} />
-                        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-navy-deep">{m.name}</span>
-                        <span className="hidden shrink-0 text-[10px] text-ink-secondary sm:inline">{m.type}</span>
-                        <span className="w-12 shrink-0 text-right text-[11.5px] font-semibold tabular-nums text-navy-deep">{m.pct.toFixed(1)}%</span>
-                      </button>
-                    </li>
-                  )
-                })
-              : categories.map((c) => {
-                  const active = sel?.kind === 'category' && sel.key === c.key
-                  const drillable = c.members.length >= 2
-                  return (
-                    <li key={c.key}>
-                      <button
-                        onClick={() => clickCategory(c)}
-                        onMouseEnter={() => setHover(slices.findIndex((s) => s.key === c.key))}
-                        onMouseLeave={() => setHover(null)}
-                        className={['flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors', active ? 'bg-soft-blue ring-1 ring-navy-primary/20' : 'hover:bg-ice/70'].join(' ')}
-                      >
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-[3px]" style={{ background: c.color }} />
-                        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-navy-deep">{c.label}</span>
-                        {drillable && <span className="shrink-0 rounded-full bg-ice px-1.5 py-0.5 text-[9px] font-semibold text-ink-secondary">{c.members.length} ›</span>}
-                        <span className="w-12 shrink-0 text-right text-[12px] font-bold tabular-nums text-navy-deep">{c.pct.toFixed(1)}%</span>
-                      </button>
-                    </li>
-                  )
-                })}
-          </ul>
-        </div>
-      </div>
-
-      {/* Detail panel — the selected block or entity. */}
-      {detail && (() => {
-        const isMember = detail.kind === 'member'
-        const name = isMember ? detail.m.name : detail.cat.label
-        const type = isMember ? detail.m.type : detail.cat.members.length > 0 ? 'Holder block' : 'Holder class'
-        const pctV = isMember ? detail.m.pct : detail.cat.pct
-        const change = isMember ? detail.m.change : null
-        const color = detail.cat.color
-        const note = 'Filed holder-category total — individual holders are listed in the Investor Movement table above. Quarter-on-quarter movement is shown there from the Screener ownership trend.'
-        return (
-          <div className="mt-3 rounded-xl border border-soft-border bg-gradient-to-br from-ice/70 to-white p-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2">
-                <span className="h-3 w-3 shrink-0 rounded-[3px]" style={{ background: color }} />
-                <div className="min-w-0">
-                  <p className="truncate text-[13px] font-bold text-navy-deep">{name}</p>
-                  <p className="text-[10.5px] text-ink-secondary">{type}</p>
-                </div>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-[16px] font-bold tabular-nums text-navy-deep">{pctV.toFixed(1)}%</p>
-                <p className="text-[9px] uppercase tracking-wide text-ink-secondary">holding</p>
-              </div>
-            </div>
-            <p className="mt-2 text-[10.5px] leading-snug text-ink-secondary">{change != null ? `Recent movement ${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)}pp. ` : ''}{note}</p>
-            {isLinkable(sourceUrl) && (
-              <a href={sourceHref(sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(sourceUrl).hint} className="mt-1.5 inline-flex items-center gap-0.5 text-[10.5px] font-medium text-navy-primary hover:underline">
-                Source filing <ArrowUpRight className="h-3 w-3" />
-              </a>
-            )}
-          </div>
-        )
-      })()}
-
-      {!named && (
-        <p className="mt-3 text-[10.5px] text-ink-secondary/80">
-          Filed shareholding-category totals (NSE / BSE) — the latest-period composition. Individual holders are listed in the Investor Movement table above.
-        </p>
-      )}
     </div>
   )
 }
