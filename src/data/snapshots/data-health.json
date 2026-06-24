@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-24T09:05:05.751Z",
-  "last_failed_run": "2026-06-24T09:05:05.751Z",
+  "last_successful_run": "2026-06-24T09:51:57.973Z",
+  "last_failed_run": "2026-06-24T09:51:57.973Z",
   "sources_checked": 11,
   "sources_success": 5,
   "sources_failed": 1,
@@ -24033,7 +24033,6 @@
     "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
     "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
     "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
-    "[moneycontrol_analyst] Broker Research page fetched but no broker cards matched (DOM may have changed).",
     "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W",
@@ -24061,7 +24060,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-24T09:03:43.187Z",
+      "last_attempt_at": "2026-06-24T09:50:29.201Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -24209,28 +24208,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T09:04:09.862Z",
+      "last_attempt_at": "2026-06-24T09:50:56.667Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "success",
-      "last_attempt_at": "2026-06-24T09:03:56.228Z",
-      "last_success_at": "2026-06-24T09:03:56.228Z",
+      "last_attempt_at": "2026-06-24T09:50:42.182Z",
+      "last_success_at": "2026-06-24T09:50:42.182Z",
       "records_fetched": 91
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-24T09:04:02.758Z",
-      "last_success_at": "2026-06-24T09:04:02.758Z",
+      "last_attempt_at": "2026-06-24T09:50:49.042Z",
+      "last_success_at": "2026-06-24T09:50:49.042Z",
       "records_fetched": 103
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T09:03:49.728Z",
+      "last_attempt_at": "2026-06-24T09:50:35.657Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24244,42 +24243,42 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-24T09:04:11.669Z",
-      "last_success_at": "2026-06-24T09:04:11.669Z",
-      "records_fetched": 0
+      "last_attempt_at": "2026-06-24T09:50:58.107Z",
+      "last_success_at": "2026-06-24T09:50:58.107Z",
+      "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T09:04:56.147Z",
+      "last_attempt_at": "2026-06-24T09:51:55.223Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-24T09:04:04.259Z",
-      "last_success_at": "2026-06-24T09:04:04.259Z",
+      "last_attempt_at": "2026-06-24T09:50:50.637Z",
+      "last_success_at": "2026-06-24T09:50:50.637Z",
       "records_fetched": 2770
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-24T09:04:24.459Z",
-      "last_success_at": "2026-06-24T09:04:24.459Z",
+      "last_attempt_at": "2026-06-24T09:51:23.603Z",
+      "last_success_at": "2026-06-24T09:51:23.603Z",
       "records_fetched": 5
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T09:04:27.583Z",
+      "last_attempt_at": "2026-06-24T09:51:26.760Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T09:04:59.483Z",
+      "last_attempt_at": "2026-06-24T09:51:56.620Z",
       "last_success_at": "2026-06-11T14:29:33.334Z",
       "records_fetched": 0
     }
