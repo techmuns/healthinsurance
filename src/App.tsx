@@ -1,9 +1,11 @@
-import { useEffect, useState, lazy, Suspense, type ComponentType } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
 import type { AuditFocus, NavTarget } from '@/insights/sourceMap'
 import { FilterProvider, useFilters } from '@/state/filters'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
+import { SectionTransition } from '@/components/SectionTransition'
+import { DataAuditPane } from '@/components/DataAuditPane'
 import { HeaderSwitcher, type TopPage } from '@/components/HeaderSwitcher'
 import { SahiAnalysisHeader } from '@/components/SahiAnalysisHeader'
 import { PageHeadline, type HeadlineTone } from '@/components/PageHeadline'
@@ -20,13 +22,11 @@ import { OwnershipGovernance } from '@/sections/OwnershipGovernance'
 import { SectoralNews } from '@/sections/SectoralNews'
 import { Insights } from '@/sections/Insights'
 
-// Lazy — the audit tab carries a ~1 MB cell-level index that should only load
-// when a reviewer actually opens the QA surface, never on first paint. The Excel
-// verifier now lives INSIDE this section, so opening Data Audit is the only place
-// that pulls SheetJS + the cell-level model.
-const ExtractedDataAudit = lazy(() =>
-  import('@/sections/ExtractedDataAudit').then((m) => ({ default: m.ExtractedDataAudit })),
-)
+// The Data Audit tab carries a ~1 MB cell-level index that should only load when
+// a reviewer actually opens the QA surface, never on first paint. DataAuditPane
+// owns that lazy load (a dynamic import) plus the premium "preparing" progress
+// experience, so opening Data Audit is the only place that pulls SheetJS + the
+// cell-level model.
 
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
@@ -306,7 +306,9 @@ export default function App() {
             </div>
 
             <div className="relative z-[1] flex min-h-full flex-col px-4 py-5 sm:px-6 lg:px-8">
-              <div key={viewKey} className="w-full animate-page-enter">
+              {/* Shared transition wrapper — the header/nav stay fixed while only
+                  this inner content area crossfades between views. */}
+              <SectionTransition transitionKey={viewKey} className="w-full">
                 <SectionErrorBoundary
                   resetKey={viewKey}
                   sectionLabel={page === 'industry' ? 'Industry Insights' : page === 'insights' ? 'Insights' : page === 'audit' ? 'Extracted Data Audit' : 'SAHI Analysis'}
@@ -320,14 +322,12 @@ export default function App() {
                       onReopened={() => setReopenInsightId(null)}
                     />
                   ) : page === 'audit' ? (
-                    <Suspense fallback={<div className="py-16 text-center text-[12.5px] text-ink-secondary">Loading the audit index…</div>}>
-                      <ExtractedDataAudit focus={auditFocus} />
-                    </Suspense>
+                    <DataAuditPane focus={auditFocus} />
                   ) : (
                     <SahiContent tab={sahiTab} />
                   )}
                 </SectionErrorBoundary>
-              </div>
+              </SectionTransition>
 
               <footer className="mt-auto border-t border-soft-border pt-4 text-center text-[11px] text-ink-secondary">
                 Insurance Investment Dashboard · Figures sourced from company filings, IRDAI &amp; GI Council disclosures · AI-gathered items are clearly labelled
