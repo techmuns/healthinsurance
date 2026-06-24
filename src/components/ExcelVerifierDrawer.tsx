@@ -1,13 +1,12 @@
 import { useMemo, useRef, useState } from 'react'
 import {
-  UploadCloud, FileSpreadsheet, X, CheckCircle2, AlertTriangle, Scale, Download,
-  ExternalLink, RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight,
+  UploadCloud, FileSpreadsheet, CheckCircle2, AlertTriangle, Scale, Download,
+  RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight,
 } from 'lucide-react'
 import { Drawer } from './Drawer'
-import { classifySource, isLinkable, sourceHref } from '@/lib/sourceHealth'
 import {
   verifyWorkbook, downloadVerifyReport, VERIFY_META,
-  type VerifyResult, type VerifyRow, type VerifyStatus,
+  type VerifyResult, type VerifyStatus,
 } from '@/lib/excelVerify'
 import { useVerify, type ListFilter } from '@/state/verifyState'
 
@@ -107,81 +106,11 @@ function StatusPill({ status }: { status: VerifyStatus }) {
   )
 }
 
-// ── Per-cell detail (uploaded vs dashboard + source / basis) ──────────────────
-function RowDetail({ row, onClose }: { row: VerifyRow; onClose: () => void }) {
-  const m = VERIFY_META[row.status]
-  const linkable = isLinkable(row.sourceUrl)
-  return (
-    <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
-      <div className="flex items-start justify-between gap-2 px-4 py-3" style={{ background: 'linear-gradient(135deg,#172B4D,#27457E)' }}>
-        <div className="leading-tight">
-          <p className="font-mono text-[10px] uppercase tracking-wide text-white/55">Cell {row.cellRef} · {row.sheet}</p>
-          <p className="mt-0.5 font-display text-[14.5px] text-white">{row.metricLabel}</p>
-          <p className="text-[11px] text-white/65">{row.entityLabel} · {row.period}</p>
-        </div>
-        <button type="button" onClick={onClose} className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
-          <X className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className={`flex items-center gap-2 px-4 py-2.5 ${m.cell}`}>
-        <span className="h-2 w-2 rounded-full" style={{ background: m.dot }} />
-        <span className={`text-[12px] font-semibold ${m.text}`}>{m.label}</span>
-        {row.diffPct != null && (
-          <span className="ml-auto text-[11px] font-semibold tabular-nums" style={{ color: m.dot }}>
-            {row.diffPct > 0 ? '+' : ''}{(row.diffPct * 100).toFixed(1)}% vs dashboard
-          </span>
-        )}
-      </div>
-
-      <div className="space-y-3 px-4 py-3">
-        {/* The two values side by side — the heart of the check. */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2">
-            <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Your file</p>
-            <p className="mt-0.5 font-semibold tabular-nums text-navy-deep">{row.uploadedDisplay}</p>
-          </div>
-          <div className="rounded-lg border border-soft-border bg-ice/50 px-3 py-2">
-            <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Dashboard</p>
-            <p className="mt-0.5 font-semibold tabular-nums text-navy-deep">{row.dashboardDisplay}</p>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">What this means</p>
-          <p className="mt-0.5 text-[12px] leading-relaxed text-ink-primary">{row.reason}</p>
-        </div>
-
-        <div>
-          <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Dashboard source / basis</p>
-          <div className="mt-0.5 text-[12px] text-ink-primary">
-            {row.sourceLabel ? (
-              linkable ? (
-                <a href={sourceHref(row.sourceUrl)!} target="_blank" rel="noreferrer" title={row.sourceName ?? classifySource(row.sourceUrl).hint} className="inline-flex items-start gap-1 text-navy-primary hover:underline">
-                  {row.sourceLabel}<ExternalLink className="mt-0.5 h-3 w-3 shrink-0" />
-                </a>
-              ) : <span title={row.sourceName ?? undefined}>{row.sourceLabel}</span>
-            ) : <span className="text-ink-secondary">Not recorded</span>}
-          </div>
-        </div>
-
-        {row.dashboardField && (
-          <div>
-            <p className="text-[9.5px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Where it’s used</p>
-            <p className="mt-0.5 text-[12px] text-ink-primary">{row.dashboardField}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
 // ── Results view ─────────────────────────────────────────────────────────────
 function Results({ result }: { result: VerifyResult }) {
   const v = useVerify()
   const filter = v.listFilter
   const setFilter = v.setListFilter
-  const [hovered, setHovered] = useState<VerifyRow | null>(null)
   const s = result.summary
 
   const rows = useMemo(
@@ -252,7 +181,7 @@ function Results({ result }: { result: VerifyResult }) {
       {/* Jump hint — the row's primary action is now "click → go to the cell". */}
       <div className="flex items-center gap-1.5 rounded-lg bg-soft-blue/40 px-3 py-1.5 text-[11.5px] text-navy-primary">
         <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
-        <span><span className="font-semibold">Click any row</span> to jump to that exact cell in the Data Audit grid — hover to preview the values.</span>
+        <span><span className="font-semibold">Click any row</span> to jump to that exact cell in the Data Audit grid and open its detail panel.</span>
       </div>
 
       {/* Filter chips */}
@@ -274,55 +203,46 @@ function Results({ result }: { result: VerifyResult }) {
         })}
       </div>
 
-      {/* Table + (optional) hover preview. Click a row → jump to the audit cell. */}
-      <div className={hovered ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
-        <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '54vh' }}>
-          <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-[#F3F6FB]">
-                {['Cell', 'Line item', 'Your file', 'Dashboard', 'Status', ''].map((h, i) => (
-                  <th key={h || 'go'} className={`border-b border-soft-border px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${i >= 2 && i <= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 ? (
-                <tr><td colSpan={6} className="px-3 py-10 text-center text-[12px] text-ink-secondary">No cells in this view.</td></tr>
-              ) : rows.map((r) => {
-                const m = VERIFY_META[r.status]
-                const isHover = hovered?.id === r.id
-                return (
-                  <tr
-                    key={r.id}
-                    onClick={() => v.navigateToCell(r)}
-                    onMouseEnter={() => setHovered(r)}
-                    title="Click to open this cell in the Data Audit grid"
-                    className={`group cursor-pointer ${m.tone === 'green' ? 'hover:bg-emerald-soft/30' : m.tone === 'amber' ? 'bg-gold-soft/25 hover:bg-gold-soft/40' : m.tone === 'red' ? 'bg-coral-soft/25 hover:bg-coral-soft/40' : 'hover:bg-ice/60'}`}
-                    style={isHover ? { boxShadow: `inset 2px 0 0 ${m.dot}` } : undefined}
-                  >
-                    <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
-                      <span className="font-mono text-[10.5px] text-ink-secondary">{r.cellRef}</span>
-                      <span className="block text-[9px] text-ink-secondary/70">{r.sheet}</span>
-                    </td>
-                    <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
-                      <span className="block truncate text-[11.5px] font-medium text-navy-deep" style={{ maxWidth: 230 }} title={r.metricLabel}>{r.metricLabel}</span>
-                      <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 230 }}>{r.entityLabel} · {r.period}</span>
-                    </td>
-                    <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] font-semibold text-navy-deep">{r.uploadedDisplay}</td>
-                    <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] text-ink-primary">{r.dashboardDisplay}</td>
-                    <td className="border-b border-soft-border/60 px-3 py-1.5 align-top"><StatusPill status={r.status} /></td>
-                    <td className="border-b border-soft-border/60 px-2 py-1.5 align-middle text-ink-secondary/50 transition-colors group-hover:text-navy-primary"><ArrowRight className="h-3.5 w-3.5" /></td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        {hovered && (
-          <div className="lg:sticky lg:top-2 lg:self-start">
-            <RowDetail row={hovered} onClose={() => setHovered(null)} />
-          </div>
-        )}
+      {/* Result table — click a row to jump to that exact cell in the grid. Hover
+          only lightly highlights the row; it never opens a panel. */}
+      <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '56vh' }}>
+        <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-[#F3F6FB]">
+              {['Cell', 'Line item', 'Your file', 'Dashboard', 'Status', ''].map((h, i) => (
+                <th key={h || 'go'} className={`border-b border-soft-border px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${i >= 2 && i <= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr><td colSpan={6} className="px-3 py-10 text-center text-[12px] text-ink-secondary">No cells in this view.</td></tr>
+            ) : rows.map((r) => {
+              const m = VERIFY_META[r.status]
+              return (
+                <tr
+                  key={r.id}
+                  onClick={() => v.navigateToCell(r)}
+                  title="Click to open this cell in the Data Audit grid"
+                  className={`group cursor-pointer ${m.tone === 'green' ? 'hover:bg-emerald-soft/30' : m.tone === 'amber' ? 'bg-gold-soft/25 hover:bg-gold-soft/40' : m.tone === 'red' ? 'bg-coral-soft/25 hover:bg-coral-soft/40' : 'hover:bg-ice/60'}`}
+                >
+                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
+                    <span className="font-mono text-[10.5px] text-ink-secondary">{r.cellRef}</span>
+                    <span className="block text-[9px] text-ink-secondary/70">{r.sheet}</span>
+                  </td>
+                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
+                    <span className="block truncate text-[11.5px] font-medium text-navy-deep" style={{ maxWidth: 230 }} title={r.metricLabel}>{r.metricLabel}</span>
+                    <span className="block truncate text-[10px] text-ink-secondary" style={{ maxWidth: 230 }}>{r.entityLabel} · {r.period}</span>
+                  </td>
+                  <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] font-semibold text-navy-deep">{r.uploadedDisplay}</td>
+                  <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] text-ink-primary">{r.dashboardDisplay}</td>
+                  <td className="border-b border-soft-border/60 px-3 py-1.5 align-top"><StatusPill status={r.status} /></td>
+                  <td className="border-b border-soft-border/60 px-2 py-1.5 align-middle text-ink-secondary/50 transition-colors group-hover:text-navy-primary"><ArrowRight className="h-3.5 w-3.5" /></td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   )

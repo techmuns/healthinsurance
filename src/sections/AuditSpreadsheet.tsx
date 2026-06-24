@@ -56,8 +56,8 @@ interface VerifyGridProps {
   view: boolean
   map: Map<string, VerifyRow>
   filter: VerifyStatus | 'all'
-  targetCellId: string | null
-  pulse: boolean
+  /** Cell currently doing the one-shot navigation pulse (null = none). */
+  pulseId: string | null
   onBackToVerifier: () => void
 }
 
@@ -300,7 +300,7 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
           <p className="mt-0.5 font-display text-[14.5px] text-white">{cell.metricLabel}</p>
           <p className="text-[11px] text-white/65">{cell.entityLabel} · {cell.period}</p>
         </div>
-        <button type="button" onClick={onClose} className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+        <button type="button" onClick={onClose} aria-label="Close" title="Close" className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -320,7 +320,7 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
         </span>
       </div>
 
-      <div className="space-y-3 px-4 py-3">
+      <div className="space-y-3 overflow-y-auto px-4 py-3" style={{ maxHeight: '68vh' }}>
         {/* Verification block — uploaded vs dashboard, when arrived via the verifier. */}
         {verifyRow && (
           <div className="rounded-lg border border-soft-border bg-ice/40 p-3">
@@ -592,17 +592,16 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                   {columns.map((col) => {
                     const cell = r.byCol.get(col.col)
                     if (!cell) return <td key={col.col} className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'}`} style={dividerStyle(col)} />
-                    const isTarget = verify?.targetCellId === cell.id
+                    const isSel = selected?.id === cell.id        // persistent selection (blue ring)
+                    const isPulsing = verify?.pulseId === cell.id // one-shot navigation pulse
                     // ── Verification overlay cell: matched → neutral; only issues tinted ──
                     if (verify?.view) {
                       const vrow = verify.map.get(cell.id)
                       const ov = vrow ? V_OVERLAY[vrow.status] : null
                       const isIssue = !!vrow && vrow.status !== 'matched'
-                      const dimmed = verify.filter !== 'all' && !isTarget && (!vrow || vrow.status !== verify.filter)
-                      const isPulsing = isTarget && verify.pulse
-                      const isSelV = selected?.id === cell.id
+                      const dimmed = verify.filter !== 'all' && !isSel && (!vrow || vrow.status !== verify.filter)
                       const valTxt = cellDisplay(cell, raw)
-                      const ring = (isPulsing || isTarget || isSelV)
+                      const ring = (isSel || isPulsing)
                         ? { boxShadow: 'inset 0 0 0 2px #1E4079' }
                         : isIssue && ov ? { boxShadow: `inset 0 0 0 1px ${ov.ring}` } : undefined
                       return (
@@ -638,7 +637,6 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                         ?? (cell.status === 'web_blocked' ? 'IRDAI' : cell.status === 'not_in_ppt' ? 'Not in PPT' : null)
                     const q = gap || tag ? QA.grey : QA[meta.color]
                     const txt = cellDisplay(cell, raw)
-                    const isSel = selected?.id === cell.id
                     const isFormula = cell.cellKind === 'formula'
                     const pipe = PIPELINE[pipelineOf(cell)]
                     const title = fetched
@@ -658,7 +656,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                           onClick={() => onSelect(cell)}
                           title={title}
                           className={`relative flex h-full min-h-[34px] w-full items-center ${fetched ? 'justify-end text-right' : 'justify-center'} px-2 py-1 tabular-nums transition-all ${q.cell} hover:brightness-95`}
-                          style={isTarget ? { boxShadow: 'inset 0 0 0 2px #1E4079' } : isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
+                          style={isPulsing ? { boxShadow: 'inset 0 0 0 2px #1E4079' } : isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
                         >
                           {isFormula && <FunctionSquare className="absolute left-1 top-1 h-2.5 w-2.5 opacity-40" />}
                           {fetched ? (
@@ -722,7 +720,7 @@ function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => v
 // Keyed by sheet + company in the page, so selection/drag state reset cleanly
 // when the sheet or company filter changes. The saved "Customize View" is keyed
 // by sheet only, so it survives a company-filter change and reloads on return.
-function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify }: {
+function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify, selected, onSelect }: {
   group: AuditGroup
   fullColumns: GridCol[]
   companyLabel: string
@@ -731,8 +729,10 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
   onRawChange: (v: boolean) => void
   onClearCompany: () => void
   verify?: VerifyGridProps
+  /** Selection is owned by the page so a verifier-row click can open the panel. */
+  selected: AuditCell | null
+  onSelect: (c: AuditCell | null) => void
 }) {
-  const [selected, setSelected] = useState<AuditCell | null>(null)
   const grid = useMemo(() => buildGrid(group), [group])
   const allCols = useMemo(() => fullColumns.map((c) => c.col), [fullColumns])
   const view = useAuditView(group.sheet, allCols)
@@ -862,13 +862,13 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
       />
 
       {/* Grid + (optional) detail */}
-      <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
-        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} view={view} verify={verify} />
+      <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={onSelect} view={view} verify={verify} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
             <CellDetail
               cell={selected}
-              onClose={() => setSelected(null)}
+              onClose={() => onSelect(null)}
               verifyRow={verify?.view ? verify.map.get(selected.id) : undefined}
               onBackToVerifier={verify?.view ? verify.onBackToVerifier : undefined}
             />
@@ -891,7 +891,8 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   const verifyResult = vctx?.result ?? null
   const verifyView = !!vctx?.verifyView && !!verifyResult
   const verifyTarget = vctx?.target ?? null
-  const [pulsing, setPulsing] = useState(false)
+  const [pulseId, setPulseId] = useState<string | null>(null)
+  const [selected, setSelected] = useState<AuditCell | null>(null)
   const [navNote, setNavNote] = useState<string | null>(null)
   const verifyMap = useMemo(() => {
     const m = new Map<string, VerifyRow>()
@@ -914,12 +915,15 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
     const grp = sheets.find((g) => g.sheet === verifyTarget.sheet)
     const custom = grp?.role === 'market_quote' || grp?.role === 'analyst_coverage'
     setNavNote(custom ? 'Exact cell mapping unavailable in this section’s custom view — showing the nearest audit section.' : null)
-    setPulsing(true)
+    // Open the compact detail panel for the clicked row, and run a one-shot pulse.
+    const tcell = !custom ? (grp?.cells.find((c) => c.id === verifyTarget.cellId) ?? null) : null
+    setSelected(tcell)
+    setPulseId(tcell ? verifyTarget.cellId : null)
     const scrollT = setTimeout(() => {
       const el = document.querySelector<HTMLElement>(`[data-cell-id="${verifyTarget.cellId.replace(/(["\\])/g, '\\$1')}"]`)
       el?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
     }, 80)
-    const pulseT = setTimeout(() => setPulsing(false), 1900)
+    const pulseT = setTimeout(() => setPulseId(null), 1900)
     return () => { clearTimeout(scrollT); clearTimeout(pulseT) }
   }, [verifyTarget?.nonce]) // eslint react-hooks rule not configured; nonce-keyed by design
 
@@ -962,13 +966,15 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   // and chip labels for the Customize View, stable across company-filter changes.
   const fullColumns = useMemo(() => (group ? buildGrid(group).columns : []), [group])
 
+  // Only show the selection (panel + blue ring) when it belongs to the active sheet.
+  const selectedOnActive = selected && selected.sheet === active ? selected : null
+
   const verifyGrid: VerifyGridProps | undefined = verifyResult
     ? {
         view: verifyView,
         map: verifyMap,
         filter: vctx?.gridFilter ?? 'all',
-        targetCellId: verifyTarget && verifyTarget.sheet === active ? verifyTarget.cellId : null,
-        pulse: pulsing && !!verifyTarget && verifyTarget.sheet === active,
+        pulseId: pulseId && verifyTarget?.sheet === active ? pulseId : null,
         onBackToVerifier: () => vctx?.openVerifier(),
       }
     : undefined
@@ -1057,7 +1063,7 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
             <button
               key={g.sheet}
               type="button"
-              onClick={() => setActive(g.sheet)}
+              onClick={() => { setActive(g.sheet); setSelected(null) }}
               title={`${g.sheet} — ${filled}/${g.stats.total} cells with a value`}
               className={[
                 'group relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[12px] transition-all duration-normal ease-premium',
@@ -1078,14 +1084,14 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
 
       {/* Page control row — the company filter applies to every sheet type. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <CompanyFilter options={companyOptions} value={effectiveCompany} onChange={setCompany} />
+        <CompanyFilter options={companyOptions} value={effectiveCompany} onChange={(c) => { setCompany(c); setSelected(null) }} />
         {effectiveCompany !== 'all' && (
           <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-secondary">
             <span className="h-2 w-2 rounded-full" style={{ background: companyColor(effectiveCompany).key }} />
             Showing <span className="font-semibold text-navy-deep">{companyLabel}</span> only
             <button
               type="button"
-              onClick={() => setCompany('all')}
+              onClick={() => { setCompany('all'); setSelected(null) }}
               className="ml-1 rounded-full border border-soft-border bg-white px-2 py-0.5 text-[10px] font-medium text-navy-primary transition-colors hover:border-navy-primary/30"
             >
               Show all
@@ -1102,13 +1108,13 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
           // The Historical Stock Movement sheet is a transposed, date-by-row series
           // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
           // can't represent — it gets a dedicated, workbook-faithful renderer.
-          <HistoricalStockMovement companyFilter={effectiveCompany} onClearCompany={() => setCompany('all')} />
+          <HistoricalStockMovement companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} />
         ) : group.role === 'analyst_coverage' ? (
           // Analyst coverage is a record list — each row a dated broker note with
           // nine attributes, not a period pivot — so it also gets a dedicated,
           // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
           // Upside×2, in company blocks closed by Average rows).
-          <AnalystCoverage key={effectiveCompany} group={group} companyFilter={effectiveCompany} onClearCompany={() => setCompany('all')} />
+          <AnalystCoverage key={effectiveCompany} group={group} companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} />
         ) : (
           <GridView
             key={`${group.sheet}::${effectiveCompany}`}
@@ -1118,8 +1124,10 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
             isFiltered={effectiveCompany !== 'all'}
             raw={raw}
             onRawChange={setRaw}
-            onClearCompany={() => setCompany('all')}
+            onClearCompany={() => { setCompany('all'); setSelected(null) }}
             verify={verifyGrid}
+            selected={selectedOnActive}
+            onSelect={setSelected}
           />
         )}
       </SectionErrorBoundary>
