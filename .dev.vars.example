@@ -1,0 +1,18 @@
+# ---------------------------------------------------------------------------
+# Local secrets for the Cloudflare Pages Function (/api/insight — the AI Senior
+# Analyst). Copy to `.dev.vars` (git-ignored) to test the AI layer locally with:
+#
+#     npx wrangler pages dev -- npm run dev
+#   or, against a production build:
+#     npm run build && npx wrangler pages dev dist
+#
+# A plain `npm run dev` (Vite only) does NOT run the function — the dashboard's
+# instant Tier-1 readout still works everywhere; only the on-demand AI card needs
+# this key. The browser NEVER receives it.
+# ---------------------------------------------------------------------------
+
+# Your Anthropic API key (same one used by the insights generator).
+ANTHROPIC_API_KEY=
+
+# Optional — override the model (defaults to claude-sonnet-4-6).
+# INSIGHTS_MODEL=claude-sonnet-4-6

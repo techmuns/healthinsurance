@@ -163,6 +163,7 @@ export function AuditDataGrid() {
   const [selectMode, setSelectMode] = useState(false)
   const [picks, setPicks] = useState<Set<string>>(new Set())
   const [readoutOpen, setReadoutOpen] = useState(false)
+  const [autoGen, setAutoGen] = useState(false)
 
   const byKey = useMemo(() => {
     const m = new Map<string, GridCell>()
@@ -215,7 +216,6 @@ export function AuditDataGrid() {
       if (byKey.has(k)) keys.push(k)
     }
     return keys
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, company, year, category, status, byKey, model])
 
   const pickedCells = useMemo(
@@ -469,10 +469,23 @@ export function AuditDataGrid() {
             </span>
             <button
               type="button"
-              onClick={() => setReadoutOpen(true)}
+              onClick={() => {
+                setAutoGen(false)
+                setReadoutOpen(true)
+              }}
+              className="rounded-full px-2.5 py-1.5 text-[11.5px] font-semibold text-navy-deep transition hover:bg-ice"
+            >
+              Preview readout
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAutoGen(true)
+                setReadoutOpen(true)
+              }}
               className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5"
             >
-              <Sparkles className="h-3.5 w-3.5" /> Analyse selection
+              <Sparkles className="h-3.5 w-3.5" /> Generate AI Analysis
             </button>
             <button type="button" onClick={clearPicks} className="rounded-full p-1 text-ink-secondary transition hover:bg-ice hover:text-navy-deep" aria-label="Clear selection">
               <X className="h-4 w-4" />
@@ -481,7 +494,17 @@ export function AuditDataGrid() {
         </div>
       )}
 
-      {readoutOpen && <AnalystReadoutDrawer cells={pickedCells} onClose={() => setReadoutOpen(false)} />}
+      {readoutOpen && (
+        <AnalystReadoutDrawer
+          cells={pickedCells}
+          autoGenerate={autoGen}
+          onGoToSource={() => {
+            const first = pickedCells.find(isReadyCell) ?? pickedCells[0]
+            if (first) setSelected(first)
+          }}
+          onClose={() => setReadoutOpen(false)}
+        />
+      )}
     </div>
   )
 }

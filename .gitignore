@@ -24,6 +24,9 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+# Cloudflare Pages local dev secrets (used by `wrangler pages dev`)
+.dev.vars
+!.dev.vars.example
 
 # Generated filled workbook (produced by the ingestion job / locally; CI uploads
 # it as an artifact). The template under templates/ is the committed source.

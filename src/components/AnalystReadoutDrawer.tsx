@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   X,
   TrendingUp,
@@ -9,10 +9,15 @@ import {
   Crown,
   ChevronDown,
   ChevronRight,
+  Sparkles,
+  RefreshCw,
+  Loader2,
 } from 'lucide-react'
 import { formatGridValue, type GridCell } from '@/lib/auditGrid'
-import { computeReadout, scopeLabel } from '@/lib/analystReadout'
-import type { MetricStat, TrendStat, Tier1Readout } from '@/insights/analystTypes'
+import { computeReadout, scopeLabel, buildAnalystRequest } from '@/lib/analystReadout'
+import { generateAnalysis, cachedAnalysis } from '@/lib/insightApi'
+import { AnalystCard } from '@/components/AnalystCard'
+import type { MetricStat, TrendStat, Tier1Readout, AnalystResult } from '@/insights/analystTypes'
 
 // ---------------------------------------------------------------------------
 //  AnalystReadoutDrawer — the right-side analyst panel.
@@ -227,14 +232,57 @@ function SourceQualityBlock({ readout }: { readout: Tier1Readout }) {
 export interface AnalystReadoutDrawerProps {
   cells: GridCell[]
   onClose: () => void
-  /** Optional slot rendered above the Tier-1 readout (the AI card lives here). */
-  aiSlot?: React.ReactNode
+  /** Pin the generated AI card to the Insights tab (wired in a later phase). */
+  onPin?: (result: AnalystResult, scopeLabel: string) => void
+  /** Jump to the first selected source cell. */
+  onGoToSource?: () => void
+  pinnedSignature?: string | null
+  /** Kick off the AI generation on open (set when opened via "Generate AI Analysis"). */
+  autoGenerate?: boolean
 }
 
-export function AnalystReadoutDrawer({ cells, onClose, aiSlot }: AnalystReadoutDrawerProps) {
+export function AnalystReadoutDrawer({ cells, onClose, onPin, onGoToSource, pinnedSignature, autoGenerate }: AnalystReadoutDrawerProps) {
   const readout = useMemo(() => computeReadout(cells), [cells])
   const [showTier1, setShowTier1] = useState(true)
   const label = useMemo(() => scopeLabel(readout), [readout])
+
+  // ── Tier 2 — the on-demand AI synthesis ─────────────────────────────────
+  const [aiState, setAiState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [ai, setAi] = useState<AnalystResult | null>(null)
+  const [aiCached, setAiCached] = useState(false)
+  const [aiError, setAiError] = useState<{ error: string; detail?: string } | null>(null)
+  const canGenerate = readout.coverage.ready > 0
+
+  const generate = async (force = false) => {
+    setAiState('loading')
+    setAiError(null)
+    const resp = await generateAnalysis(buildAnalystRequest(cells), force)
+    if (resp.ok) {
+      setAi(resp.result)
+      setAiCached(Boolean(resp.cached))
+      setAiState('done')
+    } else {
+      setAiError({ error: resp.error, detail: resp.detail })
+      setAiState('error')
+    }
+  }
+
+  // Show a previously-generated card instantly (no paid call). Optionally
+  // auto-generate when the panel was opened via "Generate AI Analysis".
+  useEffect(() => {
+    const cached = cachedAnalysis(readout.signature)
+    if (cached) {
+      setAi(cached)
+      setAiCached(true)
+      setAiState('done')
+      return
+    }
+    setAi(null)
+    setAiCached(false)
+    setAiError(null)
+    if (autoGenerate && readout.coverage.ready > 0) void generate(false)
+    else setAiState('idle')
+  }, [readout.signature])
 
   return (
     <div className="pointer-events-none fixed inset-y-0 right-0 z-40 flex w-full max-w-md">
@@ -256,8 +304,57 @@ export function AnalystReadoutDrawer({ cells, onClose, aiSlot }: AnalystReadoutD
         <div className="scroll-thin min-h-0 flex-1 space-y-2 overflow-y-auto px-4 py-3">
           <CoverageStrip readout={readout} />
 
-          {/* Tier-2 AI slot (wired next phase) */}
-          {aiSlot}
+          {/* Tier-2 — the on-demand AI Senior-Analyst synthesis */}
+          {aiState === 'done' && ai ? (
+            <div className="space-y-1.5">
+              <AnalystCard
+                result={ai}
+                scopeLabel={label}
+                cached={aiCached}
+                onPin={onPin ? () => onPin(ai, label) : undefined}
+                pinned={pinnedSignature != null && pinnedSignature === readout.signature}
+                onGoToSource={onGoToSource}
+              />
+              <button type="button" onClick={() => generate(true)} className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-muted-blue transition hover:text-navy-deep">
+                <RefreshCw className="h-3 w-3" /> Regenerate
+              </button>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-[#9DB4D8] bg-gradient-to-br from-soft-blue/70 to-white p-3">
+              <div className="flex items-center gap-1.5 text-navy-deep">
+                <Sparkles className="h-3.5 w-3.5 text-champagne-deep" />
+                <p className="text-[11.5px] font-semibold">AI senior-analyst synthesis</p>
+              </div>
+              <p className="mt-0.5 text-[10.5px] leading-snug text-ink-secondary">
+                A grounded read on what the selected data means, the hidden angle, the risks and what to watch — using only your selected, audited values.
+              </p>
+              {aiState === 'error' && aiError && (
+                <div className="mt-2 rounded-lg bg-coral-soft/60 px-2.5 py-1.5 text-[10.5px] text-coral">
+                  <span className="font-semibold">{aiError.error}</span>
+                  {aiError.detail && <span className="mt-0.5 block text-ink-secondary">{aiError.detail}</span>}
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={!canGenerate || aiState === 'loading'}
+                onClick={() => generate(false)}
+                className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3 py-2 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {aiState === 'loading' ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Analysing…
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" /> {aiState === 'error' ? 'Try again' : 'Generate AI Analysis'}
+                  </>
+                )}
+              </button>
+              {!canGenerate && (
+                <p className="mt-1.5 text-[10px] italic text-ink-secondary">Select at least one ready, source-backed cell to enable AI analysis.</p>
+              )}
+            </div>
+          )}
 
           {/* Tier-1 readout */}
           <button
