@@ -51,3 +51,14 @@ export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
     </VerifyProvider>
   )
 }
+
+/**
+ * Warm the cached audit model ahead of rendering the grid. `buildAudit()` caches
+ * its result, so calling it here primes the cache: the subsequent grid render
+ * (its own `useMemo(buildAudit)`) returns the cached model instantly with no
+ * blocking compute. Used by DataAuditPane to run the heavy index build behind
+ * the loading card. Pure cache priming — no data is read differently or changed.
+ */
+export function warmAudit(): void {
+  buildAudit()
+}

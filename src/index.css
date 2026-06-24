@@ -244,7 +244,7 @@ body {
   display: none;
 }
 
-/* ── Insight "show the working" flip card ─────────────────────────────────
+/* ── Insight "show the working" flip card ────────────────────────────────
    A real 3D half-turn (front ⇄ methodology). The wrapper's height is animated
    in JS to whichever face is showing, so the back can be taller than the front
    without ever clipping. Reduced-motion users get an opacity cross-fade (the JS
@@ -266,7 +266,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* ── KaTeX formula sizing + typographic fallback ──────────────────────────
+/* ── KaTeX formula sizing + typographic fallback ─────────────────────────
    KaTeX loads lazily; until then (or if it fails) a serif typographic fallback
    renders the same expression in readable notation. */
 .kf-katex .katex { color: inherit; }
@@ -296,4 +296,104 @@ body {
 .kf-frac .kf-den {
   padding: 0.04em 0.32em 0;
   line-height: 1.3;
+}
+
+/* ── Section / page transitions ───────────────────────────────────
+   A calm exit→enter crossfade used when switching the top-level sections
+   (Industry · SAHI · Insights · Data Audit) and the SAHI sub-tabs. The motion
+   is GPU-friendly — opacity + transform only, never a layout property — so even
+   the tall Data Audit grid swaps without a reflow storm. The container holds a
+   measured min-height through the brief exit so the column can't collapse to a
+   blank band between views. Easing + durations sit in the premium 150–280ms
+   band (see SectionTransition.tsx). */
+.section-pane {
+  will-change: opacity, transform;
+}
+.section-pane--enter {
+  animation: section-pane-enter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.section-pane--exit {
+  animation: section-pane-exit 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes section-pane-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.987);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes section-pane-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.992);
+  }
+}
+
+/* ── Data Audit loading + reveal ──────────────────────────────────
+   The audit grid fades + lifts in once the loader has prepared it (cache warm,
+   index built). The loader card itself gets a soft entrance so it never reads
+   as a hard, blank "waiting" frame. */
+.audit-loader-enter {
+  animation: fade-soft 0.3s ease-out both;
+}
+.audit-reveal {
+  animation: audit-reveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes audit-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* The progress ring's stroke eases smoothly as the percentage climbs, so even
+   a stepped percentage reads as a continuous, calm fill. */
+.audit-ring-progress {
+  transition: stroke-dashoffset 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* A soft, slow halo pulse behind the ring — life without distraction. */
+.audit-ring-halo {
+  animation: audit-ring-halo 2.6s ease-in-out infinite;
+}
+@keyframes audit-ring-halo {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+/* Respect reduced-motion: keep state changes as a quick, calm opacity fade —
+   never a hard cut, never a slide/scale. The global reduced-motion reset above
+   already collapses durations; these higher-specificity rules keep a gentle
+   fade for the entrances and silence the looping halo. */
+@media (prefers-reduced-motion: reduce) {
+  .section-pane--enter,
+  .audit-loader-enter,
+  .audit-reveal {
+    animation: fade-soft 0.12s ease both !important;
+  }
+  .section-pane--exit {
+    animation: fade-soft 0.001ms ease both !important;
+  }
+  .audit-ring-progress {
+    transition: none !important;
+  }
+  .audit-ring-halo {
+    animation: none !important;
+  }
 }
