@@ -30,7 +30,7 @@ import { Insights } from '@/sections/Insights'
 
 type SectionProps = { onNavigate?: (id: string) => void; sub?: string }
 
-// ── SAHI Analysis sub-navigation ─────────────────────────────────────────
+// ── SAHI Analysis sub-navigation ────────────────────────────────────────────
 // The detailed SAHI workspace starts directly at Companies (Overview has moved
 // to Industry Insights > Health Industry Insights). Each tab maps to a route
 // string that drives the period/basis behaviour in the SAHI header.

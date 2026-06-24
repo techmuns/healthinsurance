@@ -244,7 +244,7 @@ body {
   display: none;
 }
 
-/* ── Insight "show the working" flip card ────────────────────────────────
+/* ── Insight "show the working" flip card ─────────────────────────────────
    A real 3D half-turn (front ⇄ methodology). The wrapper's height is animated
    in JS to whichever face is showing, so the back can be taller than the front
    without ever clipping. Reduced-motion users get an opacity cross-fade (the JS
@@ -266,7 +266,7 @@ body {
   backface-visibility: hidden;
 }
 
-/* ── KaTeX formula sizing + typographic fallback ─────────────────────────
+/* ── KaTeX formula sizing + typographic fallback ──────────────────────────
    KaTeX loads lazily; until then (or if it fails) a serif typographic fallback
    renders the same expression in readable notation. */
 .kf-katex .katex { color: inherit; }
@@ -298,7 +298,7 @@ body {
   line-height: 1.3;
 }
 
-/* ── Section / page transitions ───────────────────────────────────
+/* ── Section / page transitions ────────────────────────────────────────────
    A calm exit→enter crossfade used when switching the top-level sections
    (Industry · SAHI · Insights · Data Audit) and the SAHI sub-tabs. The motion
    is GPU-friendly — opacity + transform only, never a layout property — so even
@@ -336,7 +336,7 @@ body {
   }
 }
 
-/* ── Data Audit loading + reveal ──────────────────────────────────
+/* ── Data Audit loading + reveal ────────────────────────────────────────────
    The audit grid fades + lifts in once the loader has prepared it (cache warm,
    index built). The loader card itself gets a soft entrance so it never reads
    as a hard, blank "waiting" frame. */
