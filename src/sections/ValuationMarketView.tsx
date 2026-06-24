@@ -1,59 +1,19 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart, ResponsiveContainer } from 'recharts'
-import { ArrowRight, ArrowUpRight, Info, Lightbulb, Search, TrendingDown, TrendingUp } from 'lucide-react'
+import { Info, Lightbulb } from 'lucide-react'
 import { insurers } from '@/data/mockData'
-import {
-  analystConsensus,
-  focalMultiples,
-  focalGwpFy,
-  FOCAL_VALUATION_ID,
-  marketSnapshot,
-  peerValuation,
-  UNLISTED_METHODOLOGY,
-  type PeerValuationRow,
-} from '@/data/valuationData'
-import { srcTag } from '@/data/valuationSources'
+import { FOCAL_VALUATION_ID, peerValuation, type PeerValuationRow } from '@/data/valuationData'
 import { getAnalystCoverage, getMarketQuote } from '@/lib/analystCoverage'
 import { useActiveCompany } from '@/state/filters'
-import { SourceTag } from '@/components/SourceTag'
 import { NavValuationCard } from '@/components/NavValuationCard'
 import type { Insurer } from '@/data/types'
-import { CORAL, Eyebrow, GOLD, GREEN, NAVY, OpenSource, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
+import { CORAL, Eyebrow, GOLD, GREEN, NAVY, PEER, TEAL, ValPill, clamp, fmtCr, px, ratingTone, upPct, xMult } from './valuationShared'
+import { ValuationHero } from './ValuationHero'
+import { PeerValuationMatrix } from './PeerValuationMatrix'
 
 export function ValuationMarketView() {
   const company = useActiveCompany()
   const isFocal = company.id === FOCAL_VALUATION_ID
-  const [peerView, setPeerView] = useState<'Listed' | 'Unlisted' | 'All'>('Listed')
-
-  // ── Real, sourced figures (focal = Niva Bupa) ───────────────────────────────
-  const price = marketSnapshot.currentPrice
-  const ac = analystConsensus
-  const target = ac.consensusTargetPrice
-  const upsideConsensus = target != null ? (target / price - 1) * 100 : null
-
-  const pGwp = focalMultiples.pGwp
-  const starRow = peerValuation.find((r) => r.companyId === 'star-health')
-  const starPGwp = starRow?.pGwp ?? null
-  const premiumVsStar = pGwp != null && starPGwp ? ((pGwp - starPGwp) / starPGwp) * 100 : null
-
-  // Verdict badge tone follows the LIVE consensus label — never frozen to "Buy".
-  const verdictTone = ratingTone[ac.ratingLabel as keyof typeof ratingTone] ?? ratingTone.Buy
-  // Only assert the premium is "backed by faster growth" when Niva actually grows
-  // faster than Star (and is at a premium) — never claim it unconditionally.
-  const nivaGrowth = peerValuation.find((r) => r.companyId === FOCAL_VALUATION_ID)?.growth ?? null
-  const growthEdge =
-    premiumVsStar != null && premiumVsStar > 0 && nivaGrowth != null && starRow?.growth != null && nivaGrowth > starRow.growth
-      ? ' — backed by faster growth'
-      : ''
-
-  // Verdict headline + stance (the one-line investment takeaway).
-  const verdictTitle =
-    upsideConsensus == null ? 'Awaiting Street targets'
-    : upsideConsensus >= 12 ? 'Upside to Street targets'
-    : upsideConsensus >= -3 ? 'Near Street fair value'
-    : 'Above Street targets'
-  const premiumStance = premiumVsStar != null && premiumVsStar > 5
-  const stanceLabel = premiumStance ? 'Premium to listed peers' : premiumVsStar != null && premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with peer'
 
   // ── Operating-quality compass (relative, from insurers[] headline metrics) ──
   const peerGroup = insurers.filter((i) => i.peerGroup === company.peerGroup && i.id !== company.id)
@@ -65,21 +25,7 @@ export function ValuationMarketView() {
   const compassDelta = compassData.reduce((s, d) => s + d.niva, 0) / 4 - compassData.reduce((s, d) => s + d.peer, 0) / 4
   const position = compassDelta >= 8 ? 'Above Average' : compassDelta <= -8 ? 'Weak vs peers' : 'Average'
 
-  const peerRows = peerValuation
-  const shownPeers = peerView === 'All' ? peerRows : peerRows.filter((r) => r.listingStatus === peerView)
-  const peerVerdict = premiumVsStar == null ? 'Valuation pending' : premiumVsStar > 5 ? 'Premium to listed peer' : premiumVsStar < -5 ? 'Discount to listed peer' : 'In line with listed peer'
-
-  // "What this means" reads — honest one-line summaries of values already shown
-  // above (premium vs the listed benchmark; operating quality vs peers). No new
-  // numbers, no basis change: just the so-what that turns the table into a call.
-  const peerRead: { tone: WtmTone; text: ReactNode } =
-    premiumVsStar == null
-      ? { tone: 'navy', text: <>The listed-peer comparison is pending a citable P/GWP for the benchmark.</> }
-      : premiumVsStar > 5
-        ? { tone: 'gold', text: <><b className="text-champagne-deep">~{Math.abs(premiumVsStar).toFixed(0)}% premium</b> to Star Health on P/GWP — a premium the operating quality below has to earn.</> }
-        : premiumVsStar < -5
-          ? { tone: 'teal', text: <><b className="text-teal">~{Math.abs(premiumVsStar).toFixed(0)}% discount</b> to the listed peer on P/GWP — the market is pricing in less, not more.</> }
-          : { tone: 'navy', text: <>Broadly <b className="text-navy-deep">in line</b> with the listed peer on P/GWP.</> }
+  // "What this means" read for the quality lens — honest one-liner, no new numbers.
   const qualityRead: { tone: WtmTone; text: ReactNode } =
     position === 'Above Average'
       ? { tone: 'teal', text: <>Operating quality screens <b className="text-teal">above the peer average</b> — supportive of a valuation premium.</> }
@@ -91,126 +37,11 @@ export function ValuationMarketView() {
     <div className="space-y-5">
       {isFocal ? (
         <>
-          {/* ═══ 1. VALUATION HERO — verdict (left) + since-listing path (right) ═══ */}
-          <section className="relative overflow-hidden rounded-[1.4rem] border border-[#E4E8F0] bg-gradient-to-br from-[#F7FAFD] via-[#FBFCFD] to-[#F4F7FB] p-6 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_18px_44px_rgba(23,43,77,0.08)]">
-            <div className="grid items-stretch gap-5 lg:grid-cols-[1fr_1.05fr]">
-              {/* Verdict — the single investment takeaway */}
-              <div className="flex flex-col">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D6E2FA] bg-soft-blue px-2.5 py-1">
-                    <Search className="h-3 w-3 text-navy-primary" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-navy-primary">Valuation Verdict</span>
-                  </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ color: verdictTone.fg, background: verdictTone.bg }}>
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: verdictTone.fg }} />
-                    {ac.ratingLabel}-skewed · {ac.analystCount} analysts
-                  </span>
-                  {premiumVsStar != null && (
-                    <span className="inline-flex items-center gap-1 rounded-full border border-[#EAD9B6] bg-champagne-soft px-2 py-1 text-[10.5px] font-semibold text-champagne-deep">
-                      {stanceLabel}
-                    </span>
-                  )}
-                </div>
+          {/* ═══ 1. VALUATION HERO — gauge / journey infographic + lenses ════════ */}
+          <ValuationHero />
 
-                <h1 className="mt-3 font-display text-[26px] leading-[1.12] tracking-tight text-navy-deep">{verdictTitle}</h1>
-                <p className="mt-2 max-w-md text-[12px] leading-relaxed text-ink-secondary">
-                  {marketSnapshot.company} trades at <b className="text-navy-deep">{px(price)}</b> vs consensus <b className="text-navy-deep">{px(target)}</b> ({upPct(upsideConsensus)}). The {xMult(pGwp)} P/GWP is a {premiumVsStar != null ? `~${Math.abs(premiumVsStar).toFixed(0)}% ${premiumVsStar >= 0 ? 'premium' : 'discount'}` : 'comparison pending'} to Star Health{growthEdge}.
-                </p>
-
-                <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  <Tile k="Current price" v={px(price)} sub={marketSnapshot.priceAsOf} />
-                  <Tile k="Cons. target" v={px(target)} sub={`${ac.analystCount} analysts`} />
-                  <Tile k="Upside" v={upPct(upsideConsensus)} tone={upsideConsensus == null ? 'navy' : upsideConsensus >= 0 ? 'teal' : 'red'} sub="to consensus" />
-                  <Tile k="P / GWP" v={xMult(pGwp)} sub={focalGwpFy} />
-                </div>
-
-                <div className="mt-auto flex flex-wrap items-center justify-end gap-2 pt-4">
-                  <SourceTag {...srcTag('niva-price')} />
-                  <SourceTag {...srcTag('niva-consensus')} />
-                </div>
-              </div>
-
-              {/* Since-listing growth path */}
-              <SinceListingPath />
-            </div>
-          </section>
-
-
-          {/* ═══ PEER COMPARISON ══════════════════════════════════════════════════ */}
-          <section>
-            <Eyebrow
-              label="Peer Comparison"
-              title="How does it compare with peers?"
-              note="Listed = live market valuation · Unlisted = no public price (source pending)."
-              right={
-                <div className="inline-flex items-center gap-0.5 rounded-full border border-soft-border bg-ice p-0.5">
-                  {(['Listed', 'Unlisted', 'All'] as const).map((v) => (
-                    <button key={v} type="button" onClick={() => setPeerView(v)} aria-pressed={peerView === v} className={['rounded-full px-3 py-1 text-[11px] font-semibold transition-all duration-normal ease-premium', peerView === v ? 'bg-gradient-to-br from-navy-primary to-navy-deep text-white shadow-soft ring-1 ring-[#B68B3A]/30' : 'text-ink-secondary hover:bg-soft-blue hover:text-navy-primary'].join(' ')}>{v} Peers</button>
-                  ))}
-                </div>
-              }
-            />
-            <div className="card-surface card-tint-slate p-5">
-              {/* Verdict strip — one line, not a repeated focal point */}
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-soft-border bg-gradient-to-r from-[#F7FAFD] to-[#F4F7FB] px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <h3 className="font-display text-[17px] leading-none text-navy-deep">{peerVerdict}</h3>
-                  {premiumVsStar != null && (
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-semibold ${premiumVsStar >= 0 ? 'bg-champagne-soft text-champagne-deep' : 'bg-[#F8ECEC] text-signal-negative'}`}>
-                      {premiumVsStar >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {premiumVsStar >= 0 ? '+' : ''}{premiumVsStar.toFixed(0)}% vs Star on P/GWP
-                    </span>
-                  )}
-                </div>
-                <span className="text-[11px] text-ink-secondary">Only one listed SAHI peer (Star Health); others are unlisted.</span>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[11.5px]">
-                  <thead>
-                    <tr className="border-b border-soft-border bg-[#EAF0FA] text-[10px] uppercase tracking-wide text-ink-secondary">
-                      <th className="rounded-l-lg py-2 pl-2 pr-2 font-semibold">Company</th>
-                      <th className="py-2 pr-2 font-semibold">Status</th>
-                      <th className="py-2 pr-2 text-right font-semibold">GWP (latest FY)</th>
-                      <th className="py-2 pr-2 text-right font-semibold">P/GWP</th>
-                      <th className="py-2 pr-2 text-right font-semibold">Equity value</th>
-                      <th className="py-2 pr-2 font-semibold">Source</th>
-                      <th className="rounded-r-lg py-2 pr-2 font-semibold">Confidence</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shownPeers.map((r) => {
-                      const unlisted = r.listingStatus === 'Unlisted'
-                      return (
-                        <tr key={r.companyId} className={`border-b border-[#F2F4F8] transition-colors last:border-0 ${r.companyId === FOCAL_VALUATION_ID ? 'bg-soft-blue/40' : 'hover:bg-soft-blue/25'}`}>
-                          <td className="py-2 pr-2 font-semibold text-navy-deep">{r.companyName}{r.companyId === FOCAL_VALUATION_ID && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
-                          <td className="py-2 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
-                          <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.gwp != null ? (
-                            <span className="inline-flex items-baseline gap-1">{fmtCr(r.gwp)}{r.gwpFy && <span className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary/70">{r.gwpFy}</span>}</span>
-                          ) : <span className="italic text-ink-secondary">n/a</span>}</td>
-                          <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.pGwp != null ? xMult(r.pGwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
-                          <td className="py-2 pr-2 text-right tabular-nums">{r.marketCap != null ? <span className="text-navy-deep">{fmtCr(r.marketCap)}</span> : <span className="italic text-ink-secondary">{unlisted ? 'No public price' : 'Source pending'}</span>}</td>
-                          <td className="py-2 pr-2"><OpenSource id={r.sourceId} url={r.sourceUrl ?? undefined} title={r.sourceName ?? undefined} /></td>
-                          <td className="py-2"><ValPill c={r.confidence} /></td>
-                        </tr>
-                      )
-                    })}
-                    {shownPeers.length === 0 && (
-                      <tr><td colSpan={7} className="py-4 text-center text-[11px] italic text-ink-secondary">No peers in this view.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <WhatThisMeans tone={peerRead.tone}>{peerRead.text}</WhatThisMeans>
-              {peerView !== 'Listed' && (
-                <p className="mt-3 flex items-start gap-1.5 rounded-md border border-dashed border-[#D7CBA8] bg-[#FBF6EA]/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-[#8C6B1A]">
-                  <Info className="mt-px h-3 w-3 shrink-0" />
-                  {UNLISTED_METHODOLOGY}
-                </p>
-              )}
-              <div className="mt-3 flex justify-end"><SourceTag {...srcTag('star-pgwp')} /></div>
-            </div>
-          </section>
+          {/* ═══ 2. PEER VALUATION MATRIX — one clean comparable table ═══════════ */}
+          <PeerValuationMatrix />
         </>
       ) : (
         <ValuationPending company={company} peerRow={peerValuation.find((r) => r.companyId === company.id) ?? null} />
@@ -275,89 +106,6 @@ export function ValuationMarketView() {
           <WhatThisMeans tone={qualityRead.tone}>{qualityRead.text}</WhatThisMeans>
         </div>
       </section>
-
-    </div>
-  )
-}
-
-// ── Since-listing growth path ─────────────────────────────────────────────────
-// IPO → Current → Return, as a premium horizontal journey (not boxes / not a
-// trading terminal). IPO sits in neutral blue-gray, current is highlighted teal,
-// and value created since listing reads in soft teal/green. A compact 52-week
-// band underneath gives honest price context. All figures are sourced (niva-ipo,
-// niva-price, niva-52wk).
-function SinceListingPath() {
-  const ipo = marketSnapshot.ipoPrice
-  const cur = marketSnapshot.currentPrice
-  const lo = marketSnapshot.weekLow52
-  const hi = marketSnapshot.weekHigh52
-  const ret = (cur / ipo - 1) * 100
-  const up = ret >= 0
-  const retColor = up ? TEAL : CORAL
-  const at = (v: number) => Math.max(3, Math.min(97, ((v - lo) / (hi - lo)) * 100))
-
-  return (
-    <div className="flex flex-col rounded-2xl border border-soft-border bg-white/75 p-4 shadow-soft backdrop-blur">
-      <div className="flex items-center justify-between">
-        <p className="text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-secondary">Since Listing · {marketSnapshot.listDate.replace(/^\d+\s/, '')} → now</p>
-        <ValPill c="verified" />
-      </div>
-
-      {/* Journey: IPO → Current → Return */}
-      <div className="mt-4 flex items-stretch gap-2">
-        <JourneyNode label="IPO issue" value={px(ipo)} sub={marketSnapshot.listDate} tone="neutral" />
-        <JourneyConnector />
-        <JourneyNode label="Current" value={px(cur)} sub={marketSnapshot.priceAsOf} tone="teal" highlight />
-        <JourneyConnector />
-        <div className="flex min-w-[88px] flex-1 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={{ borderColor: up ? '#C8E2DD' : '#EAD2CD', background: up ? 'linear-gradient(135deg,#EAF5EE,#F1F8F6)' : '#F8ECEC' }}>
-          <span className="inline-flex items-center gap-0.5 font-display text-[20px] leading-none" style={{ color: retColor }}>
-            {up ? <ArrowUpRight className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-            {up ? '+' : ''}{ret.toFixed(1)}%
-          </span>
-          <span className="mt-1 text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Return since listing</span>
-        </div>
-      </div>
-
-      {/* 52-week band context */}
-      <div className="mt-5">
-        <div className="relative h-2 rounded-full" style={{ background: 'linear-gradient(90deg,#EEF1F6,#E6F4F1)' }}>
-          {/* value-created segment from IPO → current */}
-          <span className="absolute top-1/2 h-2 -translate-y-1/2 rounded-full" style={{ left: `${Math.min(at(ipo), at(cur))}%`, width: `${Math.abs(at(cur) - at(ipo))}%`, background: up ? 'rgba(22,142,142,0.28)' : 'rgba(194,118,107,0.28)' }} />
-          <span className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${at(ipo)}%`, background: PEER }} title={`IPO ${px(ipo)}`} />
-          <span className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white" style={{ left: `${at(cur)}%`, background: TEAL }} title={`Now ${px(cur)}`} />
-        </div>
-        <div className="mt-1.5 flex justify-between text-[9px] text-ink-secondary">
-          <span>52-wk low <b className="text-navy-deep/70">{px(lo)}</b></span>
-          <span>52-wk high <b className="text-navy-deep/70">{px(hi)}</b></span>
-        </div>
-      </div>
-
-      <div className="mt-auto flex items-center justify-between pt-4">
-        <span className="text-[10px] text-ink-secondary">Listed <b className="text-navy-deep/80">{px(marketSnapshot.listPrice)}</b> · issue <b className="text-navy-deep/80">{px(ipo)}</b></span>
-        <SourceTag {...srcTag('niva-ipo')} />
-      </div>
-    </div>
-  )
-}
-
-function JourneyNode({ label, value, sub, tone, highlight = false }: { label: string; value: string; sub?: string; tone: 'neutral' | 'teal'; highlight?: boolean }) {
-  const style = tone === 'teal'
-    ? { borderColor: highlight ? '#9FD6CF' : '#C8E2DD', background: 'linear-gradient(135deg,#F1F8F6,#E1F2F1)' }
-    : { borderColor: '#D7DEE9', background: 'linear-gradient(135deg,#F6F8FC,#EEF1F7)' }
-  return (
-    <div className="relative flex min-w-[84px] flex-1 flex-col items-center justify-center rounded-xl border px-2 py-2.5 text-center" style={style}>
-      {highlight && <span className="absolute -top-1.5 right-2 inline-flex h-2 w-2 rounded-full ring-2 ring-white" style={{ background: TEAL }} />}
-      <span className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</span>
-      <span className="mt-0.5 font-display text-[20px] leading-none" style={{ color: tone === 'teal' ? TEAL : NAVY }}>{value}</span>
-      {sub && <span className="mt-0.5 text-[8.5px] text-ink-secondary/80">{sub}</span>}
-    </div>
-  )
-}
-
-function JourneyConnector() {
-  return (
-    <div className="flex shrink-0 items-center self-center text-ink-secondary/50">
-      <ArrowRight className="h-4 w-4" />
     </div>
   )
 }
@@ -486,4 +234,3 @@ function WhatThisMeans({ tone, children }: { tone: WtmTone; children: ReactNode 
     </div>
   )
 }
-

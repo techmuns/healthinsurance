@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Calculator, Landmark, X } from 'lucide-react'
 import { buildNavValuation, periodLabel, type NavValuation } from '@/lib/navValuation'
 
@@ -112,56 +113,52 @@ function Na() {
 
 function CalcModal({ v, companyName, anchorRef, onClose }: { v: NavValuation; companyName: string; anchorRef: React.RefObject<HTMLButtonElement>; onClose: () => void }) {
   const panelRef = useRef<HTMLDivElement>(null)
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
   const [shown, setShown] = useState(false)
 
+  // Centred modal, portalled to <body> so it always opens in the current
+  // viewport — no ancestor transform (the page / section fade-in wrappers) can
+  // capture the fixed positioning and push it off-screen. While open: Esc closes,
+  // background scroll is locked, focus moves into the dialog, and on close focus
+  // returns to the "Show calculation" trigger. Calculation content is unchanged.
   useEffect(() => {
-    const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
-    document.addEventListener('keydown', onEsc)
-    return () => document.removeEventListener('keydown', onEsc)
-  }, [onClose])
-
-  // Anchor the popover to the "Show calculation" button the user actually clicked
-  // rather than centring it in the viewport. Prefer opening just below the button
-  // with right edges aligned; flip above when there isn't room below; always clamp
-  // inside the viewport so it can never spill off-screen. Re-places on scroll/resize.
-  useLayoutEffect(() => {
-    const place = () => {
-      const anchor = anchorRef.current
-      const panel = panelRef.current
-      if (!anchor || !panel) return
-      const a = anchor.getBoundingClientRect()
-      const margin = 12
-      const gap = 8
-      const pw = panel.offsetWidth
-      const ph = panel.offsetHeight
-      const vw = window.innerWidth
-      const vh = window.innerHeight
-
-      let left = a.right - pw // align right edges → opens leftward from the button
-      left = Math.max(margin, Math.min(left, vw - pw - margin))
-
-      let top: number
-      if (a.bottom + gap + ph <= vh - margin) top = a.bottom + gap // below the button
-      else if (a.top - gap - ph >= margin) top = a.top - gap - ph // flip above
-      else top = Math.max(margin, vh - ph - margin) // clamp to viewport
-
-      setPos({ top, left })
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation()
+        onClose()
+      }
     }
-    place()
-    window.addEventListener('resize', place)
-    window.addEventListener('scroll', place, true)
+    document.addEventListener('keydown', onKey)
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const raf = requestAnimationFrame(() => {
+      setShown(true)
+      closeRef.current?.focus()
+    })
+    const trigger = anchorRef.current
     return () => {
-      window.removeEventListener('resize', place)
-      window.removeEventListener('scroll', place, true)
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = prevOverflow
+      cancelAnimationFrame(raf)
+      trigger?.focus()
     }
-  }, [anchorRef])
+  }, [onClose, anchorRef])
 
-  // Gentle fade-in once positioned (one frame later) — calm, not a pop.
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true))
-    return () => cancelAnimationFrame(id)
-  }, [])
+  // Keep keyboard focus within the dialog (simple Tab trap).
+  const onKeyDownTrap = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab') return
+    const f = panelRef.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])')
+    if (!f || f.length === 0) return
+    const first = f[0]
+    const last = f[f.length - 1]
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
 
   const rows: { m: string; value: React.ReactNode; src: React.ReactNode }[] = [
     {
@@ -206,28 +203,37 @@ function CalcModal({ v, companyName, anchorRef, onClose }: { v: NavValuation; co
     },
   ]
 
-  return (
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal>
-      <div className="absolute inset-0 bg-navy-deep/25 backdrop-blur-[1.5px]" onClick={onClose} />
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`NAV book-value calculation — ${companyName}`}
+    >
+      <div
+        className={`absolute inset-0 bg-navy-deep/30 backdrop-blur-[2px] transition-opacity duration-200 ${shown ? 'opacity-100' : 'opacity-0'}`}
+        onClick={onClose}
+        aria-hidden
+      />
       <div
         ref={panelRef}
+        onKeyDown={onKeyDownTrap}
         className={[
-          'absolute max-h-[88vh] overflow-y-auto rounded-xl2 border border-soft-border bg-card shadow-card transition-[opacity,transform] duration-150 ease-out',
-          pos && shown ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-1 opacity-0',
+          'relative z-[1] flex max-h-[85vh] w-[min(34rem,100%)] flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card transition-[opacity,transform] duration-200 ease-out',
+          shown ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0',
         ].join(' ')}
-        style={{ top: pos?.top ?? 0, left: pos?.left ?? 0, width: 'min(32rem, calc(100vw - 24px))', transformOrigin: 'top right' }}
       >
-        <div className="flex items-start justify-between gap-3 px-5 py-3.5" style={{ background: 'linear-gradient(135deg,#172B4D,#27457E)' }}>
+        <div className="flex shrink-0 items-start justify-between gap-3 px-5 py-3.5" style={{ background: 'linear-gradient(135deg,#172B4D,#27457E)' }}>
           <div className="leading-tight">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#E4C77A]">NAV · Book-value calculation</p>
             <p className="mt-0.5 font-display text-[15px] text-white">{companyName}</p>
           </div>
-          <button type="button" onClick={onClose} className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close calculation" className="rounded-md p-1 text-white/70 transition-colors hover:bg-white/10 hover:text-white">
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-5 py-4">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
           {/* Calculation table */}
           <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
             <thead>
@@ -262,6 +268,7 @@ function CalcModal({ v, companyName, anchorRef, onClose }: { v: NavValuation; co
           </p>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
