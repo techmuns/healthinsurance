@@ -16,6 +16,7 @@ import {
 import { formatGridValue, type GridCell } from '@/lib/auditGrid'
 import { computeReadout, scopeLabel, buildAnalystRequest } from '@/lib/analystReadout'
 import { generateAnalysis, cachedAnalysis } from '@/lib/insightApi'
+import { usePinnedInsights, togglePin } from '@/lib/pinnedInsights'
 import { AnalystCard } from '@/components/AnalystCard'
 import type { MetricStat, TrendStat, Tier1Readout, AnalystResult } from '@/insights/analystTypes'
 
@@ -232,19 +233,18 @@ function SourceQualityBlock({ readout }: { readout: Tier1Readout }) {
 export interface AnalystReadoutDrawerProps {
   cells: GridCell[]
   onClose: () => void
-  /** Pin the generated AI card to the Insights tab (wired in a later phase). */
-  onPin?: (result: AnalystResult, scopeLabel: string) => void
   /** Jump to the first selected source cell. */
   onGoToSource?: () => void
-  pinnedSignature?: string | null
   /** Kick off the AI generation on open (set when opened via "Generate AI Analysis"). */
   autoGenerate?: boolean
 }
 
-export function AnalystReadoutDrawer({ cells, onClose, onPin, onGoToSource, pinnedSignature, autoGenerate }: AnalystReadoutDrawerProps) {
+export function AnalystReadoutDrawer({ cells, onClose, onGoToSource, autoGenerate }: AnalystReadoutDrawerProps) {
   const readout = useMemo(() => computeReadout(cells), [cells])
   const [showTier1, setShowTier1] = useState(true)
   const label = useMemo(() => scopeLabel(readout), [readout])
+  const pins = usePinnedInsights()
+  const pinned = pins.some((p) => p.signature === readout.signature)
 
   // ── Tier 2 — the on-demand AI synthesis ─────────────────────────────────
   const [aiState, setAiState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
@@ -311,8 +311,8 @@ export function AnalystReadoutDrawer({ cells, onClose, onPin, onGoToSource, pinn
                 result={ai}
                 scopeLabel={label}
                 cached={aiCached}
-                onPin={onPin ? () => onPin(ai, label) : undefined}
-                pinned={pinnedSignature != null && pinnedSignature === readout.signature}
+                onPin={() => togglePin(readout.signature, label, ai)}
+                pinned={pinned}
                 onGoToSource={onGoToSource}
               />
               <button type="button" onClick={() => generate(true)} className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-muted-blue transition hover:text-navy-deep">

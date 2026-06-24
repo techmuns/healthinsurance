@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, Presentation, type LucideIcon } from 'lucide-react'
+import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, Presentation, Pin, Compass, type LucideIcon } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
@@ -7,6 +7,9 @@ import { MethodologyPanel } from '@/components/MethodologyPanel'
 import { useFilters } from '@/state/filters'
 import { resolveSource, freshnessOf, latestPeriodAcross, type Freshness, type NavTarget, type SourceLocation } from '@/insights/sourceMap'
 import { exportInsightsPptx } from '@/lib/pptExport'
+import { usePinnedInsights, togglePin } from '@/lib/pinnedInsights'
+import { AnalystCard } from '@/components/AnalystCard'
+import { InsightsExplorer } from '@/components/InsightsExplorer'
 
 const FILE = generated as unknown as InsightsFile
 
@@ -339,6 +342,8 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
   })
   const [category, setCategory] = useState<string>('all')
   const [conviction, setConviction] = useState<string>('all')
+  const [mode, setMode] = useState<'feed' | 'explorer'>('feed')
+  const pins = usePinnedInsights()
   const { setHighlightedCompany } = useFilters()
 
   // Clear the App-level reopen flag once we've mounted (the matching card opens
@@ -404,6 +409,49 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
         </div>
       </header>
 
+      {/* Advisor feed vs structured Explorer — both read the same audited data. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex overflow-hidden rounded-full border border-soft-border bg-ice/60 p-0.5">
+          {([
+            ['feed', 'Advisor feed'],
+            ['explorer', 'Explorer'],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setMode(id)}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11.5px] font-semibold transition-all ${
+                mode === id ? 'bg-white text-navy-deep shadow-soft' : 'text-ink-secondary hover:text-navy-primary'
+              }`}
+            >
+              {id === 'explorer' ? <Compass className="h-3.5 w-3.5" /> : <Lightbulb className="h-3.5 w-3.5" />} {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Pinned AI analyses — saved from Data Audit / Explorer. */}
+      {pins.length > 0 && (
+        <section className="font-sans">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="grid h-7 w-7 place-items-center rounded-lg bg-champagne-soft text-champagne-deep ring-1 ring-[#E7D29B]"><Pin className="h-3.5 w-3.5" /></span>
+            <div className="leading-tight">
+              <h2 className="font-display text-[15px] text-navy-deep">Pinned analyses</h2>
+              <p className="text-[10.5px] text-ink-secondary">AI readouts you saved · {pins.length}</p>
+            </div>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {pins.map((p) => (
+              <AnalystCard key={p.signature} result={p.result} scopeLabel={p.scopeLabel} pinned onPin={() => togglePin(p.signature, p.scopeLabel, p.result)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {mode === 'explorer' && <InsightsExplorer />}
+
+      {mode === 'feed' && (
+        <>
       {/* Filters — understated premium controls. Company leads (defaults to Niva
           Bupa); Type and Conviction refine. */}
       <div className="flex flex-wrap items-center gap-2.5">
@@ -441,6 +489,8 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
             />
           ))}
         </div>
+      )}
+        </>
       )}
     </div>
   )
