@@ -1,12 +1,26 @@
 # Project Status — Official Filings → Excel Pipeline
 
-_Last updated: 2026-06-11. Branch: `main`._
+_Last updated: 2026-06-24. Branch: `main`._
 
 This is the handoff/status doc for the official-filings → Excel-fill work. The
 container is ephemeral, so this lives in the repo so the next session can pick up
 without re-deriving state.
 
 ## Where it stands
+- **AI Senior-Analyst Explorer — Data Audit → AI** (Neha, 2026-06-24): select
+  audited cells in Data Audit's new **Analyst Grid** view (a "Select for AI" mode;
+  click cells, or a company / year / metric to grab a set), or build a scope in the
+  Insights **Explorer** tab. Both feed one pipeline: an instant, free, in-browser
+  **Tier-1 readout** (peer ranking, z-score outliers, real multi-period deltas,
+  source quality, honest gaps — no API key) and, on click, a **Tier-2 AI
+  senior-analyst card** via the Cloudflare Pages function `functions/api/insight.ts`
+  (the Anthropic key stays server-side; output passes a fail-closed grounding +
+  no-advice gate, retried once; identical selections are cached). Cards pin to the
+  Insights tab / copy. Single-FY selections are labelled, never implied as a trend.
+  The single source of truth is `buildAuditGrid()` — no parallel metric list.
+  **One manual step to switch the AI on:** set `ANTHROPIC_API_KEY` in the Cloudflare
+  Pages project settings (Workers & Pages → project → Settings → Environment
+  variables). Tier-1 works without it. Runbook: `functions/README.md`.
 - **Full-auto across every Data Audit tab** (Neha, 2026-06-11): every fetch
   workflow now has a schedule — nothing is dispatch-only any more (company
   PDFs monthly-7th, SAHI financials monthly-8th, deck metrics monthly-9th,
