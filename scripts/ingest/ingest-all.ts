@@ -25,6 +25,7 @@ import { ingestOwnership } from './ingest-ownership'
 import { ingestManagementEvents } from './ingest-management-events'
 import { ingestValuation } from './ingest-valuation'
 import { ingestMoneycontrolAnalyst } from './ingest-moneycontrol-analyst'
+import { ingestMoneycontrolStockDeals } from './ingest-moneycontrol-stock-deals'
 import { fetchInvesting } from './fetch-investing'
 import { fetchMunsMarketData } from './fetch-muns-market-data'
 import { fetchNseDelivery } from './fetch-nse-delivery'
@@ -51,6 +52,9 @@ const ALL: Fetcher[] = [
   ingestManagementEvents,
   ingestValuation,
   ingestMoneycontrolAnalyst,
+  // Fallback / second source for the Bulk / Block Deal Timeline — fills the block
+  // deals Screener Trades omits (e.g. Niva Bupa / NBH). Block-tolerant + add-only.
+  ingestMoneycontrolStockDeals,
   // Excel-template sources. Daily price/volume runs newest-source-wins through
   // price-history-store, so a blocked source can never wipe the seeded history:
   //   1. fetch-muns-market-data — PRIMARY (muns' own India-capable API),

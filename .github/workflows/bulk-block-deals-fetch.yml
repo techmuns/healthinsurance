@@ -43,11 +43,23 @@ jobs:
           MUNS_AGENT_URL: ${{ secrets.MUNS_AGENT_URL }}
         run: npx tsx scripts/ingest/bulk-block-deals-agent.ts
 
+      # Fallback / second source — Moneycontrol Stock Deals (large deals). Fills the
+      # block deals Screener omits (e.g. Niva Bupa / NBH). Attempts live; if the
+      # runner IP is blocked it records an honest 'blocked' status (never fabricates).
+      # Set the INGEST_FETCH_PROXY secret (in-region relay) to fetch through a
+      # non-blocked IP. Non-fatal: a blocked run must not fail the workflow.
+      - name: Fetch Moneycontrol stock deals (NBH large deals)
+        continue-on-error: true
+        env:
+          INGEST_OFFLINE: '0'
+          INGEST_FETCH_PROXY: ${{ secrets.INGEST_FETCH_PROXY }}
+        run: npx tsx scripts/ingest/ingest-moneycontrol-stock-deals.ts
+
       - name: Commit new deals
         run: |
           git config user.name "insurance-data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add src/data/snapshots/bulk-block-deals-snapshot.json
+          git add src/data/snapshots/bulk-block-deals-snapshot.json src/data/snapshots/moneycontrol-stock-deals.json
           git diff --staged --quiet && { echo "no change this run"; exit 0; }
           git commit -m "data: bulk/block deals @ $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3 4 5; do

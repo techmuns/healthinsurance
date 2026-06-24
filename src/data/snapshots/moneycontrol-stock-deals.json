@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "snapshot_id": "moneycontrol-stock-deals",
+    "description": "Bulk / block / large deals for the LISTED standalone-health insurers, pulled from Moneycontrol → Markets → Stock Deals → Large Deals (per stock code, e.g. NBH = Niva Bupa). FALLBACK / second source behind Screener Trades for the Bulk / Block Deal Timeline: when Screener returns zero or incomplete rows (block deals are the usual gap), Moneycontrol fills it. Rows are normalised into the shared bulk/block-deal shape and merged + de-duped with Screener at read-time. Never fabricated — an empty data array means 'checked, nothing parseable', distinct from 'not yet checked'.",
+    "schema_version": "1.0.0",
+    "source_name": "Moneycontrol",
+    "source_section": "Markets / Stock Deals / Large Deals",
+    "source_url": "https://www.moneycontrol.com/markets/stock-deals/large-deals/NBH",
+    "underlying_source": "NSE / BSE",
+    "dataset": "official",
+    "last_updated": null,
+    "last_successful_run": null,
+    "scraped_at": "2026-06-24T20:25:40.975Z",
+    "parser_status": "blocked",
+    "status": "blocked",
+    "status_detail": "Moneycontrol fetch blocked (e.g. Akamai 403 from a datacenter IP) or the parser could not read it — source requires manual review. Set INGEST_FETCH_PROXY to an in-region relay, or stage the large-deals HTML/JSON under data/raw/moneycontrol/deals/.",
+    "symbols_checked": [
+      "NBH"
+    ],
+    "notes": "Niva Bupa stock code on Moneycontrol = NBH. www.moneycontrol.com is Akamai-fronted and 403s datacenter IPs; the API host (api.moneycontrol.com) is reachable but the exact stock-deals endpoint may need pinning via MONEYCONTROL_DEALS_API_NBH. Staging the large-deals HTML/JSON under data/raw/moneycontrol/deals/ populates it offline."
+  },
+  "data": []
+}

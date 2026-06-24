@@ -30,6 +30,7 @@ import shareholdingPatternSnapshot from '@/data/snapshots/shareholding-pattern-s
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import bulkBlockDeals from '@/data/snapshots/bulk-block-deals-snapshot.json'
 import tradeDisclosuresJson from '@/data/snapshots/ownership-trade-disclosures.json'
+import moneycontrolStockDealsJson from '@/data/snapshots/moneycontrol-stock-deals.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
 import { peerValuation } from '@/data/valuationData'
 import irdaiFlashLatestJson from '@/data/snapshots/irdai-nonlife-flash-latest.json'
@@ -42,6 +43,9 @@ import type {
   OwnershipTradeDisclosureRow,
   OwnershipTradeDisclosuresEnvelope,
   TradeValidationStatus,
+  TradeSourceName,
+  MoneycontrolStockDealsEnvelope,
+  MoneycontrolDealStatus,
 } from '@/data/snapshots/_schemas'
 import type { TimePeriod, PeerGroup, Insurer, Signal } from '@/data/types'
 
@@ -410,6 +414,21 @@ export function summarizeTradeDisclosures(rows: OwnershipTradeDisclosureRow[]): 
   }
 }
 
+/** Resolved outcome of one configured deal source, for the timeline footer. */
+export type TradeSourceState = 'ok' | 'no_records' | 'blocked' | 'parse_warning' | 'pending'
+export interface TradeSourceStatus {
+  name: TradeSourceName
+  /** Display label, e.g. "Screener Trades" / "Moneycontrol Stock Deals". */
+  label: string
+  state: TradeSourceState
+  /** Merged rows this source contributed for the company. */
+  count: number
+  url: string
+  checkedAt: string | null
+  /** Human note shown when blocked / parse_warning. */
+  detail?: string | null
+}
+
 export interface TradeDisclosuresView {
   deals: OwnershipTradeDisclosureRow[]
   summary: TradeDisclosureSummary
@@ -420,28 +439,139 @@ export interface TradeDisclosuresView {
   scrapedAt: string | null
   tradesSectionFound: boolean
   validationStatus: TradeValidationStatus
+  // ── multi-source (Screener Trades + Moneycontrol Stock Deals) ──
+  /** Every configured source and its resolved state — drives the status chips. */
+  sources: TradeSourceStatus[]
+  /** True when Moneycontrol contributed at least one merged row for the company. */
+  moneycontrolUsed: boolean
+  /** Dynamic line after the company name in the card header. */
+  headerLabel: string
+  /** True once every configured source has resolved (ok / no_records / blocked /
+   *  parse_warning) — i.e. NOT still 'pending'. The empty "0 found" state is only
+   *  honest once this is true: we have actually checked every source. */
+  allSourcesChecked: boolean
 }
 
-/** Bulk & block deal disclosures for a company (newest first), with the Task-3
- *  summary and the Screener/NSE-BSE source metadata. Empty deals + a 'scraped'
- *  validation status = a confirmed clean zero (not "pending"). */
+// Dedup identity per the task: company + date + client + action + qty + price +
+// exchange. deal_type is intentionally NOT in the key — the same trade reported
+// as a "bulk" by one source and a "block" by another is still ONE trade; we keep
+// the richer row and union provenance rather than double-count it.
+const tradeDedupeKey = (d: OwnershipTradeDisclosureRow): string =>
+  [
+    d.company_id,
+    d.date,
+    (d.buyer ?? d.seller ?? '').toLowerCase().replace(/\s+/g, ' ').trim(),
+    d.buyer ? 'buy' : 'sell',
+    d.quantity ?? '',
+    d.price ?? '',
+    (d.exchange_source ?? '').toLowerCase().replace(/[\s/]/g, ''),
+  ].join('::')
+
+// "Richer" = more populated, decision-grade fields. On a dedupe collision we keep
+// the richer row as the base and union the source provenance onto it.
+const tradeRichness = (d: OwnershipTradeDisclosureRow): number =>
+  [d.quantity, d.price, d.value_cr, d.buyer ?? d.seller].filter((v) => v != null && v !== '').length +
+  (d.exchange_source && d.exchange_source !== 'NSE / BSE' ? 1 : 0)
+
+const maxIsoDate = (a: string | null | undefined, b: string | null | undefined): string | null => {
+  const x = a ?? null
+  const y = b ?? null
+  if (!x) return y
+  if (!y) return x
+  return x >= y ? x : y
+}
+
+function mcStateFrom(status: MoneycontrolDealStatus, count: number): TradeSourceState {
+  switch (status) {
+    case 'ready': return count > 0 ? 'ok' : 'no_records'
+    case 'no_records': return 'no_records'
+    case 'blocked': return 'blocked'
+    case 'parse_warning': return 'parse_warning'
+    default: return 'pending'
+  }
+}
+
+/** Bulk & block deal disclosures for a company (newest first), MERGED across
+ *  every configured source — Screener Trades (primary) + Moneycontrol Stock Deals
+ *  (fallback, fills Screener's gaps, esp. block deals) — de-duped by
+ *  company+date+client+action+qty+price+exchange, with the Task-3 summary and an
+ *  honest per-source status. Screener returning zero is NEVER treated as final:
+ *  the empty "0 found" state is only valid once `allSourcesChecked` is true and
+ *  no source produced a row. Nothing is fabricated. */
 export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
-  const env = tradeDisclosuresJson as unknown as OwnershipTradeDisclosuresEnvelope
-  const meta = env._meta
-  const deals = (env.data ?? [])
-    .filter((d) => d.company_id === companyId)
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.value_cr ?? 0) - (a.value_cr ?? 0)))
+  const scrEnv = tradeDisclosuresJson as unknown as OwnershipTradeDisclosuresEnvelope
+  const scrMeta = scrEnv._meta
+  const scrRows = (scrEnv.data ?? []).filter((d) => d.company_id === companyId)
+
+  const mcEnv = moneycontrolStockDealsJson as unknown as MoneycontrolStockDealsEnvelope
+  const mcMeta = mcEnv._meta
+  const mcRows = (mcEnv.data ?? []).filter((d) => d.company_id === companyId)
+
+  // Merge: Screener first (primary), then Moneycontrol (fallback). On collision,
+  // keep the richer row + union source provenance — never double-count.
+  const merged = new Map<string, OwnershipTradeDisclosureRow>()
+  const addRow = (row: OwnershipTradeDisclosureRow, src: TradeSourceName): void => {
+    const k = tradeDedupeKey(row)
+    const existing = merged.get(k)
+    if (!existing) {
+      merged.set(k, { ...row, sources: [src] })
+      return
+    }
+    const prevSources = existing.sources ?? [existing.source_name]
+    const base = tradeRichness(row) > tradeRichness(existing) ? { ...row } : { ...existing }
+    merged.set(k, { ...base, sources: Array.from(new Set([...prevSources, src])) })
+  }
+  for (const r of scrRows) addRow(r, 'Screener')
+  for (const r of mcRows) addRow(r, 'Moneycontrol')
+
+  const deals = [...merged.values()].sort((a, b) =>
+    a.date < b.date ? 1 : a.date > b.date ? -1 : (b.value_cr ?? 0) - (a.value_cr ?? 0),
+  )
+
+  const countFor = (src: TradeSourceName): number =>
+    deals.filter((d) => (d.sources ?? [d.source_name]).includes(src)).length
+  const scrCount = countFor('Screener')
+  const mcCount = countFor('Moneycontrol')
+
+  // Screener per-company state: a global 'scraped' run with rows = ok; with no
+  // rows = a confirmed clean zero (no_records); anything else still pending.
+  const scrState: TradeSourceState =
+    scrMeta.validation_status === 'scraped'
+      ? (scrCount > 0 ? 'ok' : 'no_records')
+      : scrMeta.validation_status === 'no_records'
+        ? 'no_records'
+        : scrMeta.validation_status === 'parse_warning'
+          ? 'parse_warning'
+          : 'pending'
+  const mcState = mcStateFrom(mcMeta.status, mcCount)
+
+  const moneycontrolUsed = mcCount > 0
+  const scrUrl = scrRows[0]?.source_url ?? scrMeta.source_url
+  const sources: TradeSourceStatus[] = [
+    { name: 'Screener', label: 'Screener Trades', state: scrState, count: scrCount, url: scrUrl, checkedAt: scrMeta.last_updated ?? scrMeta.scraped_at ?? null },
+    { name: 'Moneycontrol', label: 'Moneycontrol Stock Deals', state: mcState, count: mcCount, url: mcMeta.source_url, checkedAt: mcMeta.scraped_at ?? mcMeta.last_updated ?? null, detail: mcMeta.status_detail ?? null },
+  ]
+
+  const headerLabel = moneycontrolUsed
+    ? 'bulk / block deals aggregated from Moneycontrol Stock Deals and Screener Trades · underlying NSE / BSE'
+    : 'large trades aggregated by Screener Trades · underlying NSE / BSE'
+
+  const allSourcesChecked = scrState !== 'pending' && mcState !== 'pending'
+
   return {
     deals,
     summary: summarizeTradeDisclosures(deals),
-    sourceName: meta.source_name,
-    // Per-company Screener Trades URL (from the company's own rows).
-    sourceUrl: deals[0]?.source_url ?? meta.source_url,
-    underlyingSource: meta.underlying_source,
-    lastUpdated: meta.last_updated ?? null,
-    scrapedAt: meta.scraped_at ?? null,
-    tradesSectionFound: !!meta.trades_section_found,
-    validationStatus: meta.validation_status,
+    sourceName: moneycontrolUsed ? 'Moneycontrol + Screener' : scrMeta.source_name,
+    sourceUrl: scrUrl,
+    underlyingSource: scrMeta.underlying_source,
+    lastUpdated: moneycontrolUsed ? maxIsoDate(scrMeta.last_updated, mcMeta.last_updated) : scrMeta.last_updated ?? null,
+    scrapedAt: maxIsoDate(scrMeta.scraped_at, mcMeta.scraped_at),
+    tradesSectionFound: !!scrMeta.trades_section_found,
+    validationStatus: scrMeta.validation_status,
+    sources,
+    moneycontrolUsed,
+    headerLabel,
+    allSourcesChecked,
   }
 }
 

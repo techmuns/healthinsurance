@@ -110,6 +110,42 @@ const SEG_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
   block: { label: 'Block', bg: '#F5EEDD', fg: '#8A6A2B' },
 }
 
+// ── Multi-source status (Screener Trades + Moneycontrol Stock Deals) ─────────
+// Each configured source resolves to a state; the chip row makes the provenance
+// explicit so a Screener zero is never mistaken for "no deals exist".
+const SRC_STATE_STYLE: Record<string, { label: string; bg: string; fg: string; dot: string }> = {
+  ok: { label: 'rows found', bg: 'rgba(22,142,142,0.10)', fg: '#0F6F6F', dot: '#168E8E' },
+  no_records: { label: 'no records', bg: '#EEF1F7', fg: '#5B6573', dot: '#9AA6B6' },
+  blocked: { label: 'blocked', bg: 'rgba(199,93,84,0.12)', fg: '#B0463C', dot: '#C75D54' },
+  parse_warning: { label: 'needs review', bg: 'rgba(199,93,84,0.12)', fg: '#B0463C', dot: '#C75D54' },
+  pending: { label: 'checking…', bg: '#F5EEDD', fg: '#8A6A2B', dot: '#C9A24B' },
+}
+interface SrcChip { name: string; label: string; state: string; count: number; url: string; detail?: string | null }
+function SourceStatusChips({ sources }: { sources: SrcChip[] }) {
+  return (
+    <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+      <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary/70">Sources</span>
+      {sources.map((s) => {
+        const st = SRC_STATE_STYLE[s.state] ?? SRC_STATE_STYLE.pending
+        const tail = s.state === 'ok' ? `${s.count} deal${s.count === 1 ? '' : 's'}` : st.label
+        return (
+          <span
+            key={s.name}
+            title={s.detail ?? `${s.label}: ${st.label}${s.count ? ` · ${s.count} on record` : ''}`}
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium"
+            style={{ background: st.bg, color: st.fg }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: st.dot }} />
+            <span className="font-semibold">{s.label}</span>
+            <span aria-hidden className="opacity-50">·</span>
+            <span className="opacity-90 tabular-nums">{tail}</span>
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 /** Bulk & block deal disclosures — aggregated by Screener → Trades, underlying
  *  source NSE / BSE. Bulk and block stay in separate tabs (never mixed). Each tab
  *  drives the buy/sell signal chart, the summary stats and a visible audit table.
@@ -119,13 +155,24 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
   const { deals, summary } = view
   const counts: Record<'bulk' | 'block', number> = { bulk: summary.bulk_deal_count, block: summary.block_deal_count }
   const [segment, setSegment] = useState<'bulk' | 'block'>(counts.bulk === 0 && counts.block > 0 ? 'block' : 'bulk')
-  // A successful Screener check (or a located Trades section) makes zero records a
-  // CONFIRMED zero → "0 found", not "Data pending". Only a failed/absent scrape pends.
-  const checked = view.validationStatus === 'scraped' || view.validationStatus === 'no_records' || view.tradesSectionFound
+  // Multi-source gate: a zero is only a CONFIRMED zero once EVERY configured
+  // source (Screener Trades + Moneycontrol Stock Deals) has resolved — not still
+  // pending. A Screener zero on its own is NEVER treated as final.
+  const checked = view.allSourcesChecked
+  const scr = view.sources.find((s) => s.name === 'Screener')
+  const mc = view.sources.find((s) => s.name === 'Moneycontrol')
+  const mcBlocked = mc?.state === 'blocked' || mc?.state === 'parse_warning'
+  const checkedOn = view.scrapedAt ?? view.lastUpdated ?? '—'
+  const fromMc = (d: { sources?: ('Screener' | 'Moneycontrol')[]; source_name: string }): boolean =>
+    (d.sources ?? [d.source_name]).includes('Moneycontrol')
 
   const sideOf = (d: { buyer: string | null; seller: string | null }): 'buy' | 'sell' =>
     d.buyer && !d.seller ? 'buy' : d.seller && !d.buyer ? 'sell' : 'buy'
   const segDeals = deals.filter((d) => d.deal_type === segment)
+  // Did the fallback (Moneycontrol) fill this segment where Screener had nothing?
+  const segScreenerCount = segDeals.filter((d) => (d.sources ?? [d.source_name]).includes('Screener')).length
+  const segMcCount = segDeals.filter(fromMc).length
+  const mcFilledGap = segMcCount > 0 && segScreenerCount === 0
   const dates = [...new Set(segDeals.map((d) => d.date))]
   // The big timeline only earns its space across MULTIPLE dates; a single-date
   // set renders as a compact cluster instead (no stretched, near-empty chart).
@@ -174,11 +221,11 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
-          <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · large trades aggregated by Screener Trades · underlying NSE / BSE</p>
+          <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · {view.headerLabel}</p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-0.5">
-          <a href={sourceHref(view.sourceUrl) ?? view.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title="Screener → Trades">
-            Screener Trades <ArrowUpRight className="h-3 w-3" />
+          <a href={sourceHref(view.sourceUrl) ?? view.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={view.moneycontrolUsed ? 'Moneycontrol Stock Deals + Screener Trades' : 'Screener → Trades'}>
+            {view.moneycontrolUsed ? 'Moneycontrol + Screener' : 'Screener Trades'} <ArrowUpRight className="h-3 w-3" />
           </a>
           <span className="text-[9.5px] text-ink-secondary">Updated {view.lastUpdated ?? '—'}</span>
         </div>
@@ -190,6 +237,10 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
         <Info className="mt-px h-3 w-3 shrink-0 text-navy-primary/70" />
         Bulk / block deals are individual transaction disclosures and may not equal the quarter-end shareholding-pattern movement shown in the Ownership Trend above.
       </p>
+
+      {/* Per-source status — Screener Trades + Moneycontrol Stock Deals — so a
+          Screener zero is never mistaken for "no deals exist". */}
+      <SourceStatusChips sources={view.sources} />
 
       {/* Segment tabs — bulk and block, each with its trade count, never mixed. */}
       <div className="mb-2.5 inline-flex rounded-lg border border-soft-border bg-ice/40 p-0.5">
@@ -211,31 +262,65 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
       </div>
 
       {segDeals.length === 0 ? (
-        checked ? (
-          // Confirmed clean zero — Screener Trades was checked and reported none.
+        !checked ? (
+          // A configured source is still pending — genuinely "checking", never a
+          // confirmed zero. (Empty state is only valid once every source resolves.)
+          <DataEmptyState
+            kind="pending"
+            height={92}
+            title={`${segment[0].toUpperCase()}${segment.slice(1)} deals — checking sources`}
+            body={`Screener Trades and Moneycontrol Stock Deals are being checked for ${companyName}. ${segment[0].toUpperCase()}${segment.slice(1)}-deal disclosures populate here once every configured source has reported.`}
+          />
+        ) : mcBlocked ? (
+          // All sources checked, but Moneycontrol couldn't be read → honest "needs
+          // review", NOT a confirmed zero. (Task: never show "No deals" when a
+          // configured source is blocked and might hold the missing rows.)
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-coral/40 bg-coral-soft/40 px-4 py-7 text-center">
+            <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-coral ring-1 ring-coral/30">
+              <span className="h-1.5 w-1.5 rounded-full bg-coral" /> source needs review
+            </span>
+            <p className="max-w-md text-[12.5px] font-semibold leading-snug text-navy-deep">
+              Moneycontrol fetch blocked or parser failed — source requires manual review
+            </p>
+            <p className="mt-1 max-w-md text-[11px] leading-snug text-ink-secondary">
+              Screener Trades reported no {segment} deals for {companyName}, and Moneycontrol Stock Deals (NBH large deals) could not be read this run — so this is <span className="font-semibold text-navy-deep">not</span> a confirmed zero.
+            </p>
+            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">
+              Screener Trades · {scr?.count ?? 0} on record · Moneycontrol Stock Deals · blocked · checked {checkedOn}
+            </p>
+          </div>
+        ) : (
+          // Every configured source checked and none reported a deal → confirmed zero.
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 px-4 py-7 text-center">
             <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ring-1 ring-soft-border">
               <span className="h-1.5 w-1.5 rounded-full bg-teal" /> 0 found
             </span>
             <p className="text-[12.5px] font-semibold text-navy-deep">No {segment} deals on record</p>
             <p className="mt-1 max-w-md text-[11px] leading-snug text-ink-secondary">
+              No exchange-reported bulk/block deals found across configured sources for {companyName}.{' '}
               {segment === 'block'
-                ? `No exchange-reported block deals for ${companyName} in the current dataset. Bulk-deal activity is available in the Bulk Deals tab.`
-                : `No exchange-reported bulk deals for ${companyName} in the current dataset. Block-deal activity, when reported, appears in the Block Deals tab.`}
+                ? 'Bulk-deal activity, when present, appears in the Bulk Deals tab.'
+                : 'Block-deal activity, when reported, appears in the Block Deals tab.'}
             </p>
-            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">Confirmed from Screener Trades · checked {view.lastUpdated ?? '—'}</p>
+            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">Confirmed across Screener Trades + Moneycontrol Stock Deals · checked {checkedOn}</p>
           </div>
-        ) : (
-          // Only when the scrape failed / source was unavailable — genuinely pending.
-          <DataEmptyState
-            kind="pending"
-            height={92}
-            title={`${segment[0].toUpperCase()}${segment.slice(1)} deals — checking Screener`}
-            body={`Screener Trades couldn't be read for ${companyName} on the last run. The ${segment}-deal disclosures populate here once the scrape succeeds.`}
-          />
         )
       ) : (
         <>
+          {/* Honest provenance notes when a fallback filled a gap, or a source was
+              blocked and the list may be incomplete. */}
+          {mcFilledGap && (
+            <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-teal-soft/50 px-2.5 py-1.5 text-[10.5px] leading-snug text-teal ring-1 ring-teal/15">
+              <Info className="mt-px h-3 w-3 shrink-0" />
+              Screener has no matching records; Moneycontrol stock-deals data used for these {segment} deals.
+            </p>
+          )}
+          {!mcFilledGap && mcBlocked && (
+            <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-coral-soft/40 px-2.5 py-1.5 text-[10.5px] leading-snug text-coral ring-1 ring-coral/15">
+              <Info className="mt-px h-3 w-3 shrink-0" />
+              Moneycontrol Stock Deals could not be read this run — this {segment}-deal list reflects Screener Trades only and may be incomplete.
+            </p>
+          )}
           {/* Compact summary strip — one soft inner panel, not scattered. */}
           <div className="rounded-xl border border-soft-border bg-white/70 px-3 py-2.5">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
@@ -345,6 +430,8 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
                     {segDeals.map((d, i) => {
                       const badge = SEG_BADGE[d.deal_type] ?? SEG_BADGE.bulk
                       const dash = <span className="text-ink-secondary/40">—</span>
+                      const rowSources = d.sources ?? [d.source_name]
+                      const exch = d.exchange_source || 'NSE / BSE'
                       return (
                         <tr key={i} className="border-t border-soft-border/70 align-top">
                           <td className="whitespace-nowrap px-2.5 py-1.5 font-medium text-navy-deep">{dealDate(d.date)}</td>
@@ -354,7 +441,7 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
                           <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary" title={d.quantity != null ? `${d.quantity.toLocaleString('en-IN')} shares` : ''}>{d.quantity_display}</td>
                           <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary">{d.price != null ? `₹${d.price.toFixed(2)}` : '—'}</td>
                           <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums text-navy-deep">{d.value_display}</td>
-                          <td className="whitespace-nowrap px-2.5 py-1.5 text-ink-secondary">Screener / NSE-BSE</td>
+                          <td className="whitespace-nowrap px-2.5 py-1.5 text-ink-secondary" title={`Reported by ${rowSources.join(' + ')} · underlying ${exch}`}>{rowSources.join(' + ')} · {exch}</td>
                         </tr>
                       )
                     })}
@@ -363,7 +450,7 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
               </div>
             </div>
             <p className="mt-1 text-[9.5px] leading-snug text-ink-secondary/80">
-              Buyer/seller exactly as disclosed; the undisclosed counterparty shows a dash. Value = quantity × price. Aggregated by Screener Trades; underlying disclosures NSE / BSE.
+              Buyer/seller exactly as disclosed; the undisclosed counterparty shows a dash. Value = quantity × price. The Source column shows which feed reported each deal{view.moneycontrolUsed ? ' — Moneycontrol Stock Deals fills the rows Screener Trades omits' : ''}; underlying disclosures NSE / BSE.
             </p>
           </div>
         </>
@@ -1107,7 +1194,11 @@ export function Ownership() {
         </p>
         <p className="mt-1 flex items-start gap-1.5">
           <span className="mt-px shrink-0 font-semibold text-ink-primary">Bulk/block deals source:</span>
-          <span>Screener → Trades · underlying exchange disclosures: NSE / BSE.</span>
+          <span>
+            {trades.moneycontrolUsed
+              ? 'Moneycontrol → Markets → Stock Deals → Large Deals (NBH) + Screener → Trades, merged and de-duped'
+              : 'Screener → Trades, with Moneycontrol Stock Deals (NBH large deals) as the fallback source'}{' '}· underlying exchange disclosures: NSE / BSE.
+          </span>
         </p>
         <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-soft-border/70 pt-1.5">
           <span>Last updated from Screener — shareholding pattern: <span className="font-semibold text-ink-primary">{lastUpdated ?? '—'}</span></span>

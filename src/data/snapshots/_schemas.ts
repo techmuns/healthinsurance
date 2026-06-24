@@ -467,6 +467,12 @@ export interface OwnershipTrendsEnvelope {
 export type TradeDealType = 'bulk' | 'block'
 export type TradeValidationStatus = 'scraped' | 'no_records' | 'parse_warning' | 'pending'
 
+/** Sources that can contribute a bulk/block deal row. Screener Trades is the
+ *  primary aggregator; Moneycontrol Stock Deals is the fallback used when
+ *  Screener returns zero / incomplete rows (esp. for block deals). The two are
+ *  normalised into this one row shape and de-duped at read-time. */
+export type TradeSourceName = 'Screener' | 'Moneycontrol'
+
 export interface OwnershipTradeDisclosureRow {
   company_id: string
   company_name: string
@@ -485,11 +491,17 @@ export interface OwnershipTradeDisclosureRow {
   value_display: string
   /** NSE | BSE | "NSE / BSE" when the aggregator doesn't split it. */
   exchange_source: string
-  source_name: 'Screener'
+  source_name: TradeSourceName
   source_url: string
   underlying_source: string
   scraped_at: string
   validation_status: TradeValidationStatus
+  /** Raw deal-type label exactly as the source printed it (e.g. "Bulk Deal",
+   *  "Block Deal", "Large Deal") — kept for provenance, never shown as a number. */
+  source_deal_label?: string
+  /** Every source that independently reported this same deal — populated at
+   *  read-time when Screener + Moneycontrol rows are merged + de-duped. */
+  sources?: TradeSourceName[]
 }
 
 export interface OwnershipTradeDisclosuresMeta {
@@ -515,6 +527,46 @@ export interface OwnershipTradeDisclosuresMeta {
 
 export interface OwnershipTradeDisclosuresEnvelope {
   _meta: OwnershipTradeDisclosuresMeta
+  data: OwnershipTradeDisclosureRow[]
+}
+
+// ─── moneycontrol-stock-deals (fallback source for bulk/block/large deals) ───
+// Moneycontrol → Markets → Stock Deals → Large Deals, per stock code (e.g. NBH
+// for Niva Bupa: /markets/stock-deals/large-deals/NBH). This is the SECOND
+// source behind Screener Trades for the Bulk / Block Deal Timeline: when
+// Screener returns zero / incomplete rows (block deals are the usual gap),
+// Moneycontrol fills it. Rows reuse OwnershipTradeDisclosureRow with
+// source_name 'Moneycontrol'; the data layer merges + de-dupes the two feeds.
+// A blocked / failed fetch is recorded honestly (status='blocked') and NEVER
+// fabricated — an empty data array means "checked, nothing parseable", which
+// the UI distinguishes from "not yet checked".
+export type MoneycontrolDealStatus = 'ready' | 'no_records' | 'blocked' | 'parse_warning' | 'pending'
+
+export interface MoneycontrolStockDealsMeta {
+  snapshot_id: string
+  description: string
+  schema_version: string
+  source_name: 'Moneycontrol'
+  source_section: string
+  /** Large-deals page pattern, e.g. https://www.moneycontrol.com/markets/stock-deals/large-deals/NBH */
+  source_url: string
+  underlying_source: string
+  dataset: SnapshotDataset
+  last_updated: string | null
+  last_successful_run: string | null
+  scraped_at: string | null
+  parser_status: ParserStatus
+  /** Outcome of the most recent Moneycontrol stock-deals fetch. */
+  status: MoneycontrolDealStatus
+  /** Human-readable detail when status is 'blocked' / 'parse_warning'. */
+  status_detail?: string | null
+  /** Stock codes / symbols checked this run (e.g. ["NBH"]). */
+  symbols_checked?: string[]
+  notes?: string
+}
+
+export interface MoneycontrolStockDealsEnvelope {
+  _meta: MoneycontrolStockDealsMeta
   data: OwnershipTradeDisclosureRow[]
 }
 
