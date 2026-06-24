@@ -331,6 +331,129 @@ export interface OwnershipRow {
   provenance: ProvenanceEntry
 }
 
+// ─── ownership-holdings / ownership-trends (Screener shareholding pattern) ───
+// Long-format shareholding-pattern history for the Governance → Ownership Trend
+// module. Source: Screener (Investors → Shareholding Pattern). Group-level rows
+// (Promoters / FIIs / DIIs / Public / No. of Shareholders) always exist; named
+// investor-level rows appear only when Screener exposes the entities behind a
+// line-item AND the scrape could expand them (login-gated) — otherwise
+// `expanded_investor_rows_available` is false and only group rows are present
+// (never fabricated). Percentages are nullable; missing stays null, never 0.
+
+export type OwnershipHolderGroup =
+  | 'Promoters'
+  | 'FIIs'
+  | 'DIIs'
+  | 'Public'
+  | 'No. of Shareholders'
+  | 'Other'
+
+export type OwnershipPeriodType = 'quarterly' | 'yearly'
+
+export type OwnershipValidationStatus = 'scraped' | 'missing_expanded_rows' | 'parse_warning'
+
+export type OwnershipSourceConfidence = 'screener_public_page'
+
+/** One holder/group value at one period — the normalized long-format row. */
+export interface OwnershipHoldingRow {
+  /** Dashboard join key (matches company-master). Ticker is NIVABUPA. */
+  company_id: string
+  company_name: string
+  ticker?: string
+  source_name: 'Screener'
+  source_section: string
+  period_type: OwnershipPeriodType
+  /** Screener's own period label, e.g. "Dec 2024" / "Mar 2025". */
+  period_label: string
+  /** Normalized quarter-/year-end date (ISO, YYYY-MM-DD). */
+  period_end_date: string
+  /** Dashboard fiscal label derived from the period, e.g. "Q3 FY25" / "FY25". */
+  fiscal_period: string
+  holder_group: OwnershipHolderGroup
+  /** Individual holder name when expanded; otherwise equals the group name. */
+  holder_name: string
+  /** Holding as a % of total — null for the "No. of Shareholders" row. */
+  holding_pct: number | null
+  /** Populated only on the "No. of Shareholders" row; null elsewhere. */
+  shareholder_count: number | null
+  is_group_row: boolean
+  is_expanded_investor_row: boolean
+  /** Exact label scraped from Screener (group label as shown). */
+  raw_label: string
+  classification_note: string
+  scraped_at: string
+  source_confidence: OwnershipSourceConfidence
+  validation_status: OwnershipValidationStatus
+}
+
+export type OwnershipTrendDirection =
+  | 'increase'
+  | 'decrease'
+  | 'no_change'
+  | 'new_holder'
+  | 'exited'
+  | 'insufficient_history'
+
+/** Period-over-period movement for one holder/group, derived from holdings. */
+export interface OwnershipTrendRow {
+  company_id: string
+  period_type: OwnershipPeriodType
+  /** Dashboard fiscal labels for the compared periods. */
+  current_period: string
+  previous_period: string | null
+  /** Screener raw labels for the compared periods (audit trail). */
+  current_period_label: string
+  previous_period_label: string | null
+  holder_group: OwnershipHolderGroup
+  holder_name: string
+  current_holding_pct: number | null
+  previous_holding_pct: number | null
+  change_pp: number | null
+  trend_direction: OwnershipTrendDirection
+  absolute_change_pp: number | null
+  /** 1 = largest absolute move in this period (ties broken by holding size). */
+  rank_by_change: number | null
+  /** 1 = largest current holding in this period. */
+  rank_by_current_holding: number | null
+}
+
+/** Shared meta for both Screener ownership snapshots (self-contained, not merged). */
+export interface OwnershipScreenerMeta {
+  snapshot_id: string
+  description: string
+  schema_version: string
+  company_id: string
+  company_name: string
+  ticker?: string
+  source_name: 'Screener'
+  source_section: string
+  source_url: string
+  screener_company_id: number
+  dataset: SnapshotDataset
+  last_updated: string | null
+  last_successful_run: string | null
+  scraped_at: string | null
+  classification_note: string
+  /** True only when Screener exposed named investor rows during the scrape. */
+  expanded_investor_rows_available: boolean
+  expanded_investor_rows_note?: string
+  parser_status: ParserStatus
+  periods_quarterly: string[]
+  periods_yearly: string[]
+  validation_status: OwnershipValidationStatus
+  notes?: string
+}
+
+export interface OwnershipHoldingsEnvelope {
+  _meta: OwnershipScreenerMeta
+  data: OwnershipHoldingRow[]
+}
+
+export interface OwnershipTrendsEnvelope {
+  _meta: OwnershipScreenerMeta
+  data: OwnershipTrendRow[]
+}
+
 // ─── management-events ─────────────────────────────────────────────────────
 
 export type ManagementEventType =

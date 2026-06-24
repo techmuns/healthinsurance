@@ -25,6 +25,7 @@
     "ingest:bulk-block-deals": "tsx scripts/ingest/bulk-block-deals-agent.ts",
     "ingest:management-events": "tsx scripts/ingest/management-events-agent.ts",
     "ingest:shareholding": "tsx scripts/ingest/fetch-shareholding.ts",
+    "ingest:screener-ownership": "tsx scripts/ingest/fetch-screener-shareholding.ts",
     "ingest:price:muns": "tsx scripts/ingest/fetch-muns-market-data.ts",
     "ingest:delivery:nse": "tsx scripts/ingest/fetch-nse-delivery.ts",
     "ingest:price:yahoo": "tsx scripts/ingest/fetch-yahoo-price.ts",

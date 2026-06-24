@@ -56,7 +56,7 @@ export function SahiAnalysisHeader({
   // snapshots, current-market views, point-in-time filings or an event feed — the
   // year can't change them — so the control is shown disabled there (with a note)
   // rather than pretending it applies. Company selection still applies everywhere.
-  const periodApplies = activeTab === 'distribution' || activeTab === 'profitability'
+  const periodApplies = activeTab === 'distribution' || activeTab === 'profitability' || activeTab === 'governance'
   const offCls = periodApplies ? '' : 'pointer-events-none opacity-40'
 
   // Local source-of-truth so flipping Annual ↔ Quarterly keeps the chosen years.
@@ -250,7 +250,7 @@ export function SahiAnalysisHeader({
 
         {!periodApplies && (
           <span className="text-[10px] italic text-ink-secondary/70">
-            Latest figures — the year filter applies on Premium &amp; Distribution and Profitability
+            Latest figures — the year filter applies on Premium &amp; Distribution, Profitability and Governance
           </span>
         )}
       </div>

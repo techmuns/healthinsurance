@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "company_id": "niva-bupa",
+    "company_name": "Niva Bupa Health Insurance Company Ltd",
+    "ticker": "NIVABUPA",
+    "screener_company_id": 1285147,
+    "source_name": "Screener",
+    "source_section": "Investors / Shareholding Pattern",
+    "source_url": "https://www.screener.in/company/1285147/",
+    "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
+    "expanded_investor_rows_available": false,
+    "expanded_investor_rows_note": "Screener exposes individual entity names when a shareholding line-item (Promoters / FIIs / DIIs / Public) is clicked, but those expanded rows require an authenticated Screener session and interactive expansion. They were not exposed during this capture, so only group-level rows are recorded. No investor-level data was invented; the named-holder breakdown comes from the authoritative exchange filing (shareholding-pattern-snapshot) for the latest period only.",
+    "source_confidence": "screener_public_page",
+    "captured_note": "Group-level shareholding-pattern values transcribed from the Screener public company page (company id 1285147), section Investors -> Shareholding Pattern. Used as the offline source-of-record for the ownership-trend ingestion when a live Screener scrape is unavailable (no Playwright / blocked network)."
+  },
+  "quarterly": {
+    "periods": ["Dec 2024", "Mar 2025", "Jun 2025", "Sep 2025", "Dec 2025", "Mar 2026"],
+    "groups": {
+      "Promoters": [55.98, 55.98, 55.43, 55.41, 55.36, 55.36],
+      "FIIs": [8.85, 8.90, 10.76, 10.72, 10.31, 10.60],
+      "DIIs": [9.82, 9.71, 15.06, 15.31, 16.04, 16.49],
+      "Public": [25.36, 25.42, 18.74, 18.57, 18.27, 17.56],
+      "No. of Shareholders": [146255, 136017, 154883, 158550, 147718, 135343]
+    }
+  },
+  "yearly": {
+    "periods": ["Mar 2025", "Mar 2026"],
+    "groups": {
+      "Promoters": [55.98, 55.36],
+      "FIIs": [8.90, 10.60],
+      "DIIs": [9.71, 16.49],
+      "Public": [25.42, 17.56],
+      "No. of Shareholders": [136017, 135343]
+    }
+  }
+}
