@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Crosshair } from 'lucide-react'
+import { ArrowDown, Crosshair } from 'lucide-react'
 import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
 
 // ---------------------------------------------------------------------------
@@ -12,7 +12,7 @@ import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
 //  shows the value you asked to check, where you're looking.
 // ---------------------------------------------------------------------------
 
-export function VerifyRowHighlight({ row }: { row: VerifyRow | null }) {
+export function VerifyRowHighlight({ row, located = false }: { row: VerifyRow | null; located?: boolean }) {
   const ref = useRef<HTMLDivElement>(null)
 
   // Bring the highlight into view whenever a new row is clicked, so the response
@@ -48,8 +48,12 @@ export function VerifyRowHighlight({ row }: { row: VerifyRow | null }) {
         <span className="text-ink-secondary">Dashboard <span className="ml-1 font-semibold tabular-nums text-navy-deep">{row.dashboardDisplay}</span></span>
       </div>
 
-      <p className="mt-1.5 text-[10.5px] leading-snug text-ink-secondary/90">
-        This tab is a chart &amp; table view rather than a cell grid, so the exact box can’t be outlined here — the value you clicked is shown above. The figure itself sits in the table below.
+      <p className="mt-1.5 inline-flex items-center gap-1 text-[10.5px] font-medium leading-snug" style={{ color: located ? m.dot : undefined }}>
+        {located ? (
+          <><ArrowDown className="h-3 w-3 shrink-0" /> Highlighted in the table below — scrolled into view.</>
+        ) : (
+          <span className="text-ink-secondary/90">This tab is a chart &amp; table view, so the exact box can’t be pinpointed — the value you clicked is shown above.</span>
+        )}
       </p>
     </div>
   )

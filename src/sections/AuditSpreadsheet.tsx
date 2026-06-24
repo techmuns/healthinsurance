@@ -943,7 +943,9 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
     setCompany('all')
     const grp = sheets.find((g) => g.sheet === verifyTarget.sheet)
     const custom = grp?.role === 'market_quote' || grp?.role === 'analyst_coverage'
-    setNavNote(custom ? 'Exact cell mapping unavailable in this section’s custom view — showing the nearest audit section.' : null)
+    // Custom views (Historical Stock Movement / Analyst Coverage) now highlight the
+    // exact cell in their own table, so no "mapping unavailable" note is needed.
+    setNavNote(null)
     // Open the compact detail panel for the clicked row, and run a one-shot pulse.
     const tcell = !custom ? (grp?.cells.find((c) => c.id === verifyTarget.cellId) ?? null) : null
     setSelected(tcell)

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -16,7 +16,19 @@ import { LISTED_INSURERS } from '@/lib/listedInsurers'
 import { useAuditView } from '@/lib/auditView'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import { VerifyRowHighlight } from '@/components/VerifyRowHighlight'
-import type { VerifyRow } from '@/lib/excelVerify'
+import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
+
+// Map a verifier row's metric to this table's daily column, so a clicked row
+// lands on the exact cell. Order matters: "% delivered" and "deliverable" both
+// contain "deliver", and "deliverable quantity" contains "quantity".
+type HistCol = 'close' | 'traded' | 'deliv' | 'delivpct'
+function histCol(label: string): HistCol | null {
+  const l = label.toLowerCase()
+  if (l.includes('close')) return 'close'
+  if (l.includes('deliver')) return l.includes('%') || l.includes('percent') ? 'delivpct' : 'deliv'
+  if (l.includes('traded') || l.includes('quantity') || l.includes('volume')) return 'traded'
+  return null
+}
 
 // ---------------------------------------------------------------------------
 //  Historical Stock Movement — the dashboard mirror of the workbook's
@@ -222,6 +234,21 @@ export function HistoricalStockMovement({
   const lastUpdated = SNAP._meta?.last_updated?.slice(0, 10)
   const NA_TITLE = 'Deliverable quantity is an exchange-only field (NSE) — not carried by the daily price feeds (muns API / Yahoo). Fills when an NSE delivery file is staged.'
 
+  // Verifier navigation → the exact cell in the daily table. Map the clicked
+  // row's metric to a column and its period to a date; the matching cell is
+  // ring-highlighted below and scrolled into view.
+  const hlCol = verifyRow ? histCol(verifyRow.metricLabel) : null
+  const hlDate = verifyRow?.period ?? null
+  const hlColor = verifyRow ? VERIFY_META[verifyRow.status].dot : undefined
+  const located = !!verifyRow && hlCol != null && vis(hlCol) && model.rows.some((r) => r.date === hlDate)
+  useEffect(() => {
+    if (!verifyRow) return
+    const t = setTimeout(() => {
+      document.querySelector('[data-hl-cell="1"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 90)
+    return () => clearTimeout(t)
+  }, [verifyRow?.id])
+
   // No NSE series for the chosen company — say so honestly (real data only,
   // never a fabricated stand-in). A listed name with no rows yet is still
   // backfilling from the same muns API; a non-listed name simply isn't tracked.
@@ -261,7 +288,7 @@ export function HistoricalStockMovement({
 
   return (
     <div className="space-y-4">
-      <VerifyRowHighlight row={verifyRow} />
+      <VerifyRowHighlight row={verifyRow} located={located} />
       {/* ── Header: story + provenance + KPI rail + daily chart ──────────────── */}
       <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -460,15 +487,18 @@ export function HistoricalStockMovement({
                 </tr>
               </thead>
               <tbody>
-                {dailyDesc.map((r) => (
+                {dailyDesc.map((r) => {
+                  const onRow = located && hlDate === r.date
+                  return (
                   <tr key={r.date} className="group">
-                    <Td className="text-left font-medium text-navy-deep">{fmtDate(r.date)}</Td>
-                    {vis('close') && <Td className="font-semibold tabular-nums text-navy-deep">{inr(r.close)}</Td>}
-                    {vis('traded') && <Td className="tabular-nums text-ink-primary">{qty(r.traded_qty) ?? <NA title="No volume on this session." />}</Td>}
-                    {vis('deliv') && <Td className="tabular-nums text-ink-primary">{qty(r.deliverable_qty) ?? <NA title={NA_TITLE} />}</Td>}
-                    {vis('delivpct') && <Td className="tabular-nums">{pctStr(r.deliPct) ? <DeliBadge pct={r.deliPct!} /> : <NA title={NA_TITLE} />}</Td>}
+                    <Td className={`text-left font-medium ${onRow ? 'bg-gold-soft/40 font-bold text-navy-deep' : 'text-navy-deep'}`}>{fmtDate(r.date)}</Td>
+                    {vis('close') && <Td hl={onRow && hlCol === 'close'} hlColor={hlColor} className="font-semibold tabular-nums text-navy-deep">{inr(r.close)}</Td>}
+                    {vis('traded') && <Td hl={onRow && hlCol === 'traded'} hlColor={hlColor} className="tabular-nums text-ink-primary">{qty(r.traded_qty) ?? <NA title="No volume on this session." />}</Td>}
+                    {vis('deliv') && <Td hl={onRow && hlCol === 'deliv'} hlColor={hlColor} className="tabular-nums text-ink-primary">{qty(r.deliverable_qty) ?? <NA title={NA_TITLE} />}</Td>}
+                    {vis('delivpct') && <Td hl={onRow && hlCol === 'delivpct'} hlColor={hlColor} className="tabular-nums">{pctStr(r.deliPct) ? <DeliBadge pct={r.deliPct!} /> : <NA title={NA_TITLE} />}</Td>}
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -593,9 +623,14 @@ function Th({ children, className = '', onHide }: { children: React.ReactNode; c
     </th>
   )
 }
-function Td({ children, className = '', title }: { children: React.ReactNode; className?: string; title?: string }) {
+function Td({ children, className = '', title, hl = false, hlColor }: { children: React.ReactNode; className?: string; title?: string; hl?: boolean; hlColor?: string }) {
   return (
-    <td title={title} className={`border-b border-soft-border/60 px-2.5 py-[5px] text-[11px] group-hover:bg-ice/50 ${alignClass(className)} ${className}`}>
+    <td
+      title={title}
+      data-hl-cell={hl ? '1' : undefined}
+      className={`border-b border-soft-border/60 px-2.5 py-[5px] text-[11px] ${hl ? 'relative z-[1] bg-gold-soft/60' : 'group-hover:bg-ice/50'} ${alignClass(className)} ${className}`}
+      style={hl ? { boxShadow: `inset 0 0 0 2px ${hlColor ?? '#1E4079'}` } : undefined}
+    >
       {children}
     </td>
   )

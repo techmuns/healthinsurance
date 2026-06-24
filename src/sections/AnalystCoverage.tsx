@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Building2, ExternalLink, FunctionSquare, Info, TrendingDown, TrendingUp, X } from 'lucide-react'
 import { STATUS_META, type AuditCell, type AuditGroup } from '@/lib/extractedDataAudit'
 import { companyColor, companyShortName } from '@/lib/companyColors'
@@ -6,7 +6,7 @@ import { useAuditView } from '@/lib/auditView'
 import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import { VerifyRowHighlight } from '@/components/VerifyRowHighlight'
-import type { VerifyRow } from '@/lib/excelVerify'
+import { VERIFY_META, type VerifyRow } from '@/lib/excelVerify'
 import analystSnapshot from '@/data/snapshots/analyst-coverage-snapshot.json'
 import priceHistory from '@/data/snapshots/price-history-snapshot.json'
 
@@ -214,17 +214,18 @@ function buildBlocks(group: AuditGroup): Block[] {
 
 // ── small cell renderers ──────────────────────────────────────────────────────
 /** A fetched price / target value, or an honest "not fetched yet" marker. */
-function ValueCell({ cell, selected, onSelect }: { cell: AuditCell | null; selected: boolean; onSelect: () => void }) {
+function ValueCell({ cell, selected, onSelect, verifyHl = false, hlColor }: { cell: AuditCell | null; selected: boolean; onSelect: () => void; verifyHl?: boolean; hlColor?: string }) {
   const v = numOf(cell?.normalizedValue)
   if (cell && v != null) {
     const tone = TONE[(STATUS_META[cell.status].color as Tone) ?? 'green']
     return (
       <button
         type="button"
+        data-cell-id={cell.id}
         onClick={onSelect}
         title={`${cell.metricLabel} · ${cell.period} — ${STATUS_META[cell.status].label}. Click for source.`}
-        className={`flex h-full min-h-[30px] w-full items-center justify-end px-2.5 tabular-nums transition-all ${tone.cell} hover:brightness-95`}
-        style={selected ? { boxShadow: `inset 0 0 0 2px ${tone.dot}` } : undefined}
+        className={`flex h-full min-h-[30px] w-full items-center justify-end px-2.5 tabular-nums transition-all ${verifyHl ? 'bg-gold-soft/60' : tone.cell} hover:brightness-95`}
+        style={verifyHl ? { boxShadow: `inset 0 0 0 2px ${hlColor ?? '#1E4079'}` } : selected ? { boxShadow: `inset 0 0 0 2px ${tone.dot}` } : undefined}
       >
         <span className={`text-[11.5px] font-semibold ${tone.text}`}>{inr(v)}</span>
       </button>
@@ -232,7 +233,12 @@ function ValueCell({ cell, selected, onSelect }: { cell: AuditCell | null; selec
   }
   // Empty → the aggregator backup is what fills it; say so, calmly.
   return (
-    <div className="flex h-full min-h-[30px] w-full items-center justify-center px-2" title="Not fetched yet — comes from the broker-research aggregator (low-confidence backup). Never shown as 0.">
+    <div
+      data-cell-id={cell?.id}
+      className={`flex h-full min-h-[30px] w-full items-center justify-center px-2 ${verifyHl ? 'bg-gold-soft/60' : ''}`}
+      style={verifyHl ? { boxShadow: `inset 0 0 0 2px ${hlColor ?? '#1E4079'}` } : undefined}
+      title="Not fetched yet — comes from the broker-research aggregator (low-confidence backup). Never shown as 0."
+    >
       <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/70">
         <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: '#B68B3A' }} />reports
       </span>
@@ -398,6 +404,19 @@ export function AnalystCoverage({
     [allBlocks, companyFilter, view],
   )
 
+  // Verifier navigation → highlight the exact value cell (price-at-reco / target)
+  // and scroll it into view. These cells carry audit ids, so we match by id.
+  const verifyHlId = verifyRow?.id ?? null
+  const hlColor = verifyRow ? VERIFY_META[verifyRow.status].dot : undefined
+  const located = !!verifyHlId && blocks.some((b) => b.rows.some((r) => r.priceCell?.id === verifyHlId || r.targetCell?.id === verifyHlId))
+  useEffect(() => {
+    if (!verifyHlId) return
+    const t = setTimeout(() => {
+      document.querySelector(`[data-cell-id="${verifyHlId.replace(/(["\\])/g, '\\$1')}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 90)
+    return () => clearTimeout(t)
+  }, [verifyHlId])
+
   const companyMeta = useMemo(() => new Map(allBlocks.map((b) => [b.companyId, b.companyLabel] as const)), [allBlocks])
   const chips: TrayChip[] = [
     ...view.hiddenCompanies
@@ -485,12 +504,12 @@ export function AnalystCoverage({
                   {vis('cmp') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/50"><CmpCell row={r} /></td>}
                   {vis('reco_price') && (
                     <td className="border-b border-r border-soft-border/70 p-0">
-                      <ValueCell cell={r.priceCell} selected={selected?.id === r.priceCell?.id} onSelect={() => r.priceCell && setSelected(r.priceCell)} />
+                      <ValueCell cell={r.priceCell} selected={selected?.id === r.priceCell?.id} onSelect={() => r.priceCell && setSelected(r.priceCell)} verifyHl={!!verifyHlId && r.priceCell?.id === verifyHlId} hlColor={hlColor} />
                     </td>
                   )}
                   {vis('target') && (
                     <td className="border-b border-r border-soft-border/70 p-0">
-                      <ValueCell cell={r.targetCell} selected={selected?.id === r.targetCell?.id} onSelect={() => r.targetCell && setSelected(r.targetCell)} />
+                      <ValueCell cell={r.targetCell} selected={selected?.id === r.targetCell?.id} onSelect={() => r.targetCell && setSelected(r.targetCell)} verifyHl={!!verifyHlId && r.targetCell?.id === verifyHlId} hlColor={hlColor} />
                     </td>
                   )}
                   {vis('up_reco') && <td className="border-b border-r border-soft-border/70 p-0 group-hover:bg-ice/30"><UpsideCell f={r.upsideReco} /></td>}
@@ -520,7 +539,7 @@ export function AnalystCoverage({
 
   return (
     <div className="space-y-3">
-      <VerifyRowHighlight row={verifyRow} />
+      <VerifyRowHighlight row={verifyRow} located={located} />
       {/* Title + honest source/basis line */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

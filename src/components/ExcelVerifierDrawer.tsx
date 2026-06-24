@@ -1,12 +1,12 @@
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  UploadCloud, FileSpreadsheet, AlertTriangle, Download,
-  RotateCcw, Info, Loader2, FileDown, ArrowRight, Minus, Maximize2, X,
+  UploadCloud, FileSpreadsheet, AlertTriangle,
+  RotateCcw, Info, Loader2, ArrowRight, Minus, Maximize2, X,
   History, Trash2,
 } from 'lucide-react'
 import {
-  verifyWorkbook, downloadVerifyReport, VERIFY_META,
+  verifyWorkbook, VERIFY_META,
   type VerifyResult, type VerifyRow, type VerifyStatus,
 } from '@/lib/excelVerify'
 import {
@@ -252,12 +252,6 @@ function Results({ result }: { result: VerifyResult }) {
           <span className="shrink-0 text-[11px] text-ink-secondary">· {s.comparable.toLocaleString('en-IN')} cells checked</span>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button type="button" onClick={() => downloadVerifyReport(result, 'csv')} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary">
-            <Download className="h-3.5 w-3.5" /> CSV
-          </button>
-          <button type="button" onClick={() => downloadVerifyReport(result, 'xlsx')} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary">
-            <FileDown className="h-3.5 w-3.5" /> Excel
-          </button>
           <button type="button" onClick={() => v.setResult(null)} className="inline-flex items-center gap-1.5 rounded-full bg-navy-primary px-3 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-all hover:opacity-90">
             <RotateCcw className="h-3.5 w-3.5" /> New file
           </button>
