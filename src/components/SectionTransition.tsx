@@ -24,8 +24,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 //  internal section state) pass straight through with no animation.
 // ---------------------------------------------------------------------------
 
-const EXIT_MS = 150
-const ENTER_MS = 240
+const EXIT_MS = 200
+const ENTER_MS = 380
 
 type Phase = 'idle' | 'exiting' | 'entering'
 

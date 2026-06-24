@@ -299,40 +299,39 @@ body {
 }
 
 /* ── Section / page transitions ────────────────────────────────────────────
-   A calm exit→enter crossfade used when switching the top-level sections
-   (Industry · SAHI · Insights · Data Audit) and the SAHI sub-tabs. The motion
-   is GPU-friendly — opacity + transform only, never a layout property — so even
-   the tall Data Audit grid swaps without a reflow storm. The container holds a
-   measured min-height through the brief exit so the column can't collapse to a
-   blank band between views. Easing + durations sit in the premium 150–280ms
-   band (see SectionTransition.tsx). */
+   An almost-invisible crossfade when switching the top-level sections
+   (Industry · SAHI · Insights · Data Audit) and the SAHI sub-tabs. It is mostly
+   opacity, with only a whisper of vertical movement (3px) and NO scale — the
+   page softly refreshes its content; it never slides, pops or bounces. The
+   outgoing view fades out first, then the incoming view fades in, so the two
+   are never both loud at once. GPU-friendly: opacity + transform only. The
+   container holds a measured min-height through the exit so the column can't
+   collapse between views. */
 .section-pane {
   will-change: opacity, transform;
 }
 .section-pane--enter {
-  animation: section-pane-enter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: section-pane-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .section-pane--exit {
-  animation: section-pane-exit 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: section-pane-exit 0.2s ease both;
 }
 @keyframes section-pane-enter {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.987);
+    transform: translateY(3px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 @keyframes section-pane-exit {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-6px) scale(0.992);
   }
 }
 
@@ -344,12 +343,12 @@ body {
   animation: fade-soft 0.3s ease-out both;
 }
 .audit-reveal {
-  animation: audit-reveal 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: audit-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @keyframes audit-reveal {
   0% {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   100% {
     opacity: 1;
@@ -363,7 +362,7 @@ body {
 }
 /* A soft, slow halo pulse behind the ring — life without distraction. */
 .audit-ring-halo {
-  animation: audit-ring-halo 2.6s ease-in-out infinite;
+  animation: audit-ring-halo 3.2s ease-in-out infinite;
 }
 @keyframes audit-ring-halo {
   0%,

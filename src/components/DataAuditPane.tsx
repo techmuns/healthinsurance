@@ -30,10 +30,11 @@ import { AuditLoadingCard } from '@/components/AuditLoadingCard'
 type AuditComp = ComponentType<{ focus?: AuditFocus | null }>
 type Phase = 'loading' | 'ready' | 'error'
 
-const TICK_MS = 33 // ~30fps progress nudges
-const EASE = 0.2 // fraction of the remaining gap closed each tick (decelerating)
-const HOLD_CEIL = 88 // hold here until the real model is prepared
-const COMPLETE_AT = 99.4 // the asymptote never reaches 100 — snap to done past this
+const TICK_MS = 38 // calm, unhurried nudges
+const EASE = 0.085 // small fraction of the remaining gap per tick (gentle deceleration)
+const MAX_STEP = 1.6 // never advance more than ~1.6% in one tick — smooth, never a leap (no 10 → 70)
+const HOLD_CEIL = 90 // hold here until the real model is prepared
+const COMPLETE_AT = 99.5 // the asymptote never reaches 100 — snap to done past this
 
 export function DataAuditPane({ focus }: { focus?: AuditFocus | null }) {
   const [phase, setPhase] = useState<Phase>('loading')
@@ -63,7 +64,9 @@ export function DataAuditPane({ focus }: { focus?: AuditFocus | null }) {
     window.clearInterval(tickRef.current)
     tickRef.current = window.setInterval(() => {
       const target = targetRef.current
-      let p = progressRef.current + (target - progressRef.current) * EASE
+      // Eased, but capped so the percentage never leaps (e.g. 10 → 70) — it
+      // climbs in small, even steps that read as a calm, intentional fill.
+      let p = progressRef.current + Math.min((target - progressRef.current) * EASE, MAX_STEP)
       // Don't sit exactly on the ceiling while holding — keep a hair below.
       if (p > target - 0.04) p = target - 0.02
 

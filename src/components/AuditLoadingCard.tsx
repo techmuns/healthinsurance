@@ -22,10 +22,10 @@ interface AuditLoadingCardProps {
 // The four stages the percentage moves through. `upTo` is the exclusive ceiling
 // at which the NEXT stage takes over. Copy stays plain and reassuring.
 const STAGES: { upTo: number; label: string; short: string }[] = [
-  { upTo: 25, label: 'Organizing source cells…', short: 'Source cells' },
-  { upTo: 55, label: 'Mapping extracted values…', short: 'Extracted values' },
-  { upTo: 85, label: 'Preparing audit grid…', short: 'Audit grid' },
-  { upTo: 101, label: 'Loading the best view…', short: 'Best view' },
+  { upTo: 30, label: 'Organizing extracted cells and source links…', short: 'Source links' },
+  { upTo: 65, label: 'Mapping the extracted values…', short: 'Values' },
+  { upTo: 92, label: 'Preparing the audit grid for the best view…', short: 'Audit grid' },
+  { upTo: 101, label: 'Almost ready…', short: 'Ready' },
 ]
 
 const RING = 120 // viewBox
@@ -120,17 +120,14 @@ export function AuditLoadingCard({ progress }: AuditLoadingCardProps) {
 
         {/* ── Active stage line ─────────────────────────────────────────── */}
         <div className="mt-5 flex items-center justify-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal/60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-teal" />
-          </span>
-          <p className="font-display text-[15px] text-navy-deep">{STAGES[stageIdx].label}</p>
+          <span className="h-2 w-2 shrink-0 rounded-full bg-teal/80 animate-pulse" />
+          <p className="font-display text-[14px] text-navy-deep">{STAGES[stageIdx].label}</p>
         </div>
 
         {/* Plain-English reassurance — what is actually happening, why the wait. */}
         <p className="mx-auto mt-2 max-w-xs text-center text-[12px] leading-relaxed text-ink-secondary">
-          Organizing extracted cells and source links for the best audit view — the
-          grid mirrors the source template cell-for-cell, so it takes a moment.
+          The grid mirrors the source template cell-for-cell, so it lines up many
+          extracted values against their sources before it opens — just a moment.
         </p>
 
         {/* ── Slim four-step tracker ────────────────────────────────────── */}
