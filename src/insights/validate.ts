@@ -9,27 +9,16 @@
 
 import type { InsightsFile, SignalRun, ProvenanceLayer } from './types'
 import { methodologyNumbers, forwardNumbers } from './methods'
+// Shared numeric-grounding primitives — the same rule the AI Analyst layer uses.
+import { numbersIn, closeTo as close, ALLOW_CONSTANTS as ALLOW } from './grounding'
 
 export interface ValidationResult {
   ok: boolean
   errors: string[]
 }
 
-const TOL_ABS = 0.06
-const TOL_REL = 0.012
-const close = (a: number, b: number) => Math.abs(a - b) <= Math.max(TOL_ABS, Math.abs(b) * TOL_REL)
-
-/** Structural constants that legitimately appear in prose without being a datum:
- *  the underwriting break-even, the solvency floor (x and %), the CoE assumption,
- *  and small integers (ranks, counts, n, x/y). Fiscal-year tokens are stripped
- *  before extraction so "FY25"/"FY29" never read as orphan figures. */
-const ALLOW = new Set<number>([100, 1.5, 150, 12, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 const STATUTORY_LAYERS = new Set<ProvenanceLayer>(['statutory', 'annual_report', 'ifrs'])
 const STATUTORY_CATEGORIES = new Set(['earnings_quality', 'quality', 'capital', 'growth'])
-
-function numbersIn(text: string): number[] {
-  return [...text.replace(/FY\d{2}/g, '').matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0])).filter((n) => Number.isFinite(n))
-}
 
 /** Every number the signals legitimately assert (values + comparison fields + note figures). */
 export function groundedNumbers(run: SignalRun): number[] {
