@@ -6,7 +6,7 @@ import { LockedPanel } from '@/components/LockedPanel'
 import { DataEmptyState } from '@/components/DataEmptyState'
 import { VerdictStrip } from '@/components/VerdictStrip'
 import { useActiveCompany, useFilters } from '@/state/filters'
-import { getCompanyMaster, getOwnershipData, getBulkBlockDeals, getNamedHolders, type BulkBlockDeal } from '@/lib/dataLayer'
+import { getCompanyMaster, getOwnershipData, getTradeDisclosures, getNamedHolders, type TradeDisclosuresView } from '@/lib/dataLayer'
 import {
   getOwnershipTrendView,
   groupInsight,
@@ -25,9 +25,8 @@ const dealDate = (iso: string): string =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
 const dealDateShort = (iso: string): string =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' })
-// ₹ Cr value of one trade (shares × price) — the unit the timeline plots: buys
-// rise above the zero line, sells dip below it, on one shared axis.
-const crOf = (q: number, p: number): number => (q * p) / 1e7
+// ₹ Cr formatter — the unit the timeline plots: buys rise above the zero line,
+// sells dip below it, on one shared axis.
 const fmtCr = (v: number): string => {
   const a = Math.abs(v)
   return `₹${a >= 100 ? a.toFixed(0) : a >= 10 ? a.toFixed(1) : a.toFixed(2)} Cr`
@@ -111,50 +110,57 @@ const SEG_BADGE: Record<string, { label: string; bg: string; fg: string }> = {
   block: { label: 'Block', bg: '#F5EEDD', fg: '#8A6A2B' },
 }
 
-/** Real exchange-reported bulk/block deals. Bulk and block are split into their
- *  own tabs (never mixed); each tab drives the buy/sell signal chart, the net-flow
- *  footer and a visible audit table of every trade behind it. All of it derives
- *  from `deals`, so newly-pulled trades render automatically. Per-company. */
-function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpdated }: { deals: BulkBlockDeal[]; companyName: string; sourceName: string; sourceUrl: string; lastUpdated: string | null }) {
-  // How many trades sit in each segment — drives the tab counts + the default.
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { bulk: 0, block: 0 }
-    for (const d of deals) c[d.deal_kind] = (c[d.deal_kind] ?? 0) + 1
-    return c
-  }, [deals])
-  // Default to the segment that actually has data, preferring Bulk — never force
-  // an empty Bulk tab when only Block deals exist (or vice-versa).
+/** Bulk & block deal disclosures — aggregated by Screener → Trades, underlying
+ *  source NSE / BSE. Bulk and block stay in separate tabs (never mixed). Each tab
+ *  drives the buy/sell signal chart, the summary stats and a visible audit table.
+ *  A confirmed Screener check with zero records renders a clean "0 found" state —
+ *  never "Data pending". Separate from the shareholding-pattern trend above. */
+function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; companyName: string }) {
+  const { deals, summary } = view
+  const counts: Record<'bulk' | 'block', number> = { bulk: summary.bulk_deal_count, block: summary.block_deal_count }
   const [segment, setSegment] = useState<'bulk' | 'block'>(counts.bulk === 0 && counts.block > 0 ? 'block' : 'bulk')
+  // A successful Screener check (or a located Trades section) makes zero records a
+  // CONFIRMED zero → "0 found", not "Data pending". Only a failed/absent scrape pends.
+  const checked = view.validationStatus === 'scraped' || view.validationStatus === 'no_records' || view.tradesSectionFound
 
-  const segDeals = deals.filter((d) => d.deal_kind === segment)
-  const buyCr = segDeals.filter((d) => d.side === 'buy').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
-  const sellCr = segDeals.filter((d) => d.side === 'sell').reduce((s, d) => s + crOf(d.quantity, d.price), 0)
+  const sideOf = (d: { buyer: string | null; seller: string | null }): 'buy' | 'sell' =>
+    d.buyer && !d.seller ? 'buy' : d.seller && !d.buyer ? 'sell' : 'buy'
+  const segDeals = deals.filter((d) => d.deal_type === segment)
+  const buyCr = segDeals.filter((d) => d.buyer && !d.seller).reduce((s, d) => s + (d.value_cr ?? 0), 0)
+  const sellCr = segDeals.filter((d) => d.seller && !d.buyer).reduce((s, d) => s + (d.value_cr ?? 0), 0)
   const netCr = buyCr - sellCr
   const netBought = netCr >= 0
 
   // One bar per trade, oldest → newest (left → right) so it reads like a signal
-  // tape. `deals` arrives newest-first from the data layer; reverse for display
-  // only — the data logic is untouched. Date label prints once per day-group.
+  // tape. Date label prints once per day-group.
   const chrono = [...segDeals].reverse()
   const bars: DealBar[] = chrono.map((d, idx) => ({
     i: String(idx),
     xLabel: idx > 0 && chrono[idx - 1].date === d.date ? '' : dealDateShort(d.date),
     date: d.date,
-    client: d.client,
-    side: d.side,
-    quantity: d.quantity,
-    price: d.price,
-    cr: (d.side === 'buy' ? 1 : -1) * crOf(d.quantity, d.price),
+    client: d.buyer ?? d.seller ?? '—',
+    side: sideOf(d),
+    quantity: d.quantity ?? 0,
+    price: d.price ?? 0,
+    cr: (sideOf(d) === 'buy' ? 1 : -1) * (d.value_cr ?? 0),
   }))
   const dates = [...new Set(segDeals.map((d) => d.date))]
   const oneDate = segDeals.length > 0 && dates.length === 1
   const m = niceCeil(Math.max(...bars.map((b) => Math.abs(b.cr)), 1))
   const tick = (v: number) => (Number.isInteger(v) ? `${v}` : v.toFixed(1))
+  // Single-date clusters don't stretch across the full width — cap + centre them.
+  const chartW = oneDate ? Math.max(300, bars.length * 56) : undefined
 
   const DealTick = ({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) => (
     <text x={x ?? 0} y={(y ?? 0) + 12} textAnchor="middle" fontSize={10} fontWeight={600} fill="#26303F">
       {payload?.value ?? ''}
     </text>
+  )
+  const Stat = ({ label, value, color }: { label: string; value: string; color?: string }) => (
+    <div className="min-w-0">
+      <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
+      <p className="truncate text-[12px] font-bold tabular-nums" style={color ? { color } : undefined}>{value}</p>
+    </div>
   )
 
   return (
@@ -162,11 +168,14 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
       <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
-          <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · exchange-reported large trades</p>
+          <p className="mt-0.5 truncate text-[11px] text-ink-secondary">{companyName} · large trades aggregated by Screener Trades · underlying NSE / BSE</p>
         </div>
-        <a href={sourceHref(sourceUrl) ?? sourceUrl} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title={sourceName}>
-          NSE / BSE <ArrowUpRight className="h-3 w-3" />
-        </a>
+        <div className="flex shrink-0 flex-col items-end gap-0.5">
+          <a href={sourceHref(view.sourceUrl) ?? view.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 text-[10px] font-medium text-navy-primary hover:underline" title="Screener → Trades">
+            Screener Trades <ArrowUpRight className="h-3 w-3" />
+          </a>
+          <span className="text-[9.5px] text-ink-secondary">Updated {view.lastUpdated ?? '—'}</span>
+        </div>
       </div>
 
       {/* Honest scope note — bulk/block deals are transaction disclosures, not the
@@ -196,12 +205,29 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
       </div>
 
       {segDeals.length === 0 ? (
-        <DataEmptyState
-          kind="pending"
-          height={92}
-          title={`No ${segment} deals on record`}
-          body={`No exchange-reported ${segment} deals for ${companyName} in the current dataset.${segment === 'block' && counts.bulk > 0 ? ' Bulk-deal activity is in the Bulk Deals tab.' : ' They appear here automatically once the feed reports one.'}`}
-        />
+        checked ? (
+          // Confirmed clean zero — Screener Trades was checked and reported none.
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 px-4 py-7 text-center">
+            <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ring-1 ring-soft-border">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal" /> 0 found
+            </span>
+            <p className="text-[12.5px] font-semibold text-navy-deep">No {segment} deals on record</p>
+            <p className="mt-1 max-w-md text-[11px] leading-snug text-ink-secondary">
+              {segment === 'block'
+                ? `No exchange-reported block deals for ${companyName} in the current dataset. Bulk-deal activity is available in the Bulk Deals tab.`
+                : `No exchange-reported bulk deals for ${companyName} in the current dataset. Block-deal activity, when reported, appears in the Block Deals tab.`}
+            </p>
+            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">Confirmed from Screener Trades · checked {view.lastUpdated ?? '—'}</p>
+          </div>
+        ) : (
+          // Only when the scrape failed / source was unavailable — genuinely pending.
+          <DataEmptyState
+            kind="pending"
+            height={92}
+            title={`${segment[0].toUpperCase()}${segment.slice(1)} deals — checking Screener`}
+            body={`Screener Trades couldn't be read for ${companyName} on the last run. The ${segment}-deal disclosures populate here once the scrape succeeds.`}
+          />
+        )
       ) : (
         <>
           <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-[11px]">
@@ -210,20 +236,20 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
             <span className="text-ink-secondary">· {segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} trade{segDeals.length === 1 ? '' : 's'} on record</span>
           </div>
           <p className="mb-2 text-[10px] leading-snug text-ink-secondary/80">
-            Reported only on large trades — buys rise above the line, sells dip below, ₹ Cr per trade{lastUpdated ? `. Checked ${dealDate(lastUpdated)}` : ''}. New deals appear here automatically.
+            Reported only on large trades — buys rise above the line, sells dip below, ₹ Cr per trade. New deals appear here automatically on the next Screener Trades run.
           </p>
 
-          {/* Honest data-coverage note — only when the segment truly has one date. */}
+          {/* Single-date disclosure cluster — compact, not stretched. */}
           {oneDate && (
             <p className="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-ice/70 px-2.5 py-1 text-[10.5px] text-ink-secondary ring-1 ring-soft-border">
               <Info className="h-3 w-3 shrink-0 text-ink-secondary" />
-              Only one deal date available in current dataset ({dealDate(dates[0])}).
+              Single-date disclosure cluster — all {segDeals.length} {SEG_BADGE[segment].label.toLowerCase()} trades reported on {dealDate(dates[0])}.
             </p>
           )}
 
-          <div className="w-full" style={{ height: 224 }}>
+          <div style={{ height: 224, width: chartW ? `${chartW}px` : '100%', maxWidth: '100%', margin: chartW ? '0 auto' : undefined }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap="22%">
+              <BarChart data={bars} margin={{ top: 6, right: 6, left: 2, bottom: 4 }} barCategoryGap={oneDate ? '34%' : '22%'}>
                 <CartesianGrid vertical={false} stroke={DEAL_GRID} strokeDasharray="2 4" />
                 <XAxis dataKey="xLabel" tickLine={false} axisLine={false} tick={<DealTick />} height={22} interval={0} />
                 <YAxis
@@ -244,14 +270,8 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
 
           {/* Net-flow summary — auto-calculated from the same segment's deals. */}
           <div className="mt-2 grid grid-cols-3 gap-2 border-t border-soft-border pt-2.5">
-            <div>
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total bought</p>
-              <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_BUY }}>{fmtCr(buyCr)}</p>
-            </div>
-            <div>
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Total sold</p>
-              <p className="text-[13px] font-bold tabular-nums" style={{ color: DEAL_SELL }}>{fmtCr(sellCr)}</p>
-            </div>
+            <Stat label="Total bought" value={fmtCr(buyCr)} color={DEAL_BUY} />
+            <Stat label="Total sold" value={fmtCr(sellCr)} color={DEAL_SELL} />
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">Net flow</p>
               <p className="text-[13px] font-bold tabular-nums" style={{ color: netBought ? DEAL_BUY : DEAL_SELL }}>
@@ -261,8 +281,16 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
             </div>
           </div>
 
-          {/* Visible audit table — every trade behind the chart, to verify it. The
-              chart, chips and net-flow all read the same rows, so it stays in sync. */}
+          {/* Task-3 summary stats — across the company's disclosures. */}
+          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 rounded-xl bg-ice/40 px-3 py-2 sm:grid-cols-3">
+            <Stat label="Unique buyers" value={String(summary.unique_buyers)} />
+            <Stat label="Unique sellers" value={String(summary.unique_sellers)} />
+            <Stat label="Largest trade" value={fmtCr(summary.largest_trade_value_cr)} />
+            <Stat label="Largest buyer" value={summary.largest_buyer ? `${summary.largest_buyer.name} · ${fmtCr(summary.largest_buyer.value_cr)}` : '—'} color={DEAL_BUY} />
+            <Stat label="Largest seller" value={summary.largest_seller ? `${summary.largest_seller.name} · ${fmtCr(summary.largest_seller.value_cr)}` : '—'} color={DEAL_SELL} />
+          </div>
+
+          {/* Visible audit table — every trade behind the chart, to verify it. */}
           <div className="mt-3">
             <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary">Every {SEG_BADGE[segment].label.toLowerCase()} deal on record · audit view</p>
             <div className="overflow-hidden rounded-xl border border-soft-border">
@@ -282,19 +310,18 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
                   </thead>
                   <tbody>
                     {segDeals.map((d, i) => {
-                      const buy = d.side === 'buy'
-                      const badge = SEG_BADGE[d.deal_kind] ?? SEG_BADGE.bulk
-                      const cp = <span className="text-ink-secondary/50" title="Counterparty not disclosed in exchange data">—</span>
+                      const badge = SEG_BADGE[d.deal_type] ?? SEG_BADGE.bulk
+                      const dash = <span className="text-ink-secondary/40">—</span>
                       return (
                         <tr key={i} className="border-t border-soft-border/70 align-top">
                           <td className="whitespace-nowrap px-2.5 py-1.5 font-medium text-navy-deep">{dealDate(d.date)}</td>
                           <td className="px-2 py-1.5"><span className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide" style={{ background: badge.bg, color: badge.fg }}>{badge.label}</span></td>
-                          <td className="px-2 py-1.5">{buy ? <span className="font-medium text-teal">{d.client}</span> : cp}</td>
-                          <td className="px-2 py-1.5">{buy ? cp : <span className="font-medium text-coral">{d.client}</span>}</td>
-                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary" title={`${d.quantity.toLocaleString('en-IN')} shares`}>{dealQty(d.quantity)}</td>
-                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary">₹{d.price.toFixed(2)}</td>
-                          <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums text-navy-deep">{fmtCr(crOf(d.quantity, d.price))}</td>
-                          <td className="whitespace-nowrap px-2.5 py-1.5 text-ink-secondary">NSE / BSE</td>
+                          <td className="px-2 py-1.5">{d.buyer ? <span className="font-medium text-teal">{d.buyer}</span> : dash}</td>
+                          <td className="px-2 py-1.5">{d.seller ? <span className="font-medium text-coral">{d.seller}</span> : dash}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary" title={d.quantity != null ? `${d.quantity.toLocaleString('en-IN')} shares` : ''}>{d.quantity_display}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right tabular-nums text-ink-primary">{d.price != null ? `₹${d.price.toFixed(2)}` : '—'}</td>
+                          <td className="whitespace-nowrap px-2 py-1.5 text-right font-semibold tabular-nums text-navy-deep">{d.value_display}</td>
+                          <td className="whitespace-nowrap px-2.5 py-1.5 text-ink-secondary">Screener / NSE-BSE</td>
                         </tr>
                       )
                     })}
@@ -303,7 +330,7 @@ function BulkBlockTimeline({ deals, companyName, sourceName, sourceUrl, lastUpda
               </div>
             </div>
             <p className="mt-1 text-[9.5px] leading-snug text-ink-secondary/80">
-              Buyer/seller as disclosed by the exchange — the counterparty isn’t reported per trade. Value = quantity × price. Per-trade source links aren’t in the feed; verify via the {sourceName} link above.
+              Buyer/seller exactly as disclosed; the undisclosed counterparty shows a dash. Value = quantity × price. Aggregated by Screener Trades; underlying disclosures NSE / BSE.
             </p>
           </div>
         </>
@@ -1007,7 +1034,7 @@ export function Ownership() {
   }
 
   const periodLabel = row ? `${row.quarter} ${row.fiscal_year}`.trim() : view.latest?.fiscal ?? ''
-  const bulk = getBulkBlockDeals(company.id)
+  const trades = getTradeDisclosures(company.id)
   const lastUpdated = view.meta.last_updated ?? view.meta.scraped_at ?? null
 
   return (
@@ -1029,31 +1056,27 @@ export function Ownership() {
       {/* 3 — Investor Movement table */}
       {view.available && <InvestorMovementTable view={view} companyId={company.id} latestExchangePeriod={periodLabel} />}
 
-      {/* 4 — Bulk / Block Deal timeline (kept separate from shareholding pattern) */}
-      {bulk.deals.length > 0 ? (
-        <BulkBlockTimeline deals={bulk.deals} companyName={company.shortName} sourceName={bulk.sourceName} sourceUrl={bulk.sourceUrl} lastUpdated={bulk.lastUpdated} />
-      ) : (
-        <div className="card-surface card-tint-slate p-4">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Bulk / Block Deal Timeline</p>
-          <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-ice/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-ink-secondary ring-1 ring-soft-border">
-            <Info className="mt-px h-3 w-3 shrink-0 text-navy-primary/70" />
-            Bulk / block deals are individual transaction disclosures and may not equal quarter-end shareholding-pattern movement.
-          </p>
-          <DataEmptyState kind="pending" height={92} title="No bulk / block deals on record" body={`Large buys, sells, PE/strategic exits and institutional accumulation for ${company.shortName} appear here once the exchange's bulk/block-deal feed reports one.`} />
-        </div>
-      )}
+      {/* 4 — Bulk / Block Deal timeline (Screener → Trades; separate from the
+            shareholding-pattern trend — transaction disclosures, not quarter-end
+            position). Handles its own empty / pending / populated states. */}
+      <BulkBlockTimeline view={trades} companyName={company.shortName} />
 
-      {/* 5 — Source / audit footer (PART 10) */}
+      {/* 5 — Source / audit footer — two clearly-separated sources (PART 10 + Task 7) */}
       <div className="rounded-xl border border-soft-border bg-ice/40 px-4 py-3 text-[10.5px] leading-relaxed text-ink-secondary">
-        <p>
-          <span className="font-semibold text-ink-primary">Source:</span> Screener → Investors / Shareholding Pattern · based on company filings · classifications may change due to XBRL format updates (Screener notes classifications might have changed from Sep 2022 onwards as the new XBRL format added more detail).
+        <p className="flex items-start gap-1.5">
+          <span className="mt-px shrink-0 font-semibold text-ink-primary">Ownership trend source:</span>
+          <span>Screener → Investors / Shareholding Pattern · based on company filings · classifications may change due to XBRL format updates (Screener notes classifications might have changed from Sep 2022 onwards as the new XBRL format added more detail).</span>
         </p>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span>Last updated from Screener: <span className="font-semibold text-ink-primary">{lastUpdated ?? '—'}</span></span>
+        <p className="mt-1 flex items-start gap-1.5">
+          <span className="mt-px shrink-0 font-semibold text-ink-primary">Bulk/block deals source:</span>
+          <span>Screener → Trades · underlying exchange disclosures: NSE / BSE.</span>
+        </p>
+        <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-soft-border/70 pt-1.5">
+          <span>Last updated from Screener — shareholding pattern: <span className="font-semibold text-ink-primary">{lastUpdated ?? '—'}</span></span>
+          <span aria-hidden>·</span>
+          <span>trades: <span className="font-semibold text-ink-primary">{trades.lastUpdated ?? '—'}</span></span>
           <span aria-hidden>·</span>
           <span>Named-holder breakdown: latest exchange filing ({periodLabel})</span>
-          <span aria-hidden>·</span>
-          <span>Bulk/block deals: NSE / BSE</span>
         </p>
       </div>
     </div>

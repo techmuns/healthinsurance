@@ -29,6 +29,7 @@ import ownershipSnapshot from '@/data/snapshots/ownership-snapshot.json'
 import shareholdingPatternSnapshot from '@/data/snapshots/shareholding-pattern-snapshot.json'
 import managementEventsSnapshot from '@/data/snapshots/management-events.json'
 import bulkBlockDeals from '@/data/snapshots/bulk-block-deals-snapshot.json'
+import tradeDisclosuresJson from '@/data/snapshots/ownership-trade-disclosures.json'
 import provenanceMap from '@/data/snapshots/data-provenance.json'
 import { peerValuation } from '@/data/valuationData'
 import irdaiFlashLatestJson from '@/data/snapshots/irdai-nonlife-flash-latest.json'
@@ -38,6 +39,9 @@ import type {
   IrdaiNonLifeFlashRow,
   IrdaiNonLifeFlashSource,
   IrdaiNonLifeFlashEnvelope,
+  OwnershipTradeDisclosureRow,
+  OwnershipTradeDisclosuresEnvelope,
+  TradeValidationStatus,
 } from '@/data/snapshots/_schemas'
 import type { TimePeriod, PeerGroup, Insurer, Signal } from '@/data/types'
 
@@ -336,6 +340,107 @@ export function getBulkBlockDeals(companyId: string): {
     // (the exchange's own get-quote URL blocks direct navigation).
     sourceUrl: m?.source?.aggregator_url ?? m?.source?.source_url ?? 'https://www.screener.in',
     lastUpdated: m?.last_updated ?? null,
+  }
+}
+
+// ─── Ownership trade disclosures (Screener → Trades · underlying NSE / BSE) ──
+// SEPARATE transaction-disclosure dataset for the Bulk / Block Deal Timeline —
+// never merged with ownership-holdings / ownership-trends.
+
+export interface TradeDisclosureSummary {
+  bulk_deal_count: number
+  block_deal_count: number
+  total_bought_value_cr: number
+  total_sold_value_cr: number
+  net_flow_value_cr: number
+  net_flow_direction: 'net_bought' | 'net_sold' | 'neutral'
+  unique_buyers: number
+  unique_sellers: number
+  largest_buyer: { name: string; value_cr: number } | null
+  largest_seller: { name: string; value_cr: number } | null
+  largest_trade_value_cr: number
+}
+
+const r2 = (n: number): number => Math.round(n * 100) / 100
+
+/** Task-3 summary metrics over a set of trade-disclosure rows. A row counts to
+ *  "bought" when only the buyer is disclosed, to "sold" when only the seller is;
+ *  a fully-matched row counts both parties but its value once (never double). */
+export function summarizeTradeDisclosures(rows: OwnershipTradeDisclosureRow[]): TradeDisclosureSummary {
+  let bought = 0
+  let sold = 0
+  let largestTrade = 0
+  const buyers = new Map<string, number>()
+  const sellers = new Map<string, number>()
+  for (const r of rows) {
+    const v = r.value_cr ?? 0
+    if (v > largestTrade) largestTrade = v
+    const hasBuyer = !!r.buyer
+    const hasSeller = !!r.seller
+    if (hasBuyer && !hasSeller) {
+      bought += v
+      buyers.set(r.buyer!, (buyers.get(r.buyer!) ?? 0) + v)
+    } else if (hasSeller && !hasBuyer) {
+      sold += v
+      sellers.set(r.seller!, (sellers.get(r.seller!) ?? 0) + v)
+    } else if (hasBuyer && hasSeller) {
+      buyers.set(r.buyer!, (buyers.get(r.buyer!) ?? 0) + v)
+      sellers.set(r.seller!, (sellers.get(r.seller!) ?? 0) + v)
+    }
+  }
+  const net = r2(bought - sold)
+  const top = (m: Map<string, number>): { name: string; value_cr: number } | null => {
+    let name: string | null = null
+    let max = -1
+    for (const [k, val] of m) if (val > max) { max = val; name = k }
+    return name ? { name, value_cr: r2(max) } : null
+  }
+  return {
+    bulk_deal_count: rows.filter((r) => r.deal_type === 'bulk').length,
+    block_deal_count: rows.filter((r) => r.deal_type === 'block').length,
+    total_bought_value_cr: r2(bought),
+    total_sold_value_cr: r2(sold),
+    net_flow_value_cr: net,
+    net_flow_direction: net > 0.01 ? 'net_bought' : net < -0.01 ? 'net_sold' : 'neutral',
+    unique_buyers: buyers.size,
+    unique_sellers: sellers.size,
+    largest_buyer: top(buyers),
+    largest_seller: top(sellers),
+    largest_trade_value_cr: r2(largestTrade),
+  }
+}
+
+export interface TradeDisclosuresView {
+  deals: OwnershipTradeDisclosureRow[]
+  summary: TradeDisclosureSummary
+  sourceName: string
+  sourceUrl: string
+  underlyingSource: string
+  lastUpdated: string | null
+  scrapedAt: string | null
+  tradesSectionFound: boolean
+  validationStatus: TradeValidationStatus
+}
+
+/** Bulk & block deal disclosures for a company (newest first), with the Task-3
+ *  summary and the Screener/NSE-BSE source metadata. Empty deals + a 'scraped'
+ *  validation status = a confirmed clean zero (not "pending"). */
+export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
+  const env = tradeDisclosuresJson as unknown as OwnershipTradeDisclosuresEnvelope
+  const meta = env._meta
+  const deals = (env.data ?? [])
+    .filter((d) => d.company_id === companyId)
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.value_cr ?? 0) - (a.value_cr ?? 0)))
+  return {
+    deals,
+    summary: summarizeTradeDisclosures(deals),
+    sourceName: meta.source_name,
+    sourceUrl: meta.source_url,
+    underlyingSource: meta.underlying_source,
+    lastUpdated: meta.last_updated ?? null,
+    scrapedAt: meta.scraped_at ?? null,
+    tradesSectionFound: !!meta.trades_section_found,
+    validationStatus: meta.validation_status,
   }
 }
 

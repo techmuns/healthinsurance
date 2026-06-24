@@ -454,6 +454,68 @@ export interface OwnershipTrendsEnvelope {
   data: OwnershipTrendRow[]
 }
 
+// ─── ownership-trade-disclosures (Screener → Trades; bulk & block deals) ─────
+// SEPARATE transaction-disclosure dataset for the Bulk / Block Deal Timeline.
+// Aggregated by Screener (company page → Investors / Shareholding Pattern →
+// Trades); the underlying disclosures are the NSE/BSE bulk & block deal filings.
+// This is NOT part of ownership-holdings / ownership-trends — bulk/block deals
+// are individual transactions, not the quarter-end shareholding position, and
+// the two must never be merged.
+
+export type TradeDealType = 'bulk' | 'block'
+export type TradeValidationStatus = 'scraped' | 'no_records' | 'parse_warning' | 'pending'
+
+export interface OwnershipTradeDisclosureRow {
+  company_id: string
+  company_name: string
+  deal_type: TradeDealType
+  date: string
+  /** Display label for the deal segment, e.g. "Bulk" / "Block". */
+  segment: string
+  /** Exact buyer name from the disclosure; null when only the sell side is disclosed. */
+  buyer: string | null
+  /** Exact seller name from the disclosure; null when only the buy side is disclosed. */
+  seller: string | null
+  quantity: number | null
+  quantity_display: string
+  price: number | null
+  value_cr: number | null
+  value_display: string
+  /** NSE | BSE | "NSE / BSE" when the aggregator doesn't split it. */
+  exchange_source: string
+  source_name: 'Screener'
+  source_url: string
+  underlying_source: string
+  scraped_at: string
+  validation_status: TradeValidationStatus
+}
+
+export interface OwnershipTradeDisclosuresMeta {
+  snapshot_id: string
+  description: string
+  schema_version: string
+  source_name: 'Screener'
+  source_section: string
+  source_url: string
+  screener_company_id?: number
+  underlying_source: string
+  dataset: SnapshotDataset
+  last_updated: string | null
+  last_successful_run: string | null
+  scraped_at: string | null
+  parser_status: ParserStatus
+  /** Whether the Screener Trades section was located during the scrape. */
+  trades_section_found: boolean
+  /** Per-deal-type confirmation so the UI can show "0 found" vs "Data pending". */
+  validation_status: TradeValidationStatus
+  notes?: string
+}
+
+export interface OwnershipTradeDisclosuresEnvelope {
+  _meta: OwnershipTradeDisclosuresMeta
+  data: OwnershipTradeDisclosureRow[]
+}
+
 // ─── management-events ─────────────────────────────────────────────────────
 
 export type ManagementEventType =

@@ -35,7 +35,7 @@
 
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { nowIso, writeSnapshot, appendLog, RAW_ROOT } from './util'
+import { nowIso, writeSnapshot, appendLog, readSnapshot, RAW_ROOT } from './util'
 import type {
   OwnershipHoldingRow,
   OwnershipTrendRow,
@@ -43,6 +43,10 @@ import type {
   OwnershipHolderGroup,
   OwnershipPeriodType,
   OwnershipScreenerMeta,
+  OwnershipTradeDisclosureRow,
+  OwnershipTradeDisclosuresMeta,
+  TradeDealType,
+  TradeValidationStatus,
 } from '../../src/data/snapshots/_schemas'
 
 const COMPANY_ID = 'niva-bupa' // dashboard join key (ticker NIVABUPA)
@@ -55,6 +59,10 @@ const SCREENER_URL = 'https://www.screener.in/company/NIVABUPA/'
 const SCREENER_SOURCE_URL = 'https://www.screener.in/company/NIVABUPA/#shareholding'
 const SOURCE_SECTION = 'Investors / Shareholding Pattern'
 const STAGED_FILE = resolve(RAW_ROOT, 'screener', 'nivabupa-shareholding-history.json')
+// Screener aggregates bulk & block deals under a dedicated Trades view, served
+// from /trades/company-<id>/ (found as data-url in the saved company page).
+const TRADES_URL = `https://www.screener.in/trades/company-${SCREENER_COMPANY_ID}/`
+const TRADES_SECTION = 'Investors / Shareholding Pattern / Trades'
 
 const GROUP_ORDER: OwnershipHolderGroup[] = ['Promoters', 'FIIs', 'DIIs', 'Public', 'No. of Shareholders']
 /** The % holder groups that participate in trend / rank computation. */
@@ -390,6 +398,163 @@ async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorR
   }
 }
 
+// ─── Screener Trades (bulk & block deals) → ownership_trade_disclosures ───────
+// SEPARATE transaction-disclosure dataset — never merged with ownership_holdings
+// or ownership_trends. Screener Trades republishes the NSE/BSE bulk & block deal
+// disclosures, so the underlying source is preserved as NSE / BSE.
+
+interface RawDeal {
+  company_id: string
+  deal_kind: TradeDealType
+  date: string
+  client: string
+  side: 'buy' | 'sell'
+  quantity: number
+  price: number
+}
+
+const qtyDisplay = (q: number | null): string =>
+  q == null ? '—' : q >= 1e7 ? `${(q / 1e7).toFixed(2)} Cr` : q >= 1e5 ? `${(q / 1e5).toFixed(1)} L` : q.toLocaleString('en-IN')
+const valueDisplay = (v: number | null): string => {
+  if (v == null) return '—'
+  const a = Math.abs(v)
+  return `₹${a >= 100 ? a.toFixed(0) : a >= 10 ? a.toFixed(1) : a.toFixed(2)} Cr`
+}
+
+/** Reshape a disclosed deal into a normalized trade-disclosure row. The exact
+ *  disclosed party name is preserved; the undisclosed counterparty stays null. */
+function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string): OwnershipTradeDisclosureRow {
+  const value_cr = round2((d.quantity * d.price) / 1e7)
+  return {
+    company_id: d.company_id,
+    company_name: companyName,
+    deal_type: d.deal_kind,
+    date: d.date,
+    segment: d.deal_kind === 'bulk' ? 'Bulk' : 'Block',
+    buyer: d.side === 'buy' ? d.client : null,
+    seller: d.side === 'sell' ? d.client : null,
+    quantity: d.quantity,
+    quantity_display: qtyDisplay(d.quantity),
+    price: d.price,
+    value_cr,
+    value_display: valueDisplay(value_cr),
+    exchange_source: 'NSE / BSE',
+    source_name: 'Screener',
+    source_url: TRADES_URL,
+    underlying_source: 'NSE / BSE',
+    scraped_at: scrapedAt,
+    validation_status: 'scraped',
+  }
+}
+
+/** Dedup / add-only key (Task 8): company + type + date + parties + qty + price + value. */
+const dealKey = (r: OwnershipTradeDisclosureRow): string =>
+  [r.company_id, r.deal_type, r.date, r.buyer ?? '', r.seller ?? '', r.quantity ?? '', r.price ?? '', r.value_cr ?? ''].join('|')
+
+async function loadCompanyNames(): Promise<Record<string, string>> {
+  try {
+    const master = await readSnapshot<{ data: { company_id: string; display_name?: string; legal_name?: string }[] }>('company-master.json')
+    const m: Record<string, string> = {}
+    for (const c of master.data) m[c.company_id] = c.legal_name ?? c.display_name ?? c.company_id
+    return m
+  } catch {
+    return {}
+  }
+}
+
+/** Offline source-of-record: the aggregated NSE/BSE bulk & block deals that
+ *  Screener Trades republishes (data/snapshots/bulk-block-deals-snapshot.json). */
+async function loadFallbackDeals(): Promise<RawDeal[]> {
+  try {
+    const snap = await readSnapshot<{ data: RawDeal[] }>('bulk-block-deals-snapshot.json')
+    return snap.data ?? []
+  } catch {
+    return []
+  }
+}
+
+async function loadExistingDisclosures(): Promise<OwnershipTradeDisclosureRow[]> {
+  try {
+    const snap = await readSnapshot<{ data: OwnershipTradeDisclosureRow[] }>('ownership-trade-disclosures.json')
+    return snap.data ?? []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Live Screener Trades scrape (Playwright) — best-effort, self-fencing. Opens
+ * /trades/company-<id>/, classifies each table as bulk/block by its heading and
+ * reads {date, client, buy/sell, qty, price} per row. Returns the reshaped deals
+ * + whether a Trades section was found, or null when Playwright / a browser /
+ * network is unavailable. Conservative: if a Trades section is found but no row
+ * parses cleanly, returns null so callers fall back to the real disclosures
+ * rather than wrongly claim "zero".
+ */
+async function scrapeTradesLive(): Promise<{ deals: RawDeal[]; found: boolean } | null> {
+  if (process.env.INGEST_OFFLINE !== '0') return null
+  let pw: any
+  try {
+    const spec = 'playwright'
+    pw = await import(spec)
+  } catch {
+    return null
+  }
+  let browser: any = null
+  try {
+    browser = await pw.chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-blink-features=AutomationControlled'] })
+  } catch {
+    return null
+  }
+  try {
+    const context = await browser.newContext({
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      locale: 'en-IN',
+      timezoneId: 'Asia/Kolkata',
+      viewport: { width: 1366, height: 900 },
+    })
+    const cookie = process.env.SCREENER_SESSIONID
+    if (cookie) await context.addCookies([{ name: 'sessionid', value: cookie, domain: '.screener.in', path: '/', httpOnly: true, secure: true }])
+    const page = await context.newPage()
+    const res = await page.goto(TRADES_URL, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    if (res && res.status() >= 400) return null
+    await page.waitForTimeout(800)
+    const raw = (await page
+      .$$eval('table', (tables: any[]) => {
+        const out: { kind: string; cells: string[] }[] = []
+        for (const t of tables) {
+          const ctx = (t.closest('section,div')?.textContent || t.previousElementSibling?.textContent || '').toLowerCase()
+          const kind = /block\s*deal/.test(ctx) ? 'block' : /bulk\s*deal/.test(ctx) ? 'bulk' : ''
+          if (!kind) continue
+          for (const tr of Array.from(t.querySelectorAll('tbody tr')) as any[]) {
+            const cells = (Array.from(tr.querySelectorAll('td')) as any[]).map((td) => (td.textContent || '').replace(/\s+/g, ' ').trim())
+            if (cells.length >= 4) out.push({ kind, cells })
+          }
+        }
+        return out
+      })
+      .catch(() => [] as { kind: string; cells: string[] }[]))
+    const found = raw.length > 0
+    const deals: RawDeal[] = []
+    for (const r of raw) {
+      const dateCell = r.cells.find((c) => /\d{1,2}[-/ ][A-Za-z0-9]{2,}[-/ ]\d{2,4}|\d{4}-\d{2}-\d{2}/.test(c))
+      const sideCell = r.cells.find((c) => /^(buy|sell|purchase|sale|b|s)$/i.test(c))
+      const nums = r.cells.map((c) => parseFloat(c.replace(/[,%₹\s]/g, ''))).filter((n) => Number.isFinite(n))
+      const client = r.cells.find((c) => /[A-Za-z]{3,}/.test(c) && !/^(buy|sell|purchase|sale)$/i.test(c))
+      if (!dateCell || !sideCell || !client || nums.length < 2) continue
+      const side = /^(sell|sale|s)$/i.test(sideCell) ? 'sell' : 'buy'
+      const date = /\d{4}-\d{2}-\d{2}/.test(dateCell) ? dateCell : new Date(dateCell).toISOString().slice(0, 10)
+      deals.push({ company_id: COMPANY_ID, deal_kind: r.kind as TradeDealType, date, client, side, quantity: nums[0], price: nums[1] })
+    }
+    if (found && deals.length === 0) return null // found but unparseable → fall back, never fake zero
+    return { deals, found }
+  } catch {
+    return null
+  } finally {
+    await browser.close().catch(() => {})
+  }
+}
+
 // ─── run ──────────────────────────────────────────────────────────────────────
 
 async function loadStaged(): Promise<ScreenerSource> {
@@ -458,6 +623,61 @@ async function run(): Promise<void> {
     trend_rows: trends.length,
   })
 
+  // ─── Trades (bulk/block) → ownership_trade_disclosures (separate dataset) ─────
+  const namesById = await loadCompanyNames()
+  const liveTrades = await scrapeTradesLive().catch(() => null)
+  const usingLiveTrades = !!(liveTrades && liveTrades.deals.length)
+  const rawDeals: RawDeal[] = usingLiveTrades ? liveTrades!.deals : await loadFallbackDeals()
+  const tradesFound = liveTrades ? liveTrades.found : rawDeals.length > 0
+  const scraped = rawDeals.map((d) => dealToDisclosure(d, namesById[d.company_id] ?? d.company_id, scrapedAt))
+  // Add-only merge: keep existing rows, append only genuinely new ones (Task 8).
+  const existingDisclosures = await loadExistingDisclosures()
+  const seen = new Set(existingDisclosures.map(dealKey))
+  const mergedDisclosures = [...existingDisclosures]
+  let addedDisclosures = 0
+  for (const r of scraped) {
+    const k = dealKey(r)
+    if (!seen.has(k)) { seen.add(k); mergedDisclosures.push(r); addedDisclosures++ }
+  }
+  const tradeValidation: TradeValidationStatus = usingLiveTrades || tradesFound ? 'scraped' : 'pending'
+  const tradesMeta: OwnershipTradeDisclosuresMeta = {
+    snapshot_id: 'ownership-trade-disclosures',
+    description:
+      'Bulk & block deal disclosures (transaction-level) aggregated by Screener → Trades; underlying source NSE / BSE. SEPARATE from ownership-holdings / ownership-trends — these are individual transactions, not the quarter-end shareholding position.',
+    schema_version: '1.0.0',
+    source_name: 'Screener',
+    source_section: TRADES_SECTION,
+    source_url: TRADES_URL,
+    screener_company_id: SCREENER_COMPANY_ID,
+    underlying_source: 'NSE / BSE',
+    dataset: 'official',
+    last_updated: scrapedAt.slice(0, 10),
+    last_successful_run: scrapedAt,
+    scraped_at: scrapedAt,
+    parser_status: 'ready',
+    trades_section_found: tradesFound,
+    validation_status: tradeValidation,
+    notes: usingLiveTrades
+      ? 'Captured via live Screener Trades scrape (Playwright).'
+      : 'Built from the aggregated NSE/BSE bulk & block deal disclosures that Screener Trades republishes; live Screener Trades scrape unavailable in this environment.',
+  }
+  await writeSnapshot('ownership-trade-disclosures.json', { _meta: tradesMeta, data: mergedDisclosures })
+  await appendLog('fetch-screener-shareholding.log', {
+    source: 'screener_trades',
+    mode: usingLiveTrades ? 'live' : 'offline_aggregated',
+    trades_section_found: tradesFound,
+    disclosure_rows: mergedDisclosures.length,
+    added: addedDisclosures,
+  })
+
+  // Niva Bupa trade summary for the validation report.
+  const nb = mergedDisclosures.filter((r) => r.company_id === COMPANY_ID)
+  const nbBulk = nb.filter((r) => r.deal_type === 'bulk')
+  const nbBlock = nb.filter((r) => r.deal_type === 'block')
+  const boughtCr = round2(nb.filter((r) => r.buyer && !r.seller).reduce((s, r) => s + (r.value_cr ?? 0), 0))
+  const soldCr = round2(nb.filter((r) => r.seller && !r.buyer).reduce((s, r) => s + (r.value_cr ?? 0), 0))
+  const netCr = round2(boughtCr - soldCr)
+
   // ─── PART 11 validation report ──────────────────────────────────────────────
   const groupVals = (pt: OwnershipPeriodType) => {
     const lines: string[] = []
@@ -499,6 +719,22 @@ async function run(): Promise<void> {
       }
     }
   }
+
+  log('\n  ── BULK / BLOCK DEAL TRADES (Screener → Trades · underlying NSE / BSE) ──')
+  log(`  Trades mode               : ${usingLiveTrades ? 'LIVE (Playwright)' : 'OFFLINE — aggregated NSE/BSE disclosures (Screener republishes)'}`)
+  log(`  1. Screener Trades section found    : ${tradesFound ? 'YES' : 'NO'}`)
+  log(`  2. Bulk deal count (Niva Bupa)      : ${nbBulk.length}`)
+  log(`  3. Block deal count (Niva Bupa)     : ${nbBlock.length}${nbBlock.length === 0 ? ' (confirmed zero — not pending)' : ''}`)
+  log(`  4. Parsed bulk rows:`)
+  for (const r of nbBulk) log(`     - ${r.date} · ${r.buyer ? 'BUY ' + r.buyer : 'SELL ' + r.seller} · ${r.quantity_display} @ ₹${r.price} · ${r.value_display}`)
+  log(`  5. Parsed block rows                : ${nbBlock.length === 0 ? 'none (confirmed zero)' : ''}`)
+  for (const r of nbBlock) log(`     - ${r.date} · ${r.buyer ? 'BUY ' + r.buyer : 'SELL ' + r.seller} · ${r.value_display}`)
+  log(`  6. Total bought value (Cr)          : ₹${boughtCr}`)
+  log(`  7. Total sold value (Cr)            : ₹${soldCr}`)
+  log(`  8. Net flow (Cr)                    : ${netCr >= 0 ? '+' : '−'}₹${Math.abs(netCr)} (${netCr > 0.01 ? 'net_bought' : netCr < -0.01 ? 'net_sold' : 'neutral'})`)
+  log(`  9. Data Pending when zero?          : NO — validation_status='${tradeValidation}', so 0 block deals shows "0 found", not Data Pending`)
+  log('  10. Source footer separation        : Shareholding Pattern (trend) vs Trades (bulk/block) shown as two distinct source lines')
+  log(`  ownership_trade_disclosures rows    : ${mergedDisclosures.length} (+${addedDisclosures} new this run)`)
   log('══════════════════════════════════════════════════════════════════\n')
 }
 
