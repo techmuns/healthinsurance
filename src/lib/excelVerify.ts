@@ -199,6 +199,19 @@ const canon = (s: string) => s.toLowerCase().replace(/[^a-z0-9.]/g, '')
 const normSheet = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
 const isRealRef = (ref: string) => /^[A-Z]+\d+$/.test(ref || '')
 
+/** An uploaded cell carrying an Excel error (#NAME?, #REF!, #DIV/0!, #VALUE!,
+ *  #N/A, #NUM!, #NULL!, #SPILL!, …) holds NO computed value — so it must read as
+ *  "no value in your file", never as a number that mismatches the dashboard.
+ *  (SheetJS gives error cells type 'e' with a numeric error code as `v`, which
+ *  would otherwise be compared as if it were a real figure.) Returns the error
+ *  token to show in the explanation, or null when the cell is a normal value. */
+const EXCEL_ERROR_RE = /^#(NAME\?|REF!|DIV\/0!|VALUE!|N\/A|NUM!|NULL!|SPILL!|CALC!|FIELD!|GETTING_DATA|BLOCKED!|CONNECT!|BUSY!|UNKNOWN!)$/i
+function excelError(xc: XLSX.CellObject): string | null {
+  if (xc.t === 'e') return String(xc.w ?? '').trim() || '#ERROR'
+  const s = String(xc.w ?? xc.v ?? '').trim()
+  return EXCEL_ERROR_RE.test(s) ? s : null
+}
+
 // ─── The verifier ───────────────────────────────────────────────────────────
 
 export function verifyWorkbook(data: ArrayBuffer, fileName: string): VerifyResult {
@@ -235,10 +248,17 @@ export function verifyWorkbook(data: ArrayBuffer, fileName: string): VerifyResul
       // The uploaded value at the same reference (only if this sheet is present).
       let upNum: number | null = null
       let upStr = ''
+      let upError = '' // an Excel error in your file (#NAME?, #REF!, …) — no value to compare
       if (up) {
         const xc = up.ws[cell.cellRef] as XLSX.CellObject | undefined
         if (xc && xc.v != null && xc.v !== '') {
-          if (xc.t === 'd' || xc.v instanceof Date) {
+          const err = excelError(xc)
+          if (err) {
+            // The cell errored in your workbook, so it has no computed value. Keep
+            // upNum/upStr empty so it reads as "no value" (never a mismatch); the
+            // token is surfaced in the explanation and the "your file" column below.
+            upError = err
+          } else if (xc.t === 'd' || xc.v instanceof Date) {
             upStr = xc.w ?? String(xc.v) // a date — compared as text, never coerced to a number
           } else if (xc.t === 'n' || typeof xc.v === 'number') {
             upNum = toNum(xc.v)
@@ -263,7 +283,9 @@ export function verifyWorkbook(data: ArrayBuffer, fileName: string): VerifyResul
 
       if (dashHas && !upHas) {
         status = 'missing_upload'
-        reason = 'The dashboard has a value here, but this cell is blank in your file.'
+        reason = upError
+          ? `Your file shows an Excel error (${upError}) here — the cell has no computed value, so there is nothing to compare. This is not a mismatch.`
+          : 'The dashboard has a value here, but this cell is blank in your file.'
       } else if (!dashHas && upHas) {
         status = 'missing_dashboard'
         reason = 'Your file has a value here, but the dashboard has no audited value for this cell.'
@@ -320,8 +342,8 @@ export function verifyWorkbook(data: ArrayBuffer, fileName: string): VerifyResul
         dashboardStatus: cell.status,
         dashboardValue: dashFinal,
         dashboardDisplay: dashHas ? formatValue(dashFinal, cell.unit) : '—',
-        uploadedValue: upNum ?? (upStr.trim() ? upStr.trim() : null),
-        uploadedDisplay: upHas ? (upStr.trim() || (upNum != null ? formatValue(upNum, cell.unit) : '—')) : '—',
+        uploadedValue: upError || (upNum ?? (upStr.trim() ? upStr.trim() : null)),
+        uploadedDisplay: upError || (upHas ? (upStr.trim() || (upNum != null ? formatValue(upNum, cell.unit) : '—')) : '—'),
         sourceName: cell.sourceName,
         sourceLabel: cleanSource(cell.sourceName),
         sourceUrl: cell.sourceUrl,

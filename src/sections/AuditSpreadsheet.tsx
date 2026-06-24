@@ -35,7 +35,7 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
   grey: { cell: 'bg-slate-100', ring: 'rgba(148,163,184,0.25)', text: 'text-slate-500', dot: '#94A3B8', label: 'Not needed / blocked' },
   info: { cell: 'bg-soft-blue', ring: 'rgba(61,125,214,0.20)', text: 'text-navy-primary', dot: '#3D7DD6', label: 'Calculated' },
 }
-const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
+const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red']
 
 // ── Verification overlay (Excel Upload Verifier) ─────────────────────────────
 // When the grid is in verification view, matched cells go neutral and only
@@ -1053,9 +1053,9 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
         </div>
       )}
 
-      {/* Audit section tabs — one single-line premium rail; scrolls horizontally
-          on narrow widths instead of wrapping to a second row. */}
-      <div className="flex items-center gap-1.5 overflow-x-auto scroll-thin px-0.5 pt-0.5 pb-2">
+      {/* Audit section tabs — a compact premium rail that wraps to a second row
+          on narrow widths instead of scrolling sideways, so nothing is cut off. */}
+      <div className="flex flex-wrap items-center gap-1 px-0.5 pt-0.5 pb-2">
         {sheets.map((g) => {
           const on = g.sheet === active
           const filled = g.stats.valuePresent
@@ -1066,14 +1066,14 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
               onClick={() => { setActive(g.sheet); setSelected(null) }}
               title={`${g.sheet} — ${filled}/${g.stats.total} cells with a value`}
               className={[
-                'group relative flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[12px] transition-all duration-normal ease-premium',
+                'group relative flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2 py-1 text-[11px] transition-all duration-normal ease-premium',
                 on
                   ? 'bg-gradient-to-b from-[#27457E] to-[#1E3A6B] font-semibold text-white shadow-[0_2px_8px_rgba(23,43,77,0.18)]'
                   : 'font-medium text-ink-secondary hover:bg-ice/70 hover:text-navy-primary',
               ].join(' ')}
             >
               <span>{g.sheet}</span>
-              <span className={`rounded-full px-1.5 py-px text-[9px] font-semibold tabular-nums ${on ? 'bg-white/20 text-white' : 'bg-ice text-ink-secondary'}`}>
+              <span className={`rounded-full px-1 py-px text-[8.5px] font-semibold tabular-nums ${on ? 'bg-white/20 text-white' : 'bg-ice text-ink-secondary'}`}>
                 {filled}/{g.stats.total}
               </span>
               {on && <span className="pointer-events-none absolute inset-x-2.5 bottom-1 h-[2px] rounded-full bg-gradient-to-r from-champagne to-champagne-deep" />}
