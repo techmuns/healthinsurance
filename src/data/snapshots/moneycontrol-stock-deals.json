@@ -9,11 +9,11 @@
     "underlying_source": "NSE / BSE",
     "dataset": "official",
     "last_updated": null,
-    "last_successful_run": null,
-    "scraped_at": "2026-06-24T20:25:40.975Z",
-    "parser_status": "blocked",
-    "status": "blocked",
-    "status_detail": "Moneycontrol fetch blocked (e.g. Akamai 403 from a datacenter IP) or the parser could not read it — source requires manual review. Set INGEST_FETCH_PROXY to an in-region relay, or stage the large-deals HTML/JSON under data/raw/moneycontrol/deals/.",
+    "last_successful_run": "2026-06-24T20:32:45.535Z",
+    "scraped_at": "2026-06-24T20:32:45.535Z",
+    "parser_status": "ready",
+    "status": "no_records",
+    "status_detail": "Moneycontrol returned no bulk/block/large deals for the configured stock code(s).",
     "symbols_checked": [
       "NBH"
     ],

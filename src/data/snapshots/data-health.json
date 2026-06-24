@@ -1,7 +1,7 @@
 {
-  "last_successful_run": "2026-06-24T12:12:17.008Z",
-  "last_failed_run": "2026-06-24T12:12:17.008Z",
-  "sources_checked": 11,
+  "last_successful_run": "2026-06-24T20:33:27.719Z",
+  "last_failed_run": "2026-06-24T20:33:27.719Z",
+  "sources_checked": 12,
   "sources_success": 6,
   "sources_failed": 1,
   "metrics_updated": [
@@ -24033,10 +24033,11 @@
     "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
     "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
     "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
-    "[moneycontrol_analyst] Broker Research page fetched but no broker cards matched (DOM may have changed).",
     "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W",
+    "[moneycontrol_stock_deals] NBH API https://api.moneycontrol.com/mcapi/v1/stock/stock-deals?scId=NBH&deviceType=W: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/stock-deals?scId=NBH&deviceType=W",
+    "[moneycontrol_stock_deals] NBH API https://api.moneycontrol.com/mcapi/v1/stock/deals?scId=NBH&deviceType=W: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/deals?scId=NBH&deviceType=W",
     "[yahoo_price] niva-bupa: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/NIVABUPA.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/NIVABUPA.NS/history/",
     "[yahoo_price] star-health: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/STARHEALTH.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/STARHEALTH.NS/history/",
     "[yahoo_price] icici-lombard: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/ICICIGI.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/ICICIGI.NS/history/",
@@ -24060,7 +24061,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-24T12:11:00.901Z",
+      "last_attempt_at": "2026-06-24T20:31:49.538Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -24208,28 +24209,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T12:11:27.854Z",
+      "last_attempt_at": "2026-06-24T20:32:17.086Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "success",
-      "last_attempt_at": "2026-06-24T12:11:14.008Z",
-      "last_success_at": "2026-06-24T12:11:14.008Z",
+      "last_attempt_at": "2026-06-24T20:32:02.369Z",
+      "last_success_at": "2026-06-24T20:32:02.369Z",
       "records_fetched": 91
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-24T12:11:20.453Z",
-      "last_success_at": "2026-06-24T12:11:20.453Z",
+      "last_attempt_at": "2026-06-24T20:32:09.582Z",
+      "last_success_at": "2026-06-24T20:32:09.582Z",
       "records_fetched": 103
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T12:11:07.495Z",
+      "last_attempt_at": "2026-06-24T20:31:56.079Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24243,44 +24244,51 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-24T12:11:29.528Z",
-      "last_success_at": "2026-06-24T12:11:29.528Z",
-      "records_fetched": 0
+      "last_attempt_at": "2026-06-24T20:32:19.890Z",
+      "last_success_at": "2026-06-24T20:32:19.890Z",
+      "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T12:12:14.535Z",
+      "last_attempt_at": "2026-06-24T20:33:25.374Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-24T12:11:22.015Z",
-      "last_success_at": "2026-06-24T12:11:22.015Z",
+      "last_attempt_at": "2026-06-24T20:32:11.216Z",
+      "last_success_at": "2026-06-24T20:32:11.216Z",
       "records_fetched": 2770
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-24T12:11:42.505Z",
-      "last_success_at": "2026-06-24T12:11:42.505Z",
-      "records_fetched": 5
+      "last_attempt_at": "2026-06-24T20:32:53.765Z",
+      "last_success_at": "2026-06-24T20:32:53.765Z",
+      "records_fetched": 0
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-24T12:11:46.019Z",
+      "last_attempt_at": "2026-06-24T20:32:56.830Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
-      "status": "success",
-      "last_attempt_at": "2026-06-24T12:12:15.844Z",
+      "status": "pending",
+      "last_attempt_at": "2026-06-24T20:33:27.111Z",
       "last_success_at": "2026-06-24T12:12:15.844Z",
-      "records_fetched": 4
+      "records_fetched": 0
+    },
+    {
+      "source_id": "moneycontrol_stock_deals",
+      "status": "success",
+      "last_attempt_at": "2026-06-24T20:32:45.535Z",
+      "last_success_at": "2026-06-24T20:32:45.535Z",
+      "records_fetched": 0
     }
   ]
 }
