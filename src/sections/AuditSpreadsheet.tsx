@@ -35,7 +35,12 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
   grey: { cell: 'bg-slate-100', ring: 'rgba(148,163,184,0.25)', text: 'text-slate-500', dot: '#94A3B8', label: 'Not needed / blocked' },
   info: { cell: 'bg-soft-blue', ring: 'rgba(61,125,214,0.20)', text: 'text-navy-primary', dot: '#3D7DD6', label: 'Calculated' },
 }
-const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red']
+// Three honest signals only — Fetched (green), Calculated (blue), Missing (red).
+// Unit-adjusted and hand-typed values are real, present values → they read green,
+// so there's no separate yellow "adjusted / typed" signal. Grey (resolved blanks:
+// on hold, not needed, calc input missing) stays an in-cell reason, not a legend
+// signal.
+const LEGEND: QaColor[] = ['green', 'info', 'red']
 
 // ── Verification overlay (Excel Upload Verifier) ─────────────────────────────
 // When the grid is in verification view, matched cells go neutral and only
@@ -290,7 +295,11 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
   // not-applicable (the insurer didn't exist this period) renders calm grey with NO
   // source tag — a source pipeline / "expected source" there would wrongly imply a
   // pending pull for a number that is never coming (Neha, 2026-06-22).
-  const calm = gap || blocked || notApplicable
+  // Blank formula cell — a calculation whose input value isn't available. Same
+  // logic: showing a "PPT" source would be wrong (a formula isn't fetched), so we
+  // show the reason ("value for calculation not found") instead.
+  const calcMissing = cell.cellKind === 'formula' && !fetched && !gap && !blocked && !notApplicable && !cell.blankTag
+  const calm = gap || blocked || notApplicable || calcMissing
   const pipe = PIPELINE[pipelineOf(cell)]
   return (
     <div className="flex flex-col overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-card">
@@ -313,10 +322,10 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
             ? <Info className="h-4 w-4 shrink-0 text-slate-500" />
             : <AlertCircle className="h-4 w-4 shrink-0 text-coral" />}
         <span className={`text-[12px] font-semibold ${fetched ? 'text-emerald' : calm ? 'text-slate-600' : 'text-coral'}`}>
-          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : 'Not fetched — cell empty'}
+          {fetched ? 'Fetched & verified' : gap ? 'Not published in the investor deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : calcMissing ? 'Value for calculation not found' : 'Not fetched — cell empty'}
         </span>
         <span className={`ml-auto inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${calm ? 'bg-slate-100 text-slate-500' : `${q.cell} ${q.text}`}`}>
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: calm ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : meta.label}
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: calm ? '#94A3B8' : q.dot }} />{gap ? 'Not in deck' : blocked ? blockTag : notApplicable ? 'Not applicable' : calcMissing ? 'Calculated' : meta.label}
         </span>
       </div>
 
@@ -354,8 +363,9 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
           </div>
         )}
         {/* Source pipeline + source row are meaningless for a not-applicable cell
-            (the insurer didn't exist) — show only the reason, never a source tag. */}
-        {!notApplicable && (<>
+            (the insurer didn't exist) or a calculated cell (no pipeline feeds a
+            formula) — show only the reason, never a source tag. */}
+        {!notApplicable && !calcMissing && (<>
         {/* Pipeline — the real source for a row the deck doesn't publish */}
         <DetailField label="Source pipeline">
           {gap ? (
@@ -404,6 +414,10 @@ function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: Audi
         ) : notApplicable ? (
           <DetailField label="Not applicable">
             <span className="text-ink-secondary">{cell.note}</span>
+          </DetailField>
+        ) : calcMissing ? (
+          <DetailField label="Why it's blank">
+            <span className="text-ink-secondary">{cell.note || 'A value this calculation depends on isn’t available, so it couldn’t be computed — value for calculation not found.'}</span>
           </DetailField>
         ) : (
           <DetailField label="Why it's missing">
@@ -635,9 +649,15 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                       ? null
                       : cell.blankTag
                         ?? (cell.status === 'web_blocked' ? 'IRDAI' : cell.status === 'not_in_ppt' ? 'Not in PPT' : null)
-                    const q = gap || tag ? QA.grey : QA[meta.color]
-                    const txt = cellDisplay(cell, raw)
                     const isFormula = cell.cellKind === 'formula'
+                    // A formula cell with no value couldn't compute — a value it
+                    // depends on is missing. Read it as a resolved-grey blank with
+                    // that reason, not a pending source pull (a formula isn't fetched
+                    // from a pipeline). Formula cells that DID compute are `fetched`
+                    // and keep their normal colour.
+                    const calcMissing = isFormula && !fetched && !gap && !tag && !notApplicable
+                    const q = gap || tag || calcMissing ? QA.grey : QA[meta.color]
+                    const txt = cellDisplay(cell, raw)
                     const pipe = PIPELINE[pipelineOf(cell)]
                     const title = fetched
                       ? `${cell.metricLabel} · ${cell.period} — ${meta.label}`
@@ -647,7 +667,9 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                           ? `${cell.metricLabel} · ${cell.period} — not applicable: ${cell.note}`
                         : tag
                           ? `${cell.metricLabel} · ${cell.period} — ${tag}: ${cell.note}`
-                          : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
+                          : calcMissing
+                            ? `${cell.metricLabel} · ${cell.period} — calculated cell · a value it depends on isn’t available (value for calculation not found)`
+                            : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0" style={dividerStyle(col)}>
                         <button
@@ -678,6 +700,13 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid
                             // source tag (a pipeline pill would imply a pending pull);
                             // the full reason shows on hover / click.
                             <span className="text-[11px] text-slate-300">—</span>
+                          ) : calcMissing ? (
+                            // Calculated cell with no value — a value it depends on
+                            // isn't available, so it couldn't be computed. Say that,
+                            // not a source pipeline (a formula isn't fetched anywhere).
+                            <span className="inline-flex items-center gap-1 text-[8px] font-semibold leading-tight tracking-tight text-slate-400">
+                              <span className="mt-px h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />Value for calculation not found
+                            </span>
                           ) : (
                             // Empty cell → show which pipeline should have filled it.
                             <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide text-ink-secondary/75">

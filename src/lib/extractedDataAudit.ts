@@ -219,13 +219,20 @@ export interface StatusMeta {
 
 export const STATUS_META: Record<AuditStatus, StatusMeta> = {
   fetched: { key: 'fetched', label: 'Fetched', color: 'green' },
-  transformed: { key: 'transformed', label: 'Fetched (unit adjusted)', color: 'yellow' },
-  manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'yellow' },
+  // Unit-adjusted is still a FETCHED, source-backed value (only the unit/rounding
+  // changed, e.g. 1,103.33 → ₹1,103 cr) — so it reads green like any fetched cell,
+  // not yellow. Yellow is reserved for values the dashboard calculates.
+  transformed: { key: 'transformed', label: 'Fetched (unit adjusted)', color: 'green' },
+  // A hand-entered value is still a real, present value (the audit counts it as
+  // fetched) — so it reads green, not a separate yellow signal. The cell detail
+  // still says "Typed in by hand".
+  manual_override: { key: 'manual_override', label: 'Typed in by hand', color: 'green' },
   missing: { key: 'missing', label: 'Not reachable', color: 'red' },
   parser_issue: { key: 'parser_issue', label: "Couldn't extract", color: 'red' },
   source_unavailable: { key: 'source_unavailable', label: 'Not found', color: 'red' },
   web_blocked: { key: 'web_blocked', label: 'Awaiting source file', color: 'grey' },
-  blocked: { key: 'blocked', label: 'On hold', color: 'yellow' },
+  // "On hold" is a paused blank, not an error — calm grey, not a yellow signal.
+  blocked: { key: 'blocked', label: 'On hold', color: 'grey' },
   computed: { key: 'computed', label: 'Calculated', color: 'info' },
   not_applicable: { key: 'not_applicable', label: 'Not needed here', color: 'grey' },
   not_in_ppt: { key: 'not_in_ppt', label: 'Not found in PPT', color: 'grey' },
