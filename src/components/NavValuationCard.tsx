@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Calculator, Landmark, X } from 'lucide-react'
 import { buildNavValuation, periodLabel, type NavValuation } from '@/lib/navValuation'
 
@@ -31,6 +31,7 @@ function Stat({ label, value, sub, accent = NAVY }: { label: string; value: stri
 
 export function NavValuationCard({ companyId, companyName }: { companyId: string; companyName: string }) {
   const [open, setOpen] = useState(false)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const v = useMemo(() => buildNavValuation(companyId), [companyId])
   const hasNetWorth = v.netWorth != null
 
@@ -43,6 +44,7 @@ export function NavValuationCard({ companyId, companyName }: { companyId: string
         </span>
         {hasNetWorth && (
           <button
+            ref={btnRef}
             type="button"
             onClick={() => setOpen(true)}
             className="inline-flex items-center gap-1.5 rounded-full border border-[#E4D7B6] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#9C7430] shadow-soft transition-colors hover:border-[#D8C48F] hover:bg-[#FBF7EE]"
@@ -98,7 +100,7 @@ export function NavValuationCard({ companyId, companyName }: { companyId: string
         </>
       )}
 
-      {open && <CalcModal v={v} companyName={companyName} onClose={() => setOpen(false)} />}
+      {open && <CalcModal v={v} companyName={companyName} anchorRef={btnRef} onClose={() => setOpen(false)} />}
     </div>
   )
 }
@@ -108,12 +110,58 @@ function Na() {
   return <span className="italic text-ink-secondary/60">unavailable</span>
 }
 
-function CalcModal({ v, companyName, onClose }: { v: NavValuation; companyName: string; onClose: () => void }) {
+function CalcModal({ v, companyName, anchorRef, onClose }: { v: NavValuation; companyName: string; anchorRef: React.RefObject<HTMLButtonElement>; onClose: () => void }) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null)
+  const [shown, setShown] = useState(false)
+
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     document.addEventListener('keydown', onEsc)
     return () => document.removeEventListener('keydown', onEsc)
   }, [onClose])
+
+  // Anchor the popover to the "Show calculation" button the user actually clicked
+  // rather than centring it in the viewport. Prefer opening just below the button
+  // with right edges aligned; flip above when there isn't room below; always clamp
+  // inside the viewport so it can never spill off-screen. Re-places on scroll/resize.
+  useLayoutEffect(() => {
+    const place = () => {
+      const anchor = anchorRef.current
+      const panel = panelRef.current
+      if (!anchor || !panel) return
+      const a = anchor.getBoundingClientRect()
+      const margin = 12
+      const gap = 8
+      const pw = panel.offsetWidth
+      const ph = panel.offsetHeight
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+
+      let left = a.right - pw // align right edges → opens leftward from the button
+      left = Math.max(margin, Math.min(left, vw - pw - margin))
+
+      let top: number
+      if (a.bottom + gap + ph <= vh - margin) top = a.bottom + gap // below the button
+      else if (a.top - gap - ph >= margin) top = a.top - gap - ph // flip above
+      else top = Math.max(margin, vh - ph - margin) // clamp to viewport
+
+      setPos({ top, left })
+    }
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [anchorRef])
+
+  // Gentle fade-in once positioned (one frame later) — calm, not a pop.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   const rows: { m: string; value: React.ReactNode; src: React.ReactNode }[] = [
     {
@@ -159,9 +207,16 @@ function CalcModal({ v, companyName, onClose }: { v: NavValuation; companyName: 
   ]
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" role="dialog" aria-modal>
+    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal>
       <div className="absolute inset-0 bg-navy-deep/25 backdrop-blur-[1.5px]" onClick={onClose} />
-      <div className="relative max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-xl2 border border-soft-border bg-card shadow-card">
+      <div
+        ref={panelRef}
+        className={[
+          'absolute max-h-[88vh] overflow-y-auto rounded-xl2 border border-soft-border bg-card shadow-card transition-[opacity,transform] duration-150 ease-out',
+          pos && shown ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-1 opacity-0',
+        ].join(' ')}
+        style={{ top: pos?.top ?? 0, left: pos?.left ?? 0, width: 'min(32rem, calc(100vw - 24px))', transformOrigin: 'top right' }}
+      >
         <div className="flex items-start justify-between gap-3 px-5 py-3.5" style={{ background: 'linear-gradient(135deg,#172B4D,#27457E)' }}>
           <div className="leading-tight">
             <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#E4C77A]">NAV · Book-value calculation</p>
