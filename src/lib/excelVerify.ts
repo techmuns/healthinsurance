@@ -144,6 +144,18 @@ function close(a: number, b: number, unit: string | undefined): boolean {
   return diff / denom <= REL_TOL
 }
 
+/** Do the two values render to the SAME shown figure at this cell's display
+ *  precision? The grid rounds (e.g. 6.23% and 6.0% both read "6%"), so two values
+ *  that display identically are the same shown value — never a mismatch (Neha:
+ *  "mismatch is only where it is the same value but differs"). Ratio cells also
+ *  reconcile the 0.06 ⇔ 6% (×100) representation so a fraction and a percent of
+ *  the same magnitude count as equal. */
+function sameShown(up: number, dash: number, unit: string | undefined): boolean {
+  const target = formatValue(dash, unit)
+  const ups = ratioLike(unit) ? [up, up * 100, up / 100] : [up]
+  return ups.some((u) => formatValue(u, unit) === target)
+}
+
 /** Every numeric form the dashboard could legitimately carry for a cell:
  *  the final value, the raw "as printed" value, the computed value — plus the
  *  ×100 / ÷100 forms for ratio cells (0.61 ⇔ 61% is the same number). */
@@ -293,11 +305,16 @@ export function verifyWorkbook(data: ArrayBuffer, fileName: string): VerifyResul
         // Both sides carry a value.
         const cands = dashCandidates(cell)
         if (upNum != null && cands.length) {
+          const primary = toNum(dashFinal) ?? cands[0]
           if (cands.some((d) => close(upNum as number, d, cell.unit))) {
             status = 'matched'
             reason = 'Your value matches the dashboard.'
+          } else if (sameShown(upNum, primary, cell.unit)) {
+            // Both sides show the same figure once rounded to the displayed
+            // precision (e.g. 6.0% vs 6%) — the same value, not a mismatch.
+            status = 'matched'
+            reason = 'Your value matches the dashboard at the shown precision (the tiny underlying difference rounds to the same figure).'
           } else {
-            const primary = toNum(dashFinal) ?? cands[0]
             diffPct = primary !== 0 ? (upNum - primary) / Math.abs(primary) : null
             const sig = basisSignal(cell)
             const ps = powerScale(upNum, primary)
