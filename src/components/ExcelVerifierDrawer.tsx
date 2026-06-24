@@ -277,7 +277,7 @@ export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose:
     <Drawer
       open={open}
       onClose={onClose}
-      widthClass="max-w-5xl"
+      widthClass="max-w-3xl"
       title="Excel Upload Verifier"
       subtitle="Check an uploaded workbook against the dashboard, cell by cell"
     >
