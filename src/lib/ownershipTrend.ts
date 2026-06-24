@@ -43,6 +43,11 @@ export interface TrendPeriod {
 
 export interface OwnershipTrendView {
   available: boolean
+  /** Company identity for source labelling (from the company's own rows). */
+  companyName: string
+  ticker: string
+  /** This company's Screener shareholding-pattern page URL. */
+  sourceUrl: string
   periodType: OwnershipPeriodType
   /** Visible periods (ascending) after the FY/QTR range narrows them. */
   periods: TrendPeriod[]
@@ -96,6 +101,9 @@ export function getOwnershipTrendView(companyId: string, period: TimePeriod, ran
   if (!allPeriods.length) {
     return {
       available: false,
+      companyName: '',
+      ticker: '',
+      sourceUrl: META.source_url,
       periodType,
       periods: [],
       seriesByGroup: { Promoters: [], FIIs: [], DIIs: [], Public: [], 'No. of Shareholders': [], Other: [] },
@@ -151,6 +159,9 @@ export function getOwnershipTrendView(companyId: string, period: TimePeriod, ran
 
   return {
     available: true,
+    companyName: rows[0]?.company_name ?? '',
+    ticker: rows[0]?.ticker ?? '',
+    sourceUrl: rows[0]?.source_url ?? META.source_url,
     periodType,
     periods: visible,
     seriesByGroup,

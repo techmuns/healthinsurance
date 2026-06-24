@@ -435,7 +435,8 @@ export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
     deals,
     summary: summarizeTradeDisclosures(deals),
     sourceName: meta.source_name,
-    sourceUrl: meta.source_url,
+    // Per-company Screener Trades URL (from the company's own rows).
+    sourceUrl: deals[0]?.source_url ?? meta.source_url,
     underlyingSource: meta.underlying_source,
     lastUpdated: meta.last_updated ?? null,
     scrapedAt: meta.scraped_at ?? null,

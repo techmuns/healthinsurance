@@ -1,31 +1,26 @@
 // ---------------------------------------------------------------------------
 //  Screener shareholding-pattern ingestion → ownership_holdings + ownership_trends
+//  (+ ownership_trade_disclosures from Screener → Trades)
 //
-//  Builds the Governance → Ownership Trend module's data for Niva Bupa from
-//  Screener (Investors → Shareholding Pattern, company id 1285147):
+//  Builds the Governance → Ownership Trend module's data for the LISTED SAHIs
+//  (Niva Bupa, Star Health) from Screener (Investors → Shareholding Pattern):
 //    1. Quarterly shareholding pattern (group rows: Promoters / FIIs / DIIs /
 //       Public / No. of Shareholders).
 //    2. Yearly shareholding pattern (same group rows).
-//    3. Expanded investor-level rows under each group — WHERE Screener exposes
-//       them. Screener gates the named entities behind an authenticated session
-//       + an interactive click-to-expand, so this is attempted but tolerated as
-//       unavailable; group-level rows are kept and investor-level is marked
-//       missing. No investor-level data is ever invented. (The named-holder
-//       breakdown the dashboard shows comes from the authoritative exchange
-//       filing — shareholding-pattern-snapshot.json — for the latest period.)
+//    3. Expanded investor-level rows — WHERE Screener exposes them (login-gated;
+//       attempted, tolerated as unavailable, never invented).
+//  Plus the Bulk / Block deal disclosures aggregated by Screener → Trades
+//  (underlying NSE / BSE) into the SEPARATE ownership_trade_disclosures dataset.
 //
-//  OFFLINE-FIRST, like the rest of the ingest layer:
-//    • Live (INGEST_OFFLINE=0): a real headless Chromium (Playwright) opens the
-//      Screener company page, reads the quarterly + yearly tables, and tries to
-//      expand each group row for named holders. Self-fencing — if Playwright /
-//      a browser binary / network is unavailable, it returns null.
-//    • Offline / live failed: read the staged source-of-record at
-//      data/raw/screener/nivabupa-shareholding-history.json (group-level values
-//      transcribed from the Screener public page). Never throws, never fakes.
+//  OFFLINE-FIRST: live (INGEST_OFFLINE=0) drives a real headless Chromium per
+//  company; offline reads each company's staged source-of-record under
+//  data/raw/screener/<co>-shareholding-history.json (group-level values from the
+//  Screener public page / saved capture). Never throws, never fabricates.
 //
 //  Outputs (self-contained envelopes, NOT part of the generic merge):
-//    src/data/snapshots/ownership-holdings.json   (long format, one row/holder/period)
-//    src/data/snapshots/ownership-trends.json      (period-over-period movement)
+//    src/data/snapshots/ownership-holdings.json         (multi-company; filter by company_id)
+//    src/data/snapshots/ownership-trends.json
+//    src/data/snapshots/ownership-trade-disclosures.json
 //
 //  Run:  npm run ingest:screener-ownership   (offline)
 //        INGEST_OFFLINE=0 npm run ingest:screener-ownership   (attempt live)
@@ -49,20 +44,34 @@ import type {
   TradeValidationStatus,
 } from '../../src/data/snapshots/_schemas'
 
-const COMPANY_ID = 'niva-bupa' // dashboard join key (ticker NIVABUPA)
-const TICKER = 'NIVABUPA'
-const COMPANY_NAME = 'Niva Bupa Health Insurance Company Ltd'
-const SCREENER_COMPANY_ID = 1285147 // numeric reference only; the public URL uses the NSE symbol
-// Screener's public company page is keyed by the NSE symbol — the numeric
-// /company/<id>/ form 404s, so all links use the symbol form.
-const SCREENER_URL = 'https://www.screener.in/company/NIVABUPA/'
-const SCREENER_SOURCE_URL = 'https://www.screener.in/company/NIVABUPA/#shareholding'
+// Listed SAHIs we carry a Screener shareholding-pattern history for. Screener's
+// public page is keyed by the NSE symbol (the numeric /company/<id>/ form 404s),
+// so links use the symbol; the numeric id is only for the /trades/company-<id>/
+// endpoint.
+interface CompanyCfg {
+  company_id: string
+  company_name: string
+  ticker: string
+  screener_id: number
+  staged: string
+}
+const COMPANIES: CompanyCfg[] = [
+  { company_id: 'niva-bupa', company_name: 'Niva Bupa Health Insurance Company Ltd', ticker: 'NIVABUPA', screener_id: 1285147, staged: 'nivabupa-shareholding-history.json' },
+  { company_id: 'star-health', company_name: 'Star Health and Allied Insurance Company Ltd', ticker: 'STARHEALTH', screener_id: 1275115, staged: 'starhealth-shareholding-history.json' },
+]
+const SCREENER_ID_BY_COMPANY: Record<string, number> = Object.fromEntries(COMPANIES.map((c) => [c.company_id, c.screener_id]))
+const screenerPageUrl = (ticker: string) => `https://www.screener.in/company/${ticker}/#shareholding`
+const screenerScrapeUrl = (ticker: string) => `https://www.screener.in/company/${ticker}/`
+const tradesUrlOf = (screenerId: number) => `https://www.screener.in/trades/company-${screenerId}/`
+const tradesUrlForCompany = (companyId: string) =>
+  SCREENER_ID_BY_COMPANY[companyId] ? tradesUrlOf(SCREENER_ID_BY_COMPANY[companyId]) : 'https://www.screener.in'
+
 const SOURCE_SECTION = 'Investors / Shareholding Pattern'
-const STAGED_FILE = resolve(RAW_ROOT, 'screener', 'nivabupa-shareholding-history.json')
-// Screener aggregates bulk & block deals under a dedicated Trades view, served
-// from /trades/company-<id>/ (found as data-url in the saved company page).
-const TRADES_URL = `https://www.screener.in/trades/company-${SCREENER_COMPANY_ID}/`
 const TRADES_SECTION = 'Investors / Shareholding Pattern / Trades'
+const CLASSIFICATION_NOTE =
+  'Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.'
+const EXPANDED_NOTE =
+  'Screener exposes individual entity names when a shareholding line-item is clicked, but those expanded rows require an authenticated session + interactive expansion. Group-level rows only; no investor-level data invented.'
 
 const GROUP_ORDER: OwnershipHolderGroup[] = ['Promoters', 'FIIs', 'DIIs', 'Public', 'No. of Shareholders']
 /** The % holder groups that participate in trend / rank computation. */
@@ -118,11 +127,13 @@ function normalisePeriod(label: string, periodType: OwnershipPeriodType): { endD
 
 function normaliseHoldings(
   src: ScreenerSource,
+  co: CompanyCfg,
   scrapedAt: string,
   validationStatus: OwnershipHoldingRow['validation_status'],
 ): OwnershipHoldingRow[] {
   const rows: OwnershipHoldingRow[] = []
   const classification = src._meta.classification_note
+  const sourceUrl = screenerPageUrl(co.ticker)
 
   const pushTable = (table: ScreenerTable, periodType: OwnershipPeriodType) => {
     table.periods.forEach((rawLabel, i) => {
@@ -133,11 +144,12 @@ function normaliseHoldings(
         const raw = series[i]
         const isShareholderRow = group === SHAREHOLDER_ROW
         rows.push({
-          company_id: COMPANY_ID,
-          company_name: COMPANY_NAME,
-          ticker: TICKER,
+          company_id: co.company_id,
+          company_name: co.company_name,
+          ticker: co.ticker,
           source_name: 'Screener',
           source_section: SOURCE_SECTION,
+          source_url: sourceUrl,
           period_type: periodType,
           period_label: rawLabel,
           period_end_date: endDate,
@@ -179,15 +191,14 @@ function round2(n: number): number {
 }
 
 /**
- * Period-over-period movement for the % holder groups (and expanded investors,
- * when present). Each consecutive pair (prev → cur) yields one row per holder.
- * Yearly trends use the yearly table; quarterly use the quarterly table — they
- * are NEVER averaged into one another. Ranks are computed within each current
- * period. "No. of Shareholders" is not a % holder and is excluded from trends
- * (its movement shows as a count in the insight strip instead).
+ * Period-over-period movement for one company's % holder groups. Each consecutive
+ * pair (prev → cur) yields one row per holder. Yearly trends use the yearly table;
+ * quarterly use the quarterly table — NEVER averaged. Ranks computed within each
+ * current period. "No. of Shareholders" is excluded (it's a count, not a holder).
  */
 function computeTrends(holdings: OwnershipHoldingRow[]): OwnershipTrendRow[] {
   const out: OwnershipTrendRow[] = []
+  const companyId = holdings[0]?.company_id ?? ''
 
   for (const periodType of ['quarterly', 'yearly'] as OwnershipPeriodType[]) {
     const scoped = holdings.filter((r) => r.period_type === periodType && r.holder_group !== SHAREHOLDER_ROW)
@@ -218,7 +229,7 @@ function computeTrends(holdings: OwnershipHoldingRow[]): OwnershipTrendRow[] {
         const curPct = pctAt(key, cur.raw)
         const changePp = prevPct != null && curPct != null ? round2(curPct - prevPct) : null
         periodRows.push({
-          company_id: COMPANY_ID,
+          company_id: companyId,
           period_type: periodType,
           current_period: cur.fiscal,
           previous_period: prev.fiscal,
@@ -254,22 +265,9 @@ function computeTrends(holdings: OwnershipHoldingRow[]): OwnershipTrendRow[] {
   return out
 }
 
-// ─── live scrape (Playwright) — best-effort, self-fencing ─────────────────────
+// ─── live scrape (Playwright) — best-effort, self-fencing, per company ─────────
 
-/**
- * Drive a real headless Chromium to read Screener's shareholding pattern and
- * (where exposed) expand each group row for named holders. Returns a source
- * object in the staged shape, or null when Playwright / a browser binary /
- * network is unavailable, or the tables can't be parsed. NEVER throws — callers
- * fall back to the staged source-of-record.
- *
- * Screener renders Quarterly/Yearly shareholding under `section#shareholding`
- * with a button per group row that expands the constituent entities. Those
- * expanded rows are only served to an authenticated session, so in the common
- * (anonymous) case `investorRowsAvailable` comes back false and only group rows
- * are returned — which is honest, not a failure.
- */
-async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorRowsAvailable: boolean } | null> {
+async function scrapeScreenerLive(scrapeUrl: string): Promise<{ source: ScreenerSource; investorRowsAvailable: boolean } | null> {
   if (process.env.INGEST_OFFLINE !== '0') return null // offline by default
   let pw: any
   try {
@@ -295,7 +293,6 @@ async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorR
       timezoneId: 'Asia/Kolkata',
       viewport: { width: 1366, height: 900 },
     })
-    // Optional authenticated session — expanded investor rows need it.
     const cookie = process.env.SCREENER_SESSIONID
     if (cookie) {
       await context.addCookies([
@@ -303,25 +300,22 @@ async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorR
       ])
     }
     const page = await context.newPage()
-    await page.goto(SCREENER_URL, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.goto(scrapeUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.waitForSelector('#shareholding', { timeout: 30000 }).catch(() => {})
 
     const readTab = async (tabName: 'Quarterly' | 'Yearly'): Promise<ScreenerTable | null> => {
-      // Click the Quarterly / Yearly tab inside the shareholding section.
       await page
         .locator('#shareholding button, #shareholding a', { hasText: tabName })
         .first()
         .click({ timeout: 5000 })
         .catch(() => {})
       await page.waitForTimeout(800)
-      // Attempt to expand every group row to surface named holders.
       const expanders = page.locator('#shareholding table button.button-plain, #shareholding table .show-schedules')
       const n = await expanders.count().catch(() => 0)
       for (let i = 0; i < n; i++) {
         await expanders.nth(i).click({ timeout: 2000 }).catch(() => {})
       }
       await page.waitForTimeout(400)
-      // Read the visible shareholding table into { periods, groups }.
       return (await page.$$eval('#shareholding table', (tables: any[]) => {
         const table = tables[0]
         if (!table) return null
@@ -349,9 +343,6 @@ async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorR
     const yearly = await readTab('Yearly')
     if (!quarterly || !yearly || !quarterly.periods.length) return null
 
-    // Map Screener's group labels to our canonical names; bail to the staged
-    // source if the four core groups aren't all present (don't ship a
-    // half-parsed table).
     const pick = (table: ScreenerTable): ScreenerTable | null => {
       const norm: Record<string, number[]> = {}
       const find = (re: RegExp) => Object.keys(table.groups).find((k) => re.test(k))
@@ -373,19 +364,12 @@ async function scrapeScreenerLive(): Promise<{ source: ScreenerSource; investorR
     const y = pick(yearly)
     if (!q || !y) return null
 
-    // Investor-level rows show up as extra labelled rows beyond the four groups
-    // when an authenticated expand succeeds; treat their presence as the
-    // availability signal. Anonymous sessions won't have them.
     const investorRowsAvailable =
       Object.keys(quarterly.groups).length > 6 || Object.keys(yearly.groups).length > 6
 
     return {
       source: {
-        _meta: {
-          classification_note:
-            'Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.',
-          expanded_investor_rows_available: investorRowsAvailable,
-        },
+        _meta: { classification_note: CLASSIFICATION_NOTE, expanded_investor_rows_available: investorRowsAvailable, expanded_investor_rows_note: EXPANDED_NOTE },
         quarterly: q,
         yearly: y,
       },
@@ -422,8 +406,9 @@ const valueDisplay = (v: number | null): string => {
 }
 
 /** Reshape a disclosed deal into a normalized trade-disclosure row. The exact
- *  disclosed party name is preserved; the undisclosed counterparty stays null. */
-function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string): OwnershipTradeDisclosureRow {
+ *  disclosed party name is preserved; the undisclosed counterparty stays null.
+ *  `sourceUrl` is the company's Screener Trades page. */
+function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string, sourceUrl: string): OwnershipTradeDisclosureRow {
   const value_cr = round2((d.quantity * d.price) / 1e7)
   return {
     company_id: d.company_id,
@@ -440,14 +425,14 @@ function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string): O
     value_display: valueDisplay(value_cr),
     exchange_source: 'NSE / BSE',
     source_name: 'Screener',
-    source_url: TRADES_URL,
+    source_url: sourceUrl,
     underlying_source: 'NSE / BSE',
     scraped_at: scrapedAt,
     validation_status: 'scraped',
   }
 }
 
-/** Dedup / add-only key (Task 8): company + type + date + parties + qty + price + value. */
+/** Dedup / add-only key: company + type + date + parties + qty + price + value. */
 const dealKey = (r: OwnershipTradeDisclosureRow): string =>
   [r.company_id, r.deal_type, r.date, r.buyer ?? '', r.seller ?? '', r.quantity ?? '', r.price ?? '', r.value_cr ?? ''].join('|')
 
@@ -483,15 +468,11 @@ async function loadExistingDisclosures(): Promise<OwnershipTradeDisclosureRow[]>
 }
 
 /**
- * Live Screener Trades scrape (Playwright) — best-effort, self-fencing. Opens
- * /trades/company-<id>/, classifies each table as bulk/block by its heading and
- * reads {date, client, buy/sell, qty, price} per row. Returns the reshaped deals
- * + whether a Trades section was found, or null when Playwright / a browser /
- * network is unavailable. Conservative: if a Trades section is found but no row
- * parses cleanly, returns null so callers fall back to the real disclosures
- * rather than wrongly claim "zero".
+ * Live Screener Trades scrape (Playwright) for one company — best-effort,
+ * self-fencing. Conservative: a found-but-unparseable section returns null so
+ * callers fall back to the real disclosures rather than wrongly claim "zero".
  */
-async function scrapeTradesLive(): Promise<{ deals: RawDeal[]; found: boolean } | null> {
+async function scrapeTradesLive(tradesUrl: string, companyId: string): Promise<{ deals: RawDeal[]; found: boolean } | null> {
   if (process.env.INGEST_OFFLINE !== '0') return null
   let pw: any
   try {
@@ -516,7 +497,7 @@ async function scrapeTradesLive(): Promise<{ deals: RawDeal[]; found: boolean } 
     const cookie = process.env.SCREENER_SESSIONID
     if (cookie) await context.addCookies([{ name: 'sessionid', value: cookie, domain: '.screener.in', path: '/', httpOnly: true, secure: true }])
     const page = await context.newPage()
-    const res = await page.goto(TRADES_URL, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    const res = await page.goto(tradesUrl, { waitUntil: 'domcontentloaded', timeout: 60000 })
     if (res && res.status() >= 400) return null
     await page.waitForTimeout(800)
     const raw = (await page
@@ -544,9 +525,9 @@ async function scrapeTradesLive(): Promise<{ deals: RawDeal[]; found: boolean } 
       if (!dateCell || !sideCell || !client || nums.length < 2) continue
       const side = /^(sell|sale|s)$/i.test(sideCell) ? 'sell' : 'buy'
       const date = /\d{4}-\d{2}-\d{2}/.test(dateCell) ? dateCell : new Date(dateCell).toISOString().slice(0, 10)
-      deals.push({ company_id: COMPANY_ID, deal_kind: r.kind as TradeDealType, date, client, side, quantity: nums[0], price: nums[1] })
+      deals.push({ company_id: companyId, deal_kind: r.kind as TradeDealType, date, client, side, quantity: nums[0], price: nums[1] })
     }
-    if (found && deals.length === 0) return null // found but unparseable → fall back, never fake zero
+    if (found && deals.length === 0) return null // found but unparseable → fall back
     return { deals, found }
   } catch {
     return null
@@ -557,8 +538,8 @@ async function scrapeTradesLive(): Promise<{ deals: RawDeal[]; found: boolean } 
 
 // ─── run ──────────────────────────────────────────────────────────────────────
 
-async function loadStaged(): Promise<ScreenerSource> {
-  const text = await readFile(STAGED_FILE, 'utf8')
+async function loadStaged(file: string): Promise<ScreenerSource> {
+  const text = await readFile(resolve(RAW_ROOT, 'screener', file), 'utf8')
   return JSON.parse(text) as ScreenerSource
 }
 
@@ -566,175 +547,190 @@ function inr(n: number | null): string {
   return n == null ? 'n/a' : n.toLocaleString('en-IN')
 }
 
+interface PerCompany {
+  co: CompanyCfg
+  src: ScreenerSource
+  usingLive: boolean
+  expandedAvailable: boolean
+  holdings: OwnershipHoldingRow[]
+  trends: OwnershipTrendRow[]
+}
+
 async function run(): Promise<void> {
   const scrapedAt = nowIso()
+  const log = console.log
 
-  // 1) Try a live scrape; 2) fall back to the staged source-of-record.
-  const live = await scrapeScreenerLive().catch(() => null)
-  const usingLive = !!live
-  const src: ScreenerSource = live ? live.source : await loadStaged()
-  const expandedAvailable = live ? live.investorRowsAvailable : !!src._meta.expanded_investor_rows_available
-  const validationStatus: OwnershipHoldingRow['validation_status'] = expandedAvailable
-    ? 'scraped'
-    : 'missing_expanded_rows'
+  // ── Shareholding pattern → ownership_holdings + ownership_trends (per company) ─
+  const per: PerCompany[] = []
+  const allHoldings: OwnershipHoldingRow[] = []
+  const allTrends: OwnershipTrendRow[] = []
+  for (const co of COMPANIES) {
+    const live = await scrapeScreenerLive(screenerScrapeUrl(co.ticker)).catch(() => null)
+    const src: ScreenerSource = live ? live.source : await loadStaged(co.staged)
+    const expandedAvailable = live ? live.investorRowsAvailable : !!src._meta.expanded_investor_rows_available
+    const validationStatus: OwnershipHoldingRow['validation_status'] = expandedAvailable ? 'scraped' : 'missing_expanded_rows'
+    const holdings = normaliseHoldings(src, co, scrapedAt, validationStatus)
+    const trends = computeTrends(holdings)
+    allHoldings.push(...holdings)
+    allTrends.push(...trends)
+    per.push({ co, src, usingLive: !!live, expandedAvailable, holdings, trends })
+  }
 
-  const holdings = normaliseHoldings(src, scrapedAt, validationStatus)
-  const trends = computeTrends(holdings)
-
+  const distinct = (pt: OwnershipPeriodType) =>
+    [...new Set(allHoldings.filter((r) => r.period_type === pt).map((r) => r.period_label))]
   const meta: OwnershipScreenerMeta = {
     snapshot_id: 'ownership-holdings',
     description:
-      'Niva Bupa shareholding-pattern history (long format) from Screener — Investors / Shareholding Pattern. Drives Governance → Ownership Trend.',
+      'Shareholding-pattern history (long format) for listed SAHIs from Screener — Investors / Shareholding Pattern. Drives Governance → Ownership Trend. Multi-company; filter by company_id.',
     schema_version: '1.0.0',
-    company_id: COMPANY_ID,
-    company_name: COMPANY_NAME,
-    ticker: TICKER,
+    company_id: 'multi',
+    company_name: 'Listed SAHIs (Niva Bupa, Star Health)',
+    ticker: '',
     source_name: 'Screener',
     source_section: SOURCE_SECTION,
-    source_url: SCREENER_SOURCE_URL,
-    screener_company_id: SCREENER_COMPANY_ID,
+    source_url: 'https://www.screener.in',
+    screener_company_id: 0,
     dataset: 'official',
     last_updated: scrapedAt.slice(0, 10),
     last_successful_run: scrapedAt,
     scraped_at: scrapedAt,
-    classification_note: src._meta.classification_note,
-    expanded_investor_rows_available: expandedAvailable,
-    expanded_investor_rows_note: src._meta.expanded_investor_rows_note,
+    classification_note: CLASSIFICATION_NOTE,
+    expanded_investor_rows_available: per.some((p) => p.expandedAvailable),
+    expanded_investor_rows_note: EXPANDED_NOTE,
     parser_status: 'ready',
-    periods_quarterly: src.quarterly.periods,
-    periods_yearly: src.yearly.periods,
-    validation_status: validationStatus,
-    notes: usingLive
-      ? 'Captured via live Screener scrape (Playwright).'
+    periods_quarterly: distinct('quarterly'),
+    periods_yearly: distinct('yearly'),
+    validation_status: per.every((p) => p.expandedAvailable) ? 'scraped' : 'missing_expanded_rows',
+    notes: per.some((p) => p.usingLive)
+      ? 'Captured via live Screener scrape (Playwright) where available; staged source-of-record otherwise.'
       : 'Built from the staged Screener source-of-record (offline); live scrape unavailable in this environment.',
   }
 
-  await writeSnapshot('ownership-holdings.json', { _meta: meta, data: holdings })
+  await writeSnapshot('ownership-holdings.json', { _meta: meta, data: allHoldings })
   await writeSnapshot('ownership-trends.json', {
     _meta: { ...meta, snapshot_id: 'ownership-trends', description: 'Period-over-period ownership movement derived from ownership-holdings.' },
-    data: trends,
+    data: allTrends,
   })
   await appendLog('fetch-screener-shareholding.log', {
     source: 'screener_shareholding',
-    company_id: COMPANY_ID,
-    mode: usingLive ? 'live' : 'offline_staged',
-    expanded_investor_rows: expandedAvailable,
-    holdings_rows: holdings.length,
-    trend_rows: trends.length,
+    companies: COMPANIES.map((c) => c.company_id),
+    mode: per.some((p) => p.usingLive) ? 'live' : 'offline_staged',
+    holdings_rows: allHoldings.length,
+    trend_rows: allTrends.length,
   })
 
-  // ─── Trades (bulk/block) → ownership_trade_disclosures (separate dataset) ─────
+  // ── Trades (bulk/block) → ownership_trade_disclosures (separate dataset) ─────
   const namesById = await loadCompanyNames()
-  const liveTrades = await scrapeTradesLive().catch(() => null)
-  const usingLiveTrades = !!(liveTrades && liveTrades.deals.length)
-  const rawDeals: RawDeal[] = usingLiveTrades ? liveTrades!.deals : await loadFallbackDeals()
-  const tradesFound = liveTrades ? liveTrades.found : rawDeals.length > 0
-  const scraped = rawDeals.map((d) => dealToDisclosure(d, namesById[d.company_id] ?? d.company_id, scrapedAt))
-  // Add-only merge: keep existing rows, append only genuinely new ones (Task 8).
+  const fallbackDeals = await loadFallbackDeals()
+  const tradeRows: OwnershipTradeDisclosureRow[] = []
+  let anyTradesFound = false
+  let anyLiveTrades = false
+  const handled = new Set<string>()
+  for (const co of COMPANIES) {
+    handled.add(co.company_id)
+    const liveT = await scrapeTradesLive(tradesUrlOf(co.screener_id), co.company_id).catch(() => null)
+    const usingLiveT = !!(liveT && liveT.deals.length)
+    anyLiveTrades = anyLiveTrades || usingLiveT
+    const coDeals = usingLiveT ? liveT!.deals : fallbackDeals.filter((d) => d.company_id === co.company_id)
+    if ((liveT && liveT.found) || coDeals.length) anyTradesFound = true
+    for (const d of coDeals) tradeRows.push(dealToDisclosure(d, namesById[d.company_id] ?? co.company_name, scrapedAt, tradesUrlForCompany(d.company_id)))
+  }
+  // Any other listed names present in the fallback but not configured above.
+  for (const d of fallbackDeals) {
+    if (handled.has(d.company_id)) continue
+    anyTradesFound = true
+    tradeRows.push(dealToDisclosure(d, namesById[d.company_id] ?? d.company_id, scrapedAt, tradesUrlForCompany(d.company_id)))
+  }
+
+  // Add-only merge: keep existing rows, append only genuinely new ones.
   const existingDisclosures = await loadExistingDisclosures()
   const seen = new Set(existingDisclosures.map(dealKey))
   const mergedDisclosures = [...existingDisclosures]
   let addedDisclosures = 0
-  for (const r of scraped) {
+  for (const r of tradeRows) {
     const k = dealKey(r)
     if (!seen.has(k)) { seen.add(k); mergedDisclosures.push(r); addedDisclosures++ }
   }
-  const tradeValidation: TradeValidationStatus = usingLiveTrades || tradesFound ? 'scraped' : 'pending'
+  const tradeValidation: TradeValidationStatus = anyLiveTrades || anyTradesFound ? 'scraped' : 'pending'
   const tradesMeta: OwnershipTradeDisclosuresMeta = {
     snapshot_id: 'ownership-trade-disclosures',
     description:
-      'Bulk & block deal disclosures (transaction-level) aggregated by Screener → Trades; underlying source NSE / BSE. SEPARATE from ownership-holdings / ownership-trends — these are individual transactions, not the quarter-end shareholding position.',
+      'Bulk & block deal disclosures (transaction-level) aggregated by Screener → Trades; underlying source NSE / BSE. SEPARATE from ownership-holdings / ownership-trends — individual transactions, not the quarter-end shareholding position. Multi-company; filter by company_id.',
     schema_version: '1.0.0',
     source_name: 'Screener',
     source_section: TRADES_SECTION,
-    source_url: TRADES_URL,
-    screener_company_id: SCREENER_COMPANY_ID,
+    source_url: 'https://www.screener.in',
+    screener_company_id: 0,
     underlying_source: 'NSE / BSE',
     dataset: 'official',
     last_updated: scrapedAt.slice(0, 10),
     last_successful_run: scrapedAt,
     scraped_at: scrapedAt,
     parser_status: 'ready',
-    trades_section_found: tradesFound,
+    trades_section_found: anyTradesFound,
     validation_status: tradeValidation,
-    notes: usingLiveTrades
-      ? 'Captured via live Screener Trades scrape (Playwright).'
+    notes: anyLiveTrades
+      ? 'Captured via live Screener Trades scrape (Playwright) where available.'
       : 'Built from the aggregated NSE/BSE bulk & block deal disclosures that Screener Trades republishes; live Screener Trades scrape unavailable in this environment.',
   }
   await writeSnapshot('ownership-trade-disclosures.json', { _meta: tradesMeta, data: mergedDisclosures })
   await appendLog('fetch-screener-shareholding.log', {
     source: 'screener_trades',
-    mode: usingLiveTrades ? 'live' : 'offline_aggregated',
-    trades_section_found: tradesFound,
+    mode: anyLiveTrades ? 'live' : 'offline_aggregated',
+    trades_section_found: anyTradesFound,
     disclosure_rows: mergedDisclosures.length,
     added: addedDisclosures,
   })
 
-  // Niva Bupa trade summary for the validation report.
-  const nb = mergedDisclosures.filter((r) => r.company_id === COMPANY_ID)
-  const nbBulk = nb.filter((r) => r.deal_type === 'bulk')
-  const nbBlock = nb.filter((r) => r.deal_type === 'block')
-  const boughtCr = round2(nb.filter((r) => r.buyer && !r.seller).reduce((s, r) => s + (r.value_cr ?? 0), 0))
-  const soldCr = round2(nb.filter((r) => r.seller && !r.buyer).reduce((s, r) => s + (r.value_cr ?? 0), 0))
-  const netCr = round2(boughtCr - soldCr)
-
-  // ─── PART 11 validation report ──────────────────────────────────────────────
-  const groupVals = (pt: OwnershipPeriodType) => {
-    const lines: string[] = []
-    for (const g of GROUP_ORDER) {
-      const series = holdings
-        .filter((r) => r.period_type === pt && r.holder_group === g)
-        .map((r) => (g === SHAREHOLDER_ROW ? inr(r.shareholder_count) : r.holding_pct == null ? 'n/a' : `${r.holding_pct}%`))
-      lines.push(`     - ${g}: ${series.join(', ')}`)
-    }
-    return lines.join('\n')
-  }
-
-  const log = console.log
+  // ─── Validation report ───────────────────────────────────────────────────────
   log('\n══════════════════════════════════════════════════════════════════')
-  log('  SCREENER SHAREHOLDING INGESTION — VALIDATION (Niva Bupa, id 1285147)')
+  log('  SCREENER OWNERSHIP INGESTION — VALIDATION (listed SAHIs)')
   log('══════════════════════════════════════════════════════════════════')
-  log(`  Scrape mode             : ${usingLive ? 'LIVE (Playwright)' : 'OFFLINE — staged Screener source-of-record'}`)
-  log(`  1. Quarterly periods    : ${src.quarterly.periods.join(', ')}`)
-  log(`  2. Yearly periods       : ${src.yearly.periods.join(', ')}`)
-  log('  3. Quarterly group values:')
-  log(groupVals('quarterly'))
-  log('  4. Yearly group values:')
-  log(groupVals('yearly'))
-  log(`  5. Expanded investor-level rows found : ${expandedAvailable ? 'YES' : 'NO — group-level only (Investor View uses latest exchange filing; Screener named rows are login-only)'}`)
-  log(`  6. ownership_holdings rows inserted   : ${holdings.length}`)
-  log(`  7. ownership_trends rows inserted     : ${trends.length}`)
-  log('  8. Annual toggle → yearly trend       : wired (UI reads global `period`==="Annual" → yearly table)')
-  log('  9. Quarterly toggle → quarterly trend : wired (UI reads global `period`==="Quarterly" → quarterly table)')
-  log(`  10. Investor-level rows invented      : NO — investor view marked '${validationStatus}'`)
-  log('  11. Source footer                     : rendered by the module (Screener → Investors / Shareholding Pattern)')
-  log('  12. Screenshot                        : capture from the running app (npm run dev)')
-  // Spot-check the latest movement so the numbers are visible in the log.
-  for (const pt of ['quarterly', 'yearly'] as OwnershipPeriodType[]) {
-    const latest = trends.filter((t) => t.period_type === pt).slice(-PCT_GROUPS.length)
-    if (latest.length) {
-      log(`\n  Latest ${pt} movement (${latest[0].previous_period} → ${latest[0].current_period}):`)
-      for (const t of latest) {
-        log(`     - ${t.holder_group}: ${t.previous_holding_pct}% → ${t.current_holding_pct}% (${(t.change_pp ?? 0) > 0 ? '+' : ''}${t.change_pp} pp, ${t.trend_direction})`)
+  log(`  Scrape mode             : ${per.some((p) => p.usingLive) ? 'LIVE (Playwright)' : 'OFFLINE — staged Screener source-of-record'}`)
+  for (const p of per) {
+    const gv = (pt: OwnershipPeriodType) =>
+      GROUP_ORDER.map((g) => {
+        const series = p.holdings
+          .filter((r) => r.period_type === pt && r.holder_group === g)
+          .map((r) => (g === SHAREHOLDER_ROW ? inr(r.shareholder_count) : r.holding_pct == null ? 'n/a' : `${r.holding_pct}%`))
+        return `       - ${g}: ${series.join(', ')}`
+      }).join('\n')
+    log(`\n  ── ${p.co.company_name} (${p.co.ticker}, id ${p.co.screener_id}) ──`)
+    log(`    Quarterly periods : ${p.src.quarterly.periods.join(', ')}`)
+    log(`    Yearly periods    : ${p.src.yearly.periods.join(', ')}`)
+    log(`    Quarterly group values:\n${gv('quarterly')}`)
+    log(`    Yearly group values:\n${gv('yearly')}`)
+    log(`    Expanded investor rows : ${p.expandedAvailable ? 'YES' : 'NO — group-level only (Screener named rows are login-only)'}`)
+    log(`    holdings rows: ${p.holdings.length} · trend rows: ${p.trends.length}`)
+    for (const pt of ['quarterly', 'yearly'] as OwnershipPeriodType[]) {
+      const latest = p.trends.filter((t) => t.period_type === pt).slice(-PCT_GROUPS.length)
+      if (latest.length) {
+        log(`    Latest ${pt} (${latest[0].previous_period}→${latest[0].current_period}): ` +
+          latest.map((t) => `${t.holder_group} ${(t.change_pp ?? 0) > 0 ? '+' : ''}${t.change_pp}pp/${t.trend_direction}`).join(', '))
       }
     }
   }
+  log(`\n  TOTAL ownership_holdings rows : ${allHoldings.length}`)
+  log(`  TOTAL ownership_trends rows   : ${allTrends.length}`)
+  log('  Annual/Quarterly toggle       : wired (UI reads global `period`; both companies use the same view logic)')
+  log('  Investor-level rows invented  : NO')
 
   log('\n  ── BULK / BLOCK DEAL TRADES (Screener → Trades · underlying NSE / BSE) ──')
-  log(`  Trades mode               : ${usingLiveTrades ? 'LIVE (Playwright)' : 'OFFLINE — aggregated NSE/BSE disclosures (Screener republishes)'}`)
-  log(`  1. Screener Trades section found    : ${tradesFound ? 'YES' : 'NO'}`)
-  log(`  2. Bulk deal count (Niva Bupa)      : ${nbBulk.length}`)
-  log(`  3. Block deal count (Niva Bupa)     : ${nbBlock.length}${nbBlock.length === 0 ? ' (confirmed zero — not pending)' : ''}`)
-  log(`  4. Parsed bulk rows:`)
-  for (const r of nbBulk) log(`     - ${r.date} · ${r.buyer ? 'BUY ' + r.buyer : 'SELL ' + r.seller} · ${r.quantity_display} @ ₹${r.price} · ${r.value_display}`)
-  log(`  5. Parsed block rows                : ${nbBlock.length === 0 ? 'none (confirmed zero)' : ''}`)
-  for (const r of nbBlock) log(`     - ${r.date} · ${r.buyer ? 'BUY ' + r.buyer : 'SELL ' + r.seller} · ${r.value_display}`)
-  log(`  6. Total bought value (Cr)          : ₹${boughtCr}`)
-  log(`  7. Total sold value (Cr)            : ₹${soldCr}`)
-  log(`  8. Net flow (Cr)                    : ${netCr >= 0 ? '+' : '−'}₹${Math.abs(netCr)} (${netCr > 0.01 ? 'net_bought' : netCr < -0.01 ? 'net_sold' : 'neutral'})`)
-  log(`  9. Data Pending when zero?          : NO — validation_status='${tradeValidation}', so 0 block deals shows "0 found", not Data Pending`)
-  log('  10. Source footer separation        : Shareholding Pattern (trend) vs Trades (bulk/block) shown as two distinct source lines')
-  log(`  ownership_trade_disclosures rows    : ${mergedDisclosures.length} (+${addedDisclosures} new this run)`)
+  log(`  Trades mode               : ${anyLiveTrades ? 'LIVE (Playwright)' : 'OFFLINE — aggregated NSE/BSE disclosures (Screener republishes)'}`)
+  log(`  Screener Trades section found : ${anyTradesFound ? 'YES' : 'NO'}`)
+  for (const co of COMPANIES) {
+    const d = mergedDisclosures.filter((r) => r.company_id === co.company_id)
+    const bulkN = d.filter((r) => r.deal_type === 'bulk').length
+    const blockN = d.filter((r) => r.deal_type === 'block').length
+    const bought = round2(d.filter((r) => r.buyer && !r.seller).reduce((s, r) => s + (r.value_cr ?? 0), 0))
+    const sold = round2(d.filter((r) => r.seller && !r.buyer).reduce((s, r) => s + (r.value_cr ?? 0), 0))
+    const dates = [...new Set(d.map((r) => r.date))]
+    const net = round2(bought - sold)
+    log(`    ${co.ticker}: bulk ${bulkN}, block ${blockN}${blockN === 0 ? ' (confirmed zero — "0 found", not pending)' : ''} · bought ₹${bought} Cr · sold ₹${sold} Cr · net ${net >= 0 ? '+' : '−'}₹${Math.abs(net)} Cr · ${dates.length} date(s) → ${dates.length > 1 ? 'timeline chart' : 'single-date cluster'} · src ${tradesUrlForCompany(co.company_id)}`)
+  }
+  log(`  Data Pending when zero?       : NO — validation_status='${tradeValidation}'`)
+  log('  Source footer separation      : Shareholding Pattern (trend) vs Trades (bulk/block) — two distinct source lines')
+  log(`  ownership_trade_disclosures   : ${mergedDisclosures.length} rows (+${addedDisclosures} new this run)`)
   log('══════════════════════════════════════════════════════════════════\n')
 }
 

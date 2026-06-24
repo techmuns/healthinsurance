@@ -362,6 +362,8 @@ export interface OwnershipHoldingRow {
   ticker?: string
   source_name: 'Screener'
   source_section: string
+  /** Per-company Screener page URL (symbol form). */
+  source_url: string
   period_type: OwnershipPeriodType
   /** Screener's own period label, e.g. "Dec 2024" / "Mar 2025". */
   period_label: string

@@ -675,7 +675,7 @@ function ShareholderStrip({ view, selectedIdx }: { view: OwnershipTrendView; sel
 
 // Compact source pill + click popover that opens DOWNWARD from the pill — so it
 // never floats over the chart/donut interaction area.
-function HeroSource({ sourceUrl, scrapedAt, lastUpdated }: { sourceUrl: string; scrapedAt: string | null; lastUpdated: string | null }) {
+function HeroSource({ label, sourceUrl, scrapedAt, lastUpdated }: { label: string; sourceUrl: string; scrapedAt: string | null; lastUpdated: string | null }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="relative mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-soft-border/70 pt-2.5">
@@ -694,7 +694,7 @@ function HeroSource({ sourceUrl, scrapedAt, lastUpdated }: { sourceUrl: string; 
       <span className="text-[10px] text-ink-secondary">Updated {lastUpdated ?? '—'}</span>
       {open && (
         <div className="absolute left-0 top-full z-40 mt-1.5 w-72 rounded-xl border border-soft-border bg-card p-3 text-left shadow-card">
-          <p className="text-[11px] font-semibold leading-snug text-navy-deep">Screener — Niva Bupa (NIVABUPA) · Investors / Shareholding Pattern</p>
+          <p className="text-[11px] font-semibold leading-snug text-navy-deep">{label}</p>
           <a href={sourceUrl} target="_blank" rel="noreferrer" className="mt-1.5 block break-all text-[10px] leading-snug text-muted-blue hover:underline">
             {sourceUrl}
           </a>
@@ -834,7 +834,12 @@ function OwnershipTrendHero({ view }: { view: OwnershipTrendView }) {
       </div>
 
       {/* Compact source pill (popover opens downward, off the chart) */}
-      <HeroSource sourceUrl={view.meta.source_url} scrapedAt={view.meta.scraped_at} lastUpdated={lastUpdated} />
+      <HeroSource
+        label={`Screener — ${view.companyName || 'Listed SAHI'}${view.ticker ? ` (${view.ticker})` : ''} · Investors / Shareholding Pattern`}
+        sourceUrl={view.sourceUrl}
+        scrapedAt={view.meta.scraped_at}
+        lastUpdated={lastUpdated}
+      />
     </div>
   )
 }
