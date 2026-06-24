@@ -65,7 +65,23 @@ function persist(key: string, value: unknown) {
   try { sessionStorage.setItem(key, JSON.stringify(value)) } catch { /* ignore */ }
 }
 
-type ResizeDir = 'se' | 'e' | 's'
+// Every edge and corner. Each letter is an edge that moves; the opposite edge
+// stays anchored, so dragging the LEFT edge widens to the left, the TOP edge
+// shortens from the top, etc. — the normal window-resize behaviour.
+type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+
+/** Resize by moving only the dragged edge(s); the opposite edge is anchored.
+ *  Enforces the min size against the anchored edge and keeps every edge inside
+ *  the viewport. */
+function resizeBox(s: Box, mode: ResizeDir, dx: number, dy: number): Box {
+  const m = 8, W = vpW(), H = vpH()
+  let left = s.x, top = s.y, right = s.x + s.w, bottom = s.y + s.h
+  if (mode.includes('e')) right = Math.min(W - m, Math.max(s.x + WIN_MIN_W, right + dx))
+  if (mode.includes('w')) left = Math.max(m, Math.min(right - WIN_MIN_W, left + dx))
+  if (mode.includes('s')) bottom = Math.min(H - m, Math.max(s.y + WIN_MIN_H, bottom + dy))
+  if (mode.includes('n')) top = Math.max(m, Math.min(bottom - WIN_MIN_H, top + dy))
+  return { x: left, y: top, w: right - left, h: bottom - top }
+}
 
 function useFloatingWindow() {
   const [box, setBox] = useState<Box>(() => (typeof window === 'undefined' ? { x: 40, y: 40, w: 540, h: 600 } : loadBox()))
@@ -95,10 +111,10 @@ function useFloatingWindow() {
     const onMove = (ev: PointerEvent) => {
       const dx = ev.clientX - start.px, dy = ev.clientY - start.py
       const next = mode === 'move'
-        ? { ...start, x: start.x + dx, y: start.y + dy }
-        : { ...start, w: start.w + (mode === 'e' || mode === 'se' ? dx : 0), h: start.h + (mode === 's' || mode === 'se' ? dy : 0) }
-      latest = clampBox(next)
-      el.style.left = `${latest.x}px`; el.style.top = `${latest.y}px`; el.style.width = `${latest.w}px`; el.style.height = `${latest.h}px`
+        ? clampBox({ x: start.x + dx, y: start.y + dy, w: start.w, h: start.h })
+        : resizeBox(start, mode, dx, dy)
+      latest = next
+      el.style.left = `${next.x}px`; el.style.top = `${next.y}px`; el.style.width = `${next.w}px`; el.style.height = `${next.h}px`
     }
     const onUp = () => {
       window.removeEventListener('pointermove', onMove)
@@ -153,7 +169,7 @@ function VerifierWindow({
   return createPortal(
     <aside
       ref={win.ref}
-      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-ivory shadow-lift outline-none animate-fade-in"
+      className="fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-ivory shadow-lift outline-none"
       style={{ left: box.x, top: box.y, width: box.w, height: box.h }}
       role="dialog"
       aria-label={title}
@@ -168,7 +184,7 @@ function VerifierWindow({
           <GripVertical className="h-4 w-4 shrink-0 text-ink-secondary/45" />
           <h3 className="truncate font-display text-[15.5px] text-navy-deep">{title}</h3>
         </div>
-        <div className="flex shrink-0 items-center gap-0.5" onPointerDown={(e) => e.stopPropagation()}>
+        <div className="relative z-40 flex shrink-0 items-center gap-0.5" onPointerDown={(e) => e.stopPropagation()}>
           <button type="button" onClick={onMinimize} aria-label="Minimise" title="Minimise" className="rounded-full p-1.5 text-ink-secondary transition-colors hover:bg-ice hover:text-navy-primary">
             <Minus className="h-4 w-4" />
           </button>
@@ -184,14 +200,19 @@ function VerifierWindow({
       {/* Content fills the window; the children own their internal scrolling. */}
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
 
-      {/* Resize handles — z-20 keeps them above the sticky table header so they're
-          always grabbable; generous hit areas with a hover cue, and the corner is
-          an always-visible grip (the obvious place to drag-resize from). */}
-      <div onPointerDown={win.onResizePointerDown('e')} className="absolute right-0 top-12 bottom-7 z-20 w-2.5 cursor-ew-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
-      <div onPointerDown={win.onResizePointerDown('s')} className="absolute bottom-0 left-7 right-7 z-20 h-2.5 cursor-ns-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      {/* Resize from any edge or corner — like a normal window. z-30 keeps the
+          handles above the table (the header buttons sit at z-40, so the corners
+          never block them). Edges show a hover cue; the bottom-right has a grip. */}
+      <div onPointerDown={win.onResizePointerDown('n')} className="absolute left-10 right-10 top-0 z-30 h-2 cursor-ns-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('s')} className="absolute bottom-0 left-10 right-10 z-30 h-2 cursor-ns-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('e')} className="absolute bottom-9 right-0 top-12 z-30 w-2 cursor-ew-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('w')} className="absolute bottom-9 left-0 top-12 z-30 w-2 cursor-ew-resize transition-colors hover:bg-navy-primary/10" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('nw')} className="absolute left-0 top-0 z-30 h-4 w-4 cursor-nwse-resize" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('ne')} className="absolute right-0 top-0 z-30 h-4 w-4 cursor-nesw-resize" style={{ touchAction: 'none' }} aria-hidden />
+      <div onPointerDown={win.onResizePointerDown('sw')} className="absolute bottom-0 left-0 z-30 h-4 w-4 cursor-nesw-resize" style={{ touchAction: 'none' }} aria-hidden />
       <div
         onPointerDown={win.onResizePointerDown('se')}
-        className="absolute bottom-0 right-0 z-20 grid h-6 w-6 cursor-nwse-resize place-items-center rounded-tl-lg bg-card/80 text-ink-secondary/60 transition-colors hover:bg-navy-primary/10 hover:text-navy-primary"
+        className="absolute bottom-0 right-0 z-30 grid h-5 w-5 cursor-nwse-resize place-items-center rounded-tl-lg bg-card/80 text-ink-secondary/60 transition-colors hover:bg-navy-primary/10 hover:text-navy-primary"
         style={{ touchAction: 'none' }}
         title="Drag to resize"
       >
