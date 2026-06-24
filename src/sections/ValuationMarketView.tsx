@@ -171,7 +171,7 @@ export function ValuationMarketView() {
                     <tr className="border-b border-soft-border bg-[#EAF0FA] text-[10px] uppercase tracking-wide text-ink-secondary">
                       <th className="rounded-l-lg py-2 pl-2 pr-2 font-semibold">Company</th>
                       <th className="py-2 pr-2 font-semibold">Status</th>
-                      <th className="py-2 pr-2 text-right font-semibold">GWP (FY26)</th>
+                      <th className="py-2 pr-2 text-right font-semibold">GWP (latest FY)</th>
                       <th className="py-2 pr-2 text-right font-semibold">P/GWP</th>
                       <th className="py-2 pr-2 text-right font-semibold">Equity value</th>
                       <th className="py-2 pr-2 font-semibold">Source</th>
@@ -185,10 +185,12 @@ export function ValuationMarketView() {
                         <tr key={r.companyId} className={`border-b border-[#F2F4F8] transition-colors last:border-0 ${r.companyId === FOCAL_VALUATION_ID ? 'bg-soft-blue/40' : 'hover:bg-soft-blue/25'}`}>
                           <td className="py-2 pr-2 font-semibold text-navy-deep">{r.companyName}{r.companyId === FOCAL_VALUATION_ID && <span className="ml-1 text-[9px] font-bold uppercase text-champagne-deep">·focal</span>}</td>
                           <td className="py-2 pr-2"><span className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${unlisted ? 'border border-dashed border-[#C9CFD9] text-ink-secondary' : 'bg-soft-blue text-navy-primary'}`}>{unlisted ? 'Unlisted' : 'Listed'}</span></td>
-                          <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.gwp != null ? fmtCr(r.gwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
+                          <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.gwp != null ? (
+                            <span className="inline-flex items-baseline gap-1">{fmtCr(r.gwp)}{r.gwpFy && <span className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary/70">{r.gwpFy}</span>}</span>
+                          ) : <span className="italic text-ink-secondary">n/a</span>}</td>
                           <td className="py-2 pr-2 text-right tabular-nums text-navy-deep">{r.pGwp != null ? xMult(r.pGwp) : <span className="italic text-ink-secondary">n/a</span>}</td>
                           <td className="py-2 pr-2 text-right tabular-nums">{r.marketCap != null ? <span className="text-navy-deep">{fmtCr(r.marketCap)}</span> : <span className="italic text-ink-secondary">{unlisted ? 'No public price' : 'Source pending'}</span>}</td>
-                          <td className="py-2 pr-2"><OpenSource id={r.sourceId} /></td>
+                          <td className="py-2 pr-2"><OpenSource id={r.sourceId} url={r.sourceUrl ?? undefined} title={r.sourceName ?? undefined} /></td>
                           <td className="py-2"><ValPill c={r.confidence} /></td>
                         </tr>
                       )

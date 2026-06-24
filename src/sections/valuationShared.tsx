@@ -55,7 +55,7 @@ export function ValPill({ c, className = '' }: { c: ValConfidence; className?: s
 
 /** Small "Open source" button — one click opens the exact report / filing.
  *  `url` (dynamic Moneycontrol rows) takes precedence over the curated `id`. */
-export function OpenSource({ id, url }: { id: string; url?: string }) {
+export function OpenSource({ id, url, title: providedTitle }: { id: string; url?: string; title?: string }) {
   const s = valSrc(id)
   const href = url ?? s?.source_url
   if (!href) {
@@ -66,7 +66,7 @@ export function OpenSource({ id, url }: { id: string; url?: string }) {
       </span>
     )
   }
-  const title = url ? 'Moneycontrol' : s?.report_title ?? 'Source'
+  const title = providedTitle ?? (url ? 'Moneycontrol' : s?.report_title ?? 'Source')
   return (
     <a
       href={href}

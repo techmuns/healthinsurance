@@ -13,6 +13,7 @@
 
 import streetSnapshot from '@/data/snapshots/street-analyst-snapshot.json'
 import valuationFundamentals from '@/data/snapshots/valuation-fundamentals-snapshot.json'
+import insurerAnnual from '@/data/snapshots/insurer-annual-snapshot.json'
 import type { StreetAnalystSnapshot } from '@/data/snapshots/_schemas'
 
 // Quarterly-refreshed reported financials (GWP / PAT / growth / retail share) for
@@ -38,6 +39,34 @@ function latestFundamentals(companyId: string): FundamentalsRow | null {
 function fundamentalsFor(companyId: string, fy: string): FundamentalsRow | null {
   return FUND_ROWS.find((r) => r.company_id === companyId && r.fiscal_year === fy) ?? null
 }
+
+// The unlisted SAHIs have no market price (so no multiple), but their gross
+// written premium IS filed and already drives the rest of the dashboard via the
+// per-insurer annual snapshot. We read their latest full-year GWP from there so
+// the peer table can show real scale — labelled with its own fiscal year (it
+// trails the listed names by a year until they file) — instead of a blank. Same
+// gross-written-premium basis as the listed rows; never a market-derived number.
+interface AnnualGwpRow {
+  company_id: string
+  fiscal_year: string
+  gwp: number | null
+  growth_yoy?: number | null
+  provenance?: { source_name?: string; source_url?: string; confidence?: string }
+}
+const ANNUAL_ROWS = ((insurerAnnual as { data?: AnnualGwpRow[] }).data ?? [])
+/** Latest full-year row that actually carries a GWP for a company, or null. */
+function latestAnnualGwp(companyId: string): AnnualGwpRow | null {
+  return ANNUAL_ROWS
+    .filter((r) => r.company_id === companyId && r.gwp != null)
+    .sort((a, b) => _fyNum(b.fiscal_year) - _fyNum(a.fiscal_year))[0] ?? null
+}
+/** Provenance URLs come straight from the snapshot; tidy Windows path artefacts
+ *  (stray backslashes, raw spaces) into a clickable URL. */
+function cleanUrl(u: string | undefined): string | null {
+  if (!u) return null
+  return u.replace(/\\/g, '/').replace(/ /g, '%20')
+}
+
 const r2 = (v: number) => Math.round(v * 100) / 100
 const r1 = (v: number) => Math.round(v * 10) / 10
 
@@ -384,12 +413,17 @@ export interface PeerValuationRow {
   companyName: string
   listingStatus: Listing
   marketCap: number | null // ₹ Cr (listed = market; unlisted = null → pending)
-  gwp: number | null // ₹ Cr, FY26
+  gwp: number | null // ₹ Cr — gross written premium
+  gwpFy: string | null // the fiscal year `gwp` represents (honest per-row label)
   pGwp: number | null
   pe: number | null
   growth: number | null // GWP YoY %
   confidence: ValConfidence
   sourceId: string
+  /** Direct source link when the figure comes from the annual snapshot (unlisted
+   *  GWP) rather than the curated valuation registry; null = use `sourceId`. */
+  sourceUrl?: string | null
+  sourceName?: string | null
 }
 
 // Listed peer rows are built from the same quarterly fundamentals snapshot, with
@@ -415,6 +449,7 @@ function listedPeerRow(
     listingStatus: 'Listed',
     marketCap: mcap,
     gwp,
+    gwpFy: f?.fiscal_year ?? 'FY26',
     pGwp: gwp > 0 ? r2(mcap / gwp) : seedPGwp,
     pe: pat != null && pat > 0 ? r1(mcap / pat) : seedPe,
     growth: f?.gwp_growth_yoy ?? seedGrowth,
@@ -423,12 +458,38 @@ function listedPeerRow(
   }
 }
 
+// Unlisted peer rows: real gross written premium (latest filed full year) from
+// the annual snapshot, with its own honest fiscal-year label and source link.
+// No market price → no P/GWP, no equity value (those stay blank, "no public
+// price"). If a company has no GWP filed yet, the row stays fully pending.
+function unlistedPeerRow(companyId: string, companyName: string): PeerValuationRow {
+  const a = latestAnnualGwp(companyId)
+  return {
+    companyId,
+    companyName,
+    listingStatus: 'Unlisted',
+    marketCap: null,
+    gwp: a?.gwp ?? null,
+    gwpFy: a?.fiscal_year ?? null,
+    pGwp: null,
+    pe: null,
+    growth: a?.growth_yoy ?? null,
+    // GWP is sourced (a filing) but the equity valuation is still unavailable —
+    // 'secondary' marks the shown figure as credibly sourced; the missing market
+    // valuation is conveyed by the blank P/GWP & "no public price" equity cell.
+    confidence: a?.gwp != null ? 'secondary' : 'pending',
+    sourceId: 'unlisted-pending',
+    sourceUrl: cleanUrl(a?.provenance?.source_url),
+    sourceName: a?.provenance?.source_name ?? null,
+  }
+}
+
 export const peerValuation: PeerValuationRow[] = [
   listedPeerRow('niva-bupa', 'Niva Bupa', 15576, 9432.9, 27.4, 1.65, 42.6, 'niva-pgwp'),
   listedPeerRow('star-health', 'Star Health', 30356, 20369, 16, 1.49, 33.3, 'star-pgwp'),
-  { companyId: 'care-health', companyName: 'Care Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
-  { companyId: 'aditya-birla', companyName: 'Aditya Birla Health', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
-  { companyId: 'manipalcigna', companyName: 'ManipalCigna', listingStatus: 'Unlisted', marketCap: null, gwp: null, pGwp: null, pe: null, growth: null, confidence: 'pending', sourceId: 'unlisted-pending' },
+  unlistedPeerRow('care-health', 'Care Health'),
+  unlistedPeerRow('aditya-birla', 'Aditya Birla Health'),
+  unlistedPeerRow('manipalcigna', 'ManipalCigna'),
 ]
 
 export const UNLISTED_METHODOLOGY =
