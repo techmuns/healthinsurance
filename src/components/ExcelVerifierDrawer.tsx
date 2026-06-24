@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import {
   UploadCloud, FileSpreadsheet, X, CheckCircle2, AlertTriangle, Scale, Download,
-  ExternalLink, RotateCcw, Info, Loader2, FileDown,
+  ExternalLink, RotateCcw, Info, Loader2, FileDown, MousePointerClick, ArrowRight,
 } from 'lucide-react'
 import { Drawer } from './Drawer'
 import { classifySource, isLinkable, sourceHref } from '@/lib/sourceHealth'
@@ -9,20 +9,22 @@ import {
   verifyWorkbook, downloadVerifyReport, VERIFY_META,
   type VerifyResult, type VerifyRow, type VerifyStatus,
 } from '@/lib/excelVerify'
+import { useVerify, type ListFilter } from '@/state/verifyState'
 
 // ---------------------------------------------------------------------------
 //  Excel Upload Verifier — a dedicated tool (separate from "Add a source").
 //  Neha uploads her workbook; the dashboard reads it in the browser and checks
 //  every cell against its OWN audited value, then lets her export the report.
-//  Colour psychology: green = match, amber = source/basis differs, red =
+//  Clicking a result row jumps to that exact cell in the Data Audit grid (via
+//  the shared verify state); hovering a row previews the uploaded-vs-dashboard
+//  detail. Colour psychology: green = match, amber = source/basis differs, red =
 //  mismatch, grey = missing. Compact, Bloomberg-style surface.
 // ---------------------------------------------------------------------------
 
 const ACCEPT = '.xlsx,.xls,.csv'
 
 // Filter buckets shown as chips. "missing" folds the two missing directions.
-type FilterKey = 'all' | 'mismatch' | 'source_basis' | 'missing' | 'matched'
-const inBucket = (status: VerifyStatus, key: FilterKey): boolean =>
+const inBucket = (status: VerifyStatus, key: ListFilter): boolean =>
   key === 'all' ? true : key === 'missing' ? status.startsWith('missing') : status === key
 
 // ── Upload zone (first screen) ───────────────────────────────────────────────
@@ -175,9 +177,11 @@ function RowDetail({ row, onClose }: { row: VerifyRow; onClose: () => void }) {
 }
 
 // ── Results view ─────────────────────────────────────────────────────────────
-function Results({ result, onReset }: { result: VerifyResult; onReset: () => void }) {
-  const [filter, setFilter] = useState<FilterKey>('all')
-  const [selected, setSelected] = useState<VerifyRow | null>(null)
+function Results({ result }: { result: VerifyResult }) {
+  const v = useVerify()
+  const filter = v.listFilter
+  const setFilter = v.setListFilter
+  const [hovered, setHovered] = useState<VerifyRow | null>(null)
   const s = result.summary
 
   const rows = useMemo(
@@ -186,7 +190,7 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
   )
   const missingSheets = result.sheetMatch.filter((sm) => !sm.matchedTo)
 
-  const chips: { key: FilterKey; label: string; count: number; dot?: string }[] = [
+  const chips: { key: ListFilter; label: string; count: number; dot?: string }[] = [
     { key: 'all', label: 'All', count: s.comparable },
     { key: 'mismatch', label: 'Mismatched', count: s.mismatch, dot: VERIFY_META.mismatch.dot },
     { key: 'source_basis', label: 'Source / basis', count: s.sourceBasis, dot: VERIFY_META.source_basis.dot },
@@ -210,7 +214,7 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
           <button type="button" onClick={() => downloadVerifyReport(result, 'xlsx')} className="inline-flex items-center gap-1.5 rounded-full border border-soft-border bg-card px-3 py-1.5 text-[12px] font-medium text-ink-secondary shadow-soft transition-colors hover:border-navy-primary/30 hover:text-navy-primary">
             <FileDown className="h-3.5 w-3.5" /> Excel
           </button>
-          <button type="button" onClick={onReset} className="inline-flex items-center gap-1.5 rounded-full bg-navy-primary px-3 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-all hover:opacity-90">
+          <button type="button" onClick={() => v.setResult(null)} className="inline-flex items-center gap-1.5 rounded-full bg-navy-primary px-3 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-all hover:opacity-90">
             <RotateCcw className="h-3.5 w-3.5" /> New file
           </button>
         </div>
@@ -245,6 +249,12 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
         </div>
       )}
 
+      {/* Jump hint — the row's primary action is now "click → go to the cell". */}
+      <div className="flex items-center gap-1.5 rounded-lg bg-soft-blue/40 px-3 py-1.5 text-[11.5px] text-navy-primary">
+        <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
+        <span><span className="font-semibold">Click any row</span> to jump to that exact cell in the Data Audit grid — hover to preview the values.</span>
+      </div>
+
       {/* Filter chips */}
       <div className="flex flex-wrap items-center gap-1.5">
         {chips.map((c) => {
@@ -264,29 +274,31 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
         })}
       </div>
 
-      {/* Table + (optional) detail */}
-      <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
+      {/* Table + (optional) hover preview. Click a row → jump to the audit cell. */}
+      <div className={hovered ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
         <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '54vh' }}>
           <table className="w-full border-separate" style={{ borderSpacing: 0 }}>
             <thead className="sticky top-0 z-10">
               <tr className="bg-[#F3F6FB]">
-                {['Cell', 'Line item', 'Your file', 'Dashboard', 'Status'].map((h, i) => (
-                  <th key={h} className={`border-b border-soft-border px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${i >= 2 && i <= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
+                {['Cell', 'Line item', 'Your file', 'Dashboard', 'Status', ''].map((h, i) => (
+                  <th key={h || 'go'} className={`border-b border-soft-border px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ${i >= 2 && i <= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
-                <tr><td colSpan={5} className="px-3 py-10 text-center text-[12px] text-ink-secondary">No cells in this view.</td></tr>
+                <tr><td colSpan={6} className="px-3 py-10 text-center text-[12px] text-ink-secondary">No cells in this view.</td></tr>
               ) : rows.map((r) => {
                 const m = VERIFY_META[r.status]
-                const isSel = selected?.id === r.id
+                const isHover = hovered?.id === r.id
                 return (
                   <tr
                     key={r.id}
-                    onClick={() => setSelected(r)}
+                    onClick={() => v.navigateToCell(r)}
+                    onMouseEnter={() => setHovered(r)}
+                    title="Click to open this cell in the Data Audit grid"
                     className={`group cursor-pointer ${m.tone === 'green' ? 'hover:bg-emerald-soft/30' : m.tone === 'amber' ? 'bg-gold-soft/25 hover:bg-gold-soft/40' : m.tone === 'red' ? 'bg-coral-soft/25 hover:bg-coral-soft/40' : 'hover:bg-ice/60'}`}
-                    style={isSel ? { boxShadow: `inset 2px 0 0 ${m.dot}` } : undefined}
+                    style={isHover ? { boxShadow: `inset 2px 0 0 ${m.dot}` } : undefined}
                   >
                     <td className="border-b border-soft-border/60 px-3 py-1.5 align-top">
                       <span className="font-mono text-[10.5px] text-ink-secondary">{r.cellRef}</span>
@@ -299,15 +311,16 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
                     <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] font-semibold text-navy-deep">{r.uploadedDisplay}</td>
                     <td className="border-b border-soft-border/60 px-3 py-1.5 text-right align-top tabular-nums text-[11.5px] text-ink-primary">{r.dashboardDisplay}</td>
                     <td className="border-b border-soft-border/60 px-3 py-1.5 align-top"><StatusPill status={r.status} /></td>
+                    <td className="border-b border-soft-border/60 px-2 py-1.5 align-middle text-ink-secondary/50 transition-colors group-hover:text-navy-primary"><ArrowRight className="h-3.5 w-3.5" /></td>
                   </tr>
                 )
               })}
             </tbody>
           </table>
         </div>
-        {selected && (
+        {hovered && (
           <div className="lg:sticky lg:top-2 lg:self-start">
-            <RowDetail row={selected} onClose={() => setSelected(null)} />
+            <RowDetail row={hovered} onClose={() => setHovered(null)} />
           </div>
         )}
       </div>
@@ -317,7 +330,7 @@ function Results({ result, onReset }: { result: VerifyResult; onReset: () => voi
 
 // ── Drawer shell ─────────────────────────────────────────────────────────────
 export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [result, setResult] = useState<VerifyResult | null>(null)
+  const v = useVerify()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -328,18 +341,17 @@ export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose:
       const res = verifyWorkbook(buf, file.name)
       if (res.summary.comparable === 0) {
         setError('Couldn’t match any cells. Make sure this is the dashboard’s portfolio-review workbook (its tabs are matched by name).')
-        setResult(null)
+        v.setResult(null)
       } else {
-        setResult(res)
+        v.setResult(res)
       }
     } catch (e) {
       setError(e instanceof Error ? `Couldn’t read this file: ${e.message}` : 'Couldn’t read this file.')
-      setResult(null)
+      v.setResult(null)
     } finally {
       setBusy(false)
     }
   }
-  const reset = () => { setResult(null); setError(null) }
 
   return (
     <Drawer
@@ -349,8 +361,8 @@ export function ExcelVerifierDrawer({ open, onClose }: { open: boolean; onClose:
       title="Excel Upload Verifier"
       subtitle="Check an uploaded workbook against the dashboard, cell by cell"
     >
-      {result ? (
-        <Results result={result} onReset={reset} />
+      {v.result ? (
+        <Results result={v.result} />
       ) : (
         <div className="space-y-4">
           <UploadZone onPick={onPick} busy={busy} />

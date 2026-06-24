@@ -1,6 +1,7 @@
-import { useState, lazy, Suspense, Component, type ReactNode } from 'react'
+import { lazy, Suspense, Component, type ReactNode } from 'react'
 import { FileCheck2, FileSpreadsheet, TriangleAlert, RotateCcw, Loader2 } from 'lucide-react'
 import { Drawer } from './Drawer'
+import { useVerify } from '@/state/verifyState'
 
 // ---------------------------------------------------------------------------
 //  ExcelVerifierLauncher — the entry point to the Excel Upload Verifier, placed
@@ -59,8 +60,9 @@ function VerifierLoading({ onClose }: { onClose: () => void }) {
 }
 
 export function ExcelVerifierLauncher() {
-  const [open, setOpen] = useState(false)
-  const close = () => setOpen(false)
+  const v = useVerify()
+  const close = v.closeVerifier
+  const active = !!v.result
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl2 border border-soft-border bg-gradient-to-r from-soft-blue/40 to-card p-4 shadow-soft">
       <div className="flex items-start gap-2.5">
@@ -68,21 +70,25 @@ export function ExcelVerifierLauncher() {
           <FileSpreadsheet className="h-4 w-4" />
         </span>
         <div className="leading-tight">
-          <p className="font-display text-[14px] text-navy-deep">Check your workbook against this audit</p>
+          <p className="font-display text-[14px] text-navy-deep">
+            {active ? 'Verification active — review the highlighted cells below' : 'Check your workbook against this audit'}
+          </p>
           <p className="mt-0.5 text-[11.5px] leading-relaxed text-ink-secondary">
-            Upload your Excel and it’s compared cell-by-cell to these figures — matches, mismatches and source/basis differences flagged, with a report to export.
+            {active
+              ? 'Reopen the verifier to browse the full result list, switch files, or export the report. Only flagged cells are highlighted in the grid.'
+              : 'Upload your Excel and it’s compared cell-by-cell to these figures — matches, mismatches and source/basis differences flagged, with a report to export.'}
           </p>
         </div>
       </div>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={v.openVerifier}
         className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-navy-primary px-4 py-2 text-[12.5px] font-semibold text-white shadow-soft transition-all hover:bg-navy-deep"
         title="Upload an Excel file and check it cell-by-cell against this audit"
       >
-        <FileCheck2 className="h-3.5 w-3.5" /> Verify Excel
+        <FileCheck2 className="h-3.5 w-3.5" /> {active ? 'Reopen verifier' : 'Verify Excel'}
       </button>
-      {open && (
+      {v.open && (
         <VerifierBoundary onClose={close}>
           <Suspense fallback={<VerifierLoading onClose={close} />}>
             <ExcelVerifierDrawer open onClose={close} />

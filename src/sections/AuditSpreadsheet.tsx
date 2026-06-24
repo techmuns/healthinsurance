@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X, ArrowLeft, FileCheck2 } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
   type AuditModel, type AuditGroup, type AuditCell, type QaColor,
@@ -14,6 +14,8 @@ import { AnalystCoverage } from '@/sections/AnalystCoverage'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
 import { CompanyFilter, type CompanyOption } from '@/components/CompanyFilter'
+import { useVerifyOptional } from '@/state/verifyState'
+import type { VerifyResult, VerifyRow, VerifyStatus } from '@/lib/excelVerify'
 
 // ---------------------------------------------------------------------------
 //  Audit · Spreadsheet view — mirrors the source Excel template tab-for-tab and
@@ -34,6 +36,41 @@ const QA: Record<QaColor, { cell: string; ring: string; text: string; dot: strin
   info: { cell: 'bg-soft-blue', ring: 'rgba(61,125,214,0.20)', text: 'text-navy-primary', dot: '#3D7DD6', label: 'Calculated' },
 }
 const LEGEND: QaColor[] = ['green', 'yellow', 'info', 'red', 'grey']
+
+// ── Verification overlay (Excel Upload Verifier) ─────────────────────────────
+// When the grid is in verification view, matched cells go neutral and only
+// problem cells are tinted by their verify status — distinct, soft premium tones.
+// Counts/classification are entirely the verifier's; this is styling only.
+const V_OVERLAY: Record<VerifyStatus, { cell: string; text: string; dot: string; ring: string; label: string }> = {
+  matched:           { cell: 'bg-white',         text: 'text-ink-primary',  dot: '#2F855A', ring: 'transparent',             label: 'Matched' },
+  mismatch:          { cell: 'bg-coral-soft',    text: 'text-coral',        dot: '#C75D54', ring: 'rgba(199,93,84,0.55)',   label: 'Mismatched' },
+  source_basis:      { cell: 'bg-gold-soft',     text: 'text-gold',         dot: '#B7791F', ring: 'rgba(183,121,31,0.5)',   label: 'Source / basis differs' },
+  missing_upload:    { cell: 'bg-soft-blue/70',  text: 'text-navy-primary', dot: '#5B7FB0', ring: 'rgba(91,127,176,0.55)',  label: 'Blank in your file' },
+  missing_dashboard: { cell: 'bg-lavender-soft', text: 'text-lavender',     dot: '#7A6CA6', ring: 'rgba(122,108,166,0.65)', label: 'Missing in dashboard' },
+}
+// Worst-first, with matched last — drives the verification legend/filter order.
+const V_ORDER: VerifyStatus[] = ['mismatch', 'source_basis', 'missing_upload', 'missing_dashboard', 'matched']
+
+/** Verification props threaded into the grid (built once in AuditSpreadsheet). */
+interface VerifyGridProps {
+  view: boolean
+  map: Map<string, VerifyRow>
+  filter: VerifyStatus | 'all'
+  targetCellId: string | null
+  pulse: boolean
+  onBackToVerifier: () => void
+}
+
+/** Count for a verify status from the summary (drives the legend chips). */
+function vCount(s: VerifyResult['summary'], k: VerifyStatus): number {
+  switch (k) {
+    case 'matched': return s.matched
+    case 'mismatch': return s.mismatch
+    case 'source_basis': return s.sourceBasis
+    case 'missing_upload': return s.missingUpload
+    case 'missing_dashboard': return s.missingDashboard
+  }
+}
 
 // ── Source pipelines ─────────────────────────────────────────────────────────
 // Every template cell is fed by one of these acquisition pipelines. When a cell
@@ -239,7 +276,7 @@ function DetailField({ label, children }: { label: string; children: React.React
   )
 }
 
-function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void }) {
+function CellDetail({ cell, onClose, verifyRow, onBackToVerifier }: { cell: AuditCell; onClose: () => void; verifyRow?: VerifyRow; onBackToVerifier?: () => void }) {
   const meta = STATUS_META[cell.status]
   const q = QA[meta.color]
   const fetched = isFetched(cell)
@@ -284,6 +321,38 @@ function CellDetail({ cell, onClose }: { cell: AuditCell; onClose: () => void })
       </div>
 
       <div className="space-y-3 px-4 py-3">
+        {/* Verification block — uploaded vs dashboard, when arrived via the verifier. */}
+        {verifyRow && (
+          <div className="rounded-lg border border-soft-border bg-ice/40 p-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: V_OVERLAY[verifyRow.status].dot }}>
+                <span className="h-2 w-2 rounded-full" style={{ background: V_OVERLAY[verifyRow.status].dot }} />
+                {V_OVERLAY[verifyRow.status].label}
+              </span>
+              {verifyRow.diffPct != null && (
+                <span className="text-[11px] font-semibold tabular-nums" style={{ color: V_OVERLAY[verifyRow.status].dot }}>
+                  {verifyRow.diffPct > 0 ? '+' : ''}{(verifyRow.diffPct * 100).toFixed(1)}% vs dashboard
+                </span>
+              )}
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <div className="rounded-md border border-soft-border bg-white px-2.5 py-1.5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Your file</p>
+                <p className="mt-0.5 text-[12.5px] font-semibold tabular-nums text-navy-deep">{verifyRow.uploadedDisplay}</p>
+              </div>
+              <div className="rounded-md border border-soft-border bg-white px-2.5 py-1.5">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.08em] text-ink-secondary">Dashboard</p>
+                <p className="mt-0.5 text-[12.5px] font-semibold tabular-nums text-navy-deep">{verifyRow.dashboardDisplay}</p>
+              </div>
+            </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-ink-secondary">{verifyRow.reason}</p>
+            {onBackToVerifier && (
+              <button type="button" onClick={onBackToVerifier} className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-navy-primary/30 bg-soft-blue px-3 py-1 text-[11px] font-semibold text-navy-primary transition-colors hover:border-navy-primary/50">
+                <ArrowLeft className="h-3 w-3" /> Back to Verifier row
+              </button>
+            )}
+          </div>
+        )}
         {/* Source pipeline + source row are meaningless for a not-applicable cell
             (the insurer didn't exist) — show only the reason, never a source tag. */}
         {!notApplicable && (<>
@@ -377,7 +446,7 @@ function viewColumns(columns: GridCol[], view: AuditView, entityByColumn: boolea
   return ents.flatMap((e) => byE.get(e)!.slice().sort((a, b) => r(a) - r(b)))
 }
 
-function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView }) {
+function SheetGrid({ grid, raw, selected, onSelect, view, verify }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView; verify?: VerifyGridProps }) {
   const { rows, entityByColumn } = grid
   const [dragKey, setDragKey] = useState<string | null>(null)
   const [overKey, setOverKey] = useState<string | null>(null)
@@ -523,6 +592,38 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                   {columns.map((col) => {
                     const cell = r.byCol.get(col.col)
                     if (!cell) return <td key={col.col} className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'}`} style={dividerStyle(col)} />
+                    const isTarget = verify?.targetCellId === cell.id
+                    // ── Verification overlay cell: matched → neutral; only issues tinted ──
+                    if (verify?.view) {
+                      const vrow = verify.map.get(cell.id)
+                      const ov = vrow ? V_OVERLAY[vrow.status] : null
+                      const isIssue = !!vrow && vrow.status !== 'matched'
+                      const dimmed = verify.filter !== 'all' && !isTarget && (!vrow || vrow.status !== verify.filter)
+                      const isPulsing = isTarget && verify.pulse
+                      const isSelV = selected?.id === cell.id
+                      const valTxt = cellDisplay(cell, raw)
+                      const ring = (isPulsing || isTarget || isSelV)
+                        ? { boxShadow: 'inset 0 0 0 2px #1E4079' }
+                        : isIssue && ov ? { boxShadow: `inset 0 0 0 1px ${ov.ring}` } : undefined
+                      return (
+                        <td key={col.col} className="border-b border-r border-soft-border/60 p-0" style={dividerStyle(col)}>
+                          <button
+                            type="button"
+                            data-cell-id={cell.id}
+                            onClick={() => onSelect(cell)}
+                            title={vrow ? `${cell.metricLabel} · ${cell.period} — ${V_OVERLAY[vrow.status].label}` : `${cell.metricLabel} · ${cell.period}`}
+                            className={`relative flex h-full min-h-[34px] w-full items-center justify-end px-2 py-1 text-right tabular-nums transition-all ${isIssue && ov ? ov.cell : 'bg-white'} ${dimmed ? 'opacity-30' : ''} hover:brightness-95`}
+                            style={ring}
+                          >
+                            {isPulsing && <span className="pointer-events-none absolute inset-0 animate-ping rounded-sm bg-navy-primary/10" />}
+                            {isIssue && ov && <span className="absolute left-1 top-1 h-1.5 w-1.5 rounded-full" style={{ background: ov.dot }} />}
+                            <span className={`text-[11.5px] ${isIssue && ov ? `font-semibold ${ov.text}` : valTxt ? 'font-medium text-ink-primary/75' : 'text-ink-secondary/30'}`}>
+                              {valTxt || (vrow?.status === 'missing_dashboard' ? '—' : '·')}
+                            </span>
+                          </button>
+                        </td>
+                      )
+                    }
                     const meta = STATUS_META[cell.status]
                     const gap = deckGap(cell)
                     const fetched = isFetched(cell)
@@ -553,10 +654,11 @@ function SheetGrid({ grid, raw, selected, onSelect, view }: { grid: Grid; raw: b
                       <td key={col.col} className="border-b border-r border-soft-border/60 p-0" style={dividerStyle(col)}>
                         <button
                           type="button"
+                          data-cell-id={cell.id}
                           onClick={() => onSelect(cell)}
                           title={title}
                           className={`relative flex h-full min-h-[34px] w-full items-center ${fetched ? 'justify-end text-right' : 'justify-center'} px-2 py-1 tabular-nums transition-all ${q.cell} hover:brightness-95`}
-                          style={isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
+                          style={isTarget ? { boxShadow: 'inset 0 0 0 2px #1E4079' } : isSel ? { boxShadow: `inset 0 0 0 2px ${q.dot}` } : undefined}
                         >
                           {isFormula && <FunctionSquare className="absolute left-1 top-1 h-2.5 w-2.5 opacity-40" />}
                           {fetched ? (
@@ -620,7 +722,7 @@ function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => v
 // Keyed by sheet + company in the page, so selection/drag state reset cleanly
 // when the sheet or company filter changes. The saved "Customize View" is keyed
 // by sheet only, so it survives a company-filter change and reloads on return.
-function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany }: {
+function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify }: {
   group: AuditGroup
   fullColumns: GridCol[]
   companyLabel: string
@@ -628,6 +730,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
   raw: boolean
   onRawChange: (v: boolean) => void
   onClearCompany: () => void
+  verify?: VerifyGridProps
 }) {
   const [selected, setSelected] = useState<AuditCell | null>(null)
   const grid = useMemo(() => buildGrid(group), [group])
@@ -703,13 +806,15 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
               )
             })}
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
-            {LEGEND.map((c) => (
-              <span key={c} className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: QA[c].dot, opacity: 0.85 }} />{QA[c].label}
-              </span>
-            ))}
-          </div>
+          {!verify?.view && (
+            <div className="flex flex-wrap items-center gap-2 text-[10px] text-ink-secondary">
+              {LEGEND.map((c) => (
+                <span key={c} className="inline-flex items-center gap-1">
+                  <span className="h-2.5 w-2.5 rounded-[3px]" style={{ background: QA[c].dot, opacity: 0.85 }} />{QA[c].label}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -758,10 +863,15 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
 
       {/* Grid + (optional) detail */}
       <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]' : ''}>
-        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} view={view} />
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={setSelected} view={view} verify={verify} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
-            <CellDetail cell={selected} onClose={() => setSelected(null)} />
+            <CellDetail
+              cell={selected}
+              onClose={() => setSelected(null)}
+              verifyRow={verify?.view ? verify.map.get(selected.id) : undefined}
+              onBackToVerifier={verify?.view ? verify.onBackToVerifier : undefined}
+            />
           </div>
         )}
       </div>
@@ -776,11 +886,42 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   const [raw, setRaw] = useState(false)
   const [company, setCompany] = useState('all')
 
+  // ── Excel verification overlay (from the Verify Excel tool) ────────────────
+  const vctx = useVerifyOptional()
+  const verifyResult = vctx?.result ?? null
+  const verifyView = !!vctx?.verifyView && !!verifyResult
+  const verifyTarget = vctx?.target ?? null
+  const [pulsing, setPulsing] = useState(false)
+  const [navNote, setNavNote] = useState<string | null>(null)
+  const verifyMap = useMemo(() => {
+    const m = new Map<string, VerifyRow>()
+    if (verifyResult) for (const r of verifyResult.rows) m.set(r.id, r)
+    return m
+  }, [verifyResult])
+
   // Arriving from an insight's "Go to Data Audit": pre-select that company so its
   // rows are isolated for verification (an invalid id falls back to "all" below).
   useEffect(() => {
     if (focus?.company) setCompany(focus.company)
   }, [focus])
+
+  // Verifier row → exact cell: switch to that tab, clear the company filter so the
+  // cell can't be hidden, then scroll it into view and pulse it for ~1.8s.
+  useEffect(() => {
+    if (!verifyTarget) return
+    setActive(verifyTarget.sheet)
+    setCompany('all')
+    const grp = sheets.find((g) => g.sheet === verifyTarget.sheet)
+    const custom = grp?.role === 'market_quote' || grp?.role === 'analyst_coverage'
+    setNavNote(custom ? 'Exact cell mapping unavailable in this section’s custom view — showing the nearest audit section.' : null)
+    setPulsing(true)
+    const scrollT = setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-cell-id="${verifyTarget.cellId.replace(/(["\\])/g, '\\$1')}"]`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+    }, 80)
+    const pulseT = setTimeout(() => setPulsing(false), 1900)
+    return () => { clearTimeout(scrollT); clearTimeout(pulseT) }
+  }, [verifyTarget?.nonce]) // eslint react-hooks rule not configured; nonce-keyed by design
 
   const group = sheets.find((g) => g.sheet === active) ?? sheets[0]
 
@@ -821,10 +962,69 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
   // and chip labels for the Customize View, stable across company-filter changes.
   const fullColumns = useMemo(() => (group ? buildGrid(group).columns : []), [group])
 
+  const verifyGrid: VerifyGridProps | undefined = verifyResult
+    ? {
+        view: verifyView,
+        map: verifyMap,
+        filter: vctx?.gridFilter ?? 'all',
+        targetCellId: verifyTarget && verifyTarget.sheet === active ? verifyTarget.cellId : null,
+        pulse: pulsing && !!verifyTarget && verifyTarget.sheet === active,
+        onBackToVerifier: () => vctx?.openVerifier(),
+      }
+    : undefined
+
   if (!sheets.length) return null
 
   return (
     <div className="space-y-2.5">
+      {/* Excel verification status bar — counts + filter + exit/clear. Only the
+          flagged statuses pop in the grid; matched cells go neutral. */}
+      {verifyResult && (verifyView ? (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-[#C9D6EC] bg-gradient-to-r from-[#EEF3FB] to-card px-3 py-2 shadow-soft">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.1em] text-navy-primary">
+            <FileCheck2 className="h-3.5 w-3.5" /> Excel verification
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {(['all', ...V_ORDER] as (VerifyStatus | 'all')[]).map((k) => {
+              const on = (vctx?.gridFilter ?? 'all') === k
+              const count = k === 'all' ? verifyResult.summary.comparable : vCount(verifyResult.summary, k)
+              const dot = k === 'all' ? '#27457E' : V_OVERLAY[k].dot
+              const label = k === 'all' ? 'All' : V_OVERLAY[k].label
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => vctx?.setGridFilter(on && k !== 'all' ? 'all' : k)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors ${on ? 'border-navy-primary/40 bg-navy-primary/[0.06] text-navy-deep' : 'border-soft-border bg-card text-ink-secondary hover:border-navy-primary/30'}`}
+                >
+                  <span className="h-2 w-2 rounded-full" style={{ background: dot }} />
+                  {label}
+                  <span className="rounded-full bg-ice px-1.5 text-[9.5px] font-semibold tabular-nums text-ink-secondary">{count.toLocaleString('en-IN')}</span>
+                </button>
+              )
+            })}
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <button type="button" onClick={() => vctx?.exitVerifyView()} className="rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-navy-primary/30 hover:text-navy-primary">Exit view</button>
+            <button type="button" onClick={() => vctx?.clearVerification()} className="rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:border-coral/40 hover:text-coral">Clear</button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-soft-border bg-ice/40 px-3 py-2 text-[11.5px] text-ink-secondary">
+          <FileCheck2 className="h-3.5 w-3.5 shrink-0 text-navy-primary" />
+          <span>Verification results are loaded.</span>
+          <button type="button" onClick={() => vctx?.setVerifyView(true)} className="rounded-full border border-navy-primary/30 bg-soft-blue px-2.5 py-0.5 text-[11px] font-semibold text-navy-primary transition-colors hover:border-navy-primary/50">Show verification view</button>
+          <button type="button" onClick={() => vctx?.clearVerification()} className="rounded-full border border-soft-border bg-white px-2.5 py-0.5 text-[11px] font-medium text-ink-secondary transition-colors hover:border-coral/40 hover:text-coral">Clear</button>
+        </div>
+      ))}
+
+      {/* Nearest-section note when an exact cell can't be addressed. */}
+      {navNote && verifyView && (
+        <div className="flex items-center gap-1.5 rounded-lg border border-[#E4CE93] bg-[#FBF6EA] px-3 py-1.5 text-[11px] text-champagne-deep">
+          <Info className="h-3.5 w-3.5 shrink-0" /> {navNote}
+        </div>
+      )}
+
       {/* Verifying-from-insight banner — names the exact company / metric / period /
           value to check; the company is already filtered in. Honest about whether
           this is an exact cell or the closest row. */}
@@ -919,6 +1119,7 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
             raw={raw}
             onRawChange={setRaw}
             onClearCompany={() => setCompany('all')}
+            verify={verifyGrid}
           />
         )}
       </SectionErrorBoundary>
