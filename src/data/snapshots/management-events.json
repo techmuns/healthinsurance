@@ -4,8 +4,8 @@
     "description": "Management / governance events (appointments, resignations, board & KMP changes) for the SAHI health insurers — web-sourced via the muns agent, each item source-linked. Medium confidence; verify against the underlying filing.",
     "schema_version": "1.1.0",
     "dataset": "ai_generated",
-    "last_updated": "2026-06-23",
-    "last_successful_run": "2026-06-23T09:51:43.123Z",
+    "last_updated": "2026-06-24",
+    "last_successful_run": "2026-06-24T09:39:29.725Z",
     "upstream_sources": [
       "muns_agent_web"
     ],
@@ -16,147 +16,51 @@
   "data": [
     {
       "company_id": "niva-bupa",
-      "event_date": "2026-01-01",
-      "event_type": "kmp_change",
-      "person_name": "Christopher Wei",
-      "designation": "CEO, Bupa Global, India & UK",
-      "event_summary": "Bupa disclosed that Christopher Wei became CEO of Bupa Global, India & UK from 1 Jan 2026, a material parent-level leadership change relevant to Niva Bupa.",
-      "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/board-of-directors.aspx",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "care-health",
-      "event_date": "2025-10-01",
-      "event_type": "resignation",
-      "person_name": "Anuj Gulati",
-      "designation": "CEO",
-      "event_summary": "Care Health CEO Anuj Gulati exited the insurer, according to a corporate-news report covering his departure.",
-      "source_name": "whalesbook.com",
-      "source_url": "https://www.whalesbook.com/corporate-news/English/insurance/Care-Health-CEO-Anuj-Gulati-Exits-Insurer-Ranks-Second-in-India/69ee4ae95a43f6b807be425b",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "niva-bupa",
-      "event_date": "2025-08-29",
+      "event_date": "2026-06-16",
       "event_type": "appointment",
       "person_name": "Ashwani Bhatia",
-      "designation": "Chairman; Non-Executive Independent Director",
-      "event_summary": "Niva Bupa announced board-level changes including the appointment of Ashwani Bhatia as Chairman after Milind Barve’s resignation.",
-      "source_name": "hindi.cnbctv18.com",
-      "source_url": "https://hindi.cnbctv18.com/share-market/niva-bupa-announces-board-level-changes-ashwani-bhatia-appointed-chairman-after-milind-barve-resignation-179967.htm",
+      "designation": "Non-Executive Independent Director",
+      "event_summary": "Niva Bupa appointed Ashwani Bhatia as a Non-Executive Independent Director.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/niva-bupa-appoints-ashwani-bhatia-as-non-executive-independent-director/42026112",
       "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "niva-bupa",
-      "event_date": "2025-08-29",
-      "event_type": "resignation",
-      "person_name": "Milind Barve",
-      "designation": "Chairman",
-      "event_summary": "Niva Bupa announced the resignation of Milind Barve as Chairman as part of the board changes disclosed on 29 Aug 2025.",
-      "source_name": "hindi.cnbctv18.com",
-      "source_url": "https://hindi.cnbctv18.com/share-market/niva-bupa-announces-board-level-changes-ashwani-bhatia-appointed-chairman-after-milind-barve-resignation-179967.htm",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
+      "fetched_at": "2026-06-24T09:39:29.725Z"
     },
     {
       "company_id": "star-health",
-      "event_date": "2025-07-31",
-      "event_type": "kmp_change",
-      "person_name": "Chandrashekhar Dwivedi",
-      "designation": "Appointed Actuary",
-      "event_summary": "Star Health’s investor shareholder-information page lists Chandrashekhar Dwivedi as Appointed Actuary, indicating the current actuarial KMP set-up.",
-      "source_name": "investor.starhealth.in",
-      "source_url": "https://investor.starhealth.in/shareholder-information",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "star-health",
-      "event_date": "2025-07-31",
-      "event_type": "kmp_change",
-      "person_name": "Kapil Punwani",
-      "designation": "Chief Risk Officer",
-      "event_summary": "Star Health’s investor shareholder-information page lists Kapil Punwani as Chief Risk Officer in the current management structure.",
-      "source_name": "investor.starhealth.in",
-      "source_url": "https://investor.starhealth.in/shareholder-information",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "star-health",
-      "event_date": "2025-07-31",
-      "event_type": "kmp_change",
+      "event_date": "2025-10-28",
+      "event_type": "reappointment",
       "person_name": "Jayashree Sethuraman",
-      "designation": "Company Secretary",
-      "event_summary": "Star Health’s investor shareholder-information page lists Jayashree Sethuraman as Company Secretary in the current governance structure.",
-      "source_name": "investor.starhealth.in",
-      "source_url": "https://investor.starhealth.in/shareholder-information",
+      "designation": "Whole-time Director",
+      "event_summary": "The company’s Oct-2025 integrated results filing states Jayashree Sethuraman was re-appointed as Whole-time Director for a further term.",
+      "source_name": "nsearchives.nseindia.com",
+      "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_28102025184231_Integratedresults28102025.pdf",
       "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
+      "fetched_at": "2026-06-24T09:39:29.725Z"
     },
     {
       "company_id": "star-health",
       "event_date": "2025-07-29",
       "event_type": "reappointment",
-      "person_name": "Jayashree Sethuraman",
-      "designation": "Company Secretary",
-      "event_summary": "Star Health’s 2025 postal ballot notice sought shareholder approval on matters tied to senior management/governance, and the company continues to identify Jayashree Sethuraman as Company Secretary in investor disclosures.",
+      "person_name": "Anand Roy",
+      "designation": "Managing Director & CEO",
+      "event_summary": "Shareholders were asked to approve the re-appointment of Anand Roy as MD & CEO for FY2025-26.",
       "source_name": "nsearchives.nseindia.com",
       "source_url": "https://nsearchives.nseindia.com/corporate/STARHEALTH_31072025125336_SEPBNotice290725.pdf",
       "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
+      "fetched_at": "2026-06-24T09:39:29.725Z"
     },
     {
       "company_id": "manipalcigna",
-      "event_date": "2025-01-13",
-      "event_type": "appointment",
-      "person_name": "Joydeep Saha",
-      "designation": "Managing Director & CEO",
-      "event_summary": "ManipalCigna announced Joydeep Saha as MD & CEO, a key leadership transition for the standalone health insurer.",
-      "source_name": "adgully.com",
-      "source_url": "https://www.adgully.com/post/4890/manipalcigna-names-joydeep-saha-as-md-ceo",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "manipalcigna",
-      "event_date": "2025-01-13",
-      "event_type": "kmp_change",
-      "person_name": "Joydeep Saha",
-      "designation": "Appointed Actuary / Chief Officer – Actuarial, Product, Reinsurance, Group Underwriting & Analytics (previous role)",
-      "event_summary": "ManipalCigna’s management pages note Joydeep Saha previously served as Appointed Actuary and chief officer before becoming MD & CEO, implying a consequential KMP reshuffle.",
-      "source_name": "manipalcigna.com",
-      "source_url": "https://www.manipalcigna.com/management-team",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "aditya-birla",
-      "event_date": "2024-12-09",
-      "event_type": "kmp_change",
-      "person_name": "Mayank Bathwal",
-      "designation": "CEO",
-      "event_summary": "Economic Times identified Mayank Bathwal as CEO of Aditya Birla Health Insurance in Dec 2024 coverage; no newer sourced change was found in the retrieved results.",
-      "source_name": "m.economictimes.com",
-      "source_url": "https://m.economictimes.com/wealth/insure/health-insurance/why-more-competition-may-benefit-policyholders-aditya-birla-health-insurance-ceo-mayank-bathwal/articleshow/126088316.cms",
-      "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
-    },
-    {
-      "company_id": "manipalcigna",
-      "event_date": "2024-07-23",
+      "event_date": "2025-07-09",
       "event_type": "appointment",
       "person_name": "Anjan Kumar Ganguly",
       "designation": "Chief Financial Officer",
-      "event_summary": "ManipalCigna appointed Anjan Kumar Ganguly as CFO, according to the company announcement reported by Impact.",
-      "source_name": "impactonnet.com",
-      "source_url": "https://www.impactonnet.com/more-from-impact/manipalcigna-health-insurance-appoints-anjan-kumar-ganguly-as-cfo-14856.html",
+      "event_summary": "ManipalCigna appointed Anjan Kumar Ganguly as Chief Financial Officer.",
+      "source_name": "bfsi.economictimes.indiatimes.com",
+      "source_url": "https://bfsi.economictimes.indiatimes.com/articles/anjan-kumar-ganguly-joins-manipalcigna-health-insurance-as-cfo/131631191",
       "confidence": "medium",
-      "fetched_at": "2026-06-23T09:51:43.123Z"
+      "fetched_at": "2026-06-24T09:39:29.725Z"
     }
   ]
 }
