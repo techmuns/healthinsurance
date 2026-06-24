@@ -48,8 +48,11 @@ import type {
 const COMPANY_ID = 'niva-bupa' // dashboard join key (ticker NIVABUPA)
 const TICKER = 'NIVABUPA'
 const COMPANY_NAME = 'Niva Bupa Health Insurance Company Ltd'
-const SCREENER_COMPANY_ID = 1285147
-const SCREENER_URL = `https://www.screener.in/company/${SCREENER_COMPANY_ID}/`
+const SCREENER_COMPANY_ID = 1285147 // numeric reference only; the public URL uses the NSE symbol
+// Screener's public company page is keyed by the NSE symbol — the numeric
+// /company/<id>/ form 404s, so all links use the symbol form.
+const SCREENER_URL = 'https://www.screener.in/company/NIVABUPA/'
+const SCREENER_SOURCE_URL = 'https://www.screener.in/company/NIVABUPA/#shareholding'
 const SOURCE_SECTION = 'Investors / Shareholding Pattern'
 const STAGED_FILE = resolve(RAW_ROOT, 'screener', 'nivabupa-shareholding-history.json')
 
@@ -423,7 +426,7 @@ async function run(): Promise<void> {
     ticker: TICKER,
     source_name: 'Screener',
     source_section: SOURCE_SECTION,
-    source_url: SCREENER_URL,
+    source_url: SCREENER_SOURCE_URL,
     screener_company_id: SCREENER_COMPANY_ID,
     dataset: 'official',
     last_updated: scrapedAt.slice(0, 10),

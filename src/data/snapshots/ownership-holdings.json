@@ -8,12 +8,12 @@
     "ticker": "NIVABUPA",
     "source_name": "Screener",
     "source_section": "Investors / Shareholding Pattern",
-    "source_url": "https://www.screener.in/company/1285147/",
+    "source_url": "https://www.screener.in/company/NIVABUPA/#shareholding",
     "screener_company_id": 1285147,
     "dataset": "official",
     "last_updated": "2026-06-24",
-    "last_successful_run": "2026-06-24T08:25:34.731Z",
-    "scraped_at": "2026-06-24T08:25:34.731Z",
+    "last_successful_run": "2026-06-24T08:58:28.607Z",
+    "scraped_at": "2026-06-24T08:58:28.607Z",
     "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
     "expanded_investor_rows_available": false,
     "expanded_investor_rows_note": "Screener exposes individual entity names when a shareholding line-item (Promoters / FIIs / DIIs / Public) is clicked, but those expanded rows require an authenticated Screener session and interactive expansion. They were not exposed during this capture, so only group-level rows are recorded. No investor-level data was invented; the named-holder breakdown comes from the authoritative exchange filing (shareholding-pattern-snapshot) for the latest period only.",
@@ -52,7 +52,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -74,7 +74,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -96,7 +96,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -118,7 +118,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -140,7 +140,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -162,7 +162,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -184,7 +184,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -206,7 +206,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -228,7 +228,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -250,7 +250,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -272,7 +272,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -294,7 +294,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -316,7 +316,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -338,7 +338,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -360,7 +360,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -382,7 +382,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -404,7 +404,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -426,7 +426,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -448,7 +448,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -470,7 +470,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -492,7 +492,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -514,7 +514,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -536,7 +536,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -558,7 +558,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -580,7 +580,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -602,7 +602,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -624,7 +624,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -646,7 +646,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -668,7 +668,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -690,7 +690,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -712,7 +712,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -734,7 +734,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -756,7 +756,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -778,7 +778,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -800,7 +800,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -822,7 +822,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Promoters",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -844,7 +844,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "FIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -866,7 +866,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "DIIs",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -888,7 +888,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "Public",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     },
@@ -910,7 +910,7 @@
       "is_expanded_investor_row": false,
       "raw_label": "No. of Shareholders",
       "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
-      "scraped_at": "2026-06-24T08:25:34.731Z",
+      "scraped_at": "2026-06-24T08:58:28.607Z",
       "source_confidence": "screener_public_page",
       "validation_status": "missing_expanded_rows"
     }

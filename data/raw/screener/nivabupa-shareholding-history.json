@@ -6,7 +6,7 @@
     "screener_company_id": 1285147,
     "source_name": "Screener",
     "source_section": "Investors / Shareholding Pattern",
-    "source_url": "https://www.screener.in/company/1285147/",
+    "source_url": "https://www.screener.in/company/NIVABUPA/#shareholding",
     "classification_note": "Classifications might have changed from Sep 2022 onwards. The new XBRL format added more details to the shareholding pattern from that point on.",
     "expanded_investor_rows_available": false,
     "expanded_investor_rows_note": "Screener exposes individual entity names when a shareholding line-item (Promoters / FIIs / DIIs / Public) is clicked, but those expanded rows require an authenticated Screener session and interactive expansion. They were not exposed during this capture, so only group-level rows are recorded. No investor-level data was invented; the named-holder breakdown comes from the authoritative exchange filing (shareholding-pattern-snapshot) for the latest period only.",

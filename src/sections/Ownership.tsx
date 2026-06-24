@@ -591,7 +591,7 @@ function OwnershipTrendHero({ view, scrapedAt }: { view: OwnershipTrendView; scr
           period={view.latest?.fiscal}
           confidence="high"
           provenance={{
-            source_name: 'Screener — Investors / Shareholding Pattern (Niva Bupa, company id 1285147)',
+            source_name: 'Screener — Niva Bupa (NIVABUPA) · Investors / Shareholding Pattern',
             source_url: view.meta.source_url,
             fetched_at: scrapedAt,
           }}
