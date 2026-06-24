@@ -151,7 +151,7 @@ export function DataAuditPane({ focus }: { focus?: AuditFocus | null }) {
   return <AuditLoadingCard progress={progress} />
 }
 
-// ── Calm failure state ───────────────────────────────────────────────────────
+// ── Calm failure state ─────────────────────────────────────────────────────
 // Only shown on a genuine failure (chunk fetch / index build). Reassuring, not
 // alarming — a quiet retry, with the technical detail tucked away for an
 // engineer. Never appears during normal loading.

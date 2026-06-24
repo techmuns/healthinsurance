@@ -62,7 +62,7 @@ export function AuditLoadingCard({ progress }: AuditLoadingCardProps) {
           Extracted Data Audit
         </p>
 
-        {/* ── Progress ring ─────────────────────────────────────────────── */}
+        {/* ── Progress ring ────────────────────────────────────────────── */}
         <div className="relative mx-auto mt-5 h-[132px] w-[132px]">
           {/* Soft halo behind the ring. */}
           <div
