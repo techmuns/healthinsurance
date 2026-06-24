@@ -3,7 +3,7 @@ import { FileSpreadsheet } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 import { ExcelVerifierLauncher } from '@/components/ExcelVerifierLauncher'
-import { VerifyProvider, useVerify } from '@/state/verifyState'
+import { useVerify } from '@/state/verifyState'
 import type { AuditFocus } from '@/insights/sourceMap'
 
 // ---------------------------------------------------------------------------
@@ -45,11 +45,9 @@ function AuditBody({ focus }: { focus?: AuditFocus | null }) {
 }
 
 export function ExtractedDataAudit({ focus }: { focus?: AuditFocus | null }) {
-  return (
-    <VerifyProvider>
-      <AuditBody focus={focus} />
-    </VerifyProvider>
-  )
+  // VerifyProvider is mounted at the app level (App.tsx) so an uploaded Excel
+  // survives navigating between sections — this section just consumes it.
+  return <AuditBody focus={focus} />
 }
 
 /**

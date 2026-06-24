@@ -2,6 +2,7 @@ import { useEffect, useState, type ComponentType } from 'react'
 import { Users, Share2, Gauge, Scale, Activity, Landmark, Newspaper, ArrowLeft, type LucideIcon } from 'lucide-react'
 import type { AuditFocus, NavTarget } from '@/insights/sourceMap'
 import { FilterProvider, useFilters } from '@/state/filters'
+import { VerifyProvider } from '@/state/verifyState'
 import { DEFAULT_RANGE } from '@/lib/dateRange'
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary'
 import { SectionTransition } from '@/components/SectionTransition'
@@ -266,6 +267,9 @@ export default function App() {
 
   return (
     <FilterProvider>
+      {/* Verification state lives at the app level so an uploaded Excel survives
+          moving between sections — leaving Data Audit no longer discards it. */}
+      <VerifyProvider>
       <div className="flex h-screen overflow-hidden">
         {/* Lean collapsible left navigation — app-level (the two pages). */}
         <Sidebar
@@ -349,6 +353,7 @@ export default function App() {
           </button>
         )}
       </div>
+      </VerifyProvider>
     </FilterProvider>
   )
 }
