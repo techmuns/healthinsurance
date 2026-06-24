@@ -15,6 +15,8 @@ import { companyShortName } from '@/lib/companyColors'
 import { LISTED_INSURERS } from '@/lib/listedInsurers'
 import { useAuditView } from '@/lib/auditView'
 import { CustomizeBar, type TrayChip } from '@/components/CustomizeBar'
+import { VerifyRowHighlight } from '@/components/VerifyRowHighlight'
+import type { VerifyRow } from '@/lib/excelVerify'
 
 // ---------------------------------------------------------------------------
 //  Historical Stock Movement — the dashboard mirror of the workbook's
@@ -151,9 +153,11 @@ const DAILY_HIDEABLE: { key: string; label: string }[] = [
 export function HistoricalStockMovement({
   companyFilter = 'all',
   onClearCompany,
+  verifyRow = null,
 }: {
   companyFilter?: string
   onClearCompany?: () => void
+  verifyRow?: VerifyRow | null
 } = {}) {
   const [gran, setGran] = useState<Granularity>('month')
   const view = useAuditView('historical-stock', DAILY_HIDEABLE.map((c) => c.key))
@@ -257,6 +261,7 @@ export function HistoricalStockMovement({
 
   return (
     <div className="space-y-4">
+      <VerifyRowHighlight row={verifyRow} />
       {/* ── Header: story + provenance + KPI rail + daily chart ──────────────── */}
       <div className="rounded-xl2 border border-soft-border bg-card p-4 shadow-soft">
         <div className="flex flex-wrap items-start justify-between gap-3">

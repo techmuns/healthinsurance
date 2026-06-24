@@ -979,6 +979,15 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
       }
     : undefined
 
+  // The custom sheets (Historical Stock Movement, Analyst Coverage) aren't a cell
+  // grid, so a clicked verifier row can't pulse an exact cell there. Instead we
+  // hand the matched row to the renderer, which shows an honest highlight banner
+  // (the value you clicked, your-file vs dashboard) — never a faked cell anchor.
+  const customVerifyRow: VerifyRow | null =
+    verifyResult && verifyView && verifyTarget?.sheet === active
+      ? verifyMap.get(verifyTarget.cellId) ?? null
+      : null
+
   if (!sheets.length) return null
 
   return (
@@ -1108,13 +1117,13 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
           // The Historical Stock Movement sheet is a transposed, date-by-row series
           // (Close / Total Qty / Deliverable Qty / % Delivered) the generic grid
           // can't represent — it gets a dedicated, workbook-faithful renderer.
-          <HistoricalStockMovement companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} />
+          <HistoricalStockMovement companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} verifyRow={customVerifyRow} />
         ) : group.role === 'analyst_coverage' ? (
           // Analyst coverage is a record list — each row a dated broker note with
           // nine attributes, not a period pivot — so it also gets a dedicated,
           // workbook-faithful renderer (Company/Broker/Date/Reco/CMP/Price/Target/
           // Upside×2, in company blocks closed by Average rows).
-          <AnalystCoverage key={effectiveCompany} group={group} companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} />
+          <AnalystCoverage key={effectiveCompany} group={group} companyFilter={effectiveCompany} onClearCompany={() => { setCompany('all'); setSelected(null) }} verifyRow={customVerifyRow} />
         ) : (
           <GridView
             key={`${group.sheet}::${effectiveCompany}`}
