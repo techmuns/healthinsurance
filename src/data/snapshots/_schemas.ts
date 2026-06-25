@@ -500,6 +500,13 @@ export interface OwnershipTradeDisclosureRow {
   /** Raw deal-type label exactly as the source printed it (e.g. "Bulk Deal",
    *  "Block Deal", "Large Deal") — kept for provenance, never shown as a number. */
   source_deal_label?: string
+  /** Human-readable source path for provenance, e.g.
+   *  "Screener → Niva Bupa → Investors / Shareholding / Trades modal → Block Deals tab". */
+  source_path?: string
+  /** Which tab/section of the source produced this row ("Bulk Deals" | "Block Deals" |
+   *  "Insider Trades" | "SAST"). Drives classification: a row read from the Block
+   *  Deals tab is `block` even if the row text never repeats the word "block". */
+  source_tab?: string
   /** Every source that independently reported this same deal — populated at
    *  read-time when Screener + Moneycontrol rows are merged + de-duped. */
   sources?: TradeSourceName[]

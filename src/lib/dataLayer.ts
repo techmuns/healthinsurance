@@ -618,8 +618,8 @@ export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
   ]
 
   const headerLabel = fallbackUsed
-    ? 'bulk / block deals aggregated from Moneycontrol & exchange feeds (daily agent) and Screener Trades · underlying NSE / BSE'
-    : 'large trades aggregated by Screener Trades · underlying NSE / BSE'
+    ? 'bulk / block deals aggregated from the Screener Trades modal, Moneycontrol & exchange feeds · underlying NSE / BSE'
+    : 'bulk / block deals from the Screener Trades modal · underlying NSE / BSE'
 
   // Zero is only "confirmed" once every configured source has resolved.
   const allSourcesChecked = scrState !== 'pending' && mcState !== 'pending' && exState !== 'pending'

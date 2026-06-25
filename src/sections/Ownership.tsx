@@ -176,6 +176,14 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
   const segScreenerCount = segDeals.filter((d) => (d.sources ?? [d.source_name]).includes('Screener')).length
   const segFallbackCount = segDeals.filter(fromFallback).length
   const fallbackFilledGap = segFallbackCount > 0 && segScreenerCount === 0
+  // Per-TAB source status — each chip recounts for the ACTIVE segment, so the Block
+  // Deals tab reads "Screener Trades · 4 deals" while a source with nothing in this
+  // tab reads "no records" (and a blocked source stays "blocked", never a false 0).
+  const segSources = view.sources.map((s) => {
+    const c = segDeals.filter((d) => (d.sources ?? [d.source_name]).includes(s.name)).length
+    const state = s.state === 'ok' || s.state === 'no_records' ? (c > 0 ? 'ok' : 'no_records') : s.state
+    return { ...s, count: c, state }
+  })
   // Per-tab summary (bought / sold / net / parties / largest) — same logic as the
   // section summary, scoped to the active segment.
   const segSummary = summarizeTradeDisclosures(segDeals)
@@ -237,7 +245,7 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
 
       {/* Per-source status — Screener Trades + Moneycontrol Stock Deals — so a
           Screener zero is never mistaken for "no deals exist". */}
-      <SourceStatusChips sources={view.sources} />
+      <SourceStatusChips sources={segSources} />
 
       {/* Segment tabs — bulk and block, each with its trade count, never mixed. */}
       <div className="mb-2.5 inline-flex rounded-lg border border-soft-border bg-ice/40 p-0.5">

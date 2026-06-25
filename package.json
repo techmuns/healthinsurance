@@ -25,6 +25,7 @@
     "ingest:bulk-block-deals": "tsx scripts/ingest/bulk-block-deals-agent.ts",
     "ingest:moneycontrol-deals": "tsx scripts/ingest/ingest-moneycontrol-stock-deals.ts",
     "verify:moneycontrol-deals": "tsx scripts/ingest/verify-moneycontrol-stock-deals.ts",
+    "verify:niva-block-deals": "tsx --tsconfig tsconfig.app.json scripts/ingest/verify-niva-block-deals.ts",
     "ingest:management-events": "tsx scripts/ingest/management-events-agent.ts",
     "ingest:shareholding": "tsx scripts/ingest/fetch-shareholding.ts",
     "ingest:screener-ownership": "tsx scripts/ingest/fetch-screener-shareholding.ts",

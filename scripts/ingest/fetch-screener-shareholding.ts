@@ -30,7 +30,11 @@
 
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { nowIso, writeSnapshot, appendLog, readSnapshot, RAW_ROOT } from './util'
+import * as cheerio from 'cheerio'
+import { nowIso, writeSnapshot, appendLog, readSnapshot, RAW_ROOT, detectAccessBlock } from './util'
+
+const SCRAPER_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 import type {
   OwnershipHoldingRow,
   OwnershipTrendRow,
@@ -48,14 +52,14 @@ import type {
 // public page is keyed by the NSE symbol (the numeric /company/<id>/ form 404s),
 // so links use the symbol; the numeric id is only for the /trades/company-<id>/
 // endpoint.
-interface CompanyCfg {
+export interface CompanyCfg {
   company_id: string
   company_name: string
   ticker: string
   screener_id: number
   staged: string
 }
-const COMPANIES: CompanyCfg[] = [
+export const COMPANIES: CompanyCfg[] = [
   { company_id: 'niva-bupa', company_name: 'Niva Bupa Health Insurance Company Ltd', ticker: 'NIVABUPA', screener_id: 1285147, staged: 'nivabupa-shareholding-history.json' },
   { company_id: 'star-health', company_name: 'Star Health and Allied Insurance Company Ltd', ticker: 'STARHEALTH', screener_id: 1275115, staged: 'starhealth-shareholding-history.json' },
 ]
@@ -395,6 +399,28 @@ interface RawDeal {
   side: 'buy' | 'sell'
   quantity: number
   price: number
+  /** Which Screener tab produced the row ("Bulk Deals" | "Block Deals"). This is
+   *  the CLASSIFICATION key: a row read from the Block Deals tab is `block`, even
+   *  if the row text itself never repeats the word "block". */
+  source_tab?: string
+  source_path?: string
+}
+
+/** Human-readable provenance path into Screener's trades modal. */
+const screenerTradesPath = (companyName: string, tab: string): string =>
+  `Screener → ${companyName} → Investors / Shareholding / Trades modal → ${tab} tab`
+const screenerModalUrl = (ticker: string) => `https://www.screener.in/company/${ticker}/#shareholding`
+
+/** "15 Jun 2026" | "15-Jun-2026" | "2026-06-15" → ISO yyyy-mm-dd (best-effort). */
+export function normTradeDate(s: string): string {
+  const t = s.trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t
+  const d = new Date(t)
+  return Number.isNaN(d.getTime()) ? t : d.toISOString().slice(0, 10)
+}
+/** Screener actions: B | Buy | Purchase → buy · S | Sell | Sale → sell. */
+export function normTradeSide(v: unknown): 'buy' | 'sell' {
+  return /^(s|sell|sale)$/i.test(String(v ?? '').trim()) ? 'sell' : 'buy'
 }
 
 const qtyDisplay = (q: number | null): string =>
@@ -409,7 +435,9 @@ const valueDisplay = (v: number | null): string => {
  *  disclosed party name is preserved; the undisclosed counterparty stays null.
  *  `sourceUrl` is the company's Screener Trades page. */
 function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string, sourceUrl: string): OwnershipTradeDisclosureRow {
+  // Amount: dealValueCr = quantity × price / 1,00,00,000 (₹ Cr).
   const value_cr = round2((d.quantity * d.price) / 1e7)
+  const tab = d.source_tab ?? (d.deal_kind === 'block' ? 'Block Deals' : 'Bulk Deals')
   return {
     company_id: d.company_id,
     company_name: companyName,
@@ -429,6 +457,9 @@ function dealToDisclosure(d: RawDeal, companyName: string, scrapedAt: string, so
     underlying_source: 'NSE / BSE',
     scraped_at: scrapedAt,
     validation_status: 'scraped',
+    source_deal_label: d.deal_kind === 'block' ? 'Block Deal' : 'Bulk Deal',
+    source_tab: tab,
+    source_path: d.source_path ?? screenerTradesPath(companyName, tab),
   }
 }
 
@@ -520,12 +551,17 @@ async function scrapeTradesLive(tradesUrl: string, companyId: string): Promise<{
     for (const r of raw) {
       const dateCell = r.cells.find((c) => /\d{1,2}[-/ ][A-Za-z0-9]{2,}[-/ ]\d{2,4}|\d{4}-\d{2}-\d{2}/.test(c))
       const sideCell = r.cells.find((c) => /^(buy|sell|purchase|sale|b|s)$/i.test(c))
-      const nums = r.cells.map((c) => parseFloat(c.replace(/[,%₹\s]/g, ''))).filter((n) => Number.isFinite(n))
       const client = r.cells.find((c) => /[A-Za-z]{3,}/.test(c) && !/^(buy|sell|purchase|sale)$/i.test(c))
+      // Exclude the date/side/name cells so the date's day isn't read as quantity.
+      const nums = r.cells
+        .filter((c) => c !== dateCell && c !== client && !/^(buy|sell|purchase|sale|b|s)$/i.test(c))
+        .map((c) => parseFloat(c.replace(/[,%₹\s]/g, '')))
+        .filter((n) => Number.isFinite(n))
       if (!dateCell || !sideCell || !client || nums.length < 2) continue
       const side = /^(sell|sale|s)$/i.test(sideCell) ? 'sell' : 'buy'
       const date = /\d{4}-\d{2}-\d{2}/.test(dateCell) ? dateCell : new Date(dateCell).toISOString().slice(0, 10)
-      deals.push({ company_id: companyId, deal_kind: r.kind as TradeDealType, date, client, side, quantity: nums[0], price: nums[1] })
+      const tab = r.kind === 'block' ? 'Block Deals' : 'Bulk Deals'
+      deals.push({ company_id: companyId, deal_kind: r.kind as TradeDealType, date, client, side, quantity: nums[0], price: nums[1], source_tab: tab })
     }
     if (found && deals.length === 0) return null // found but unparseable → fall back
     return { deals, found }
@@ -533,6 +569,118 @@ async function scrapeTradesLive(tradesUrl: string, companyId: string): Promise<{
     return null
   } finally {
     await browser.close().catch(() => {})
+  }
+}
+
+/** Parse one Screener trade-table row → RawDeal. `tab` is authoritative for the
+ *  deal_kind: a row from the Block Deals tab is `block` regardless of its text.
+ *  Normalises action (B/Buy/Purchase → buy · S/Sell/Sale → sell). */
+export function parseScreenerTradeRow(cells: string[], tab: string, co: CompanyCfg): RawDeal | null {
+  const dateCell = cells.find((c) => /\d{1,2}\s+[A-Za-z]{3,}\s+\d{2,4}|\d{4}-\d{2}-\d{2}|\d{1,2}[-/][A-Za-z0-9]{2,}[-/]\d{2,4}/.test(c))
+  const actionCell = cells.find((c) => /^(buy|sell|purchase|sale|b|s)$/i.test(c.trim()))
+  const client = cells.find((c) => /[A-Za-z]{3,}/.test(c) && !/^(buy|sell|purchase|sale)$/i.test(c.trim()) && !/^[\d,.\s]+$/.test(c.trim()))
+  // Quantity / price = the numeric cells, EXCLUDING the date cell (its day would
+  // otherwise be read as a number), the action cell and the name cell.
+  const nums = cells
+    .filter((c) => c !== dateCell && c !== client && !/^(buy|sell|purchase|sale|b|s)$/i.test(c.trim()))
+    .map((c) => parseFloat(c.replace(/[,%₹\s]/g, '')))
+    .filter((n) => Number.isFinite(n))
+  if (!dateCell || !actionCell || !client || nums.length < 2) return null
+  const deal_kind: TradeDealType = tab === 'Block Deals' ? 'block' : 'bulk'
+  // Screener's bulk/block tables print Quantity then Price (no value column) —
+  // matching the modal Neha reads. nums[0] = quantity, nums[1] = price.
+  return {
+    company_id: co.company_id,
+    deal_kind,
+    date: normTradeDate(dateCell),
+    client: client.trim(),
+    side: normTradeSide(actionCell),
+    quantity: nums[0],
+    price: nums[1],
+    source_tab: tab,
+    source_path: screenerTradesPath(co.company_name, tab),
+  }
+}
+
+/**
+ * Cookie-aware live read of Screener's trades modal — the /trades/company-<id>/
+ * endpoint the modal AJAX-loads. That endpoint is LOGIN-GATED: without a
+ * logged-in session it 302s to /register/. Supply SCREENER_SESSIONID (a Screener
+ * session cookie) to read it. Parses BOTH the Bulk Deals and Block Deals tables,
+ * classifying each row by its tab heading. Returns a status so the caller reports
+ * honestly (login_required vs blocked vs ok) instead of a false "0 found".
+ */
+async function scrapeTradesHttp(co: CompanyCfg): Promise<{ deals: RawDeal[]; status: 'ok' | 'login_required' | 'blocked' | 'error' | 'skipped' }> {
+  if (process.env.INGEST_OFFLINE !== '0') return { deals: [], status: 'skipped' }
+  const cookie = process.env.SCREENER_SESSIONID
+  if (!cookie) return { deals: [], status: 'login_required' }
+  const url = tradesUrlOf(co.screener_id)
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': SCRAPER_UA, Cookie: `sessionid=${cookie}`, Accept: 'text/html,application/xhtml+xml' },
+      redirect: 'manual',
+    })
+    if (res.status >= 300 && res.status < 400) return { deals: [], status: 'login_required' }
+    if (res.status === 403 || res.status === 429) return { deals: [], status: 'blocked' }
+    if (!res.ok) return { deals: [], status: 'error' }
+    const html = await res.text()
+    if (detectAccessBlock(html, url).blocked) return { deals: [], status: 'blocked' }
+    if (/\/register\/|sign in to view|please log\s?in/i.test(html) && !/block\s*deal/i.test(html)) return { deals: [], status: 'login_required' }
+    const $ = cheerio.load(html)
+    const deals: RawDeal[] = []
+    $('table').each((_i, t) => {
+      const $t = $(t)
+      const ctx = ($t.prevAll('h1,h2,h3,h4,button,a').slice(0, 4).text() + ' ' + ($t.closest('section,div').children('h1,h2,h3,h4,header').first().text() || '')).toLowerCase()
+      const tab = /block\s*deal/.test(ctx) ? 'Block Deals' : /bulk\s*deal/.test(ctx) ? 'Bulk Deals' : ''
+      if (tab !== 'Block Deals' && tab !== 'Bulk Deals') return
+      $t.find('tbody tr').each((_j, tr) => {
+        const cells = $(tr).find('td').map((_k, td) => $(td).text().replace(/\s+/g, ' ').trim()).get()
+        if (cells.length < 4) return
+        const row = parseScreenerTradeRow(cells, tab, co)
+        if (row) deals.push(row)
+      })
+    })
+    return { deals, status: deals.length ? 'ok' : 'error' }
+  } catch {
+    return { deals: [], status: 'error' }
+  }
+}
+
+/**
+ * Staged source-of-record for Screener's (login-gated) trades modal — a manual,
+ * dated capture of the Bulk/Block deal rows read from the modal, kept under
+ * data/raw/screener/<ticker>-trades.json. This is how block deals reach the
+ * dashboard when no live session is configured: it is REAL, source-backed data
+ * (Screener Trades modal), captured by hand, with explicit provenance — never
+ * fabricated, and superseded automatically the moment a live read succeeds.
+ *
+ *   { "_source": { "url": "...", "path": "...", "captured_at": "YYYY-MM-DD" },
+ *     "deals": [ { "deal_kind":"block", "date":"2026-06-15", "client":"...",
+ *                  "side":"sell", "quantity":4000000, "price":83 }, ... ] }
+ */
+async function loadStagedScreenerTrades(co: CompanyCfg): Promise<{ deals: RawDeal[]; capturedAt: string | null; path: string | null }> {
+  try {
+    const text = await readFile(resolve(RAW_ROOT, 'screener', `${co.ticker.toLowerCase()}-trades.json`), 'utf8')
+    const j = JSON.parse(text) as { _source?: { path?: string; captured_at?: string }; deals?: Record<string, unknown>[] }
+    const deals: RawDeal[] = (j.deals ?? [])
+      .filter((d) => d && (d.deal_kind === 'bulk' || d.deal_kind === 'block') && d.date && d.client && d.quantity != null && d.price != null)
+      .map((d) => {
+        const tab = d.deal_kind === 'block' ? 'Block Deals' : 'Bulk Deals'
+        return {
+          company_id: co.company_id,
+          deal_kind: d.deal_kind as TradeDealType,
+          date: normTradeDate(String(d.date)),
+          client: String(d.client).trim(),
+          side: normTradeSide((d.side ?? d.action) as unknown),
+          quantity: Number(d.quantity),
+          price: Number(d.price),
+          source_tab: tab,
+          source_path: (j._source?.path as string) ?? screenerTradesPath(co.company_name, tab),
+        }
+      })
+    return { deals, capturedAt: j._source?.captured_at ?? null, path: j._source?.path ?? null }
+  } catch {
+    return { deals: [], capturedAt: null, path: null }
   }
 }
 
@@ -620,20 +768,40 @@ async function run(): Promise<void> {
   })
 
   // ── Trades (bulk/block) → ownership_trade_disclosures (separate dataset) ─────
+  // Sources merged per company, best-first: (1) live cookie read of Screener's
+  // trades modal, (2) live Playwright read, (3) a manual staged capture of the
+  // modal (source-of-record — the block deals live here when no session is set),
+  // (4) the aggregated NSE/BSE fallback snapshot. The Block Deals tab is parsed
+  // SEPARATELY from Bulk Deals and classified by tab — a low-quality "no records"
+  // from one source never erases real rows from another.
   const namesById = await loadCompanyNames()
   const fallbackDeals = await loadFallbackDeals()
   const tradeRows: OwnershipTradeDisclosureRow[] = []
   let anyTradesFound = false
   let anyLiveTrades = false
   const handled = new Set<string>()
+  const tradeSourceMode: Record<string, string> = {}
   for (const co of COMPANIES) {
     handled.add(co.company_id)
-    const liveT = await scrapeTradesLive(tradesUrlOf(co.screener_id), co.company_id).catch(() => null)
-    const usingLiveT = !!(liveT && liveT.deals.length)
-    anyLiveTrades = anyLiveTrades || usingLiveT
-    const coDeals = usingLiveT ? liveT!.deals : fallbackDeals.filter((d) => d.company_id === co.company_id)
-    if ((liveT && liveT.found) || coDeals.length) anyTradesFound = true
-    for (const d of coDeals) tradeRows.push(dealToDisclosure(d, namesById[d.company_id] ?? co.company_name, scrapedAt, tradesUrlForCompany(d.company_id)))
+    const http = await scrapeTradesHttp(co).catch(() => ({ deals: [] as RawDeal[], status: 'error' as const }))
+    const liveT = http.deals.length ? null : await scrapeTradesLive(tradesUrlOf(co.screener_id), co.company_id).catch(() => null)
+    const liveDeals = http.deals.length ? http.deals : (liveT?.deals ?? [])
+    const staged = await loadStagedScreenerTrades(co)
+    const fb = fallbackDeals.filter((d) => d.company_id === co.company_id)
+    if (liveDeals.length) anyLiveTrades = true
+
+    const coDeals = [...liveDeals, ...staged.deals, ...fb]
+    if (coDeals.length || (liveT && liveT.found) || http.status === 'ok') anyTradesFound = true
+    tradeSourceMode[co.company_id] = http.deals.length
+      ? 'live_http'
+      : liveT?.deals.length
+        ? 'live_playwright'
+        : staged.deals.length
+          ? 'staged_modal'
+          : fb.length
+            ? 'fallback_aggregated'
+            : http.status // login_required | blocked | error | skipped
+    for (const d of coDeals) tradeRows.push(dealToDisclosure(d, namesById[d.company_id] ?? co.company_name, scrapedAt, screenerModalUrl(co.ticker)))
   }
   // Any other listed names present in the fallback but not configured above.
   for (const d of fallbackDeals) {
@@ -670,8 +838,8 @@ async function run(): Promise<void> {
     trades_section_found: anyTradesFound,
     validation_status: tradeValidation,
     notes: anyLiveTrades
-      ? 'Captured via live Screener Trades scrape (Playwright) where available.'
-      : 'Built from the aggregated NSE/BSE bulk & block deal disclosures that Screener Trades republishes; live Screener Trades scrape unavailable in this environment.',
+      ? 'Captured via live read of Screener’s Trades modal (Bulk + Block Deals tabs parsed separately) where a session was available.'
+      : 'Block deals come from a dated staged capture of Screener’s (login-gated) Trades modal — Block Deals tab — plus the aggregated NSE/BSE disclosures Screener republishes. Set SCREENER_SESSIONID to read the modal live.',
   }
   await writeSnapshot('ownership-trade-disclosures.json', { _meta: tradesMeta, data: mergedDisclosures })
   await appendLog('fetch-screener-shareholding.log', {
@@ -715,9 +883,14 @@ async function run(): Promise<void> {
   log('  Annual/Quarterly toggle       : wired (UI reads global `period`; both companies use the same view logic)')
   log('  Investor-level rows invented  : NO')
 
-  log('\n  ── BULK / BLOCK DEAL TRADES (Screener → Trades · underlying NSE / BSE) ──')
-  log(`  Trades mode               : ${anyLiveTrades ? 'LIVE (Playwright)' : 'OFFLINE — aggregated NSE/BSE disclosures (Screener republishes)'}`)
+  log('\n  ── BULK / BLOCK DEAL TRADES (Screener → Trades modal · underlying NSE / BSE) ──')
+  log(`  Trades mode               : ${anyLiveTrades ? 'LIVE (Screener session)' : 'OFFLINE — staged Screener-modal capture + aggregated NSE/BSE disclosures'}`)
   log(`  Screener Trades section found : ${anyTradesFound ? 'YES' : 'NO'}`)
+  const MODE_LABEL: Record<string, string> = {
+    live_http: 'LIVE Screener modal (cookie)', live_playwright: 'LIVE Screener modal (browser)',
+    staged_modal: 'staged Screener-modal capture', fallback_aggregated: 'aggregated NSE/BSE fallback',
+    login_required: 'LOGIN REQUIRED (set SCREENER_SESSIONID)', blocked: 'BLOCKED', error: 'no read', skipped: 'offline (no live attempt)',
+  }
   for (const co of COMPANIES) {
     const d = mergedDisclosures.filter((r) => r.company_id === co.company_id)
     const bulkN = d.filter((r) => r.deal_type === 'bulk').length
@@ -726,7 +899,8 @@ async function run(): Promise<void> {
     const sold = round2(d.filter((r) => r.seller && !r.buyer).reduce((s, r) => s + (r.value_cr ?? 0), 0))
     const dates = [...new Set(d.map((r) => r.date))]
     const net = round2(bought - sold)
-    log(`    ${co.ticker}: bulk ${bulkN}, block ${blockN}${blockN === 0 ? ' (confirmed zero — "0 found", not pending)' : ''} · bought ₹${bought} Cr · sold ₹${sold} Cr · net ${net >= 0 ? '+' : '−'}₹${Math.abs(net)} Cr · ${dates.length} date(s) → ${dates.length > 1 ? 'timeline chart' : 'single-date cluster'} · src ${tradesUrlForCompany(co.company_id)}`)
+    const mode = MODE_LABEL[tradeSourceMode[co.company_id]] ?? tradeSourceMode[co.company_id] ?? '—'
+    log(`    ${co.ticker}: bulk ${bulkN}, block ${blockN} · source: ${mode} · bought ₹${bought} Cr · sold ₹${sold} Cr · net ${net >= 0 ? '+' : '−'}₹${Math.abs(net)} Cr · ${dates.length} date(s) · src ${screenerModalUrl(co.ticker)}`)
   }
   log(`  Data Pending when zero?       : NO — validation_status='${tradeValidation}'`)
   log('  Source footer separation      : Shareholding Pattern (trend) vs Trades (bulk/block) — two distinct source lines')
@@ -734,7 +908,9 @@ async function run(): Promise<void> {
   log('══════════════════════════════════════════════════════════════════\n')
 }
 
-run().catch((err) => {
+// Only run the full ingestion when invoked directly (so importing the exported
+// pure helpers — e.g. in verify-niva-block-deals.ts — has no side effects).
+if (process.argv[1]?.endsWith('fetch-screener-shareholding.ts')) run().catch((err) => {
   console.error('fetch-screener-shareholding failed:', err)
   process.exitCode = 1
 })

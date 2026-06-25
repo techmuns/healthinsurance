@@ -1,0 +1,18 @@
+{
+  "_source": {
+    "name": "Screener Trades modal",
+    "url": "https://www.screener.in/company/NIVABUPA/#shareholding",
+    "path": "Screener → Niva Bupa → Investors / Shareholding / Trades modal → Block Deals tab",
+    "modal_title": "Niva Bupa Health trades",
+    "tab": "Block Deals",
+    "captured_at": "2026-06-25",
+    "captured_by": "Neha — read from the Screener trades modal (Block Deals tab); the modal is login-gated, so this is the dated source-of-record until a live Screener session is configured (SCREENER_SESSIONID).",
+    "note": "Bulk deals come from the aggregated NSE/BSE snapshot; this file carries the Block Deals tab, which is otherwise login-gated. Action normalised on read: B → buy, Sale → sell. dealValueCr = quantity × price / 1,00,00,000."
+  },
+  "deals": [
+    { "deal_kind": "block", "date": "2026-06-15", "client": "Krishnan Ramachandran", "side": "sell", "action": "Sale", "quantity": 4000000, "price": 83.0 },
+    { "deal_kind": "block", "date": "2026-06-15", "client": "Hsbc Global Investment Funds Indian Equity", "side": "buy", "action": "B", "quantity": 2135355, "price": 83.0 },
+    { "deal_kind": "block", "date": "2026-06-15", "client": "Hsbc Indien", "side": "buy", "action": "B", "quantity": 1313743, "price": 83.0 },
+    { "deal_kind": "block", "date": "2026-06-15", "client": "Hsbc Indian Equity Mother Fund", "side": "buy", "action": "B", "quantity": 550902, "price": 83.0 }
+  ]
+}
