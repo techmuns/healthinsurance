@@ -326,8 +326,9 @@ body {
     opacity: 0;
     transform: translateY(3px);
   }
-  /* End at `none`, not translateY(0): a settled non-none transform would make
-     the pane a containing block for any position:fixed child. */
+  /* End at `none`, not translateY(0) — hygiene that matches `.audit-reveal`:
+     keep entrance transforms from settling into a position:fixed containing
+     block. (Here the --enter class is also dropped once idle.) */
   100% {
     opacity: 1;
     transform: none;
@@ -349,18 +350,22 @@ body {
 .audit-loader-enter {
   animation: fade-soft 0.3s ease-out both;
 }
+/* `backwards`, NOT `both`: `.audit-reveal` stays on the element for the whole
+   session, so a forwards/both fill would keep a transform animation permanently
+   "in effect" — and an element with a filling transform animation is a
+   containing block for position:fixed children *regardless of the value* (even
+   identity / none). That pinned the "Analyse selected data" pill to the bottom
+   of the tall audit page instead of the viewport. `backwards` still applies the
+   0% frame up front (no entrance flash) but leaves nothing applied once the
+   animation finishes, so the settled pane creates no containing block. */
 .audit-reveal {
-  animation: audit-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: audit-reveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 @keyframes audit-reveal {
   0% {
     opacity: 0;
     transform: translateY(4px);
   }
-  /* End at `none`, not translateY(0): `.audit-reveal` stays on the element, so
-     with `both` fill-mode a settled translateY(0) would persist and keep the
-     audit pane a containing block — pinning the "Analyse selected data" pill to
-     the bottom of the page rather than the viewport. */
   100% {
     opacity: 1;
     transform: none;
