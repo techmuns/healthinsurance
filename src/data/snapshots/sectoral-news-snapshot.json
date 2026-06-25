@@ -3,14 +3,69 @@
     "snapshot_id": "sectoral-news-snapshot",
     "description": "Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-22",
-    "last_successful_run": "2026-06-22T11:56:43.639Z",
+    "last_updated": "2026-06-25",
+    "last_successful_run": "2026-06-25T09:22:57.945Z",
     "seed_count": 31,
-    "agent_count": 51,
+    "agent_count": 61,
     "generated_by": "Seed: investor portfolio pack. Updates: AI (muns agent, web search).",
     "notes": "Seed floor can never be lost. Agent items are de-duped by subject+date and verified-before-acting."
   },
   "data": [
+    {
+      "sn": 83,
+      "category": "General",
+      "date": "2026-06-24",
+      "subject": "Healthcare inflation becomes a household finance risk",
+      "summary": "A June 24 sector commentary said average hospitalisation costs have risen sharply between 2017-18 and 2023-24, while out-of-pocket spending remains high despite broader insurance coverage. For health insurers, that supports long-term demand but also points to affordability stress and sustained claims-cost pressure.",
+      "reference": "https://expresshealthcare.in/news/indias-healthcare-inflation-challenge-is-becoming-a-household-finance-challenge/454088",
+      "id": "08a30047ac51a6",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
+      "sn": 84,
+      "category": "Competition / Peers",
+      "date": "2026-06-22",
+      "subject": "Niva Bupa and Star outpace broader non-life market in May",
+      "summary": "May 2026 premium data showed standalone health insurers continuing to gain share, with Niva Bupa up about 30% YoY and Star Health up about 19%, while SAHIs as a group grew about 31%. That reinforces retail health as a growth pocket and suggests listed specialists are still outperforming slower peers in parts of non-life.",
+      "reference": "https://bfsi.economictimes.indiatimes.com/articles/niva-bupa-and-icici-lombard-drive-non-life-insurance-premium-growth-in-may-2026/131896688",
+      "id": "08859fa1e5e820",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
+      "sn": 87,
+      "category": "Regulatory",
+      "date": "2026-06-19",
+      "subject": "IRDAI consults on intermediary rule changes",
+      "summary": "IRDAI released a consultation paper on amendments to insurance intermediaries regulations. Since health-insurance growth is heavily distribution-led, changes here can influence acquisition economics, channel strategy, and competitive positioning for SAHIs and general insurers.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9576161",
+      "id": "1fae99c8121e32",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
+      "sn": 86,
+      "category": "Regulatory",
+      "date": "2026-06-19",
+      "subject": "IRDAI opens consultation on penalties framework",
+      "summary": "IRDAI issued a public consultation note on the manner and procedure for imposition of penalties regulations, 2026. A more explicit enforcement framework raises compliance stakes for insurers and intermediaries and could affect governance and conduct standards across the sector.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9573085",
+      "id": "01ff3a1482033d",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
+      "sn": 85,
+      "category": "Regulatory",
+      "date": "2026-06-19",
+      "subject": "IRDAI proposes changes to TPA regulations",
+      "summary": "IRDAI published an exposure draft to amend the Third Party Administrators - Health Services regulations. Because TPAs are central to cashless claims servicing, any rule change can affect insurer operating models, compliance needs, and provider-network relationships.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9572466",
+      "id": "010e8bdef6a232",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
     {
       "sn": 73,
       "category": "Regulatory",
@@ -45,6 +100,17 @@
       "added_at": "2026-06-22"
     },
     {
+      "sn": 88,
+      "category": "Regulatory",
+      "date": "2026-06-17",
+      "subject": "IRDAI sets up AI governance working group for insurance",
+      "summary": "IRDAI announced a working group on artificial-intelligence governance in insurance. This matters for health insurers because AI is increasingly used in underwriting, fraud detection, claims triage, and service, so future standards may shape both efficiency gains and compliance burdens.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9565283",
+      "id": "049b8e3632a411",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
       "sn": 74,
       "category": "Regulatory",
       "date": "2026-06-17",
@@ -76,6 +142,28 @@
       "id": "0a4fde7b3df318",
       "origin": "agent",
       "added_at": "2026-06-18"
+    },
+    {
+      "sn": 90,
+      "category": "Regulatory",
+      "date": "2026-06-15",
+      "subject": "IRDAI consults on insurer registration and capital-rule changes",
+      "summary": "IRDAI issued a consultation paper on amendments to registration, capital structure, transfer of shares, and amalgamation rules for insurers. While not health-specific, these proposals could influence future capital raising, ownership changes, and sector consolidation.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9546932",
+      "id": "1bfc065c219693",
+      "origin": "agent",
+      "added_at": "2026-06-25"
+    },
+    {
+      "sn": 89,
+      "category": "Competition / Peers",
+      "date": "2026-06-15",
+      "subject": "May premium flash figures confirm health-share gains",
+      "summary": "IRDAI published May 2026 non-life flash premium figures, giving the latest official read on market growth and segment mix. The release is important because it confirms health remains among the strongest premium-growth segments and provides the benchmark for comparing Niva Bupa, Star Health, and peers versus industry trends.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9546293",
+      "id": "0f7b483f2c776d",
+      "origin": "agent",
+      "added_at": "2026-06-25"
     },
     {
       "sn": 76,
@@ -164,6 +252,17 @@
       "id": "0bcba045629232",
       "origin": "agent",
       "added_at": "2026-06-10"
+    },
+    {
+      "sn": 91,
+      "category": "Regulatory",
+      "date": "2026-06-05",
+      "subject": "IRDAI pushes Ind AS readiness for insurers",
+      "summary": "IRDAI said it organised a workshop on implementation of Indian Accounting Standards for the insurance sector. Ind AS migration could change how earnings, liabilities, and comparability are reported, making it an important watch item for investors in listed and unlisted health insurers.",
+      "reference": "https://irdai.gov.in/web/guest/document-detail?documentId=9517571",
+      "id": "071d22bc64cdb0",
+      "origin": "agent",
+      "added_at": "2026-06-25"
     },
     {
       "sn": 64,
@@ -505,6 +604,17 @@
       "id": "12845e973f4557",
       "origin": "agent",
       "added_at": "2026-06-22"
+    },
+    {
+      "sn": 92,
+      "category": "Profitability",
+      "date": "2026-02-16",
+      "subject": "New claim-settlement data shows SAHIs still lead on speed",
+      "summary": "Economic Times reported IRDAI’s latest FY25 claims-settlement data, with Niva Bupa and Aditya Birla Health at or near 100% of claims settled within three months, and Star Health also high at 99.81%. Fast settlement supports franchise quality, though investors should still weigh it against complaints, pricing, and incurred claims trends.",
+      "reference": "https://economictimes.indiatimes.com/wealth/insure/latest-claim-settlement-ratio-of-health-and-general-insurers-released-by-irda-in-2026-acko-aditya-birla-galaxy-lead-shriram-iffco-tokio-fall-below-90/articleshow/127906061.cms",
+      "id": "1c9a009bdee7f0",
+      "origin": "agent",
+      "added_at": "2026-06-25"
     },
     {
       "sn": 50,
