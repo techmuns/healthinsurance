@@ -307,13 +307,18 @@ body {
    are never both loud at once. GPU-friendly: opacity + transform only. The
    container holds a measured min-height through the exit so the column can't
    collapse between views. */
-.section-pane {
-  will-change: opacity, transform;
-}
+/* `will-change` is applied ONLY while a transition is actually running (the
+   --enter / --exit variants), never on the resting pane. Left on at rest it
+   keeps a permanent compositing layer that makes the pane a containing block
+   for position:fixed descendants — which re-anchors the floating action bars
+   (e.g. Data Audit's "Analyse selected data" pill) to the bottom of the tall
+   page instead of the viewport, putting them far below the fold. */
 .section-pane--enter {
+  will-change: opacity, transform;
   animation: section-pane-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .section-pane--exit {
+  will-change: opacity, transform;
   animation: section-pane-exit 0.2s ease both;
 }
 @keyframes section-pane-enter {
@@ -321,9 +326,11 @@ body {
     opacity: 0;
     transform: translateY(3px);
   }
+  /* End at `none`, not translateY(0): a settled non-none transform would make
+     the pane a containing block for any position:fixed child. */
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 @keyframes section-pane-exit {
@@ -350,9 +357,13 @@ body {
     opacity: 0;
     transform: translateY(4px);
   }
+  /* End at `none`, not translateY(0): `.audit-reveal` stays on the element, so
+     with `both` fill-mode a settled translateY(0) would persist and keep the
+     audit pane a containing block — pinning the "Analyse selected data" pill to
+     the bottom of the page rather than the viewport. */
   100% {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 /* The progress ring's stroke eases smoothly as the percentage climbs, so even
