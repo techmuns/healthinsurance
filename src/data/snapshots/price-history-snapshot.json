@@ -5,10 +5,10 @@
     "schema_version": "1.1.0",
     "dataset": "official",
     "source_policy": "official-first (NSE). Investing.com is login-free backup only, tagged low-confidence.",
-    "last_successful_run": "2026-06-25T15:25:06.410Z",
+    "last_successful_run": "2026-06-25T15:51:34.518Z",
     "parser_status": "ready",
     "notes": "Daily close / traded / deliverable quantity per listed insurer. Workbook seed (NSE via S&P Capital IQ) for niva-bupa listing→Jul-2025; Yahoo Finance keeps it current (close + volume). Deliverable quantity is NSE-only — null where only Yahoo covers a day, until an NSE delivery file is staged.",
-    "last_updated": "2026-06-25T15:25:41.185Z",
+    "last_updated": "2026-06-25T15:51:37.636Z",
     "row_count": 2035,
     "companies": [
       "godigit",
@@ -22,7 +22,7 @@
       "to": "2026-06-25"
     },
     "seeded_from_workbook": "data/raw/exchanges/niva-bupa/niva-bupa-historical-stock-movement.xlsx",
-    "muns_last_run": "2026-06-25T15:25:06.410Z",
+    "muns_last_run": "2026-06-25T15:51:34.518Z",
     "nse_delivery_last_run": "2026-06-25T15:25:39.932Z"
   },
   "data": [
@@ -6966,7 +6966,7 @@
       "company_id": "godigit",
       "date": "2026-06-25",
       "close": 312.65,
-      "traded_qty": 104281,
+      "traded_qty": 103881,
       "deliverable_qty": 56387,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
@@ -13919,7 +13919,7 @@
       "company_id": "icici-lombard",
       "date": "2026-06-25",
       "close": 1813.6,
-      "traded_qty": 420984,
+      "traded_qty": 420983,
       "deliverable_qty": 240063,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
@@ -20719,7 +20719,7 @@
       "company_id": "niva-bupa",
       "date": "2026-06-25",
       "close": 84.79,
-      "traded_qty": 1208562,
+      "traded_qty": 1208551,
       "deliverable_qty": 645472,
       "provenance": {
         "source_name": "muns market-data API — NSE daily history",
