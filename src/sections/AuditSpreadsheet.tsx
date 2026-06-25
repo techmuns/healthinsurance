@@ -1245,7 +1245,7 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
       {aiMode && !verifyView && (
         <div className="flex items-center gap-1.5 rounded-xl border border-[#9DB4D8] bg-soft-blue/60 px-3 py-1.5 text-[11px] text-navy-primary">
           <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
-          Drag across cells to select a range — like Excel. Press Esc to clear.
+          Drag across cells to select a range. Press Esc to clear.
         </div>
       )}
 
