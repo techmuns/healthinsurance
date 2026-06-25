@@ -281,7 +281,7 @@ export function AiAnalysisDrawer({ cells, autoGenerate, onClose, onClear }: { ce
         {/* Footer actions */}
         <div className="border-t border-soft-border px-4 py-2.5">
           {state === 'error' && (
-            <p className="mb-2 text-[10px] italic text-ink-secondary">AI model unavailable — showing the computed readout from your selection.</p>
+            <p className="mb-2 text-[10px] italic text-ink-secondary">Computed readout from your selection.</p>
           )}
           <div className="flex items-center gap-2">
             <CopyBtn text={copyText} />
