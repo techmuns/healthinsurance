@@ -1035,6 +1035,27 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
     return () => { clearTimeout(scrollT); clearTimeout(pulseT) }
   }, [verifyTarget?.nonce]) // eslint react-hooks rule not configured; nonce-keyed by design
 
+  // Clicking a verification FILTER pill must not leave the previously-selected
+  // cell stuck (border + detail panel) when that cell isn't in the chosen
+  // category. Move the selection to the first matching cell on this sheet and
+  // scroll it into view — "remove the old highlight and take me to those cells"
+  // (Neha, 2026-06-22). If the current selection already matches, stay put; if no
+  // match exists on this sheet, just clear the stale selection.
+  const vFilter = vctx?.gridFilter ?? 'all'
+  useEffect(() => {
+    if (!verifyView || vFilter === 'all') return
+    if (selected && verifyMap.get(selected.id)?.status === vFilter) return
+    const grp = sheets.find((g) => g.sheet === active)
+    const first = grp?.cells.find((c) => verifyMap.get(c.id)?.status === vFilter) ?? null
+    setSelected(first)
+    if (!first) return
+    const scrollT = setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-cell-id="${first.id.replace(/(["\\])/g, '\\$1')}"]`)
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' })
+    }, 80)
+    return () => clearTimeout(scrollT)
+  }, [vFilter]) // eslint react-hooks rule not configured; filter-keyed by design
+
   // AI Mode is mutually exclusive with the Excel verification overlay.
   useEffect(() => { if (verifyView) setAiMode(false) }, [verifyView])
   // Turning AI Mode off clears any selection + closes the drawer.
