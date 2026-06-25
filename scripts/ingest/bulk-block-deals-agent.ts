@@ -44,8 +44,8 @@ function buildPayload() {
   return {
     user_index: 124,
     tasks: [
-      'List the most recent EXCHANGE-REPORTED bulk deals AND block deals for these two listed Indian health insurers: Niva Bupa (NSE: NIVABUPA) and Star Health (NSE: STARHEALTH). Use ONLY the official NSE / BSE bulk & block deal disclosures (also shown on screener.in). Cover roughly the last 6 months. If there are none, return nothing — never invent a deal.\n\n' +
-        'IMPORTANT: bulk deals and block deals are published in SEPARATE tables (both on NSE/BSE and on screener.in). Check BOTH tables and return EVERY row from EACH. Block deals are easy to miss — do NOT omit them: if a company has block deals, include every one, tagged deal_kind="block".\n\n' +
+      'List the most recent EXCHANGE-REPORTED bulk deals AND block deals for these two listed Indian health insurers: Niva Bupa (NSE: NIVABUPA, Moneycontrol code NBH) and Star Health (NSE: STARHEALTH). Use the official NSE / BSE bulk & block deal disclosures, cross-checked against the aggregators that republish them: screener.in AND Moneycontrol — in particular the Moneycontrol large/stock-deals page https://www.moneycontrol.com/markets/stock-deals/large-deals/NBH for Niva Bupa. Cover roughly the last 6 months. If there are none, return nothing — never invent a deal.\n\n' +
+        'IMPORTANT: bulk deals and block deals are published in SEPARATE tables (on NSE/BSE, screener.in, and Moneycontrol). Check BOTH tables on EACH source and return EVERY row from EACH. Block deals are easy to miss — do NOT omit them: if a company has block deals, include every one, tagged deal_kind="block". Niva Bupa block deals are frequently absent from screener.in but DO appear on Moneycontrol (NBH large deals) — check Moneycontrol specifically for Niva Bupa block/large deals.\n\n' +
         'Return ONLY a pipe-delimited table, no leading/trailing pipe, EXACTLY these columns:\n\n' +
         'company | deal_kind | date | client | side | quantity | price\n\n' +
         'company  = "NIVABUPA" or "STARHEALTH".\n' +
@@ -171,6 +171,10 @@ export async function main(): Promise<number> {
     ...snap._meta,
     last_updated: added > 0 ? today : (snap._meta?.last_updated as string) ?? today,
     last_successful_run: pullSucceeded ? fetched_at : prevSuccessRun,
+    // The task prompt now explicitly checks Moneycontrol (NBH large deals), so a
+    // successful pull means Moneycontrol WAS consulted — the UI only treats a
+    // block-deal zero as "confirmed" once this is true (never before).
+    moneycontrol_checked: pullSucceeded ? true : ((snap._meta?.moneycontrol_checked as boolean) ?? false),
   }
 
   await writeSnapshot(SNAPSHOT_FILE, snap)

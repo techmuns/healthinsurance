@@ -450,6 +450,11 @@ export interface TradeDisclosuresView {
    *  parse_warning) — i.e. NOT still 'pending'. The empty "0 found" state is only
    *  honest once this is true: we have actually checked every source. */
   allSourcesChecked: boolean
+  /** True once Moneycontrol has ACTUALLY been consulted — either the daily agent
+   *  completed a run with its Moneycontrol instruction, or the direct fetch
+   *  succeeded. A block-deal zero is only "confirmed" when this is true; until
+   *  then the UI shows "needs review", never a false zero. */
+  moneycontrolChecked: boolean
 }
 
 // Dedup identity per the task: company + date + client + action + qty + price +
@@ -491,6 +496,56 @@ function mcStateFrom(status: MoneycontrolDealStatus, count: number): TradeSource
   }
 }
 
+// ─── daily research agent (muns) → 'Exchange' rows ──────────────────────────
+// The muns agent pulls exchange-reported bulk/block deals (NSE / BSE, and — once
+// pointed at it — Moneycontrol's NBH large deals) via live web search, so it
+// reaches deal data even when a direct datacenter-IP fetch is 403-blocked. Its
+// snapshot (bulk-block-deals-snapshot.json) is normalised here into the shared
+// row shape and merged as the 'Exchange' source. Add-only + sanity-gated upstream;
+// nothing fabricated.
+interface AgentDeal { company_id: string; deal_kind: 'bulk' | 'block'; date: string; client: string; side: 'buy' | 'sell'; quantity: number; price: number }
+const AGENT_COMPANY_NAME: Record<string, string> = {
+  'niva-bupa': 'Niva Bupa Health Insurance Company Limited',
+  'star-health': 'Star Health and Allied Insurance Company Limited',
+}
+const agentQtyDisplay = (q: number | null): string =>
+  q == null ? 'n/a' : q >= 1e7 ? `${(q / 1e7).toFixed(2)} Cr` : q >= 1e5 ? `${(q / 1e5).toFixed(1)} L` : q.toLocaleString('en-IN')
+const agentValDisplay = (cr: number | null): string => {
+  if (cr == null) return 'n/a'
+  const a = Math.abs(cr)
+  return `₹${a >= 100 ? a.toFixed(0) : a >= 10 ? a.toFixed(1) : a.toFixed(2)} Cr`
+}
+function normalizeAgentRows(companyId: string): OwnershipTradeDisclosureRow[] {
+  const env = bulkBlockDeals as { _meta?: { last_successful_run?: string; last_updated?: string }; data?: AgentDeal[] }
+  const at = env._meta?.last_successful_run ?? env._meta?.last_updated ?? ''
+  return (env.data ?? [])
+    .filter((d) => d.company_id === companyId)
+    .map((d) => {
+      const cr = d.quantity != null && d.price != null ? Math.round((d.quantity * d.price) / 1e7 * 100) / 100 : null
+      return {
+        company_id: d.company_id,
+        company_name: AGENT_COMPANY_NAME[d.company_id] ?? d.company_id,
+        deal_type: d.deal_kind,
+        date: d.date,
+        segment: d.deal_kind === 'block' ? 'Block' : 'Bulk',
+        buyer: d.side === 'buy' ? d.client : null,
+        seller: d.side === 'sell' ? d.client : null,
+        quantity: d.quantity ?? null,
+        quantity_display: agentQtyDisplay(d.quantity ?? null),
+        price: d.price ?? null,
+        value_cr: cr,
+        value_display: agentValDisplay(cr),
+        exchange_source: 'NSE / BSE',
+        source_name: 'Exchange',
+        source_url: 'https://www.moneycontrol.com/markets/stock-deals/large-deals/NBH',
+        underlying_source: 'NSE / BSE',
+        scraped_at: at,
+        validation_status: 'scraped',
+        source_deal_label: d.deal_kind === 'block' ? 'Block Deal' : 'Bulk Deal',
+      } satisfies OwnershipTradeDisclosureRow
+    })
+}
+
 /** Bulk & block deal disclosures for a company (newest first), MERGED across
  *  every configured source — Screener Trades (primary) + Moneycontrol Stock Deals
  *  (fallback, fills Screener's gaps, esp. block deals) — de-duped by
@@ -521,8 +576,12 @@ export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
     const base = tradeRichness(row) > tradeRichness(existing) ? { ...row } : { ...existing }
     merged.set(k, { ...base, sources: Array.from(new Set([...prevSources, src])) })
   }
+  const agentMeta = (bulkBlockDeals as { _meta?: { last_successful_run?: string | null; last_updated?: string | null; moneycontrol_checked?: boolean } })._meta ?? {}
+  const agentRows = normalizeAgentRows(companyId)
+
   for (const r of scrRows) addRow(r, 'Screener')
   for (const r of mcRows) addRow(r, 'Moneycontrol')
+  for (const r of agentRows) addRow(r, 'Exchange')
 
   const deals = [...merged.values()].sort((a, b) =>
     a.date < b.date ? 1 : a.date > b.date ? -1 : (b.value_cr ?? 0) - (a.value_cr ?? 0),
@@ -532,6 +591,7 @@ export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
     deals.filter((d) => (d.sources ?? [d.source_name]).includes(src)).length
   const scrCount = countFor('Screener')
   const mcCount = countFor('Moneycontrol')
+  const exCount = countFor('Exchange')
 
   // Screener per-company state: a global 'scraped' run with rows = ok; with no
   // rows = a confirmed clean zero (no_records); anything else still pending.
@@ -544,34 +604,44 @@ export function getTradeDisclosures(companyId: string): TradeDisclosuresView {
           ? 'parse_warning'
           : 'pending'
   const mcState = mcStateFrom(mcMeta.status, mcCount)
+  // The daily agent has run successfully iff it stamped a last_successful_run.
+  const exState: TradeSourceState = agentMeta.last_successful_run ? (exCount > 0 ? 'ok' : 'no_records') : 'pending'
 
-  const moneycontrolUsed = mcCount > 0
+  // A "fallback" is any source beyond Screener Trades. The header credits them
+  // only when they actually contributed a row.
+  const fallbackUsed = mcCount > 0 || exCount > 0
   const scrUrl = scrRows[0]?.source_url ?? scrMeta.source_url
   const sources: TradeSourceStatus[] = [
     { name: 'Screener', label: 'Screener Trades', state: scrState, count: scrCount, url: scrUrl, checkedAt: scrMeta.last_updated ?? scrMeta.scraped_at ?? null },
-    { name: 'Moneycontrol', label: 'Moneycontrol Stock Deals', state: mcState, count: mcCount, url: mcMeta.source_url, checkedAt: mcMeta.scraped_at ?? mcMeta.last_updated ?? null, detail: mcMeta.status_detail ?? null },
+    { name: 'Exchange', label: 'Daily agent · NSE / BSE / Moneycontrol', state: exState, count: exCount, url: 'https://www.moneycontrol.com/markets/stock-deals/large-deals/NBH', checkedAt: agentMeta.last_updated ?? agentMeta.last_successful_run ?? null, detail: exState === 'pending' ? 'The daily research agent has not completed a run yet.' : null },
+    { name: 'Moneycontrol', label: 'Moneycontrol Stock Deals (direct)', state: mcState, count: mcCount, url: mcMeta.source_url, checkedAt: mcMeta.scraped_at ?? mcMeta.last_updated ?? null, detail: mcMeta.status_detail ?? null },
   ]
 
-  const headerLabel = moneycontrolUsed
-    ? 'bulk / block deals aggregated from Moneycontrol Stock Deals and Screener Trades · underlying NSE / BSE'
+  const headerLabel = fallbackUsed
+    ? 'bulk / block deals aggregated from Moneycontrol & exchange feeds (daily agent) and Screener Trades · underlying NSE / BSE'
     : 'large trades aggregated by Screener Trades · underlying NSE / BSE'
 
-  const allSourcesChecked = scrState !== 'pending' && mcState !== 'pending'
+  // Zero is only "confirmed" once every configured source has resolved.
+  const allSourcesChecked = scrState !== 'pending' && mcState !== 'pending' && exState !== 'pending'
+  // Moneycontrol counts as actually-checked only when the daily agent completed a
+  // run carrying its Moneycontrol instruction, OR the direct fetch read the page.
+  const moneycontrolChecked = !!agentMeta.moneycontrol_checked || mcState === 'ok' || mcState === 'no_records'
 
   return {
     deals,
     summary: summarizeTradeDisclosures(deals),
-    sourceName: moneycontrolUsed ? 'Moneycontrol + Screener' : scrMeta.source_name,
+    sourceName: fallbackUsed ? 'Moneycontrol + Exchange + Screener' : scrMeta.source_name,
     sourceUrl: scrUrl,
     underlyingSource: scrMeta.underlying_source,
-    lastUpdated: moneycontrolUsed ? maxIsoDate(scrMeta.last_updated, mcMeta.last_updated) : scrMeta.last_updated ?? null,
-    scrapedAt: maxIsoDate(scrMeta.scraped_at, mcMeta.scraped_at),
+    lastUpdated: fallbackUsed ? maxIsoDate(maxIsoDate(scrMeta.last_updated, mcMeta.last_updated), agentMeta.last_updated) : scrMeta.last_updated ?? null,
+    scrapedAt: maxIsoDate(maxIsoDate(scrMeta.scraped_at, mcMeta.scraped_at), agentMeta.last_successful_run ?? agentMeta.last_updated),
     tradesSectionFound: !!scrMeta.trades_section_found,
     validationStatus: scrMeta.validation_status,
     sources,
-    moneycontrolUsed,
+    moneycontrolUsed: fallbackUsed,
     headerLabel,
     allSourcesChecked,
+    moneycontrolChecked,
   }
 }
 

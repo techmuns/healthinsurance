@@ -468,10 +468,11 @@ export type TradeDealType = 'bulk' | 'block'
 export type TradeValidationStatus = 'scraped' | 'no_records' | 'parse_warning' | 'pending'
 
 /** Sources that can contribute a bulk/block deal row. Screener Trades is the
- *  primary aggregator; Moneycontrol Stock Deals is the fallback used when
- *  Screener returns zero / incomplete rows (esp. for block deals). The two are
- *  normalised into this one row shape and de-duped at read-time. */
-export type TradeSourceName = 'Screener' | 'Moneycontrol'
+ *  primary aggregator; Moneycontrol Stock Deals is the direct fallback; 'Exchange'
+ *  is the daily research agent (live web search of NSE / BSE / Moneycontrol) — the
+ *  path that still works when a direct datacenter-IP fetch is blocked. All three
+ *  are normalised into this one row shape and de-duped at read-time. */
+export type TradeSourceName = 'Screener' | 'Moneycontrol' | 'Exchange'
 
 export interface OwnershipTradeDisclosureRow {
   company_id: string

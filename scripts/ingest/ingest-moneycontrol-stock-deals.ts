@@ -378,6 +378,11 @@ export const ingestMoneycontrolStockDeals: Fetcher = {
     let anyReadable = false // we successfully READ a source (page/JSON), block or not
     let anyBlocked = false
     let sawAnyTable = false
+    // The large-deals PAGE is the authoritative source. An empty API response is
+    // NOT confirmation of "no deals"; only a readable PAGE confirms a clean zero,
+    // and a blocked PAGE forces 'blocked' regardless of what the APIs returned.
+    let pageReadable = false
+    let pageBlocked = false
 
     for (const co of COMPANIES) {
       const pageUrl = dealsPageUrl(co.sc_id)
@@ -412,17 +417,21 @@ export const ingestMoneycontrolStockDeals: Fetcher = {
         const blk = detectAccessBlock(buffer, pageUrl)
         if (blk.blocked) {
           anyBlocked = true
+          pageBlocked = true
           warnings.push(`${co.sc_id} page blocked: ${blk.reason}`)
         } else {
           const { rows, sawTable } = parseDealsHtml(cheerio.load(buffer.toString('utf8')), co, pageUrl, fetched_at)
           sawAnyTable = sawAnyTable || sawTable
           anyReadable = true
+          pageReadable = true
           addRows(rows)
           await appendLog(`${PARSER_NAME}.log`, { source: 'html', scId: co.sc_id, mode, sawTable, rows: rows.length })
           if (sawTable && rows.length === 0) warnings.push(`${co.sc_id} page read but no deal rows parsed (DOM may have changed).`)
         }
       } catch (err) {
         const msg = errMsg(err); anyBlocked = anyBlocked || (!offline) || isBlockErr(msg)
+        // A live page fetch that failed = the authoritative source was unreadable.
+        pageBlocked = pageBlocked || (!offline) || isBlockErr(msg)
         warnings.push(`${co.sc_id} page ${pageUrl}: ${msg}`)
       }
     }
@@ -444,12 +453,22 @@ export const ingestMoneycontrolStockDeals: Fetcher = {
     let status_detail: string | null = null
     if (all.length > 0) {
       status = 'ready'
-    } else if (anyReadable && sawAnyTable) {
+    } else if (pageBlocked) {
+      // Authoritative page blocked → NEVER a confirmed zero, even if an API
+      // endpoint returned an empty 200.
+      status = 'blocked'
+      status_detail = 'Moneycontrol large-deals page blocked (e.g. Akamai 403 from a datacenter IP) — source requires manual review. Set INGEST_FETCH_PROXY to an in-region relay, or stage the large-deals HTML/JSON under data/raw/moneycontrol/deals/.'
+    } else if (pageReadable && sawAnyTable) {
       status = 'parse_warning'
       status_detail = 'Moneycontrol page was read but no deal rows could be parsed — the table layout may have changed; source requires manual review.'
-    } else if (anyReadable) {
+    } else if (pageReadable) {
       status = 'no_records'
-      status_detail = 'Moneycontrol returned no bulk/block/large deals for the configured stock code(s).'
+      status_detail = 'Moneycontrol large-deals page was read and reported no bulk/block/large deals for the configured stock code(s).'
+    } else if (anyReadable) {
+      // Only a staged file / API export was readable (page not attempted) — a
+      // real Moneycontrol export with no rows.
+      status = 'no_records'
+      status_detail = 'A staged Moneycontrol export was read and reported no bulk/block/large deals for the configured stock code(s).'
     } else if (anyBlocked) {
       status = 'blocked'
       status_detail = 'Moneycontrol fetch blocked (e.g. Akamai 403 from a datacenter IP) or the parser could not read it — source requires manual review. Set INGEST_FETCH_PROXY to an in-region relay, or stage the large-deals HTML/JSON under data/raw/moneycontrol/deals/.'

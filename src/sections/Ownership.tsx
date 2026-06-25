@@ -156,23 +156,26 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
   const counts: Record<'bulk' | 'block', number> = { bulk: summary.bulk_deal_count, block: summary.block_deal_count }
   const [segment, setSegment] = useState<'bulk' | 'block'>(counts.bulk === 0 && counts.block > 0 ? 'block' : 'bulk')
   // Multi-source gate: a zero is only a CONFIRMED zero once EVERY configured
-  // source (Screener Trades + Moneycontrol Stock Deals) has resolved — not still
-  // pending. A Screener zero on its own is NEVER treated as final.
+  // source (Screener + the daily exchange agent + the direct Moneycontrol fetch)
+  // has resolved — not still pending. A Screener zero on its own is NEVER final.
   const checked = view.allSourcesChecked
   const scr = view.sources.find((s) => s.name === 'Screener')
-  const mc = view.sources.find((s) => s.name === 'Moneycontrol')
-  const mcBlocked = mc?.state === 'blocked' || mc?.state === 'parse_warning'
+  const agent = view.sources.find((s) => s.name === 'Exchange') // daily research agent (live web)
+  // Moneycontrol must have ACTUALLY been checked (daily agent ran with its
+  // Moneycontrol instruction, or the direct fetch read it) before a block-deal
+  // zero is treated as confirmed. Until then it's an honest "needs review".
+  const fallbackUnverified = !view.moneycontrolChecked
   const checkedOn = view.scrapedAt ?? view.lastUpdated ?? '—'
-  const fromMc = (d: { sources?: ('Screener' | 'Moneycontrol')[]; source_name: string }): boolean =>
-    (d.sources ?? [d.source_name]).includes('Moneycontrol')
+  const fromFallback = (d: { sources?: ('Screener' | 'Moneycontrol' | 'Exchange')[]; source_name: string }): boolean =>
+    (d.sources ?? [d.source_name]).some((s) => s === 'Moneycontrol' || s === 'Exchange')
 
   const sideOf = (d: { buyer: string | null; seller: string | null }): 'buy' | 'sell' =>
     d.buyer && !d.seller ? 'buy' : d.seller && !d.buyer ? 'sell' : 'buy'
   const segDeals = deals.filter((d) => d.deal_type === segment)
-  // Did the fallback (Moneycontrol) fill this segment where Screener had nothing?
+  // Did a fallback (Moneycontrol / daily agent) fill this segment where Screener had nothing?
   const segScreenerCount = segDeals.filter((d) => (d.sources ?? [d.source_name]).includes('Screener')).length
-  const segMcCount = segDeals.filter(fromMc).length
-  const mcFilledGap = segMcCount > 0 && segScreenerCount === 0
+  const segFallbackCount = segDeals.filter(fromFallback).length
+  const fallbackFilledGap = segFallbackCount > 0 && segScreenerCount === 0
   const dates = [...new Set(segDeals.map((d) => d.date))]
   // The big timeline only earns its space across MULTIPLE dates; a single-date
   // set renders as a compact cluster instead (no stretched, near-empty chart).
@@ -269,28 +272,30 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
             kind="pending"
             height={92}
             title={`${segment[0].toUpperCase()}${segment.slice(1)} deals — checking sources`}
-            body={`Screener Trades and Moneycontrol Stock Deals are being checked for ${companyName}. ${segment[0].toUpperCase()}${segment.slice(1)}-deal disclosures populate here once every configured source has reported.`}
+            body={`Screener Trades and the daily exchange agent (NSE / BSE / Moneycontrol) are being checked for ${companyName}. ${segment[0].toUpperCase()}${segment.slice(1)}-deal disclosures populate here once every configured source has reported.`}
           />
-        ) : mcBlocked ? (
-          // All sources checked, but Moneycontrol couldn't be read → honest "needs
-          // review", NOT a confirmed zero. (Task: never show "No deals" when a
-          // configured source is blocked and might hold the missing rows.)
+        ) : fallbackUnverified ? (
+          // All sources resolved, but no fallback could actually reach Moneycontrol/
+          // exchange data this run (agent not yet run, direct fetch blocked) → honest
+          // "needs review", NOT a confirmed zero. (Never show "No deals" when a source
+          // that might hold the missing rows couldn't be checked.)
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-coral/40 bg-coral-soft/40 px-4 py-7 text-center">
             <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-coral ring-1 ring-coral/30">
               <span className="h-1.5 w-1.5 rounded-full bg-coral" /> source needs review
             </span>
             <p className="max-w-md text-[12.5px] font-semibold leading-snug text-navy-deep">
-              Moneycontrol fetch blocked or parser failed — source requires manual review
+              Moneycontrol not yet verified — source requires manual review
             </p>
             <p className="mt-1 max-w-md text-[11px] leading-snug text-ink-secondary">
-              Screener Trades reported no {segment} deals for {companyName}, and Moneycontrol Stock Deals (NBH large deals) could not be read this run — so this is <span className="font-semibold text-navy-deep">not</span> a confirmed zero.
+              Screener Trades reported no {segment} deals for {companyName}, and Moneycontrol (NBH large deals) has not been confirmed yet — the daily research agent checks the Moneycontrol / NSE / BSE feeds on its next run. So this is <span className="font-semibold text-navy-deep">not</span> a confirmed zero.
             </p>
             <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">
-              Screener Trades · {scr?.count ?? 0} on record · Moneycontrol Stock Deals · blocked · checked {checkedOn}
+              Screener Trades · {scr?.count ?? 0} on record · Moneycontrol · not yet verified · daily agent {agent?.state ?? 'pending'} · checked {checkedOn}
             </p>
           </div>
         ) : (
-          // Every configured source checked and none reported a deal → confirmed zero.
+          // Every configured source checked (incl. the daily agent that reads
+          // Moneycontrol) and none reported a deal → confirmed zero.
           <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-soft-border bg-ice/40 px-4 py-7 text-center">
             <span className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-secondary ring-1 ring-soft-border">
               <span className="h-1.5 w-1.5 rounded-full bg-teal" /> 0 found
@@ -302,23 +307,23 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
                 ? 'Bulk-deal activity, when present, appears in the Bulk Deals tab.'
                 : 'Block-deal activity, when reported, appears in the Block Deals tab.'}
             </p>
-            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">Confirmed across Screener Trades + Moneycontrol Stock Deals · checked {checkedOn}</p>
+            <p className="mt-1.5 text-[9.5px] text-ink-secondary/70">Confirmed across Screener Trades + the daily agent (Moneycontrol / NSE / BSE) · checked {checkedOn}</p>
           </div>
         )
       ) : (
         <>
           {/* Honest provenance notes when a fallback filled a gap, or a source was
               blocked and the list may be incomplete. */}
-          {mcFilledGap && (
+          {fallbackFilledGap && (
             <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-teal-soft/50 px-2.5 py-1.5 text-[10.5px] leading-snug text-teal ring-1 ring-teal/15">
               <Info className="mt-px h-3 w-3 shrink-0" />
-              Screener has no matching records; Moneycontrol stock-deals data used for these {segment} deals.
+              Screener has no matching records; Moneycontrol / exchange (daily agent) data used for these {segment} deals.
             </p>
           )}
-          {!mcFilledGap && mcBlocked && (
-            <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-coral-soft/40 px-2.5 py-1.5 text-[10.5px] leading-snug text-coral ring-1 ring-coral/15">
+          {!fallbackFilledGap && fallbackUnverified && (
+            <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-champagne-soft/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-champagne-deep ring-1 ring-[#EAD9B6]">
               <Info className="mt-px h-3 w-3 shrink-0" />
-              Moneycontrol Stock Deals could not be read this run — this {segment}-deal list reflects Screener Trades only and may be incomplete.
+              Moneycontrol (NBH large deals) has not been verified yet — the daily research agent checks it on its next run, so this {segment}-deal list may still be incomplete.
             </p>
           )}
           {/* Compact summary strip — one soft inner panel, not scattered. */}
@@ -1196,8 +1201,8 @@ export function Ownership() {
           <span className="mt-px shrink-0 font-semibold text-ink-primary">Bulk/block deals source:</span>
           <span>
             {trades.moneycontrolUsed
-              ? 'Moneycontrol → Markets → Stock Deals → Large Deals (NBH) + Screener → Trades, merged and de-duped'
-              : 'Screener → Trades, with Moneycontrol Stock Deals (NBH large deals) as the fallback source'}{' '}· underlying exchange disclosures: NSE / BSE.
+              ? 'Screener → Trades + a daily research agent that pulls Moneycontrol (NBH large deals) / NSE / BSE via live web search, merged and de-duped'
+              : 'Screener → Trades, with a daily research agent (Moneycontrol NBH / NSE / BSE) + direct Moneycontrol fetch as fallback sources'}{' '}· underlying exchange disclosures: NSE / BSE.
           </span>
         </p>
         <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-soft-border/70 pt-1.5">
