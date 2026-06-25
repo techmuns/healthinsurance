@@ -85,3 +85,38 @@ so no human is in the loop. The chain:
 Validate a backfilled column against a known anchor before trusting the run — the
 agent's Niva H1FY26 GWP/NWP reproduced the hand-read deck values exactly, and the
 combined = claims + expense identity should hold per period.
+
+## Bulk / block deals — Moneycontrol fallback + relay
+
+The Bulk / Block Deal Timeline (Governance → Ownership) reads TWO sources, merged
+and de-duped at read time in `getTradeDisclosures()`:
+
+1. **Screener Trades** (`ownership-trade-disclosures.json`) — primary aggregator.
+2. **Moneycontrol Stock Deals** (`moneycontrol-stock-deals.json`) — fallback that
+   fills the **block deals Screener omits** (Niva Bupa = stock code `NBH`, page
+   `/markets/stock-deals/large-deals/NBH`). Fetcher:
+   `scripts/ingest/ingest-moneycontrol-stock-deals.ts` (offline-first, add-only,
+   block-tolerant, never fabricates). Verify: `npm run verify:moneycontrol-deals`.
+
+`www.moneycontrol.com` is Akamai-fronted and returns **403 to datacenter IPs**
+(GitHub Actions included), so the fetcher records an honest `status: blocked` and
+the UI shows "source requires manual review" — never a false "0 found".
+
+**To make it self-update (the chosen path):** set one GitHub **repo secret**
+`INGEST_FETCH_PROXY` to an in-region (India) scraping-relay URL **template that
+contains the literal `{url}`** placeholder. The daily `bulk-block-deals-fetch.yml`
+job already passes it through; `fetchBuffer()` swaps `{url}` for the encoded
+target and retries through the relay whenever the direct fetch is 403-blocked.
+
+- Where: GitHub → repo **Settings → Secrets and variables → Actions → New
+  repository secret** → name `INGEST_FETCH_PROXY`.
+- Example value (ScraperAPI): `https://api.scraperapi.com/?api_key=YOUR_KEY&country_code=in&render=true&url={url}`
+  (any relay that returns the raw bytes works — ZenRows, ScrapingBee, etc.).
+- Then **Actions → "bulk block deals fetch" → Run workflow** to populate now
+  (or wait for the weekday-evening cron). No code change needed.
+
+If the relay returns the page but rows don't parse (MC changed its DOM), the
+status flips to `parse_warning` ("needs review") — that's the signal to tune the
+generic table parser against the now-visible real HTML (or pin the exact JSON
+endpoint via `MONEYCONTROL_DEALS_API_NBH`).
+
