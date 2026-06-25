@@ -40,22 +40,28 @@ export function ValuationMarketView() {
           {/* ═══ 1. VALUATION HERO — gauge / journey infographic + lenses ════════ */}
           <ValuationHero />
 
-          {/* ═══ 2. PEER VALUATION MATRIX — one clean comparable table ═══════════ */}
+          {/* ═══ 2. PEER VALUATION MATRIX — one clean comparable table; its
+                   Book-value view now carries the NAV / book-value valuation for
+                   EVERY peer, so the old standalone Niva-only card is gone here. ═ */}
           <PeerValuationMatrix />
         </>
       ) : (
-        <ValuationPending company={company} peerRow={peerValuation.find((r) => r.companyId === company.id) ?? null} />
-      )}
+        <>
+          <ValuationPending company={company} peerRow={peerValuation.find((r) => r.companyId === company.id) ?? null} />
 
-      {/* ═══ NAV / BOOK-VALUE LENS — implied value at peer P/BV, working hidden ══ */}
-      <section>
-        <Eyebrow
-          label="Book-Value Lens"
-          title="NAV / book-value valuation"
-          note="Values the company on its net worth at a comparable listed-peer P/BV. The final number shows here; the full working is one click away."
-        />
-        <NavValuationCard companyId={company.id} companyName={company.shortName} />
-      </section>
+          {/* ═══ NAV / BOOK-VALUE LENS — per-company, only on the non-focal pending
+                   view (the peer matrix, which carries book value for all peers,
+                   isn't shown here), so each company keeps its book-value cross-check. */}
+          <section>
+            <Eyebrow
+              label="Book-Value Lens"
+              title={`${company.shortName} · NAV / book-value valuation`}
+              note="Values the company on its net worth at a comparable listed-peer P/BV. The final number shows here; the full working is one click away."
+            />
+            <NavValuationCard companyId={company.id} companyName={company.shortName} />
+          </section>
+        </>
+      )}
 
       {/* ═══ 5. QUALITY LENS — supports whether the premium is earned ════════════ */}
       <section>
