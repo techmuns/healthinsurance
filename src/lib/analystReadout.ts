@@ -104,7 +104,7 @@ export function selectionFromAuditCells(cells: AuditCell[]): SelectionItem[] {
 }
 
 // ── Period ordering — handles FYxx, Qn FYxx, H1/H2 FYxx, 9M FYxx ──────────────
-function periodSortKey(p: string): number {
+export function periodSortKey(p: string): number {
   const fy = p.match(/FY\s?(\d{2})/i)
   const year = fy ? 2000 + Number(fy[1]) : 0
   let frac = 0.9 // a full FY sorts after that FY's interim periods
@@ -325,9 +325,47 @@ export function buildAnalystRequest(items: SelectionItem[], datasetVersion = DAT
  *  read shown with or without AI. Honest: only grounded values, no fabrication,
  *  no trend implied from a single period. */
 export function localQuickRead(readout: Tier1Readout, items: SelectionItem[]): string[] {
-  const out: string[] = []
   const fmt = (v: number, u: string) => formatValue(v, u)
+  const signed = (v: number, u: string) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${fmt(Math.abs(v), u)}`
 
+  // Time-series: one dominant series (single metric + single entity, ≥2 periods).
+  if (readout.trends.length === 1 && readout.scope.metrics.length === 1 && readout.scope.companies.length === 1) {
+    const t = readout.trends[0]
+    const p0 = t.points[0].period
+    const pN = t.points[t.points.length - 1].period
+    const rose = t.absChange > 0
+    const verb = rose ? 'rose' : t.absChange < 0 ? 'eased' : 'was broadly flat'
+    const out: string[] = []
+    out.push(`${t.metricLabel} ${verb} from ${fmt(t.from, t.unit)} (${p0}) to ${fmt(t.to, t.unit)} (${pN}).`)
+    out.push(`That is ${signed(t.absChange, t.unit)}${t.pctChange != null ? ` (${t.pctChange > 0 ? '+' : ''}${t.pctChange}%)` : ''} across ${t.points.length} periods.`)
+    if (t.points.length > 2) {
+      let jump: { d: number; a: string; b: string } | null = null
+      for (let i = 1; i < t.points.length; i++) {
+        const d = t.points[i].value - t.points[i - 1].value
+        if (jump == null || Math.abs(d) > Math.abs(jump.d)) jump = { d, a: t.points[i - 1].period, b: t.points[i].period }
+      }
+      if (jump) out.push(`The biggest single move was ${jump.a}→${jump.b} (${signed(jump.d, t.unit)}).`)
+    }
+    const mag = t.pctChange != null ? Math.abs(t.pctChange) : null
+    if (mag != null) {
+      out.push(
+        mag >= 50
+          ? `This reads as ${rose ? 'a sharp multi-period expansion' : 'a steep multi-period decline'}, not a flat trend.`
+          : mag >= 10
+            ? `This reads as ${rose ? 'a steady climb' : 'a steady decline'} over the period.`
+            : 'This reads as broadly stable across the period.',
+      )
+    }
+    out.push(
+      readout.coverage.gaps === 0
+        ? `All ${readout.coverage.ready} selected cells are ready, so conviction is high for this selection.`
+        : `${readout.coverage.gaps} of ${readout.coverage.total} selected cells are gaps, so treat this as a partial read.`,
+    )
+    return out.slice(0, 6)
+  }
+
+  // Cross-section + general.
+  const out: string[] = []
   for (const m of readout.metricStats.slice(0, 3)) {
     if (m.higherIsBetter == null) {
       out.push(`${m.metricLabel} ranges from ${m.min.companyLabel} at ${fmt(m.min.value, m.unit)} to ${m.max.companyLabel} at ${fmt(m.max.value, m.unit)} (median ${fmt(m.median, m.unit)}).`)
@@ -339,22 +377,17 @@ export function localQuickRead(readout: Tier1Readout, items: SelectionItem[]): s
     const outlier = m.ranks.find((r) => r.isOutlier)
     if (outlier) out.push(`${outlier.companyLabel} stands apart from the group on ${m.metricLabel} at ${fmt(outlier.value, m.unit)}.`)
   }
-
   for (const t of readout.trends.slice(0, 2)) {
     const dir = t.absChange > 0 ? 'rose' : t.absChange < 0 ? 'eased' : 'held flat'
     out.push(`${t.companyLabel}'s ${t.metricLabel} ${dir} from ${fmt(t.from, t.unit)} to ${fmt(t.to, t.unit)} over ${t.points[0].period}–${t.points[t.points.length - 1].period}.`)
   }
-
-  // Nothing comparative — state the selected values plainly.
   if (out.length === 0) {
     for (const r of items.filter((i) => i.ready && i.value != null).slice(0, 4)) {
       out.push(`${r.companyLabel} · ${r.metricLabel} (${r.period}): ${fmt(r.value as number, r.unit)}.`)
     }
   }
-
   if (readout.scope.singlePeriod && readout.scope.periods[0] && out.length > 0) {
     out.push(`${readout.scope.periods[0]} only — not enough history to call a trend.`)
   }
-
   return out.slice(0, 6)
 }

@@ -1308,7 +1308,14 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
         </div>
       )}
 
-      {aiDrawerOpen && <AiAnalysisDrawer cells={aiSelection} autoGenerate={aiAutoGen} onClose={() => setAiDrawerOpen(false)} />}
+      {aiDrawerOpen && (
+        <AiAnalysisDrawer
+          cells={aiSelection}
+          autoGenerate={aiAutoGen}
+          onClose={() => setAiDrawerOpen(false)}
+          onClear={() => { clearAiSelection(); setAiDrawerOpen(false) }}
+        />
+      )}
     </div>
   )
 }
