@@ -73,22 +73,22 @@ export function ValuationHero() {
   )
 
   return (
-    <section className="relative overflow-hidden rounded-[1.5rem] border border-[#ECEAE0] bg-gradient-to-br from-[#FBFAF6] via-[#FCFCFA] to-[#F4F7FC] p-5 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_22px_50px_rgba(23,43,77,0.08)] sm:p-6 lg:p-7">
+    <section className="relative overflow-hidden rounded-[1.5rem] border border-[#ECEAE0] bg-gradient-to-br from-[#FBFAF6] via-[#FCFCFA] to-[#F4F7FC] p-4 shadow-[0_2px_4px_rgba(23,43,77,0.04),0_22px_50px_rgba(23,43,77,0.08)] sm:p-5 lg:p-6">
       {/* faint tonal pools — keep the canvas warm, never flat */}
       <span className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle,rgba(22,142,142,0.10),transparent 70%)' }} />
       <span className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle,rgba(182,139,58,0.10),transparent 70%)' }} />
 
-      <div className="relative grid items-stretch gap-6 lg:grid-cols-[0.92fr_1.16fr_0.96fr]">
+      <div className="relative grid items-stretch gap-4 lg:grid-cols-[0.92fr_1.16fr_0.96fr] lg:gap-5">
         {/* ── LEFT · the verdict (answers the page's question) ──────────── */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full" style={{ background: verdictTone.fg }} />
             <p className="text-[10.5px] font-bold uppercase tracking-[0.24em] text-champagne-deep">Street verdict</p>
           </div>
-          <h2 className="mt-2.5 font-display text-[27px] leading-[1.08] tracking-tight text-navy-deep">{verdictTitle}</h2>
-          <p className="mt-3 max-w-[20rem] text-[12.5px] leading-relaxed text-ink-secondary">{takeaway}</p>
+          <h2 className="mt-2 font-display text-[25px] leading-[1.08] tracking-tight text-navy-deep">{verdictTitle}</h2>
+          <p className="mt-2 max-w-[20rem] text-[12.5px] leading-relaxed text-ink-secondary">{takeaway}</p>
 
-          <div className="mt-4 flex flex-wrap gap-1.5">
+          <div className="mt-3 flex flex-wrap gap-1.5">
             <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ color: verdictTone.fg, background: verdictTone.bg }}>
               <span className="h-1.5 w-1.5 rounded-full" style={{ background: verdictTone.fg }} />
               {ac.ratingLabel}-skewed · {ac.analystCount} analyst{ac.analystCount === 1 ? '' : 's'}
@@ -100,14 +100,15 @@ export function ValuationHero() {
             )}
           </div>
 
-          <div className="mt-auto flex flex-wrap items-center gap-2 pt-5">
+          {/* Source — directly under the verdict content (no pushed-down gap). */}
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <SourceTag {...srcTag('niva-price')} />
             <SourceTag {...srcTag('niva-consensus')} />
           </div>
         </div>
 
         {/* ── CENTRE · valuation-position gauge / journey ───────────────── */}
-        <div className="flex flex-col items-center rounded-2xl border border-soft-border bg-white/65 px-4 pb-4 pt-3.5 shadow-soft backdrop-blur">
+        <div className="flex flex-col items-center rounded-2xl border border-soft-border bg-white/65 px-4 pb-3 pt-3 shadow-soft backdrop-blur">
           <div className="flex w-full items-center justify-between">
             <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-secondary">Valuation position</p>
             <p className="text-[9.5px] font-medium text-ink-secondary/80">vs IPO → fair value</p>
@@ -118,12 +119,12 @@ export function ValuationHero() {
           {/* Current price anchor */}
           <div className="-mt-1 text-center">
             <p className="font-display text-[30px] leading-none tracking-tight text-navy-deep tabular-nums">{px(price)}</p>
-            <p className="mt-1 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-secondary">Current price</p>
+            <p className="mt-0.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-secondary">Current price</p>
             <p className="mt-0.5 text-[9.5px] text-ink-secondary/75">{cleanAsOf(ms.priceAsOf)}</p>
           </div>
 
-          {/* Return + upside callouts */}
-          <div className="mt-3.5 grid w-full grid-cols-2 gap-2">
+          {/* Return + upside callouts — pulled close under the gauge/price */}
+          <div className="mt-2.5 grid w-full grid-cols-2 gap-2">
             <Callout
               label="Return since listing"
               value={upPct(ret)}
@@ -164,7 +165,6 @@ export function ValuationHero() {
 // the current price (the needle). Pure presentation over already-derived numbers.
 function ValuationGauge({ ipo, listed, price, target, hi }: { ipo: number; listed: number; price: number; target: number | null; hi: number }) {
   const W = 300
-  const H = 168
   const cx = 150
   const cy = 150
   const R = 124
@@ -188,8 +188,10 @@ function ValuationGauge({ ipo, listed, price, target, hi }: { ipo: number; liste
   ]
 
   return (
-    <div className="relative mt-1 w-full" style={{ maxWidth: 320 }}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Valuation position from IPO issue price to Street fair value">
+    <div className="relative mt-0.5 w-full" style={{ maxWidth: 252 }}>
+      {/* viewBox crops the dead space above the arc + below the hub so the gauge
+          reads compact without shrinking the arc itself. */}
+      <svg viewBox={`0 18 ${W} 144`} className="w-full" role="img" aria-label="Valuation position from IPO issue price to Street fair value">
         <defs>
           <linearGradient id="valGaugeGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0" stopColor="#C9A24C" />
@@ -263,12 +265,12 @@ function ValuationLensesCard({
   growthEdge: boolean
 }) {
   const maxV = Math.max(pGwp ?? 0, starPGwp ?? 0) || 1
-  const barH = (v: number | null) => (v == null ? 0 : Math.round(20 + 74 * (v / maxV)))
+  const barH = (v: number | null) => (v == null ? 0 : Math.round(12 + 26 * (v / maxV)))
   const pos52 = hi > lo ? Math.max(0, Math.min(100, ((price - lo) / (hi - lo)) * 100)) : 50
   const premiumUp = premiumVsStar != null && premiumVsStar >= 0
 
   return (
-    <aside className="flex flex-col rounded-2xl border border-soft-border bg-white/70 p-4 shadow-soft backdrop-blur">
+    <aside className="flex flex-col rounded-2xl border border-soft-border bg-white/70 p-3.5 shadow-soft backdrop-blur">
       <div className="flex items-center justify-between">
         <p className="text-[9.5px] font-bold uppercase tracking-[0.18em] text-ink-secondary">Valuation lenses</p>
         <span className="rounded-full bg-soft-blue px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-navy-primary">{gwpFy}</span>
@@ -276,7 +278,7 @@ function ValuationLensesCard({
 
       {/* Premium to listed peer — paired bars */}
       {pGwp != null && starPGwp != null && (
-        <div className="mt-3 rounded-xl border border-[#EAD9B6] bg-gradient-to-b from-[#FBF7EE] to-white p-3">
+        <div className="mt-2.5 rounded-xl border border-[#EAD9B6] bg-gradient-to-b from-[#FBF7EE] to-white p-2.5">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-champagne-deep">Premium to listed peer</p>
             {premiumVsStar != null && (
@@ -286,16 +288,16 @@ function ValuationLensesCard({
               </span>
             )}
           </div>
-          <div className="mt-2.5 flex items-end justify-center gap-6" style={{ height: 104 }}>
+          <div className="mt-2 flex items-end justify-center gap-6" style={{ height: 72 }}>
             <PeerBar name="Niva Bupa" value={xMult(pGwp)} h={barH(pGwp)} color={TEAL} focal />
             <PeerBar name="Star Health" value={xMult(starPGwp)} h={barH(starPGwp)} color={PEER} />
           </div>
-          <p className="mt-1.5 text-center text-[9px] font-medium uppercase tracking-[0.1em] text-ink-secondary/80">P / GWP · {gwpFy}</p>
+          <p className="mt-1 text-center text-[9px] font-medium uppercase tracking-[0.1em] text-ink-secondary/80">P / GWP · {gwpFy}</p>
         </div>
       )}
 
       {/* Lens rows */}
-      <div className="mt-3 space-y-1.5">
+      <div className="mt-2.5 space-y-1">
         <LensRow label="P / GWP" value={xMult(pGwp)} tone="navy" hint={gwpFy} />
         <LensRow label="Premium vs Star" value={premiumVsStar == null ? 'n/a' : `${premiumVsStar >= 0 ? '+' : ''}${premiumVsStar.toFixed(0)}%`} tone={premiumUp ? 'gold' : 'teal'} hint="P/GWP" />
         <LensRow label="Upside to fair value" value={upPct(upside)} tone={upside == null ? 'navy' : upside >= 0 ? 'gold' : 'coral'} hint="to consensus" />
@@ -303,7 +305,7 @@ function ValuationLensesCard({
       </div>
 
       {/* 52-week position */}
-      <div className="mt-3 rounded-xl border border-soft-border bg-ice/50 p-2.5">
+      <div className="mt-2 rounded-xl border border-soft-border bg-ice/50 p-2">
         <div className="flex items-center justify-between text-[9px] font-semibold uppercase tracking-wide text-ink-secondary">
           <span>52-week range</span>
           <span className="tabular-nums text-navy-deep">{px(lo)} – {px(hi)}</span>
@@ -314,7 +316,7 @@ function ValuationLensesCard({
       </div>
 
       {growthEdge && (
-        <p className="mt-3 text-[10.5px] leading-snug text-ink-secondary">
+        <p className="mt-2.5 text-[10.5px] leading-snug text-ink-secondary">
           The premium is <span className="font-semibold text-champagne-deep">backed by faster growth</span> than the listed peer.
         </p>
       )}
@@ -333,7 +335,7 @@ const TONE: Record<'teal' | 'gold' | 'navy' | 'coral', { fg: string; bg: string;
 function Callout({ label, value, tone, icon }: { label: string; value: string; tone: 'teal' | 'gold' | 'navy' | 'coral'; icon: ReactNode }) {
   const t = TONE[tone]
   return (
-    <div className="rounded-xl border px-2.5 py-2" style={{ background: t.bg, borderColor: t.ring }}>
+    <div className="rounded-xl border px-2.5 py-1.5" style={{ background: t.bg, borderColor: t.ring }}>
       <p className="text-[8.5px] font-semibold uppercase tracking-wide text-ink-secondary">{label}</p>
       <p className="mt-0.5 inline-flex items-center gap-1 font-display text-[18px] leading-none tabular-nums" style={{ color: t.fg }}>
         <span style={{ color: t.fg }}>{icon}</span>
@@ -346,7 +348,7 @@ function Callout({ label, value, tone, icon }: { label: string; value: string; t
 function LensRow({ label, value, tone, hint }: { label: string; value: string; tone: 'teal' | 'gold' | 'navy' | 'coral'; hint?: string }) {
   const t = TONE[tone]
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5" style={{ background: t.bg }}>
+    <div className="flex items-center justify-between gap-2 rounded-lg px-2 py-1" style={{ background: t.bg }}>
       <span className="text-[10.5px] font-medium text-ink-secondary">{label}</span>
       <span className="inline-flex items-baseline gap-1">
         <span className="font-display text-[14px] leading-none tabular-nums" style={{ color: t.fg }}>{value}</span>
