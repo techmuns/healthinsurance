@@ -120,6 +120,29 @@ function quarterlyPremiumMap(companyId: string): Map<string, { gwp: number | nul
   return map
 }
 
+/** Full-year GWP (₹ Cr) for a standalone health insurer, summed from the GI
+ *  Council MONTHLY health totals — used to fill an annual year the company hasn't
+ *  filed its annual report for yet (e.g. FY26) but where all 12 fiscal months are
+ *  on record. `health_total` is the total written premium for a standalone health
+ *  insurer (same basis the quarterly view already uses). NWP / NEP are NOT
+ *  derivable this way, so they stay an honest n/a. */
+function annualGwpFromMonthly(companyId: string): Map<string, number> {
+  const byFy: Record<string, Map<string, number>> = {}
+  for (const r of gicHealthMonthly.data as GicHealthMRow[]) {
+    if (r.entity !== companyId || typeof r.health_total !== 'number') continue
+    const m = MON_FY.exec(r.period)
+    if (!m || !FISCAL_MONTHS.includes(m[1])) continue
+    ;(byFy[`FY${m[2]}`] ??= new Map()).set(m[1], r.health_total)
+  }
+  const out = new Map<string, number>()
+  for (const [fy, months] of Object.entries(byFy)) {
+    if (FISCAL_MONTHS.every((mon) => months.has(mon))) {
+      out.set(fy, Math.round(FISCAL_MONTHS.reduce((s, mon) => s + (months.get(mon) ?? 0), 0) * 100) / 100)
+    }
+  }
+  return out
+}
+
 /** Multi-series tooltip — period, each reported measure, and the retention ratio.
  *  Null (not disclosed) measures are dropped so a missing value never reads as 0. */
 function PremiumTooltip({
@@ -211,9 +234,20 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
     // Where that differs materially from headline GWP (IRDAI 1/n long-term rule,
     // e.g. Niva Bupa FY25) we surface a compact note.
     const oneByN: string[] = []
+    const derivedFys: string[] = []
+    const monthlyAnnualGwp = annualGwpFromMonthly(focalId)
     rows = fyLabelsInRange(range).map((fy) => {
       const r = reportedByFy.get(fy)
-      if (!r) return { period: fy, gwp: null, nwp: null, nep: null }
+      if (!r) {
+        // No filed annual row yet — fill GWP from the GI Council 12-month health
+        // total when the whole fiscal year is on record (net / earned stay n/a).
+        const derived = monthlyAnnualGwp.get(fy)
+        if (derived != null) {
+          derivedFys.push(fy)
+          return { period: fy, gwp: derived, nwp: null, nep: null }
+        }
+        return { period: fy, gwp: null, nwp: null, nep: null }
+      }
       const gross = typeof r.gross_direct_premium === 'number' ? r.gross_direct_premium : r.gwp
       if (
         typeof r.gross_direct_premium === 'number' &&
@@ -224,7 +258,10 @@ export function PremiumFlowQuality({ focalId }: { focalId: string }) {
       }
       return { period: fy, gwp: gross, nwp: r.nwp, nep: r.nep }
     })
-    basisNote = oneByN.length >= 1 ? `${oneByN.join(', ')} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.` : undefined
+    const notes: string[] = []
+    if (oneByN.length >= 1) notes.push(`${oneByN.join(', ')} gross premium shown on IRDAI 1/n basis. Headline GWP may differ.`)
+    if (derivedFys.length >= 1) notes.push(`${derivedFys.join(', ')} gross is the GI Council 12-month health total; net / earned pending the company's annual results.`)
+    basisNote = notes.length ? notes.join(' ') : undefined
   }
 
   if (noHistory) {
