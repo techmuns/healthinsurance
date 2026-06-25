@@ -11,8 +11,9 @@
       "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA",
       "aggregator_url": "https://www.screener.in/company/NIVABUPA/#shareholding"
     },
-    "last_successful_run": "2026-06-24T17:56:35.723Z",
-    "notes": "Quantity in shares; price in Rs/share. side = buy | sell. deal_kind = bulk | block."
+    "last_successful_run": "2026-06-25T05:54:29.240Z",
+    "notes": "Quantity in shares; price in Rs/share. side = buy | sell. deal_kind = bulk | block.",
+    "moneycontrol_checked": true
   },
   "data": [
     {
