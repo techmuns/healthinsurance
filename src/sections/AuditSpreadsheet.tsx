@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, ExternalLink, FunctionSquare, Info, Building2, X, ArrowLeft, FileCheck2, Sparkles, MousePointerClick } from 'lucide-react'
 import {
   STATUS_META, formatValue, formatRaw,
@@ -462,7 +462,7 @@ function viewColumns(columns: GridCol[], view: AuditView, entityByColumn: boolea
   return ents.flatMap((e) => byE.get(e)!.slice().sort((a, b) => r(a) - r(b)))
 }
 
-function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false, onAiSelection, clearSignal = 0 }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView; verify?: VerifyGridProps; aiMode?: boolean; onAiSelection?: (cells: AuditCell[]) => void; clearSignal?: number }) {
+function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false, onAiSelection, onAnalyse, clearSignal = 0 }: { grid: Grid; raw: boolean; selected: AuditCell | null; onSelect: (c: AuditCell) => void; view: AuditView; verify?: VerifyGridProps; aiMode?: boolean; onAiSelection?: (cells: AuditCell[]) => void; onAnalyse?: () => void; clearSignal?: number }) {
   const { rows, entityByColumn } = grid
   const [dragKey, setDragKey] = useState<string | null>(null)
   const [overKey, setOverKey] = useState<string | null>(null)
@@ -510,6 +510,37 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false
     lastReport.current = sig
     onAiSelection?.(cells)
   }, [b?.r0, b?.r1, b?.c0, b?.c1, rows, columns, onAiSelection])
+
+  // ── AI Mode: a floating "Analyse" chip pinned to the selection ──────────────
+  // The action shows up right where the eye is — just above the top-right of the
+  // selected range, inside the scrolling grid so it tracks the cells on scroll.
+  // (If the selection hugs the top, under the sticky header, it drops below.)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [chip, setChip] = useState<{ top: number; left: number; below: boolean } | null>(null)
+  useLayoutEffect(() => {
+    const cont = scrollRef.current
+    if (!aiMode || !b || !cont) { setChip(null); return }
+    const topRight =
+      cont.querySelector<HTMLElement>(`[data-r="${b.r0}"][data-c="${b.c1}"]`) ??
+      cont.querySelector<HTMLElement>(`[data-r="${b.r0}"][data-c="${b.c0}"]`)
+    if (!topRight) { setChip(null); return }
+    const cr = cont.getBoundingClientRect()
+    const tr = topRight.getBoundingClientRect()
+    const headH = cont.querySelector('thead')?.getBoundingClientRect().height ?? 0
+    // Sit above the selection's top-right by default; if that top is tucked under
+    // the sticky header band, drop to just below the selection's bottom-right
+    // instead so the chip never hides behind the header or the data.
+    const below = tr.top - cr.top - headH < 30
+    const anchor = below
+      ? (cont.querySelector<HTMLElement>(`[data-r="${b.r1}"][data-c="${b.c1}"]`) ?? topRight).getBoundingClientRect()
+      : tr
+    setChip({
+      top: (below ? anchor.bottom : anchor.top) - cr.top + cont.scrollTop,
+      left: anchor.right - cr.left + cont.scrollLeft,
+      below,
+    })
+  }, [aiMode, b?.r0, b?.r1, b?.c0, b?.c1, raw])
+
   const aiCellProps = (r: number, c: number) =>
     aiMode
       ? {
@@ -569,7 +600,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false
 
   let lastSection = ''
   return (
-    <div className="overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '70vh', userSelect: aiMode ? 'none' : undefined }}>
+    <div ref={scrollRef} className="relative overflow-auto rounded-xl2 border border-soft-border bg-card shadow-soft" style={{ maxHeight: '70vh', userSelect: aiMode ? 'none' : undefined }}>
       <table className="border-separate" style={{ borderSpacing: 0 }}>
         <thead className="sticky top-0 z-20">
           {entityByColumn && (
@@ -664,6 +695,8 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false
                       return (
                         <td
                           key={col.col}
+                          data-r={ri}
+                          data-c={ci}
                           className={`border-b border-r border-soft-border/60 ${zebra ? 'bg-[#FAFCFE]' : 'bg-[#FCFDFE]'} ${aiMode ? 'cursor-cell' : ''}`}
                           style={{ ...dividerStyle(col), ...(inSel(ri, ci) ? { boxShadow: 'inset 0 0 0 2px #4F7BCF', background: 'rgba(79,123,207,0.12)' } : null) }}
                           {...aiCellProps(ri, ci)}
@@ -734,7 +767,7 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false
                             ? `${cell.metricLabel} · ${cell.period} — calculated cell · a value it depends on isn’t available (value for calculation not found)`
                             : `${cell.metricLabel} · ${cell.period} — missing · expected from ${pipe.label}`
                     return (
-                      <td key={col.col} className={`border-b border-r border-soft-border/60 p-0 ${aiMode ? 'cursor-cell' : ''}`} style={dividerStyle(col)} {...aiCellProps(ri, ci)}>
+                      <td key={col.col} data-r={ri} data-c={ci} className={`border-b border-r border-soft-border/60 p-0 ${aiMode ? 'cursor-cell' : ''}`} style={dividerStyle(col)} {...aiCellProps(ri, ci)}>
                         <button
                           type="button"
                           data-cell-id={cell.id}
@@ -787,6 +820,19 @@ function SheetGrid({ grid, raw, selected, onSelect, view, verify, aiMode = false
           })}
         </tbody>
       </table>
+      {/* Selection-anchored action — the "Analyse" button appears right at the
+          top-right of the cells the user just dragged across, scrolling with
+          them, so the action is where the eye already is. */}
+      {chip && onAnalyse && aiMode && (
+        <button
+          type="button"
+          onClick={onAnalyse}
+          className="absolute z-30 inline-flex items-center gap-1 rounded-full border border-[#9DB4D8] bg-gradient-to-br from-[#1E4079] to-[#143058] px-2.5 py-1 text-[11px] font-semibold text-white shadow-lift transition hover:brightness-110"
+          style={{ top: chip.top, left: chip.left, transform: chip.below ? 'translate(-100%, 6px)' : 'translate(-100%, calc(-100% - 6px))' }}
+        >
+          <Sparkles className="h-3 w-3" /> Analyse
+        </button>
+      )}
     </div>
   )
 }
@@ -813,7 +859,7 @@ function CompanyEmptyState({ label, onClear }: { label: string; onClear: () => v
 // Keyed by sheet + company in the page, so selection/drag state reset cleanly
 // when the sheet or company filter changes. The saved "Customize View" is keyed
 // by sheet only, so it survives a company-filter change and reloads on return.
-function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify, selected, onSelect, aiMode, onAiSelection, clearSignal }: {
+function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChange, onClearCompany, verify, selected, onSelect, aiMode, onAiSelection, onAnalyse, clearSignal }: {
   group: AuditGroup
   fullColumns: GridCol[]
   companyLabel: string
@@ -828,6 +874,8 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
   /** AI Mode: drag-select cells for analysis. */
   aiMode?: boolean
   onAiSelection?: (cells: AuditCell[]) => void
+  /** Open the analysis drawer for the current selection (from the in-grid chip). */
+  onAnalyse?: () => void
   clearSignal?: number
 }) {
   const grid = useMemo(() => buildGrid(group), [group])
@@ -960,7 +1008,7 @@ function GridView({ group, fullColumns, companyLabel, isFiltered, raw, onRawChan
 
       {/* Grid + (optional) detail */}
       <div className={selected ? 'grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]' : ''}>
-        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={onSelect} view={view} verify={verify} aiMode={aiMode} onAiSelection={onAiSelection} clearSignal={clearSignal} />
+        <SheetGrid grid={grid} raw={raw} selected={selected} onSelect={onSelect} view={view} verify={verify} aiMode={aiMode} onAiSelection={onAiSelection} onAnalyse={onAnalyse} clearSignal={clearSignal} />
         {selected && (
           <div className="lg:sticky lg:top-2 lg:self-start">
             <CellDetail
@@ -1262,12 +1310,38 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
         )}
       </div>
 
-      {/* AI Mode hint */}
+      {/* AI Mode — a contextual bar right above the grid: the drag hint until
+          cells are picked, then a live count + a primary "Analyse" action, so
+          the action sits where the eye already is rather than off at the page
+          edge. The same action also floats on the selection itself (in-grid). */}
       {aiMode && !verifyView && (
-        <div className="flex items-center gap-1.5 rounded-xl border border-[#9DB4D8] bg-soft-blue/60 px-3 py-1.5 text-[11px] text-navy-primary">
-          <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
-          Drag across cells to select a range. Press Esc to clear.
-        </div>
+        aiSelection.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-[#9DB4D8] bg-soft-blue/70 px-3 py-2">
+            <span className="text-[11.5px] font-semibold text-navy-deep">
+              {aiSelection.length} cell{aiSelection.length === 1 ? '' : 's'} selected · <span className="text-teal">{aiReady} ready</span>
+              {aiSelection.length - aiReady > 0 && (
+                <span className="text-coral"> · {aiSelection.length - aiReady} gap{aiSelection.length - aiReady > 1 ? 's' : ''}</span>
+              )}
+            </span>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => { setAiAutoGen(true); setAiDrawerOpen(true) }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Analyse selected data
+              </button>
+              <button type="button" onClick={clearAiSelection} className="inline-flex items-center gap-1 rounded-full border border-soft-border bg-white px-2.5 py-1 text-[11px] font-medium text-ink-secondary transition hover:border-coral/40 hover:text-coral">
+                <X className="h-3.5 w-3.5" /> Clear
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 rounded-xl border border-[#9DB4D8] bg-soft-blue/60 px-3 py-1.5 text-[11px] text-navy-primary">
+            <MousePointerClick className="h-3.5 w-3.5 shrink-0" />
+            Drag across cells to select a range. Press Esc to clear.
+          </div>
+        )
       )}
 
       {/* Contain a per-sheet render failure to this panel — the tab bar above
@@ -1300,34 +1374,11 @@ export function AuditSpreadsheet({ model, focus }: { model: AuditModel; focus?: 
             onSelect={setSelected}
             aiMode={aiMode}
             onAiSelection={setAiSelection}
+            onAnalyse={() => { setAiAutoGen(true); setAiDrawerOpen(true) }}
             clearSignal={clearSignal}
           />
         )}
       </SectionErrorBoundary>
-
-      {/* AI Mode floating action bar — only while there's an active selection. */}
-      {aiMode && aiSelection.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2 px-3">
-          <div className="flex items-center gap-3 rounded-full border border-[#9DB4D8] bg-card/95 px-3 py-2 shadow-lift backdrop-blur">
-            <span className="pl-1 text-[11.5px] font-semibold text-navy-deep">
-              {aiSelection.length} cell{aiSelection.length === 1 ? '' : 's'} selected · <span className="text-teal">{aiReady} ready</span>
-              {aiSelection.length - aiReady > 0 && (
-                <span className="text-coral"> · {aiSelection.length - aiReady} gap{aiSelection.length - aiReady > 1 ? 's' : ''}</span>
-              )}
-            </span>
-            <button
-              type="button"
-              onClick={() => { setAiAutoGen(true); setAiDrawerOpen(true) }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-br from-[#1E4079] to-[#143058] px-3.5 py-1.5 text-[12px] font-semibold text-white shadow-soft transition-transform hover:-translate-y-0.5"
-            >
-              <Sparkles className="h-3.5 w-3.5" /> Analyse selected data
-            </button>
-            <button type="button" onClick={clearAiSelection} className="rounded-full p-1 text-ink-secondary transition hover:bg-ice hover:text-navy-deep" aria-label="Clear selection">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
 
       {aiDrawerOpen && (
         <AiAnalysisDrawer
