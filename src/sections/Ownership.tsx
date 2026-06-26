@@ -184,6 +184,10 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
     const state = s.state === 'ok' || s.state === 'no_records' ? (c > 0 ? 'ok' : 'no_records') : s.state
     return { ...s, count: c, state }
   })
+  // Screener supplied this tab's rows while the direct Moneycontrol page came back
+  // empty → say so explicitly, so an empty Moneycontrol never reads as "no deals".
+  const mcDirect = view.sources.find((s) => s.name === 'Moneycontrol')
+  const screenerOverEmptyMc = segScreenerCount > 0 && !!mcDirect && (mcDirect.state === 'no_records' || mcDirect.state === 'blocked')
   // Per-tab summary (bought / sold / net / parties / largest) — same logic as the
   // section summary, scoped to the active segment.
   const segSummary = summarizeTradeDisclosures(segDeals)
@@ -326,6 +330,12 @@ function BulkBlockTimeline({ view, companyName }: { view: TradeDisclosuresView; 
             <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-champagne-soft/60 px-2.5 py-1.5 text-[10.5px] leading-snug text-champagne-deep ring-1 ring-[#EAD9B6]">
               <Info className="mt-px h-3 w-3 shrink-0" />
               Moneycontrol (NBH large deals) has not been verified yet — the daily research agent checks it on its next run, so this {segment}-deal list may still be incomplete.
+            </p>
+          )}
+          {!fallbackUnverified && screenerOverEmptyMc && (
+            <p className="mb-2.5 flex items-start gap-1.5 rounded-lg bg-teal-soft/40 px-2.5 py-1.5 text-[10.5px] leading-snug text-teal ring-1 ring-teal/15">
+              <Info className="mt-px h-3 w-3 shrink-0" />
+              Moneycontrol direct returned no records; the Screener Trades modal returned these {segment} deals.
             </p>
           )}
           {/* Compact summary strip — one soft inner panel, not scattered. */}
