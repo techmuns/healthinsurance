@@ -4,8 +4,8 @@
     "description": "Management / governance events (appointments, resignations, board & KMP changes) for the SAHI health insurers — web-sourced via the muns agent, each item source-linked. Medium confidence; verify against the underlying filing.",
     "schema_version": "1.1.0",
     "dataset": "ai_generated",
-    "last_updated": "2026-06-26",
-    "last_successful_run": "2026-06-26T09:36:12.143Z",
+    "last_updated": "2026-06-27",
+    "last_successful_run": "2026-06-27T08:42:40.433Z",
     "upstream_sources": [
       "muns_agent_web"
     ],
@@ -15,40 +15,52 @@
   },
   "data": [
     {
-      "company_id": "niva-bupa",
-      "event_date": "2026-01-01",
-      "event_type": "kmp_change",
-      "person_name": "Christopher Lane",
-      "designation": "CEO / senior leadership oversight",
-      "event_summary": "Niva Bupa’s board page states Christopher Lane became CEO of Bupa Global, India & UK effective 1 Jan 2026, a material leadership change at the parent business overseeing Niva Bupa.",
-      "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/board-of-directors.aspx",
-      "confidence": "medium",
-      "fetched_at": "2026-06-26T09:36:12.143Z"
-    },
-    {
-      "company_id": "niva-bupa",
-      "event_date": "2024-06-01",
+      "company_id": "manipalcigna",
+      "event_date": "2026-06-27",
       "event_type": "appointment",
-      "person_name": "Aparna Sharma",
-      "designation": "Company Secretary / Secretarial Team",
-      "event_summary": "Niva Bupa’s management page says Aparna Sharma joined the company’s secretarial team in June 2024.",
-      "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/management-team.aspx",
+      "person_name": "Anjan Kumar Ganguly",
+      "designation": "Chief Financial Officer",
+      "event_summary": "ManipalCigna named Anjan Kumar Ganguly as CFO, according to ETBFSI reporting.",
+      "source_name": "bfsi.economictimes.indiatimes.com",
+      "source_url": "https://bfsi.economictimes.indiatimes.com/articles/anjan-kumar-ganguly-joins-manipalcigna-health-insurance-as-cfo/131631191",
       "confidence": "medium",
-      "fetched_at": "2026-06-26T09:36:12.143Z"
+      "fetched_at": "2026-06-27T08:42:40.433Z"
+    },
+    {
+      "company_id": "star-health",
+      "event_date": "2026-02-13",
+      "event_type": "resignation",
+      "person_name": "Utpal Sheth",
+      "designation": "Non-Executive Non-Independent Director",
+      "event_summary": "Star Health accepted the resignation of Utpal Sheth as director.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/star-health-accepts-resignation-of-utpal-sheth-and-appoints-him-as-additional-director/44022323",
+      "confidence": "medium",
+      "fetched_at": "2026-06-27T08:42:40.433Z"
+    },
+    {
+      "company_id": "star-health",
+      "event_date": "2026-02-13",
+      "event_type": "appointment",
+      "person_name": "Utpal Sheth",
+      "designation": "Additional Director (Non-Executive Independent Director)",
+      "event_summary": "Following his resignation in the previous category, Star Health appointed Utpal Sheth as an Additional Director designated as Non-Executive Independent Director.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/star-health-accepts-resignation-of-utpal-sheth-and-appoints-him-as-additional-director/44022323",
+      "confidence": "medium",
+      "fetched_at": "2026-06-27T08:42:40.433Z"
     },
     {
       "company_id": "niva-bupa",
-      "event_date": "2024-03-31",
-      "event_type": "board_change",
-      "person_name": "Jolly Abraham Plammoottil",
-      "designation": "Audit Committee member / director",
-      "event_summary": "Niva Bupa’s FY24 annual report notes that Jolly Abraham Plammoottil resigned as a member of the Audit Committee.",
-      "source_name": "transactions.nivabupa.com",
-      "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/Corporate-Announcements/2024-25/Submision%20of%20Annual%20report%20for%20the%20financial%20year%20ended%20March%2031,%202024.pdf",
+      "event_date": "2026-01-16",
+      "event_type": "appointment",
+      "person_name": "Ashwani Bhatia",
+      "designation": "Non-Executive Independent Director",
+      "event_summary": "Niva Bupa announced the appointment of Ashwani Bhatia as a Non-Executive Independent Director.",
+      "source_name": "scanx.trade",
+      "source_url": "https://scanx.trade/stock-market-news/companies/niva-bupa-appoints-ashwani-bhatia-as-non-executive-independent-director/42026112",
       "confidence": "medium",
-      "fetched_at": "2026-06-26T09:36:12.143Z"
+      "fetched_at": "2026-06-27T08:42:40.433Z"
     }
   ]
 }
