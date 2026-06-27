@@ -23981,7 +23981,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-26T07:08:51.179Z",
+      "last_attempt_at": "2026-06-27T06:43:10.906Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24016,14 +24016,14 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-26T07:08:53.807Z",
-      "last_success_at": "2026-06-26T07:08:53.807Z",
+      "last_attempt_at": "2026-06-27T06:43:13.671Z",
+      "last_success_at": "2026-06-27T06:43:13.671Z",
       "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-26T07:10:02.004Z",
+      "last_attempt_at": "2026-06-27T06:44:22.715Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24037,29 +24037,29 @@
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-26T07:09:26.738Z",
-      "last_success_at": "2026-06-26T07:09:26.738Z",
-      "records_fetched": 9
+      "last_attempt_at": "2026-06-27T06:43:48.371Z",
+      "last_success_at": "2026-06-27T06:43:48.371Z",
+      "records_fetched": 10
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-26T07:09:32.767Z",
+      "last_attempt_at": "2026-06-27T06:43:53.746Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-26T07:10:05.793Z",
+      "last_attempt_at": "2026-06-27T06:44:24.544Z",
       "last_success_at": "2026-06-24T12:12:15.844Z",
       "records_fetched": 0
     },
     {
       "source_id": "moneycontrol_stock_deals",
       "status": "success",
-      "last_attempt_at": "2026-06-26T07:09:18.217Z",
-      "last_success_at": "2026-06-26T07:09:18.217Z",
+      "last_attempt_at": "2026-06-27T06:43:39.126Z",
+      "last_success_at": "2026-06-27T06:43:39.126Z",
       "records_fetched": 0
     }
   ]
