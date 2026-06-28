@@ -23810,6 +23810,7 @@
     "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
     "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
     "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
+    "[moneycontrol_analyst] Broker Research page fetched but no broker cards matched (DOM may have changed).",
     "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
     "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W",
@@ -23981,7 +23982,7 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-27T06:43:10.906Z",
+      "last_attempt_at": "2026-06-28T07:38:29.661Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24016,14 +24017,14 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-27T06:43:13.671Z",
-      "last_success_at": "2026-06-27T06:43:13.671Z",
-      "records_fetched": 6
+      "last_attempt_at": "2026-06-28T07:38:31.384Z",
+      "last_success_at": "2026-06-28T07:38:31.384Z",
+      "records_fetched": 0
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-27T06:44:22.715Z",
+      "last_attempt_at": "2026-06-28T07:39:26.527Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24037,29 +24038,29 @@
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-27T06:43:48.371Z",
-      "last_success_at": "2026-06-27T06:43:48.371Z",
+      "last_attempt_at": "2026-06-28T07:38:52.759Z",
+      "last_success_at": "2026-06-28T07:38:52.759Z",
       "records_fetched": 10
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-27T06:43:53.746Z",
+      "last_attempt_at": "2026-06-28T07:38:58.038Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-27T06:44:24.544Z",
+      "last_attempt_at": "2026-06-28T07:39:27.965Z",
       "last_success_at": "2026-06-24T12:12:15.844Z",
       "records_fetched": 0
     },
     {
       "source_id": "moneycontrol_stock_deals",
       "status": "success",
-      "last_attempt_at": "2026-06-27T06:43:39.126Z",
-      "last_success_at": "2026-06-27T06:43:39.126Z",
+      "last_attempt_at": "2026-06-28T07:38:44.171Z",
+      "last_success_at": "2026-06-28T07:38:44.171Z",
       "records_fetched": 0
     }
   ]
