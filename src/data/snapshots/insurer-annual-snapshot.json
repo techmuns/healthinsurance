@@ -23,6 +23,111 @@
   "data": [
     {
       "company_id": "niva-bupa",
+      "fiscal_year": "FY26",
+      "gwp": 8585.9,
+      "nwp": null, "nep": null, "pat": null, "revenue": null,
+      "combined_ratio": null, "cisor": null, "claims_ratio": null, "expense_ratio": null, "commission_ratio": null,
+      "solvency_ratio": null, "roe": null, "market_share": null, "retail_mix": null, "group_mix": null,
+      "renewal_rate": null, "claims_settlement_ratio": null, "branch_count": null, "employee_count": null, "distribution_summary": null,
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026, FY26 provisional & unaudited) — Niva Bupa Grand Total (Health + Personal Accident) ₹8,585.9 Cr; YoY +27.0% vs the same report's FY25 ₹6,762.2 Cr (same GI-Council basis). Premium only — FY26 audited profitability/ROE/solvency not yet published.",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "parser_name": "gicouncil-segment-annual (per-insurer grand total)",
+        "confidence": "high"
+      },
+      "customer_retention": null,
+      "growth_yoy": 27.0,
+      "market_share_change": null,
+      "valuation_p_gwp": null
+    },
+    {
+      "company_id": "star-health",
+      "fiscal_year": "FY26",
+      "gwp": 18605.5,
+      "nwp": null, "nep": null, "pat": null, "revenue": null,
+      "combined_ratio": null, "cisor": null, "claims_ratio": null, "expense_ratio": null, "commission_ratio": null,
+      "solvency_ratio": null, "roe": null, "market_share": null, "retail_mix": null, "group_mix": null,
+      "renewal_rate": null, "claims_settlement_ratio": null, "branch_count": null, "employee_count": null, "distribution_summary": null,
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026, FY26 provisional & unaudited) — Star Health Grand Total (Health + Personal Accident) ₹18,605.5 Cr; YoY +11.3% vs the same report's FY25 ₹16,716.2 Cr (same GI-Council basis). Premium only — FY26 audited profitability/ROE/solvency not yet published.",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "parser_name": "gicouncil-segment-annual (per-insurer grand total)",
+        "confidence": "high"
+      },
+      "customer_retention": null,
+      "growth_yoy": 11.3,
+      "market_share_change": null,
+      "valuation_p_gwp": null
+    },
+    {
+      "company_id": "care-health",
+      "fiscal_year": "FY26",
+      "gwp": 10031.3,
+      "nwp": null, "nep": null, "pat": null, "revenue": null,
+      "combined_ratio": null, "cisor": null, "claims_ratio": null, "expense_ratio": null, "commission_ratio": null,
+      "solvency_ratio": null, "roe": null, "market_share": null, "retail_mix": null, "group_mix": null,
+      "renewal_rate": null, "claims_settlement_ratio": null, "branch_count": null, "employee_count": null, "distribution_summary": null,
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026, FY26 provisional & unaudited) — Care Health Grand Total (Health + Personal Accident) ₹10,031.3 Cr; YoY +20.9% vs the same report's FY25 ₹8,296.6 Cr (same GI-Council basis). Premium only — FY26 audited profitability/ROE/solvency not yet published.",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "parser_name": "gicouncil-segment-annual (per-insurer grand total)",
+        "confidence": "high"
+      },
+      "customer_retention": null,
+      "growth_yoy": 20.9,
+      "market_share_change": null,
+      "valuation_p_gwp": null
+    },
+    {
+      "company_id": "aditya-birla",
+      "fiscal_year": "FY26",
+      "gwp": 6238.2,
+      "nwp": null, "nep": null, "pat": null, "revenue": null,
+      "combined_ratio": null, "cisor": null, "claims_ratio": null, "expense_ratio": null, "commission_ratio": null,
+      "solvency_ratio": null, "roe": null, "market_share": null, "retail_mix": null, "group_mix": null,
+      "renewal_rate": null, "claims_settlement_ratio": null, "branch_count": null, "employee_count": null, "distribution_summary": null,
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026, FY26 provisional & unaudited) — Aditya Birla Health Grand Total (Health + Personal Accident) ₹6,238.2 Cr; YoY +29.4% vs the same report's FY25 ₹4,821.7 Cr (same GI-Council basis). Premium only — FY26 audited profitability/ROE/solvency not yet published.",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "parser_name": "gicouncil-segment-annual (per-insurer grand total)",
+        "confidence": "high"
+      },
+      "customer_retention": null,
+      "growth_yoy": 29.4,
+      "market_share_change": null,
+      "valuation_p_gwp": null
+    },
+    {
+      "company_id": "manipalcigna",
+      "fiscal_year": "FY26",
+      "gwp": 2213.0,
+      "nwp": null, "nep": null, "pat": null, "revenue": null,
+      "combined_ratio": null, "cisor": null, "claims_ratio": null, "expense_ratio": null, "commission_ratio": null,
+      "solvency_ratio": null, "roe": null, "market_share": null, "retail_mix": null, "group_mix": null,
+      "renewal_rate": null, "claims_settlement_ratio": null, "branch_count": null, "employee_count": null, "distribution_summary": null,
+      "provenance": {
+        "source_name": "GI Council Segment-wise Report (upto March 2026, FY26 provisional & unaudited) — ManipalCigna Grand Total (Health + Personal Accident) ₹2,213.0 Cr; YoY +23.1% vs the same report's FY25 ₹1,797.6 Cr (same GI-Council basis). Premium only — FY26 audited profitability/ROE/solvency not yet published.",
+        "source_url": "https://www.gicouncil.in/media/4638/segment_march_2026-170426.xlsx",
+        "source_file": "data/agent-pulls/industry-segment-history/sources/segment_march_2026-170426.xlsx",
+        "source_period": "FY26",
+        "parser_name": "gicouncil-segment-annual (per-insurer grand total)",
+        "confidence": "high"
+      },
+      "customer_retention": null,
+      "growth_yoy": 23.1,
+      "market_share_change": null,
+      "valuation_p_gwp": null
+    },
+    {
+      "company_id": "niva-bupa",
       "fiscal_year": "FY25",
       "gwp": 6762.23,
       "gross_direct_premium": 6762.23,

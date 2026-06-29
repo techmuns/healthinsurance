@@ -447,11 +447,12 @@ export function CompetitivePositioning() {
   const activeCell = selectedRow.cells[activeKey] ?? selectedRow.cells.growth
   const cellSource = resolveCellSource(selectedRow.insurer.id, activeCell.metric.key)
   const pickCell = (companyId: string, key: string) => { setActiveCompany(companyId); setActiveKey(key) }
-  // Competitive Position has no frequency toggle — the scorecard is a latest-
-  // figures snapshot. Label it with the ACTUAL data year (the latest annual FY
-  // in the snapshot), not the selected range, so picking an earlier range never
-  // mislabels the latest figures as some other span.
-  const rangeLabel = `${getLatestAnnualFyLabel()} (latest)`
+  // Competitive Position has no frequency toggle — the scorecard shows each
+  // metric's LATEST real value, which can span fiscal years (e.g. provisional
+  // FY26 GWP growth alongside the latest audited FY25 profitability and live
+  // market multiples). Each cell's exact period is on its source tag, so the
+  // footer states the span honestly rather than claiming one single year.
+  const rangeLabel = `latest available per metric · FY26 GWP growth (provisional) · ${getLatestAnnualFyLabel()} profitability · live multiples`
 
   const explainGrowth = focalRow.cells.growth.tone === 'leader' || focalRow.cells.growth.tone === 'strong'
     ? `Strong GWP growth${focalRow.cells.retailMix.tone === 'leader' || focalRow.cells.retailMix.tone === 'strong' ? ' + retail-mix lead' : ''}`

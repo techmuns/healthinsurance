@@ -775,25 +775,41 @@ function realPriceToGwp(companyId: string): number | null {
   return row?.price_to_gwp ?? null
 }
 
+// Newest annual row (rows are newest-FY-first) where `field` is a real number —
+// so every metric independently shows its LATEST real value and auto-advances as
+// data lands, even when metrics are sourced for different fiscal years (e.g. a
+// provisional FY26 GWP alongside the latest audited FY25 ROE / solvency). Missing
+// stays missing (returns null), never a fake 0.
+function latestField(rows: InsurerAnnualLike[], field: keyof InsurerAnnualLike): number | null {
+  for (const r of rows) {
+    const v = r[field]
+    if (typeof v === 'number' && isFinite(v)) return v
+  }
+  return null
+}
+
 function buildInsurer(c: CompanyMasterEntry): Insurer {
-  const rows = annualRowsFor(c.company_id)
-  const latest = rows[0] ?? null
-  const prior = rows.find((r, idx) => idx > 0 && r.gwp != null) ?? null
+  const rows = annualRowsFor(c.company_id) // newest fiscal year first
 
-  const gwp = latest?.gwp ?? 0
-  const combinedRatio = latest?.combined_ratio ?? 0 // 0 = N/A (life)
-  const roe = latest?.roe ?? 0
-  const marketShare = latest?.market_share ?? 0
+  const gwp = latestField(rows, 'gwp') ?? 0
+  const combinedRatio = latestField(rows, 'combined_ratio') ?? 0 // 0 = N/A (life)
+  const roe = latestField(rows, 'roe') ?? 0
+  const marketShare = latestField(rows, 'market_share') ?? 0
 
-  // Prefer a true YoY derivation when two years exist (auto-updates on ingest),
-  // else fall back to the value cited on the latest row.
+  // Growth on a CONSISTENT basis: prefer the YoY printed on the newest GWP row
+  // (set when that row's premium is sourced on a different basis than the prior
+  // year — e.g. a GI-Council provisional FY26 GWP whose honest YoY is computed
+  // within the same source), else derive from the two newest GWP rows.
+  const gwpRows = rows.filter((r) => typeof r.gwp === 'number' && isFinite(r.gwp))
+  const g0 = gwpRows[0] ?? null
+  const g1 = gwpRows[1] ?? null
   const growth = round1(
-    latest?.gwp != null && prior?.gwp ? (latest.gwp / prior.gwp - 1) * 100 : latest?.growth_yoy ?? 0,
+    g0?.growth_yoy != null ? g0.growth_yoy : g0?.gwp != null && g1?.gwp ? (g0.gwp / g1.gwp - 1) * 100 : 0,
   )
   // Use the reported YoY pp change directly: historical market_share rows in the
   // snapshot can be on a different basis (overall-health vs segment pool), so
   // deriving latest-minus-prior would mix bases.
-  const marketShareChange = round1(latest?.market_share_change ?? 0)
+  const marketShareChange = round1(latestField(rows, 'market_share_change') ?? 0)
 
   const insurer: Insurer = {
     id: c.company_id,
@@ -803,23 +819,34 @@ function buildInsurer(c: CompanyMasterEntry): Insurer {
     peerGroup: c.peer_group,
     marketShare,
     premiumCollection: gwp,
-    settlementRatio: latest?.claims_settlement_ratio ?? 0,
-    renewalRate: latest?.renewal_rate ?? 0,
-    customerRetention: latest?.customer_retention ?? 0,
+    settlementRatio: latestField(rows, 'claims_settlement_ratio') ?? 0,
+    renewalRate: latestField(rows, 'renewal_rate') ?? 0,
+    customerRetention: latestField(rows, 'customer_retention') ?? 0,
     growth,
     margin: combinedRatio > 0 ? round1(100 - combinedRatio) : 0,
     combinedRatio,
-    solvency: latest?.solvency_ratio ?? 0,
+    solvency: latestField(rows, 'solvency_ratio') ?? 0,
     roe,
-    valuation: realPriceToGwp(c.company_id) ?? latest?.valuation_p_gwp ?? 0, // real feed first; 0 = N/A (unlisted)
+    valuation: realPriceToGwp(c.company_id) ?? latestField(rows, 'valuation_p_gwp') ?? 0, // real feed first; 0 = N/A (unlisted)
     marketShareChange,
-    retailMix: latest?.retail_mix ?? 0,
+    retailMix: latestField(rows, 'retail_mix') ?? 0,
     signal: 'Watch',
     takeaway: '',
   }
   insurer.signal = deriveSignal(combinedRatio, growth, roe)
   insurer.takeaway = deriveTakeaway(insurer)
   return insurer
+}
+
+/** Provenance of the newest annual row where `field` is a real number — so a
+ *  per-metric source tag points at the exact filing that metric's shown value
+ *  came from (e.g. growth → the FY26 GI-Council premium; ROE → the FY25 AR). */
+export function getMetricRowProvenance(companyId: string, field: string): RowProvenance | null {
+  for (const r of annualRowsFor(companyId)) {
+    const v = (r as unknown as Record<string, unknown>)[field]
+    if (typeof v === 'number' && isFinite(v)) return (r as { provenance?: RowProvenance }).provenance ?? null
+  }
+  return null
 }
 
 // Standalone-health minnows with negligible market share and no meaningful
@@ -903,7 +930,13 @@ export const RETAIL_MIX_SOURCE = {
 /** Latest annual fiscal-year label actually present in the snapshot (e.g. "FY25").
  *  Period labels must reflect the real underlying data — never a hardcoded year. */
 export function getLatestAnnualFyLabel(): string {
-  const fys = (annualSnapshot.data as Array<{ fiscal_year: string }>).map((r) => fyNum(r.fiscal_year))
+  // Latest fiscal year with a COMPLETE audited financial picture (profitability),
+  // not a premium-only provisional year — so headline "as of FYxx" labels stay
+  // honest. A premium-only FY26 row (GI Council provisional GWP) does NOT advance
+  // this; the per-metric source tags carry each cell's own period.
+  const fys = (annualSnapshot.data as Array<{ fiscal_year: string; roe: number | null; combined_ratio: number | null }>)
+    .filter((r) => r.roe != null || r.combined_ratio != null)
+    .map((r) => fyNum(r.fiscal_year))
   const max = fys.length ? Math.max(...fys) : 0
   return max ? `FY${max}` : 'FY25'
 }

@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
-import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance } from '@/lib/dataLayer'
+import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance } from '@/lib/dataLayer'
 import type { DashboardFilters, Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
@@ -259,8 +259,9 @@ export interface CellSource {
   provenance: { source_name?: string; source_url?: string; fetched_at?: string | null }
 }
 
-// Scorecard metric key → its column in the per-metric provenance map.
-// `growth` is derived from GWP, so its source is the GWP filing.
+// Scorecard metric key → the annual-snapshot column whose value drives it.
+// `growth` is computed from GWP, so its source is the GWP row (which for SAHIs is
+// the provisional FY26 GI-Council premium; for others the latest reported GWP).
 const METRIC_PROV_FIELD: Record<string, string> = {
   growth: 'gwp',
   retailMix: 'retail_mix',
@@ -272,11 +273,19 @@ const METRIC_PROV_FIELD: Record<string, string> = {
 // Valuation multiples come from the daily market feed, not the annual filing.
 const VALUATION_KEYS = new Set(['priceToEarnings', 'priceToBook', 'valuation'])
 
+function labelFor(sourceName?: string): string {
+  return /GI Council/i.test(sourceName ?? '') ? 'GI Council' : 'Company filing'
+}
+
 /**
- * Resolve a real, clickable source for one scorecard cell. Priority:
- *   1. exact per-metric provenance (data-provenance.json),
- *   2. the company's annual-report filing (embedded on the annual snapshot row),
- *   3. for valuation multiples, the daily valuation feed.
+ * Resolve a real, clickable source for one scorecard cell — with the EXACT
+ * fiscal year that cell's shown value came from (so a FY26 GWP-growth cell links
+ * to the FY26 GI-Council premium while a FY25 ROE cell links to the FY25 annual
+ * report). Priority:
+ *   1. the snapshot row that supplied this metric's latest real value,
+ *   2. the per-metric provenance map (data-provenance.json),
+ *   3. the company's annual-report filing,
+ *   4. for valuation multiples, the daily valuation feed.
  * Returns null only when no source URL is on record.
  */
 export function resolveCellSource(companyId: string, metricKey: string): CellSource | null {
@@ -295,10 +304,20 @@ export function resolveCellSource(companyId: string, metricKey: string): CellSou
 
   const field = METRIC_PROV_FIELD[metricKey]
   if (field) {
+    // The row that actually supplied this metric's value — carries the right FY.
+    const rp = getMetricRowProvenance(companyId, field)
+    if (rp?.source_url) {
+      return {
+        label: labelFor(rp.source_name),
+        period: rp.source_period,
+        confidence: rp.confidence ?? 'high',
+        provenance: { source_name: rp.source_name, source_url: rp.source_url, fetched_at: rp.fetched_at },
+      }
+    }
     const p = lookupProvenance(`company.${field}`, companyId, 'Annual')
     if (p?.source_url) {
       return {
-        label: 'Company filing',
+        label: labelFor(p.source_name),
         period: p.source_period,
         confidence: p.confidence,
         provenance: { source_name: p.source_name, source_url: p.source_url, fetched_at: p.fetched_at },
@@ -311,7 +330,7 @@ export function resolveCellSource(companyId: string, metricKey: string): CellSou
   const row = getAnnualRowProvenance(companyId)
   if (row?.source_url) {
     return {
-      label: 'Company filing',
+      label: labelFor(row.source_name),
       period: row.source_period,
       confidence: row.confidence ?? 'high',
       provenance: { source_name: row.source_name, source_url: row.source_url, fetched_at: row.fetched_at },
