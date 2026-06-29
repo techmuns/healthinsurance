@@ -149,8 +149,9 @@ function Header({ variant, count }: { variant: 'full' | 'compact'; count: number
           <Users className="h-5 w-5 text-navy-deep" strokeWidth={2} />
           <h2 className="font-display text-[21px] leading-tight text-navy-deep">Management &amp; Event Intelligence</h2>
         </div>
+        <p className="mt-1 max-w-2xl text-[11.5px] leading-snug text-ink-secondary">Leadership, board, governance and execution events that can affect the investment thesis.</p>
       </div>
-      {count > 0 && <span className="text-[11px] text-ink-secondary">{count} source-backed event{count === 1 ? '' : 's'}</span>}
+      {count > 0 && <span className="shrink-0 text-[11px] text-ink-secondary">{count} source-backed event{count === 1 ? '' : 's'}</span>}
     </div>
   )
 }

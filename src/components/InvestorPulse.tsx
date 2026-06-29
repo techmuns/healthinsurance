@@ -130,12 +130,16 @@ function HeroTile({
   value,
   sub,
   tone,
+  impact,
+  confidence,
 }: {
   icon: LucideIcon
   label: string
   value: string
   sub?: string
   tone: { fg: string; bg: string }
+  impact?: SignalImpact
+  confidence?: PulseSignal['confidence']
 }) {
   return (
     <div className="flex items-start gap-2.5 rounded-xl border border-soft-border bg-white p-2.5">
@@ -145,6 +149,12 @@ function HeroTile({
       <div className="min-w-0">
         <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{label}</p>
         <p className="line-clamp-2 text-[12px] font-semibold leading-tight text-navy-deep" title={value}>{value}</p>
+        {(impact || confidence) && (
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {impact && <ImpactChip impact={impact} />}
+            {confidence && <ConfidenceDot confidence={confidence} />}
+          </div>
+        )}
         {sub && <p className="mt-0.5 truncate text-[10px] leading-tight text-ink-secondary" title={sub}>{sub}</p>}
       </div>
     </div>
@@ -166,7 +176,6 @@ function PulseCard({
   emptyText: string
   accent: string
 }) {
-  const [open, setOpen] = useState(false)
   return (
     <div className="flex flex-col rounded-xl border border-soft-border bg-card p-3 shadow-soft">
       <div className="flex items-center gap-1.5">
@@ -174,23 +183,22 @@ function PulseCard({
         <p className="text-[9px] font-bold uppercase tracking-[0.1em]" style={{ color: accent }}>{label}</p>
       </div>
       {signal ? (
-        <button type="button" onClick={() => setOpen((v) => !v)} className="mt-2 flex flex-1 flex-col text-left">
+        <div className="mt-2 flex flex-1 flex-col">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-ink-secondary">
               <CalendarClock className="h-3 w-3" strokeWidth={2.2} />
               {signal.dateLabel}
             </span>
             <ImpactChip impact={signal.impact} />
+            <ConfidenceDot confidence={signal.confidence} />
           </div>
-          <p className={`mt-1.5 text-[12px] font-semibold leading-snug text-navy-deep ${open ? '' : 'line-clamp-2'}`}>{signal.title}</p>
-          {open && signal.whyItMatters && <p className="mt-1 text-[11px] leading-snug text-ink-secondary">{signal.whyItMatters}</p>}
-          <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+          <p className="mt-1.5 text-[12px] font-semibold leading-snug text-navy-deep line-clamp-2">{signal.title}</p>
+          {/* the one-line implication, always visible */}
+          {signal.whyItMatters && <p className="mt-1 text-[11px] leading-snug text-ink-secondary line-clamp-2">{signal.whyItMatters}</p>}
+          <div className="mt-auto pt-2">
             <SourceLink name={signal.sourceName} url={signal.sourceUrl} />
-            <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold text-ink-secondary">
-              {open ? 'Less' : 'Why'} <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
-            </span>
           </div>
-        </button>
+        </div>
       ) : (
         <p className="mt-2 flex-1 text-[11px] leading-snug text-ink-secondary">{emptyText}</p>
       )}
@@ -264,7 +272,7 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
 
       {pulse.isEmpty ? (
         <div className="relative mt-4 rounded-xl border border-dashed border-soft-border bg-white/70 px-4 py-10 text-center">
-          <p className="font-editorial text-[15px] font-semibold text-navy-deep">No major new signal found for {pulse.company}.</p>
+          <p className="font-editorial text-[15px] font-semibold text-navy-deep">No major new source-backed signal today for {pulse.company}.</p>
           <p className="mt-1 text-[12px] text-ink-secondary">There&apos;s no source-backed market intelligence or governance event on record for this company yet. New signals appear here automatically as the pipeline ingests them.</p>
         </div>
       ) : (
@@ -280,17 +288,12 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
             {pulse.todayRead && (
               <>
                 <p className="mt-2 font-editorial text-[16px] font-semibold leading-snug text-navy-deep">{pulse.todayRead.headline}</p>
-                <p className="mt-1.5 font-editorial text-[13.5px] leading-relaxed text-ink-primary">{pulse.todayRead.summary}</p>
-                {pulse.todayRead.bullets.length > 0 && (
-                  <ul className="mt-2.5 space-y-1">
-                    {pulse.todayRead.bullets.map((b, i) => (
-                      <li key={i} className="flex gap-1.5 text-[12px] leading-snug text-ink-secondary">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full" style={{ background: GOLD }} />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <ul className="mt-2.5 space-y-1.5">
+                  <ReadBullet label="Changed" text={pulse.todayRead.changed} />
+                  <ReadBullet label="Matters" text={pulse.todayRead.matters} />
+                  <ReadBullet label="Watch next" text={pulse.todayRead.watchNext} />
+                </ul>
+                <p className="mt-2.5 border-t border-soft-border pt-2 text-[10px] font-medium text-ink-secondary">{pulse.todayRead.sourceLine}</p>
               </>
             )}
           </div>
@@ -302,20 +305,26 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
               label="Fastest Signal"
               value={pulse.freshest ? pulse.freshest.title : 'No fresh signal'}
               sub={pulse.freshest ? `${pulse.freshest.dateLabel} · ${pulse.freshest.category}` : undefined}
+              impact={pulse.freshest?.impact}
+              confidence={pulse.freshest?.confidence}
               tone={{ fg: GOLD, bg: 'rgba(182,139,58,0.12)' }}
             />
             <HeroTile
               icon={ShieldAlert}
               label="Risk Watch"
               value={pulse.latestRisk ? pulse.latestRisk.title : 'No active risk flag'}
-              sub={pulse.counts.risk + pulse.counts.watch > 0 ? `${pulse.counts.risk} risk · ${pulse.counts.watch} watch` : 'Feed reads clean'}
+              sub={pulse.latestRisk ? `${pulse.latestRisk.dateLabel} · ${pulse.counts.risk} risk · ${pulse.counts.watch} watch` : 'Feed reads clean'}
+              impact={pulse.latestRisk?.impact}
+              confidence={pulse.latestRisk?.confidence}
               tone={{ fg: IMPACT_META.Risk.fg, bg: IMPACT_META.Risk.bg }}
             />
             <HeroTile
               icon={TrendingUp}
               label="Opportunity Watch"
               value={pulse.latestOpportunity ? pulse.latestOpportunity.title : 'No fresh upside catalyst'}
-              sub={pulse.counts.positive > 0 ? `${pulse.counts.positive} positive signal${pulse.counts.positive === 1 ? '' : 's'}` : undefined}
+              sub={pulse.latestOpportunity ? `${pulse.latestOpportunity.dateLabel} · ${pulse.counts.positive} positive` : undefined}
+              impact={pulse.latestOpportunity?.impact}
+              confidence={pulse.latestOpportunity?.confidence}
               tone={{ fg: IMPACT_META.Positive.fg, bg: IMPACT_META.Positive.bg }}
             />
             <HeroTile
@@ -338,21 +347,29 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
 export function OverviewPulse({ pulse }: { pulse: InvestorPulseData }) {
   const [showAllFeed, setShowAllFeed] = useState(false)
   const feed = pulse.signals
-  const feedShown = showAllFeed ? feed : feed.slice(0, 6)
+  const feedShown = showAllFeed ? feed : feed.slice(0, 5)
 
   if (pulse.isEmpty) {
     return (
       <div className="rounded-2xl border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12.5px] text-ink-secondary">
-        No major new signal found for {pulse.company}.
+        No major new source-backed signal today for {pulse.company}.
       </div>
     )
   }
 
   // Source trail — every distinct source feeding the curated feed, deduped.
   const sources = [...new Map(feed.filter((s) => s.sourceUrl).map((s) => [s.sourceUrl, s])).values()]
+  // Honest staleness cue — if even the freshest signal is old, say so plainly.
+  const freshestDays = pulse.freshest?.daysAgo ?? null
+  const stale = freshestDays != null && freshestDays > 14
 
   return (
     <div className="space-y-6">
+      {stale && pulse.freshest && (
+        <div className="rounded-xl border border-soft-border bg-ice/50 px-3.5 py-2 text-[11.5px] text-ink-secondary">
+          Latest source-backed signal: <span className="font-semibold text-navy-deep">{pulse.freshest.dateLabel}</span>. No material new signal since then.
+        </div>
+      )}
       {/* ── Daily Signal Pulse ───────────────────────────────────────────── */}
       <div>
         <SubHeading
@@ -376,15 +393,15 @@ export function OverviewPulse({ pulse }: { pulse: InvestorPulseData }) {
           <SubHeading
             icon={Radar}
             eyebrow="Curated Market Intelligence"
-            title="What could move the name, ranked by what matters"
-            note={`${feed.length} source-backed signal${feed.length === 1 ? '' : 's'} · ${pulse.company} & sector · curated, verify before acting`}
+            title="Top signals, ranked by freshness then impact"
+            note={`${feed.length} source-backed · ${pulse.company} & sector · curated, verify before acting`}
           />
           <ul className="space-y-2">
             {feedShown.map((s) => (
               <FeedItem key={s.id} signal={s} />
             ))}
           </ul>
-          {feed.length > 6 && (
+          {feed.length > 5 && (
             <button
               type="button"
               onClick={() => setShowAllFeed((v) => !v)}
@@ -417,6 +434,16 @@ export function OverviewPulse({ pulse }: { pulse: InvestorPulseData }) {
         </div>
       )}
     </div>
+  )
+}
+
+// One labelled line of Today's Read — "Changed / Matters / Watch next".
+function ReadBullet({ label, text }: { label: string; text: string }) {
+  return (
+    <li className="flex gap-2 text-[12.5px] leading-snug">
+      <span className="mt-px w-[68px] shrink-0 text-[9px] font-bold uppercase tracking-[0.08em]" style={{ color: GOLD }}>{label}</span>
+      <span className="font-editorial text-ink-primary">{text}</span>
+    </li>
   )
 }
 

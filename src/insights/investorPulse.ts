@@ -92,10 +92,12 @@ export interface DataAnomaly {
 }
 
 export interface TodayRead {
-  headline: string
-  summary: string // 4–6 line analyst-style read, deterministic
+  headline: string // one sharp "Net read is X: …" sentence
   stance: SignalImpact
-  bullets: string[]
+  changed: string // the freshest source-backed development
+  matters: string // why it matters (one line)
+  watchNext: string // the single thing to monitor next
+  sourceLine: string // compact "N signals · X% source-backed · freshest <date>"
 }
 
 // ── Lens layer (the internal Insights analysis lenses) ──────────────────────
@@ -499,7 +501,6 @@ function deriveStance(counts: InvestorPulse['counts']): SignalImpact {
 }
 
 function buildTodayRead(
-  company: string,
   companySignals: PulseSignal[],
   sectorSignals: PulseSignal[],
   mgmt: PulseManagementEvent[],
@@ -511,56 +512,47 @@ function buildTodayRead(
 
   const stance = deriveStance(counts)
   const freshest = all.slice().sort(byNewest)[0] ?? null
-
-  // Headline — a factual one-liner about the feed, not an opinion.
+  const reg = all.filter((s) => s.category === 'Regulatory').length
   const n = counts.total
-  const headline = n
-    ? `${n} source-backed signal${n === 1 ? '' : 's'} for ${company} — net read is ${STANCE_WORD[stance]}`
-    : `Governance activity for ${company}, no market signals on file`
 
-  // Summary — 4–6 short lines, each a fact about the actual items.
-  const lines: string[] = []
-  if (n) {
-    const parts: string[] = []
-    if (counts.positive) parts.push(`${counts.positive} positive`)
-    if (counts.risk) parts.push(`${counts.risk} risk`)
-    if (counts.watch) parts.push(`${counts.watch} to watch`)
-    if (counts.neutral) parts.push(`${counts.neutral} neutral`)
-    lines.push(`The feed holds ${n} source-backed item${n === 1 ? '' : 's'}${parts.length ? ` — ${parts.join(', ')}` : ''}.`)
-  }
-  if (freshest) {
-    lines.push(`Freshest read: "${freshest.title}" (${freshest.dateLabel}, ${freshest.category.toLowerCase()}), via ${freshest.sourceName}.`)
-  }
-  if (sectorSignals.length) {
-    const reg = sectorSignals.filter((s) => s.category === 'Regulatory').length
-    lines.push(
-      `${sectorSignals.length} sector-wide development${sectorSignals.length === 1 ? '' : 's'} also bear${sectorSignals.length === 1 ? 's' : ''} on the name${
-        reg ? `, including ${reg} on the regulatory front` : ''
-      }.`,
-    )
-  }
-  if (mgmt.length) {
-    const latest = mgmt.slice().sort(byNewest)[0]
-    lines.push(`On governance: ${latest.eventLabel.toLowerCase()}${latest.person ? ` — ${latest.person}` : ''} (${latest.dateLabel}).`)
-  }
-  if (coverage?.consensus) {
+  // Headline — one sharp "net read" sentence with a clause built from the real mix.
+  let clause: string
+  if (reg > 0 && counts.positive > 0) clause = 'regulatory pressure is building while demand signals stay positive'
+  else if (counts.positive > 0 && counts.risk + counts.watch > 0) clause = 'positive demand signals are offset by items to watch'
+  else if (counts.positive > 0) clause = 'demand signals are positive'
+  else if (counts.risk + counts.watch > 0) clause = 'the open items are watch-and-risk, not catalysts'
+  else if (mgmt.length) clause = 'the only fresh activity is governance, not market signals'
+  else clause = 'no strongly directional signal today'
+  const headline = `Net read is ${STANCE_WORD[stance]}: ${clause}.`
+
+  // Changed — the single freshest source-backed development.
+  const changed = freshest
+    ? `${freshest.title} (${freshest.category}, ${freshest.dateLabel}).`
+    : mgmt.length
+      ? `${mgmt[0].eventLabel}${mgmt[0].person ? ` — ${mgmt[0].person}` : ''} (${mgmt[0].dateLabel}).`
+      : 'No fresh source-backed development.'
+
+  // Matters — why it matters (one line, from the freshest item's own rationale).
+  const matters = freshest?.whyItMatters ? firstSentence(freshest.whyItMatters) : 'Sets the near-term tone for the name and the sector.'
+
+  // Watch next — the single thing to monitor, anchored to the dominant theme.
+  let watchNext: string
+  if (reg > 0) watchNext = 'Whether premium growth stays profitable after claims and expense pressure as conduct rules tighten.'
+  else if (counts.risk + counts.watch > 0) {
+    const w = all.find((s) => s.impact === 'Risk') ?? all.find((s) => s.impact === 'Watch')
+    watchNext = w ? `${w.title}.` : 'Whether the data confirms the news.'
+  } else if (coverage?.consensus) {
     const c = coverage.consensus
-    const tgt = c.consensusTargetPrice != null ? `, consensus target ₹${c.consensusTargetPrice}` : ''
-    lines.push(`The Street currently reads ${c.ratingLabel}${tgt} across ${c.analystCount} covering desk${c.analystCount === 1 ? '' : 's'}.`)
-  }
-  if (n) {
-    const pct = Math.round((counts.sourced / Math.max(1, n)) * 100)
-    lines.push(`Every item below links a source; ${pct}% point to a primary or credibly-reported original.`)
-  }
+    watchNext = `Whether results confirm the Street's ${c.ratingLabel} stance${c.consensusTargetPrice != null ? ` (target ₹${c.consensusTargetPrice})` : ''}.`
+  } else watchNext = 'Whether upcoming data confirms the signals above.'
 
-  // Bullets — the 3–4 highest-signal items, each traceable to a real source.
-  const bullets = all
-    .slice()
-    .sort((a, b) => impactRank(a.impact) - impactRank(b.impact) || byNewest(a, b))
-    .slice(0, 4)
-    .map((s) => `${s.category}: ${s.title}`)
+  // Source line — compact provenance read.
+  const pct = n ? Math.round((counts.sourced / n) * 100) : 0
+  const sourceLine = n
+    ? `${n} signal${n === 1 ? '' : 's'} · ${pct}% source-backed · freshest ${freshest?.dateLabel ?? '—'}`
+    : `${mgmt.length} governance event${mgmt.length === 1 ? '' : 's'} on record`
 
-  return { headline, summary: lines.slice(0, 6).join(' '), stance, bullets }
+  return { headline, stance, changed, matters, watchNext, sourceLine }
 }
 
 function impactRank(i: SignalImpact): number {
@@ -1018,10 +1010,21 @@ export function buildInvestorPulse(companyId: string, companyName: string): Inve
   const scoped = rawIntel.filter(
     (i) => !i.company_id || i.company_id === companyId || i.company_id === 'sector' || i.company_id === 'all',
   )
+  // Curated ranking for the feed: freshness band → impact → company relevance →
+  // source confidence (a stale-but-loud item never buries today's material news).
+  const freshBand = (d: number | null) => (d == null ? 4 : d <= 2 ? 0 : d <= 7 ? 1 : d <= 31 ? 2 : 3)
+  const scopeRank = (s: PulseSignal) => (s.scope === 'company' ? 0 : 1)
+  const confRank = (s: PulseSignal) => ({ High: 0, Medium: 1, Low: 2 }[s.confidence])
   const signals = scoped
     .map((i) => toSignal(i, companyId))
     .filter((s): s is PulseSignal => s != null)
-    .sort((a, b) => impactRank(a.impact) - impactRank(b.impact) || byNewest(a, b))
+    .sort(
+      (a, b) =>
+        freshBand(a.daysAgo) - freshBand(b.daysAgo) ||
+        impactRank(a.impact) - impactRank(b.impact) ||
+        scopeRank(a) - scopeRank(b) ||
+        confRank(a) - confRank(b),
+    )
 
   const companySignals = signals.filter((s) => s.scope === 'company')
   const sectorSignals = signals.filter((s) => s.scope === 'sector')
@@ -1055,7 +1058,7 @@ export function buildInvestorPulse(companyId: string, companyName: string): Inve
   }
 
   const coverage = getAnalystCoverage(companyId)
-  const todayRead = buildTodayRead(companyName, companySignals, sectorSignals, managementEvents, coverage, counts)
+  const todayRead = buildTodayRead(companySignals, sectorSignals, managementEvents, coverage, counts)
 
   // Freshness from the newest dated item across signals + events.
   const newestDays = [...signals, ...managementEvents]
