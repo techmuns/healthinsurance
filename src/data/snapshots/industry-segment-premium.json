@@ -5,7 +5,7 @@
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-06-29",
-    "last_successful_run": "2026-06-29T07:28:01.261Z",
+    "last_successful_run": "2026-06-29T08:55:51.674Z",
     "upstream_sources": [
       "irdai_handbook",
       "gi_council",
@@ -133,8 +133,8 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-29T07:26:54.141Z",
-        "parsed_at": "2026-06-29T07:26:56.018Z",
+        "fetched_at": "2026-06-29T08:54:47.981Z",
+        "parsed_at": "2026-06-29T08:54:49.862Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
       },
