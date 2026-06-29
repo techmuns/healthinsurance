@@ -1,10 +1,20 @@
 import { useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 import type { NavTarget } from '@/insights/sourceMap'
-import { ANALYTICAL_LENSES, type InsightLens, type InvestorPulse as InvestorPulseData, type LensKey } from '@/insights/investorPulse'
+import { ANALYTICAL_LENSES, selectManagementEvents, type InsightLens, type InvestorPulse as InvestorPulseData, type LensKey } from '@/insights/investorPulse'
 import { InsightLensView, LENS_ICON, StanceChip, ConfidenceChip } from '@/components/InsightLensView'
+import { ManagementEventIntelligence } from '@/components/ManagementEventIntelligence'
 
 type AnalyticalKey = Exclude<LensKey, 'overviewPulse'>
+
+// Sections that carry a compact REFERENCE to the shared management-events feed
+// (the full version lives in Pulse). Forward-Looking → leadership/execution read;
+// Risk & Regulatory → governance-risk read. Same shared component + data path.
+const MGMT_EVENT_LENSES = new Set<AnalyticalKey>(['forwardLookingStrategy', 'riskRegulatoryChanges'])
+const MGMT_EVENT_LABEL: Partial<Record<AnalyticalKey, string>> = {
+  forwardLookingStrategy: 'Leadership & board references',
+  riskRegulatoryChanges: 'Governance-risk references',
+}
 
 // Data Insights — the fact-based deep dive. The seven analytical lenses are
 // stacked as compact accordion SECTIONS (not separate tabs): each header shows
@@ -19,14 +29,22 @@ function LensAccordion({
   onToggle,
   onGoToSource,
   reopenInsightId,
+  companyId,
+  companyName,
 }: {
   lens: InsightLens
   open: boolean
   onToggle: () => void
   onGoToSource: (target: NavTarget, insightId: string) => void
   reopenInsightId?: string | null
+  companyId: string
+  companyName: string
 }) {
   const Icon = LENS_ICON[lens.key as AnalyticalKey]
+  // Forward-Looking / Risk sections reference the shared management events (compact),
+  // but only when this company actually has governance events on record.
+  const showMgmtRef = MGMT_EVENT_LENSES.has(lens.key as AnalyticalKey)
+  const govEvents = showMgmtRef ? selectManagementEvents(companyId, { governanceOnly: true }) : []
   return (
     <div className="overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-2.5 p-3.5 text-left transition-colors hover:bg-ice/40">
@@ -45,8 +63,14 @@ function LensAccordion({
         <ChevronDown className={`h-4 w-4 shrink-0 text-ink-secondary transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="border-t border-soft-border p-4">
+        <div className="space-y-4 border-t border-soft-border p-4">
           <InsightLensView lens={lens} onGoToSource={onGoToSource} reopenInsightId={reopenInsightId} hideHeader />
+          {showMgmtRef && govEvents.length > 0 && (
+            <div>
+              <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{MGMT_EVENT_LABEL[lens.key as AnalyticalKey]}</p>
+              <ManagementEventIntelligence variant="compact" companyId={companyId} companyName={companyName} />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -89,6 +113,8 @@ export function DataInsights({
           onToggle={() => toggle(k)}
           onGoToSource={onGoToSource}
           reopenInsightId={reopenInsightId}
+          companyId={pulse.companyId}
+          companyName={pulse.company}
         />
       ))}
     </div>
