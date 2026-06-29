@@ -72,6 +72,7 @@ const METRIC_SYNONYMS: Record<string, RegExp[]> = {
   eom_igaap: [/expenses?\s+of\s+management/i, /\beom\b/i],
   expense_ratio_ifrs: [/expense\s+ratio/i],
   claims_ratio_ifrs: [/claims?\s+ratio/i, /loss\s+ratio/i],
+  combined_ratio_ifrs: [/combined\s+ratio/i],
   expense_ratio_igaap: [/expense\s+ratio/i, /opex\s+ratio/i],
   claims_ratio_igaap: [/claims?\s+ratio/i, /loss\s+ratio/i],
   combined_ratio_igaap: [/combined\s+ratio/i],
@@ -89,7 +90,7 @@ const METRIC_SYNONYMS: Record<string, RegExp[]> = {
 }
 // IFRS cells additionally require an IFRS marker on the same page so an IGAAP
 // table can't masquerade as the IFRS figure (basis discipline).
-const NEEDS_IFRS_MARKER = new Set(['expense_ratio_ifrs', 'claims_ratio_ifrs', 'pat_ifrs'])
+const NEEDS_IFRS_MARKER = new Set(['expense_ratio_ifrs', 'claims_ratio_ifrs', 'combined_ratio_ifrs', 'pat_ifrs'])
 const IFRS_MARKER = /\bifrs\b|ind[\s-]?as/i
 
 // Period tokens a page must ALSO carry for the hit to count for that cell.
