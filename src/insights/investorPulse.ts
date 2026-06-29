@@ -27,6 +27,7 @@ import type { Insight, InsightCategory, InsightsFile } from '@/insights/types'
 import { getManagementEvents } from '@/lib/dataLayer'
 import { getAnalystCoverage } from '@/lib/analystCoverage'
 import { getPromises } from '@/lib/promiseTracker'
+import { getEarningsBridge, earningsQuality, BRIDGE_SOURCE, BRIDGE_SOURCE_URL } from '@/data/earningsBridge'
 import { isLinkable, sourceHref, classifySource } from '@/lib/sourceHealth'
 
 const INSIGHTS_FILE = generated as unknown as InsightsFile
@@ -613,7 +614,7 @@ interface AnnualRow {
 const round1 = (v: number) => Math.round(v * 10) / 10
 const fmtPct = (v: number) => `${round1(v)}%`
 const fmtX = (v: number) => `${Math.round(v * 100) / 100}x`
-const fmtCr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
+const fmtCr = (v: number) => `${v < 0 ? '-' : ''}₹${Math.abs(v).toLocaleString('en-IN')} Cr`
 // Provenance source_name fields can be long prose ("Niva Bupa FY24-25 Annual
 // Report — Schedule 1 …"). Keep just the clean head for a compact source chip.
 function shortenSource(name?: string | null): string {
@@ -622,10 +623,6 @@ function shortenSource(name?: string | null): string {
   return head.length > 64 ? `${head.slice(0, 61)}…` : head || 'Dashboard snapshot'
 }
 const refOf = (p?: Provenance): SourceRef => ({ name: shortenSource(p?.source_name), url: p?.source_url || '' })
-function confFromProv(p?: Provenance): Confidence {
-  const c = (p?.confidence ?? '').toLowerCase()
-  return c === 'high' ? 'High' : c === 'medium' ? 'Medium' : 'Low'
-}
 function firstSentence(s: string): string {
   const m = s.match(/^.*?[.!?](\s|$)/)
   return (m ? m[0] : s).trim()
@@ -739,8 +736,25 @@ function metricsForLens(
     }
   }
 
-  // investmentPerformance: no investment-income / yield / asset-mix data is wired
-  // anywhere yet, so it returns no metrics → the lens renders an honest empty state.
+  if (key === 'investmentPerformance') {
+    // Real, audited investment figures come from the earnings bridge (Revenue A/c
+    // + P&L). Per-company yield / asset-mix are not disclosed, so we surface
+    // investment income and its share of profit only — never a fabricated yield.
+    // Companies without a bridge fall through to the honest empty state.
+    const bridge = getEarningsBridge(companyId)
+    if (bridge.length) {
+      const yr = bridge[0]
+      const b = yr.igaap
+      const eq = earningsQuality(b)
+      const bridgeSrc: SourceRef = { name: BRIDGE_SOURCE, url: BRIDGE_SOURCE_URL }
+      out.push(M('Investment income', fmtCr(b.investmentIncome), yr.fy, 'Neutral', bridgeSrc, 'From the Revenue A/c + P&L'))
+      if (b.pat) {
+        const pctOfPat = Math.round((b.investmentIncome / b.pat) * 100)
+        out.push(M('Investment income vs PAT', `${pctOfPat}%`, yr.fy, eq.investmentLed ? 'Watch' : 'Positive', bridgeSrc, eq.investmentLed ? 'Profit is investment-income-led' : 'Core-led profit'))
+      }
+      out.push(M('Underwriting result', fmtCr(b.underwritingResult), yr.fy, b.underwritingResult < 0 ? 'Watch' : 'Positive', bridgeSrc, b.underwritingResult < 0 ? 'Core book loses money before investment income' : 'Core book profitable'))
+    }
+  }
   return out
 }
 
@@ -769,6 +783,13 @@ function metricImplication(key: Exclude<LensKey, 'overviewPulse'>, metrics: Metr
     return solv.tone === 'Risk' || solv.tone === 'Watch'
       ? 'Solvency sits close enough to the floor that a capital raise or slower growth is a live possibility.'
       : 'Capital looks comfortably above the regulatory floor, leaving room to fund growth.'
+  }
+  if (key === 'investmentPerformance' && metrics.length) {
+    const uw = metrics.find((m) => m.label === 'Underwriting result')
+    const inv = metrics.find((m) => m.label === 'Investment income vs PAT')
+    return uw && uw.tone === 'Watch' && inv
+      ? 'Profit quality is thin — the core underwriting book loses money, so reported profit rests on investment income, which is sensitive to market yields and a weaker signal of franchise strength.'
+      : 'Investment income supplements a profitable core book rather than carrying it.'
   }
   return ''
 }
@@ -803,7 +824,9 @@ function buildLens(
 
   const investorImplication = lensInsights[0]?.application?.framing || lensInsights[0]?.thesis || metricImplication(key, metrics)
   const stance = lensInsights[0] ? CATEGORY_STANCE[lensInsights[0].category] : metricStance(metrics)
-  const confidence: Confidence = lensInsights.length ? 'High' : metrics.length ? confFromProv(peerRow?.provenance ?? annualRows[0]?.provenance) : 'Low'
+  // Source-linked metrics → High confidence in the numbers; unsourced metrics →
+  // Medium; nothing → Low. Curated insights always lead at High.
+  const confidence: Confidence = lensInsights.length ? 'High' : metrics.some((m) => m.sourceUrl) ? 'High' : metrics.length ? 'Medium' : 'Low'
   const oneLineRead = lensInsights[0]
     ? firstSentence(lensInsights[0].summary)
     : metrics[0]
