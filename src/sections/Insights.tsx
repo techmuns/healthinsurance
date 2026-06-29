@@ -70,14 +70,18 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
                   type="button"
                   onClick={() => setView(id)}
                   className={[
-                    'relative inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
-                    on ? 'bg-navy-deep text-white shadow-soft' : 'text-navy-deep hover:bg-ice',
+                    'relative inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-all duration-normal ease-premium',
+                    on ? 'text-white' : 'text-navy-deep hover:bg-ice',
                   ].join(' ')}
+                  style={on ? {
+                    background: 'linear-gradient(135deg, #1E4079 0%, #14294C 100%)',
+                    boxShadow: 'inset 0 0 0 1px rgba(228,198,124,0.45), 0 4px 12px rgba(20,48,88,0.22)',
+                  } : undefined}
                 >
-                  <Icon className="h-4 w-4" strokeWidth={2} />
+                  <Icon className="h-4 w-4" strokeWidth={2} style={on ? { color: '#E4C67C' } : undefined} />
                   {label}
                   {/* thin gold underline accent on the active tab */}
-                  {on && <span className="pointer-events-none absolute inset-x-2.5 bottom-[3px] h-[2px] rounded-full bg-champagne" />}
+                  {on && <span className="pointer-events-none absolute inset-x-2.5 bottom-[3px] h-[2px] rounded-full" style={{ background: 'linear-gradient(90deg, transparent, #E4C67C, transparent)' }} />}
                 </button>
               )
             })}

@@ -19,6 +19,7 @@ import {
   Gauge,
   Target,
   Network,
+  ArrowRight,
   type LucideIcon,
 } from 'lucide-react'
 import { insurers } from '@/data/mockData'
@@ -86,7 +87,7 @@ function CategoryChip({ category }: { category: SignalCategory }) {
 function ImpactChip({ impact }: { impact: SignalImpact }) {
   const m = IMPACT_META[impact]
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em]" style={{ color: m.fg, background: m.bg }}>
+    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.04em]" style={{ color: m.fg, background: m.bg, boxShadow: `inset 0 0 0 1px ${m.dot}33` }}>
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: m.dot }} />
       {m.label}
     </span>
@@ -144,8 +145,8 @@ export function CompanyFilter() {
 
 function ReadRow({ icon: Icon, label, text, tint, fg }: { icon: LucideIcon; label: string; text: string; tint: string; fg: string }) {
   return (
-    <div className="flex items-start gap-2.5 border-t border-white/10 py-2 first:border-t-0">
-      <span className="mt-px grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
+    <div className="flex items-start gap-2.5 py-2 first:pt-0" style={{ borderTop: '1px solid rgba(228,198,124,0.10)' }}>
+      <span className="icon-ring-gold-dark mt-px grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
         <Icon className="h-4 w-4" strokeWidth={2.1} style={{ color: fg }} />
       </span>
       <p className="w-[78px] shrink-0 pt-1 text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: GOLD_ON_NAVY }}>{label}</p>
@@ -160,25 +161,36 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
   const sm = STANCE_META[tr.stance]
   return (
     <section className="relative isolate flex flex-col overflow-hidden rounded-2xl p-5 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
-      {/* soft blue radial blob + a single warm gold accent, contained inside */}
+      {/* Layered premium detailing, contained inside the card:
+          light bloom · navy-on-navy tonal blobs · a blended gold wave from the
+          lower-right · a fine gold spark texture in the corner. */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="blob-b absolute -right-16 -top-20 h-72 w-72 opacity-80 blur-2xl" style={{ background: 'radial-gradient(circle at 35% 35%, rgba(96,138,206,0.6), transparent 70%)' }} />
-        <div className="blob-d absolute -bottom-20 -right-12 h-72 w-72 opacity-90 blur-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(196,150,66,0.42), transparent 68%)' }} />
-        <div className="blob-a absolute -left-24 bottom-0 h-72 w-72 opacity-50 blur-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(40,72,128,0.6), transparent 72%)' }} />
+        {/* soft radial light bloom, upper area */}
+        <div className="absolute -top-12 left-8 h-56 w-80 opacity-60 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(124,162,222,0.26), transparent 70%)' }} />
+        {/* navy-on-navy tonal blobs */}
+        <div className="blob-b absolute right-6 -top-24 h-72 w-72 opacity-70 blur-2xl" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(82,124,194,0.42), transparent 72%)' }} />
+        <div className="blob-c absolute -left-20 -bottom-12 h-72 w-72 opacity-70 blur-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(42,76,138,0.55), transparent 72%)' }} />
+        {/* blended gold wave entering from the lower-right */}
+        <div className="blob-e absolute -bottom-28 -right-20 h-80 w-[28rem] opacity-90 blur-2xl" style={{ background: 'radial-gradient(ellipse at 72% 72%, rgba(208,160,74,0.5), rgba(182,139,58,0.16) 46%, transparent 72%)' }} />
+        {/* fine gold spark texture, lower-right corner */}
+        <div className="gold-sparks absolute bottom-3 right-5 h-24 w-32 opacity-50" style={{ maskImage: 'radial-gradient(circle at 82% 82%, black, transparent 74%)', WebkitMaskImage: 'radial-gradient(circle at 82% 82%, black, transparent 74%)' }} />
       </div>
+
+      {/* hairline gold top edge — a quiet premium frame detail */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(228,198,124,0.45) 30%, rgba(228,198,124,0.45) 70%, transparent)' }} />
 
       {/* eyebrow + stance */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-full ring-1 ring-white/15" style={{ background: 'rgba(228,198,124,0.12)' }}>
+          <span className="icon-ring-gold-dark grid h-8 w-8 place-items-center rounded-full" style={{ background: 'rgba(228,198,124,0.12)' }}>
             <PenLine className="h-4 w-4" style={{ color: GOLD_ON_NAVY }} strokeWidth={2} />
           </span>
           <span className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: GOLD_ON_NAVY }}>Today&apos;s Read</span>
-            <span className="h-px w-7" style={{ background: 'rgba(228,198,124,0.5)' }} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD_ON_NAVY }}>Today&apos;s Read</span>
+            <span className="gold-rule h-px w-9 rounded-full" />
           </span>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/90 ring-1 ring-white/15" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/90" style={{ background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 0 0 1px rgba(228,198,124,0.22)' }}>
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: sm.fg }} /> {sm.label}
         </span>
       </div>
@@ -195,10 +207,12 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
         <ReadRow icon={Eye} label="Watch Next" text={tr.watchNext} tint="rgba(56,168,162,0.16)" fg="#6FD0CB" />
       </div>
 
-      {/* source / freshness foot */}
-      <div className="mt-auto flex items-center gap-2 border-t border-white/10 pt-3 text-[10.5px] font-medium text-white/55">
-        <Globe className="h-3.5 w-3.5" strokeWidth={2} style={{ color: 'rgba(228,198,124,0.8)' }} />
-        {tr.sourceLine}
+      {/* source / freshness foot — small gold icon + fine separator rhythm */}
+      <div className="mt-3.5 flex items-center gap-2 pt-3 text-[10.5px] font-medium text-white/60" style={{ borderTop: '1px solid rgba(228,198,124,0.16)' }}>
+        <span className="icon-ring-gold-dark grid h-5 w-5 shrink-0 place-items-center rounded-full" style={{ background: 'rgba(228,198,124,0.10)' }}>
+          <Globe className="h-3 w-3" strokeWidth={2.1} style={{ color: 'rgba(228,198,124,0.9)' }} />
+        </span>
+        <span className="tracking-[0.01em]">{tr.sourceLine}</span>
       </div>
     </section>
   )
@@ -207,17 +221,18 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
 // ── Signal Stack — vertical panel (navy top bar + 3 alert rows) on the right of
 //    Today's Read. Fastest Signal · Risk Watch · Opportunity Watch. ────────────
 
-function SignalStackRow({ icon: Icon, label, signal, emptyText, accent, tint }: {
+function SignalStackRow({ icon: Icon, label, signal, emptyText, accent, tint, ringClass }: {
   icon: LucideIcon
   label: string
   signal: PulseSignal | null
   emptyText: string
   accent: string
   tint: string
+  ringClass: string
 }) {
   return (
-    <div className="flex gap-3 px-4 py-3.5">
-      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
+    <div className="flex gap-3 px-4 py-3.5 transition-colors hover:bg-ice/40">
+      <span className={`${ringClass} mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full`} style={{ background: tint }}>
         <Icon className="h-[18px] w-[18px]" strokeWidth={2.2} style={{ color: accent }} />
       </span>
       <div className="min-w-0 flex-1">
@@ -247,15 +262,19 @@ function SignalStackRow({ icon: Icon, label, signal, emptyText, accent, tint }: 
 
 function SignalStack({ pulse }: { pulse: InvestorPulseData }) {
   return (
-    <section className="flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
-      <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: 'linear-gradient(135deg, #1E4079 0%, #152C52 100%)' }}>
-        <Layers className="h-4 w-4" strokeWidth={2.1} style={{ color: GOLD_ON_NAVY }} />
+    <section className="premium-panel flex flex-col overflow-hidden rounded-2xl">
+      <div className="relative flex items-center gap-2 px-4 py-2.5" style={{ background: 'linear-gradient(135deg, #1E4079 0%, #152C52 100%)' }}>
+        <span className="icon-ring-gold-dark grid h-6 w-6 place-items-center rounded-md" style={{ background: 'rgba(228,198,124,0.12)' }}>
+          <Layers className="h-3.5 w-3.5" strokeWidth={2.1} style={{ color: GOLD_ON_NAVY }} />
+        </span>
         <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white">Signal Stack</h3>
+        {/* gold hairline base of the navy header */}
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(228,198,124,0.5), transparent)' }} />
       </div>
       <div className="flex flex-1 flex-col divide-y divide-soft-border">
-        <SignalStackRow icon={Zap} label="Fastest Signal" signal={pulse.freshest} emptyText="No fresh signal on file." accent={GOLD} tint="rgba(182,139,58,0.12)" />
-        <SignalStackRow icon={ShieldAlert} label="Risk Watch" signal={pulse.latestRisk} emptyText="No active risk flag." accent={IMPACT_META.Risk.fg} tint="rgba(192,88,79,0.10)" />
-        <SignalStackRow icon={TrendingUp} label="Opportunity Watch" signal={pulse.latestOpportunity} emptyText="No fresh upside catalyst." accent={IMPACT_META.Positive.fg} tint="rgba(22,142,142,0.10)" />
+        <SignalStackRow icon={Zap} label="Fastest Signal" signal={pulse.freshest} emptyText="No fresh signal on file." accent={GOLD} tint="rgba(182,139,58,0.12)" ringClass="icon-ring-gold" />
+        <SignalStackRow icon={ShieldAlert} label="Risk Watch" signal={pulse.latestRisk} emptyText="No active risk flag." accent={IMPACT_META.Risk.fg} tint="rgba(192,88,79,0.10)" ringClass="icon-ring-soft" />
+        <SignalStackRow icon={TrendingUp} label="Opportunity Watch" signal={pulse.latestOpportunity} emptyText="No fresh upside catalyst." accent={IMPACT_META.Positive.fg} tint="rgba(22,142,142,0.10)" ringClass="icon-ring-soft" />
       </div>
     </section>
   )
@@ -268,7 +287,7 @@ function SignalStack({ pulse }: { pulse: InvestorPulseData }) {
 function CuratedRow({ signal }: { signal: PulseSignal }) {
   const [open, setOpen] = useState(false)
   return (
-    <tr className="group cursor-pointer border-t border-soft-border align-top transition-colors hover:bg-ice/60" onClick={() => setOpen((v) => !v)}>
+    <tr className="group cursor-pointer align-top transition-colors hover:bg-ice/60" style={{ borderTop: '1px solid rgba(39,69,126,0.07)' }} onClick={() => setOpen((v) => !v)}>
         <td className="whitespace-nowrap py-3 pl-4 pr-3 text-[10.5px] font-semibold text-ink-secondary">{signal.dateLabel}</td>
         <td className="py-3 pr-3"><CategoryChip category={signal.category} /></td>
         <td className="py-3 pr-3">
@@ -300,12 +319,13 @@ function CuratedIntelligence({ pulse }: { pulse: InvestorPulseData }) {
   const freshestDays = pulse.freshest?.daysAgo ?? null
   const stale = freshestDays != null && freshestDays > 14
   return (
-    <section className="overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
+    <section className="premium-panel overflow-hidden rounded-2xl">
       <div className="flex flex-wrap items-center justify-between gap-2 px-4 pb-2.5 pt-4">
         <div>
           <div className="mb-1 flex items-center gap-2">
             <span className="h-3 w-[3px] rounded-full bg-champagne" />
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Curated Market Intelligence</span>
+            <span className="gold-rule h-px w-8 rounded-full" />
           </div>
           <h2 className="font-display text-[16px] leading-tight text-navy-deep">Top signals, ranked by freshness then impact.</h2>
         </div>
@@ -313,10 +333,12 @@ function CuratedIntelligence({ pulse }: { pulse: InvestorPulseData }) {
           <button
             type="button"
             onClick={() => setShowAll((v) => !v)}
-            className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-champagne-deep transition-colors hover:text-navy-deep"
+            className="group inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-champagne-deep transition-colors hover:text-navy-deep"
           >
             {showAll ? 'Show fewer' : 'View all signals'}
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAll ? 'rotate-180' : ''}`} />
+            {showAll
+              ? <ChevronDown className="h-3.5 w-3.5 rotate-180" />
+              : <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
           </button>
         )}
       </div>
@@ -328,9 +350,9 @@ function CuratedIntelligence({ pulse }: { pulse: InvestorPulseData }) {
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-left">
           <thead>
-            <tr className="border-t border-soft-border bg-surface-tint/70">
+            <tr className="bg-surface-tint/70" style={{ borderTop: '1px solid rgba(39,69,126,0.10)', borderBottom: '1px solid rgba(182,139,58,0.28)' }}>
               {['Date', 'Category', 'Signal', 'Impact', 'Confidence', 'Source'].map((h, i) => (
-                <th key={h} className={`py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-ink-secondary ${i === 0 ? 'pl-4 pr-3' : i === 5 ? 'pr-4' : 'pr-3'}`}>{h}</th>
+                <th key={h} className={`py-2.5 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary ${i === 0 ? 'pl-4 pr-3' : i === 5 ? 'pr-4' : 'pr-3'}`}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -354,11 +376,14 @@ function EventTimelineRow({ e, last }: { e: PulseManagementEvent; last: boolean 
   const [d, mon] = e.dateLabel.split(' ')
   return (
     <li className="relative flex gap-3 pb-4 last:pb-0">
-      {/* date block */}
-      <div className="relative z-[1] flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border border-soft-border bg-white shadow-soft">
-        <span className="text-[14px] font-bold leading-none text-navy-deep">{d}</span>
+      {/* date tile — gold-ringed, with a fine gold cap stripe */}
+      <div className="icon-ring-gold relative z-[1] flex h-11 w-11 shrink-0 flex-col items-center justify-center overflow-hidden rounded-lg bg-white">
+        <span className="absolute inset-x-0 top-0 h-[3px]" style={{ background: 'linear-gradient(90deg, rgba(182,139,58,0.85), rgba(182,139,58,0.4))' }} />
+        <span className="mt-0.5 text-[14px] font-bold leading-none text-navy-deep">{d}</span>
         <span className="text-[8px] font-bold uppercase tracking-wide text-champagne-deep">{mon}</span>
       </div>
+      {/* gold connector dot at the line junction */}
+      {!last && <span className="absolute left-[17px] top-[42px] z-[1] h-2 w-2 rounded-full" style={{ background: '#B68B3A', boxShadow: '0 0 0 2px #fff' }} />}
       <div className="min-w-0 flex-1 pt-0.5">
         <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.05em]" style={{ color: IMPACT_META[e.impact].fg, background: IMPACT_META[e.impact].bg }}>
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />
@@ -388,11 +413,14 @@ function ManagementEvents({ pulse }: { pulse: InvestorPulseData }) {
   const events = selectManagementEvents(pulse.companyId, {})
   const shown = showAll ? events : events.slice(0, 2)
   return (
-    <section className="flex h-full flex-col rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
-      <div className="flex items-center justify-between gap-2">
+    <section className="premium-panel flex flex-col rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-2 border-b border-soft-border/70 pb-2.5">
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-champagne-deep" strokeWidth={2.1} />
+          <span className="icon-ring-gold grid h-6 w-6 place-items-center rounded-md" style={{ background: 'rgba(182,139,58,0.12)' }}>
+            <Users className="h-3.5 w-3.5 text-champagne-deep" strokeWidth={2.1} />
+          </span>
           <h3 className="text-[11px] font-bold uppercase tracking-[0.14em] text-navy-deep">Management &amp; Event Intelligence</h3>
+          <span className="gold-rule h-px w-6 rounded-full" />
         </div>
         {events.length > 0 && <span className="shrink-0 text-[9.5px] font-semibold text-ink-secondary">{events.length} on record</span>}
       </div>
@@ -411,10 +439,12 @@ function ManagementEvents({ pulse }: { pulse: InvestorPulseData }) {
             <button
               type="button"
               onClick={() => setShowAll((v) => !v)}
-              className="mt-1 inline-flex items-center gap-1 self-start text-[11px] font-semibold text-champagne-deep transition-colors hover:text-navy-deep"
+              className="group mt-1 inline-flex items-center gap-1.5 self-start text-[11px] font-semibold text-champagne-deep transition-colors hover:text-navy-deep"
             >
               {showAll ? 'Show fewer' : 'View all events'}
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAll ? 'rotate-180' : ''}`} />
+              {showAll
+                ? <ChevronDown className="h-3.5 w-3.5 rotate-180" />
+                : <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />}
             </button>
           )}
         </>
@@ -463,9 +493,9 @@ function BroaderCardView({ card }: { card: BroaderCard }) {
   const m = IMPACT_META[card.stance]
   const c = CONFIDENCE_META[card.confidence]
   return (
-    <article className="flex flex-col rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+    <article className="premium-panel flex flex-col rounded-2xl p-4 transition-shadow hover-lift">
       <div className="flex items-center gap-2">
-        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ background: 'rgba(182,139,58,0.12)' }}>
+        <span className="icon-ring-gold grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ background: 'rgba(182,139,58,0.12)' }}>
           <Icon className="h-4 w-4 text-champagne-deep" strokeWidth={2} />
         </span>
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{card.eyebrow}</p>
@@ -511,6 +541,7 @@ function BroaderSignals({ pulse }: { pulse: InvestorPulseData }) {
         <div className="mb-1 flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Broader Signals &amp; Correlations</span>
+          <span className="gold-rule h-px w-8 rounded-full" />
         </div>
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="flex items-center gap-2">
@@ -535,16 +566,22 @@ function AnomalyFooter({ pulse }: { pulse: InvestorPulseData }) {
   const anomalies = pulse.dataAnomalies
   if (anomalies.length === 0) {
     return (
-      <div className="flex items-center gap-2 px-1 pt-1 text-[10.5px] text-ink-secondary">
-        <ShieldCheck className="h-3.5 w-3.5 text-teal" strokeWidth={2} />
-        No material data anomalies detected in latest update.
+      <div className="flex items-center gap-2 px-1 pt-0.5">
+        <span className="h-px flex-1" style={{ background: 'linear-gradient(90deg, transparent, rgba(39,69,126,0.12))' }} />
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10.5px] text-ink-secondary">
+          <ShieldCheck className="h-3.5 w-3.5 text-teal" strokeWidth={2} />
+          No material data anomalies detected in latest update.
+        </span>
+        <span className="h-px flex-1" style={{ background: 'linear-gradient(90deg, rgba(39,69,126,0.12), transparent)' }} />
       </div>
     )
   }
   return (
-    <div className="rounded-xl border border-coral/30 bg-coral-soft/50 px-3.5 py-2.5">
+    <div className="rounded-xl px-3.5 py-2.5" style={{ background: 'linear-gradient(135deg, rgba(248,236,236,0.7), rgba(250,242,242,0.5))', boxShadow: 'inset 0 0 0 1px rgba(199,93,84,0.26)' }}>
       <div className="flex items-center gap-2">
-        <ShieldAlert className="h-3.5 w-3.5 text-coral" strokeWidth={2.1} />
+        <span className="grid h-5 w-5 place-items-center rounded-full" style={{ background: 'rgba(199,93,84,0.10)', boxShadow: 'inset 0 0 0 1px rgba(199,93,84,0.30)' }}>
+          <ShieldAlert className="h-3 w-3 text-coral" strokeWidth={2.1} />
+        </span>
         <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-coral">Data Anomaly Watch · {anomalies.length}</span>
       </div>
       <ul className="mt-1.5 space-y-1">
