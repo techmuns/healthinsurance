@@ -99,6 +99,44 @@ export function validateRatios(row: {
   return out
 }
 
+/**
+ * GI Council health-portfolio row integrity: the four health components
+ * (retail + group + government + overseas-medical) must reconstruct the printed
+ * total, so the derived Retail Mix (retail ÷ total) rests on a self-consistent
+ * basis. Guards against a unit slip or a mis-mapped column before the row ever
+ * reaches the snapshot the Product Mix chart and peer grid read from.
+ */
+export function validateHealthPortfolioSum(row: {
+  health_retail?: number | null
+  health_group?: number | null
+  health_govt?: number | null
+  overseas_medical?: number | null
+  health_total?: number | null
+}): ValidationIssue | null {
+  const { health_retail, health_group, health_govt, overseas_medical, health_total } = row
+  if (typeof health_total !== 'number' || health_total <= 0) return null
+  const parts = [health_retail, health_group, health_govt, overseas_medical].filter(
+    (v): v is number => typeof v === 'number',
+  )
+  if (!parts.length) return null
+  const sum = parts.reduce((s, v) => s + v, 0)
+  // Allow ₹1 Cr (rounding) plus 0.1% of the total for unit noise.
+  const tol = Math.max(1, health_total * 0.001)
+  if (Math.abs(sum - health_total) > tol) {
+    return {
+      level: 'error',
+      message: `Health components sum to ${sum.toFixed(1)} but total is ${health_total.toFixed(1)} ₹Cr (Δ ${(sum - health_total).toFixed(1)}).`,
+    }
+  }
+  if (typeof health_retail === 'number') {
+    const retailPct = (health_retail / health_total) * 100
+    if (retailPct < 0 || retailPct > 100) {
+      return { level: 'error', message: `Retail mix ${retailPct.toFixed(1)}% is outside [0, 100].` }
+    }
+  }
+  return null
+}
+
 // Monthly segment-premium fields (GI Council Segmentwise Report).
 const SEGMENT_FIELDS = [
   'health_premium', 'retail_health_premium', 'group_health_premium',

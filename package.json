@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check:retail-mix": "tsx --tsconfig tsconfig.app.json scripts/check-retail-mix.ts",
     "preview": "vite preview",
     "ingest": "tsx scripts/ingest/ingest-all.ts",
     "ingest:monthly": "CADENCE=monthly tsx scripts/ingest/ingest-all.ts",
