@@ -173,8 +173,8 @@ export function InsightLensView({
 
       {!lens.available ? (
         <div className="rounded-2xl border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">
-          <p className="font-editorial text-[14px] font-semibold text-navy-deep">Not enough verified data for this lens yet.</p>
-          <p className="mt-1 text-[12px] text-ink-secondary">This lens turns on automatically once source-backed {lens.title.toLowerCase()} data is wired for {/* company implied by selection */}the selected company.</p>
+          <p className="font-editorial text-[14px] font-semibold text-navy-deep">Not enough verified data for this category yet.</p>
+          <p className="mt-1 text-[12px] text-ink-secondary">This category turns on automatically once source-backed {lens.title.toLowerCase()} data is wired for {/* company implied by selection */}the selected company.</p>
         </div>
       ) : (
         <>

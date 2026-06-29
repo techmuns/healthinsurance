@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { CalendarClock } from 'lucide-react'
 import type { NavTarget } from '@/insights/sourceMap'
 import { ANALYTICAL_LENSES, selectManagementEvents, type InsightLens, type InvestorPulse as InvestorPulseData, type LensKey } from '@/insights/investorPulse'
 import { InsightLensView, LENS_ICON, StanceChip, ConfidenceChip } from '@/components/InsightLensView'
@@ -16,68 +16,92 @@ const MGMT_EVENT_LABEL: Partial<Record<AnalyticalKey, string>> = {
   riskRegulatoryChanges: 'Governance-risk references',
 }
 
-// Data Insights — the fact-based deep dive. The seven analytical lenses are
-// stacked as compact accordion SECTIONS (not separate tabs): each header shows
-// the lens title, stance, confidence and one-line read so the whole company
-// reads "at a glance" while scrolling; click a header to expand the full section
-// (metric strip + the unchanged flip cards + missed-signal / implication /
-// watch-next / source trail).
+// Compact tab labels — the full title still leads the category story below.
+const TAB_LABEL: Record<AnalyticalKey, string> = {
+  underwritingProfitability: 'Underwriting',
+  growthLevers: 'Growth Levers',
+  competitivePositioning: 'Positioning',
+  expenseManagement: 'Expenses',
+  investmentPerformance: 'Investments',
+  forwardLookingStrategy: 'Forward View',
+  riskRegulatoryChanges: 'Risk & Regulatory',
+}
 
-function LensAccordion({
-  lens,
-  open,
-  onToggle,
-  onGoToSource,
-  reopenInsightId,
-  companyId,
-  companyName,
-}: {
-  lens: InsightLens
-  open: boolean
-  onToggle: () => void
-  onGoToSource: (target: NavTarget, insightId: string) => void
-  reopenInsightId?: string | null
-  companyId: string
-  companyName: string
+// Data Insights — an analyst workbook. The seven analytical lenses are presented
+// as horizontal file-folder TABS; selecting one opens a single focused category
+// story: a category header (title · one-line read · stance · confidence · as-of),
+// then the unchanged deep-dive content (metric strip + flip cards + missed-signal
+// / implication / watch-next / source trail) supplied by InsightLensView. Only
+// the navigation changed — every insight, flip card and source link is preserved.
+
+// ── File-folder tab strip ─────────────────────────────────────────────────────
+
+function FolderTabs({ keys, selected, onSelect, lenses }: {
+  keys: AnalyticalKey[]
+  selected: AnalyticalKey
+  onSelect: (k: AnalyticalKey) => void
+  lenses: InvestorPulseData['lenses']
 }) {
-  const Icon = LENS_ICON[lens.key as AnalyticalKey]
-  // Forward-Looking / Risk sections reference the shared management events (compact),
-  // but only when this company actually has governance events on record.
-  const showMgmtRef = MGMT_EVENT_LENSES.has(lens.key as AnalyticalKey)
-  const govEvents = showMgmtRef ? selectManagementEvents(companyId, { governanceOnly: true }) : []
   return (
-    <div
-      className="overflow-hidden rounded-2xl border bg-card shadow-soft transition-colors"
-      style={open ? { borderColor: 'rgba(182,139,58,0.45)', boxShadow: 'inset 3px 0 0 0 #B68B3A, 0 1px 2px rgba(23,43,77,0.05), 0 10px 24px rgba(23,43,77,0.08)' } : { borderColor: '#E1E6EF' }}
-    >
-      <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-2.5 p-3.5 text-left transition-colors hover:bg-ice/40">
-        <span
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg transition-colors"
-          style={open ? { background: 'rgba(182,139,58,0.12)', color: '#9C7430' } : { background: '#EEF4FF', color: '#27457E' }}
-        >
-          <Icon className="h-4 w-4" strokeWidth={2} />
+    <div role="tablist" aria-label="Data Insights categories" className="flex gap-1 overflow-x-auto hide-scrollbar border-b border-soft-border">
+      {keys.map((k) => {
+        const on = k === selected
+        const lens = lenses[k]
+        const Icon = LENS_ICON[k]
+        return (
+          <button
+            key={k}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onSelect(k)}
+            title={lens.title}
+            className={[
+              'group relative inline-flex shrink-0 items-center gap-1.5 rounded-t-lg px-3 py-2 text-[11.5px] font-semibold transition-colors',
+              on ? 'text-white' : 'border border-b-0 border-soft-border bg-surface-tint/70 text-navy-deep hover:bg-ice',
+            ].join(' ')}
+            style={on ? { background: 'linear-gradient(135deg, #1E4079 0%, #14294C 100%)', boxShadow: 'inset 0 2px 0 0 #E4C67C' } : undefined}
+          >
+            <Icon className="h-3.5 w-3.5" strokeWidth={2} style={{ color: on ? '#E4C67C' : '#27457E' }} />
+            <span className="whitespace-nowrap">{TAB_LABEL[k]}</span>
+            {!lens.available && <span className="h-1.5 w-1.5 rounded-full" style={{ background: on ? 'rgba(255,255,255,0.4)' : 'rgba(107,114,128,0.45)' }} title="Limited data" />}
+            {/* gold underline that connects the active folder to the story below */}
+            {on && <span className="pointer-events-none absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-champagne" />}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+// ── Category header — title · one-line analyst read · stance · confidence · as-of
+
+function CategoryHeader({ lens }: { lens: InsightLens }) {
+  const Icon = LENS_ICON[lens.key as AnalyticalKey]
+  return (
+    <div className="premium-panel rounded-2xl p-4">
+      <div className="flex items-start gap-3">
+        <span className="icon-ring-gold grid h-9 w-9 shrink-0 place-items-center rounded-lg" style={{ background: 'rgba(182,139,58,0.12)' }}>
+          <Icon className="h-[18px] w-[18px] text-champagne-deep" strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-display text-[16px] leading-tight text-navy-deep">{lens.title}</h3>
+            <h2 className="font-display text-[19px] leading-tight text-navy-deep">{lens.title}</h2>
             <StanceChip stance={lens.stance} />
             <ConfidenceChip confidence={lens.confidence} />
             {!lens.available && <span className="rounded-full bg-ice px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wide text-ink-secondary">Limited data</span>}
           </div>
-          <p className={`mt-0.5 font-editorial text-[12.5px] leading-snug text-ink-secondary ${open ? '' : 'line-clamp-1'}`}>{lens.oneLineRead}</p>
+          <p className="mt-0.5 text-[11.5px] leading-snug text-ink-secondary">{lens.purpose}</p>
         </div>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-ink-secondary transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="space-y-4 border-t border-soft-border p-4">
-          <InsightLensView lens={lens} onGoToSource={onGoToSource} reopenInsightId={reopenInsightId} hideHeader />
-          {showMgmtRef && govEvents.length > 0 && (
-            <div>
-              <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{MGMT_EVENT_LABEL[lens.key as AnalyticalKey]}</p>
-              <ManagementEventIntelligence variant="compact" governanceOnly companyId={companyId} companyName={companyName} />
-            </div>
-          )}
-        </div>
+      </div>
+      {lens.available && lens.oneLineRead && (
+        <p className="mt-3 border-t border-soft-border/70 pt-2.5 font-editorial text-[14px] leading-snug text-ink-primary">{lens.oneLineRead}</p>
+      )}
+      {lens.asOf && (
+        <p className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-medium text-ink-secondary">
+          <CalendarClock className="h-3 w-3 text-champagne-deep" strokeWidth={2.1} />
+          Fundamentals as of <span className="font-semibold text-navy-deep">{lens.asOf}</span> · these update quarterly/annually, not daily.
+        </p>
       )}
     </div>
   )
@@ -96,33 +120,43 @@ export function DataInsights({
 }) {
   const keys = ANALYTICAL_LENSES as AnalyticalKey[]
   const firstAvailable = keys.find((k) => pulse.lenses[k].available) ?? keys[0]
-  // One section open at a time — clicking a header collapses any other.
-  const [openKey, setOpenKey] = useState<AnalyticalKey | null>(initialOpenKey ?? firstAvailable)
-  const toggle = (k: AnalyticalKey) => setOpenKey((prev) => (prev === k ? null : k))
+  const [selected, setSelected] = useState<AnalyticalKey>(initialOpenKey ?? firstAvailable)
+
+  const lens = pulse.lenses[selected]
+  const showMgmtRef = MGMT_EVENT_LENSES.has(selected)
+  const govEvents = showMgmtRef ? selectManagementEvents(pulse.companyId, { governanceOnly: true }) : []
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Intro eyebrow */}
       <div className="px-0.5">
         <div className="mb-1 flex items-center gap-2">
           <span className="h-3 w-[3px] rounded-full bg-champagne" />
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Data Insights</span>
+          <span className="gold-rule h-px w-8 rounded-full" />
         </div>
         <p className="text-[11.5px] leading-snug text-ink-secondary">
-          Fact-based deep dive from the wired dashboard data — GI Council / IRDAI, financials, peers and valuation. Each section is source-backed; expand any to see the workings.
+          A source-backed analyst workbook — pick a category folder to open its focused story. Each card flips to its in-depth thesis, workings and sources.
         </p>
       </div>
-      {keys.map((k) => (
-        <LensAccordion
-          key={k}
-          lens={pulse.lenses[k]}
-          open={openKey === k}
-          onToggle={() => toggle(k)}
-          onGoToSource={onGoToSource}
-          reopenInsightId={reopenInsightId}
-          companyId={pulse.companyId}
-          companyName={pulse.company}
-        />
-      ))}
+
+      {/* File-folder category tabs */}
+      <FolderTabs keys={keys} selected={selected} onSelect={setSelected} lenses={pulse.lenses} />
+
+      {/* Selected category story (key forces a calm fade between categories) */}
+      <div key={selected} className="animate-fade-in space-y-4">
+        <CategoryHeader lens={lens} />
+        <InsightLensView lens={lens} onGoToSource={onGoToSource} reopenInsightId={reopenInsightId} hideHeader />
+        {showMgmtRef && govEvents.length > 0 && (
+          <div className="premium-panel rounded-2xl p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-3 w-[3px] rounded-full bg-champagne" />
+              <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{MGMT_EVENT_LABEL[selected]}</p>
+            </div>
+            <ManagementEventIntelligence variant="compact" governanceOnly companyId={pulse.companyId} companyName={pulse.company} />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
