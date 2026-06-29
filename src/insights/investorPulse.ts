@@ -511,13 +511,19 @@ function buildTodayRead(
   if (!all.length && !mgmt.length) return null
 
   const stance = deriveStance(counts)
-  const freshest = all.slice().sort(byNewest)[0] ?? null
+  const freshestSignal = all.slice().sort(byNewest)[0] ?? null
+  const freshestMgmt = mgmt.length ? mgmt.slice().sort(byNewest)[0] : null
+  // The genuinely freshest source-backed development is the newer of the freshest
+  // market signal vs the freshest governance event — so a recent board/leadership
+  // change surfaces as "what changed" instead of being hidden behind sector news.
+  const mgmtIsFreshest = !!freshestMgmt && (!freshestSignal || freshestMgmt.date > freshestSignal.date)
   const reg = all.filter((s) => s.category === 'Regulatory').length
   const n = counts.total
 
   // Headline — one sharp "net read" sentence with a clause built from the real mix.
   let clause: string
-  if (reg > 0 && counts.positive > 0) clause = 'regulatory pressure is building while demand signals stay positive'
+  if (mgmtIsFreshest && freshestMgmt) clause = `the freshest development is governance — a ${freshestMgmt.eventLabel.toLowerCase()}${counts.positive ? ', against a positive demand backdrop' : ''}`
+  else if (reg > 0 && counts.positive > 0) clause = 'regulatory pressure is building while demand signals stay positive'
   else if (counts.positive > 0 && counts.risk + counts.watch > 0) clause = 'positive demand signals are offset by items to watch'
   else if (counts.positive > 0) clause = 'demand signals are positive'
   else if (counts.risk + counts.watch > 0) clause = 'the open items are watch-and-risk, not catalysts'
@@ -525,15 +531,21 @@ function buildTodayRead(
   else clause = 'no strongly directional signal today'
   const headline = `Net read is ${STANCE_WORD[stance]}: ${clause}.`
 
-  // Changed — the single freshest source-backed development.
-  const changed = freshest
-    ? `${freshest.title} (${freshest.category}, ${freshest.dateLabel}).`
-    : mgmt.length
-      ? `${mgmt[0].eventLabel}${mgmt[0].person ? ` — ${mgmt[0].person}` : ''} (${mgmt[0].dateLabel}).`
-      : 'No fresh source-backed development.'
+  // Changed — the single freshest source-backed development (signal or governance).
+  const changed = mgmtIsFreshest && freshestMgmt
+    ? `${freshestMgmt.eventLabel}${freshestMgmt.person ? ` — ${freshestMgmt.person}` : ''} (Governance, ${freshestMgmt.dateLabel}).`
+    : freshestSignal
+      ? `${freshestSignal.title} (${freshestSignal.category}, ${freshestSignal.dateLabel}).`
+      : freshestMgmt
+        ? `${freshestMgmt.eventLabel}${freshestMgmt.person ? ` — ${freshestMgmt.person}` : ''} (Governance, ${freshestMgmt.dateLabel}).`
+        : 'No fresh source-backed development.'
 
   // Matters — why it matters (one line, from the freshest item's own rationale).
-  const matters = freshest?.whyItMatters ? firstSentence(freshest.whyItMatters) : 'Sets the near-term tone for the name and the sector.'
+  const matters = mgmtIsFreshest && freshestMgmt?.summary
+    ? firstSentence(freshestMgmt.summary)
+    : freshestSignal?.whyItMatters
+      ? firstSentence(freshestSignal.whyItMatters)
+      : 'Sets the near-term tone for the name and the sector.'
 
   // Watch next — the single thing to monitor, anchored to the dominant theme.
   let watchNext: string
@@ -549,7 +561,7 @@ function buildTodayRead(
   // Source line — compact provenance read.
   const pct = n ? Math.round((counts.sourced / n) * 100) : 0
   const sourceLine = n
-    ? `${n} signal${n === 1 ? '' : 's'} · ${pct}% source-backed · freshest ${freshest?.dateLabel ?? '—'}`
+    ? `${n} signal${n === 1 ? '' : 's'} · ${pct}% source-backed · freshest ${freshestSignal?.dateLabel ?? '—'}`
     : `${mgmt.length} governance event${mgmt.length === 1 ? '' : 's'} on record`
 
   return { headline, stance, changed, matters, watchNext, sourceLine }

@@ -190,6 +190,7 @@ function PulseCard({
               {signal.dateLabel}
             </span>
             <ImpactChip impact={signal.impact} />
+            {signal.scope === 'sector' && <span className="rounded-full bg-soft-blue px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide text-navy-primary">Sector</span>}
             <ConfidenceDot confidence={signal.confidence} />
           </div>
           <p className="mt-1.5 text-[12px] font-semibold leading-snug text-navy-deep line-clamp-2">{signal.title}</p>
@@ -304,7 +305,7 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
               icon={Zap}
               label="Fastest Signal"
               value={pulse.freshest ? pulse.freshest.title : 'No fresh signal'}
-              sub={pulse.freshest ? `${pulse.freshest.dateLabel} · ${pulse.freshest.category}` : undefined}
+              sub={pulse.freshest ? `${pulse.freshest.dateLabel} · ${pulse.freshest.category}${pulse.freshest.scope === 'sector' ? ' · sector-wide' : ''}` : undefined}
               impact={pulse.freshest?.impact}
               confidence={pulse.freshest?.confidence}
               tone={{ fg: GOLD, bg: 'rgba(182,139,58,0.12)' }}
@@ -313,7 +314,7 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
               icon={ShieldAlert}
               label="Risk Watch"
               value={pulse.latestRisk ? pulse.latestRisk.title : 'No active risk flag'}
-              sub={pulse.latestRisk ? `${pulse.latestRisk.dateLabel} · ${pulse.counts.risk} risk · ${pulse.counts.watch} watch` : 'Feed reads clean'}
+              sub={pulse.latestRisk ? `${pulse.latestRisk.dateLabel}${pulse.latestRisk.scope === 'sector' ? ' · sector-wide' : ''} · ${pulse.counts.risk} risk · ${pulse.counts.watch} watch` : 'Feed reads clean'}
               impact={pulse.latestRisk?.impact}
               confidence={pulse.latestRisk?.confidence}
               tone={{ fg: IMPACT_META.Risk.fg, bg: IMPACT_META.Risk.bg }}
@@ -322,7 +323,7 @@ export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
               icon={TrendingUp}
               label="Opportunity Watch"
               value={pulse.latestOpportunity ? pulse.latestOpportunity.title : 'No fresh upside catalyst'}
-              sub={pulse.latestOpportunity ? `${pulse.latestOpportunity.dateLabel} · ${pulse.counts.positive} positive` : undefined}
+              sub={pulse.latestOpportunity ? `${pulse.latestOpportunity.dateLabel}${pulse.latestOpportunity.scope === 'sector' ? ' · sector-wide' : ''} · ${pulse.counts.positive} positive` : undefined}
               impact={pulse.latestOpportunity?.impact}
               confidence={pulse.latestOpportunity?.confidence}
               tone={{ fg: IMPACT_META.Positive.fg, bg: IMPACT_META.Positive.bg }}
