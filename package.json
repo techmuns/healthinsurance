@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:retail-mix": "tsx --tsconfig tsconfig.app.json scripts/check-retail-mix.ts",
+    "check:basis": "tsx --tsconfig tsconfig.app.json scripts/check-basis-toggle.ts",
     "check:links": "tsx scripts/check-source-links.ts",
     "preview": "vite preview",
     "ingest": "tsx scripts/ingest/ingest-all.ts",

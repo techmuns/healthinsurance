@@ -16,14 +16,20 @@ on:
     paths:
       - 'src/data/snapshots/**'
       - 'src/lib/retailMixAudit.ts'
+      - 'src/lib/peerScorecard.ts'
       - 'src/lib/dataLayer.ts'
+      - 'src/data/accountingBasis.ts'
       - 'scripts/check-retail-mix.ts'
+      - 'scripts/check-basis-toggle.ts'
   pull_request:
     paths:
       - 'src/data/snapshots/**'
       - 'src/lib/retailMixAudit.ts'
+      - 'src/lib/peerScorecard.ts'
       - 'src/lib/dataLayer.ts'
+      - 'src/data/accountingBasis.ts'
       - 'scripts/check-retail-mix.ts'
+      - 'scripts/check-basis-toggle.ts'
 
 permissions:
   contents: read
@@ -53,3 +59,6 @@ jobs:
 
       - name: Retail Mix agrees on every surface
         run: npm run check:retail-mix
+
+      - name: Accounting-basis toggle is like-for-like (IGAAP vs IFRS)
+        run: npm run check:basis

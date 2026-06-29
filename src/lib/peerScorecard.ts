@@ -13,8 +13,8 @@
 // ---------------------------------------------------------------------------
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
-import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance, latestRetailMixPoint, RETAIL_MIX_SOURCE } from '@/lib/dataLayer'
-import { hasBasisData, getBasisProfit, ANNUAL_PERIODS, BASIS_SOURCE_LABEL, type AccountingBasis } from '@/data/accountingBasis'
+import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance, latestRetailMixPoint, getLatestAnnualFyLabel, RETAIL_MIX_SOURCE } from '@/lib/dataLayer'
+import { hasBasisData, getBasisProfit, ANNUAL_PERIODS, BASIS_SOURCE_LABEL, type AccountingBasis, type BasisPeriod } from '@/data/accountingBasis'
 import type { DashboardFilters, Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
@@ -150,16 +150,19 @@ export function median(values: number[]): number | null {
 // market-share, solvency, valuation — are basis-neutral. ROE has no clean IFRS
 // equity, so it stays on its statutory basis on both lenses (see the page note).
 
-/** Latest annual combined ratio on a basis for a dual-basis SAHI — with its FY.
- *  null when the company isn't tracked on that basis (→ honest NA). */
+/** Combined ratio on a basis for a dual-basis SAHI, PINNED to the dashboard's
+ *  canonical annual FY — so the IGAAP↔IFRS toggle is a true like-for-like basis
+ *  comparison (same company, SAME year), never FY25-IGAAP vs FY26-IFRS. Returns
+ *  null when the company isn't dual-basis tracked, or when it has no published
+ *  figure on that basis for that exact FY (→ honest NA, never a cross-year fill).
+ *  Auto-advances with the dashboard: when the canonical annual rolls to FY26,
+ *  both lenses move to FY26 together. */
 function basisCombinedPoint(companyId: string, basis: AccountingBasis): { fy: string; cr: number } | null {
   if (!hasBasisData(companyId)) return null
-  for (let k = ANNUAL_PERIODS.length - 1; k >= 0; k--) {
-    const p = ANNUAL_PERIODS[k]
-    const cr = getBasisProfit(companyId, basis, p)?.combinedRatio
-    if (typeof cr === 'number') return { fy: p, cr }
-  }
-  return null
+  const fy = getLatestAnnualFyLabel()
+  if (!(ANNUAL_PERIODS as string[]).includes(fy)) return null
+  const cr = getBasisProfit(companyId, basis, fy as BasisPeriod)?.combinedRatio
+  return typeof cr === 'number' ? { fy, cr } : null
 }
 
 function valueOf(i: Insurer, m: MetricDef, basis: AccountingBasis): number | null {
