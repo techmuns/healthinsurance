@@ -145,6 +145,9 @@ export interface InsightLens {
   insightIds: string[]
   metrics: MetricRead[]
   relatedSignals: PulseSignal[]
+  /** Latest reporting period behind this lens (e.g. 'FY26') — honest freshness;
+   *  these fundamentals update quarterly/annually, never "today". */
+  asOf?: string
   /** False → the lens shows an honest "not enough verified data yet" state. */
   available: boolean
 }
@@ -789,6 +792,91 @@ function metricStance(metrics: MetricRead[]): SignalImpact {
   if (metrics.some((m) => m.tone === 'Positive')) return 'Positive'
   return 'Neutral'
 }
+// Parse the underlying number from a formatted metric value (e.g. "96.1%" → 96.1,
+// "-₹250 Cr" → -250, "3.03x" → 3.03). Disputed tiles return null — never reasoned on.
+function metricNum(metrics: MetricRead[], label: string): number | null {
+  const m = metrics.find((x) => x.label === label)
+  if (!m || m.disputed) return null
+  const n = parseFloat(m.value.replace(/[^0-9.-]/g, ''))
+  return Number.isNaN(n) ? null : n
+}
+
+// A sharp, number-anchored analyst one-liner for metric-only sections (used when
+// no curated insight leads the lens). Returns null → caller falls back generically.
+function metricOneLine(key: Exclude<LensKey, 'overviewPulse'>, metrics: MetricRead[]): string | null {
+  if (key === 'underwritingProfitability') {
+    const cr = metricNum(metrics, 'Combined ratio')
+    if (cr == null) return null
+    return cr < 100
+      ? `Combined ratio ${cr}% — underwriting runs at/near breakeven, so growth is not being bought at a heavy loss.`
+      : `Combined ratio ${cr}% — above the 100% line, so premium is still written at an underwriting loss.`
+  }
+  if (key === 'expenseManagement') {
+    const exp = metricNum(metrics, 'Expense ratio')
+    if (exp == null) return null
+    return exp >= 33
+      ? `Expense ratio ${exp}% — still elevated; premium growth has not yet translated into operating efficiency.`
+      : `Expense ratio ${exp}% — relatively lean, though operating leverage still needs to prove out as the book grows.`
+  }
+  if (key === 'growthLevers') {
+    const g = metricNum(metrics, 'GWP growth (YoY)')
+    const gwp = metrics.find((m) => m.label === 'Gross written premium')
+    const retail = metricNum(metrics, 'Retail mix')
+    if (g == null && !gwp) return null
+    const head = gwp ? `GWP ${gwp.value}${g != null ? `, +${g}% YoY` : ''}` : `GWP +${g}% YoY`
+    const tail = retail != null ? ` Growth is still volume-led (retail mix ${retail}%); margin quality is unproven here.` : ' Growth is still volume-led; margin quality is unproven here.'
+    return `${head}.${tail}`
+  }
+  if (key === 'competitivePositioning') {
+    const ms = metrics.find((m) => m.label === 'Health market share')
+    const g = metricNum(metrics, 'GWP growth (YoY)')
+    if (!ms) return null
+    const rank = ms.note ? ` (${ms.note})` : ''
+    return `${ms.value} health share${rank}, growing ${g != null ? `${g}% ` : ''}roughly with the market — share gains help only if they are profitable share.`
+  }
+  if (key === 'riskRegulatoryChanges') {
+    const solv = metricNum(metrics, 'Solvency ratio')
+    if (solv == null) return null
+    return solv >= 1.8
+      ? `Solvency ${solv}x vs the 1.5x floor — capital is comfortable, so the live risk is regulatory, not solvency.`
+      : `Solvency ${solv}x vs the 1.5x floor — headroom is thinner; watch solvency alongside regulation.`
+  }
+  if (key === 'forwardLookingStrategy') {
+    const g = metrics.find((m) => m.label === 'Guidance delivered')
+    if (!g) return null
+    return `${g.value} guidance targets delivered to date — a credible delivery record is the cleanest read on management here.`
+  }
+  if (key === 'investmentPerformance') {
+    const pct = metricNum(metrics, 'Investment income vs PAT')
+    if (pct == null) return null
+    return `Investment income is ${pct}% of PAT — earnings are investment-led, not underwriting-led, so profit quality is weaker than headline PAT suggests.`
+  }
+  return null
+}
+
+// Concrete, data-anchored "what to monitor next" for metric-only sections.
+function metricWatchNext(key: Exclude<LensKey, 'overviewPulse'>, metrics: MetricRead[]): string[] {
+  if (!metrics.length) return []
+  switch (key) {
+    case 'underwritingProfitability':
+      return ['Combined ratio vs the 100% break-even in the next print', 'Claims ratio (MLR) as the book scales']
+    case 'expenseManagement':
+      return ['Expense ratio trend as GWP grows — the test of operating leverage', 'Commission cost vs premium growth']
+    case 'growthLevers':
+      return ['Whether retail mix holds as GWP grows (margin-accretive vs group)', 'Combined ratio against this growth — profitable vs bought growth']
+    case 'competitivePositioning':
+      return ['Claims ratio as share grows — profitable share vs bought share', 'GWP growth vs the SAHI peer median']
+    case 'riskRegulatoryChanges':
+      return ['Solvency vs the 1.5x regulatory floor', 'IRDAI mis-selling / distribution-conduct rules']
+    case 'forwardLookingStrategy':
+      return ['Next guidance print vs stated targets', 'Analyst coverage breadth (re-rating catalyst)']
+    case 'investmentPerformance':
+      return ['Underwriting result vs investment income — earnings-quality drift', 'Investment yield if/when disclosed']
+    default:
+      return []
+  }
+}
+
 function metricImplication(key: Exclude<LensKey, 'overviewPulse'>, metrics: MetricRead[]): string {
   const cr = metrics.find((m) => m.label === 'Combined ratio')
   const exp = metrics.find((m) => m.label === 'Expense ratio')
@@ -799,9 +887,18 @@ function metricImplication(key: Exclude<LensKey, 'overviewPulse'>, metrics: Metr
       : 'Underwriting is at or near breakeven, so margin gains can come from the core book rather than markets.'
   }
   if (key === 'expenseManagement' && exp) {
-    return exp.tone === 'Risk'
-      ? 'The cost base is heavy relative to premium — operating leverage has to show up as the book scales, or margins stay pressured.'
-      : 'Cost discipline looks reasonable; watch whether scale keeps pulling the expense ratio down.'
+    return exp.tone === 'Risk' || exp.tone === 'Watch'
+      ? 'The cost base is still heavy relative to premium — operating leverage has to show up as the book scales, or margins stay pressured.'
+      : 'Cost discipline looks reasonable; the question is whether scale keeps pulling the expense ratio down.'
+  }
+  if (key === 'growthLevers' && metrics.length) {
+    return 'Re-rating needs margin proof, not just premium — track the combined ratio against this growth rather than the headline GWP number.'
+  }
+  if (key === 'competitivePositioning' && metrics.length) {
+    return 'Share gains only help the thesis if they are profitable share — watch the claims ratio as the book grows, not just the share number.'
+  }
+  if (key === 'forwardLookingStrategy' && metrics.length) {
+    return 'A credible delivery record supports the thesis, but thin analyst coverage means a re-rating may lag the fundamentals.'
   }
   if (key === 'riskRegulatoryChanges' && solv) {
     return solv.tone === 'Risk' || solv.tone === 'Watch'
@@ -816,6 +913,17 @@ function metricImplication(key: Exclude<LensKey, 'overviewPulse'>, metrics: Metr
       : 'Investment income supplements a profitable core book rather than carrying it.'
   }
   return ''
+}
+
+// Newest fiscal period across a lens's metrics ("FY26" > "FY25"), for honest freshness.
+function newestPeriod(metrics: MetricRead[]): string | undefined {
+  const fy = (p: string) => {
+    const m = /FY\s*(\d{2,4})/i.exec(p)
+    return m ? Number(m[1]) : -1
+  }
+  const periods = metrics.map((m) => m.period).filter(Boolean)
+  if (!periods.length) return undefined
+  return periods.slice().sort((a, b) => fy(a) - fy(b)).slice(-1)[0]
 }
 
 function buildLens(
@@ -844,18 +952,19 @@ function buildLens(
     if (ins.watch?.items?.length) for (const w of ins.watch.items) watchRaw.push(`${w.trigger} — ${w.condition}`)
     else if (ins.falsifier) watchRaw.push(`Thesis flips if: ${ins.falsifier}`)
   }
-  const watchNext = [...new Set(watchRaw)].slice(0, 4)
+  // Insight-led watch list, else a concrete metric-driven "what to monitor next".
+  const watchNext = watchRaw.length ? [...new Set(watchRaw)].slice(0, 4) : metricWatchNext(key, metrics)
 
   const investorImplication = lensInsights[0]?.application?.framing || lensInsights[0]?.thesis || metricImplication(key, metrics)
   const stance = lensInsights[0] ? CATEGORY_STANCE[lensInsights[0].category] : metricStance(metrics)
   // Source-linked metrics → High confidence in the numbers; unsourced metrics →
   // Medium; nothing → Low. Curated insights always lead at High.
   const confidence: Confidence = lensInsights.length ? 'High' : metrics.some((m) => m.sourceUrl) ? 'High' : metrics.length ? 'Medium' : 'Low'
+  // Insight-led sections keep the curated read; metric-only sections get a sharp,
+  // number-anchored analyst one-liner (falling back to a plain stat, then purpose).
   const oneLineRead = lensInsights[0]
     ? firstSentence(lensInsights[0].summary)
-    : metrics[0]
-      ? `${metrics[0].label} at ${metrics[0].value} (${metrics[0].period}).`
-      : meta.purpose
+    : metricOneLine(key, metrics) ?? (metrics[0] ? `${metrics[0].label} at ${metrics[0].value} (${metrics[0].period}).` : meta.purpose)
 
   const sourceRefs = dedupeRefs([
     ...metrics.map((m) => ({ name: m.sourceName, url: m.sourceUrl })),
@@ -877,6 +986,7 @@ function buildLens(
     insightIds: lensInsights.map((i) => i.id),
     metrics,
     relatedSignals,
+    asOf: newestPeriod(metrics),
     available: lensInsights.length > 0 || metrics.length > 0 || relatedSignals.length > 0,
   }
 }

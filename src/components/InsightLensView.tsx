@@ -257,6 +257,11 @@ export function InsightLensView({
           {lens.sourceRefs.length > 0 && (
             <div className="rounded-xl border border-soft-border bg-ice/40 p-3.5">
               <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Source / data reference</p>
+              {lens.asOf && (
+                <p className="mt-1 text-[10px] leading-snug text-ink-secondary">
+                  Fundamentals last reported as of <span className="font-semibold text-navy-deep">{lens.asOf}</span> — these ratios update quarterly/annually, not daily.
+                </p>
+              )}
               <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
                 {lens.sourceRefs.map((r, i) =>
                   r.url ? (
