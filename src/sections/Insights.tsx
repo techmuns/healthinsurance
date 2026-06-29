@@ -117,6 +117,8 @@ function InsightsBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute -inset-x-2 -inset-y-2 -z-10 overflow-hidden rounded-3xl">
       <div className="absolute inset-0" style={{ background: 'linear-gradient(165deg, #F3F8FE 0%, #E4EEFA 46%, #EFF5FD 100%)' }} />
+      {/* soft diagonal blue wash behind the main content */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(118deg, transparent 0%, rgba(206,224,247,0.45) 38%, transparent 60%)' }} />
       {/* pale blue blob behind the header / top-left */}
       <div className="blob-a absolute -left-32 -top-28 h-[26rem] w-[26rem] opacity-95 blur-3xl" style={{ background: 'radial-gradient(circle at 42% 42%, rgba(170,201,243,0.78), transparent 70%)' }} />
       {/* flowing blue shapes along the top-right and right edge */}

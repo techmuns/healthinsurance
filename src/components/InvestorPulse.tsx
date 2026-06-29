@@ -145,7 +145,7 @@ export function CompanyFilter() {
 
 function ReadRow({ icon: Icon, label, text, tint, fg }: { icon: LucideIcon; label: string; text: string; tint: string; fg: string }) {
   return (
-    <div className="flex items-start gap-2.5 py-2 first:pt-0" style={{ borderTop: '1px solid rgba(228,198,124,0.10)' }}>
+    <div className="flex items-start gap-2.5 py-1.5 first:pt-0" style={{ borderTop: '1px solid rgba(228,198,124,0.12)' }}>
       <span className="icon-ring-gold-dark mt-px grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
         <Icon className="h-4 w-4" strokeWidth={2.1} style={{ color: fg }} />
       </span>
@@ -160,10 +160,11 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
   if (!tr) return null
   const sm = STANCE_META[tr.stance]
   return (
-    <section className="relative isolate flex flex-col overflow-hidden rounded-2xl p-5 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
+    <section className="relative isolate flex flex-col overflow-hidden rounded-2xl px-5 py-4 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
       {/* Soft corner-blob detailing (same calm language as the Industry header):
           gentle, rounded radial blobs bleeding in from the corners — a warm
-          gold blob lower-right, soft blue blobs elsewhere. No hard shapes. */}
+          gold blob lower-right, soft blue blobs elsewhere + a faint blue radial
+          overlay for depth. No hard shapes. */}
       <div
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
@@ -171,6 +172,7 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
             'radial-gradient(circle at 90% 96%, rgba(214,178,98,0.34) 0%, transparent 50%),' +
             'radial-gradient(circle at 97% 6%, rgba(96,138,206,0.30) 0%, transparent 48%),' +
             'radial-gradient(circle at 4% 98%, rgba(44,80,146,0.5) 0%, transparent 54%),' +
+            'radial-gradient(circle at 28% 24%, rgba(74,114,184,0.20) 0%, transparent 56%),' +
             'radial-gradient(circle at 16% 6%, rgba(122,162,222,0.26) 0%, transparent 50%)',
         }}
       />
@@ -195,19 +197,19 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
       </div>
 
       {/* gold serif headline — same display serif as the "Insights" page title */}
-      <h2 className="mt-3 font-display text-[21px] font-semibold leading-[1.2] tracking-[0.002em]" style={{ color: GOLD_ON_NAVY }}>
+      <h2 className="mt-2.5 font-display text-[21px] font-semibold leading-[1.2] tracking-[0.002em]" style={{ color: '#E9C46C' }}>
         {tr.headline}
       </h2>
 
       {/* changed / matters / watch-next */}
-      <div className="mt-3">
+      <div className="mt-2.5">
         <ReadRow icon={Zap} label="Changed" text={tr.changed} tint="rgba(228,198,124,0.14)" fg={GOLD_ON_NAVY} />
         <ReadRow icon={ShieldCheck} label="Matters" text={tr.matters} tint="rgba(255,255,255,0.08)" fg="#CFE0F5" />
         <ReadRow icon={Eye} label="Watch Next" text={tr.watchNext} tint="rgba(56,168,162,0.16)" fg="#6FD0CB" />
       </div>
 
       {/* source / freshness foot — small gold icon + fine separator rhythm */}
-      <div className="mt-3.5 flex items-center gap-2 pt-3 text-[10.5px] font-medium text-white/60" style={{ borderTop: '1px solid rgba(228,198,124,0.16)' }}>
+      <div className="mt-3 flex items-center gap-2 pt-2.5 text-[10.5px] font-medium text-white/60" style={{ borderTop: '1px solid rgba(228,198,124,0.16)' }}>
         <span className="icon-ring-gold-dark grid h-5 w-5 shrink-0 place-items-center rounded-full" style={{ background: 'rgba(228,198,124,0.10)' }}>
           <Globe className="h-3 w-3" strokeWidth={2.1} style={{ color: 'rgba(228,198,124,0.9)' }} />
         </span>
