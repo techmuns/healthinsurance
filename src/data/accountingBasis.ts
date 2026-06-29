@@ -115,7 +115,7 @@ const STAR_IGAAP: BasisTable = {
 }
 const STAR_IFRS: BasisTable = {
   FY23: na(),
-  FY24: { pat: 1103, patMarginGwp: 7.2, claimsRatio: 66.5, expenseRatio: 30.7, combinedRatio: 97.2, eom: null },
+  FY24: { pat: 1103, patMarginGwp: 7.2, claimsRatio: 66.5, expenseRatio: 30.7, combinedRatio: 97.3, eom: null },
   FY25: { pat: 787, patMarginGwp: 4.7, claimsRatio: 70.7, expenseRatio: 30.4, combinedRatio: 101.1, eom: null },
   FY26: { pat: 911, patMarginGwp: 4.9, claimsRatio: 68.7, expenseRatio: 30.1, combinedRatio: 98.8, eom: null },
   Q4FY25: { pat: 271, patMarginGwp: 5.3, claimsRatio: 69.2, expenseRatio: 29.2, combinedRatio: 98.4, eom: null },
