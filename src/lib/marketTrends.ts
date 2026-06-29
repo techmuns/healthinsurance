@@ -115,7 +115,7 @@ interface GicRow {
 const GIC_ROWS = gicHealthPortfolio.data as GicRow[]
 const GIC_META = (gicHealthPortfolio as { _meta?: { last_updated?: string } })._meta
 const GIC_SOURCE_LABEL = 'GI Council Segment-wise Report · health portfolio (computed)'
-const GIC_SOURCE_URL = 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/'
+const GIC_SOURCE_URL = 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/'
 
 const DRHP_YEARS = sortYears(ROWS.flatMap((r) => Object.keys(r.overall_gdpi_inr_bn)))
 const LAST_DRHP_FY = DRHP_YEARS[DRHP_YEARS.length - 1] ?? 'FY24'

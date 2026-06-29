@@ -945,7 +945,7 @@ export const RETAIL_MIX_SOURCE = {
   confidence: 'high' as const,
   provenance: {
     source_name: 'GI Council Segment-wise Report — Health Portfolio (retail vs group health premium)',
-    source_url: 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/',
+    source_url: 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/',
     fetched_at: (gicHealthPortfolio as { _meta?: { last_updated?: string } })._meta?.last_updated ?? '',
   },
 }

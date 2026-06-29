@@ -107,7 +107,7 @@ export const GI_SEGMENT_SOURCE = {
   confidence: 'high' as const,
   provenance: {
     source_name: latestSegRow?.provenance?.source_name ?? 'GI Council Segment-wise Report',
-    source_url: latestSegRow?.provenance?.source_url ?? 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/',
+    source_url: latestSegRow?.provenance?.source_url ?? 'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/',
     fetched_at: (industrySegment as MetaLike)._meta?.last_updated ?? '',
   },
 }
