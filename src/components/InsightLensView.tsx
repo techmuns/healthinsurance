@@ -13,6 +13,7 @@ import {
   LineChart,
   Landmark,
   Trophy,
+  AlertTriangle,
   type LucideIcon,
 } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
@@ -33,7 +34,7 @@ const FILE = generated as unknown as InsightsFile
 const PANEL_LATEST = latestPeriodAcross(FILE.insights)
 const byId = (id: string): Insight | undefined => FILE.insights.find((i) => i.id === id)
 
-const LENS_ICON: Record<Exclude<LensKey, 'overviewPulse'>, LucideIcon> = {
+export const LENS_ICON: Record<Exclude<LensKey, 'overviewPulse'>, LucideIcon> = {
   underwritingProfitability: Gauge,
   growthLevers: TrendingUp,
   competitivePositioning: Trophy,
@@ -43,7 +44,7 @@ const LENS_ICON: Record<Exclude<LensKey, 'overviewPulse'>, LucideIcon> = {
   riskRegulatoryChanges: Landmark,
 }
 
-function StanceChip({ stance }: { stance: InsightLens['stance'] }) {
+export function StanceChip({ stance }: { stance: InsightLens['stance'] }) {
   const m = IMPACT_META[stance]
   return (
     <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em]" style={{ color: m.fg, background: m.bg }}>
@@ -53,7 +54,7 @@ function StanceChip({ stance }: { stance: InsightLens['stance'] }) {
   )
 }
 
-function ConfidenceChip({ confidence }: { confidence: InsightLens['confidence'] }) {
+export function ConfidenceChip({ confidence }: { confidence: InsightLens['confidence'] }) {
   const c = CONFIDENCE_META[confidence]
   return (
     <span className="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em]" style={{ color: c.fg, background: c.bg }}>
@@ -64,6 +65,23 @@ function ConfidenceChip({ confidence }: { confidence: InsightLens['confidence'] 
 
 function MetricTile({ m }: { m: MetricRead }) {
   const tone = IMPACT_META[m.tone]
+  // A known-disputed figure renders as an honest "verifying" state, never a clean number.
+  if (m.disputed) {
+    return (
+      <div className="rounded-xl border p-3" style={{ borderColor: 'rgba(156,116,48,0.3)', background: 'rgba(156,116,48,0.06)' }}>
+        <div className="flex items-center justify-between gap-1.5">
+          <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{m.label}</p>
+          <span className="rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.04em]" style={{ color: CONFIDENCE_META.Low.fg, background: CONFIDENCE_META.Low.bg }}>Low confidence</span>
+        </div>
+        <p className="mt-1 flex items-center gap-1 text-[13px] font-semibold leading-snug text-champagne-deep">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Figure disputed — verifying
+          <span className="rounded bg-white/70 px-1 py-0.5 text-[8.5px] font-semibold text-ink-secondary">{m.period}</span>
+        </p>
+        {m.note && <p className="mt-1 text-[10px] leading-snug text-ink-secondary">{m.note}</p>}
+        <p className="mt-1 text-[9.5px] italic text-ink-secondary">{m.sourceName}</p>
+      </div>
+    )
+  }
   return (
     <div className="rounded-xl border border-soft-border bg-card p-3 shadow-soft">
       <p className="text-[9px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{m.label}</p>
@@ -113,10 +131,13 @@ export function InsightLensView({
   lens,
   onGoToSource,
   reopenInsightId,
+  hideHeader = false,
 }: {
   lens: InsightLens
   onGoToSource: (target: NavTarget, insightId: string) => void
   reopenInsightId?: string | null
+  /** Skip the built-in header when an outer accordion already provides one. */
+  hideHeader?: boolean
 }) {
   const Icon = LENS_ICON[lens.key as Exclude<LensKey, 'overviewPulse'>] ?? Gauge
   const insights = lens.insightIds.map(byId).filter((i): i is Insight => !!i)
@@ -128,25 +149,27 @@ export function InsightLensView({
 
   return (
     <section className="space-y-5">
-      {/* ── Lens header ──────────────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
-        <div className="flex items-center gap-2">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-soft-blue text-navy-primary">
-            <Icon className="h-4 w-4" strokeWidth={2} />
-          </span>
-          <div className="min-w-0">
-            <h2 className="font-display text-[20px] leading-tight text-navy-deep">{lens.title}</h2>
-            <p className="text-[11px] text-ink-secondary">{lens.purpose}</p>
+      {/* ── Lens header (omitted when an accordion supplies it) ──────────── */}
+      {!hideHeader && (
+        <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+          <div className="flex items-center gap-2">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-soft-blue text-navy-primary">
+              <Icon className="h-4 w-4" strokeWidth={2} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="font-display text-[20px] leading-tight text-navy-deep">{lens.title}</h2>
+              <p className="text-[11px] text-ink-secondary">{lens.purpose}</p>
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+              <StanceChip stance={lens.stance} />
+              <ConfidenceChip confidence={lens.confidence} />
+            </div>
           </div>
-          <div className="ml-auto flex shrink-0 items-center gap-1.5">
-            <StanceChip stance={lens.stance} />
-            <ConfidenceChip confidence={lens.confidence} />
-          </div>
+          {lens.available && lens.oneLineRead && (
+            <p className="mt-2.5 border-t border-soft-border pt-2.5 font-editorial text-[14px] leading-snug text-ink-primary">{lens.oneLineRead}</p>
+          )}
         </div>
-        {lens.available && lens.oneLineRead && (
-          <p className="mt-2.5 border-t border-soft-border pt-2.5 font-editorial text-[14px] leading-snug text-ink-primary">{lens.oneLineRead}</p>
-        )}
-      </div>
+      )}
 
       {!lens.available ? (
         <div className="rounded-2xl border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center">

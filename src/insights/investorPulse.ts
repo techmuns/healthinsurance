@@ -119,6 +119,8 @@ export interface MetricRead {
   note?: string
   sourceName: string
   sourceUrl: string
+  /** A known-disputed figure — rendered as "verifying" at Low confidence, never a clean fact. */
+  disputed?: boolean
 }
 
 export interface SourceRef {
@@ -653,6 +655,20 @@ function annualPick(rows: AnnualRow[], field: keyof AnnualRow): { value: number;
   return null
 }
 
+// Known, unresolved data discrepancies — surfaced honestly ("Figure disputed —
+// verifying", Low confidence), never shown as a clean fact. Reconciled values
+// drop out of this list once verified.
+const DISPUTED_FIGURES: { companyId: string; lens: Exclude<LensKey, 'overviewPulse'>; label: string; period: string; note: string; src: SourceRef }[] = [
+  {
+    companyId: 'care-health',
+    lens: 'growthLevers',
+    label: 'Retail health premium',
+    period: 'FY26',
+    note: '₹6,874.56 Cr fetched vs ₹6,597.60 Cr in the GI Council Mar-2026 file / Paragon Excel — held at Low confidence until reconciled.',
+    src: { name: 'GI Council monthly segment (Mar 2026)', url: '' },
+  },
+]
+
 function metricsForLens(
   key: Exclude<LensKey, 'overviewPulse'>,
   companyId: string,
@@ -753,6 +769,14 @@ function metricsForLens(
         out.push(M('Investment income vs PAT', `${pctOfPat}%`, yr.fy, eq.investmentLed ? 'Watch' : 'Positive', bridgeSrc, eq.investmentLed ? 'Profit is investment-income-led' : 'Core-led profit'))
       }
       out.push(M('Underwriting result', fmtCr(b.underwritingResult), yr.fy, b.underwritingResult < 0 ? 'Watch' : 'Positive', bridgeSrc, b.underwritingResult < 0 ? 'Core book loses money before investment income' : 'Core book profitable'))
+    }
+  }
+
+  // Surface any known data discrepancy for this company/lens honestly — a
+  // verifying-at-Low-confidence tile, never a clean number.
+  for (const d of DISPUTED_FIGURES) {
+    if (d.companyId === companyId && d.lens === key) {
+      out.push({ label: d.label, value: 'Figure disputed — verifying', period: d.period, tone: 'Watch', note: d.note, sourceName: d.src.name, sourceUrl: d.src.url, disputed: true })
     }
   }
   return out
