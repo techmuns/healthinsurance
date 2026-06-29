@@ -48,12 +48,16 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
 
   return (
     // `insights-tab` scopes the editorial serif to this tab's written narrative.
-    <div className="insights-tab space-y-4">
+    // A relative shell so the soft blue/gold blob backdrop can sit behind the
+    // whole tab (Pulse + Data Insights) without bleeding into other tabs.
+    <div className="insights-tab relative isolate space-y-4">
+      <InsightsBackdrop />
+
       {/* ── One compact header row: title · company filter · Pulse | Data Insights. */}
-      <div className="sticky top-0 z-10 -mx-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-soft-border bg-surface-tint/85 px-3 py-2 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 -mx-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-xl border border-soft-border bg-surface-tint/80 px-3.5 py-2.5 backdrop-blur-md">
         <div className="min-w-0">
-          <h1 className="font-display text-[20px] leading-tight text-navy-deep">Insights</h1>
-          <p className="text-[11px] leading-snug text-ink-secondary">Senior analyst read + data-backed insights for the selected company.</p>
+          <h1 className="font-display text-[26px] leading-none text-navy-deep">Insights</h1>
+          <p className="mt-1 text-[11px] leading-snug text-ink-secondary">Senior analyst read + data-backed insights for the selected company.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <CompanyFilter />
@@ -66,12 +70,14 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
                   type="button"
                   onClick={() => setView(id)}
                   className={[
-                    'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
+                    'relative inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[12.5px] font-semibold transition-colors',
                     on ? 'bg-navy-deep text-white shadow-soft' : 'text-navy-deep hover:bg-ice',
                   ].join(' ')}
                 >
                   <Icon className="h-4 w-4" strokeWidth={2} />
                   {label}
+                  {/* thin gold underline accent on the active tab */}
+                  {on && <span className="pointer-events-none absolute inset-x-2.5 bottom-[3px] h-[2px] rounded-full bg-champagne" />}
                 </button>
               )
             })}
@@ -95,6 +101,22 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
           <DataInsights pulse={pulse} onGoToSource={goToSource} reopenInsightId={reopenRef.current} initialOpenKey={reopenLens} />
         )}
       </div>
+    </div>
+  )
+}
+
+// Soft abstract blob backdrop for the whole Insights tab — a very light
+// blue-white canvas, a couple of pale blue blobs, and a single controlled warm
+// gold accent toward the lower/right. Subtle, never cartoonish; sits behind all
+// content (-z-10) and is purely decorative.
+function InsightsBackdrop() {
+  return (
+    <div aria-hidden className="pointer-events-none absolute -inset-x-2 -inset-y-2 -z-10 overflow-hidden rounded-3xl">
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(165deg, #F5F9FE 0%, #EAF1FB 48%, #F2F7FD 100%)' }} />
+      <div className="blob-a absolute -left-28 -top-24 h-80 w-80 opacity-80 blur-3xl" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(183,209,245,0.7), transparent 70%)' }} />
+      <div className="blob-b absolute -right-24 top-16 h-[26rem] w-[26rem] opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 40%, rgba(203,222,246,0.72), transparent 72%)' }} />
+      <div className="blob-c absolute left-1/3 top-1/2 h-80 w-80 opacity-55 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(215,231,249,0.7), transparent 72%)' }} />
+      <div className="blob-d absolute -bottom-24 right-4 h-72 w-72 opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(226,201,142,0.4), transparent 70%)' }} />
     </div>
   )
 }

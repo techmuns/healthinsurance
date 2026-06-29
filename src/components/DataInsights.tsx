@@ -46,9 +46,15 @@ function LensAccordion({
   const showMgmtRef = MGMT_EVENT_LENSES.has(lens.key as AnalyticalKey)
   const govEvents = showMgmtRef ? selectManagementEvents(companyId, { governanceOnly: true }) : []
   return (
-    <div className="overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
+    <div
+      className="overflow-hidden rounded-2xl border bg-card shadow-soft transition-colors"
+      style={open ? { borderColor: 'rgba(182,139,58,0.45)', boxShadow: 'inset 3px 0 0 0 #B68B3A, 0 1px 2px rgba(23,43,77,0.05), 0 10px 24px rgba(23,43,77,0.08)' } : { borderColor: '#E1E6EF' }}
+    >
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center gap-2.5 p-3.5 text-left transition-colors hover:bg-ice/40">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-soft-blue text-navy-primary">
+        <span
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg transition-colors"
+          style={open ? { background: 'rgba(182,139,58,0.12)', color: '#9C7430' } : { background: '#EEF4FF', color: '#27457E' }}
+        >
           <Icon className="h-4 w-4" strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">
@@ -96,9 +102,15 @@ export function DataInsights({
 
   return (
     <div className="space-y-3">
-      <p className="px-0.5 text-[11.5px] text-ink-secondary">
-        Fact-based deep dive from the wired dashboard data — GI Council / IRDAI, financials, peers and valuation. Each section is source-backed; expand any to see the workings.
-      </p>
+      <div className="px-0.5">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-[3px] rounded-full bg-champagne" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Data Insights</span>
+        </div>
+        <p className="text-[11.5px] leading-snug text-ink-secondary">
+          Fact-based deep dive from the wired dashboard data — GI Council / IRDAI, financials, peers and valuation. Each section is source-backed; expand any to see the workings.
+        </p>
+      </div>
       {keys.map((k) => (
         <LensAccordion
           key={k}
