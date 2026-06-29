@@ -16,6 +16,9 @@ import {
   ShieldCheck,
   PenLine,
   Layers,
+  Gauge,
+  Target,
+  Network,
   type LucideIcon,
 } from 'lucide-react'
 import { insurers } from '@/data/mockData'
@@ -30,6 +33,8 @@ import {
   type PulseManagementEvent,
   type SignalCategory,
   type SignalImpact,
+  type InsightLens,
+  type Confidence,
 } from '@/insights/investorPulse'
 
 const GOLD = '#B68B3A'
@@ -139,12 +144,12 @@ export function CompanyFilter() {
 
 function ReadRow({ icon: Icon, label, text, tint, fg }: { icon: LucideIcon; label: string; text: string; tint: string; fg: string }) {
   return (
-    <div className="flex items-start gap-3 border-t border-white/10 py-3 first:border-t-0">
-      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
-        <Icon className="h-[18px] w-[18px]" strokeWidth={2.1} style={{ color: fg }} />
+    <div className="flex items-start gap-2.5 border-t border-white/10 py-2 first:border-t-0">
+      <span className="mt-px grid h-8 w-8 shrink-0 place-items-center rounded-full" style={{ background: tint }}>
+        <Icon className="h-4 w-4" strokeWidth={2.1} style={{ color: fg }} />
       </span>
-      <p className="w-[84px] shrink-0 pt-1.5 text-[10.5px] font-bold uppercase tracking-[0.12em]" style={{ color: GOLD_ON_NAVY }}>{label}</p>
-      <p className="flex-1 pt-1 font-editorial text-[14px] leading-snug text-white/85">{text}</p>
+      <p className="w-[78px] shrink-0 pt-1 text-[10px] font-bold uppercase tracking-[0.1em]" style={{ color: GOLD_ON_NAVY }}>{label}</p>
+      <p className="flex-1 pt-0.5 font-editorial text-[13px] leading-snug text-white/85">{text}</p>
     </div>
   )
 }
@@ -154,7 +159,7 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
   if (!tr) return null
   const sm = STANCE_META[tr.stance]
   return (
-    <section className="relative isolate flex h-full flex-col overflow-hidden rounded-2xl p-6 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
+    <section className="relative isolate flex flex-col overflow-hidden rounded-2xl p-5 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
       {/* soft blue radial blob + a single warm gold accent, contained inside */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="blob-b absolute -right-16 -top-20 h-72 w-72 opacity-80 blur-2xl" style={{ background: 'radial-gradient(circle at 35% 35%, rgba(96,138,206,0.6), transparent 70%)' }} />
@@ -165,33 +170,33 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
       {/* eyebrow + stance */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <span className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-white/15" style={{ background: 'rgba(228,198,124,0.12)' }}>
-            <PenLine className="h-[18px] w-[18px]" style={{ color: GOLD_ON_NAVY }} strokeWidth={2} />
+          <span className="grid h-8 w-8 place-items-center rounded-full ring-1 ring-white/15" style={{ background: 'rgba(228,198,124,0.12)' }}>
+            <PenLine className="h-4 w-4" style={{ color: GOLD_ON_NAVY }} strokeWidth={2} />
           </span>
           <span className="flex items-center gap-2">
-            <span className="text-[10.5px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD_ON_NAVY }}>Today&apos;s Read</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: GOLD_ON_NAVY }}>Today&apos;s Read</span>
             <span className="h-px w-7" style={{ background: 'rgba(228,198,124,0.5)' }} />
           </span>
         </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/90 ring-1 ring-white/15" style={{ background: 'rgba(255,255,255,0.06)' }}>
+        <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/90 ring-1 ring-white/15" style={{ background: 'rgba(255,255,255,0.06)' }}>
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: sm.fg }} /> {sm.label}
         </span>
       </div>
 
-      {/* gold serif headline */}
-      <h2 className="mt-4 font-editorial text-[27px] font-semibold leading-[1.16] tracking-[0.005em]" style={{ color: GOLD_ON_NAVY }}>
+      {/* gold serif headline — same display serif as the "Insights" page title */}
+      <h2 className="mt-3 font-display text-[21px] font-semibold leading-[1.2] tracking-[0.002em]" style={{ color: GOLD_ON_NAVY }}>
         {tr.headline}
       </h2>
 
       {/* changed / matters / watch-next */}
-      <div className="mt-4">
+      <div className="mt-3">
         <ReadRow icon={Zap} label="Changed" text={tr.changed} tint="rgba(228,198,124,0.14)" fg={GOLD_ON_NAVY} />
         <ReadRow icon={ShieldCheck} label="Matters" text={tr.matters} tint="rgba(255,255,255,0.08)" fg="#CFE0F5" />
         <ReadRow icon={Eye} label="Watch Next" text={tr.watchNext} tint="rgba(56,168,162,0.16)" fg="#6FD0CB" />
       </div>
 
       {/* source / freshness foot */}
-      <div className="mt-auto flex items-center gap-2 border-t border-white/10 pt-3.5 text-[10.5px] font-medium text-white/55">
+      <div className="mt-auto flex items-center gap-2 border-t border-white/10 pt-3 text-[10.5px] font-medium text-white/55">
         <Globe className="h-3.5 w-3.5" strokeWidth={2} style={{ color: 'rgba(228,198,124,0.8)' }} />
         {tr.sourceLine}
       </div>
@@ -242,7 +247,7 @@ function SignalStackRow({ icon: Icon, label, signal, emptyText, accent, tint }: 
 
 function SignalStack({ pulse }: { pulse: InvestorPulseData }) {
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
+    <section className="flex flex-col overflow-hidden rounded-2xl border border-soft-border bg-card shadow-soft">
       <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: 'linear-gradient(135deg, #1E4079 0%, #152C52 100%)' }}>
         <Layers className="h-4 w-4" strokeWidth={2.1} style={{ color: GOLD_ON_NAVY }} />
         <h3 className="text-[11px] font-bold uppercase tracking-[0.16em] text-white">Signal Stack</h3>
@@ -418,6 +423,112 @@ function ManagementEvents({ pulse }: { pulse: InvestorPulseData }) {
   )
 }
 
+// ── Broader Signals & Correlations — a senior-analyst thought layer that frames
+//    today's signal against the longer-term sector / regulatory / profitability
+//    backdrop. NOT a news feed: each card reuses a source-backed analytical lens
+//    (the same data wired into Data Insights) — never a fabricated claim. When a
+//    lens lacks verified data, the card says so and drops to Low confidence. ────
+
+type BroaderCard = {
+  eyebrow: string
+  icon: LucideIcon
+  headline: string
+  bullets: string[]
+  stance: SignalImpact
+  confidence: Confidence
+  src: { name: string; url: string } | null
+  asOf?: string
+}
+
+function cardFromLens(eyebrow: string, icon: LucideIcon, lens: InsightLens): BroaderCard {
+  const headline = lens.available && lens.oneLineRead ? lens.oneLineRead : lens.purpose
+  const raw = lens.keyInsights.length ? lens.keyInsights : lens.missedSignals.length ? lens.missedSignals : lens.watchNext
+  let bullets = raw.slice(0, 2)
+  const needsConfirm = !lens.available || bullets.length === 0
+  if (bullets.length === 0) bullets = ['Needs confirmation from next reported data.']
+  return {
+    eyebrow,
+    icon,
+    headline,
+    bullets,
+    stance: lens.stance,
+    confidence: needsConfirm ? 'Low' : lens.confidence,
+    src: lens.sourceRefs[0] ?? null,
+    asOf: lens.asOf,
+  }
+}
+
+function BroaderCardView({ card }: { card: BroaderCard }) {
+  const Icon = card.icon
+  const m = IMPACT_META[card.stance]
+  const c = CONFIDENCE_META[card.confidence]
+  return (
+    <article className="flex flex-col rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+      <div className="flex items-center gap-2">
+        <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ background: 'rgba(182,139,58,0.12)' }}>
+          <Icon className="h-4 w-4 text-champagne-deep" strokeWidth={2} />
+        </span>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-champagne-deep">{card.eyebrow}</p>
+        <span className="ml-auto inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-[0.05em]" style={{ color: m.fg, background: m.bg }}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: m.dot }} />{m.label}
+        </span>
+      </div>
+      <h4 className="mt-2 text-[13px] font-semibold leading-snug text-navy-deep">{card.headline}</h4>
+      <ul className="mt-2 space-y-1.5">
+        {card.bullets.map((b, i) => (
+          <li key={i} className="flex gap-1.5 text-[11px] leading-snug text-ink-secondary">
+            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-champagne" />
+            <span className="line-clamp-3">{b}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-3 text-[9.5px] text-ink-secondary">
+        {card.src?.url ? (
+          <a href={card.src.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 font-medium text-navy-primary hover:underline">
+            {card.src.name}<ExternalLink className="h-2.5 w-2.5" />
+          </a>
+        ) : (
+          <span className="font-medium text-ink-secondary">{card.src?.name ?? 'Wired dashboard data'}</span>
+        )}
+        {card.asOf && <span className="text-ink-secondary">· {card.asOf}</span>}
+        <span className="inline-flex items-center gap-1 font-semibold" style={{ color: c.fg }}>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: c.fg }} />{card.confidence} confidence
+        </span>
+      </div>
+    </article>
+  )
+}
+
+function BroaderSignals({ pulse }: { pulse: InvestorPulseData }) {
+  const cards: BroaderCard[] = [
+    cardFromLens('Sector Context', Landmark, pulse.lenses.riskRegulatoryChanges),
+    cardFromLens('Profitability Link', Gauge, pulse.lenses.underwritingProfitability),
+    cardFromLens('Investment Thesis Read', Target, pulse.lenses.forwardLookingStrategy),
+  ]
+  return (
+    <section className="relative isolate overflow-hidden rounded-2xl border border-soft-border bg-surface-tint/60 p-4 shadow-soft section-wash">
+      <div className="mb-3">
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-[3px] rounded-full bg-champagne" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Broader Signals &amp; Correlations</span>
+        </div>
+        <div className="flex flex-wrap items-baseline gap-2">
+          <span className="flex items-center gap-2">
+            <Network className="h-4 w-4 text-navy-deep" strokeWidth={2} />
+            <h2 className="font-display text-[16px] leading-tight text-navy-deep">The longer-term picture behind today&apos;s read.</h2>
+          </span>
+          <span className="text-[11px] leading-snug text-ink-secondary">Longer-term Indian insurance, regulatory and profitability links behind today&apos;s signals.</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        {cards.map((card) => (
+          <BroaderCardView key={card.eyebrow} card={card} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 // ── Data Anomaly Watch — no big card when clean: a quiet footer note only. ─────
 
 function AnomalyFooter({ pulse }: { pulse: InvestorPulseData }) {
@@ -464,7 +575,7 @@ export function PulseView({ pulse }: { pulse: InvestorPulseData }) {
   return (
     <div className="space-y-4">
       {/* Row 1 — Today's Read hero (65%) + Signal Stack (35%) */}
-      <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.85fr)_minmax(0,1fr)]">
         <TodaysReadHero pulse={pulse} />
         <SignalStack pulse={pulse} />
       </div>
@@ -474,6 +585,9 @@ export function PulseView({ pulse }: { pulse: InvestorPulseData }) {
         <CuratedIntelligence pulse={pulse} />
         <ManagementEvents pulse={pulse} />
       </div>
+
+      {/* Broader Signals & Correlations — the senior-analyst thought layer */}
+      <BroaderSignals pulse={pulse} />
 
       {/* Data Anomaly Watch — quiet footer when clean, compact list when present */}
       <AnomalyFooter pulse={pulse} />
