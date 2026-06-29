@@ -79,22 +79,28 @@ export function ManagementEventIntelligence({
   companyId,
   companyName,
   variant = 'full',
+  governanceOnly = false,
+  title,
 }: {
   companyId: string
   companyName: string
   variant?: 'full' | 'compact'
+  /** Filter to governance-relevant events only (Governance tab + Data Insights refs). */
+  governanceOnly?: boolean
+  /** Override the compact-header label (e.g. "Management & Events" in Pulse). */
+  title?: string
 }) {
   const dense = variant === 'compact'
-  const events = selectManagementEvents(companyId, { governanceOnly: dense })
+  const events = selectManagementEvents(companyId, { governanceOnly })
   const [showAll, setShowAll] = useState(false)
 
   if (events.length === 0) {
-    // Compact (governance) hides entirely on an empty set so the tab stays clean;
-    // the full Insights view shows an honest "nothing on record" note.
+    // Compact hides entirely on an empty set so the surface stays clean; the full
+    // Insights view shows an honest "nothing on record" note.
     if (dense) return null
     return (
       <section className="card-surface p-5">
-        <Header variant={variant} count={0} />
+        <Header variant={variant} count={0} title={title} />
         <div className="mt-4 rounded-xl border border-dashed border-soft-border bg-ice/40 px-4 py-8 text-center text-[12px] text-ink-secondary">
           No board, KMP or leadership changes on record for {companyName}. New events appear here automatically as exchange / IR filings are ingested.
         </div>
@@ -102,12 +108,12 @@ export function ManagementEventIntelligence({
     )
   }
 
-  const limit = dense ? 3 : showAll ? events.length : 6
+  const limit = showAll ? events.length : dense ? 3 : 6
   const shown = events.slice(0, limit)
 
   return (
     <section className={dense ? 'rounded-2xl border border-soft-border bg-card p-4 shadow-soft' : 'card-surface p-5'}>
-      <Header variant={variant} count={events.length} />
+      <Header variant={variant} count={events.length} title={title} />
       <ul className={dense ? 'mt-3 space-y-2' : 'mt-4 space-y-2.5'}>
         {shown.map((e) => (
           <EventRow key={e.id} e={e} dense={dense} />
@@ -126,13 +132,13 @@ export function ManagementEventIntelligence({
   )
 }
 
-function Header({ variant, count }: { variant: 'full' | 'compact'; count: number }) {
+function Header({ variant, count, title }: { variant: 'full' | 'compact'; count: number; title?: string }) {
   if (variant === 'compact') {
     return (
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-navy-primary" strokeWidth={2.2} />
-          <h3 className="text-[13px] font-bold text-navy-deep">Governance events</h3>
+          <h3 className="text-[13px] font-bold text-navy-deep">{title ?? 'Governance events'}</h3>
         </div>
         {count > 0 && <span className="text-[10px] font-semibold text-ink-secondary">{count} on record</span>}
       </div>

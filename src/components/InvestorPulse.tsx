@@ -1,10 +1,7 @@
 import { useState } from 'react'
 import {
-  Sparkles,
-  Gauge,
   ShieldAlert,
   TrendingUp,
-  BadgeCheck,
   CalendarClock,
   ExternalLink,
   ChevronDown,
@@ -92,76 +89,32 @@ function SourceLink({ name, url }: { name: string; url: string }) {
   )
 }
 
-// ── company picker — surfaces the GLOBAL selected-company filter where Insights
-//    needs it (the Insights page has no SAHI header). One source of truth: it
-//    drives `highlightedCompany`, so every other tab stays in sync. ───────────
+// ── compact company filter — the single company control for Insights (drives the
+//    global `highlightedCompany`). A small dropdown, not a chip row. ───────────
 
-function CompanyPicker() {
+export function CompanyFilter() {
   const active = useActiveCompany()
   const { setHighlightedCompany } = useFilters()
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span className="mr-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Company</span>
-      {SAHI.map((c) => {
-        const on = c.id === active.id
-        return (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => setHighlightedCompany(c.id)}
-            className={[
-              'rounded-lg px-2.5 py-1 text-[11.5px] font-semibold transition-colors',
-              on ? 'bg-navy-deep text-white shadow-soft' : 'border border-soft-border bg-white text-navy-deep hover:border-muted-blue',
-            ].join(' ')}
-          >
+    <label className="group inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-soft-border bg-white px-2.5 py-1.5 shadow-soft transition-colors hover:border-muted-blue">
+      <span className="text-[8.5px] font-bold uppercase tracking-[0.09em] text-ink-secondary">Company</span>
+      <select
+        value={active.id}
+        onChange={(e) => setHighlightedCompany(e.target.value)}
+        className="appearance-none bg-transparent pr-1 text-[12px] font-semibold text-navy-deep outline-none"
+      >
+        {SAHI.map((c) => (
+          <option key={c.id} value={c.id}>
             {c.shortName}
-          </button>
-        )
-      })}
-    </div>
+          </option>
+        ))}
+      </select>
+      <ChevronDown className="h-3 w-3 shrink-0 text-ink-secondary transition-colors group-hover:text-muted-blue" />
+    </label>
   )
 }
 
-// ── hero right tiles — at-a-glance summary, one line each ────────────────────
-
-function HeroTile({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  tone,
-  impact,
-  confidence,
-}: {
-  icon: LucideIcon
-  label: string
-  value: string
-  sub?: string
-  tone: { fg: string; bg: string }
-  impact?: SignalImpact
-  confidence?: PulseSignal['confidence']
-}) {
-  return (
-    <div className="flex items-start gap-2.5 rounded-xl border border-soft-border bg-white p-2.5">
-      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ background: tone.bg }}>
-        <Icon className="h-3.5 w-3.5" style={{ color: tone.fg }} strokeWidth={2.2} />
-      </span>
-      <div className="min-w-0">
-        <p className="text-[8.5px] font-bold uppercase tracking-[0.1em] text-ink-secondary">{label}</p>
-        <p className="line-clamp-2 text-[12px] font-semibold leading-tight text-navy-deep" title={value}>{value}</p>
-        {(impact || confidence) && (
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {impact && <ImpactChip impact={impact} />}
-            {confidence && <ConfidenceDot confidence={confidence} />}
-          </div>
-        )}
-        {sub && <p className="mt-0.5 truncate text-[10px] leading-tight text-ink-secondary" title={sub}>{sub}</p>}
-      </div>
-    </div>
-  )
-}
-
-// ── daily signal pulse card — readable, click-to-expand ──────────────────────
+// ── signal card — title + one-line implication + impact/confidence + source ──
 
 function PulseCard({
   icon: Icon,
@@ -242,113 +195,11 @@ function FeedItem({ signal }: { signal: PulseSignal }) {
   )
 }
 
-// ── Persistent hero — "Today's Investor Pulse" (always shown above the lenses) ─
+// ── Pulse — the compact senior-analyst daily read: Today's Read + 3 signal cards
+//    + a short curated feed (top 3) + compact management events. ───────────────
 
-export function InvestorPulseHero({ pulse }: { pulse: InvestorPulseData }) {
-  const stance = pulse.todayRead?.stance ?? 'Neutral'
-  const sm = STANCE_META[stance]
-  const conf = CONFIDENCE_META[pulse.confidence]
-
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-[#E4CE93] bg-gradient-to-br from-[#F7F5EF] via-card to-[#EAEFF7] p-4 shadow-card sm:p-5">
-      <span aria-hidden className="pointer-events-none absolute -left-10 -top-12 h-40 w-40 rounded-full bg-champagne/20 opacity-70 blur-3xl" />
-      <span aria-hidden className="pointer-events-none absolute right-1/4 top-0 h-px w-1/3 bg-gradient-to-r from-transparent via-[#B68B3A]/30 to-transparent" />
-
-      {/* title row + company picker */}
-      <div className="relative flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne-soft text-champagne-deep shadow-[0_4px_14px_rgba(182,139,58,0.22)] ring-1 ring-[#E7D29B]">
-            <Radar className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Insights</p>
-            <h1 className="font-editorial text-[26px] font-semibold leading-tight text-navy-deep">Today&apos;s Investor Pulse</h1>
-            <p className="mt-0.5 max-w-xl font-editorial text-[13.5px] leading-snug text-ink-secondary">
-              What changed, what matters, and what could move {pulse.company} next.
-            </p>
-          </div>
-        </div>
-        <CompanyPicker />
-      </div>
-
-      {pulse.isEmpty ? (
-        <div className="relative mt-4 rounded-xl border border-dashed border-soft-border bg-white/70 px-4 py-10 text-center">
-          <p className="font-editorial text-[15px] font-semibold text-navy-deep">No major new source-backed signal today for {pulse.company}.</p>
-          <p className="mt-1 text-[12px] text-ink-secondary">There&apos;s no source-backed market intelligence or governance event on record for this company yet. New signals appear here automatically as the pipeline ingests them.</p>
-        </div>
-      ) : (
-        <div className="relative mt-4 grid gap-4 lg:grid-cols-[1.35fr_1fr]">
-          {/* LEFT · Today's Read */}
-          <div className="rounded-xl border border-soft-border bg-white/80 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-navy-primary">Today&apos;s Read</p>
-              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em]" style={{ color: sm.fg, background: sm.bg }}>
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: sm.fg }} /> {sm.label}
-              </span>
-            </div>
-            {pulse.todayRead && (
-              <>
-                <p className="mt-2 font-editorial text-[16px] font-semibold leading-snug text-navy-deep">{pulse.todayRead.headline}</p>
-                <ul className="mt-2.5 space-y-1.5">
-                  <ReadBullet label="Changed" text={pulse.todayRead.changed} />
-                  <ReadBullet label="Matters" text={pulse.todayRead.matters} />
-                  <ReadBullet label="Watch next" text={pulse.todayRead.watchNext} />
-                </ul>
-                <p className="mt-2.5 border-t border-soft-border pt-2 text-[10px] font-medium text-ink-secondary">{pulse.todayRead.sourceLine}</p>
-              </>
-            )}
-          </div>
-
-          {/* RIGHT · 4 compact tiles */}
-          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            <HeroTile
-              icon={Zap}
-              label="Fastest Signal"
-              value={pulse.freshest ? pulse.freshest.title : 'No fresh signal'}
-              sub={pulse.freshest ? `${pulse.freshest.dateLabel} · ${pulse.freshest.category}${pulse.freshest.scope === 'sector' ? ' · sector-wide' : ''}` : undefined}
-              impact={pulse.freshest?.impact}
-              confidence={pulse.freshest?.confidence}
-              tone={{ fg: GOLD, bg: 'rgba(182,139,58,0.12)' }}
-            />
-            <HeroTile
-              icon={ShieldAlert}
-              label="Risk Watch"
-              value={pulse.latestRisk ? pulse.latestRisk.title : 'No active risk flag'}
-              sub={pulse.latestRisk ? `${pulse.latestRisk.dateLabel}${pulse.latestRisk.scope === 'sector' ? ' · sector-wide' : ''} · ${pulse.counts.risk} risk · ${pulse.counts.watch} watch` : 'Feed reads clean'}
-              impact={pulse.latestRisk?.impact}
-              confidence={pulse.latestRisk?.confidence}
-              tone={{ fg: IMPACT_META.Risk.fg, bg: IMPACT_META.Risk.bg }}
-            />
-            <HeroTile
-              icon={TrendingUp}
-              label="Opportunity Watch"
-              value={pulse.latestOpportunity ? pulse.latestOpportunity.title : 'No fresh upside catalyst'}
-              sub={pulse.latestOpportunity ? `${pulse.latestOpportunity.dateLabel}${pulse.latestOpportunity.scope === 'sector' ? ' · sector-wide' : ''} · ${pulse.counts.positive} positive` : undefined}
-              impact={pulse.latestOpportunity?.impact}
-              confidence={pulse.latestOpportunity?.confidence}
-              tone={{ fg: IMPACT_META.Positive.fg, bg: IMPACT_META.Positive.bg }}
-            />
-            <HeroTile
-              icon={BadgeCheck}
-              label="Source Confidence · Freshness"
-              value={`${pulse.confidence} confidence`}
-              sub={`${pulse.freshnessLabel} · ${pulse.counts.sourced}/${pulse.counts.total} sourced`}
-              tone={{ fg: conf.fg, bg: conf.bg }}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ── Overview Pulse lens body — Daily Signal Pulse + Curated Market Intelligence
-//    + Management & Event Intelligence + a Source trail. ───────────────────────
-
-export function OverviewPulse({ pulse }: { pulse: InvestorPulseData }) {
-  const [showAllFeed, setShowAllFeed] = useState(false)
-  const feed = pulse.signals
-  const feedShown = showAllFeed ? feed : feed.slice(0, 5)
+export function PulseView({ pulse }: { pulse: InvestorPulseData }) {
+  const [showAll, setShowAll] = useState(false)
 
   if (pulse.isEmpty) {
     return (
@@ -358,82 +209,75 @@ export function OverviewPulse({ pulse }: { pulse: InvestorPulseData }) {
     )
   }
 
-  // Source trail — every distinct source feeding the curated feed, deduped.
-  const sources = [...new Map(feed.filter((s) => s.sourceUrl).map((s) => [s.sourceUrl, s])).values()]
-  // Honest staleness cue — if even the freshest signal is old, say so plainly.
+  const feed = pulse.signals
+  const feedShown = showAll ? feed : feed.slice(0, 3)
+  const stance = pulse.todayRead?.stance ?? 'Neutral'
+  const sm = STANCE_META[stance]
   const freshestDays = pulse.freshest?.daysAgo ?? null
   const stale = freshestDays != null && freshestDays > 14
 
   return (
-    <div className="space-y-6">
-      {stale && pulse.freshest && (
-        <div className="rounded-xl border border-soft-border bg-ice/50 px-3.5 py-2 text-[11.5px] text-ink-secondary">
-          Latest source-backed signal: <span className="font-semibold text-navy-deep">{pulse.freshest.dateLabel}</span>. No material new signal since then.
+    <div className="space-y-4">
+      {/* Today's Read — one compact card */}
+      {pulse.todayRead && (
+        <div className="rounded-2xl border border-soft-border bg-card p-4 shadow-soft">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-navy-primary">Today&apos;s Read</p>
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.05em]" style={{ color: sm.fg, background: sm.bg }}>
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: sm.fg }} /> {sm.label}
+            </span>
+          </div>
+          <p className="mt-1.5 font-editorial text-[16px] font-semibold leading-snug text-navy-deep">{pulse.todayRead.headline}</p>
+          <ul className="mt-2.5 space-y-1.5">
+            <ReadBullet label="Changed" text={pulse.todayRead.changed} />
+            <ReadBullet label="Matters" text={pulse.todayRead.matters} />
+            <ReadBullet label="Watch next" text={pulse.todayRead.watchNext} />
+          </ul>
+          <p className="mt-2.5 border-t border-soft-border pt-2 text-[10px] font-medium text-ink-secondary">{pulse.todayRead.sourceLine}</p>
         </div>
       )}
-      {/* ── Daily Signal Pulse ───────────────────────────────────────────── */}
-      <div>
-        <SubHeading
-          icon={Gauge}
-          eyebrow="Daily Signal Pulse"
-          title="The five reads to glance at first"
-          note="Signal-based — no price or volume movement is implied unless a cited source reports it."
-        />
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
-          <PulseCard icon={Sparkles} label="What changed" signal={pulse.freshest} emptyText="No new development on file." accent={GOLD} />
-          <PulseCard icon={Activity} label="Moving fast" signal={pulse.movingFast[0] ?? null} emptyText="Nothing in the last 7 days." accent="#168E8E" />
-          <PulseCard icon={ShieldAlert} label="Risk watch" signal={pulse.latestRisk} emptyText="No active risk flag." accent={IMPACT_META.Risk.fg} />
-          <PulseCard icon={TrendingUp} label="Opportunity watch" signal={pulse.latestOpportunity} emptyText="No fresh upside catalyst." accent={IMPACT_META.Positive.fg} />
-          <PulseCard icon={Radar} label="Data anomaly watch" signal={pulse.dataAnomalies[0] ? feed.find((s) => s.id === pulse.dataAnomalies[0].id) ?? null : null} emptyText="No reported data movement on record. We never infer a price or volume move." accent={GOLD} />
-        </div>
+
+      {/* Signal Summary — 3 compact cards */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <PulseCard icon={Zap} label="Fastest Signal" signal={pulse.freshest} emptyText="No fresh signal on file." accent={GOLD} />
+        <PulseCard icon={ShieldAlert} label="Risk Watch" signal={pulse.latestRisk} emptyText="No active risk flag." accent={IMPACT_META.Risk.fg} />
+        <PulseCard icon={TrendingUp} label="Opportunity Watch" signal={pulse.latestOpportunity} emptyText="No fresh upside catalyst." accent={IMPACT_META.Positive.fg} />
       </div>
 
-      {/* ── Curated Market Intelligence ──────────────────────────────────── */}
+      {/* Curated Market Intelligence — top 3, expandable */}
       {feed.length > 0 && (
         <div>
           <SubHeading
             icon={Radar}
             eyebrow="Curated Market Intelligence"
-            title="Top signals, ranked by freshness then impact"
-            note={`${feed.length} source-backed · ${pulse.company} & sector · curated, verify before acting`}
+            title="Top signals, freshest first"
+            note="Signal-based — no price or volume movement is implied unless a cited source reports it."
           />
+          {stale && pulse.freshest && (
+            <p className="mb-2 text-[10.5px] text-ink-secondary">
+              Latest source-backed signal: <span className="font-semibold text-navy-deep">{pulse.freshest.dateLabel}</span>. No material new signal since then.
+            </p>
+          )}
           <ul className="space-y-2">
             {feedShown.map((s) => (
               <FeedItem key={s.id} signal={s} />
             ))}
           </ul>
-          {feed.length > 5 && (
+          {feed.length > 3 && (
             <button
               type="button"
-              onClick={() => setShowAllFeed((v) => !v)}
-              className="mt-3 inline-flex items-center gap-1 text-[11.5px] font-semibold text-navy-primary hover:underline"
+              onClick={() => setShowAll((v) => !v)}
+              className="mt-2.5 inline-flex items-center gap-1 text-[11.5px] font-semibold text-navy-primary hover:underline"
             >
-              {showAllFeed ? 'Show fewer' : `Show all ${feed.length}`}
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAllFeed ? 'rotate-180' : ''}`} />
+              {showAll ? 'Show fewer' : `View all ${feed.length} signals`}
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showAll ? 'rotate-180' : ''}`} />
             </button>
           )}
         </div>
       )}
 
-      {/* ── Management & Event Intelligence (shared component, full variant) ── */}
-      <div>
-        <ManagementEventIntelligence variant="full" companyId={pulse.companyId} companyName={pulse.company} />
-      </div>
-
-      {/* ── Source trail ─────────────────────────────────────────────────── */}
-      {sources.length > 0 && (
-        <div className="rounded-xl border border-soft-border bg-ice/40 p-3.5">
-          <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Source trail</p>
-          <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
-            {sources.map((s) => (
-              <a key={s.id} href={s.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[10.5px] font-medium text-navy-primary hover:underline">
-                {s.sourceName}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Management & Event Intelligence — compact shared component (all events) */}
+      <ManagementEventIntelligence variant="compact" title="Management & Events" companyId={pulse.companyId} companyName={pulse.company} />
     </div>
   )
 }

@@ -78,7 +78,7 @@ export function ManagementEvents() {
       {/* Board / KMP / leadership changes — compact, governance-relevant view of
           the SHARED component. The full "Management & Event Intelligence" block
           lives in Insights; this stays lean and governance-only. */}
-      <ManagementEventIntelligence variant="compact" companyId={company.id} companyName={company.shortName} />
+      <ManagementEventIntelligence variant="compact" governanceOnly companyId={company.id} companyName={company.shortName} />
     </div>
   )
 }

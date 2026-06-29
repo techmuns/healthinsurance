@@ -68,7 +68,7 @@ function LensAccordion({
           {showMgmtRef && govEvents.length > 0 && (
             <div>
               <p className="mb-2 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">{MGMT_EVENT_LABEL[lens.key as AnalyticalKey]}</p>
-              <ManagementEventIntelligence variant="compact" companyId={companyId} companyName={companyName} />
+              <ManagementEventIntelligence variant="compact" governanceOnly companyId={companyId} companyName={companyName} />
             </div>
           )}
         </div>
@@ -90,15 +90,9 @@ export function DataInsights({
 }) {
   const keys = ANALYTICAL_LENSES as AnalyticalKey[]
   const firstAvailable = keys.find((k) => pulse.lenses[k].available) ?? keys[0]
-  // Accordions open independently; the reopened (or first available) section starts open.
-  const [openKeys, setOpenKeys] = useState<Set<AnalyticalKey>>(() => new Set([initialOpenKey ?? firstAvailable]))
-  const toggle = (k: AnalyticalKey) =>
-    setOpenKeys((prev) => {
-      const next = new Set(prev)
-      if (next.has(k)) next.delete(k)
-      else next.add(k)
-      return next
-    })
+  // One section open at a time — clicking a header collapses any other.
+  const [openKey, setOpenKey] = useState<AnalyticalKey | null>(initialOpenKey ?? firstAvailable)
+  const toggle = (k: AnalyticalKey) => setOpenKey((prev) => (prev === k ? null : k))
 
   return (
     <div className="space-y-3">
@@ -109,7 +103,7 @@ export function DataInsights({
         <LensAccordion
           key={k}
           lens={pulse.lenses[k]}
-          open={openKeys.has(k)}
+          open={openKey === k}
           onToggle={() => toggle(k)}
           onGoToSource={onGoToSource}
           reopenInsightId={reopenInsightId}
