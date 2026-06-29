@@ -3,6 +3,7 @@ import { FileSpreadsheet } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 import { ExcelVerifierLauncher } from '@/components/ExcelVerifierLauncher'
+import { RetailMixAuditCard } from '@/components/RetailMixAuditCard'
 import { useVerify } from '@/state/verifyState'
 import type { AuditFocus } from '@/insights/sourceMap'
 
@@ -26,6 +27,10 @@ function AuditBody({ focus }: { focus?: AuditFocus | null }) {
   return (
     <div className="space-y-3">
       <ExcelVerifierLauncher />
+
+      {/* Derived-metric audit: Retail Mix workings + cross-surface validation,
+          so the chart and peer grid can never silently disagree. */}
+      <RetailMixAuditCard />
 
       <AuditSpreadsheet model={model} focus={focus} />
 

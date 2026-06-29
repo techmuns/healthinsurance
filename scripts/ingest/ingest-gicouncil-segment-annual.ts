@@ -56,6 +56,7 @@ import { toNumber } from './parsers'
 import { Worker } from 'node:worker_threads'
 import { createRequire } from 'node:module'
 import { gicFetch } from './gic-fetch'
+import { validateHealthPortfolioSum } from './validate-insurance-data'
 import { appendLog, ensureDir, fileExists, isOfflineMode, nowIso, writeRaw, RAW_ROOT, PROCESSED_ROOT, REPO_ROOT } from './util'
 import * as cheerio from 'cheerio'
 import { createHash } from 'node:crypto'
@@ -1196,6 +1197,14 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
 
       // 2. Health-portfolio entities (per-insurer + carrier-type aggregates).
       for (const e of st.entities) {
+        // Source integrity: components must reconstruct the printed total, so the
+        // derived Retail Mix (retail ÷ total) rests on a self-consistent basis.
+        // Aggregates derived by arithmetic (PSUs/Private/Others) can legitimately
+        // round differently, so only warn on as-printed per-insurer rows.
+        if (!e.derivation) {
+          const issue = validateHealthPortfolioSum(e)
+          if (issue) warnings.push(`gic-health-portfolio ${st.fy} ${e.entity}: ${issue.message}`)
+        }
         records.push({
           target: 'gic-health-portfolio',
           keys: { fiscal_year: st.fy, entity: e.entity, carrier_group: e.carrier_group },
