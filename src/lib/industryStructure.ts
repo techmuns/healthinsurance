@@ -196,8 +196,8 @@ function giSegmentMixCard(): StructureCard | null {
   const healthSeg = segments.find((s) => s.name === 'Health')
   const motorSeg = segments.find((s) => s.name === 'Motor')
   const insight = healthSeg && motorSeg
-    ? `Health (${Math.round(healthSeg.share)}%) and Motor (${Math.round(motorSeg.share)}%) together write about ${Math.round(healthSeg.share + motorSeg.share)}% of all general-insurance premium — Health is now the single largest line.`
-    : 'Health is the single largest general-insurance line by premium.'
+    ? `Health and Motor together form about ${Math.round(healthSeg.share + motorSeg.share)}% of general insurance premium.`
+    : 'Health is the single largest general insurance line by premium.'
 
   return {
     key: 'segment-mix',

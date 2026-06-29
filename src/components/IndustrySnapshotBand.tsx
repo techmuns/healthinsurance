@@ -115,7 +115,7 @@ function buildRingCards(cards: StructureCard[]): RingCard[] {
       segments: c.segments.map((s, i) => ({ ...s, ...style.palette[Math.min(i, style.palette.length - 1)] })),
       enhanced,
       centerValue: enhanced && c.total != null ? inrCompact(c.total) : undefined,
-      centerCaption: enhanced ? `${c.fy} General Insurance` : undefined,
+      centerCaption: enhanced ? `${c.fy} GI Premium` : undefined,
     }
   })
 }
@@ -173,6 +173,10 @@ function RingChart({ segments, enhanced, centerValue, centerCaption }: { segment
     })
   }, [segments])
 
+  // The enhanced GI-mix donut reads slightly larger, with a roomier centre hole
+  // for the two-line label (it carries no outer % chips, so it can grow safely).
+  const inner = enhanced ? 55 : INNER
+  const outer = enhanced ? 69 : OUTER
   return (
     <div className="relative shrink-0" style={{ width: BOX, height: BOX }}>
       <ResponsiveContainer>
@@ -184,8 +188,8 @@ function RingChart({ segments, enhanced, centerValue, centerCaption }: { segment
             nameKey="name"
             cx="50%"
             cy="50%"
-            innerRadius={INNER}
-            outerRadius={OUTER}
+            innerRadius={inner}
+            outerRadius={outer}
             paddingAngle={1.6}
             cornerRadius={4}
             startAngle={90}
@@ -215,10 +219,10 @@ function RingChart({ segments, enhanced, centerValue, centerCaption }: { segment
         </div>
       )}
       {enhanced && centerValue && (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-7 text-center">
-          <span className="font-display text-[13.5px] font-semibold leading-none text-navy-deep">{centerValue}</span>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+          <span className="font-display text-[15px] font-semibold leading-none text-navy-deep">{centerValue}</span>
           {centerCaption && (
-            <span className="mt-1 text-[7.5px] font-semibold uppercase leading-tight tracking-[0.07em] text-ink-secondary">{centerCaption}</span>
+            <span className="mt-1 text-[8px] font-semibold uppercase leading-none tracking-[0.06em] text-ink-secondary">{centerCaption}</span>
           )}
         </div>
       )}
@@ -249,21 +253,36 @@ function RingInsightCard({ title, subtitle, segments, insight, tone, enhanced, c
 
       <div className="relative mt-2 flex items-center gap-3">
         <RingChart segments={segments} enhanced={enhanced} centerValue={centerValue} centerCaption={centerCaption} />
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
-          {segments.map((s) => (
-            <div key={s.name} className="flex items-start gap-2">
-              <span className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-              <div className="min-w-0 flex-1">
-                <p className="text-[11.5px] font-medium leading-snug text-navy-deep">{s.name}</p>
-                <p className="text-[11px] tabular-nums text-ink-secondary">{inr(s.premium)}</p>
+        {enhanced ? (
+          // Compact single-line legend — keeps a 7-segment card the same height
+          // as the two-segment cards (name · ₹ Cr · % on one tight row each).
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-[3px]">
+            {segments.map((s) => (
+              <div key={s.name} className="flex items-center gap-1.5 text-[11px] leading-tight">
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
+                <span className="min-w-0 flex-1 truncate font-medium text-navy-deep">{s.name}</span>
+                <span className="shrink-0 tabular-nums text-ink-secondary">{inr(s.premium)}</span>
+                <span className="w-10 shrink-0 text-right font-semibold tabular-nums text-navy-deep">{s.share}%</span>
               </div>
-              <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-navy-deep">{s.share}%</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
+            {segments.map((s) => (
+              <div key={s.name} className="flex items-start gap-2">
+                <span className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11.5px] font-medium leading-snug text-navy-deep">{s.name}</p>
+                  <p className="text-[11px] tabular-nums text-ink-secondary">{inr(s.premium)}</p>
+                </div>
+                <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-navy-deep">{s.share}%</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className={`relative mt-auto flex items-center gap-2 rounded-xl px-3 py-2 ${t.insight}`}>
+      <div className={`relative mt-auto flex items-center gap-2 rounded-xl px-3 ${enhanced ? 'py-1.5' : 'py-2'} ${t.insight}`}>
         <TrendingUp className="h-3.5 w-3.5 shrink-0" />
         <span className="text-[11px] font-medium leading-snug">{insight}</span>
       </div>
