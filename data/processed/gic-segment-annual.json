@@ -3,7 +3,7 @@
     "snapshot_id": "gic-segment-annual",
     "description": "Full-FY statements extracted from GI Council Segment-wise Reports. For each FY the newest GIC statement wins (a later report's restated prior-year columns supersede the year's own earlier edition).",
     "source_listing": "https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/",
-    "last_run_at": "2026-06-29T08:54:47.981Z",
+    "last_run_at": "2026-06-29T10:01:36.283Z",
     "files_used": [
       {
         "period": "2026-03",

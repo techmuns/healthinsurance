@@ -1,6 +1,6 @@
 {
-  "last_successful_run": "2026-06-29T08:55:52.283Z",
-  "last_failed_run": "2026-06-29T08:55:52.283Z",
+  "last_successful_run": "2026-06-29T10:02:40.497Z",
+  "last_failed_run": "2026-06-29T10:02:40.497Z",
   "sources_checked": 12,
   "sources_success": 6,
   "sources_failed": 1,
@@ -24069,7 +24069,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-29T08:54:26.665Z",
+      "last_attempt_at": "2026-06-29T10:01:15.743Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -24217,28 +24217,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-29T08:54:53.614Z",
+      "last_attempt_at": "2026-06-29T10:01:42.033Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:54:39.837Z",
-      "last_success_at": "2026-06-29T08:54:39.837Z",
+      "last_attempt_at": "2026-06-29T10:01:28.038Z",
+      "last_success_at": "2026-06-29T10:01:28.038Z",
       "records_fetched": 91
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:54:46.396Z",
-      "last_success_at": "2026-06-29T08:54:46.396Z",
+      "last_attempt_at": "2026-06-29T10:01:34.794Z",
+      "last_success_at": "2026-06-29T10:01:34.794Z",
       "records_fetched": 103
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-29T08:54:33.380Z",
+      "last_attempt_at": "2026-06-29T10:01:22.284Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24252,50 +24252,50 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:54:56.608Z",
-      "last_success_at": "2026-06-29T08:54:56.608Z",
+      "last_attempt_at": "2026-06-29T10:01:44.547Z",
+      "last_success_at": "2026-06-29T10:01:44.547Z",
       "records_fetched": 0
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-29T08:55:49.439Z",
+      "last_attempt_at": "2026-06-29T10:02:37.229Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:54:47.981Z",
-      "last_success_at": "2026-06-29T08:54:47.981Z",
+      "last_attempt_at": "2026-06-29T10:01:36.283Z",
+      "last_success_at": "2026-06-29T10:01:36.283Z",
       "records_fetched": 2770
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:55:17.466Z",
-      "last_success_at": "2026-06-29T08:55:17.466Z",
+      "last_attempt_at": "2026-06-29T10:02:05.362Z",
+      "last_success_at": "2026-06-29T10:02:05.362Z",
       "records_fetched": 5
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-29T08:55:20.956Z",
+      "last_attempt_at": "2026-06-29T10:02:08.743Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-29T08:55:50.705Z",
+      "last_attempt_at": "2026-06-29T10:02:38.494Z",
       "last_success_at": "2026-06-24T12:12:15.844Z",
       "records_fetched": 0
     },
     {
       "source_id": "moneycontrol_stock_deals",
       "status": "success",
-      "last_attempt_at": "2026-06-29T08:55:09.227Z",
-      "last_success_at": "2026-06-29T08:55:09.227Z",
+      "last_attempt_at": "2026-06-29T10:01:57.272Z",
+      "last_success_at": "2026-06-29T10:01:57.272Z",
       "records_fetched": 0
     }
   ]
