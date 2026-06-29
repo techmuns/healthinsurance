@@ -3,14 +3,25 @@
     "snapshot_id": "sectoral-news-snapshot",
     "description": "Key Sectoral News feed — a permanent seed of 31 curated portfolio-pack updates, kept current by a scheduled muns web-search agent. Each item links its source. Seed items are curated; agent items are AI-gathered (web), clearly labelled and not audited.",
     "schema_version": "1.0.0",
-    "last_updated": "2026-06-25",
-    "last_successful_run": "2026-06-25T09:22:57.945Z",
+    "last_updated": "2026-06-29",
+    "last_successful_run": "2026-06-29T11:01:29.848Z",
     "seed_count": 31,
-    "agent_count": 61,
+    "agent_count": 71,
     "generated_by": "Seed: investor portfolio pack. Updates: AI (muns agent, web search).",
     "notes": "Seed floor can never be lost. Agent items are de-duped by subject+date and verified-before-acting."
   },
   "data": [
+    {
+      "sn": 93,
+      "category": "Regulatory",
+      "date": "2026-06-26",
+      "subject": "IRDAI sets up health-insurance advisory sub-committee",
+      "summary": "IRDAI announced the constitution of an Insurance Advisory Committee sub-committee focused on health insurance. For investors, that signals active regulatory attention on product design, claims and sector pain points, with potential downstream changes in pricing or operating rules.",
+      "reference": "https://irdai.gov.in/",
+      "id": "10d5423e3d34e6",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
     {
       "sn": 83,
       "category": "General",
@@ -287,6 +298,17 @@
       "added_at": "2026-06-11"
     },
     {
+      "sn": 94,
+      "category": "Regulatory",
+      "date": "2026-06-01",
+      "subject": "IRDAI issues 2026 information and cybersecurity guidelines",
+      "summary": "IRDAI highlighted new information and cybersecurity guidelines in 2026 on its homepage. While sector-wide rather than health-specific, tighter cyber and data-governance expectations matter because health insurers handle sensitive medical data and digital claims workflows.",
+      "reference": "https://irdai.gov.in/",
+      "id": "1a6f365517d197",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
       "sn": 44,
       "category": "General",
       "date": "2026-06-01",
@@ -340,6 +362,39 @@
       "id": "065581abdd7dec",
       "origin": "agent",
       "added_at": "2026-06-18"
+    },
+    {
+      "sn": 95,
+      "category": "GST",
+      "date": "2026-05-15",
+      "subject": "GST debate on health insurance premiums stays in focus",
+      "summary": "Market-facing tax explainers and coverage indicate health-insurance GST remained an active topic in 2026, with consumer attention centered on whether premium taxes might be cut or exempted. Even without a confirmed policy change in the source used here, the issue matters because any reduction would directly improve affordability and could support industry growth.",
+      "reference": "https://cleartax.in/s/gst-on-health-insurance",
+      "id": "17f40c867c57fd",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
+      "sn": 96,
+      "category": "General",
+      "date": "2026-05-01",
+      "subject": "India’s health-insurance protection gap remains large",
+      "summary": "Commentary on India’s health-insurance gap underscores that under-penetration remains structurally high. That is positive for long-run premium growth for standalone health insurers, though monetization depends on affordability, distribution reach and claims experience.",
+      "reference": "https://whalesbook.com/news/English/insurance/Indias-Health-Insurance-Gap-Why-It-Matters-for-Insurers/6a40b0a4fb97bcde4ce536af",
+      "id": "0df230d7880978",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
+      "sn": 97,
+      "category": "Profitability",
+      "date": "2026-04-30",
+      "subject": "Senior-citizen health premium revisions face closer review",
+      "summary": "An IRDAI circular on review of premium-rate revisions for senior-citizen health policies points to greater scrutiny of price hikes in a medically vulnerable segment. That can protect customers and reduce repricing flexibility for insurers if claims inflation stays elevated.",
+      "reference": "https://irdai.gov.in/documents/37343/365525/Circular+-+Review+of+revision+in++premium+rates+under+health+insurance+policies+for+senior+citizens.pdf/b703b6bf-d407-e8f0-a302-c17260bec4a5?version=2.0&t=1738303418499&download=true",
+      "id": "1e5bcc44166f75",
+      "origin": "agent",
+      "added_at": "2026-06-29"
     },
     {
       "sn": 67,
@@ -397,6 +452,17 @@
       "added_at": "2026-06-18"
     },
     {
+      "sn": 98,
+      "category": "General",
+      "date": "2026-04-15",
+      "subject": "Claim-settlement rankings highlight consumer trust dynamics",
+      "summary": "Recent publication of claim-settlement ratios for health and general insurers keeps service quality and payout credibility in focus for buyers. For listed and private health insurers alike, better settlement performance can aid distribution and retention, while weaker metrics can pressure growth and brand perception.",
+      "reference": "https://economictimes.indiatimes.com/wealth/insure/latest-claim-settlement-ratio-of-health-and-general-insurers-released-by-irda-in-2026-acko-aditya-birla-galaxy-lead-shriram-iffco-tokio-fall-below-90/articleshow/127906061.cms?from=mdr",
+      "id": "0818c34b4ffa04",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
       "sn": 69,
       "category": "Regulatory",
       "date": "2026-04-12",
@@ -417,6 +483,17 @@
       "id": "1771b0d9c68125",
       "origin": "agent",
       "added_at": "2026-06-11"
+    },
+    {
+      "sn": 99,
+      "category": "Competition / Peers",
+      "date": "2026-04-01",
+      "subject": "Health-insurance product comparison intensity remains high",
+      "summary": "Consumer comparison platforms in 2026 continue to spotlight and rank products from Star Health, Niva Bupa, Care, Aditya Birla Health and peers. That reflects an increasingly competitive acquisition environment where product features, room-rent terms, restore benefits and network breadth are key differentiators.",
+      "reference": "https://joinditto.in/health-insurance/companies/",
+      "id": "1446b948757b36",
+      "origin": "agent",
+      "added_at": "2026-06-29"
     },
     {
       "sn": 54,
@@ -540,6 +617,17 @@
       "added_at": "2026-06-18"
     },
     {
+      "sn": 100,
+      "category": "Competition / Peers",
+      "date": "2026-03-15",
+      "subject": "Star Health remains a prominent benchmark in retail product comparisons",
+      "summary": "Ongoing product reviews of Star Health plans show the company remains highly visible in the retail market and a reference point for category design. High visibility is positive for sales, but it also means peers are competing directly against its flagship benefit structures and pricing.",
+      "reference": "https://www.beshak.org/insurance/health-insurance/best-health-insurance-plans/star-health-comprehensive/",
+      "id": "125f877728cf6c",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
       "sn": 58,
       "category": "Competition / Peers",
       "date": "2026-03-15",
@@ -560,6 +648,28 @@
       "id": "18567e1b92ad5a",
       "origin": "agent",
       "added_at": "2026-06-15"
+    },
+    {
+      "sn": 101,
+      "category": "Competition / Peers",
+      "date": "2026-03-10",
+      "subject": "Broader insurer league tables keep standalone health players under comparison",
+      "summary": "2026 company rankings continue to place Star Health, Niva Bupa, Care and Aditya Birla Health side by side with diversified general insurers. For investors, that reinforces that competition is not limited to standalone health specialists; multi-line insurers with health offerings remain relevant rivals.",
+      "reference": "https://www.policyx.com/health-insurance/articles/top-10-health-insurance-companies-in-india/",
+      "id": "1bd4b99c36a7e0",
+      "origin": "agent",
+      "added_at": "2026-06-29"
+    },
+    {
+      "sn": 102,
+      "category": "GST",
+      "date": "2026-03-01",
+      "subject": "Market confusion persists over insurance GST changes",
+      "summary": "Retail-oriented web coverage in 2026 shows substantial public confusion around whether GST on health premiums has changed. Even absent a reliable official confirmation in the cited source, this matters because headline-driven expectations can temporarily influence demand, distributor messaging and policyholder behavior.",
+      "reference": "https://www.dmifinance.in/gst/gst-on-insurance-premiums/",
+      "id": "0127198c378d57",
+      "origin": "agent",
+      "added_at": "2026-06-29"
     },
     {
       "sn": 60,
