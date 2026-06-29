@@ -13,13 +13,13 @@
     ],
     "dataset": "official",
     "last_updated": "2026-06-29",
-    "last_successful_run": "2026-06-29T07:27:01.858Z",
-    "last_fetched_at": "2026-06-29T07:27:01.858Z",
+    "last_successful_run": "2026-06-29T08:34:00.808Z",
+    "last_fetched_at": "2026-06-29T08:34:00.808Z",
     "parser_status": "ready",
     "notes": "Live Moneycontrol pull from: Moneycontrol Broker Research, Moneycontrol Price. Missing fields stay null (never fabricated)."
   },
   "consensus": {
-    "current_price": 84.52,
+    "current_price": 84.61,
     "consensus_target_price": 95,
     "highest_target_price": 100,
     "lowest_target_price": 90,
@@ -30,11 +30,11 @@
     "last_updated": "2026-06-29"
   },
   "market": {
-    "current_price": 84.52,
+    "current_price": 84.61,
     "week_high_52": 92.9,
     "week_low_52": 67.5,
-    "price_change_pct": -0.3184,
-    "price_as_of": "2026-06-29 12:57:09"
+    "price_change_pct": -0.2123,
+    "price_as_of": "2026-06-29 14:04:26"
   },
   "reports": [
     {
