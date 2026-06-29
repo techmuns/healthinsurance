@@ -4,8 +4,8 @@
     "description": "Industry-wide GI segment premium (Health / Motor / Fire / Crop / Marine / Personal Accident / Other). Drives Market Engine main chart and the Industry Snapshot GI premium-mix donut.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
-    "last_updated": "2026-06-28",
-    "last_successful_run": "2026-06-28T10:33:10.365Z",
+    "last_updated": "2026-06-29",
+    "last_successful_run": "2026-06-29T07:28:01.261Z",
     "upstream_sources": [
       "irdai_handbook",
       "gi_council",
@@ -83,11 +83,12 @@
         "source_url": "https://www.gicouncil.in/media/4513/final-segment-24-25.xlsx",
         "source_file": "data/agent-pulls/gicouncil-segment/sources/final-segment-24-25.xlsx",
         "source_period": "FY24",
-        "fetched_at": "2026-06-10T20:32:42.257Z",
-        "parsed_at": "2026-06-10T20:33:05.464Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 7782.44
     },
     {
       "period_type": "annual",
@@ -107,11 +108,12 @@
         "source_url": "https://www.gicouncil.in/media/4418/segment_march_2024-16.xlsx",
         "source_file": "data/agent-pulls/gicouncil-segment/sources/segment_march_2024-16.xlsx",
         "source_period": "FY23",
-        "fetched_at": "2026-06-10T17:07:57.519Z",
-        "parsed_at": "2026-06-10T17:07:57.708Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 7034.58
     },
     {
       "period_type": "annual",
@@ -131,11 +133,12 @@
         "source_url": "https://www.gicouncil.in/media/4181/segment-wise-figures-upto-march-2023.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY23-march.xlsx",
         "source_period": "FY22",
-        "fetched_at": "2026-06-28T10:33:00.431Z",
-        "parsed_at": "2026-06-28T10:33:05.478Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 6904.2
     },
     {
       "period_type": "annual",
@@ -155,11 +158,12 @@
         "source_url": "https://www.gicouncil.in/media/3989/segment-wise-figures-upto-march-2022.xlsx",
         "source_file": "data/raw/gicouncil/segment-annual/FY22-march.xlsx",
         "source_period": "FY21",
-        "fetched_at": "2026-06-10T20:32:42.257Z",
-        "parsed_at": "2026-06-10T20:33:05.464Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 5100.48
     },
     {
       "period_type": "annual",
@@ -203,11 +207,12 @@
         "source_url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx",
         "source_file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "source_period": "FY19",
-        "fetched_at": "2026-06-10T20:32:42.257Z",
-        "parsed_at": "2026-06-10T20:33:05.464Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 5401.73
     },
     {
       "period_type": "annual",
@@ -227,11 +232,12 @@
         "source_url": "https://www.gicouncil.in/media/3713/segment-wise-report_march-2019.xlsx",
         "source_file": "data/agent-pulls/gicouncil-segment/sources/segment-wise-report_march-2019.xlsx",
         "source_period": "FY18",
-        "fetched_at": "2026-06-10T20:32:42.257Z",
-        "parsed_at": "2026-06-10T20:33:05.464Z",
+        "fetched_at": "2026-06-29T07:26:54.141Z",
+        "parsed_at": "2026-06-29T07:26:56.018Z",
         "parser_name": "ingest-gicouncil-segment-annual",
         "confidence": "high"
-      }
+      },
+      "pa_premium": 4390.25
     },
     {
       "period_type": "annual",

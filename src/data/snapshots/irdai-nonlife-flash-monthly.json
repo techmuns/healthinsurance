@@ -15,7 +15,7 @@
     "dataset": "pending",
     "last_updated": null,
     "last_successful_run": null,
-    "last_fetched_at": "2026-06-25T15:50:46.379Z",
+    "last_fetched_at": "2026-06-29T07:26:37.248Z",
     "parser_status": "pending",
     "notes": "Pending — IRDAI source not yet reachable / no file. Drop data/raw/irdai/nonlife-flash/<YYYY-MM>.xlsx to populate.",
     "warnings": [

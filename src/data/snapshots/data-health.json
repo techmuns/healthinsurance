@@ -1,9 +1,9 @@
 {
-  "last_successful_run": "2026-06-28T10:33:10.939Z",
-  "last_failed_run": "2026-06-25T15:52:09.775Z",
-  "sources_checked": 2,
-  "sources_success": 2,
-  "sources_failed": 0,
+  "last_successful_run": "2026-06-29T07:28:01.885Z",
+  "last_failed_run": "2026-06-29T07:28:01.885Z",
+  "sources_checked": 12,
+  "sources_success": 6,
+  "sources_failed": 1,
   "metrics_updated": [
     "company.gwp::niva-bupa::Annual",
     "company.pat::niva-bupa::Annual",
@@ -23777,7 +23777,13 @@
     "government_health_premium::star-health::2026-05",
     "government_health_premium_ytd::star-health::2026-05",
     "overseas_medical_premium::star-health::2026-05",
-    "overseas_medical_premium_ytd::star-health::2026-05"
+    "overseas_medical_premium_ytd::star-health::2026-05",
+    "pa_premium::FY18",
+    "pa_premium::FY19",
+    "pa_premium::FY21",
+    "pa_premium::FY22",
+    "pa_premium::FY23",
+    "pa_premium::FY24"
   ],
   "metrics_missing": [
     "company.gwp::manipalcigna::Annual",
@@ -23802,6 +23808,24 @@
     "company.distribution.tier_mix"
   ],
   "parser_warnings": [
+    "[irdai_monthly_business] To populate Monthly: download the IRDAI \"Monthly Business Figures – Non-Life Insurers\" XLSX and drop it into data/raw/irdai/monthly/. The next run uses it automatically.",
+    "[irdai_nonlife_flash] IRDAI index fetch failed: HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+    "[gicouncil_segmentwise] 2025-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-05: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-06: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-07: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-08: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-09: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-10: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-11: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-12: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-01: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-02: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-03: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2026-05: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
+    "[gicouncil_segmentwise] 2025-10 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (0.76→0.64); monthly set null (restatement/mis-parse, not estimated).",
+    "[gicouncil_segmentwise] 2026-02 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (2.21→1.88); monthly set null (restatement/mis-parse, not estimated).",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY19-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY20-march.xlsx",
     "[gicouncil_segmentwise_annual] staged file not recognised as a segment report (skipped): FY21-march.xlsx",
@@ -24007,22 +24031,24 @@
     "[gicouncil_segmentwise_annual] Q4FY21 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q2FY18 bajaj-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
     "[gicouncil_segmentwise_annual] Q4FY18 reliance-general: cumulative fell across the period (restatement) — field left null, not smoothed.",
-    "[gicouncil_segmentwise] 2025-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-05: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-06: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-07: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-08: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-09: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-10: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-11: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-12: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-01: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-02: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-03: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-04: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2026-05: columns not found (kept null, not estimated): motor_premium, fire_premium, crop_premium, marine_premium, other_premium",
-    "[gicouncil_segmentwise] 2025-10 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (0.76→0.64); monthly set null (restatement/mis-parse, not estimated).",
-    "[gicouncil_segmentwise] 2026-02 ManipalCigna Health Insurance Co Ltd: overseas_medical_premium YTD fell vs prior month (2.21→1.88); monthly set null (restatement/mis-parse, not estimated).",
+    "[valuation_daily] niva-bupa: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIVABUPA",
+    "[valuation_daily] star-health: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=STARHEALTH",
+    "[valuation_daily] icici-lombard: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=ICICIGI",
+    "[valuation_daily] hdfc-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=HDFCLIFE",
+    "[valuation_daily] sbi-life: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=SBILIFE",
+    "[valuation_daily] godigit: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=GODIGIT",
+    "[valuation_daily] new-india: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=NIACL",
+    "[valuation_daily] religare-enterprises: HTTP 403 for https://www.nseindia.com/api/quote-equity?symbol=RELIGARE",
+    "[moneycontrol_analyst] Forecast endpoint 0 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/price-forecast?scId=NBH&deviceType=W",
+    "[moneycontrol_analyst] Forecast endpoint 1 failed: HTTP 422 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/analyst-rating?scId=NBH&deviceType=W",
+    "[moneycontrol_analyst] Forecast endpoint 2 failed: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/estimates/recommendation?scId=NBH&deviceType=W",
+    "[moneycontrol_stock_deals] NBH API https://api.moneycontrol.com/mcapi/v1/stock/stock-deals?scId=NBH&deviceType=W: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/stock-deals?scId=NBH&deviceType=W",
+    "[moneycontrol_stock_deals] NBH API https://api.moneycontrol.com/mcapi/v1/stock/deals?scId=NBH&deviceType=W: HTTP 404 for https://api.moneycontrol.com/mcapi/v1/stock/deals?scId=NBH&deviceType=W",
+    "[yahoo_price] niva-bupa: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/NIVABUPA.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/NIVABUPA.NS/history/",
+    "[yahoo_price] star-health: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/STARHEALTH.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/STARHEALTH.NS/history/",
+    "[yahoo_price] icici-lombard: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/ICICIGI.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/ICICIGI.NS/history/",
+    "[yahoo_price] godigit: HTTP 429 for https://query1.finance.yahoo.com/v8/finance/chart/GODIGIT.NS?range=2y&interval=1d. Source: https://finance.yahoo.com/quote/GODIGIT.NS/history/",
+    "[nse_delivery] 2026-06-29: no NSE settlement file (MTO + bhavdata both absent — likely a non-trading day)",
     "[validation-rejected] gic-health-quarterly 9MFY21/new-india/general: health_govt (-0.23) is negative — premium cannot be negative.",
     "[validation-rejected] gic-health-quarterly H1FY21/bajaj-general/general: health_govt (-5.07) is negative — premium cannot be negative.",
     "[validation-rejected] gic-health-quarterly Q1FY21/bajaj-general/general: health_govt (-6.03) is negative — premium cannot be negative.",
@@ -24042,7 +24068,7 @@
     {
       "source_id": "irdai_monthly_business",
       "status": "failed",
-      "last_attempt_at": "2026-06-25T15:50:39.397Z",
+      "last_attempt_at": "2026-06-29T07:26:30.384Z",
       "last_success_at": null,
       "records_fetched": 0,
       "error": "HTTP 404 for https://irdai.gov.in/monthly-business-figures-non-life-insurers"
@@ -24190,28 +24216,28 @@
     {
       "source_id": "valuation_daily",
       "status": "pending",
-      "last_attempt_at": "2026-06-28T07:38:29.661Z",
+      "last_attempt_at": "2026-06-29T07:26:59.793Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_flash_sahi",
       "status": "success",
-      "last_attempt_at": "2026-06-25T15:50:52.604Z",
-      "last_success_at": "2026-06-25T15:50:52.604Z",
+      "last_attempt_at": "2026-06-29T07:26:43.774Z",
+      "last_success_at": "2026-06-29T07:26:43.774Z",
       "records_fetched": 91
     },
     {
       "source_id": "gicouncil_segmentwise",
       "status": "success",
-      "last_attempt_at": "2026-06-28T10:33:09.327Z",
-      "last_success_at": "2026-06-28T10:33:09.327Z",
+      "last_attempt_at": "2026-06-29T07:26:52.723Z",
+      "last_success_at": "2026-06-29T07:26:52.723Z",
       "records_fetched": 103
     },
     {
       "source_id": "irdai_nonlife_flash",
       "status": "pending",
-      "last_attempt_at": "2026-06-25T15:50:46.379Z",
+      "last_attempt_at": "2026-06-29T07:26:37.248Z",
       "last_success_at": null,
       "records_fetched": 0
     },
@@ -24225,50 +24251,50 @@
     {
       "source_id": "moneycontrol_analyst",
       "status": "success",
-      "last_attempt_at": "2026-06-28T07:38:31.384Z",
-      "last_success_at": "2026-06-28T07:38:31.384Z",
-      "records_fetched": 0
+      "last_attempt_at": "2026-06-29T07:27:01.858Z",
+      "last_success_at": "2026-06-29T07:27:01.858Z",
+      "records_fetched": 6
     },
     {
       "source_id": "price_history",
       "status": "pending",
-      "last_attempt_at": "2026-06-28T07:39:26.527Z",
+      "last_attempt_at": "2026-06-29T07:27:58.843Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "gicouncil_segmentwise_annual",
       "status": "success",
-      "last_attempt_at": "2026-06-28T10:33:00.431Z",
-      "last_success_at": "2026-06-28T10:33:00.431Z",
+      "last_attempt_at": "2026-06-29T07:26:54.141Z",
+      "last_success_at": "2026-06-29T07:26:54.141Z",
       "records_fetched": 2770
     },
     {
       "source_id": "muns_market_data",
       "status": "success",
-      "last_attempt_at": "2026-06-28T07:38:52.759Z",
-      "last_success_at": "2026-06-28T07:38:52.759Z",
+      "last_attempt_at": "2026-06-29T07:27:23.239Z",
+      "last_success_at": "2026-06-29T07:27:23.239Z",
       "records_fetched": 10
     },
     {
       "source_id": "yahoo_price",
       "status": "pending",
-      "last_attempt_at": "2026-06-28T07:38:58.038Z",
+      "last_attempt_at": "2026-06-29T07:27:29.872Z",
       "last_success_at": null,
       "records_fetched": 0
     },
     {
       "source_id": "nse_delivery",
       "status": "pending",
-      "last_attempt_at": "2026-06-28T07:39:27.965Z",
+      "last_attempt_at": "2026-06-29T07:28:00.362Z",
       "last_success_at": "2026-06-24T12:12:15.844Z",
       "records_fetched": 0
     },
     {
       "source_id": "moneycontrol_stock_deals",
       "status": "success",
-      "last_attempt_at": "2026-06-28T07:38:44.171Z",
-      "last_success_at": "2026-06-28T07:38:44.171Z",
+      "last_attempt_at": "2026-06-29T07:27:14.939Z",
+      "last_success_at": "2026-06-29T07:27:14.939Z",
       "records_fetched": 0
     }
   ]
