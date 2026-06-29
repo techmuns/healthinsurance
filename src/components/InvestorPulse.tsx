@@ -161,44 +161,19 @@ function TodaysReadHero({ pulse }: { pulse: InvestorPulseData }) {
   const sm = STANCE_META[tr.stance]
   return (
     <section className="relative isolate flex flex-col overflow-hidden rounded-2xl p-5 shadow-card" style={{ background: 'linear-gradient(150deg, #1C3A6E 0%, #15294C 58%, #102140 100%)' }}>
-      {/* Layered premium detailing, contained inside the card:
-          light bloom · navy-on-navy tonal blobs · a blended gold wave from the
-          lower-right · a fine gold spark texture in the corner. */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        {/* soft radial light bloom, upper area */}
-        <div className="absolute -top-14 left-6 h-64 w-96 opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(132,170,230,0.34), transparent 70%)' }} />
-        {/* navy-on-navy tonal blobs — stronger, curved texture */}
-        <div className="blob-b absolute right-2 -top-24 h-80 w-80 opacity-90 blur-2xl" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(86,130,202,0.5), transparent 72%)' }} />
-        <div className="blob-c absolute -left-24 -bottom-16 h-80 w-80 opacity-90 blur-2xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(44,80,146,0.62), transparent 72%)' }} />
-        <div className="blob-a absolute left-1/3 top-10 h-56 w-72 opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(60,98,168,0.34), transparent 72%)' }} />
-
-        {/* GOLD WAVE — a defined, metallic gold shape sweeping in from the
-            lower-right. A soft bloom for depth, the wave body in a gold
-            gradient, and a champagne rim highlight along the crest. */}
-        <div className="absolute -bottom-3 right-0 h-[82%] w-[60%]">
-          <div className="absolute inset-0 blur-2xl" style={{ background: 'radial-gradient(ellipse at 86% 92%, rgba(216,172,88,0.6), rgba(182,139,58,0.2) 44%, transparent 70%)' }} />
-          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 400 300" preserveAspectRatio="none" style={{ filter: 'blur(1.5px)' }}>
-            <defs>
-              <linearGradient id="tr-goldWave" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#F1DDA8" stopOpacity="0" />
-                <stop offset="34%" stopColor="#E2BE74" stopOpacity="0.42" />
-                <stop offset="68%" stopColor="#C69C4E" stopOpacity="0.68" />
-                <stop offset="100%" stopColor="#A57C33" stopOpacity="0.85" />
-              </linearGradient>
-              <linearGradient id="tr-goldRim" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#F6E7BE" stopOpacity="0" />
-                <stop offset="62%" stopColor="#F4E3B2" stopOpacity="0.55" />
-                <stop offset="100%" stopColor="#FBF1CF" stopOpacity="0.9" />
-              </linearGradient>
-            </defs>
-            <path d="M400,300 L400,34 C322,52 300,150 208,202 C146,237 66,252 0,300 Z" fill="url(#tr-goldWave)" />
-            <path d="M400,34 C322,52 300,150 208,202 C146,237 66,252 0,300" fill="none" stroke="url(#tr-goldRim)" strokeWidth="2.25" />
-          </svg>
-        </div>
-
-        {/* fine gold spark texture, lower-right corner */}
-        <div className="gold-sparks absolute bottom-3 right-4 h-24 w-32 opacity-60" style={{ maskImage: 'radial-gradient(circle at 82% 82%, black, transparent 74%)', WebkitMaskImage: 'radial-gradient(circle at 82% 82%, black, transparent 74%)' }} />
-      </div>
+      {/* Soft corner-blob detailing (same calm language as the Industry header):
+          gentle, rounded radial blobs bleeding in from the corners — a warm
+          gold blob lower-right, soft blue blobs elsewhere. No hard shapes. */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(circle at 90% 96%, rgba(214,178,98,0.34) 0%, transparent 50%),' +
+            'radial-gradient(circle at 97% 6%, rgba(96,138,206,0.30) 0%, transparent 48%),' +
+            'radial-gradient(circle at 4% 98%, rgba(44,80,146,0.5) 0%, transparent 54%),' +
+            'radial-gradient(circle at 16% 6%, rgba(122,162,222,0.26) 0%, transparent 50%)',
+        }}
+      />
 
       {/* hairline gold top edge — a quiet premium frame detail */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(228,198,124,0.45) 30%, rgba(228,198,124,0.45) 70%, transparent)' }} />
