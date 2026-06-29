@@ -13,7 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
-import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance } from '@/lib/dataLayer'
+import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance, latestRetailMixPoint, RETAIL_MIX_SOURCE } from '@/lib/dataLayer'
 import type { DashboardFilters, Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
@@ -262,9 +262,10 @@ export interface CellSource {
 // Scorecard metric key → the annual-snapshot column whose value drives it.
 // `growth` is computed from GWP, so its source is the GWP row (which for SAHIs is
 // the provisional FY26 GI-Council premium; for others the latest reported GWP).
+// NB: retailMix is intentionally absent — it is resolved separately to the GI
+// Council Health Portfolio (the chart's source), not the annual-disclosure row.
 const METRIC_PROV_FIELD: Record<string, string> = {
   growth: 'gwp',
-  retailMix: 'retail_mix',
   marketShareChange: 'market_share',
   combinedRatio: 'combined_ratio',
   roe: 'roe',
@@ -300,6 +301,22 @@ export function resolveCellSource(companyId: string, metricKey: string): CellSou
       }
     }
     return null
+  }
+
+  // Retail Mix is derived from the GI Council health portfolio (retail ÷ total
+  // health premium) — the SAME source/formula as the Product Mix chart — so its
+  // source drawer must cite the GI Council with the actual latest reported FY,
+  // not the company's annual report. Returns null (→ link-free label) only when
+  // the GI Council has no health split on record for this insurer.
+  if (metricKey === 'retailMix') {
+    const pt = latestRetailMixPoint(companyId)
+    if (!pt) return null
+    return {
+      label: RETAIL_MIX_SOURCE.source,
+      period: pt.fy,
+      confidence: RETAIL_MIX_SOURCE.confidence,
+      provenance: RETAIL_MIX_SOURCE.provenance,
+    }
   }
 
   const field = METRIC_PROV_FIELD[metricKey]
