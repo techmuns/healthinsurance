@@ -14,6 +14,7 @@
 // ---------------------------------------------------------------------------
 
 import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
+import { latestRetailMixPoint } from '@/lib/dataLayer'
 
 export type PromiseCategory = 'Growth' | 'Profitability' | 'Distribution' | 'Capital' | 'Valuation' | 'Regulation'
 export type PromiseStatus = 'Delivered' | 'On Track' | 'Delayed' | 'Missed' | 'Not Measurable'
@@ -120,7 +121,13 @@ export function getPromises(companyId: string): PromiseItem[] {
   const row = latestAnnualRow(companyId)
   const fy = row ? String(row.fiscal_year) : null
   return defs.map((def) => {
-    const actual = def.metricKey && row ? num(row[def.metricKey]) : null
+    // Retail mix resolves from the GI Council health portfolio (retail ÷ total
+    // health premium) — the SAME source/formula as the Product Mix chart and the
+    // peer grid — so the actual never disagrees across surfaces. Other metrics
+    // read the latest audited annual row.
+    const retailPt = def.metricKey === 'retail_mix' ? latestRetailMixPoint(companyId) : null
+    const actual = def.metricKey === 'retail_mix' ? (retailPt?.retailPct ?? null) : def.metricKey && row ? num(row[def.metricKey]) : null
+    const actualFy = def.metricKey === 'retail_mix' ? (retailPt?.fy ?? null) : fy
     return {
       company: companyId,
       category: def.category,
@@ -132,7 +139,7 @@ export function getPromises(companyId: string): PromiseItem[] {
       status: statusFor(def, actual),
       source: def.source,
       sourceUrl: def.sourceUrl,
-      actualFy: actual != null ? fy : null,
+      actualFy: actual != null ? actualFy : null,
     }
   })
 }

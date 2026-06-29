@@ -829,7 +829,12 @@ function buildInsurer(c: CompanyMasterEntry): Insurer {
     roe,
     valuation: realPriceToGwp(c.company_id) ?? latestField(rows, 'valuation_p_gwp') ?? 0, // real feed first; 0 = N/A (unlisted)
     marketShareChange,
-    retailMix: latestField(rows, 'retail_mix') ?? 0,
+    // Retail Mix comes from the GI Council health portfolio (retail ÷ total
+    // health premium) — the SAME source and formula as the Product Mix chart —
+    // so the peer grid and chart agree by construction. (Was the hand-entered
+    // annual-disclosure `retail_mix`, which diverged from the chart, e.g. Star
+    // Health 67% vs the chart's ~96%.) 0 = N/A (no GI Council split on record).
+    retailMix: latestRetailMixPct(c.company_id) ?? 0,
     signal: 'Watch',
     takeaway: '',
   }
@@ -914,6 +919,24 @@ export function retailMixSeriesForCompany(companyId: string): RetailMixPoint[] {
     })
   }
   return [...byFy.values()].sort((a, b) => fyNum(a.fy) - fyNum(b.fy))
+}
+
+/** The latest fiscal-year point of an insurer's retail-vs-group HEALTH split,
+ *  from the SAME GI Council series that drives the Product Mix chart — so the
+ *  peer-grid Retail Mix column, its source drawer, and the chart can never
+ *  disagree. null when the GI Council has no health split on record for this
+ *  insurer (→ honest N/A, never a fake zero). */
+export function latestRetailMixPoint(companyId: string): RetailMixPoint | null {
+  const series = retailMixSeriesForCompany(companyId)
+  return series.length ? series[series.length - 1] : null
+}
+
+/** Latest retail-vs-group HEALTH mix percent for an insurer (retail ÷ total
+ *  health premium), on the same GI Council basis as the Product Mix chart. This
+ *  is the canonical Retail Mix used across the peer grid, Analysis Builder and
+ *  company copy — so a single source/formula feeds every surface. null → N/A. */
+export function latestRetailMixPct(companyId: string): number | null {
+  return latestRetailMixPoint(companyId)?.retailPct ?? null
 }
 
 /** Source descriptor for the retail/group split (GI Council Health Portfolio). */
