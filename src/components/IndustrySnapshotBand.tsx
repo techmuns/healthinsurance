@@ -250,21 +250,33 @@ function RingInsightCard({ title, subtitle, segments, insight, tone, enhanced, c
 
       <div className="relative mt-2 flex items-center gap-3">
         <RingChart segments={segments} enhanced={enhanced} centerValue={centerValue} centerCaption={centerCaption} />
-        {/* Identical legend markup to cards 2 & 3 (no truncation, same type
-            rhythm); the 7-segment card just uses a tighter row gap so it stays
-            compact instead of growing the card. */}
-        <div className={`flex min-w-0 flex-1 flex-col justify-center ${enhanced ? 'gap-1.5' : 'gap-2.5'}`}>
-          {segments.map((s) => (
-            <div key={s.name} className="flex items-start gap-2">
-              <span className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
-              <div className="min-w-0 flex-1">
-                <p className="text-[11.5px] font-medium leading-snug text-navy-deep">{s.name}</p>
-                <p className="text-[11px] tabular-nums text-ink-secondary">{inr(s.premium)}</p>
+        {enhanced ? (
+          // Minimal resting legend (label + colour cue only) — the same vertical
+          // list structure as cards 2 & 3, but detail-light to keep the many-
+          // segment card as compact and elegant as the old 3-segment one. The
+          // premium, share % and YoY live on the ring's hover tooltip, not here.
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
+            {segments.map((s) => (
+              <div key={s.name} className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium leading-snug text-navy-deep">{s.name}</span>
               </div>
-              <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-navy-deep">{s.share}%</span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
+            {segments.map((s) => (
+              <div key={s.name} className="flex items-start gap-2">
+                <span className="mt-[3px] h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: s.color }} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11.5px] font-medium leading-snug text-navy-deep">{s.name}</p>
+                  <p className="text-[11px] tabular-nums text-ink-secondary">{inr(s.premium)}</p>
+                </div>
+                <span className="shrink-0 text-[12.5px] font-semibold tabular-nums text-navy-deep">{s.share}%</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className={`relative mt-auto flex items-center gap-2 rounded-xl px-3 py-2 ${t.insight}`}>
