@@ -1359,6 +1359,51 @@
    "source_file": "data/agent-pulls/sahi-financials/aditya-birla/sources/301025_Q2-FY26-Investor-Presentation.ashx",
    "source_url": "https://www.adityabirlacapital.com/-/media/ABCL/pdf/Quarterly-Results/301025_Q2-FY26-Investor-Presentation.ashx",
    "as_of": "2025-10-30"
+  },
+  {
+   "company_id": "niva-bupa",
+   "metric": "combined_ratio_ifrs",
+   "period": "FY24",
+   "raw_value": 103.0,
+   "transform": "pct_to_fraction",
+   "unit": "ratio",
+   "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+   "confidence": "high",
+   "source_title": "Niva Bupa Earnings Presentation Q1 FY26",
+   "source_page": 24,
+   "source_file": "data/raw/companies/niva-bupa/niva-bupa-Earnings-Presentation-Q1-FY26.pdf",
+   "printed_as": "103.0%",
+   "note": "Combined Insurance Service Ratio (CISR) = the IFRS combined ratio (Financial Performance chart, p24), distinct from the statutory 1/n IGAAP combined ratio (98.8% FY24) printed on the same deck."
+  },
+  {
+   "company_id": "niva-bupa",
+   "metric": "combined_ratio_ifrs",
+   "period": "FY25",
+   "raw_value": 103.0,
+   "transform": "pct_to_fraction",
+   "unit": "ratio",
+   "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+   "confidence": "high",
+   "source_title": "Niva Bupa Earnings Presentation Q1 FY26",
+   "source_page": 24,
+   "source_file": "data/raw/companies/niva-bupa/niva-bupa-Earnings-Presentation-Q1-FY26.pdf",
+   "printed_as": "103.0%",
+   "note": "IFRS CISR (p24 chart); corroborated by the Q4 FY26 earnings call (FY26 IFRS combined improved 160 bps to 101.4% => FY25 = 103.0%). Distinct from the 1/n IGAAP combined 101.2%."
+  },
+  {
+   "company_id": "niva-bupa",
+   "metric": "combined_ratio_ifrs",
+   "period": "FY26",
+   "raw_value": 101.4,
+   "transform": "pct_to_fraction",
+   "unit": "ratio",
+   "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
+   "confidence": "high",
+   "source_title": "Niva Bupa Earnings Call Transcript Q4 FY26",
+   "source_page": 3,
+   "source_file": "data/raw/companies/niva-bupa/niva-bupa-Earnings-Call-Transcript-Q4-FY26.pdf",
+   "printed_as": "101.4%",
+   "note": "Q4 FY26 earnings call p3: 'combined ratio for FY26 under IFRS has improved by 160 basis points to 101.4%'. IFRS basis (CISR), distinct from the 1/n IGAAP combined 103.4%."
   }
  ]
 }
