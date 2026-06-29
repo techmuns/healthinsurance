@@ -66,11 +66,12 @@ body {
   /* White panels gain a faint cool sheen, a soft warm-tinted hairline and a
      low, soft shadow so they never read as flat SaaS white. */
   .premium-panel {
-    background-image: linear-gradient(162deg, #ffffff 0%, #fbfcfe 54%, #f4f8fd 100%);
-    border: 1px solid rgba(39, 69, 126, 0.12);
+    background-image: linear-gradient(162deg, #ffffff 0%, #fbfcfe 46%, #eef4fc 100%);
+    border: 1px solid rgba(39, 69, 126, 0.13);
     box-shadow:
       0 1px 2px rgba(23, 43, 77, 0.04),
-      0 12px 28px rgba(23, 43, 77, 0.07);
+      0 14px 32px rgba(23, 43, 77, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
   }
 
   /* Thin gold ring + faint lift for icon tiles on light surfaces. */

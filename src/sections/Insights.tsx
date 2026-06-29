@@ -116,11 +116,16 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
 function InsightsBackdrop() {
   return (
     <div aria-hidden className="pointer-events-none absolute -inset-x-2 -inset-y-2 -z-10 overflow-hidden rounded-3xl">
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(165deg, #F5F9FE 0%, #EAF1FB 48%, #F2F7FD 100%)' }} />
-      <div className="blob-a absolute -left-28 -top-24 h-80 w-80 opacity-80 blur-3xl" style={{ background: 'radial-gradient(circle at 40% 40%, rgba(183,209,245,0.7), transparent 70%)' }} />
-      <div className="blob-b absolute -right-24 top-16 h-[26rem] w-[26rem] opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 40%, rgba(203,222,246,0.72), transparent 72%)' }} />
-      <div className="blob-c absolute left-1/3 top-1/2 h-80 w-80 opacity-55 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(215,231,249,0.7), transparent 72%)' }} />
-      <div className="blob-d absolute -bottom-24 right-4 h-72 w-72 opacity-50 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(226,201,142,0.4), transparent 70%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(165deg, #F3F8FE 0%, #E4EEFA 46%, #EFF5FD 100%)' }} />
+      {/* pale blue blob behind the header / top-left */}
+      <div className="blob-a absolute -left-32 -top-28 h-[26rem] w-[26rem] opacity-95 blur-3xl" style={{ background: 'radial-gradient(circle at 42% 42%, rgba(170,201,243,0.78), transparent 70%)' }} />
+      {/* flowing blue shapes along the top-right and right edge */}
+      <div className="blob-b absolute -right-28 -top-10 h-[30rem] w-[30rem] opacity-85 blur-3xl" style={{ background: 'radial-gradient(circle at 52% 42%, rgba(189,214,245,0.8), transparent 72%)' }} />
+      <div className="blob-e absolute right-1/4 top-1/3 h-[22rem] w-[22rem] opacity-60 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(205,224,247,0.72), transparent 72%)' }} />
+      {/* faint blue lower-left so the page edges flow */}
+      <div className="blob-c absolute -left-20 bottom-10 h-80 w-80 opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle at 50% 50%, rgba(198,219,246,0.7), transparent 72%)' }} />
+      {/* faint warm-gold accent near the lower-right */}
+      <div className="blob-d absolute -bottom-28 right-2 h-[24rem] w-[24rem] opacity-70 blur-3xl" style={{ background: 'radial-gradient(circle at 58% 58%, rgba(226,196,128,0.5), rgba(214,182,110,0.16) 45%, transparent 72%)' }} />
     </div>
   )
 }
