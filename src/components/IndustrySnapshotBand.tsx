@@ -287,15 +287,31 @@ function RingInsightCard({ title, subtitle, segments, insight, tone, enhanced, c
   )
 }
 
+// Self-watching freshness: the GI premium-mix card auto-advances as the GI
+// Council publishes, but if the Council goes quiet we shouldn't silently sit on
+// a stale year. A full FY's report is normally out within a few months of the
+// March year-end; flag only when the latest GI year is more than ~15 months past
+// its year-end (i.e. a whole next-year report is genuinely overdue).
+function giOverdueNote(latestGiFy: string | undefined): string | null {
+  if (!latestGiFy) return null
+  const yy = Number(latestGiFy.replace(/^FY/, ''))
+  if (!yy) return null
+  const fyEnd = new Date(2000 + yy, 2, 31).getTime() // 31 Mar of the FY-end year
+  const monthsBehind = (Date.now() - fyEnd) / (1000 * 60 * 60 * 24 * 30.44)
+  return monthsBehind > 15 ? `GI Council data may be overdue — latest on file is ${latestGiFy}` : null
+}
+
 export function IndustrySnapshotBand() {
   // Built once per load from the committed snapshots — advances on its own as
   // ingestion lands new fiscal years.
-  const { cards, span, sourceLine } = useMemo(() => {
+  const { cards, span, sourceLine, overdueNote } = useMemo(() => {
     const structure = industrySnapshotCards()
+    const giFy = structure.find((c) => c.key === 'segment-mix')?.fy
     return {
       cards: buildRingCards(structure),
       span: industrySnapshotSpan(structure),
       sourceLine: industrySnapshotSourceLine(structure),
+      overdueNote: giOverdueNote(giFy),
     }
   }, [])
 
@@ -315,7 +331,15 @@ export function IndustrySnapshotBand() {
         ))}
       </div>
 
-      <div className="mt-2 flex justify-end">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        {overdueNote ? (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-champagne-soft px-2 py-0.5 text-[10px] font-medium text-champagne-deep">
+            <span className="h-1.5 w-1.5 rounded-full bg-champagne" />
+            {overdueNote}
+          </span>
+        ) : (
+          <span />
+        )}
         <span className="text-[10px] text-ink-secondary/80">{sourceLine}</span>
       </div>
     </section>
