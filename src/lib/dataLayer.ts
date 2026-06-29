@@ -651,8 +651,18 @@ interface ProvenanceEntry {
   source_name: string
   source_url: string
   source_file?: string | null
+  source_period?: string
   fetched_at: string | null
   confidence: 'high' | 'medium' | 'low' | 'pending'
+}
+
+/** Embedded source object carried on a snapshot row (annual filing / valuation feed). */
+export interface RowProvenance {
+  source_name?: string
+  source_url?: string
+  source_period?: string
+  fetched_at?: string | null
+  confidence?: 'high' | 'medium' | 'low' | 'pending'
 }
 
 export function lookupProvenance(
@@ -667,6 +677,25 @@ export function lookupProvenance(
 
 export function getDataProvenance(metricId: string, companyId: string, period: TimePeriod) {
   return lookupProvenance(metricId, companyId, period)
+}
+
+/**
+ * Embedded provenance on a company's latest annual snapshot row — the annual
+ * report / public-disclosure filing the reported figures are drawn from. Used as
+ * the fallback source for any reported metric that has no row in the per-metric
+ * provenance map. Never fabricated: returns null when the row carries no source.
+ */
+export function getAnnualRowProvenance(companyId: string): RowProvenance | null {
+  const row = annualRowsFor(companyId)[0] as (InsurerAnnualLike & { provenance?: RowProvenance }) | undefined
+  return row?.provenance ?? null
+}
+
+/** Embedded provenance on a company's daily valuation row — the market-multiples source. */
+export function getValuationProvenance(companyId: string): RowProvenance | null {
+  const row = (valuationSnapshot.data as Array<{ company_id: string; provenance?: RowProvenance }>).find(
+    (r) => r.company_id === companyId,
+  )
+  return row?.provenance ?? null
 }
 
 // ─── Executive-Overview Insurer universe (built from snapshots) ─────────────

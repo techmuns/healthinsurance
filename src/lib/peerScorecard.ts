@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
+import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance } from '@/lib/dataLayer'
 import type { DashboardFilters, Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
@@ -242,4 +243,80 @@ export function diffIsGood(c: Cell): boolean | null {
 
 export function rankLabel(c: Cell): string {
   return c.rank != null ? `#${c.rank}` : 'NA'
+}
+
+// ─── Per-cell source resolution ──────────────────────────────────────────────
+// Every scorecard cell (company × metric) resolves to the real document the
+// number came from, so the right-hand panel can show a clickable source link.
+// No fabrication: each URL is read from a snapshot; a cell with no source on
+// record returns null and the panel shows a quiet, link-free label.
+
+export interface CellSource {
+  /** SourceTag label, e.g. 'Company filing' or 'Valuation feed'. */
+  label: string
+  period?: string
+  confidence: 'high' | 'medium' | 'low' | 'pending'
+  provenance: { source_name?: string; source_url?: string; fetched_at?: string | null }
+}
+
+// Scorecard metric key → its column in the per-metric provenance map.
+// `growth` is derived from GWP, so its source is the GWP filing.
+const METRIC_PROV_FIELD: Record<string, string> = {
+  growth: 'gwp',
+  retailMix: 'retail_mix',
+  marketShareChange: 'market_share',
+  combinedRatio: 'combined_ratio',
+  roe: 'roe',
+  solvency: 'solvency_ratio',
+}
+// Valuation multiples come from the daily market feed, not the annual filing.
+const VALUATION_KEYS = new Set(['priceToEarnings', 'priceToBook', 'valuation'])
+
+/**
+ * Resolve a real, clickable source for one scorecard cell. Priority:
+ *   1. exact per-metric provenance (data-provenance.json),
+ *   2. the company's annual-report filing (embedded on the annual snapshot row),
+ *   3. for valuation multiples, the daily valuation feed.
+ * Returns null only when no source URL is on record.
+ */
+export function resolveCellSource(companyId: string, metricKey: string): CellSource | null {
+  if (VALUATION_KEYS.has(metricKey)) {
+    const v = getValuationProvenance(companyId)
+    if (v?.source_url) {
+      return {
+        label: 'Valuation feed',
+        period: v.source_period ?? 'TTM',
+        confidence: v.confidence ?? 'medium',
+        provenance: { source_name: v.source_name, source_url: v.source_url, fetched_at: v.fetched_at },
+      }
+    }
+    return null
+  }
+
+  const field = METRIC_PROV_FIELD[metricKey]
+  if (field) {
+    const p = lookupProvenance(`company.${field}`, companyId, 'Annual')
+    if (p?.source_url) {
+      return {
+        label: 'Company filing',
+        period: p.source_period,
+        confidence: p.confidence,
+        provenance: { source_name: p.source_name, source_url: p.source_url, fetched_at: p.fetched_at },
+      }
+    }
+  }
+
+  // Fall back to the company's annual-report filing — the document the reported
+  // figures are drawn from — so every disclosed cell still links to a real source.
+  const row = getAnnualRowProvenance(companyId)
+  if (row?.source_url) {
+    return {
+      label: 'Company filing',
+      period: row.source_period,
+      confidence: row.confidence ?? 'high',
+      provenance: { source_name: row.source_name, source_url: row.source_url, fetched_at: row.fetched_at },
+    }
+  }
+
+  return null
 }

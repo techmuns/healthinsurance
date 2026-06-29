@@ -1,15 +1,18 @@
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useFilters } from '@/state/filters'
 import { getLatestAnnualFyLabel } from '@/lib/dataLayer'
 import { AnalysisBuilder } from '@/components/AnalysisBuilder'
 import { SectionTabs } from '@/components/SectionTabs'
+import { SourceTag } from '@/components/SourceTag'
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import {
   getScorecard,
+  resolveCellSource,
   fmtValue,
   fmtDiff,
   diffIsGood,
   type Cell,
+  type CellSource,
   type CellTone,
   type MetricDef,
   type MetricGroup,
@@ -129,7 +132,7 @@ function SubScore({ icon, label, cell, theme }: { icon: 'growth' | 'profit' | 'c
 }
 
 // ── Heatmap ─────────────────────────────────────────────────────────────────
-function HeatCell({ cell, onPick }: { cell: Cell; onPick: (k: string) => void }) {
+function HeatCell({ cell, companyId, selected, onPickCell }: { cell: Cell; companyId: string; selected: boolean; onPickCell: (companyId: string, k: string) => void }) {
   const t = TONE[cell.tone]
   const isNA = cell.value == null
   const diff = fmtDiff(cell)
@@ -137,20 +140,26 @@ function HeatCell({ cell, onPick }: { cell: Cell; onPick: (k: string) => void })
   // Everything else stays a calm, softly-bordered pastel tile, never a loud block.
   const highlight = !isNA && cell.best
   const title = isNA
-    ? `${cell.metric.label}: not disclosed for this peer`
-    : `${cell.metric.label} · Rank ${cell.rank} of ${cell.count}${diff ? ` · ${diff} vs peer median` : ''}`
+    ? `${cell.metric.label}: not disclosed for this peer — click to see the source`
+    : `${cell.metric.label} · Rank ${cell.rank} of ${cell.count}${diff ? ` · ${diff} vs peer median` : ''} · click for the source`
+  // Ring priority: a navy selection ring (the cell driving the side panel) wins;
+  // otherwise the single gold best-in-column ring; otherwise a calm soft border.
+  const innerRing = highlight ? `inset 0 0 0 1.4px ${hexA(GOLD, 0.8)}` : `inset 0 0 0 1px ${hexA(SLATE, 0.18)}`
+  const outerRing = selected
+    ? `0 0 0 2px ${hexA(NAVY_PRIMARY, 0.6)}, 0 2px 7px ${hexA(NAVY_PRIMARY, 0.2)}`
+    : highlight
+      ? `0 1px 3px ${hexA(GOLD, 0.16)}`
+      : TILE_SHADOW
   return (
     <td className="p-1">
       <button
         type="button"
         title={title}
-        onClick={() => onPick(cell.metric.key)}
+        onClick={() => onPickCell(companyId, cell.metric.key)}
         className="relative flex min-h-[54px] w-full items-center justify-center rounded-[11px] px-2.5 py-2 text-center transition duration-200 hover:brightness-[0.985]"
         style={{
           background: t.bg,
-          boxShadow: highlight
-            ? `inset 0 0 0 1.4px ${hexA(GOLD, 0.8)}, 0 1px 3px ${hexA(GOLD, 0.16)}`
-            : `inset 0 0 0 1px ${hexA(SLATE, 0.18)}, ${TILE_SHADOW}`,
+          boxShadow: `${innerRing}, ${outerRing}`,
         }}
       >
         {highlight && (
@@ -172,7 +181,7 @@ function HeatCell({ cell, onPick }: { cell: Cell; onPick: (k: string) => void })
   )
 }
 
-function HeatmapScorecard({ rows, metrics, activeKey, onPick, onPickCompany }: { rows: ScoreRow[]; metrics: MetricDef[]; activeKey: string; onPick: (k: string) => void; onPickCompany: (id: string) => void }) {
+function HeatmapScorecard({ rows, metrics, activeKey, selectedCompany, onPick, onPickCell, onPickCompany }: { rows: ScoreRow[]; metrics: MetricDef[]; activeKey: string; selectedCompany: string; onPick: (k: string) => void; onPickCell: (companyId: string, k: string) => void; onPickCompany: (id: string) => void }) {
   const groups = groupsOf(metrics)
   return (
     <div className="overflow-x-auto">
@@ -225,7 +234,13 @@ function HeatmapScorecard({ rows, metrics, activeKey, onPick, onPickCompany }: {
               {groups.map((g, gi) => (
                 <Fragment key={g.group}>
                   {g.items.map((m) => (
-                    <HeatCell key={m.key} cell={r.cells[m.key]} onPick={onPick} />
+                    <HeatCell
+                      key={m.key}
+                      cell={r.cells[m.key]}
+                      companyId={r.insurer.id}
+                      selected={r.insurer.id === selectedCompany && m.key === activeKey}
+                      onPickCell={onPickCell}
+                    />
                   ))}
                   {gi < groups.length - 1 && <td className="w-5" aria-hidden />}
                 </Fragment>
@@ -285,13 +300,13 @@ function CompareBar({ label, value, max, color, unit, strong }: { label: string;
   )
 }
 
-function PeerSignalPanel({ cell, focalName, onPick, pills, whyBullets, questions }: { cell: Cell; focalName: string; onPick: (k: string) => void; pills: { key: string; label: string }[]; whyBullets: string[]; questions: string[] }) {
+function PeerSignalPanel({ cell, focalName, selectedName, source, onPick, pills, whyBullets, questions }: { cell: Cell; focalName: string; selectedName: string; source: CellSource | null; onPick: (k: string) => void; pills: { key: string; label: string }[]; whyBullets: string[]; questions: string[] }) {
   const m = cell.metric
   const insight = cell.value == null
-    ? `${m.label} isn't comparable across this peer group — pick another metric.`
+    ? `${m.label} isn't disclosed for ${selectedName} — see the source for what is on record.`
     : m.polarity === 'rich'
-      ? `${focalName} trades at ${fmtValue(cell)}, ${cell.signal === 'Premium' ? 'above' : 'below'} the peer median.`
-      : `${focalName} ranks #${cell.rank} of ${cell.count} at ${fmtValue(cell)}, ${diffIsGood(cell) ? 'above' : 'below'} the peer median.`
+      ? `${selectedName} trades at ${fmtValue(cell)}, ${cell.signal === 'Premium' ? 'above' : 'below'} the peer median.`
+      : `${selectedName} ranks #${cell.rank} of ${cell.count} at ${fmtValue(cell)}, ${diffIsGood(cell) ? 'above' : 'below'} the peer median.`
   const max = Math.max(Math.abs(cell.value ?? 0), Math.abs(cell.median ?? 0)) || 1
   return (
     <div className="overflow-hidden rounded-xl2 border border-soft-border bg-card shadow-soft">
@@ -336,16 +351,35 @@ function PeerSignalPanel({ cell, focalName, onPick, pills, whyBullets, questions
           })}
         </div>
         <div className="flex items-center justify-between gap-2">
-          <p className="font-display text-[12.5px] text-navy-deep">{m.label}</p>
+          <p className="font-display text-[12.5px] text-navy-deep">
+            <span className="font-semibold">{selectedName}</span>
+            <span className="text-ink-secondary"> · {m.label}</span>
+          </p>
           <SignalBadge signal={cell.signal} />
         </div>
         <p className="text-[11.5px] leading-relaxed text-ink-primary">{insight}</p>
         {cell.value != null && (
           <div className="space-y-2 rounded-lg bg-ice/50 p-3">
-            <CompareBar label={focalName} value={cell.value} max={max} color={TEAL} unit={m.unit} strong />
+            <CompareBar label={selectedName} value={cell.value} max={max} color={TEAL} unit={m.unit} strong />
             {cell.median != null && <CompareBar label="Peer median" value={cell.median} max={max} color={SLATE} unit={m.unit} />}
           </div>
         )}
+
+        {/* Per-cell source — the document this exact figure came from, one click away. */}
+        <div className="flex items-center justify-between gap-2 border-t border-soft-border pt-2.5">
+          <span className="text-[9px] font-semibold uppercase tracking-[0.09em] text-ink-secondary">Source</span>
+          {source ? (
+            <SourceTag
+              source={source.label}
+              period={source.period}
+              confidence={source.confidence}
+              provenance={source.provenance}
+              align="right"
+            />
+          ) : (
+            <span className="text-[10.5px] italic text-ink-secondary">Not on record</span>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -398,11 +432,21 @@ export function CompetitivePositioning() {
   const filters = useFilters()
   const [tab, setTab] = useState<Tab>('Scorecard')
   const [activeKey, setActiveKey] = useState('growth')
+  // The cell currently driving the side panel. `null` company = follow the focal
+  // company; clicking any cell pins that company so its source shows on the right.
+  const [activeCompany, setActiveCompany] = useState<string | null>(null)
 
   const card = useMemo(() => getScorecard({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany }), [filters.peerGroup, filters.highlightedCompany])
   const focal = card.focal
   const focalRow = card.rows.find((r) => r.focal) ?? card.rows[0]
-  const activeCell = focalRow.cells[activeKey] ?? focalRow.cells.growth
+  // When the focal company changes (peer/company filter), let the panel snap back
+  // to following the focal company rather than staying pinned to a stale cell.
+  useEffect(() => { setActiveCompany(null) }, [focal.id])
+  // Resolve the selected cell from the pinned company (or the focal company).
+  const selectedRow = (activeCompany && card.rows.find((r) => r.insurer.id === activeCompany)) || focalRow
+  const activeCell = selectedRow.cells[activeKey] ?? selectedRow.cells.growth
+  const cellSource = resolveCellSource(selectedRow.insurer.id, activeCell.metric.key)
+  const pickCell = (companyId: string, key: string) => { setActiveCompany(companyId); setActiveKey(key) }
   // Competitive Position has no frequency toggle — the scorecard is a latest-
   // figures snapshot. Label it with the ACTUAL data year (the latest annual FY
   // in the snapshot), not the selected range, so picking an earlier range never
@@ -483,14 +527,14 @@ export function CompetitivePositioning() {
               </div>
             </div>
             <div className="bg-card p-4">
-              <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} onPick={setActiveKey} onPickCompany={filters.setHighlightedCompany} />
+              <HeatmapScorecard rows={card.rows} metrics={card.metrics} activeKey={activeKey} selectedCompany={selectedRow.insurer.id} onPick={setActiveKey} onPickCell={pickCell} onPickCompany={filters.setHighlightedCompany} />
               <div className="mt-3 border-t border-soft-border pt-2.5">
                 <Legend />
               </div>
             </div>
           </div>
           <div className="space-y-3">
-            <PeerSignalPanel cell={activeCell} focalName={focal.shortName} onPick={setActiveKey} pills={PILLS} whyBullets={whyBullets} questions={keyQuestions} />
+            <PeerSignalPanel cell={activeCell} focalName={focal.shortName} selectedName={selectedRow.insurer.shortName} source={cellSource} onPick={setActiveKey} pills={PILLS} whyBullets={whyBullets} questions={keyQuestions} />
           </div>
         </div>
       )}
