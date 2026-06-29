@@ -30,7 +30,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY25 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
         "source_period": "Q3 FY25",
         "fetched_at": "2026-05-28T12:39:51.266Z",
@@ -84,7 +84,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY22 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 21-22/Qtr 1 21-22\\NL33_SOLVENCY_MARGIN_1628763594.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2021-22/Qtr%201%2021-22/NL33_SOLVENCY_MARGIN_1628763594.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 21-22\\NL33_SOLVENCY_MARGIN_1628763594.pdf",
         "source_period": "Q1 FY22",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -111,7 +111,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY21 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 20-21/Qtr 1 20-21\\NL33_1597413652.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2020-21/Qtr%201%2020-21/NL33_1597413652.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 20-21\\NL33_1597413652.pdf",
         "source_period": "Q1 FY21",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -138,7 +138,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY21 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 20-21/Qtr 2 20-21\\NL33_1604924097.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2020-21/Qtr%202%2020-21/NL33_1604924097.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 20-21\\NL33_1604924097.pdf",
         "source_period": "Q2 FY21",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -165,7 +165,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY21 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 20-21/Qtr 3 20-21\\NL33_1614142537.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2020-21/Qtr%203%2020-21/NL33_1614142537.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 20-21\\NL33_1614142537.pdf",
         "source_period": "Q3 FY21",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -192,7 +192,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q4 FY21 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 20-21/Qtr 4 20-21\\NL33_SOLVENCY_MARGIN_1623911359.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2020-21/Qtr%204%2020-21/NL33_SOLVENCY_MARGIN_1623911359.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 4 20-21\\NL33_SOLVENCY_MARGIN_1623911359.pdf",
         "source_period": "Q4 FY21",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -219,7 +219,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY20 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 19-20/Qtr 1 19-20\\NL-33_1565861171.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2019-20/Qtr%201%2019-20/NL-33_1565861171.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 19-20\\NL-33_1565861171.pdf",
         "source_period": "Q1 FY20",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -246,7 +246,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY20 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 19-20/Qtr 2 19-20\\NL33_1573641397.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2019-20/Qtr%202%2019-20/NL33_1573641397.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 19-20\\NL33_1573641397.pdf",
         "source_period": "Q2 FY20",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -273,7 +273,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY20 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 19-20/Qtr 3 19-20\\NL-33_1581514644.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2019-20/Qtr%203%2019-20/NL-33_1581514644.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 19-20\\NL-33_1581514644.pdf",
         "source_period": "Q3 FY20",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -300,7 +300,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q4 FY20 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 19-20/Qtr 4 19-20\\NL33_1594978821.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2019-20/Qtr%204%2019-20/NL33_1594978821.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 4 19-20\\NL33_1594978821.pdf",
         "source_period": "Q4 FY20",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -327,7 +327,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY19 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 18-19/Qtr 1 18-19\\NL33_1534227302.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2018-19/Qtr%201%2018-19/NL33_1534227302.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 18-19\\NL33_1534227302.pdf",
         "source_period": "Q1 FY19",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -354,7 +354,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY19 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 18-19/Qtr 2 18-19\\NL33_1542289756.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2018-19/Qtr%202%2018-19/NL33_1542289756.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 18-19\\NL33_1542289756.pdf",
         "source_period": "Q2 FY19",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -381,7 +381,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY19 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 18-19/Qtr 3 18-19\\NL33_1550141445.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2018-19/Qtr%203%2018-19/NL33_1550141445.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 18-19\\NL33_1550141445.pdf",
         "source_period": "Q3 FY19",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -408,7 +408,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q4 FY19 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 18-19/Qtr 4 18-19\\NL33_1561037864.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2018-19/Qtr%204%2018-19/NL33_1561037864.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 4 18-19\\NL33_1561037864.pdf",
         "source_period": "Q4 FY19",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -435,7 +435,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY18 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 17-18/Qtr 1 17-18\\NL-33_1502258803.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2017-18/Qtr%201%2017-18/NL-33_1502258803.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 17-18\\NL-33_1502258803.pdf",
         "source_period": "Q1 FY18",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -462,7 +462,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY18 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 17-18/Qtr 2 17-18\\NL-33_1511157867.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2017-18/Qtr%202%2017-18/NL-33_1511157867.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 17-18\\NL-33_1511157867.pdf",
         "source_period": "Q2 FY18",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -489,7 +489,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY18 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 17-18/Qtr 3 17-18\\NL-33_1541077247.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2017-18/Qtr%203%2017-18/NL-33_1541077247.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 17-18\\NL-33_1541077247.pdf",
         "source_period": "Q3 FY18",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -516,7 +516,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q4 FY18 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 17-18/Qtr 4 17-18\\NL33_1525974566.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2017-18/Qtr%204%2017-18/NL33_1525974566.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 4 17-18\\NL33_1525974566.pdf",
         "source_period": "Q4 FY18",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -543,7 +543,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY17 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 16-17/Qtr 2 16-17\\1617q2NL-33_1501066736.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2016-17/Qtr%202%2016-17/1617q2NL-33_1501066736.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 16-17\\1617q2NL-33_1501066736.pdf",
         "source_period": "Q2 FY17",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -570,7 +570,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY17 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 16-17/Qtr 3 16-17\\1617q3NL-33_1501065179.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2016-17/Qtr%203%2016-17/1617q3NL-33_1501065179.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 16-17\\1617q3NL-33_1501065179.pdf",
         "source_period": "Q3 FY17",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -597,7 +597,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q4 FY17 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 16-17/Qtr 4 16-17\\1617q4NL-33_1501066095.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2016-17/Qtr%204%2016-17/1617q4NL-33_1501066095.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 4 16-17\\1617q4NL-33_1501066095.pdf",
         "source_period": "Q4 FY17",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -624,7 +624,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY16 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 15-16/Qtr 3 15-16\\1516q3NL-33_1494314596.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2015-16/Qtr%203%2015-16/1516q3NL-33_1494314596.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 15-16\\1516q3NL-33_1494314596.pdf",
         "source_period": "Q3 FY16",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -651,7 +651,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q1 FY15 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 14-15/Qtr 1 14-15\\1415q1NL-33_1494245481.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2014-15/Qtr%201%2014-15/1415q1NL-33_1494245481.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 1 14-15\\1415q1NL-33_1494245481.pdf",
         "source_period": "Q1 FY15",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -678,7 +678,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q2 FY15 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 14-15/Qtr 2 14-15\\1415q2NL-33_1494246636.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2014-15/Qtr%202%2014-15/1415q2NL-33_1494246636.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 2 14-15\\1415q2NL-33_1494246636.pdf",
         "source_period": "Q2 FY15",
         "fetched_at": "2026-05-30T15:23:11.939Z",
@@ -705,7 +705,7 @@
       "period_type": "quarterly",
       "provenance": {
         "source_name": "care-health Q3 FY15 public disclosure",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 14-15/Qtr 3 14-15\\1415q3NL-33_1494247191.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2014-15/Qtr%203%2014-15/1415q3NL-33_1494247191.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 14-15\\1415q3NL-33_1494247191.pdf",
         "source_period": "Q3 FY15",
         "fetched_at": "2026-05-30T15:23:11.939Z",

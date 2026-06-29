@@ -66,7 +66,6 @@ import { relative, resolve } from 'node:path'
 const SOURCE_ID = 'gicouncil_segmentwise_annual'
 const LISTING_URLS = [
   'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report-on-homepage/',
-  'https://www.gicouncil.in/statistics/industry-statistics/segment-wise-report/',
 ]
 const RAW_SUBDIR = 'gicouncil/segment-annual' // full-FY drops (any recognisable name)
 const RAW_SUBDIR_MONTHLY = 'gicouncil/segment' // shared with the monthly fetcher (<YYYY-MM>.xlsx)

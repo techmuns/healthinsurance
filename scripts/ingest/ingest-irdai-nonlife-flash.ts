@@ -54,7 +54,7 @@ import { resolve } from 'node:path'
 const SOURCE_ID = 'irdai_nonlife_flash'
 const SOURCE_NAME = 'IRDAI Non-Life Flash Figures'
 // The official IRDAI page that hosts the monthly non-life flash-figures files.
-const SOURCE_URL = 'https://irdai.gov.in/monthly-business-figures-non-life-insurers'
+const SOURCE_URL = 'https://irdai.gov.in/non-life'
 const RAW_SUBDIR = 'irdai/nonlife-flash'
 const EXACT_BLOCK_LOG =
   'IRDAI source blocked GitHub Actions request with 403. Non-Life Flash Figures snapshot not updated.'

@@ -23,7 +23,7 @@
       "basis": "FY26 in progress. LIC total premium published; industry life total (total-premium basis) and the four PSU general insurers' FY26 figure not yet published — kept null, not estimated.",
       "provenance": {
         "source_name": "LIC FY26 results (year ended 31-Mar-2026): total premium income Rs 5,35,984 cr, +9.80% YoY. Industry life total and public-sector general FY26 pending publication (Life Council / IRDAI / GI Council).",
-        "source_url": "https://licindia.in/web/guest/press-releases",
+        "source_url": "https://licindia.in/web/guest/press-release",
         "fetched_at": "2026-06-16",
         "confidence": "high"
       }
@@ -38,7 +38,7 @@
       "provenance": {
         "source_name": "IRDAI Annual Report 2024-25 (industry total life premium, Rs 8.86 lakh cr); LIC FY25 results press release 27-May-2025 (LIC total premium income Rs 4,88,148 cr); GI Council / IRDAI FY25 (public-sector general premium ~Rs 1.06 lakh cr — four PSU general insurers, per the 29-May-2025 PSGIC review)",
         "source_url": "https://irdai.gov.in/annual-reports",
-        "lic_source_url": "https://licindia.in/web/guest/press-releases",
+        "lic_source_url": "https://licindia.in/web/guest/press-release",
         "public_gi_source_url": "https://www.gicouncil.in/statistics/industry-statistics/",
         "fetched_at": "2026-06-16",
         "confidence": "high"

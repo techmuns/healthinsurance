@@ -8,7 +8,7 @@
     "refresh_cadence": "daily/weekly — NSE & BSE publish bulk and block deals each trading day. The agent pulls the latest deals per listed insurer and appends new ones (add-only, de-duped by date+client+side+qty).",
     "source": {
       "source_name": "NSE / BSE bulk & block deals (via Screener)",
-      "source_url": "https://www.nseindia.com/get-quote/equity/NIVABUPA",
+      "source_url": "https://www.nseindia.com/get-quotes/equity?symbol=NIVABUPA",
       "aggregator_url": "https://www.screener.in/company/NIVABUPA/#shareholding"
     },
     "last_successful_run": "2026-06-25T05:54:29.240Z",

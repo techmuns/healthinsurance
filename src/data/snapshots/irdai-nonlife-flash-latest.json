@@ -2,7 +2,7 @@
   "_meta": {
     "schema_version": "1.0.0",
     "source": "IRDAI Non-Life Flash Figures",
-    "source_url": "https://irdai.gov.in/monthly-business-figures-non-life-insurers",
+    "source_url": "https://irdai.gov.in/non-life",
     "upstream_sources": [
       "irdai_nonlife_flash"
     ],

@@ -333,7 +333,7 @@
       "distribution_summary": null,
       "provenance": {
         "source_name": "care-health disclosure (FY25)",
-        "source_url": "https://cms.careinsurance.com/cms/public/uploads\\uploads\\public_disclosure/FY 24-25/Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
+        "source_url": "https://cms.careinsurance.com/cms/public/uploads/uploads/public_disclosure/FY%2024-25/Qtr%203%2024-25/PublicDisclosuresDecember2024_1738647983.pdf",
         "source_file": "/home/runner/work/HealthInsurance/HealthInsurance/data/raw/companies/care-health/care-health-Qtr 3 24-25\\PublicDisclosuresDecember2024_1738647983.pdf",
         "source_period": "FY25",
         "fetched_at": "2026-05-28T12:35:19.619Z",
@@ -443,7 +443,7 @@
       "distribution_summary": null,
       "provenance": {
         "source_name": "ManipalCigna FY25 Public Disclosures — FY25 headline figures (summary seed)",
-        "source_url": "https://www.manipalcigna.com/public-disclosures",
+        "source_url": "https://www.manipalcigna.com/disclosures/public-disclosures",
         "source_file": null,
         "source_period": "FY25",
         "fetched_at": "2026-05-29T17:13:54.887Z",

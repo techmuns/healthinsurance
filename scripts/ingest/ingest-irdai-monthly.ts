@@ -17,7 +17,7 @@ import { appendLog, isOfflineMode, nowIso, readSnapshot, writeRaw } from './util
 import { fetchBuffer, fetchHtml, findLinks, findRowByAlias, loadStagedRaw, parseXlsx, toNumber } from './parsers'
 
 const SOURCE_ID = 'irdai_monthly_business'
-const SOURCE_URL = 'https://irdai.gov.in/monthly-business-figures-non-life-insurers'
+const SOURCE_URL = 'https://irdai.gov.in/non-life'
 
 // Aliases per insurer — used to find the row in the IRDAI XLSX where the
 // first column carries the insurer name. Different IRDAI releases use

@@ -26,7 +26,7 @@
       "retail_share_delta_bps": 76,
       "provenance": {
         "source_name": "Niva Bupa audited FY26 results (year ended 31-Mar-2026), published 8-May-2026: GWP Rs 9,432.9 cr (+27.4%), PAT Rs 366.1 cr (+80%, IFRS), retail-health share 10.1% (+76 bps)",
-        "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/",
+        "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "fetched_at": "2026-06-01",
         "confidence": "high"
       }
@@ -42,7 +42,7 @@
       "retail_share_delta_bps": null,
       "provenance": {
         "source_name": "Niva Bupa FY25 audited results: GWP Rs 7,015 cr, PAT Rs 203 cr",
-        "source_url": "https://transactions.nivabupa.com/pages/doc/investor-relations/",
+        "source_url": "https://transactions.nivabupa.com/pages/investor-relations.aspx",
         "fetched_at": "2026-06-01",
         "confidence": "high"
       }
@@ -58,7 +58,7 @@
       "retail_share_delta_bps": null,
       "provenance": {
         "source_name": "Star Health audited FY26 results: GWP Rs 20,369 cr (+16%), PAT Rs 911 cr",
-        "source_url": "https://starhealth.in/investor-relations/",
+        "source_url": "https://www.starhealth.in/investors/financial-information/",
         "fetched_at": "2026-06-01",
         "confidence": "high"
       }
