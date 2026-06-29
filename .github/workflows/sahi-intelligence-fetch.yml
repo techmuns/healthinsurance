@@ -11,8 +11,11 @@ name: sahi intelligence fetch
 
 on:
   schedule:
-    # Full-auto (Neha, 2026-06-11): weekly (Wed) — market-intelligence feed.
-    - cron: '0 4 * * 3'
+    # Daily (Neha, 2026-06-29): the Curated Market Intelligence feed in the
+    # Insights tab is the daily-moving layer (analyst actions, regulatory and
+    # sector news, catalysts), so it refreshes every morning at 04:00 UTC. Was
+    # weekly (Wed) — bumped to daily so "Today's Investor Pulse" reads truly daily.
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 permissions:
