@@ -20,9 +20,16 @@
 // ===========================================================================
 
 import intelSnapshot from '@/data/snapshots/market-intelligence-snapshot.json'
+import generated from '@/data/insights.generated.json'
+import annualSnapshot from '@/data/snapshots/insurer-annual-snapshot.json'
+import peerSnapshot from '@/data/snapshots/sahi-peer-comparison.json'
+import type { Insight, InsightCategory, InsightsFile } from '@/insights/types'
 import { getManagementEvents } from '@/lib/dataLayer'
 import { getAnalystCoverage } from '@/lib/analystCoverage'
+import { getPromises } from '@/lib/promiseTracker'
 import { isLinkable, sourceHref, classifySource } from '@/lib/sourceHealth'
+
+const INSIGHTS_FILE = generated as unknown as InsightsFile
 
 // ── Normalized vocabulary (the contract the UI renders) ─────────────────────
 
@@ -90,6 +97,131 @@ export interface TodayRead {
   bullets: string[]
 }
 
+// ── Lens layer (the internal Insights analysis lenses) ──────────────────────
+
+export type LensKey =
+  | 'overviewPulse'
+  | 'underwritingProfitability'
+  | 'investmentPerformance'
+  | 'growthLevers'
+  | 'expenseManagement'
+  | 'competitivePositioning'
+  | 'forwardLookingStrategy'
+  | 'riskRegulatoryChanges'
+
+/** A single source-backed metric read shown in a lens's metric strip. */
+export interface MetricRead {
+  label: string
+  value: string // formatted; null metrics are omitted, never shown as a fake 0
+  period: string
+  tone: SignalImpact
+  note?: string
+  sourceName: string
+  sourceUrl: string
+}
+
+export interface SourceRef {
+  name: string
+  url: string
+}
+
+/** The normalized brief for one analysis lens (buy-side framing). */
+export interface InsightLens {
+  key: LensKey
+  title: string
+  purpose: string
+  oneLineRead: string
+  stance: SignalImpact
+  confidence: Confidence
+  keyInsights: string[]
+  missedSignals: string[]
+  investorImplication: string
+  watchNext: string[]
+  sourceRefs: SourceRef[]
+  /** ids of deep-dive insights (insights.generated.json) rendered as flip cards. */
+  insightIds: string[]
+  metrics: MetricRead[]
+  relatedSignals: PulseSignal[]
+  /** False → the lens shows an honest "not enough verified data yet" state. */
+  available: boolean
+}
+
+// Display order + copy for the lens chips (Overview first, then the deep lenses).
+export const LENS_META: Record<LensKey, { title: string; purpose: string }> = {
+  overviewPulse: { title: 'Overview Pulse', purpose: 'What changed, what matters, and what needs attention today.' },
+  underwritingProfitability: { title: 'Underwriting Profitability', purpose: 'Is the premium growth profitable, or bought at a loss?' },
+  growthLevers: { title: 'Growth Levers', purpose: 'Where premium growth actually comes from — and is it durable.' },
+  competitivePositioning: { title: 'Competitive Positioning', purpose: 'How the company stands against its peers.' },
+  expenseManagement: { title: 'Expense Management', purpose: 'Cost discipline and whether scale is improving margins.' },
+  investmentPerformance: { title: 'Investment Performance', purpose: 'How the float is invested, and how much profit leans on it.' },
+  forwardLookingStrategy: { title: 'Forward-Looking Strategy', purpose: 'Management plan, execution credibility and future catalysts.' },
+  riskRegulatoryChanges: { title: 'Risk & Regulatory Changes', purpose: 'Regulation, sector risk and the company-specific exposure.' },
+}
+export const LENS_ORDER: LensKey[] = [
+  'overviewPulse',
+  'underwritingProfitability',
+  'growthLevers',
+  'competitivePositioning',
+  'expenseManagement',
+  'investmentPerformance',
+  'forwardLookingStrategy',
+  'riskRegulatoryChanges',
+]
+/** The deep analytical lenses (everything except the Overview digest). */
+export const ANALYTICAL_LENSES: LensKey[] = LENS_ORDER.filter((k) => k !== 'overviewPulse')
+
+// ── No-loss migration map ───────────────────────────────────────────────────
+// Every existing deep-dive insight is routed to exactly one lens. An explicit
+// per-id map handles cases where same-category insights belong in different
+// lenses (e.g. the two "quality" insights split between Underwriting and Growth);
+// a category fallback guarantees any FUTURE insight still lands somewhere. No
+// insight is ever dropped — it is reassigned.
+const LENS_BY_INSIGHT_ID: Record<string, LensKey> = {
+  'care-solvency-runway': 'riskRegulatoryChanges',
+  'segment-underwriting-loss': 'underwritingProfitability',
+  'niva-pb-roe-dislocation': 'competitivePositioning',
+  'niva-retail-mix-drift': 'growthLevers',
+  'aditya-growth-quality': 'growthLevers',
+  'manipal-cr-outlier': 'underwritingProfitability',
+  'niva-credibility-thin-coverage': 'forwardLookingStrategy',
+}
+const LENS_BY_CATEGORY: Record<InsightCategory, LensKey> = {
+  growth: 'growthLevers',
+  quality: 'underwritingProfitability',
+  earnings_quality: 'underwritingProfitability',
+  valuation: 'competitivePositioning',
+  capital: 'riskRegulatoryChanges',
+  management: 'forwardLookingStrategy',
+  regulatory: 'riskRegulatoryChanges',
+  market_structure: 'competitivePositioning',
+}
+/** The lens a deep-dive insight belongs to (id override, else category). */
+export function lensForInsight(ins: Insight): LensKey {
+  return LENS_BY_INSIGHT_ID[ins.id] ?? LENS_BY_CATEGORY[ins.category]
+}
+
+// Curated-market-intelligence signals also feed the relevant deep lens.
+const SIGNAL_LENS: Record<SignalCategory, LensKey> = {
+  'Analyst Action': 'competitivePositioning',
+  'Sector Catalyst': 'riskRegulatoryChanges',
+  Regulatory: 'riskRegulatoryChanges',
+  Management: 'forwardLookingStrategy',
+  Filing: 'forwardLookingStrategy',
+  'Data Movement': 'growthLevers',
+}
+
+// Deterministic category → stance (mirrors the flip card's tone semantics).
+const CATEGORY_STANCE: Record<InsightCategory, SignalImpact> = {
+  capital: 'Risk',
+  earnings_quality: 'Risk',
+  valuation: 'Watch',
+  growth: 'Positive',
+  quality: 'Watch',
+  management: 'Neutral',
+  regulatory: 'Watch',
+  market_structure: 'Neutral',
+}
+
 export interface InvestorPulse {
   company: string
   companyId: string
@@ -108,6 +240,8 @@ export interface InvestorPulse {
   latestOpportunity: PulseSignal | null
   movingFast: PulseSignal[] // items within the last 7 days, newest first
   counts: { positive: number; risk: number; watch: number; neutral: number; sourced: number; total: number }
+  /** The deep analysis lenses, keyed by lens id (Overview excluded — it is the digest). */
+  lenses: Record<Exclude<LensKey, 'overviewPulse'>, InsightLens>
   /** True when there is genuinely nothing usable for the selected company. */
   isEmpty: boolean
 }
@@ -427,6 +561,293 @@ function impactRank(i: SignalImpact): number {
   return { Risk: 0, Positive: 1, Watch: 2, Neutral: 3 }[i]
 }
 
+// ── Lens builders — real, source-backed metric reads + synthesized briefs ────
+//
+//  Metric reads come straight from the wired snapshots (sahi-peer-comparison FY25
+//  for the headline ratios with their provenance, the insurer-annual-snapshot for
+//  the series fields). Null fields are simply OMITTED — never shown as a fake 0.
+//  The lens "brief" fields (oneLineRead, missed signals, implication, watch-next)
+//  are synthesized DETERMINISTICALLY from the curated insights already mapped into
+//  the lens — no model prose, no fabrication.
+
+interface Provenance {
+  source_name?: string | null
+  source_url?: string | null
+  confidence?: string | null
+}
+interface PeerRow {
+  company_id: string
+  fiscal_year?: string
+  gwp?: number | null
+  growth?: number | null
+  health_market_share?: number | null
+  retail_health_market_share?: number | null
+  pat?: number | null
+  combined_ratio?: number | null
+  claims_ratio?: number | null
+  expense_ratio?: number | null
+  solvency_ratio?: number | null
+  distribution_concentration?: number | null
+  provenance?: Provenance
+}
+interface AnnualRow {
+  company_id: string
+  fiscal_year: string
+  gwp?: number | null
+  nwp?: number | null
+  nep?: number | null
+  combined_ratio?: number | null
+  claims_ratio?: number | null
+  expense_ratio?: number | null
+  commission_ratio?: number | null
+  solvency_ratio?: number | null
+  roe?: number | null
+  market_share?: number | null
+  retail_mix?: number | null
+  group_mix?: number | null
+  growth_yoy?: number | null
+  market_share_change?: number | null
+  provenance?: Provenance
+}
+
+const round1 = (v: number) => Math.round(v * 10) / 10
+const fmtPct = (v: number) => `${round1(v)}%`
+const fmtX = (v: number) => `${Math.round(v * 100) / 100}x`
+const fmtCr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
+// Provenance source_name fields can be long prose ("Niva Bupa FY24-25 Annual
+// Report — Schedule 1 …"). Keep just the clean head for a compact source chip.
+function shortenSource(name?: string | null): string {
+  if (!name) return 'Dashboard snapshot'
+  const head = name.split(/\s[—–-]\s|\s*\(/)[0].trim()
+  return head.length > 64 ? `${head.slice(0, 61)}…` : head || 'Dashboard snapshot'
+}
+const refOf = (p?: Provenance): SourceRef => ({ name: shortenSource(p?.source_name), url: p?.source_url || '' })
+function confFromProv(p?: Provenance): Confidence {
+  const c = (p?.confidence ?? '').toLowerCase()
+  return c === 'high' ? 'High' : c === 'medium' ? 'Medium' : 'Low'
+}
+function firstSentence(s: string): string {
+  const m = s.match(/^.*?[.!?](\s|$)/)
+  return (m ? m[0] : s).trim()
+}
+function dedupeRefs(refs: SourceRef[]): SourceRef[] {
+  const seen = new Set<string>()
+  const out: SourceRef[] = []
+  for (const r of refs) {
+    const k = `${r.name}|${r.url}`
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(r)
+  }
+  return out
+}
+
+const combinedTone = (v: number): SignalImpact => (v < 100 ? 'Positive' : v <= 104 ? 'Watch' : 'Risk')
+const expenseTone = (v: number): SignalImpact => (v < 33 ? 'Positive' : v <= 40 ? 'Watch' : 'Risk')
+const growthTone = (v: number): SignalImpact => (v >= 20 ? 'Positive' : v >= 8 ? 'Neutral' : 'Watch')
+const solvencyTone = (v: number): SignalImpact => (v >= 1.8 ? 'Positive' : v >= 1.5 ? 'Watch' : 'Risk')
+
+/** First annual row (newest fiscal year) carrying a non-null value for `field`. */
+function annualPick(rows: AnnualRow[], field: keyof AnnualRow): { value: number; period: string; src: SourceRef } | null {
+  for (const r of rows) {
+    const v = r[field]
+    if (typeof v === 'number') return { value: v, period: r.fiscal_year, src: refOf(r.provenance) }
+  }
+  return null
+}
+
+function metricsForLens(
+  key: Exclude<LensKey, 'overviewPulse'>,
+  companyId: string,
+  peerRow: PeerRow | undefined,
+  annualRows: AnnualRow[],
+  peerAll: PeerRow[],
+): MetricRead[] {
+  const out: MetricRead[] = []
+  const peerSrc = refOf(peerRow?.provenance)
+  const M = (label: string, value: string, period: string, tone: SignalImpact, src: SourceRef, note?: string): MetricRead => ({
+    label,
+    value,
+    period,
+    tone,
+    note,
+    sourceName: src.name,
+    sourceUrl: src.url,
+  })
+
+  if (key === 'underwritingProfitability') {
+    const cr = peerRow?.combined_ratio != null ? { value: peerRow.combined_ratio, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'combined_ratio')
+    if (cr) out.push(M('Combined ratio', fmtPct(cr.value), cr.period, combinedTone(cr.value), cr.src, cr.value > 100 ? 'Above the 100% break-even' : 'Below the 100% break-even'))
+    const claims = peerRow?.claims_ratio != null ? { value: peerRow.claims_ratio, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'claims_ratio')
+    if (claims) out.push(M('Claims ratio', fmtPct(claims.value), claims.period, 'Neutral', claims.src, 'Premium paid back as claims'))
+    const exp = peerRow?.expense_ratio != null ? { value: peerRow.expense_ratio, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'expense_ratio')
+    if (exp) out.push(M('Expense ratio', fmtPct(exp.value), exp.period, expenseTone(exp.value), exp.src))
+  }
+
+  if (key === 'expenseManagement') {
+    const exp = peerRow?.expense_ratio != null ? { value: peerRow.expense_ratio, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'expense_ratio')
+    if (exp) out.push(M('Expense ratio', fmtPct(exp.value), exp.period, expenseTone(exp.value), exp.src))
+    const comm = annualPick(annualRows, 'commission_ratio')
+    if (comm) out.push(M('Commission ratio', fmtPct(comm.value), comm.period, 'Neutral', comm.src, 'Pay-out to distribution'))
+  }
+
+  if (key === 'growthLevers') {
+    const gwp = annualPick(annualRows, 'gwp')
+    if (gwp) out.push(M('Gross written premium', fmtCr(gwp.value), gwp.period, 'Neutral', gwp.src))
+    const growth = peerRow?.growth != null ? { value: peerRow.growth, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'growth_yoy')
+    if (growth) out.push(M('GWP growth (YoY)', fmtPct(growth.value), growth.period, growthTone(growth.value), growth.src))
+    const retail = annualPick(annualRows, 'retail_mix')
+    const group = annualPick(annualRows, 'group_mix')
+    if (retail) out.push(M('Retail mix', fmtPct(retail.value), retail.period, 'Neutral', retail.src, group ? `Group ${fmtPct(group.value)}` : 'Share of GWP from retail'))
+    const ms = peerRow?.health_market_share != null ? { value: peerRow.health_market_share, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'market_share')
+    if (ms) out.push(M('Health market share', fmtPct(ms.value), ms.period, 'Neutral', ms.src))
+  }
+
+  if (key === 'competitivePositioning') {
+    if (peerRow?.health_market_share != null) {
+      const ranked = peerAll.filter((r) => r.health_market_share != null).sort((a, b) => (b.health_market_share ?? 0) - (a.health_market_share ?? 0))
+      const rank = ranked.findIndex((r) => r.company_id === companyId) + 1
+      out.push(M('Health market share', fmtPct(peerRow.health_market_share), peerRow.fiscal_year ?? 'FY25', 'Neutral', peerSrc, rank ? `#${rank} of ${ranked.length} SAHIs` : undefined))
+    }
+    if (peerRow?.growth != null) {
+      const growths = peerAll.map((r) => r.growth).filter((g): g is number => typeof g === 'number').sort((a, b) => a - b)
+      const median = growths.length ? growths[Math.floor(growths.length / 2)] : null
+      out.push(M('GWP growth (YoY)', fmtPct(peerRow.growth), peerRow.fiscal_year ?? 'FY25', growthTone(peerRow.growth), peerSrc, median != null ? `Peer median ${fmtPct(median)}` : undefined))
+    }
+    if (peerRow?.combined_ratio != null) out.push(M('Combined ratio', fmtPct(peerRow.combined_ratio), peerRow.fiscal_year ?? 'FY25', combinedTone(peerRow.combined_ratio), peerSrc))
+  }
+
+  if (key === 'riskRegulatoryChanges') {
+    const solv = peerRow?.solvency_ratio != null ? { value: peerRow.solvency_ratio, period: peerRow.fiscal_year ?? 'FY25', src: peerSrc } : annualPick(annualRows, 'solvency_ratio')
+    if (solv) out.push(M('Solvency ratio', fmtX(solv.value), solv.period, solvencyTone(solv.value), solv.src, 'Regulatory floor 1.5x'))
+  }
+
+  if (key === 'forwardLookingStrategy') {
+    const promises = getPromises(companyId)
+    if (promises.length) {
+      const delivered = promises.filter((p) => p.status === 'Delivered').length
+      out.push(
+        M(
+          'Guidance delivered',
+          `${delivered}/${promises.length}`,
+          'FY25',
+          delivered * 2 >= promises.length ? 'Positive' : 'Watch',
+          { name: promises[0].source ?? 'Earnings-call guidance', url: promises[0].sourceUrl ?? '' },
+          'Management targets met vs the audited actual',
+        ),
+      )
+    }
+  }
+
+  // investmentPerformance: no investment-income / yield / asset-mix data is wired
+  // anywhere yet, so it returns no metrics → the lens renders an honest empty state.
+  return out
+}
+
+// Stance + implication when a lens is metric-only (no curated insight to lead it).
+function metricStance(metrics: MetricRead[]): SignalImpact {
+  if (metrics.some((m) => m.tone === 'Risk')) return 'Risk'
+  if (metrics.some((m) => m.tone === 'Watch')) return 'Watch'
+  if (metrics.some((m) => m.tone === 'Positive')) return 'Positive'
+  return 'Neutral'
+}
+function metricImplication(key: Exclude<LensKey, 'overviewPulse'>, metrics: MetricRead[]): string {
+  const cr = metrics.find((m) => m.label === 'Combined ratio')
+  const exp = metrics.find((m) => m.label === 'Expense ratio')
+  const solv = metrics.find((m) => m.label === 'Solvency ratio')
+  if (key === 'underwritingProfitability' && cr) {
+    return cr.tone === 'Risk' || cr.value.startsWith('1')
+      ? 'Premium is still written at an underwriting loss — near-term profit leans on investment income and scale, not the core book.'
+      : 'Underwriting is at or near breakeven, so margin gains can come from the core book rather than markets.'
+  }
+  if (key === 'expenseManagement' && exp) {
+    return exp.tone === 'Risk'
+      ? 'The cost base is heavy relative to premium — operating leverage has to show up as the book scales, or margins stay pressured.'
+      : 'Cost discipline looks reasonable; watch whether scale keeps pulling the expense ratio down.'
+  }
+  if (key === 'riskRegulatoryChanges' && solv) {
+    return solv.tone === 'Risk' || solv.tone === 'Watch'
+      ? 'Solvency sits close enough to the floor that a capital raise or slower growth is a live possibility.'
+      : 'Capital looks comfortably above the regulatory floor, leaving room to fund growth.'
+  }
+  return ''
+}
+
+function buildLens(
+  key: Exclude<LensKey, 'overviewPulse'>,
+  companyId: string,
+  allInsights: Insight[],
+  signals: PulseSignal[],
+  peerRow: PeerRow | undefined,
+  annualRows: AnnualRow[],
+  peerAll: PeerRow[],
+): InsightLens {
+  const meta = LENS_META[key]
+  const lensInsights = allInsights
+    .filter((i) => lensForInsight(i) === key && i.affectedInsurers.includes(companyId))
+    .sort((a, b) => a.rank - b.rank)
+  const metrics = metricsForLens(key, companyId, peerRow, annualRows, peerAll)
+  const relatedSignals = signals.filter((s) => SIGNAL_LENS[s.category] === key)
+
+  const keyInsights: string[] = lensInsights.map((i) => i.shortHeadline)
+  if (keyInsights.length < 2) for (const m of metrics.slice(0, 2)) keyInsights.push(`${m.label}: ${m.value} (${m.period})`)
+
+  const missedSignals = lensInsights.map((i) => i.whatConsensusMisses).filter(Boolean).slice(0, 3)
+
+  const watchRaw: string[] = []
+  for (const ins of lensInsights) {
+    if (ins.watch?.items?.length) for (const w of ins.watch.items) watchRaw.push(`${w.trigger} — ${w.condition}`)
+    else if (ins.falsifier) watchRaw.push(`Thesis flips if: ${ins.falsifier}`)
+  }
+  const watchNext = [...new Set(watchRaw)].slice(0, 4)
+
+  const investorImplication = lensInsights[0]?.application?.framing || lensInsights[0]?.thesis || metricImplication(key, metrics)
+  const stance = lensInsights[0] ? CATEGORY_STANCE[lensInsights[0].category] : metricStance(metrics)
+  const confidence: Confidence = lensInsights.length ? 'High' : metrics.length ? confFromProv(peerRow?.provenance ?? annualRows[0]?.provenance) : 'Low'
+  const oneLineRead = lensInsights[0]
+    ? firstSentence(lensInsights[0].summary)
+    : metrics[0]
+      ? `${metrics[0].label} at ${metrics[0].value} (${metrics[0].period}).`
+      : meta.purpose
+
+  const sourceRefs = dedupeRefs([
+    ...metrics.map((m) => ({ name: m.sourceName, url: m.sourceUrl })),
+    ...(lensInsights.length ? [{ name: `${lensInsights.length} curated source-backed insight${lensInsights.length === 1 ? '' : 's'}`, url: '' }] : []),
+  ])
+
+  return {
+    key,
+    title: meta.title,
+    purpose: meta.purpose,
+    oneLineRead,
+    stance,
+    confidence,
+    keyInsights: keyInsights.slice(0, 5),
+    missedSignals,
+    investorImplication,
+    watchNext,
+    sourceRefs,
+    insightIds: lensInsights.map((i) => i.id),
+    metrics,
+    relatedSignals,
+    available: lensInsights.length > 0 || metrics.length > 0 || relatedSignals.length > 0,
+  }
+}
+
+function buildLenses(companyId: string, signals: PulseSignal[]): Record<Exclude<LensKey, 'overviewPulse'>, InsightLens> {
+  const allInsights = INSIGHTS_FILE.insights
+  const peerAll = (peerSnapshot.data as PeerRow[]) ?? []
+  const peerRow = peerAll.find((r) => r.company_id === companyId)
+  const annualRows = ((annualSnapshot.data as AnnualRow[]) ?? [])
+    .filter((r) => r.company_id === companyId)
+    .sort((a, b) => (a.fiscal_year < b.fiscal_year ? 1 : a.fiscal_year > b.fiscal_year ? -1 : 0))
+  const out = {} as Record<Exclude<LensKey, 'overviewPulse'>, InsightLens>
+  for (const key of ANALYTICAL_LENSES as Exclude<LensKey, 'overviewPulse'>[]) {
+    out[key] = buildLens(key, companyId, allInsights, signals, peerRow, annualRows, peerAll)
+  }
+  return out
+}
+
 // ── public builder ──────────────────────────────────────────────────────────
 
 /**
@@ -510,6 +931,7 @@ export function buildInvestorPulse(companyId: string, companyName: string): Inve
     latestOpportunity,
     movingFast,
     counts,
+    lenses: buildLenses(companyId, signals),
     isEmpty: signals.length === 0 && managementEvents.length === 0,
   }
 }
