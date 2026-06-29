@@ -138,6 +138,7 @@ const RETAIL_NAMED_IDS = [
 
 const norm = (v: unknown): string => String(v ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
 const clean = (v: unknown): string => String(v ?? '').replace(/\s+/g, ' ').trim()
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
 const r2 = (v: number): number => Math.round(v * 100) / 100
 // The report prints ₹ Cr to 2dp; workbook cells carry float dust beyond that.
 const num2 = (v: unknown): number | null => {
@@ -398,7 +399,24 @@ async function resolveSources(warnings: string[]): Promise<SourceFile[]> {
 
   // 3. Live discovery + download (needs a non-datacenter egress or the proxy).
   if (!isOfflineMode()) {
-    const links = await discoverListing(warnings)
+    // gicouncil.in 403s datacenter IPs, so a single discovery pass can come back
+    // empty and silently leave us on stale staged files for a whole cycle. Keep
+    // retrying the live listing a few times (backoff, inside the time budget) so
+    // a transient block doesn't cost a refresh — the run fetches until it can
+    // actually read the listing. (Neha, 2026-06-29: "keep fetching till it gets
+    // the latest data.")
+    const LIVE_BUDGET_MS = Math.max(60_000, Number(process.env.GIC_TIME_BUDGET_MS) || 8 * 60_000)
+    const deadline = Date.now() + LIVE_BUDGET_MS
+    const MAX_LISTING_ATTEMPTS = 4
+    let links: Array<{ url: string; text: string }> = []
+    for (let attempt = 1; attempt <= MAX_LISTING_ATTEMPTS; attempt++) {
+      links = await discoverListing(warnings)
+      if (links.length > 0 || Date.now() >= deadline) break
+      const backoff = Math.min(20_000, 5_000 * 2 ** (attempt - 1)) // 5s, 10s, 20s
+      if (Date.now() + backoff >= deadline) break
+      warnings.push(`listing unreadable (attempt ${attempt}/${MAX_LISTING_ATTEMPTS}) — retrying in ${backoff / 1000}s`)
+      await sleep(backoff)
+    }
     const manifestPath = resolve(stagedDir, 'manifest.json')
     const manifest: { files: Record<string, ManifestEntry> } = await readFile(manifestPath, 'utf8')
       .then((t) => JSON.parse(t))
