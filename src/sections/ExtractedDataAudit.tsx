@@ -3,7 +3,6 @@ import { FileSpreadsheet } from 'lucide-react'
 import { buildAudit } from '@/lib/extractedDataAudit'
 import { AuditSpreadsheet } from '@/sections/AuditSpreadsheet'
 import { ExcelVerifierLauncher } from '@/components/ExcelVerifierLauncher'
-import { RetailMixAuditCard } from '@/components/RetailMixAuditCard'
 import { useVerify } from '@/state/verifyState'
 import type { AuditFocus } from '@/insights/sourceMap'
 
@@ -28,10 +27,10 @@ function AuditBody({ focus }: { focus?: AuditFocus | null }) {
     <div className="space-y-3">
       <ExcelVerifierLauncher />
 
-      {/* Derived-metric audit: Retail Mix workings + cross-surface validation,
-          so the chart and peer grid can never silently disagree. */}
-      <RetailMixAuditCard />
-
+      {/* The Retail Mix cross-surface validation (chart vs peer grid can never
+          silently disagree) still runs as a guard via `npm run check:retail-mix`
+          in CI — the in-page workings card was retired as internal QA, not
+          viewer content. See src/lib/retailMixAudit.ts. */}
       <AuditSpreadsheet model={model} focus={focus} />
 
       {/* Floating return — once a file is verified, jump back to the verifier

@@ -1,0 +1,55 @@
+name: check-retail-mix
+
+# Keeps the Retail Mix number identical everywhere it appears (the Product Mix
+# chart and the Peer scorecard read one derivation). The in-page audit card was
+# retired as internal QA, so this job is now the guard: it fails if the chart and
+# the grid would ever show different Retail Mix values, if a retail/group split
+# doesn't sum to 100%, or if a company's GI-Council health components don't
+# reconstruct the printed total.
+#
+# Runs on any change to the underlying data or the derivation/consumer code.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/data/snapshots/**'
+      - 'src/lib/retailMixAudit.ts'
+      - 'src/lib/dataLayer.ts'
+      - 'scripts/check-retail-mix.ts'
+  pull_request:
+    paths:
+      - 'src/data/snapshots/**'
+      - 'src/lib/retailMixAudit.ts'
+      - 'src/lib/dataLayer.ts'
+      - 'scripts/check-retail-mix.ts'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-retail-mix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  retail-mix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Retail Mix agrees on every surface
+        run: npm run check:retail-mix
