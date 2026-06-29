@@ -17,6 +17,7 @@
     "ingest:events": "CADENCE=event tsx scripts/ingest/ingest-all.ts",
     "ingest:filings": "tsx scripts/ingest/fetch-company-filings.ts",
     "ingest:gic-segment-annual": "tsx scripts/ingest/run-gic-segment-annual.ts",
+    "validate:basis": "tsx scripts/validate-basis-vs-source.ts",
     "ingest:distribution": "tsx scripts/ingest/run-distribution.ts",
     "ingest:audit": "tsx scripts/ingest/audit-fill.ts fill",
     "ingest:sectoral-news": "tsx scripts/ingest/sahi-sectoral-news-agent.ts",

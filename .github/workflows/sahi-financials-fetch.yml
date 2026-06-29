@@ -130,3 +130,11 @@ jobs:
             echo "publish retry $i"; sleep 5
           done
           echo "ERROR: publish failed after retries"; exit 1
+
+      # Integrity gate: the dual-basis profitability module must still agree with
+      # the freshly-rebuilt Data-Audit source-of-truth. Fails ONLY on a gross
+      # disagreement (a real curated error); rounding, basis-definitional gaps
+      # (expense-ratio vs EoM) and not-yet-machine-extracted cells are reported,
+      # not failed. (Profitability IFRS/IGAAP validation, Neha 2026-06-29.)
+      - name: Validate profitability basis ⇄ source-of-truth
+        run: npm run validate:basis
