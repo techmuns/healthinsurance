@@ -4,6 +4,8 @@ import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
 import { MethodologyPanel } from '@/components/MethodologyPanel'
+import { getPromises, type PromiseStatus } from '@/lib/promiseTracker'
+import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
 import { useFilters } from '@/state/filters'
 import { resolveSource, freshnessOf, latestPeriodAcross, type Freshness, type NavTarget, type SourceLocation } from '@/insights/sourceMap'
 import { exportInsightsPptx } from '@/lib/pptExport'
@@ -92,6 +94,56 @@ function usePrefersReducedMotion(): boolean {
 // methodology panel on the BACK (a "View workings" pill signals the affordance;
 // a drag-to-select never flips). LEFT is the written read: category badge, the
 // editorial title, the overlooked angle + short thesis, a hero metric tile, then
+// Per-target guidance breakdown — the end-to-end "which specific targets were
+// met and which were missed" behind a "X of Y delivered" insight. Real and
+// source-backed: reads the same getPromises() the Promise Tracker uses, so the
+// aggregate never disagrees with the line items. Delivered first, then the ones
+// still open, each with its target, current actual and a link to the guidance.
+const GUIDE_STATUS: Record<PromiseStatus, { label: string; mark: string; fg: string; bg: string; ring: string }> = {
+  Delivered:        { label: 'Met',            mark: '✓', fg: '#0E6F6D', bg: 'rgba(14,111,109,0.10)',  ring: 'rgba(14,111,109,0.22)' },
+  'On Track':       { label: 'On track',       mark: '→', fg: '#3D5F9F', bg: 'rgba(61,95,159,0.10)',   ring: 'rgba(61,95,159,0.22)' },
+  Delayed:          { label: 'Behind',         mark: '!', fg: '#9C7430', bg: 'rgba(156,116,48,0.12)',  ring: 'rgba(156,116,48,0.26)' },
+  Missed:           { label: 'Missed',         mark: '✗', fg: '#A8443B', bg: 'rgba(168,68,59,0.10)',   ring: 'rgba(168,68,59,0.22)' },
+  'Not Measurable': { label: 'Not measurable', mark: '–', fg: '#64748B', bg: 'rgba(100,116,139,0.10)', ring: 'rgba(100,116,139,0.22)' },
+}
+const GUIDE_ORDER: PromiseStatus[] = ['Delivered', 'On Track', 'Delayed', 'Missed', 'Not Measurable']
+
+function GuidanceBreakdown({ companyId }: { companyId: string }) {
+  const items = getPromises(companyId)
+  if (!items.length) return null
+  const delivered = items.filter((p) => p.status === 'Delivered').length
+  const sorted = [...items].sort((a, b) => GUIDE_ORDER.indexOf(a.status) - GUIDE_ORDER.indexOf(b.status))
+  return (
+    <div className="flex h-full flex-col">
+      <p className="text-[11.5px] leading-snug text-ink-secondary">
+        <span className="font-bold text-navy-deep">{delivered} of {items.length}</span> guidance targets delivered — each line is management&apos;s own target vs the latest audited actual.
+      </p>
+      <ul className="mt-2.5 space-y-1.5">
+        {sorted.map((p, i) => {
+          const s = GUIDE_STATUS[p.status]
+          return (
+            <li key={`${p.metric}-${i}`} className="flex items-start gap-2 rounded-lg border bg-card px-2.5 py-1.5" style={{ borderColor: s.ring }}>
+              <span className="mt-px grid h-4 w-4 shrink-0 place-items-center rounded-full text-[10px] font-bold" style={{ color: s.fg, background: s.bg }}>{s.mark}</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[12px] font-semibold text-navy-deep">{p.metric}</p>
+                <p className="text-[10.5px] tabular-nums leading-snug text-ink-secondary">
+                  Target {p.target} · now {p.current}{p.actualFy ? ` (${p.actualFy})` : ''}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide" style={{ color: s.fg, background: s.bg }}>{s.label}</span>
+            </li>
+          )
+        })}
+      </ul>
+      {isLinkable(items[0].sourceUrl) && (
+        <p className="mt-2 text-[10px] leading-snug text-ink-secondary">
+          Source: <a href={sourceHref(items[0].sourceUrl)!} target="_blank" rel="noreferrer" title={classifySource(items[0].sourceUrl).hint} className="text-navy-primary hover:underline">{items[0].source}</a> · targets are management&apos;s stated guidance; actuals read live from the audited annual disclosures.
+        </p>
+      )}
+    </div>
+  )
+}
+
 // conviction / falsifier / source. RIGHT is the visual evidence: one live chart.
 function InsightCard({ ins, hero = false, source, freshness, onGoToSource, initialFlipped = false }: { ins: Insight; hero?: boolean; source: SourceLocation; freshness: Freshness; onGoToSource: () => void; initialFlipped?: boolean }) {
   const cat = CATCH[ins.category]
@@ -101,6 +153,9 @@ function InsightCard({ ins, hero = false, source, freshness, onGoToSource, initi
   const focal = ins.affectedInsurers.length === 1 ? ins.affectedInsurers[0] : undefined
   // The one number that makes the insight concrete — the proof under the claim.
   const stat = ins.evidence.find((e) => e.value != null) ?? ins.evidence[0]
+  // A "X of Y guidance delivered" insight → show the per-target met/missed
+  // breakdown as its visual evidence (this card carries no chart otherwise).
+  const guidanceCo = ins.evidence.find((e) => /guidance delivered/i.test(e.metric))?.insurer ?? null
   // The hero number leans gold when it spotlights one company, else its tone colour.
   const statColor = focal && stat && stat.insurer === focal ? GOLD : tone.fg
 
@@ -259,9 +314,10 @@ function InsightCard({ ins, hero = false, source, freshness, onGoToSource, initi
                   <BarChart3 className="h-3.5 w-3.5 text-[#E4CE93]" strokeWidth={2.2} />
                   <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/90">Visual Evidence</span>
                 </div>
-                {/* chart body — grows to fill, so the card bottom-aligns with the memo */}
+                {/* chart body — grows to fill, so the card bottom-aligns with the memo.
+                    Guidance insights show the per-target met/missed breakdown here. */}
                 <div className="min-h-0 flex-1 p-3.5">
-                  <InsightChart spec={ins.chart} focal={focal} bare fill />
+                  {guidanceCo ? <GuidanceBreakdown companyId={guidanceCo} /> : <InsightChart spec={ins.chart} focal={focal} bare fill />}
                 </div>
                 {/* key takeaway strip — the insight's own "what consensus misses", verbatim */}
                 <div className="border-t border-soft-border bg-ice/60 px-4 py-2.5">

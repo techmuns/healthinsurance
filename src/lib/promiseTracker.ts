@@ -93,13 +93,27 @@ const PROMISES_BY_COMPANY: Record<string, PromiseDef[]> = {
 }
 
 const fyNum = (fy: string) => Number(String(fy).replace(/^FY/, '')) || 0
-function latestAnnualRow(companyId: string): Record<string, unknown> | null {
-  const rows = (annualSnapshot.data as Array<Record<string, unknown>>)
+const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+
+/** Annual rows for a company, newest fiscal year first. */
+function annualRowsDesc(companyId: string): Array<Record<string, unknown>> {
+  return (annualSnapshot.data as Array<Record<string, unknown>>)
     .filter((r) => r.company_id === companyId)
     .sort((a, b) => fyNum(String(b.fiscal_year)) - fyNum(String(a.fiscal_year)))
-  return rows[0] ?? null
 }
-const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null)
+
+/** The latest audited actual for a metric — read from the newest annual row that
+ *  actually reports it, NOT just rows[0]. This matters since premium-only rows
+ *  (e.g. a provisional FY26 GWP row) carry null ROE / combined ratio / solvency,
+ *  which must fall back to the latest year that reported them — never read as a
+ *  "Data pending" that would wrongly drop a delivered promise. */
+function latestActual(rows: Array<Record<string, unknown>>, key: AnnualKey): { value: number; fy: string } | null {
+  for (const r of rows) {
+    const v = num(r[key])
+    if (v != null) return { value: v, fy: String(r.fiscal_year) }
+  }
+  return null
+}
 const fmt = (v: number, unit: '%' | 'x') => (unit === 'x' ? `${v.toFixed(2)}x` : `${v.toFixed(1)}%`)
 
 function statusFor(def: PromiseDef, actual: number | null): PromiseStatus {
@@ -118,16 +132,16 @@ function statusFor(def: PromiseDef, actual: number | null): PromiseStatus {
 export function getPromises(companyId: string): PromiseItem[] {
   const defs = PROMISES_BY_COMPANY[companyId]
   if (!defs) return []
-  const row = latestAnnualRow(companyId)
-  const fy = row ? String(row.fiscal_year) : null
+  const rows = annualRowsDesc(companyId)
   return defs.map((def) => {
     // Retail mix resolves from the GI Council health portfolio (retail ÷ total
     // health premium) — the SAME source/formula as the Product Mix chart and the
-    // peer grid — so the actual never disagrees across surfaces. Other metrics
-    // read the latest audited annual row.
+    // peer grid — so the actual never disagrees across surfaces. Every other
+    // metric resolves to the latest annual row that actually reports it.
     const retailPt = def.metricKey === 'retail_mix' ? latestRetailMixPoint(companyId) : null
-    const actual = def.metricKey === 'retail_mix' ? (retailPt?.retailPct ?? null) : def.metricKey && row ? num(row[def.metricKey]) : null
-    const actualFy = def.metricKey === 'retail_mix' ? (retailPt?.fy ?? null) : fy
+    const hit = def.metricKey && def.metricKey !== 'retail_mix' ? latestActual(rows, def.metricKey) : null
+    const actual = def.metricKey === 'retail_mix' ? (retailPt?.retailPct ?? null) : (hit?.value ?? null)
+    const actualFy = def.metricKey === 'retail_mix' ? (retailPt?.fy ?? null) : (hit?.fy ?? null)
     return {
       company: companyId,
       category: def.category,
