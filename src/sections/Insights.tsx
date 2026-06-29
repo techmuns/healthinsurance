@@ -1,14 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, Lightbulb, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, Presentation, type LucideIcon } from 'lucide-react'
+import { Sparkles, Eye, ShieldAlert, AlertTriangle, Scale, TrendingUp, Gauge, Users, Landmark, Share2, BadgeCheck, ChevronDown, Sigma, BarChart3, CalendarClock, Presentation, type LucideIcon } from 'lucide-react'
 import generated from '@/data/insights.generated.json'
 import type { InsightsFile, Insight, InsightCategory, ProvenanceLayer } from '@/insights/types'
 import { InsightChart } from '@/components/InsightChart'
 import { MethodologyPanel } from '@/components/MethodologyPanel'
 import { getPromises, type PromiseStatus } from '@/lib/promiseTracker'
 import { classifySource, sourceHref, isLinkable } from '@/lib/sourceHealth'
-import { useFilters } from '@/state/filters'
+import { useFilters, useActiveCompany } from '@/state/filters'
 import { resolveSource, freshnessOf, latestPeriodAcross, type Freshness, type NavTarget, type SourceLocation } from '@/insights/sourceMap'
 import { exportInsightsPptx } from '@/lib/pptExport'
+import { InvestorPulse } from '@/components/InvestorPulse'
+import { ManagementEventIntelligence } from '@/components/ManagementEventIntelligence'
 
 const FILE = generated as unknown as InsightsFile
 
@@ -349,12 +351,15 @@ const ALL_CATEGORIES = [...new Set(FILE.insights.map((i) => i.category))]
 // Company filter — a simple, grouped lens (not one row per insurer). Defaults to
 // Niva Bupa so the focal name leads; "Other peers" rolls up the remaining SAHIs.
 const OTHER_PEERS = ['care-health', 'aditya-birla', 'manipalcigna']
-const COMPANY_OPTIONS: [string, string][] = [
-  ['niva-bupa', 'Niva Bupa'],
-  ['star-health', 'Star'],
-  ['others', 'Other peers'],
-  ['all', 'All'],
-]
+// Map the GLOBAL selected-company id → the deep-dive feed's grouped lens, so the
+// one company picker in the Investor Pulse hero drives this feed too (no
+// duplicate company control on the page).
+const groupForId = (id: string): string => {
+  if (id === 'niva-bupa') return 'niva-bupa'
+  if (id === 'star-health') return 'star-health'
+  if (OTHER_PEERS.includes(id)) return 'others'
+  return 'all'
+}
 const matchCompany = (ins: Insight, sel: string): boolean => {
   if (sel === 'all') return true
   if (sel === 'others') return ins.affectedInsurers.some((id) => OTHER_PEERS.includes(id))
@@ -388,14 +393,28 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
   // Captured once at mount: when the reader returns from "Go to source", this is
   // the insight to re-open (flipped), and the filter must be set to show it.
   const reopenRef = useRef(reopenInsightId ?? null)
+  const { highlightedCompany, setHighlightedCompany } = useFilters()
+  const activeCompany = useActiveCompany()
+  // The deep-dive feed follows the GLOBAL company picker (in the Pulse hero); on a
+  // reopen it snaps to the reopened insight's group so that card is visible.
   const [company, setCompany] = useState<string>(() => {
     const id = reopenRef.current
     const ins = id ? FILE.insights.find((i) => i.id === id) : undefined
-    return ins ? groupFor(ins) : 'niva-bupa'
+    return ins ? groupFor(ins) : groupForId(highlightedCompany)
   })
   const [category, setCategory] = useState<string>('all')
   const [conviction, setConviction] = useState<string>('all')
-  const { setHighlightedCompany } = useFilters()
+
+  // Keep the deep-dive feed in sync with the global company picker (skip the very
+  // first run so a reopen-driven initial group isn't immediately overwritten).
+  const firstSync = useRef(true)
+  useEffect(() => {
+    if (firstSync.current) {
+      firstSync.current = false
+      return
+    }
+    setCompany(groupForId(highlightedCompany))
+  }, [highlightedCompany])
 
   // Clear the App-level reopen flag once we've mounted (the matching card opens
   // flipped + scrolls itself); the card's own state persists after this clears.
@@ -436,68 +455,68 @@ export function Insights({ onNavigate, reopenInsightId, onReopened }: { onNaviga
   return (
     // `insights-tab` scopes the editorial Cormorant Garamond serif to this tab's
     // written narrative only; charts, tables, numbers and controls stay sans.
-    <div className="insights-tab space-y-5">
-      {/* Advisor briefing lead — slim, premium hero */}
-      <header className="relative overflow-hidden rounded-2xl border border-soft-border bg-gradient-to-br from-[#F7F5EF] via-card to-[#EAEFF7] px-4 py-3.5 shadow-card sm:px-5 sm:py-4">
-        {/* soft gold glow behind the icon + a thin gold seam at the top edge */}
-        <span aria-hidden className="pointer-events-none absolute -left-8 -top-10 h-36 w-36 rounded-full bg-champagne/20 opacity-70 blur-3xl" />
-        <span aria-hidden className="pointer-events-none absolute right-1/4 top-0 h-px w-1/3 bg-gradient-to-r from-transparent via-[#B68B3A]/30 to-transparent" />
-        <div className="relative flex flex-wrap items-center gap-3.5">
-          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-champagne-soft text-champagne-deep ring-1 ring-[#E7D29B] shadow-[0_4px_14px_rgba(182,139,58,0.22)]"><Lightbulb className="h-5 w-5" /></span>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne-deep">Advisor's read</p>
-            <h1 className="font-editorial text-[24px] font-semibold leading-tight text-navy-deep">What stands out across the dashboard</h1>
-            <p className="mt-1 max-w-2xl font-editorial text-[13.5px] leading-relaxed text-ink-secondary">I went through all five health insurers — every chart, filing and price — and pulled out the insights worth acting on, sharpest first. Each one challenges the obvious read, names the single number behind it, and says what would flip the call.</p>
+    <div className="insights-tab space-y-6">
+      {/* ── Today's Investor Pulse — the hero/value section. Curated daily
+          investor intelligence for the selected company; the Curated Market
+          Intelligence feed and Daily Signal Pulse live inside it. ── */}
+      <InvestorPulse />
+
+      {/* ── Management & Event Intelligence — the shared, reusable events
+          component (full variant). Governance shows only the compact,
+          governance-relevant version of this same component. ── */}
+      <ManagementEventIntelligence variant="full" companyId={activeCompany.id} companyName={activeCompany.shortName} />
+
+      {/* ── Deep-Dive Insights — the analytical advisor memos (the existing
+          insight engine), driven by the same company picker in the Pulse hero. ── */}
+      <div className="border-t border-soft-border pt-5">
+        <div className="mb-3">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="h-3 w-[3px] rounded-full bg-champagne" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-champagne">Deep-Dive Insights</span>
           </div>
-          {/* compact status badge — a live update chip, not a separate card */}
-          <div className="inline-flex shrink-0 items-center gap-2.5 rounded-xl border border-soft-border bg-white/75 px-3 py-1.5 shadow-soft backdrop-blur-sm">
-            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full rounded-full bg-teal/40" /><span className="relative inline-flex h-2 w-2 rounded-full bg-teal" /></span>
-            <div className="text-right leading-tight">
-              <p className="font-display text-[12.5px] text-navy-deep">Updated {GEN_DATE}</p>
-              <p className="text-[9.5px] text-ink-secondary">{FILE.insights.length} insights · {avgReady}% source-backed · data through {PANEL_LATEST}</p>
-            </div>
+          <div className="flex flex-wrap items-baseline gap-2.5">
+            <h2 className="font-display text-[20px] leading-tight text-navy-deep">The analytical reads behind the numbers</h2>
+            <span className="text-[11px] text-ink-secondary">{FILE.insights.length} insights · {avgReady}% source-backed · data through {PANEL_LATEST} · updated {GEN_DATE}</span>
           </div>
         </div>
-      </header>
 
-      {/* Filters — understated premium controls. Company leads (defaults to Niva
-          Bupa); Type and Conviction refine. */}
-      <div className="flex flex-wrap items-center gap-2.5">
-        <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Filter</span>
-        <Filter label="Company" value={company} onChange={setCompany} options={COMPANY_OPTIONS} />
-        <Filter label="Type" value={category} onChange={setCategory} options={[['all', 'All'], ...ALL_CATEGORIES.map((c) => [c, CATCH[c].label] as [string, string])]} />
-        <Filter label="Conviction" value={conviction} onChange={setConviction} options={[['all', 'All'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]} />
-        <span className="ml-1 text-[10.5px] font-medium text-ink-secondary">{filtered.length} insight{filtered.length === 1 ? '' : 's'} shown</span>
-        {/* Export the shown insights as a PowerPoint deck (one slide per insight). */}
-        <button
-          type="button"
-          onClick={() => exportInsightsPptx({ ...FILE, insights: filtered })}
-          disabled={filtered.length === 0}
-          title="Download these insights as a PowerPoint deck — a title slide plus one slide per insight"
-          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[#E2CF9B] bg-champagne-soft px-2.5 py-1 text-[11px] font-semibold text-champagne-deep shadow-soft transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Presentation className="h-3.5 w-3.5" /> Export to PowerPoint
-        </button>
+        {/* Filters — Type & Conviction refine; the company is set by the Pulse picker. */}
+        <div className="mb-4 flex flex-wrap items-center gap-2.5">
+          <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-secondary">Filter</span>
+          <Filter label="Type" value={category} onChange={setCategory} options={[['all', 'All'], ...ALL_CATEGORIES.map((c) => [c, CATCH[c].label] as [string, string])]} />
+          <Filter label="Conviction" value={conviction} onChange={setConviction} options={[['all', 'All'], ['high', 'High'], ['medium', 'Medium'], ['low', 'Low']]} />
+          <span className="ml-1 text-[10.5px] font-medium text-ink-secondary">{filtered.length} insight{filtered.length === 1 ? '' : 's'} shown</span>
+          {/* Export the shown insights as a PowerPoint deck (one slide per insight). */}
+          <button
+            type="button"
+            onClick={() => exportInsightsPptx({ ...FILE, insights: filtered })}
+            disabled={filtered.length === 0}
+            title="Download these insights as a PowerPoint deck — a title slide plus one slide per insight"
+            className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-[#E2CF9B] bg-champagne-soft px-2.5 py-1 text-[11px] font-semibold text-champagne-deep shadow-soft transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Presentation className="h-3.5 w-3.5" /> Export to PowerPoint
+          </button>
+        </div>
+
+        {/* Feed */}
+        {filtered.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12.5px] text-ink-secondary">No deep-dive insight matches this filter for {activeCompany.shortName}.</div>
+        ) : (
+          <div className="space-y-5">
+            {filtered.map((ins, i) => (
+              <InsightCard
+                key={ins.id}
+                ins={ins}
+                hero={i === 0}
+                source={resolveSource(ins)}
+                freshness={freshnessOf(ins, PANEL_LATEST)}
+                onGoToSource={() => goToSource(ins)}
+                initialFlipped={ins.id === reopenRef.current}
+              />
+            ))}
+          </div>
+        )}
       </div>
-
-      {/* Feed */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-soft-border bg-ice/40 px-4 py-10 text-center text-[12.5px] text-ink-secondary">Nothing matches this filter.</div>
-      ) : (
-        <div className="space-y-5">
-          {filtered.map((ins, i) => (
-            <InsightCard
-              key={ins.id}
-              ins={ins}
-              hero={i === 0}
-              source={resolveSource(ins)}
-              freshness={freshnessOf(ins, PANEL_LATEST)}
-              onGoToSource={() => goToSource(ins)}
-              initialFlipped={ins.id === reopenRef.current}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }
