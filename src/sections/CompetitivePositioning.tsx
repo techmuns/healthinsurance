@@ -4,6 +4,8 @@ import { getLatestAnnualFyLabel } from '@/lib/dataLayer'
 import { AnalysisBuilder } from '@/components/AnalysisBuilder'
 import { SectionTabs } from '@/components/SectionTabs'
 import { SourceTag } from '@/components/SourceTag'
+import { AccountingBasisToggle } from '@/components/AccountingBasisControls'
+import { BASIS_TRACKED_COMPANIES, type AccountingBasis } from '@/data/accountingBasis'
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import {
   getScorecard,
@@ -432,11 +434,15 @@ export function CompetitivePositioning() {
   const filters = useFilters()
   const [tab, setTab] = useState<Tab>('Scorecard')
   const [activeKey, setActiveKey] = useState('growth')
+  // Accounting lens for the profit-basis column (Combined Ratio). Default
+  // IGAAP/Statutory keeps the reported view unchanged; IFRS re-points Combined
+  // Ratio to the dual-basis SAHIs' IFRS accounts (others → honest NA).
+  const [basis, setBasis] = useState<AccountingBasis>('igaap')
   // The cell currently driving the side panel. `null` company = follow the focal
   // company; clicking any cell pins that company so its source shows on the right.
   const [activeCompany, setActiveCompany] = useState<string | null>(null)
 
-  const card = useMemo(() => getScorecard({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany }), [filters.peerGroup, filters.highlightedCompany])
+  const card = useMemo(() => getScorecard({ peerGroup: filters.peerGroup, highlightedCompany: filters.highlightedCompany }, basis), [filters.peerGroup, filters.highlightedCompany, basis])
   const focal = card.focal
   const focalRow = card.rows.find((r) => r.focal) ?? card.rows[0]
   // When the focal company changes (peer/company filter), let the panel snap back
@@ -445,7 +451,7 @@ export function CompetitivePositioning() {
   // Resolve the selected cell from the pinned company (or the focal company).
   const selectedRow = (activeCompany && card.rows.find((r) => r.insurer.id === activeCompany)) || focalRow
   const activeCell = selectedRow.cells[activeKey] ?? selectedRow.cells.growth
-  const cellSource = resolveCellSource(selectedRow.insurer.id, activeCell.metric.key)
+  const cellSource = resolveCellSource(selectedRow.insurer.id, activeCell.metric.key, basis)
   const pickCell = (companyId: string, key: string) => { setActiveCompany(companyId); setActiveKey(key) }
   // Competitive Position has no frequency toggle — the scorecard shows each
   // metric's LATEST real value, which can span fiscal years (e.g. provisional
@@ -492,7 +498,21 @@ export function CompetitivePositioning() {
             <span className="font-semibold text-navy-deep">{focal.shortName}</span> · {card.groupLabel} peer group · Multi-metric scorecard
           </p>
         </div>
+        {/* Accounting lens — re-points the Combined Ratio column between
+            IGAAP/Statutory (reported) and IFRS for the SAHIs that file IFRS.
+            Only on the scorecard/table views (the Analysis Builder runs its own
+            metric set). */}
+        {tab !== 'Analysis Builder' && <AccountingBasisToggle value={basis} onChange={setBasis} />}
       </div>
+
+      {basis === 'ifrs' && tab !== 'Analysis Builder' && (
+        <p className="flex items-start gap-1.5 rounded-lg border border-[#CDE7E4] bg-[#F1FAF8] px-3 py-2 text-[11px] leading-snug text-[#0E6F6D]">
+          <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#168E8E]" />
+          <span>
+            <strong className="font-semibold">IFRS lens.</strong> Only the <strong className="font-semibold">Combined Ratio</strong> moves to IFRS, and only for {BASIS_TRACKED_COMPANIES.join(', ')} — the SAHIs that publish IFRS accounts; insurers without an IFRS filing show <em>NA</em> rather than a cross-basis number. ROE has no published IFRS equity, so it stays on the statutory basis. Premium, share, solvency and valuation columns are basis-neutral.
+          </span>
+        </p>
+      )}
 
       {/* Tabs — pill switcher matching the in-page section toggle */}
       <SectionTabs tabs={TABS.map((t) => ({ id: t, label: t }))} active={tab} onSelect={(id) => setTab(id as Tab)} />

@@ -14,6 +14,7 @@
 
 import { getFilteredInsurers, getHighlightedInsurer } from '@/lib/insurers'
 import { lookupProvenance, getAnnualRowProvenance, getValuationProvenance, getMetricRowProvenance, latestRetailMixPoint, RETAIL_MIX_SOURCE } from '@/lib/dataLayer'
+import { hasBasisData, getBasisProfit, ANNUAL_PERIODS, BASIS_SOURCE_LABEL, type AccountingBasis } from '@/data/accountingBasis'
 import type { DashboardFilters, Insurer } from '@/data/types'
 import valuationSnapshot from '@/data/snapshots/valuation-snapshot.json'
 
@@ -140,7 +141,31 @@ export function median(values: number[]): number | null {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
 }
 
-function valueOf(i: Insurer, m: MetricDef): number | null {
+// ── Accounting-basis lens ────────────────────────────────────────────────────
+// Combined Ratio is the only scorecard metric with a published dual-basis
+// representation (IGAAP/Statutory vs IFRS), and only for the SAHIs that file IFRS
+// accounts (Niva Bupa, Star Health, Care Health). Under the IFRS lens that
+// metric reads from the curated dual-basis dataset; insurers that don't publish
+// IFRS show an honest NA (never a cross-basis fill). All other columns — premium,
+// market-share, solvency, valuation — are basis-neutral. ROE has no clean IFRS
+// equity, so it stays on its statutory basis on both lenses (see the page note).
+
+/** Latest annual combined ratio on a basis for a dual-basis SAHI — with its FY.
+ *  null when the company isn't tracked on that basis (→ honest NA). */
+function basisCombinedPoint(companyId: string, basis: AccountingBasis): { fy: string; cr: number } | null {
+  if (!hasBasisData(companyId)) return null
+  for (let k = ANNUAL_PERIODS.length - 1; k >= 0; k--) {
+    const p = ANNUAL_PERIODS[k]
+    const cr = getBasisProfit(companyId, basis, p)?.combinedRatio
+    if (typeof cr === 'number') return { fy: p, cr }
+  }
+  return null
+}
+
+function valueOf(i: Insurer, m: MetricDef, basis: AccountingBasis): number | null {
+  // IFRS lens only re-points Combined Ratio; IGAAP keeps the reported snapshot
+  // value so the default view is byte-for-byte unchanged.
+  if (m.key === 'combinedRatio' && basis === 'ifrs') return basisCombinedPoint(i.id, 'ifrs')?.cr ?? null
   if (m.naWhen?.(i)) return null
   const v = m.resolve ? m.resolve(i) : m.field ? i[m.field] : null
   return typeof v === 'number' && isFinite(v) ? v : null
@@ -166,8 +191,9 @@ function signalFor(m: MetricDef, value: number, med: number | null, tone: CellTo
   return 'Weak'
 }
 
-/** Build the full scorecard for the active company + peer group. */
-export function getScorecard(filters: FilterInput): Scorecard {
+/** Build the full scorecard for the active company + peer group, on the chosen
+ *  accounting basis (default IGAAP/Statutory — the unchanged reported view). */
+export function getScorecard(filters: FilterInput, basis: AccountingBasis = 'igaap'): Scorecard {
   const list = getFilteredInsurers(filters)
   const focal = getHighlightedInsurer(filters)
   // Focal first, then peers (stable order otherwise).
@@ -177,7 +203,7 @@ export function getScorecard(filters: FilterInput): Scorecard {
   const ctx = new Map<string, { med: number | null; rankedIds: string[]; count: number }>()
   for (const m of METRICS) {
     const present = list
-      .map((i) => ({ id: i.id, v: valueOf(i, m) }))
+      .map((i) => ({ id: i.id, v: valueOf(i, m, basis) }))
       .filter((x): x is { id: string; v: number } => x.v != null)
     const med = median(present.map((x) => x.v))
     const dir =
@@ -192,7 +218,7 @@ export function getScorecard(filters: FilterInput): Scorecard {
     const cells: Record<string, Cell> = {}
     for (const m of METRICS) {
       const c = ctx.get(m.key)!
-      const value = valueOf(insurer, m)
+      const value = valueOf(insurer, m, basis)
       if (value == null) {
         cells[m.key] = { metric: m, value: null, rank: null, count: c.count, median: c.med, diff: null, best: false, tone: 'na', signal: 'NA' }
         continue
@@ -289,7 +315,21 @@ function labelFor(sourceName?: string): string {
  *   4. for valuation multiples, the daily valuation feed.
  * Returns null only when no source URL is on record.
  */
-export function resolveCellSource(companyId: string, metricKey: string): CellSource | null {
+export function resolveCellSource(companyId: string, metricKey: string, basis: AccountingBasis = 'igaap'): CellSource | null {
+  // Under the IFRS lens, Combined Ratio comes from the company's IFRS accounts
+  // (annual report / investor presentation), not the statutory filing — cite that
+  // with the FY actually shown. Null (link-free) for insurers without IFRS.
+  if (metricKey === 'combinedRatio' && basis === 'ifrs') {
+    const pt = basisCombinedPoint(companyId, 'ifrs')
+    if (!pt) return null
+    return {
+      label: BASIS_SOURCE_LABEL.ifrs,
+      period: pt.fy,
+      confidence: 'high',
+      provenance: { source_name: 'IFRS accounts (annual report / investor presentation)', source_url: '', fetched_at: null },
+    }
+  }
+
   if (VALUATION_KEYS.has(metricKey)) {
     const v = getValuationProvenance(companyId)
     if (v?.source_url) {
