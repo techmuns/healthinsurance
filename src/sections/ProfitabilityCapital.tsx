@@ -1966,22 +1966,14 @@ export function ProfitabilityCapital({ onNavigate, lens: lensKey }: { onNavigate
   // Guard against a stale selection mid-switch (the effect runs after render).
   const activeStage = lens.stages.find((s) => s.semantic === selected) ?? lens.stages[0]
 
-  // Period lens. Quarterly profitability exists only as standalone Q4 cells.
-  // Pick the LATEST in-range quarter that actually carries data ON THE SELECTED
-  // BASIS — never a quarter the basis hasn't reported (that would either blank
-  // the card or, worse, fall back to a stale prior period). A quarter whose cell
-  // exists but is all-null (e.g. an IFRS quarter a company doesn't publish) does
-  // NOT count as data. Monthly has no basis cells → Pending.
-  const quarterHasData = (q: BasisPeriod): boolean => {
-    const b = getBasisProfit(company.id, basis, q)
-    return !!b && (b.pat != null || b.combinedRatio != null || b.patMarginGwp != null)
-  }
+  // Period lens. Quarterly profitability exists only as standalone Q4 cells; the
+  // latest in-range FY picks the quarter. Monthly has none → Pending.
+  const latestFy = series[series.length - 1]?.fy ?? null
   const quarter: BasisPeriod | null =
-    period === 'Quarterly'
-      ? (Q4_PERIODS.filter((q) => labelInRange(q.slice(2), range) && quarterHasData(q)).pop() ?? null)
+    period === 'Quarterly' && latestFy && Q4_PERIODS.includes(`Q4${latestFy}` as BasisPeriod)
+      ? (`Q4${latestFy}` as BasisPeriod)
       : null
-  const quarterPrev: BasisPeriod | null =
-    quarter === 'Q4FY26' && labelInRange('FY25', range) && quarterHasData('Q4FY25') ? 'Q4FY25' : null
+  const quarterPrev: BasisPeriod | null = quarter === 'Q4FY26' && labelInRange('FY25', range) ? 'Q4FY25' : null
   const periodTag = period === 'Quarterly' ? (quarter ? periodLabel(quarter) : 'Quarterly') : 'FY25'
 
   const stages = buildLensStages(lens, company, series, basisCtx, period, quarter)
