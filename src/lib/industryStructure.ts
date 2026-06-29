@@ -31,6 +31,10 @@ interface SegAnnualRow {
   fiscal_year: string
   health_premium: number | null
   motor_premium: number | null
+  fire_premium?: number | null
+  marine_premium?: number | null
+  crop_premium?: number | null
+  pa_premium?: number | null // Personal Accident
   total_gi_premium: number | null
   provenance?: { source_name?: string; source_url?: string; fetched_at?: string }
 }
@@ -118,6 +122,8 @@ export interface StructureSeg {
   name: string
   premium: number // ₹ Cr
   share: number // % (1 dp)
+  /** YoY change vs the prior fiscal year, % (1 dp). null when no prior basis. */
+  yoy?: number | null
 }
 
 export interface StructureCard {
@@ -127,6 +133,8 @@ export interface StructureCard {
   provisional: boolean
   segments: StructureSeg[]
   insight: string
+  /** Card total (₹ Cr) — drives the donut centre label (segment-mix only). */
+  total?: number
 }
 
 const pctShares = (vals: number[]): number[] => {
@@ -134,48 +142,71 @@ const pctShares = (vals: number[]): number[] => {
   return vals.map((v) => r1((v / total) * 100))
 }
 
-/** Card 1 — Life / GI-other / Health, at the latest FY where life + GI are both sourced. */
-function segmentMixCard(): StructureCard | null {
-  const candidates = LIFE_ROWS.filter((l) => l.life_total_premium != null)
-  for (const life of [...candidates].reverse()) {
-    const seg = SEG_ANNUAL.find(
-      (r) => r.fiscal_year === life.fiscal_year && r.total_gi_premium != null && r.health_premium != null,
-    )
-    if (!seg) continue
-    const lifeP = Math.round(life.life_total_premium!)
-    const health = Math.round(seg.health_premium!)
-    const giOther = Math.round(seg.total_gi_premium! - seg.health_premium!)
-    const [lifeS, giS, healthS] = pctShares([lifeP, giOther, health])
+// Card 1 — General-Insurance-only premium mix (no Life). The named GI lines are
+// drawn straight from the GI Council Segment-wise Report; "Others" is the honest
+// residual (GI total − the named lines) so the ring always foots to the printed
+// industry total. Each segment carries its own YoY vs the prior FY.
+const GI_SEG_DEFS: { field: keyof SegAnnualRow; name: string }[] = [
+  { field: 'health_premium', name: 'Health' },
+  { field: 'motor_premium', name: 'Motor' },
+  { field: 'fire_premium', name: 'Fire' },
+  { field: 'crop_premium', name: 'Crop' },
+  { field: 'pa_premium', name: 'Personal Accident' },
+  { field: 'marine_premium', name: 'Marine' },
+]
 
-    // "Fastest-growing" is asserted only when computed true within GI
-    // (life has no prior-year row in the seed to compare against).
-    const prior = SEG_ANNUAL.find((r) => fyNum(r.fiscal_year) === fyNum(seg.fiscal_year) - 1)
-    let healthFastest = false
-    if (prior?.health_premium && prior.motor_premium && prior.total_gi_premium && seg.motor_premium) {
-      const g = (now: number, then: number) => now / then - 1
-      const hg = g(seg.health_premium!, prior.health_premium)
-      const mg = g(seg.motor_premium, prior.motor_premium)
-      const og = g(
-        seg.total_gi_premium! - seg.health_premium! - seg.motor_premium,
-        prior.total_gi_premium - prior.health_premium - prior.motor_premium,
-      )
-      healthFastest = hg >= mg && hg >= og
-    }
-    return {
-      key: 'segment-mix',
-      fy: seg.fiscal_year,
-      provisional: /provisional/i.test(seg.provenance?.source_name ?? ''),
-      segments: [
-        { name: 'Life Insurance', premium: lifeP, share: lifeS },
-        { name: 'General Insurance (Other than Health)', premium: giOther, share: giS },
-        { name: 'Health Insurance', premium: health, share: healthS },
-      ],
-      insight: healthFastest
-        ? `Life is the largest segment by far; health is the fastest-growing GI line but still ~${Math.round(healthS)}% of total premium.`
-        : `Life is the largest segment by far; health is ~${Math.round(healthS)}% of total premium.`,
-    }
+/** Card 1 — General Insurance premium mix, at the latest FY where the GI total
+ *  and at least Health are printed. GI-only: Life is never shown on this card. */
+function giSegmentMixCard(): StructureCard | null {
+  const seg = [...SEG_ANNUAL].reverse().find((r) => r.total_gi_premium != null && r.health_premium != null)
+  if (!seg) return null
+  const total = seg.total_gi_premium!
+  const prior = SEG_ANNUAL.find((r) => fyNum(r.fiscal_year) === fyNum(seg.fiscal_year) - 1)
+  const yoyOf = (field: keyof SegAnnualRow, now: number): number | null => {
+    const then = prior ? (prior[field] as number | null | undefined) : null
+    return then != null && then > 0 ? r1((now / then - 1) * 100) : null
   }
-  return null
+
+  // Named GI lines that have a printed value this FY (missing ≠ zero — a line the
+  // source omits is folded into Others rather than shown as a fake 0).
+  const named = GI_SEG_DEFS
+    .map((d) => ({ name: d.name, field: d.field, value: seg[d.field] as number | null | undefined }))
+    .filter((s): s is { name: string; field: keyof SegAnnualRow; value: number } => s.value != null)
+
+  const namedSum = named.reduce((s, n) => s + n.value, 0)
+  const othersPrem = Math.max(0, total - namedSum)
+  // Others YoY: prior Others = prior total − prior named (same line set), when sourced.
+  let othersYoy: number | null = null
+  if (prior?.total_gi_premium != null) {
+    const priorNamed = named.reduce((s, n) => {
+      const v = prior[n.field] as number | null | undefined
+      return v != null ? s + v : s
+    }, 0)
+    const priorOthers = prior.total_gi_premium - priorNamed
+    othersYoy = priorOthers > 0 ? r1((othersPrem / priorOthers - 1) * 100) : null
+  }
+
+  const premiums = [...named.map((n) => n.value), othersPrem]
+  const shares = pctShares(premiums)
+  const segments: StructureSeg[] = [
+    ...named.map((n, i) => ({ name: n.name, premium: Math.round(n.value), share: shares[i], yoy: yoyOf(n.field, n.value) })),
+    { name: 'Others', premium: Math.round(othersPrem), share: shares[shares.length - 1], yoy: othersYoy },
+  ]
+
+  const healthSeg = segments.find((s) => s.name === 'Health')
+  const motorSeg = segments.find((s) => s.name === 'Motor')
+  const insight = healthSeg && motorSeg
+    ? `Health (${Math.round(healthSeg.share)}%) and Motor (${Math.round(motorSeg.share)}%) together write about ${Math.round(healthSeg.share + motorSeg.share)}% of all general-insurance premium — Health is now the single largest line.`
+    : 'Health is the single largest general-insurance line by premium.'
+
+  return {
+    key: 'segment-mix',
+    fy: seg.fiscal_year,
+    provisional: /provisional/i.test(seg.provenance?.source_name ?? ''),
+    segments,
+    insight,
+    total: Math.round(total),
+  }
 }
 
 /** Card 2 — SAHI vs non-SAHI within health, at the latest FY both GIC feeds cover. */
@@ -246,7 +277,7 @@ function psuPrivateCard(): StructureCard | null {
 }
 
 export function industrySnapshotCards(): StructureCard[] {
-  return [segmentMixCard(), sahiSplitCard(), psuPrivateCard()].filter((c): c is StructureCard => c != null)
+  return [giSegmentMixCard(), sahiSplitCard(), psuPrivateCard()].filter((c): c is StructureCard => c != null)
 }
 
 /** "FY25–FY26" band label across whatever years the cards landed on. */
@@ -258,11 +289,11 @@ export function industrySnapshotSpan(cards: StructureCard[]): string {
 
 /** Short, honest source footnote assembled from the live provenances. */
 export function industrySnapshotSourceLine(cards: StructureCard[]): string {
-  const lifeFy = cards.find((c) => c.key === 'segment-mix')?.fy
+  const giCard = cards.find((c) => c.key === 'segment-mix')
   const sahiCard = cards.find((c) => c.key === 'sahi-split')
   const psuFy = cards.find((c) => c.key === 'psu-private')?.fy
   const parts: string[] = []
-  if (lifeFy) parts.push(`IRDAI Annual Report (life, ${lifeFy})`)
+  if (giCard) parts.push(`GI Council segment report (GI premium mix, ${giCard.fy}${giCard.provisional ? ', provisional' : ''})`)
   if (sahiCard) parts.push(`GI Council segment report (GI & SAHI, ${sahiCard.fy}${sahiCard.provisional ? ', provisional' : ''})`)
   if (psuFy) parts.push(`public vs private on total premium — public = LIC + 4 PSU general insurers (${psuFy})`)
   return `Source: ${parts.join(' · ')}.`

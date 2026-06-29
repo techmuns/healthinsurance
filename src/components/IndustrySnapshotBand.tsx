@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { TrendingUp } from 'lucide-react'
 import {
   industrySnapshotCards,
@@ -30,6 +30,7 @@ interface Seg {
   share: number // %
   color: string // ring fill
   labelColor: string // readable % label colour (placed just outside the ring)
+  yoy?: number | null // YoY change vs prior FY, % (tooltip only)
 }
 
 interface RingCard {
@@ -40,14 +41,31 @@ interface RingCard {
   // Dominant tint per card (colour-psychology): Market Size = blue,
   // SAHI vs Non-SAHI = teal, PSU vs Private = gold.
   tone: 'blue' | 'teal' | 'gold'
+  // Enhanced GI premium-mix donut (card 1 only): a centre total label + an
+  // on-hover tooltip with ₹ Cr, share and YoY. Cards 2 & 3 leave these unset
+  // and render exactly as before.
+  enhanced?: boolean
+  centerValue?: string // e.g. "₹3.36L Cr"
+  centerCaption?: string // e.g. "FY26 General Insurance"
 }
 
 // Ring fills
 const TEAL = '#168E8E'
 const NAVY = '#27457E'
-const VIOLET = '#8061B8'
 const GREY = '#AEB6C2'
 const GOLD = '#C29A45'
+
+// GI premium-mix palette (card 1): Health pops in vivid teal; every other line
+// is a calm, muted premium tone so the eye lands on Health first.
+const GI_MIX_PALETTE: { color: string; labelColor: string }[] = [
+  { color: TEAL, labelColor: '#0E6F6D' }, // Health (highlight)
+  { color: '#6E8FB8', labelColor: '#3D5F9F' }, // Motor
+  { color: '#C58A63', labelColor: '#9C5E38' }, // Fire
+  { color: '#9FB079', labelColor: '#6E7E4A' }, // Crop
+  { color: '#A98BB5', labelColor: '#6F4F7B' }, // Personal Accident
+  { color: '#7FA6AC', labelColor: '#4E767C' }, // Marine
+  { color: GREY, labelColor: '#535C68' }, // Others
+]
 
 // Per-card presentation: title, tone and the segment palette (in the same
 // order industryStructure emits the segments).
@@ -56,14 +74,10 @@ const CARD_STYLE: Record<
   { title: (fy: string) => string; subtitle: string; tone: RingCard['tone']; palette: { color: string; labelColor: string }[] }
 > = {
   'segment-mix': {
-    title: (fy) => `1. Market Size by Segment (${fy})`,
+    title: (fy) => `1. General Insurance Premium Mix (${fy})`,
     subtitle: 'Total Premium (₹ Cr) and Market Share (%)',
     tone: 'blue',
-    palette: [
-      { color: NAVY, labelColor: '#1E3A6B' },
-      { color: VIOLET, labelColor: '#574089' },
-      { color: TEAL, labelColor: '#0E6F6D' },
-    ],
+    palette: GI_MIX_PALETTE,
   },
   'sahi-split': {
     title: (fy) => `2. SAHI vs Non-SAHI (Health Insurance) (${fy})`,
@@ -85,20 +99,26 @@ const CARD_STYLE: Record<
   },
 }
 
+const inr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
+// Compact ₹ for the donut centre: ≥1 lakh-crore reads as "₹3.36L Cr".
+const inrCompact = (v: number) => (v >= 100000 ? `₹${(v / 100000).toFixed(2)}L Cr` : inr(v))
+
 function buildRingCards(cards: StructureCard[]): RingCard[] {
   return cards.map((c) => {
     const style = CARD_STYLE[c.key]
+    const enhanced = c.key === 'segment-mix'
     return {
       title: style.title(c.fy),
       subtitle: style.subtitle,
       tone: style.tone,
       insight: c.insight,
       segments: c.segments.map((s, i) => ({ ...s, ...style.palette[Math.min(i, style.palette.length - 1)] })),
+      enhanced,
+      centerValue: enhanced && c.total != null ? inrCompact(c.total) : undefined,
+      centerCaption: enhanced ? `${c.fy} General Insurance` : undefined,
     }
   })
 }
-
-const inr = (v: number) => `₹${v.toLocaleString('en-IN')} Cr`
 const RAD = Math.PI / 180
 
 // Ring geometry (px). Thin band; a roomier box + a larger label radius keep the
@@ -109,10 +129,32 @@ const INNER = 46
 const OUTER = 58
 const LABEL_R = OUTER + 19
 
-/** Slim ring chart — thin stroke, rounded ends, clean center hole, with the %
- *  for each segment placed just outside the ring (kept off the thin band so it
- *  always reads cleanly). */
-function RingChart({ segments }: { segments: Seg[] }) {
+/** On-hover tooltip for the GI premium-mix donut: segment name, ₹ Cr, % share
+ *  and YoY (when a prior-year basis exists). */
+function GiTooltip({ active, payload }: { active?: boolean; payload?: { payload: Seg }[] }) {
+  if (!active || !payload?.length) return null
+  const s = payload[0].payload
+  return (
+    <div className="rounded-lg border border-soft-border bg-card px-3 py-2 shadow-card">
+      <p className="flex items-center gap-1.5 text-[11.5px] font-semibold text-navy-deep">
+        <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
+        {s.name}
+      </p>
+      <p className="mt-0.5 text-[11px] tabular-nums text-ink-secondary">{inr(s.premium)} · {s.share}% share</p>
+      {s.yoy != null && (
+        <p className="mt-0.5 text-[11px] font-medium tabular-nums" style={{ color: s.yoy >= 0 ? '#2F855A' : '#A8443B' }}>
+          YoY {s.yoy >= 0 ? '+' : '−'}{Math.abs(s.yoy).toFixed(1)}%
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Slim ring chart — thin stroke, rounded ends, clean center hole. The two-line
+ *  cards place each segment's % just outside the ring; the enhanced GI premium-
+ *  mix card (many slices) instead carries a centre total + an on-hover tooltip,
+ *  keeping the ring uncluttered. */
+function RingChart({ segments, enhanced, centerValue, centerCaption }: { segments: Seg[]; enhanced?: boolean; centerValue?: string; centerCaption?: string }) {
   const labels = useMemo(() => {
     let acc = 0
     return segments.map((s) => {
@@ -135,6 +177,7 @@ function RingChart({ segments }: { segments: Seg[] }) {
     <div className="relative shrink-0" style={{ width: BOX, height: BOX }}>
       <ResponsiveContainer>
         <PieChart>
+          {enhanced && <Tooltip content={<GiTooltip />} wrapperStyle={{ outline: 'none', zIndex: 20 }} />}
           <Pie
             data={segments}
             dataKey="share"
@@ -157,17 +200,28 @@ function RingChart({ segments }: { segments: Seg[] }) {
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="pointer-events-none absolute inset-0">
-        {labels.map((l) => (
-          <span
-            key={l.key}
-            className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-px text-[11px] font-bold tabular-nums shadow-[0_1px_2px_rgba(23,43,77,0.10)] ring-1 ring-black/[0.04]"
-            style={{ left: l.x, top: l.y, color: l.color }}
-          >
-            {l.share}%
-          </span>
-        ))}
-      </div>
+      {/* Two-line cards: % chips just outside the ring. Enhanced card: centre total. */}
+      {!enhanced && (
+        <div className="pointer-events-none absolute inset-0">
+          {labels.map((l) => (
+            <span
+              key={l.key}
+              className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white/90 px-1.5 py-px text-[11px] font-bold tabular-nums shadow-[0_1px_2px_rgba(23,43,77,0.10)] ring-1 ring-black/[0.04]"
+              style={{ left: l.x, top: l.y, color: l.color }}
+            >
+              {l.share}%
+            </span>
+          ))}
+        </div>
+      )}
+      {enhanced && centerValue && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-7 text-center">
+          <span className="font-display text-[13.5px] font-semibold leading-none text-navy-deep">{centerValue}</span>
+          {centerCaption && (
+            <span className="mt-1 text-[7.5px] font-semibold uppercase leading-tight tracking-[0.07em] text-ink-secondary">{centerCaption}</span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -180,7 +234,7 @@ const TINT: Record<RingCard['tone'], { accent: string; wash: string; bloom: stri
   gold: { accent: '#C29A45', wash: 'rgba(194,154,69,0.07)', bloom: 'rgba(194,154,69,0.13)', insight: 'bg-champagne-soft text-champagne-deep' },
 }
 
-function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard) {
+function RingInsightCard({ title, subtitle, segments, insight, tone, enhanced, centerValue, centerCaption }: RingCard) {
   const t = TINT[tone]
   return (
     <div
@@ -194,7 +248,7 @@ function RingInsightCard({ title, subtitle, segments, insight, tone }: RingCard)
       <p className="relative mt-0.5 text-[11px] text-ink-secondary">{subtitle}</p>
 
       <div className="relative mt-2 flex items-center gap-3">
-        <RingChart segments={segments} />
+        <RingChart segments={segments} enhanced={enhanced} centerValue={centerValue} centerCaption={centerCaption} />
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
           {segments.map((s) => (
             <div key={s.name} className="flex items-start gap-2">

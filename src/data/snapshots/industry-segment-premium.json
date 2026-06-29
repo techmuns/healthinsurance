@@ -1,7 +1,7 @@
 {
   "_meta": {
     "snapshot_id": "industry-segment-premium",
-    "description": "Industry-wide GI segment premium (Health / Motor / Fire / Crop / Marine / Other). Drives Market Engine main chart.",
+    "description": "Industry-wide GI segment premium (Health / Motor / Fire / Crop / Marine / Personal Accident / Other). Drives Market Engine main chart and the Industry Snapshot GI premium-mix donut.",
     "schema_version": "1.0.0",
     "dataset": "mixed",
     "last_updated": "2026-06-28",
@@ -12,7 +12,7 @@
       "irdai_monthly_business"
     ],
     "parser_status": "gi_council_segment_xlsx",
-    "notes": "FY23-FY26 are the canonical GI Council Segment-wise Report figures, parsed by scripts/ingest/ingest-gicouncil-segment-annual.ts from the official full-FY workbooks (segment_march_2024, final-segment-24-25, segment_march_2026 — checksummed under data/agent-pulls/). For each FY the newest GIC statement wins: a later report's restated prior-year comparative supersedes the year's own earlier edition (FY25 = the March-2026 report's prior-year columns, 118,857.63 health; FY23 = the March-2024 report's prior-year columns, 256,894.25 total, replacing the handbook-seeded 256,984). 'Others' = Total non-life − Health − Motor (identity over the same report's printed Industry Total row). Crop comes from the Miscellaneous portfolio sheet; fire/marine/motor/health/total from the Segmentwise Report sheet. FY15-FY22 still await older GIC segment reports or the IRDAI Handbook (drop XLSX files into data/raw/gicouncil/segment-annual/ to backfill — March / 'final segment' editions only). Basis: GI Council 'Health' includes overseas medical, excludes personal accident."
+    "notes": "FY23-FY26 are the canonical GI Council Segment-wise Report figures, parsed by scripts/ingest/ingest-gicouncil-segment-annual.ts from the official full-FY workbooks (segment_march_2024, final-segment-24-25, segment_march_2026 — checksummed under data/agent-pulls/). For each FY the newest GIC statement wins: a later report's restated prior-year comparative supersedes the year's own earlier edition (FY25 = the March-2026 report's prior-year columns, 118,857.63 health; FY23 = the March-2024 report's prior-year columns, 256,894.25 total, replacing the handbook-seeded 256,984). 'Others' = Total non-life − Health − Motor (identity over the same report's printed Industry Total row). Crop comes from the Miscellaneous portfolio sheet; fire/marine/motor/health/pa (Personal Accident, the Segmentwise 'P.A.' column)/total from the Segmentwise Report sheet. FY26 P.A. = 11,603.74 Cr, FY25 = 8,594.96 Cr (March-2026 GIC report Industry Total row). FY15-FY22 still await older GIC segment reports or the IRDAI Handbook (drop XLSX files into data/raw/gicouncil/segment-annual/ to backfill — March / 'final segment' editions only). Basis: GI Council 'Health' includes overseas medical, excludes personal accident."
   },
   "data": [
     {
@@ -24,6 +24,7 @@
       "fire_premium": 27523.79,
       "crop_premium": 19216.49,
       "marine_premium": 5819.52,
+      "pa_premium": 11603.74,
       "other_premium": 90762.14,
       "total_gi_premium": 336122.68,
       "health_share": 40.8,
@@ -48,6 +49,7 @@
       "fire_premium": 24265.33,
       "crop_premium": 26235.04,
       "marine_premium": 5503.94,
+      "pa_premium": 8594.96,
       "other_premium": 89709.59,
       "total_gi_premium": 307660.69,
       "health_share": 38.6,

@@ -170,6 +170,7 @@ interface IndustrySegments {
   motor: number | null
   health: number | null
   crop: number | null
+  pa: number | null // Personal Accident (Segmentwise "P.A." column)
   total: number | null
 }
 
@@ -742,7 +743,7 @@ async function parseWorkbook(buffer: Buffer, key: string, warnings: string[]): P
 
   const swTotals = industryTotalsOf(sw, {
     fire: ['fire'], marine: ['marinetotal'], motor: ['motortotal'],
-    health: ['health'], total: ['grandtotal'],
+    health: ['health'], pa: ['pa', 'personalaccident'], total: ['grandtotal'],
   }, 'Segmentwise Report', warnings)
   const miscTotals = misc
     ? industryTotalsOf(misc, { crop: ['cropinsurance'] }, 'Miscellaneous portfolio', warnings)
@@ -754,6 +755,7 @@ async function parseWorkbook(buffer: Buffer, key: string, warnings: string[]): P
     motor: swTotals?.[which].motor ?? null,
     health: swTotals?.[which].health ?? null,
     crop: miscTotals?.[which].crop ?? null,
+    pa: swTotals?.[which].pa ?? null,
     total: swTotals?.[which].total ?? null,
   })
   const segments = { current: seg('current'), previous: seg('previous') }
@@ -1183,7 +1185,7 @@ export const ingestGicouncilSegmentAnnual: Fetcher = {
           values: {
             period_type: 'annual', fiscal_year: st.fy,
             health_premium: s.health, motor_premium: s.motor, fire_premium: s.fire,
-            crop_premium: s.crop, marine_premium: s.marine, other_premium: other,
+            crop_premium: s.crop, marine_premium: s.marine, pa_premium: s.pa, other_premium: other,
             total_gi_premium: s.total,
             health_share: s.total && s.health != null ? Math.round((s.health / s.total) * 1000) / 10 : null,
             motor_share: s.total && s.motor != null ? Math.round((s.motor / s.total) * 1000) / 10 : null,
