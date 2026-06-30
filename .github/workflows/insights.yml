@@ -62,9 +62,14 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
-      - name: Signal + grounding checks
-        run: npm run insights:check
-
+      # Regenerate FIRST, then validate the fresh output. The generator is itself
+      # fail-closed (it writes nothing unless every number is grounded in the live
+      # signals and the arithmetic/direction gate passes, and the methodology is
+      # deterministic-only), so the firewall is fully preserved. Running the check
+      # before regeneration used to deadlock: when the live data drifted, the
+      # committed cards went stale, the check failed on those stale numbers, and the
+      # job aborted *before* the regeneration step that would have fixed them — so
+      # the feed could never self-heal. Generate-then-validate removes that deadlock.
       - name: Generate insights (Anthropic)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -75,6 +80,11 @@ jobs:
             exit 0
           fi
           npm run insights:generate
+
+      # Belt-and-suspenders: validate whatever is now on disk (the freshly generated
+      # feed, or the committed one if regeneration was skipped). Fail-closed.
+      - name: Signal + grounding checks
+        run: npm run insights:check
 
       - name: Commit refreshed insights
         run: |
